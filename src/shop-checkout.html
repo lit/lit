@@ -127,6 +127,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <form
               id="checkoutForm"
               is="iron-form"
+              method="post"
               action="/data/sample_success_response.json"
               on-iron-form-response="_didReceiveResponse"
               on-iron-form-presubmit="_willSendRequest">
@@ -501,7 +502,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _submit: function(e) {
         if (this._validateForm()) {
-          this.$.checkoutForm.submit();
+          // To send the form data to the server:
+          // 2) Remove the code below.
+          // 3) Uncomment `this.$.checkoutForm.submit()`.
+
+          this.$.checkoutForm.fire('iron-form-presubmit', null, { bubbles: false });
+
+          this.debounce('_submitForm', function() {
+            this.$.checkoutForm.fire('iron-form-response', {
+              response: {
+                success: 1,
+                successMessage: 'Your order has been received.'
+              }
+            }, { bubbles: false });
+          }, 1000);
+
+          // this.$.checkoutForm.submit();
         }
       },
 
@@ -588,19 +604,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       _willSendRequest: function(e) {
         var form = e.target;
-        var params = form.request.params;
-
-        // Populate the request params where `cartItemsId[i]` is the ID and `cartItemsQuantity[i]`
-        // is the quantity for some item `i`.
-        params.cartItemsId = [];
-        params.cartItemsQuantity = [];
-
-        this.cart.forEach(function(cartItem) {
-          params.cartItemsId.push(cartItem.item.name);
-          params.cartItemsQuantity.push(cartItem.quantity);
-        });
+        var body = form.request.body;
 
         this._setWaiting(true);
+
+        if (!body) {
+          return;
+        }
+        // Populate the request body where `cartItemsId[i]` is the ID and `cartItemsQuantity[i]`
+        // is the quantity for some item `i`.
+        body.cartItemsId = [];
+        body.cartItemsQuantity = [];
+
+        this.cart.forEach(function(cartItem) {
+          body.cartItemsId.push(cartItem.item.name);
+          body.cartItemsQuantity.push(cartItem.quantity);
+        });
       },
 
       /**
