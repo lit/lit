@@ -34,7 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-size: 12px;
       }
 
-      header > .action-btn {
+      header > kart-button[responsive] {
         margin-top: 20px;
       }
 
@@ -42,23 +42,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         header > h1 {
           font-size: 1.1em;
-        }
-
-        /* Action Buttons are used in shop-detail, shop-cart and shop-checkout */
-        .action-btn {
-          @apply(--layout-fixed-bottom);
-          height: 64px;
-          z-index: 1;
-        }
-
-        .action-btn > * {
-          background-color: var(--app-accent-color);
-          border: none;
-          color: white;
-          padding: 20px;
-          width: 100%;
-          height: 100%;
-          font-size: 15px;
         }
 
       }
