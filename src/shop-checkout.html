@@ -370,7 +370,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <div class="flex">Total</div>
                   <div>[[_formatPrice(total)]]</div>
                 </div>
-                <shop-button class="action-btn" id="submitBox">
+                <shop-button responsive id="submitBox">
                   <input type="button" on-tap="_submit" value="Place Order">
                 </shop-button>
               </section>
@@ -382,7 +382,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <header state="success">
           <h1>Thanks for your purchase!</h1>
           <p>[[response.successMessage]]</p>
-          <shop-button class="action-btn">
+          <shop-button responsive>
             <a href="/">Finish</a>
           </shop-button>
         </header>
@@ -391,7 +391,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <header state="error">
           <h1>We couldn&acute;t process your order</h1>
           <p id="errorMessage">[[response.errorMessage]]</p>
-          <shop-button class="action-btn">
+          <shop-button responsive>
             <a href="/checkout">Try again</a>
           </shop-button>
         </header>
