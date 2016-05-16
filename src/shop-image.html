@@ -64,10 +64,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _srcChanged: function(src) {
-        this.$.img.src = '';
+        this.$.img.removeAttribute('src');
         this.$.img.style.transition = '';
         this.$.img.style.opacity = 0;
-        this.$.img.src = src || '';
+        if (src) {
+          this.$.img.src = src;
+        }
       },
 
       _onImgLoad: function() {
