@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<dom-module id="shop-slide-overlay">
+<dom-module id="shop-tabs-overlay">
   <template strip-whitespace>
     <style>
       :host {
@@ -28,7 +28,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
   <script>
     Polymer({
-      is: 'shop-slide-overlay',
+      is: 'shop-tabs-overlay',
 
       properties: {
         /**
@@ -52,7 +52,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _targetChanged: function(newTarget, oldTarget) {
         if (!this._transitionsInFlight.length) {
           if (this._lastTarget) {
-            this._lastTarget.classList.remove('shop-slide-overlay-static-above');
+            this._lastTarget.classList.remove('shop-tabs-overlay-static-above');
           }
           this.style.display = 'block';
           this._move(oldTarget, newTarget);
@@ -77,7 +77,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._lastTarget = this.target;
         } else {
           if (this._lastTarget) {
-            this._lastTarget.classList.add('shop-slide-overlay-static-above');
+            this._lastTarget.classList.add('shop-tabs-overlay-static-above');
           }
           this.style.display = 'none';
         }
