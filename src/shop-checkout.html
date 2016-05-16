@@ -142,13 +142,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             <div class="subsection grid" visible$="[[_hasItems]]">
               <section>
-                <h2>Account Information</h2>
+                <h2 id="accountInfoHeading">Account Information</h2>
                 <div class="row input-row">
                   <shop-input>
                     <input type="email" id="accountEmail" name="accountEmail"
-                        placeholder="Email" autofocus required>
+                        placeholder="Email" autofocus required
+                        aria-labelledby="accountEmailLabel accountInfoHeading">
                     <shop-md-decorator error-message="Invalid Email" aria-hidden="true">
-                      <label for="accountEmail">Email</label>
+                      <label id="accountEmailLabel">Email</label>
                       <shop-underline></shop-underline>
                     </shop-md-decorator>
                   </shop-input>
@@ -156,20 +157,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <div class="row input-row">
                   <shop-input>
                     <input type="tel" id="accountPhone" name="accountPhone" pattern="\d{10,}"
-                        placeholder="Phone Number" required>
+                        placeholder="Phone Number" required
+                        aria-labelledby="accountPhoneLabel accountInfoHeading">
                     <shop-md-decorator error-message="Invalid Phone Number" aria-hidden="true">
-                      <label for="accountPhone">Phone Number</label>
+                      <label id="accountPhoneLabel">Phone Number</label>
                       <shop-underline></shop-underline>
                     </shop-md-decorator>
                   </shop-input>
                 </div>
-                <h2>Shipping Address</h2>
+                <h2 id="shipAddressHeading">Shipping Address</h2>
                 <div class="row input-row">
                   <shop-input>
                     <input type="text" id="shipAddress" name="shipAddress" pattern=".{5,}"
-                        placeholder="Address" required>
+                        placeholder="Address" required
+                        aria-labelledby="shipAddressLabel shipAddressHeading">
                     <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
-                      <label for="shipAddress">Address</label>
+                      <label id="shipAddressLabel">Address</label>
                       <shop-underline></shop-underline>
                     </shop-md-decorator>
                   </shop-input>
@@ -177,9 +180,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <div class="row input-row">
                   <shop-input>
                     <input type="text" id="shipCity" name="shipCity" pattern=".{2,}"
-                        placeholder="City" required>
+                        placeholder="City" required
+                        aria-labelledby="shipCityLabel shipAddressHeading">
                     <shop-md-decorator error-message="Invalid City" aria-hidden="true">
-                      <label for="shipCity">City</label>
+                      <label id="shipCityLabel">City</label>
                       <shop-underline></shop-underline>
                     </shop-md-decorator>
                   </shop-input>
@@ -187,25 +191,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <div class="row input-row">
                   <shop-input>
                     <input type="text" id="shipState" name="shipState" pattern=".{2,}"
-                        placeholder="State/Province" required>
+                        placeholder="State/Province" required
+                        aria-labelledby="shipStateLabel shipAddressHeading">
                     <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
-                      <label for="shipState">State/Province</label>
+                      <label id="shipStateLabel">State/Province</label>
                       <shop-underline></shop-underline>
                     </shop-md-decorator>
                   </shop-input>
                   <shop-input>
                     <input type="text" id="shipZip" name="shipZip" pattern=".{4,}"
-                        placeholder="Zip/Postal Code" required>
+                        placeholder="Zip/Postal Code" required
+                        aria-labelledby="shipZipLabel shipAddressHeading">
                     <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
-                      <label for="shipZip">Zip/Postal Code</label>
+                      <label id="shipZipLabel">Zip/Postal Code</label>
                       <shop-underline></shop-underline>
                     </shop-md-decorator>
                   </shop-input>
                 </div>
                 <div class="column">
-                  <label for="shipCountry" class="shop-select-label">Country</label>
+                  <label id="shipCountryLabel" class="shop-select-label">Country</label>
                   <shop-select>
-                    <select id="shipCountry" name="shipCountry" required>
+                    <select id="shipCountry" name="shipCountry" required
+                        aria-labelledby="shipCountryLabel shipAddressHeading">
                       <option value="US" selected>United States</option>
                       <option value="CA">Canada</option>
                     </select>
@@ -214,7 +221,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </shop-md-decorator>
                   </shop-select>
                 </div>
-                <h2>Billing Address</h2>
+                <h2 id="billAddressHeading">Billing Address</h2>
                 <div class="billing-address-picker">
                   <shop-switch>
                     <input type="checkbox" id="setBilling" name="setBilling"
@@ -227,10 +234,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <div class="row input-row">
                     <shop-input>
                       <input type="text" id="billAddress" name="billAddress" pattern=".{5,}"
-                          placeholder="Billing Address" required$="[[hasBillingAddress]]"
-                          autocomplete="billing street-address">
+                          placeholder="Address" required$="[[hasBillingAddress]]"
+                          autocomplete="billing street-address"
+                          aria-labelledby="billAddressLabel billAddressHeading">
                       <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
-                        <label for="billAddress">Billing Address</label>
+                        <label id="billAddressLabel">Address</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
@@ -239,9 +247,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <shop-input>
                       <input type="text" id="billCity" name="billCity" pattern=".{2,}"
                           placeholder="City" required$="[[hasBillingAddress]]"
-                          autocomplete="billing address-level2">
+                          autocomplete="billing address-level2"
+                          aria-labelledby="billCityLabel billAddressHeading">
                       <shop-md-decorator error-message="Invalid City" aria-hidden="true">
-                        <label for="billCity">City</label>
+                        <label id="billCityLabel">City</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
@@ -250,27 +259,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <shop-input>
                       <input type="text" id="billState" name="billState" pattern=".{2,}"
                           placeholder="State/Province" required$="[[hasBillingAddress]]"
-                          autocomplete="billing address-level1">
+                          autocomplete="billing address-level1"
+                          aria-labelledby="billStateLabel billAddressHeading">
                       <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
-                        <label for="billState">State/Province</label>
+                        <label id="billStateLabel">State/Province</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
                     <shop-input>
                       <input type="text" id="billZip" name="billZip" pattern=".{4,}"
                           placeholder="Zip/Postal Code" required$="[[hasBillingAddress]]"
-                          autocomplete="billing postal-code">
+                          autocomplete="billing postal-code"
+                          aria-labelledby="billZipLabel billAddressHeading">
                       <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
-                        <label for="billZip">Zip/Postal Code</label>
+                        <label id="billZipLabel">Zip/Postal Code</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
                   </div>
                   <div class="column">
-                    <label for="billCountry" class="shop-select-label">Country</label>
+                    <label id="billCountryLabel" class="shop-select-label">Country</label>
                     <shop-select>
                       <select id="billCountry" name="billCountry" required$="[[hasBillingAddress]]"
-                           autocomplete="billing country">
+                          autocomplete="billing country"
+                          aria-labelledby="billCountryLabel billAddressHeading">
                         <option value="US" selected>United States</option>
                         <option value="CA">Canada</option>
                       </select>

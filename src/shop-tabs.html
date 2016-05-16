@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selectable.html">
-<link rel="import" href="shop-slide-overlay.html">
+<link rel="import" href="shop-tabs-overlay.html">
 
 <dom-module id="shop-tabs">
   <template strip-whitespace>
@@ -25,12 +25,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         position: relative;
       }
 
-      shop-slide-overlay {
+      shop-tabs-overlay {
         @apply(--shop-tab-overlay);
       }
     </style>
     <div id="container">
-      <shop-slide-overlay id="overlay"></shop-slide-overlay>
+      <shop-tabs-overlay id="overlay"></shop-tabs-overlay>
       <content></content>
     </div>
   </template>
