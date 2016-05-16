@@ -1,0 +1,27 @@
+{
+  "name": "SHOP",
+  "version": "0.5",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "private": true,
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.4.0",
+    "app-layout": "polymerlabs/app-layout#master",
+    "carbon-route": "polymerelements/carbon-route#behaviorize",
+    "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
+    "iron-form": "polymerelements/iron-form#^1.0.0",
+    "iron-icon": "polymerelements/iron-icon#^1.0.0",
+    "iron-iconset-svg": "polymerelements/iron-iconset-svg#^1.0.0",
+    "iron-localstorage": "polymerelements/iron-localstorage#^1.0.0",
+    "iron-media-query": "polymerelements/iron-media-query#^1.0.0",
+    "iron-overlay-behavior": "polymerelements/iron-overlay-behavior#^1.0.0",
+    "iron-pages": "polymerelements/iron-pages#^1.0.0",
+    "iron-selector": "polymerelements/iron-selector#^1.0.0",
+    "paper-icon-button": "polymerelements/paper-icon-button#^1.0.0",
+    "paper-spinner": "polymerelements/paper-spinner#^1.0.0"
+  },
+  "devDependencies": {
+    "web-component-tester": "^4.0.0"
+  }
+}

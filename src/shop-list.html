@@ -1,0 +1,196 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/carbon-route/carbon-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-item.html">
+
+<!-- resources loaded by lazy-resources.html -->
+<!--
+<link rel="prefetch" href="shop-network-warning.html">
+-->
+
+<dom-module id="shop-list">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+      }
+
+      .grid > a {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+        .hero-image {
+          display: none;
+        }
+
+        .grid > a {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+
+    </style>
+
+    <!--
+      carbon-route provides the name of the category.
+    -->
+    <carbon-route
+        route="[[route]]"
+        pattern="/:category"
+        data="{{routeData}}"></carbon-route>
+
+    <!--
+      shop-category-data provides the category data for a given category name.
+    -->
+    <shop-category-data
+        id="categoryData"
+        category-name="[[routeData.category]]"
+        category="{{category}}"
+        failure="{{failure}}"></shop-category-data>
+
+    <shop-image
+        alt="[[category.title]]"
+        src="[[category.image]]"
+        placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
+
+    <header>
+      <h1>[[category.title]]</h1>
+      <span>[[_getPluralizedQuantity(category.items.length)]]</span>
+    </header>
+
+    <div class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[_getListItems(category.items)]]" initial-count="4">
+        <a href$="[[_getItemHref(item)]]">
+          <shop-list-item item="[[item]]"></shop-list-item>
+        </a>
+      </template>
+    </div>
+
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+    <shop-network-warning
+        hidden$="[[!failure]]"
+        offline="[[offline]]"
+        on-try-reconnect="_tryReconnect"></shop-network-warning>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-list',
+
+      properties: {
+
+        category: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
+        failure: Boolean
+
+      },
+
+      observers: [
+        '_categoryChanged(category, visible)'
+      ],
+
+      _getListItems: function(items) {
+        // Return placeholder items when the items haven't loaded yet.
+        return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _categoryChanged: function(category, visible) {
+        if (visible) {
+          // Notify the category and the page's title
+          this.fire('change-section', {
+            category: category.name,
+            title: category.title
+          });
+        }
+      },
+
+      _tryReconnect: function() {
+        this.$.categoryData.refresh();
+      },
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+          this._tryReconnect();
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>

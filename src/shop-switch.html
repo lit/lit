@@ -1,0 +1,108 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="shop-switch">
+  <template>
+    <style>
+
+      shop-switch {
+        display: inline-block;
+        isolation: isolate;
+        width: 36px;
+        height: 16px;
+        background-color: #ccc;
+        position: relative;
+        border-radius: 8px;
+        vertical-align: middle;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+      }
+
+      shop-switch > shop-md-decorator {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 8px;
+        pointer-events: none;
+      }
+
+      shop-switch > shop-md-decorator::after {
+        content: '';
+        display: block;
+        pointer-events: none;
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        width: 22px;
+        height: 22px;
+        background-color: white;
+        border-radius: 50%;
+        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.6);
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        transition: -webkit-transform 0.1s ease-out;
+        transition: transform 0.1s ease-out;
+      }
+
+      shop-switch > shop-md-decorator::before {
+        content: '';
+        display: block;
+        pointer-events: none;
+        position: absolute;
+        top: -11px;
+        left: -11px;
+        width: 38px;
+        height: 38px;
+        background-color: var(--app-accent-color);
+        border-radius: 50%;
+        opacity: 0;
+        -webkit-transform: scale3d(0, 0, 0);
+        transform: scale3d(0, 0, 0);
+        transition-properties: -webkit-transform, opacity;
+        transition-properties: transform, opacity;
+        transition-duration: 0.1s;
+        transition-timing-function: ease-out;
+      }
+
+      shop-switch > input[type=checkbox]:focus + shop-md-decorator::before {
+        opacity: 0.3;
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+      }
+
+      shop-switch > input[type=checkbox] {
+        width: 100%;
+        height: 44px;
+        position: absolute;
+        top: -15px;
+        left: -4px;
+        opacity: 0;
+      }
+
+      shop-switch > input[type=checkbox]:checked + shop-md-decorator::after {
+        -webkit-transform: translate3d(22px, 0px, 0px);
+        transform: translate3d(22px, 0px, 0px);
+        background-color: var(--app-accent-color);
+      }
+
+      shop-switch > input[type=checkbox]:checked + shop-md-decorator::before {
+        -webkit-transform: translate3d(22px, 0px, 0px);
+        transform: translate3d(22px, 0px, 0px);
+        background-color: var(--app-accent-color);
+      }
+
+    </style>
+  </template>
+</dom-module>

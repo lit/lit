@@ -1,0 +1,86 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="shop-image">
+
+  <template>
+
+    <style>
+
+      :host {
+        display: block;
+        position: relative;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+      }
+
+      img {
+        @apply(--layout-fit);
+        max-width: 100%;
+        max-height: 100%;
+        margin: 0 auto;
+        opacity: 0;
+        transition: 0.5s opacity;
+        @apply(--shop-image-img);
+      }
+
+    </style>
+
+    <img id="img" alt$="[[alt]]" on-load="_onLoadImg">
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-image',
+
+      properties: {
+
+        alt: String,
+
+        src: {
+          type: String,
+          observer: '_srcChanged'
+        },
+
+        placeholderImg: {
+          type: String,
+          observer: '_placeholderImgChanged'
+        }
+
+      },
+
+      _srcChanged: function(src) {
+        this.$.img.src = '';
+        this.$.img.style.transition = '';
+        this.$.img.style.opacity = 0;
+        this.$.img.src = src || '';
+      },
+
+      _onLoadImg: function() {
+        this.$.img.style.transition = '0.5s opacity';
+        this.$.img.style.opacity = 1;
+      },
+
+      _placeholderImgChanged: function(placeholder) {
+        this.style.backgroundImage = 'url(\'data:image/jpeg;base64,' + placeholder + '\')';
+      }
+
+    });
+
+  </script>
+
+</dom-module>
