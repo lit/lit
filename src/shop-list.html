@@ -16,11 +16,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-list-item.html">
 
-<!-- resources loaded by lazy-resources.html -->
-<!--
-<link rel="prefetch" href="shop-network-warning.html">
--->
-
 <dom-module id="shop-list">
 
   <template>
@@ -171,10 +166,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _categoryChanged: function(category, visible) {
         if (visible) {
-          // Notify the category and the page's title
-          this.fire('change-section', {
-            category: category.name,
-            title: category.title
+          this.debounce('change-section', function() {
+            // Notify the category and the page's title
+            this.fire('change-section', {
+              category: category.name,
+              title: category.title
+            });
           });
         }
       },

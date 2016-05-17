@@ -19,23 +19,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="shop-category-data.html">
+<!-- Since 'home' is the default route, eagerly load it. -->
 <link rel="import" href="shop-home.html">
-
-<!-- resources loaded by lazy-resources.html or on demand via routing -->
-<!--
-<link rel="prefetch" href="../bower_components/app-layout/app-drawer/app-drawer.html">
-<link rel="prefetch" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="prefetch" href="shop-cart.html">
-<link rel="prefetch" href="shop-cart-data.html">
-<link rel="prefetch" href="shop-cart-modal.html">
-<link rel="prefetch" href="shop-checkout.html">
-<link rel="prefetch" href="shop-detail.html">
-<link rel="prefetch" href="shop-icons.html">
-<link rel="prefetch" href="shop-list.html">
-<link rel="prefetch" href="shop-snackbar.html">
-<link rel="prefetch" href="shop-tabs.html">
-<link rel="prefetch" href="shop-tab.html">
--->
 
 <dom-module id="shop-app">
 
@@ -104,7 +89,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .announcer {
         position: fixed;
-        clip: rect(0, 0, 0, 0);
+        height: 0;
+        overflow: hidden;
       }
 
       :host(:not([page=detail])) .back-btn {
@@ -209,6 +195,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-decoration: underline;
       }
 
+      /* small screen */
       @media (max-width: 767px) {
         :host {
           padding-top: 64px;
@@ -269,7 +256,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="logo" title><a href="/" aria-label="SHOP Home">SHOP</a></div>
         <div class="cart-btn-container">
           <a href="/cart" tabindex="-1">
-            <paper-icon-button icon="shopping-cart" aria-label$="Shopping cart: [[_getPluralizedQuantity(numItems)]]"></paper-icon-button>
+            <paper-icon-button icon="shopping-cart" aria-label$="Shopping cart: [[_computePluralizedQuantity(numItems)]]"></paper-icon-button>
           </a>
           <div class="cart-badge" aria-hidden="true" hidden$="[[!numItems]]">[[numItems]]</div>
         </div>
@@ -292,7 +279,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    <template is="dom-if" if="[[_shouldShowDrawer]]">
+    <template is="dom-if" if="[[_shouldRenderDrawer]]">
       <!-- Two-way bind `drawerOpened` since app-drawer can update `opened` itself. -->
       <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
         <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
@@ -313,11 +300,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!-- cart view -->
       <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout
-          name="checkout"
-          cart="[[cart]]"
-          total="[[total]]"
-          route="{{subroute}}"></shop-checkout>
+      <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
     </iron-pages>
 
     <footer>
@@ -331,6 +314,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
+    // performance logging
     window.performance && performance.mark && performance.mark('shop-app - before register');
 
     Polymer({
@@ -345,32 +329,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           observer: '_pageChanged'
         },
 
-        categories: Array,
-
-        categoryName: String,
-
-        route: Object,
-
-        subroute: Object,
-
-        routeData: Object,
-
-        smallScreen: Boolean,
-
-        cart: Array,
-
         numItems: {
           type: Number,
           value: 0
         },
-
-        total: Number,
-
-        drawerOpened: Boolean,
-
-        offline: Boolean,
-
-        _a11yLabel: String,
 
         _shouldShowTabs: {
           computed: '_computeShouldShowTabs(page, smallScreen)'
@@ -380,16 +342,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
         },
 
-        _shouldShowDrawer: {
-          computed: '_computeShouldShowDrawer(smallScreen, loadComplete)'
+        _shouldRenderDrawer: {
+          computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
         }
       },
-
-      _cartModal: null,
-
-      _networkSnackbar: null,
-
-      _homePage: 'home',
 
       observers: [
         '_routePageChanged(routeData.page)'
@@ -406,69 +362,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       created: function() {
         window.performance && performance.mark && performance.mark('shop-app.created');
+        // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
       },
 
-      _domChange: function(e) {
-        if (window.performance && performance.mark) {
-          var target = Polymer.dom(e).rootTarget;
-          if (!this.__loggedDomChange && target.domHost != this) {
-            this.__loggedDomChange = true;
-            performance.mark(target.domHost.is + 'domChange');
-          }
-        }
-      },
-
-      attached: function() {
+      ready: function() {
+        // listen for online/offline
         Polymer.RenderStatus.afterNextRender(this, function() {
           this.listen(window, 'online', '_notifyNetworkStatus');
           this.listen(window, 'offline', '_notifyNetworkStatus');
         });
       },
 
-      detached: function() {
-        this.unlisten(window, 'online', '_notifyNetworkStatus');
-        this.unlisten(window, 'offline', '_notifyNetworkStatus');
-      },
-
       _routePageChanged: function(page) {
         // Check if routeData.page is an empty string - see PolymerElements/carbon-route#89.
         this.page = page || 'home';
-        if (this.page !== 'detail' && this.page !== 'list') {
-          this.categoryName = '';
-        }
-        // Scroll to the top of the page on every page change. Use `Polymer.AppLayout.scroll`
+        // Scroll to the top of the page on every *route* change. Use `Polymer.AppLayout.scroll`
         // with `behavior: 'silent'` to disable header scroll effects during the scroll.
         Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
-        // Close the drawer - in case the link click came from the drawer.
+        // Close the drawer - in case the *route* change came from a link in the drawer.
         this.drawerOpened = false;
       },
 
-      _pageChanged: function(page) {
+      _pageChanged: function(page, oldPage) {
         if (page != null) {
           // load page import on demand.
-          if (page !== this._homePage) {
-            this.importHref(
-              this.resolveUrl('shop-' + page + '.html'),
-              this._pageLoaded,
-              null,
-              // async!
-              true
-            );
-          // 'home' page import is eagarly loaded.
-          } else {
-            this._pageLoaded();
-          }
+          this.importHref(
+            this.resolveUrl('shop-' + page + '.html'),
+            // load callback
+            function() {
+              this._ensureLazyLoaded();
+              if (oldPage) {
+                // The size of the header depends on the page (e.g. on some pages the tabs
+                // do not appear), so reset the header's layout only when switching pages.
+                this.async(function() {
+                  this.$.header.resetLayout();
+                }, 1);
+              }
+            }, null, true);
         }
-      },
-
-      _pageLoaded: function() {
-        this._ensureLazyLoaded();
-        // The size of the header depends on the page (e.g. on some pages the tabs
-        // do not appear), so reset the header's layout only when switching pages.
-        this.async(function() {
-          this.$.header.resetLayout();
-        }, 1);
       },
 
       _ensureLazyLoaded: function() {
@@ -476,30 +408,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!this.loadComplete) {
           Polymer.RenderStatus.afterNextRender(this, function() {
             this.importHref(this.resolveUrl('lazy-resources.html'), function() {
+              // Register service worker if supported.
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js');
+              }
+              this._notifyNetworkStatus();
               this.loadComplete = true;
-              this._finishLoad();
             });
           });
         }
       },
 
-      _finishLoad: function() {
-        // Register service worker if supported.
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/service-worker.js');
+      _notifyNetworkStatus: function() {
+        var oldOffline = this.offline;
+        this.offline =  !navigator.onLine;
+        // Show the snackbar if the user is offline when starting a new session
+        // or if the network status changed.
+        if (this.offline || (!this.offline && oldOffline === true)) {
+          if (!this._networkSnackbar) {
+            this._networkSnackbar = document.createElement('shop-snackbar');
+            Polymer.dom(this.root).appendChild(this._networkSnackbar);
+          }
+          Polymer.dom(this._networkSnackbar).innerHTML = this.offline ?
+              'You are offline' : 'You are online';
+          this._networkSnackbar.open();
         }
-        this._notifyNetworkStatus();
       },
 
+      _toggleDrawer: function() {
+        this.drawerOpened = !this.drawerOpened;
+      },
+
+      // Elements in the app can notify section changes.
+      // Response by a11y announcing the section and syncronizing the category.
       _onChangeSection: function(event) {
         var detail = event.detail;
-        // Wait for the tabs to be visible before setting categoryName so that the selected
-        // bar is displayed properly.
-        if (detail.category) {
-          this.debounce('_setCategory', function() {
-            this.categoryName = detail.category;
-          }, 1);
-        }
+        this.categoryName = detail.category || '';
         // Announce the page's title
         if (detail.title) {
           this._announce(detail.title);
@@ -519,7 +463,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _onSetCartItem: function(event) {
         var detail = event.detail;
         this.$.cart.setItem(detail);
-
         if (detail.quantity === 0) {
           this._announce('Item deleted');
         } else {
@@ -532,8 +475,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._announce('Cart cleared');
       },
 
-      _toggleDrawer: function() {
-        this.drawerOpened = !this.drawerOpened;
+      // Elements in the app can notify a change to be a11y announced.
+      _onAnnounce: function(e) {
+        this._announce(e.detail);
+      },
+      
+      // A11y announce the given message.
+      _announce: function(message) {
+        this._a11yLabel = '';
+        this.debounce('_a11yAnnouncer', function() {
+          this._a11yLabel = message;
+        }, 100);
+      },
+
+      // This is for performance logging only.
+      _domChange: function(e) {
+        if (window.performance && performance.mark && !this.__loggedDomChange) {
+          var target = Polymer.dom(e).rootTarget;
+          if (target.domHost.is.match(this.page)) {
+            this.__loggedDomChange = true;
+            performance.mark(target.domHost.is + '.domChange');
+          }
+        }
       },
 
       _computeShouldShowTabs: function(page, smallScreen) {
@@ -544,38 +507,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return _shouldShowTabs && loadComplete;
       },
 
-      _computeShouldShowDrawer: function(smallScreen, loadComplete) {
+      _computeShouldRenderDrawer: function(smallScreen, loadComplete) {
         return smallScreen && loadComplete;
       },
 
-      _notifyNetworkStatus: function() {
-        var oldOffline = this.offline;
-        this.offline =  !navigator.onLine;
-        // Show the snackbar if the user is offline when starting a new session
-        // or if the network status changed.
-        if (this.offline || (!this.offline && oldOffline === true)) {
-          if (!this._networkSnackbar) {
-            this._networkSnackbar = document.createElement('shop-snackbar');
-            Polymer.dom(this.root).appendChild(this._networkSnackbar);
-          }
-          Polymer.dom(this._networkSnackbar).innerHTML = this.offline ?
-              'You are offline' : 'You are online';
-          this._networkSnackbar.open();
-        }
-      },
-
-      _announce: function(text) {
-        this._a11yLabel = '';
-        this.debounce('_a11yAnnouncer', function() {
-          this._a11yLabel = text;
-        }, 100);
-      },
-
-      _onAnnounce: function(e) {
-        this._announce(e.detail);
-      },
-
-      _getPluralizedQuantity: function(quantity) {
+      _computePluralizedQuantity: function(quantity) {
         return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
       }
 

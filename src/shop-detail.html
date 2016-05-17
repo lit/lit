@@ -17,11 +17,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-select.html">
 
-<!-- resources loaded by lazy-resources.html -->
-<!--
-<link rel="prefetch" href="shop-network-warning.html">
--->
-
 <dom-module id="shop-detail">
 
   <template>
@@ -237,22 +232,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       _itemChanged: function(item, visible) {
-        if (!visible) {
-          return;
+        if (visible) {
+          this.debounce('item-change', function() {
+            // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
+            // unescape it ("<br>") and set it as innerHTML.
+            var text = item ? item.description : '';
+            this.$.desc.innerHTML = this._unescapeText(text);
+
+            // Reset the select menus.
+            this.$.quantitySelect.value = '1';
+            this.$.sizeSelect.value = 'M';
+
+            this.fire('change-section', {
+              category: item.category,
+              title: item.title
+            });
+          });
         }
-        // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
-        // unescape it ("<br>") and set it as innerHTML.
-        var text = item ? item.description : '';
-        this.$.desc.innerHTML = this._unescapeText(text);
-
-        // Reset the select menus.
-        this.$.quantitySelect.value = '1';
-        this.$.sizeSelect.value = 'M';
-
-        this.fire('change-section', {
-          category: item.category,
-          title: item.title
-        });
       },
 
       _unescapeText: function(text) {
