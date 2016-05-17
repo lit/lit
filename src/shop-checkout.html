@@ -138,7 +138,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             <header class="subsection" visible$="[[_hasItems]]">
               <h1>Checkout</h1>
-              <span>([[_formatPrice(total)]])</span>
+              <span>Shop is a demo app - form data will not be sent</span>
             </header>
 
             <div class="subsection grid" visible$="[[_hasItems]]">
@@ -393,7 +393,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <!-- Success message UI -->
         <header state="success">
-          <h1>Thanks for your purchase!</h1>
+          <h1>Thank you</h1>
           <p>[[response.successMessage]]</p>
           <shop-button responsive>
             <a href="/">Finish</a>
@@ -512,7 +512,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.$.checkoutForm.fire('iron-form-response', {
               response: {
                 success: 1,
-                successMessage: 'Your order has been received.'
+                successMessage: 'Demo checkout process complete.'
               }
             }, { bubbles: false });
           }, 1000);
