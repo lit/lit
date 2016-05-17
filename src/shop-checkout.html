@@ -9,7 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/carbon-route/carbon-route.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-common-styles.html">
@@ -407,11 +407,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
 
     <!-- Handles the routing for the success and error subroutes -->
-    <carbon-route
+    <app-route
         route="[[route]]"
         pattern="/:state"
         on-active-changed="_activeRouteHandler">
-     </carbon-route>
+     </app-route>
 
     <!-- Show spinner when waiting for the server to repond -->
     <paper-spinner-lite active="[[waiting]]"></paper-spinner-lite>

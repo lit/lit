@@ -9,7 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/carbon-route/carbon-route.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
@@ -71,12 +71,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <!--
-      carbon-route provides the name of the category.
+      app-route provides the name of the category.
     -->
-    <carbon-route
+    <app-route
         route="[[route]]"
         pattern="/:category"
-        data="{{routeData}}"></carbon-route>
+        data="{{routeData}}"></app-route>
 
     <!--
       shop-category-data provides the category data for a given category name.
