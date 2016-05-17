@@ -385,20 +385,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _pageChanged: function(page, oldPage) {
         if (page != null) {
-          // load page import on demand.
-          this.importHref(
-            this.resolveUrl('shop-' + page + '.html'),
-            // load callback
-            function() {
-              this._ensureLazyLoaded();
-              if (oldPage) {
-                // The size of the header depends on the page (e.g. on some pages the tabs
-                // do not appear), so reset the header's layout only when switching pages.
-                this.async(function() {
-                  this.$.header.resetLayout();
-                }, 1);
-              }
-            }, null, true);
+          // home route is eagerly loaded
+          if (page == 'home') {
+            this._pageLoaded(Boolean(oldPage));
+          // other routes are lazy loaded
+          } else {
+            this.importHref(
+              this.resolveUrl('shop-' + page + '.html'),
+              function() {
+                this._pageLoaded(Boolean(oldPage));
+              }, null, true);
+          }
+        }
+      },
+
+      _pageLoaded: function(shouldResetLayout) {
+        this._ensureLazyLoaded();
+        if (shouldResetLayout) {
+          // The size of the header depends on the page (e.g. on some pages the tabs
+          // do not appear), so reset the header's layout only when switching pages.
+          this.async(function() {
+            this.$.header.resetLayout();
+          }, 1);
         }
       },
 
