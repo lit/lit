@@ -65,14 +65,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           && 'content' in document.createElement('template')) {
         // platform is good!
       } else {
-        // mini-fill <link rel=prefetch>
-        // (only needed for Safari, but relatively harmless and not detectable)
-        var l$ = document.querySelectorAll('link[rel=prefetch]');
-        for (var i=0, r; i < l$.length; i++) {
-          r = new XMLHttpRequest();
-          r.open('GET', l$[i].href);
-          r.send();
-        }
         // polyfill the platform!
         var e = document.createElement('script');
         e.src = '/bower_components/webcomponentsjs/webcomponents-lite.min.js';
