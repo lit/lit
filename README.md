@@ -8,7 +8,7 @@ Install [polymer-cli](https://github.com/Polymer/polymer-cli):
 
     npm install -g polymer-cli
 
-Need at least v0.3.0
+Need at least npm v0.3.0
 
 ##### Setup
 
