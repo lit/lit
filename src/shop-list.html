@@ -45,14 +45,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         @apply(--layout-wrap);
         @apply(--layout-justified);
         margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
       }
 
-      .grid > a {
+      .grid li {
         -webkit-flex: 1 1;
         flex: 1 1;
         -webkit-flex-basis: 33%;
         flex-basis: 33%;
         max-width: 33%;
+      }
+      
+      .grid a {
+        display:block;
         text-decoration: none;
       }
 
@@ -61,7 +67,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           display: none;
         }
 
-        .grid > a {
+        .grid  li {
           -webkit-flex-basis: 50%;
           flex-basis: 50%;
           max-width: 50%;
@@ -97,14 +103,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <span>[[_getPluralizedQuantity(category.items.length)]]</span>
     </header>
 
-    <div class="grid" hidden$="[[failure]]">
+    <ul class="grid" hidden$="[[failure]]">
       <template is="dom-repeat" items="[[_getListItems(category.items)]]" initial-count="4">
-        <a href$="[[_getItemHref(item)]]">
-          <shop-list-item item="[[item]]"></shop-list-item>
-        </a>
+        <li>
+          <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+        </li>
       </template>
-    </div>
-
+    </ul>
+    
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
