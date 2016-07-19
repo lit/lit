@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "polymer": "polymer/polymer#^1.4.0",
-    "app-layout": "polymerelements/app-layout#^0.9.0",
+    "app-layout": "polymerelements/app-layout#^0.10.0",
     "app-route": "polymerelements/app-route#^0.9.1",
     "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
     "iron-form": "polymerelements/iron-form#^1.0.0",
