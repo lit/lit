@@ -12,6 +12,8 @@ Install [polymer-cli](https://github.com/Polymer/polymer-cli):
 
 ##### Setup
     # Using CLI
+    mkdir shop
+    cd shop
     polymer init shop
     
     # Or cloning direct from GitHub
