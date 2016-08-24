@@ -182,7 +182,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         left: 0;
         right: 0;
         text-align: center;
-        margin: 20px;
+        margin-top: 20px;
         line-height: 24px;
       }
 
@@ -193,6 +193,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       footer > a:hover {
         text-decoration: underline;
+      }
+
+      .demo-label {
+        box-sizing: border-box;
+        width: 120px;
+        padding: 6px;
+        margin: 8px auto 0;
+        background-color: var(--app-primary-color);
+        color: white;
+        text-transform: uppercase;
       }
 
       /* small screen */
@@ -305,6 +315,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <footer>
       <a href="https://www.polymer-project.org/1.0/toolbox/">Made by Polymer</a>
+      <div class="demo-label">Demo Only</div>
     </footer>
 
     <!-- a11y announcer -->
