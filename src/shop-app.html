@@ -273,7 +273,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      <div id="tabContainer" primary$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
+      <div id="tabContainer" sticky$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
         <template is="dom-if" if="[[_shouldRenderTabs]]">
           <shop-tabs
               selected="[[categoryName]]"
@@ -498,7 +498,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _onAnnounce: function(e) {
         this._announce(e.detail);
       },
-      
+
       // A11y announce the given message.
       _announce: function(message) {
         this._a11yLabel = '';
