@@ -7,5 +7,15 @@
     "src/shop-cart.html",
     "src/shop-checkout.html",
     "src/lazy-resources.html"
+  ],
+  "sourceGlobs": [
+   "src/**/*",
+   "data/**/*",
+   "images/**/*",
+   "bower.json"
+  ],
+  "includeDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js"
   ]
 }
