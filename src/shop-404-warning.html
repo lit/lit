@@ -1,0 +1,53 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-icons.html">
+
+<dom-module id="shop-404-warning">
+  <template>
+    <style include="shop-button">
+
+      :host {
+        display: block;
+        text-align: center;
+        color: var(--app-secondary-color);
+      }
+
+      iron-icon {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+      }
+
+      h1 {
+        margin: 50px 0 50px 0;
+        font-weight: 300;
+      }
+
+    </style>
+
+    <div>
+      <iron-icon icon="error"></iron-icon>
+      <h1>Sorry, we couldn't find that page</h1>
+    </div>
+    <shop-button>
+      <a href="/">Go to the home page</a>
+    </shop-button>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'shop-404-warning'
+    });
+  </script>
+</dom-module>

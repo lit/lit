@@ -56,7 +56,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         flex-basis: 33%;
         max-width: 33%;
       }
-      
+
       .grid a {
         display:block;
         text-decoration: none;
@@ -110,7 +110,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </li>
       </template>
     </ul>
-    
+
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
@@ -172,13 +172,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _categoryChanged: function(category, visible) {
         if (visible) {
-          this.debounce('change-section', function() {
-            // Notify the category and the page's title
-            this.fire('change-section', {
-              category: category.name,
-              title: category.title
+          if (!category) {
+            this.fire('show-invalid-url-warning');
+          } else {
+            this.debounce('change-section', function() {
+              // Notify the category and the page's title
+              this.fire('change-section', {
+                category: category.name,
+                title: category.title
+              });
             });
-          });
+          }
         }
       },
 
