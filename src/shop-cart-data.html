@@ -9,15 +9,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 
 <dom-module id="shop-cart-data">
 
   <template>
-    <iron-localstorage
-        name="shop-cart-data"
-        value="{{cart}}"
-        on-iron-localstorage-load-empty="_initializeCart"></iron-localstorage>
+    <app-localstorage-document key="shop-cart-data" data="{{cart}}"></app-localstorage-document>
   </template>
 
   <script>
@@ -30,6 +27,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         cart: {
           type: Array,
+          value: function() {
+            return [];
+          },
           notify: true
         },
 
@@ -108,10 +108,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         return -1;
-      },
-
-      _initializeCart: function() {
-        this.clearCart();
       }
 
     });
