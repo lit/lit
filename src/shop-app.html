@@ -22,6 +22,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <!-- Since 'home' is the default route, eagerly load it. -->
 <link rel="import" href="shop-home.html">
 
+<!--
+FIXME: Somehow adding the import here instead of lazy load fixes this issue.
+https://github.com/webcomponents/shadycss/issues/13
+ -->
+<link rel="import" href="shop-icons.html">
+
 <dom-module id="shop-app">
 
   <template>
@@ -45,7 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       app-header {
-        @apply(--layout-fixed-top);
+        @apply --layout-fixed-top;
         z-index: 1;
         background-color: rgba(255, 255, 255, 0.95);
         --app-header-shadow: {
@@ -142,8 +148,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-size: 12px;
         font-weight: 500;
         pointer-events: none;
-        @apply(--layout-vertical);
-        @apply(--layout-center-center);
+        @apply --layout-vertical;
+        @apply --layout-center-center;
       }
 
       .drawer-list {
@@ -274,33 +280,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
       <div id="tabContainer" sticky$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
-        <template is="dom-if" if="[[_shouldRenderTabs]]">
-          <shop-tabs
-              selected="[[categoryName]]"
-              attr-for-selected="name">
-            <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
-              <shop-tab name="[[category.name]]">
-                <a href="/list/[[category.name]]">[[category.title]]</a>
-              </shop-tab>
-            </template>
-          </shop-tabs>
-        </template>
+        <dom-if if="[[_shouldRenderTabs]]">
+          <template>
+            <shop-tabs
+                selected="[[categoryName]]"
+                attr-for-selected="name">
+              <dom-repeat items="[[categories]]" as="category" initial-count="4">
+                <template>
+                <shop-tab name="[[category.name]]">
+                  <a href="/list/[[category.name]]">[[category.title]]</a>
+                </shop-tab>
+                </template>
+              </dom-repeat>
+            </shop-tabs>
+          </template>
+        </dom-if>
       </div>
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    <template is="dom-if" if="[[_shouldRenderDrawer]]">
+    <dom-if if="[[_shouldRenderDrawer]]">
+      <template>
       <!-- Two-way bind `drawerOpened` since app-drawer can update `opened` itself. -->
       <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
         <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-          <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
-            <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
-          </template>
+          <dom-repeat items="[[categories]]" as="category" initial-count="4">
+            <template>
+              <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
+            </template>
+          </dom-repeat>
         </iron-selector>
       </app-drawer>
-    </template>
+      </template>
+    </dom-if>
 
-    <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible">
+    <iron-pages id="pages" role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible">
       <!-- home view -->
       <shop-home name="home" categories="[[categories]]"></shop-home>
       <!-- list view of items in a category -->
@@ -377,11 +391,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.removeAttribute('unresolved');
       },
 
-      ready: function() {
+      attached: function() {
         // listen for online/offline
         Polymer.RenderStatus.afterNextRender(this, function() {
           this.listen(window, 'online', '_notifyNetworkStatus');
           this.listen(window, 'offline', '_notifyNetworkStatus');
+
+          // FIXME: hack fix for not-yet-ready iron-pages/iron-selector
+          this.$.pages._updateSelected();
         });
       },
 

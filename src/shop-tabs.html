@@ -17,8 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template strip-whitespace>
     <style>
       :host {
-        @apply(--layout);
-        @apply(--layout-center-center);
+        @apply --layout;
+        @apply --layout-center-center;
       }
 
       #container {
@@ -26,12 +26,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       shop-tabs-overlay {
-        @apply(--shop-tab-overlay);
+        @apply --shop-tab-overlay;
       }
     </style>
     <div id="container">
       <shop-tabs-overlay id="overlay"></shop-tabs-overlay>
-      <content></content>
+      <slot></slot>
     </div>
   </template>
   <script>

@@ -21,7 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="theme-color" content="#fff">
   <link rel="manifest" href="/manifest.json">
 
-  <link rel="import" href="/src/shop-app.html" async>
+  <!-- FIXME: only load polyfills that are needed -->
+  <script src="/bower_components/webcomponentsjs/webcomponents-lite.js" xshadydom="true"></script>
+  <link rel="import" href="/src/shop-app.html">
 
   <style>
 
@@ -57,8 +59,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     window.performance && performance.mark && performance.mark('index.html');
 
-    Polymer = {lazyRegister: true, dom: 'shadow'};
-
+    /*
     (function() {
       if ('registerElement' in document
           && 'import' in document.createElement('link')
@@ -71,6 +72,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.body.appendChild(e);
       }
     })();
+    */
   </script>
 
 </body>

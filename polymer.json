@@ -12,7 +12,8 @@
    "src/**/*",
    "data/**/*",
    "images/**/*",
-   "bower.json"
+   "bower.json",
+   "app.yaml"
   ],
   "includeDependencies": [
     "manifest.json",

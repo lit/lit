@@ -48,7 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .billing-address-picker {
         margin: 28px 0;
         height: 20px;
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       .billing-address-picker > label {
@@ -57,11 +57,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .grid {
         margin-top: 40px;
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       .grid > section {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .grid > section:not(:first-child) {
@@ -69,17 +69,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .row {
-        @apply(--layout-horizontal);
-        @apply(--layout-end);
+        @apply --layout-horizontal;
+        @apply --layout-end;
       }
 
       .column {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
       }
 
       .row > .flex,
       .input-row > * {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .input-row > *:not(:first-child) {
@@ -115,7 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <div class="main-frame">
-      <iron-pages selected="[[state]]" attr-for-selected="state">
+      <iron-pages id="pages" selected="[[state]]" attr-for-selected="state">
         <div state="init">
           <form
               id="checkoutForm"
@@ -366,12 +366,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   </shop-input>
                 </div>
                 <h2>Order Summary</h2>
-                <template is="dom-repeat" items="[[cart]]" as="entry">
-                  <div class="row order-summary-row">
-                    <div class="flex">[[entry.item.title]]</div>
-                    <div>[[_getEntryTotal(entry)]]</div>
-                  </div>
-                </template>
+                <dom-repeat items="[[cart]]" as="entry">
+                  <template>
+                    <div class="row order-summary-row">
+                      <div class="flex">[[entry.item.title]]</div>
+                      <div>[[_getEntryTotal(entry)]]</div>
+                    </div>
+                  </template>
+                </dom-repeat>
                 <div class="row total-row">
                   <div class="flex">Total</div>
                   <div>[[_formatPrice(total)]]</div>
@@ -662,6 +664,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._reset();
         // Notify the page's title
         this.fire('change-section', { title: 'Checkout' });
+
+        // FIXME: hack fix for not-yet-ready iron-pages/iron-selector
+        requestAnimationFrame(function() {
+          this.$.pages._updateSelected();
+        }.bind(this));
       }
 
     });

@@ -53,9 +53,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <span>([[_getPluralizedQuantity(cart.length)]])</span>
         </header>
         <div class="list">
-          <template is="dom-repeat" items="[[cart]]" as="entry">
-            <shop-cart-item entry="[[entry]]"></shop-cart-item>
-          </template>
+          <dom-repeat items="[[cart]]" as="entry">
+            <template>
+              <shop-cart-item entry="[[entry]]"></shop-cart-item>
+            </template>
+          </dom-repeat>
         </div>
         <div class="checkout-box">
           Total: <span class="subtotal">[[_formatTotal(total)]]</span>

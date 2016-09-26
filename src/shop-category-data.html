@@ -96,6 +96,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _computeItem: function(items, itemName) {
+        if (!items) {
+          return;
+        }
         for (var i = 0, item; item = items[i]; ++i) {
           if (item.name === itemName) {
             return item;

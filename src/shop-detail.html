@@ -28,8 +28,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #content {
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
       }
 
       shop-image {
@@ -38,7 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 50%;
         max-width: 600px;
         --shop-image-img: {
-          @apply(--layout-fit);
+          @apply --layout-fit;
         };
       }
 
@@ -88,7 +88,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .pickers {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         border-top: 1px solid #ccc;
       }
 
@@ -100,8 +100,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       @media (max-width: 767px) {
 
         #content {
-          @apply(--layout-vertical);
-          @apply(--layout-center);
+          @apply --layout-vertical;
+          @apply --layout-center;
         }
 
         shop-image {
@@ -217,7 +217,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         routeData: Object,
 
-        visible: Boolean,
+        visible: {
+          type: Boolean,
+          value: false
+        },
 
         offline: {
           type: Boolean,
@@ -245,8 +248,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.$.sizeSelect.value = 'M';
 
             this.fire('change-section', {
-              category: item.category,
-              title: item.title
+              category: item ? item.category : '',
+              title: item ? item.title : ''
             });
           });
         }

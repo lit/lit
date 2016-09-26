@@ -22,7 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shop-select">
 
       :host {
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         position: relative;
         margin-bottom: 24px;
       }
@@ -43,7 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .name {
-        @apply(--layout-flex-auto);
+        @apply --layout-flex-auto;
         line-height: 20px;
         font-weight: 500;
         float: left;
@@ -97,14 +97,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .flex {
-        @apply(--layout-horizontal);
-        @apply(--layout-flex-auto);
+        @apply --layout-horizontal;
+        @apply --layout-flex-auto;
         margin-left: 24px;
       }
 
       .detail {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         margin-top: 26px;
         margin-right: 30px;
         height: 20px;
@@ -112,7 +112,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       @media (max-width: 767px) {
         .flex {
-          @apply(--layout-vertical);
+          @apply --layout-vertical;
           margin-left: 10px;
         }
 
@@ -123,7 +123,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         .detail {
-          @apply(--layout-self-end);
+          @apply --layout-self-end;
           margin: 10px 10px 0 0;
         }
 
@@ -143,9 +143,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         .detail {
-          @apply(--layout-vertical);
-          @apply(--layout-start);
-          @apply(--layout-self-start);
+          @apply --layout-vertical;
+          @apply --layout-start;
+          @apply --layout-self-start;
           height: auto;
           margin-top: 0;
         }

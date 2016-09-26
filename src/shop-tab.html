@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 0;
         bottom: 0;
         left: 0;
-        @apply(--shop-tab-overlay);
+        @apply --shop-tab-overlay;
       }
 
       :host(.shop-tabs-overlay-static-above) #overlay {
@@ -41,7 +41,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     <div id="overlay"></div>
     <shop-ripple-container>
-      <content></content>
+      <slot></slot>
     </shop-ripple-container>
   </template>
   <script>
