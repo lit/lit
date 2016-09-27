@@ -18,7 +18,7 @@
     "iron-overlay-behavior": "polymerelements/iron-overlay-behavior#2.0-preview",
     "iron-pages": "polymerelements/iron-pages#2.0-preview",
     "iron-selector": "polymerelements/iron-selector#2.0-preview",
-    "paper-icon-button": "polymerelements/paper-icon-button#^1.0.0",
+    "paper-icon-button": "polymerelements/paper-icon-button#2.0-preview",
     "paper-spinner": "polymerelements/paper-spinner#2.0-preview"
   },
   "devDependencies": {
@@ -26,11 +26,6 @@
   },
   "resolutions": {
     "polymer": "2.0-preview",
-    "paper-styles": "2.0-preview",
-    "iron-a11y-keys-behavior": "2.0-preview",
-    "iron-flex-layout": "2.0-preview",
-    "iron-icon": "2.0-preview",
-    "iron-meta": "2.0-preview",
     "webcomponentsjs": "v1"
   }
 }

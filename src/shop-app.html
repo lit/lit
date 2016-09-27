@@ -396,9 +396,6 @@ https://github.com/webcomponents/shadycss/issues/13
         Polymer.RenderStatus.afterNextRender(this, function() {
           this.listen(window, 'online', '_notifyNetworkStatus');
           this.listen(window, 'offline', '_notifyNetworkStatus');
-
-          // FIXME: hack fix for not-yet-ready iron-pages/iron-selector
-          this.$.pages._updateSelected();
         });
       },
 

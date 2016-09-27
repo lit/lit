@@ -664,11 +664,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._reset();
         // Notify the page's title
         this.fire('change-section', { title: 'Checkout' });
-
-        // FIXME: hack fix for not-yet-ready iron-pages/iron-selector
-        requestAnimationFrame(function() {
-          this.$.pages._updateSelected();
-        }.bind(this));
       }
 
     });
