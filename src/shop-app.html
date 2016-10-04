@@ -394,10 +394,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _routePageChanged: function(page) {
+        if (this.page === 'list') {
+          this._listScrollTop = window.pageYOffset;
+        }
+
         this.page = page || 'home';
-        // Scroll to the top of the page on every *route* change. Use `Polymer.AppLayout.scroll`
-        // with `behavior: 'silent'` to disable header scroll effects during the scroll.
-        Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
+
         // Close the drawer - in case the *route* change came from a link in the drawer.
         this.drawerOpened = false;
       },
@@ -469,7 +471,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Response by a11y announcing the section and syncronizing the category.
       _onChangeSection: function(event) {
         var detail = event.detail;
+
+        // Scroll to the top of the page when navigating to a non-list page. For list view,
+        // scroll to the last saved position only if the category has not changed.
+        var scrollTop = 0;
+        if (this.page === 'list' && this.categoryName === detail.category) {
+          scrollTop = this._listScrollTop;
+        }
+        // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
+        // effects during the scroll.
+        Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
+
         this.categoryName = detail.category || '';
+
         // Announce the page's title
         if (detail.title) {
           document.title = detail.title + ' - SHOP';
