@@ -117,14 +117,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="main-frame">
       <iron-pages id="pages" selected="[[state]]" attr-for-selected="state">
         <div state="init">
+          <!-- iron-form has been removed temporarily, and it will be added back once ported to 2.0-->
           <form
               id="checkoutForm"
-              is="iron-form"
               method="post"
               action="/data/sample_success_response.json"
-              on-iron-form-response="_didReceiveResponse"
-              on-iron-form-presubmit="_willSendRequest">
-
+              on-submit="_onSubmit">
             <div class="subsection" visible$="[[!_hasItems]]">
               <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
             </div>
@@ -379,7 +377,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <div>[[_formatPrice(total)]]</div>
                 </div>
                 <shop-button responsive id="submitBox">
-                  <input type="button" on-click="_submit" value="Place Order">
+                  <input on-click="_validateForm" type="submit" value="Place Order">
                 </shop-button>
               </section>
             </div>
@@ -495,25 +493,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      _submit: function(e) {
-        if (this._validateForm()) {
-          // To send the form data to the server:
-          // 2) Remove the code below.
-          // 3) Uncomment `this.$.checkoutForm.submit()`.
+      _onSubmit: function(e) {
+        this._setWaiting(true);
 
-          this.$.checkoutForm.fire('iron-form-presubmit', null, { bubbles: false });
-
-          this.debounce('_submitForm', function() {
-            this.$.checkoutForm.fire('iron-form-response', {
-              response: {
-                success: 1,
-                successMessage: 'Demo checkout process complete.'
-              }
-            }, { bubbles: false });
-          }, 1000);
-
-          // this.$.checkoutForm.submit();
-        }
+        // Remove the following code to send the checkout information to a server.
+        e.preventDefault();
+        setTimeout(function() {
+          this.response = {
+            'success': 1,
+            'successMessage': "Your order has been received."
+          };
+          this._setWaiting(false);
+          this._pushState('success');
+          this._reset();
+          this.fire('clear-cart');
+        }.bind(this), 1000);
       },
 
       /**
@@ -540,7 +534,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             return;
           }
         }
-
         this.state = 'init';
       },
 
@@ -589,32 +582,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             el.setAttribute('aria-invalid', 'true');
           }
         }
-
         return !firstInvalid;
-      },
-
-      /**
-       * Adds the cart data to the payload that will be sent to the server
-       * and updates the UI to reflect the waiting state.
-       */
-      _willSendRequest: function(e) {
-        var form = e.target;
-        var body = form.request.body;
-
-        this._setWaiting(true);
-
-        if (!body) {
-          return;
-        }
-        // Populate the request body where `cartItemsId[i]` is the ID and `cartItemsQuantity[i]`
-        // is the quantity for some item `i`.
-        body.cartItemsId = [];
-        body.cartItemsQuantity = [];
-
-        this.cart.forEach(function(cartItem) {
-          body.cartItemsId.push(cartItem.item.name);
-          body.cartItemsQuantity.push(cartItem.quantity);
-        });
       },
 
       /**
