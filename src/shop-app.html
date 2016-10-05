@@ -394,7 +394,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _routePageChanged: function(page) {
-        if (this.page === 'list') {
+        // HACK(keanulee): Need to check if `page` actually changed due to polymer#3935.
+        if (this.page === 'list' && this.page !== page) {
           this._listScrollTop = window.pageYOffset;
         }
 
