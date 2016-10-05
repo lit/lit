@@ -476,8 +476,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Scroll to the top of the page when navigating to a non-list page. For list view,
         // scroll to the last saved position only if the category has not changed.
         var scrollTop = 0;
-        if (this.page === 'list' && this.categoryName === detail.category) {
-          scrollTop = this._listScrollTop;
+        if (this.page === 'list') {
+          if (this.categoryName === detail.category) {
+            scrollTop = this._listScrollTop;
+          } else {
+            // Reset the list view scrollTop if the category changed.
+            this._listScrollTop = 0;
+          }
         }
         // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
         // effects during the scroll.
