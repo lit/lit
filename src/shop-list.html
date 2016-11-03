@@ -177,13 +177,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _categoryChanged: function(category, visible) {
         if (visible) {
-          this.debounce('change-section', function() {
-            // Notify the category and the page's title
-            this.fire('change-section', {
-              category: category.name,
-              title: category.title
+          if (!category) {
+            this.fire('show-invalid-url-warning');
+          } else {
+            this.debounce('change-section', function() {
+              // Notify the category and the page's title
+              this.fire('change-section', {
+                category: category.name,
+                title: category.title
+              });
             });
-          });
+          }
         }
       },
 
