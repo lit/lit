@@ -21,8 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="theme-color" content="#fff">
   <link rel="manifest" href="/manifest.json">
 
-  <!-- FIXME: only load polyfills that are needed -->
-  <script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
   <link rel="import" href="/src/shop-app.html">
 
   <style>
@@ -58,21 +57,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     window.performance && performance.mark && performance.mark('index.html');
-
-    /*
-    (function() {
-      if ('registerElement' in document
-          && 'import' in document.createElement('link')
-          && 'content' in document.createElement('template')) {
-        // platform is good!
-      } else {
-        // polyfill the platform!
-        var e = document.createElement('script');
-        e.src = '/bower_components/webcomponentsjs/webcomponents-lite.min.js';
-        document.body.appendChild(e);
-      }
-    })();
-    */
   </script>
 
 </body>
