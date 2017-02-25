@@ -77,5 +77,8 @@
       },
       "addServiceWorker": true
     }
-  ]
+  ],
+  "lint": {
+    "rules": ["polymer-2-hybrid"]
+  }
 }
