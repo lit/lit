@@ -11,6 +11,7 @@
     "app-route": "polymerelements/app-route#2.0-preview",
     "app-storage": "polymerelements/app-storage#2.0-preview",
     "iron-flex-layout": "polymerelements/iron-flex-layout#2.0-preview",
+    "iron-form": "polymerelements/iron-form#2.0-preview",
     "iron-icon": "polymerelements/iron-icon#2.0-preview",
     "iron-iconset-svg": "polymerelements/iron-iconset-svg#2.0-preview",
     "iron-media-query": "polymerelements/iron-media-query#2.0-preview",
@@ -21,10 +22,6 @@
     "paper-spinner": "polymerelements/paper-spinner#2.0-preview"
   },
   "devDependencies": {
-    "web-component-tester": "^4.0.0"
-  },
-  "resolutions": {
-    "polymer": "2.0-preview",
-    "webcomponentsjs": "v1"
+    "web-component-tester": "^6.0.0-prerelease.6"
   }
 }
