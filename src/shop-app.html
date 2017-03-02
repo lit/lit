@@ -462,9 +462,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (this.offline || (!this.offline && oldOffline === true)) {
           if (!this._networkSnackbar) {
             this._networkSnackbar = document.createElement('shop-snackbar');
-            Polymer.dom(this.root).appendChild(this._networkSnackbar);
+            this.root.appendChild(this._networkSnackbar);
           }
-          Polymer.dom(this._networkSnackbar).innerHTML = this.offline ?
+          this._networkSnackbar.innerHTML = this.offline ?
               'You are offline' : 'You are online';
           this._networkSnackbar.open();
         }
@@ -506,7 +506,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _onAddCartItem(event) {
         if (!this._cartModal) {
           this._cartModal = document.createElement('shop-cart-modal');
-          Polymer.dom(this.root).appendChild(this._cartModal);
+          this.root.appendChild(this._cartModal);
         }
         this.$.cart.addItem(event.detail);
         this._cartModal.open();
@@ -545,7 +545,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // This is for performance logging only.
       _domChange(e) {
         if (window.performance && performance.mark && !this.__loggedDomChange) {
-          var target = Polymer.dom(e).rootTarget;
+          var target = e.composedPath()[0];
           if (target.domHost.is.match(this.page)) {
             this.__loggedDomChange = true;
             performance.mark(target.domHost.is + '.domChange');
