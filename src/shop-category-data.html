@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 
 <dom-module id="shop-category-data">
 
@@ -41,11 +41,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     ];
 
-    Polymer({
+    class ShopCategoryData extends Polymer.Element {
 
-      is: 'shop-category-data',
+      static get is() { return 'shop-category-data'; }
 
-      properties: {
+      static get properties() { return {
 
         categoryName: String,
 
@@ -75,26 +75,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true,
           readOnly: true
         }
-      },
 
-      _getCategoryObject: function(categoryName) {
+      }}
+
+      _getCategoryObject(categoryName) {
         for (var i = 0, c; c = this.categories[i]; ++i) {
           if (c.name === categoryName) {
             return c;
           }
         }
-      },
+      }
 
-      _computeCategory: function(categoryName) {
+      _computeCategory(categoryName) {
         // Fetch the items of the category. Note that the fetch is asynchronous,
         // which means `category.items` may not be set initially (but that path
         // will be notified when the fetch completes).
         var categoryObj = this._getCategoryObject(categoryName);
         this._fetchItems(categoryObj, 1);
         return categoryObj;
-      },
+      }
 
-      _computeItem: function(items, itemName) {
+      _computeItem(items, itemName) {
         if (!items || !itemName) {
           return;
         }
@@ -103,9 +104,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             return item;
           }
         }
-      },
+      }
 
-      _fetchItems: function(category, attempts) {
+      _fetchItems(category, attempts) {
         this._setFailure(false);
         // Only fetch the items of a category if it has not been previously set.
         if (!category || category.items) {
@@ -113,39 +114,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         this._getResource({
           url: '/data/' + category.name + '.json',
-          onLoad: function(e) {
+          onLoad(e) {
             this.set('category.items', JSON.parse(e.target.responseText));
           },
-          onError: function(e) {
+          onError(e) {
             this._setFailure(true);
           }
         }, attempts);
-      },
+      }
 
-      _getResource: function(rq, attempts) {
+      _getResource(rq, attempts) {
         var xhr = new XMLHttpRequest();
         xhr.addEventListener('load', rq.onLoad.bind(this));
-        xhr.addEventListener('error', function(e) {
+        xhr.addEventListener('error', (e) => {
           // Flaky connections might fail fetching resources
           if (attempts > 1) {
-            this.debounce('_getResource', this._getResource.bind(this, rq, attempts - 1), 200);
+            this._getResourceDebouncer = Polymer.Debouncer.debounce(this._getResourceDebouncer,
+              Polymer.Async.timeOut.after(200), this._getResource.bind(this, rq, attempts - 1));
           } else {
             rq.onError.call(this, e);
           }
-        }.bind(this));
+        });
 
         xhr.open('GET', rq.url);
         xhr.send();
-      },
+      }
 
-      refresh: function() {
+      refresh() {
         if (this.categoryName) {
           // Try at most 3 times to get the items.
           this._fetchItems(this._getCategoryObject(this.categoryName), 3);
         }
       }
 
-    });
+    }
+
+    customElements.define(ShopCategoryData.is, ShopCategoryData);
 
   })();
   </script>

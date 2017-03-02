@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 
 <dom-module id="shop-tabs-overlay">
   <template strip-whitespace>
@@ -27,10 +27,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </template>
   <script>
-    Polymer({
-      is: 'shop-tabs-overlay',
 
-      properties: {
+    class ShopTabsOverlay extends Polymer.Element {
+
+      static get is() { return 'shop-tabs-overlay'; }
+
+      static get properties() { return {
         /**
          * The element the overlay should cover.
          */
@@ -38,18 +40,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Object,
           observer: '_targetChanged',
         }
-      },
+      }}
 
-      listeners: {
-        'transitionend': '_onTransitionend',
-      },
-
-      created: function() {
+      constructor() {
+        super();
         this._lastTarget = undefined;
         this._transitionsInFlight = [];
-      },
+      }
 
-      _targetChanged: function(newTarget, oldTarget) {
+      ready() {
+        super.ready();
+        this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
+      }
+
+      _targetChanged(newTarget, oldTarget) {
         if (!this._transitionsInFlight.length) {
           if (this._lastTarget) {
             this._lastTarget.classList.remove('shop-tabs-overlay-static-above');
@@ -58,9 +62,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._move(oldTarget, newTarget);
           this._lastTarget = this.target;
         }
-      },
+      }
 
-      _onTransitionend: function(event) {
+      _onTransitionend(event) {
         var index = this._transitionsInFlight.indexOf(event.propertyName);
         if (index >= 0) {
           this._transitionsInFlight.splice(index, 1);
@@ -69,9 +73,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!this._transitionsInFlight.length) {
           this._moveComplete();
         }
-      },
+      }
 
-      _moveComplete: function() {
+      _moveComplete() {
         if (this._lastTarget !== this.target) {
           this._move(this._lastTarget, this.target);
           this._lastTarget = this.target;
@@ -81,9 +85,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           this.style.display = 'none';
         }
-      },
+      }
 
-      _move: function(oldTarget, newTarget) {
+      _move(oldTarget, newTarget) {
         var from = oldTarget || newTarget;
         var to = newTarget || oldTarget;
         if (!from && !to) return;
@@ -103,7 +107,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.style.transitionProperty = 'none';
           this.style.opacity = toOpacity;
           this._transitionsInFlight = [];
-          this.async(this._moveComplete);
+          Polymer.Async.microTask.run(this._moveComplete.bind(this))
           return;
         } else {
           this.style.transitionProperty = '';
@@ -160,16 +164,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._transitionsInFlight.push(names[i]);
         }
 
-        this.async(function() {
-          this.style.transitionDuration = durations.map(function(x) { return x + 's'; }).join(', ');
-          this.style.transitionDelay = delays.map(function(x) { return x + 's'; }).join(', ');
+        Polymer.Async.timeOut.run(() => {
+          this.style.transitionDuration = durations.map((x) => { return x + 's'; }).join(', ');
+          this.style.transitionDelay = delays.map((x) => { return x + 's'; }).join(', ');
           this.style.top = top + 'px';
           this.style.right = right + 'px';
           this.style.bottom = bottom + 'px';
           this.style.left = left + 'px';
           this.style.opacity = String(toOpacity);
         }, 1);
-      },
-    });
+      }
+
+    }
+
+    customElements.define(ShopTabsOverlay.is, ShopTabsOverlay);
+
   </script>
 </dom-module>

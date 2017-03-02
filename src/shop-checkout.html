@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-button.html">
@@ -421,11 +421,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
-    Polymer({
+    class ShopCheckout extends Polymer.Element {
 
-      is: 'shop-checkout',
+      static get is() { return 'shop-checkout'; }
 
-      properties: {
+      static get properties() { return {
 
         /**
          * The route for the state. e.g. `success` and `error` are mounted in the
@@ -492,47 +492,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Boolean,
           computed: '_computeHasItem(cart.length)'
         }
-      },
 
-      observers: [
+      }}
+
+      static get observers() { return [
         '_updateState(routeActive, routeData)'
-      ],
+      ]}
 
-      _submit: function(e) {
+      _submit(e) {
         if (this._validateForm()) {
           // To send the form data to the server:
           // 2) Remove the code below.
           // 3) Uncomment `this.$.checkoutForm.submit()`.
 
-          this.$.checkoutForm.fire('iron-form-presubmit', null, { bubbles: false });
+          this.$.checkoutForm.dispatchEvent(new CustomEvent('iron-form-presubmit', {
+            composed: true}));
 
-          this.debounce('_submitForm', function() {
-            this.$.checkoutForm.fire('iron-form-response', {
-              response: {
-                success: 1,
-                successMessage: 'Demo checkout process complete.'
-              }
-            }, { bubbles: false });
-          }, 1000);
+          this._submitFormDebouncer = Polymer.Debouncer.debounce(this._submitFormDebouncer,
+            Polymer.Async.timeOut.after(1000), () => {
+              this.$.checkoutForm.dispatchEvent(new CustomEvent('iron-form-response', {
+                composed: true, detail: {
+                  response: {
+                    success: 1,
+                    successMessage: 'Demo checkout process complete.'
+                  }
+                }}));
+            });
 
           // this.$.checkoutForm.submit();
         }
-      },
+      }
 
       /**
        * Sets the valid state and updates the location.
        */
-      _pushState: function(state) {
+      _pushState(state) {
         this._validState = state;
         this.set('route.path', state);
-      },
+      }
 
       /**
        * Checks that the `:state` subroute is correct. That is, the state has been pushed
        * after receiving response from the server. e.g. Users can only go to `/checkout/success`
        * if the server responsed with a success message.
        */
-      _updateState: function(active, routeData) {
+      _updateState(active, routeData) {
         if (active && routeData) {
           var state = routeData.state;
           if (this._validState === state) {
@@ -542,12 +546,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         }
         this.state = 'init';
-      },
+      }
 
       /**
        * Sets the initial state.
        */
-      _reset: function() {
+      _reset() {
         var form = this.$.checkoutForm;
 
         this._setWaiting(false);
@@ -562,13 +566,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         for (var el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
           el.removeAttribute('aria-invalid');
         }
-      },
+      }
 
       /**
        * Validates the form's inputs and adds the `aria-invalid` attribute to the inputs
        * that don't match the pattern specified in the markup.
        */
-      _validateForm: function() {
+      _validateForm() {
         var form = this.$.checkoutForm;
         var firstInvalid = false;
         var nativeForm = form._form;
@@ -580,7 +584,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (!firstInvalid) {
               // announce error message
               if (el.nextElementSibling) {
-                this.fire('announce', el.nextElementSibling.getAttribute('error-message'));
+                this.dispatchEvent(new CustomEvent('announce', {bubbles: true, composed: true,
+                  detail: el.nextElementSibling.getAttribute('error-message')}));
               }
               if (el.scrollIntoViewIfNeeded) {
                 // safari, chrome
@@ -596,13 +601,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         }
         return !firstInvalid;
-      },
+      }
 
       /**
        * Adds the cart data to the payload that will be sent to the server
        * and updates the UI to reflect the waiting state.
        */
-      _willSendRequest: function(e) {
+      _willSendRequest(e) {
         var form = e.target;
         var body = form.ajax && form.ajax.body;
 
@@ -616,17 +621,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         body.cartItemsId = [];
         body.cartItemsQuantity = [];
 
-        this.cart.forEach(function(cartItem) {
+        this.cart.forEach((cartItem) => {
           body.cartItemsId.push(cartItem.item.name);
           body.cartItemsQuantity.push(cartItem.quantity);
         });
-      },
+      }
 
       /**
        * Handles the response from the server by checking the response status
        * and transitioning to the success or error UI.
        */
-      _didReceiveResponse: function(e) {
+      _didReceiveResponse(e) {
         var response = e.detail.response;
 
         this.response = response;
@@ -635,43 +640,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (response.success) {
           this._pushState('success');
           this._reset();
-          this.fire('clear-cart');
+          this.dispatchEvent(new CustomEvent('clear-cart', {bubbles: true, composed: true}));
         } else {
           this._pushState('error');
         }
-      },
+      }
 
-      _toggleBillingAddress: function(e) {
+      _toggleBillingAddress(e) {
         this.hasBillingAddress = e.target.checked;
 
         if (this.hasBillingAddress) {
           this.$.billAddress.focus();
         }
-      },
+      }
 
-      _computeHasItem: function(cartLength) {
+      _computeHasItem(cartLength) {
         return cartLength > 0;
-      },
+      }
 
-      _formatPrice: function(total) {
+      _formatPrice(total) {
         return isNaN(total) ? '' : '$' + total.toFixed(2);
-      },
+      }
 
-      _getEntryTotal: function(entry) {
+      _getEntryTotal(entry) {
         return this._formatPrice(entry.quantity * entry.item.price);
-      },
+      }
 
-      _visibleChanged: function(visible) {
+      _visibleChanged(visible) {
         if (!visible) {
           return;
         }
         // Reset the UI states
         this._reset();
         // Notify the page's title
-        this.fire('change-section', { title: 'Checkout' });
+        this.dispatchEvent(new CustomEvent('change-section', {
+          bubbles: true, composed: true, detail: { title: 'Checkout' }}));
       }
 
-    });
+    }
+
+    customElements.define(ShopCheckout.is, ShopCheckout);
 
   </script>
 
