@@ -6,7 +6,7 @@
   ],
   "private": true,
   "dependencies": {
-    "polymer": "polymer/polymer#2.0-preview",
+    "polymer": "polymer/polymer#^2.0.0-rc.1",
     "app-layout": "polymerelements/app-layout#2.0-preview",
     "app-route": "polymerelements/app-route#2.0-preview",
     "app-storage": "polymerelements/app-storage#2.0-preview",
