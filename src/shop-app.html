@@ -546,9 +546,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _domChange(e) {
         if (window.performance && performance.mark && !this.__loggedDomChange) {
           var target = e.composedPath()[0];
-          if (target.domHost.is.match(this.page)) {
+          var host = target.getRootNode().host;
+          if (host && host.localName.match(this.page)) {
             this.__loggedDomChange = true;
-            performance.mark(target.domHost.is + '.domChange');
+            performance.mark(host.localName + '.domChange');
           }
         }
       }
