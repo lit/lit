@@ -46,7 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }}
 
       addItem(detail) {
-        var i = this._indexOfEntry(detail.item.name, detail.size);
+        let i = this._indexOfEntry(detail.item.name, detail.size);
         if (i !== -1) {
           detail.quantity += this.cart[i].quantity;
         }
@@ -54,7 +54,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       setItem(detail) {
-        var i = this._indexOfEntry(detail.item.name, detail.size);
+        let i = this._indexOfEntry(detail.item.name, detail.size);
         if (detail.quantity === 0) {
           // Remove item from cart when the new quantity is 0.
           if (i !== -1) {
@@ -97,8 +97,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _indexOfEntry(name, size) {
         if (this.cart) {
-          for (var i = 0; i < this.cart.length; ++i) {
-            var entry = this.cart[i];
+          for (let i = 0; i < this.cart.length; ++i) {
+            let entry = this.cart[i];
             if (entry.item.name === name && entry.size === size) {
               return i;
             }

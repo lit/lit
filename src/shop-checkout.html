@@ -538,7 +538,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       _updateState(active, routeData) {
         if (active && routeData) {
-          var state = routeData.state;
+          let state = routeData.state;
           if (this._validState === state) {
             this.state = state;
             this._validState = '';
@@ -552,18 +552,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Sets the initial state.
        */
       _reset() {
-        var form = this.$.checkoutForm;
+        let form = this.$.checkoutForm;
 
         this._setWaiting(false);
         form.reset();
 
-        var nativeForm = form._form;
+        let nativeForm = form._form;
         if (!nativeForm) {
           return;
         }
 
         // Remove the `aria-invalid` attribute from the form inputs.
-        for (var el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
+        for (let el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
           el.removeAttribute('aria-invalid');
         }
       }
@@ -573,11 +573,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * that don't match the pattern specified in the markup.
        */
       _validateForm() {
-        var form = this.$.checkoutForm;
-        var firstInvalid = false;
-        var nativeForm = form._form;
+        let form = this.$.checkoutForm;
+        let firstInvalid = false;
+        let nativeForm = form._form;
 
-        for (var el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
+        for (let el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
           if (el.checkValidity()) {
             el.removeAttribute('aria-invalid');
           } else {
@@ -608,8 +608,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * and updates the UI to reflect the waiting state.
        */
       _willSendRequest(e) {
-        var form = e.target;
-        var body = form.ajax && form.ajax.body;
+        let form = e.target;
+        let body = form.ajax && form.ajax.body;
 
         this._setWaiting(true);
 
@@ -632,7 +632,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * and transitioning to the success or error UI.
        */
       _didReceiveResponse(e) {
-        var response = e.detail.response;
+        let response = e.detail.response;
 
         this.response = response;
         this._setWaiting(true);

@@ -65,7 +65,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _onTransitionend(event) {
-        var index = this._transitionsInFlight.indexOf(event.propertyName);
+        let index = this._transitionsInFlight.indexOf(event.propertyName);
         if (index >= 0) {
           this._transitionsInFlight.splice(index, 1);
         }
@@ -88,18 +88,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _move(oldTarget, newTarget) {
-        var from = oldTarget || newTarget;
-        var to = newTarget || oldTarget;
+        let from = oldTarget || newTarget;
+        let to = newTarget || oldTarget;
         if (!from && !to) return;
 
-        var fromOpacity = oldTarget ? 1 : 0;
-        var toOpacity = newTarget ? 1 : 0;
+        let fromOpacity = oldTarget ? 1 : 0;
+        let toOpacity = newTarget ? 1 : 0;
 
         Polymer.dom.flush();
-        var thisRect = this.getBoundingClientRect();
-        var thisStyle = window.getComputedStyle(this);
-        var fromRect = from.getBoundingClientRect();
-        var toRect = to.getBoundingClientRect();
+        let thisRect = this.getBoundingClientRect();
+        let thisStyle = window.getComputedStyle(this);
+        let fromRect = from.getBoundingClientRect();
+        let toRect = to.getBoundingClientRect();
 
         if (toRect.top === 0 && toRect.right === 0 &&
             toRect.bottom === 0 && toRect.left === 0 &&
@@ -113,14 +113,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.style.transitionProperty = '';
         }
 
-        var top = parseFloat(thisStyle.top || '0') + (fromRect.top - thisRect.top);
-        var right = parseFloat(thisStyle.right || '0') - (fromRect.right - thisRect.right);
-        var bottom = parseFloat(thisStyle.bottom || '0') - (fromRect.bottom - thisRect.bottom);
-        var left = parseFloat(thisStyle.left || '0') + (fromRect.left - thisRect.left);
+        let top = parseFloat(thisStyle.top || '0') + (fromRect.top - thisRect.top);
+        let right = parseFloat(thisStyle.right || '0') - (fromRect.right - thisRect.right);
+        let bottom = parseFloat(thisStyle.bottom || '0') - (fromRect.bottom - thisRect.bottom);
+        let left = parseFloat(thisStyle.left || '0') + (fromRect.left - thisRect.left);
 
         this.style.transitionDuration = '0s';
         this.style.transitionDelay = '0s';
-        var startValues = [
+        let startValues = [
           this.style.top = top + 'px',
           this.style.right = right + 'px',
           this.style.bottom = bottom + 'px',
@@ -133,8 +133,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         bottom -= toRect.bottom - fromRect.bottom;
         left += toRect.left - fromRect.left;
 
-        var durations = [0.2, 0.2, 0.2, 0.2, 0.2];
-        var delays = [0, 0, 0, 0, 0];
+        let durations = [0.2, 0.2, 0.2, 0.2, 0.2];
+        let delays = [0, 0, 0, 0, 0];
         // Delay left / right transitions if element is left / right of the target.
         if (fromRect.left < toRect.left && fromRect.right < toRect.right) {
           delays[3] = 0.1;
@@ -149,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           delays[2] = 0.1;
         }
 
-        var endValues = [
+        let endValues = [
           top + 'px',
           right + 'px',
           bottom + 'px',
@@ -157,8 +157,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           String(toOpacity)
         ];
 
-        var names = ['top', 'right', 'bottom', 'left', 'opacity'];
-        for (var i = 0; i < startValues.length; i++) {
+        let names = ['top', 'right', 'bottom', 'left', 'opacity'];
+        for (let i = 0; i < startValues.length; i++) {
           if (startValues[i] === endValues[i]) continue;
           if (durations[i] === 0 && delays[i] === 0) continue;
           this._transitionsInFlight.push(names[i]);

@@ -241,7 +241,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             Polymer.Async.microTask, () => {
               // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
               // unescape it ("<br>") and set it as innerHTML.
-              var text = item ? item.description : '';
+              let text = item ? item.description : '';
               this.$.desc.innerHTML = this._unescapeText(text);
 
               // Reset the select menus.
@@ -258,7 +258,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _unescapeText(text) {
-        var elem = document.createElement('textarea');
+        let elem = document.createElement('textarea');
         elem.innerHTML = text;
         return elem.textContent;
       }

@@ -14,7 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
   (function() {
-    var categoryList = [
+    let categoryList = [
       {
         name: 'mens_outerwear',
         title: 'Men\'s Outerwear',
@@ -79,7 +79,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }}
 
       _getCategoryObject(categoryName) {
-        for (var i = 0, c; c = this.categories[i]; ++i) {
+        for (let i = 0, c; c = this.categories[i]; ++i) {
           if (c.name === categoryName) {
             return c;
           }
@@ -90,7 +90,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Fetch the items of the category. Note that the fetch is asynchronous,
         // which means `category.items` may not be set initially (but that path
         // will be notified when the fetch completes).
-        var categoryObj = this._getCategoryObject(categoryName);
+        let categoryObj = this._getCategoryObject(categoryName);
         this._fetchItems(categoryObj, 1);
         return categoryObj;
       }
@@ -99,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!items || !itemName) {
           return;
         }
-        for (var i = 0, item; item = items[i]; ++i) {
+        for (let i = 0, item; item = items[i]; ++i) {
           if (item.name === itemName) {
             return item;
           }
@@ -124,7 +124,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _getResource(rq, attempts) {
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.addEventListener('load', rq.onLoad.bind(this));
         xhr.addEventListener('error', (e) => {
           // Flaky connections might fail fetching resources

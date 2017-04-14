@@ -374,21 +374,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       constructor() {
         super();
         window.performance && performance.mark && performance.mark('shop-app.created');
-        // Custom elements polyfill safe way to indicate an element has been upgraded.
-        this.removeAttribute('unresolved');
-      }
-
-      connectedCallback() {
-        super.connectedCallback();
-        // listen for online/offline
-        Polymer.RenderStatus.afterNextRender(this, () => {
-          window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
-          window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
-        });
       }
 
       ready() {
         super.ready();
+        // Custom elements polyfill safe way to indicate an element has been upgraded.
+        this.removeAttribute('unresolved');
+        // listen for custom events
         this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
         this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
         this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
@@ -396,11 +388,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.addEventListener('announce', (e)=>this._onAnnounce(e));
         this.addEventListener('dom-change', (e)=>this._domChange(e));
         this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
+        // listen for online/offline
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
+          window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
+        });
       }
 
       _routePageChanged(page) {
-        // HACK(keanulee): Need to check if `page` actually changed due to polymer#3935.
-        if (this.page === 'list' && this.page !== page) {
+        if (this.page === 'list') {
           this._listScrollTop = window.pageYOffset;
         }
 
@@ -419,7 +415,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           } else {
             // When a load failed, it triggered a 404 which means we need to
             // eagerly load the 404 page definition
-            var cb = this._pageLoaded.bind(this, Boolean(oldPage));
+            let cb = this._pageLoaded.bind(this, Boolean(oldPage));
             Polymer.importHref(
               this.resolveUrl('shop-' + page + '.html'),
               cb, cb, true);
@@ -455,7 +451,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _notifyNetworkStatus() {
-        var oldOffline = this.offline;
+        let oldOffline = this.offline;
         this.offline =  !navigator.onLine;
         // Show the snackbar if the user is offline when starting a new session
         // or if the network status changed.
@@ -477,11 +473,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Elements in the app can notify section changes.
       // Response by a11y announcing the section and syncronizing the category.
       _onChangeSection(event) {
-        var detail = event.detail;
+        let detail = event.detail;
 
         // Scroll to the top of the page when navigating to a non-list page. For list view,
         // scroll to the last saved position only if the category has not changed.
-        var scrollTop = 0;
+        let scrollTop = 0;
         if (this.page === 'list') {
           if (this.categoryName === detail.category) {
             scrollTop = this._listScrollTop;
@@ -514,7 +510,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _onSetCartItem(event) {
-        var detail = event.detail;
+        let detail = event.detail;
         this.$.cart.setItem(detail);
         if (detail.quantity === 0) {
           this._announce('Item deleted');
@@ -545,8 +541,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // This is for performance logging only.
       _domChange(e) {
         if (window.performance && performance.mark && !this.__loggedDomChange) {
-          var target = e.composedPath()[0];
-          var host = target.getRootNode().host;
+          let target = e.composedPath()[0];
+          let host = target.getRootNode().host;
           if (host && host.localName.match(this.page)) {
             this.__loggedDomChange = true;
             performance.mark(host.localName + '.domChange');

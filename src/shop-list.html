@@ -156,6 +156,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         '_categoryChanged(category, visible)'
       ]}
 
+      connectedCallback() {
+        super.connectedCallback();
+        this.isAttached = true;
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this.isAttached = false;
+      }
+
       _getListItems(items) {
         // Return placeholder items when the items haven't loaded yet.
         return items || [{},{},{},{},{},{},{},{},{},{}];
@@ -171,7 +181,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!quantity) {
           return '';
         }
-        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        let pluralizedQ = quantity === 1 ? 'item' : 'items';
         return  '(' + quantity + ' ' + pluralizedQ + ')';
       }
 
