@@ -18,66 +18,6 @@
     "manifest.json",
     "bower_components/webcomponentsjs/*"
   ],
-  "builds": [
-    {
-      "name": "bundled",
-      "bundle": true,
-      "html": {
-        "minify": true
-      },
-      "css": {
-        "minify": true
-      },
-      "js": {
-        "minify": true
-      },
-      "addServiceWorker": true
-    },
-    {
-      "name": "bundled-compiled",
-      "bundle": true,
-      "html": {
-        "minify": true
-      },
-      "css": {
-        "minify": true
-      },
-      "js": {
-        "minify": true,
-        "compile": true
-      },
-      "addServiceWorker": true
-    },
-    {
-      "name": "unbundled",
-      "bundle": false,
-      "html": {
-        "minify": true
-      },
-      "css": {
-        "minify": true
-      },
-      "js": {
-        "minify": true
-      },
-      "addServiceWorker": true
-    },
-    {
-      "name": "unbundled-compiled",
-      "bundle": false,
-      "html": {
-        "minify": true
-      },
-      "css": {
-        "minify": true
-      },
-      "js": {
-        "minify": true,
-        "compile": true
-      },
-      "addServiceWorker": true
-    }
-  ],
   "lint": {
     "rules": ["polymer-2-hybrid"]
   }
