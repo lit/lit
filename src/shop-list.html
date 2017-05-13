@@ -186,22 +186,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _categoryChanged(category, visible) {
-        if (visible) {
-          if (!category) {
-            this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
-              bubbles: true, composed: true}));
-          } else {
-            this._changeSectionDebouncer = Polymer.Debouncer.debounce(this._changeSectionDebouncer,
-              Polymer.Async.microTask, () => {
-                // Notify the category and the page's title
-                this.dispatchEvent(new CustomEvent('change-section', {
-                  bubbles: true, composed: true, detail: {
-                    category: category.name,
-                    title: category.title
-                  }}));
-              });
-          }
+        if (!visible) {
+          return;
         }
+        this._changeSectionDebouncer = Polymer.Debouncer.debounce(this._changeSectionDebouncer,
+          Polymer.Async.microTask, () => {
+            if (category) {
+              // Notify the category and the page's title
+              this.dispatchEvent(new CustomEvent('change-section', {
+                bubbles: true, composed: true, detail: {
+                  category: category.name,
+                  title: category.title
+                }}));
+            } else {
+              this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
+                bubbles: true, composed: true}));
+            }
+          });
       }
 
       _tryReconnect() {
