@@ -19,20 +19,6 @@
     "manifest.json",
     "bower_components/webcomponentsjs/*"
   ],
-  "builds": [{
-    "name": "bundled",
-    "bundle": true,
-    "js": {"minify": true},
-    "css": {"minify": true},
-    "html": {"minify": true},
-    "addServiceWorker": true
-  },{
-    "name": "unbundled",
-    "js": {"minify": true},
-    "css": {"minify": true},
-    "html": {"minify": true},
-    "addServiceWorker": true
-  }],
   "lint": {
     "rules": ["polymer-2-hybrid"]
   },
