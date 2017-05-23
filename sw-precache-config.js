@@ -5,8 +5,6 @@ module.exports = {
     '/bower_components/webcomponentsjs/webcomponents-loader.js',
     '/images/*'
   ],
-  navigateFallback: '/index.html',
-  navigateFallbackWhitelist: [/^(?!.*\.html$|\/data\/).*/],
   runtimeCaching: [
     {
       urlPattern: /\/bower_components\/webcomponentsjs\/.*.js/,
