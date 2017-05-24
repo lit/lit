@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-form-styles.html">
@@ -53,9 +53,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <span>([[_getPluralizedQuantity(cart.length)]])</span>
         </header>
         <div class="list">
-          <template is="dom-repeat" items="[[cart]]" as="entry">
-            <shop-cart-item entry="[[entry]]"></shop-cart-item>
-          </template>
+          <dom-repeat items="[[cart]]" as="entry">
+            <template>
+              <shop-cart-item entry="[[entry]]"></shop-cart-item>
+            </template>
+          </dom-repeat>
         </div>
         <div class="checkout-box">
           Total: <span class="subtotal">[[_formatTotal(total)]]</span>
@@ -70,11 +72,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
-    Polymer({
+    class ShopCart extends Polymer.Element {
 
-      is: 'shop-cart',
+      static get is() { return 'shop-cart'; }
 
-      properties: {
+      static get properties() { return {
 
         total: Number,
 
@@ -90,28 +92,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           computed: '_computeHasItem(cart.length)'
         }
 
-      },
+      }}
 
-      _formatTotal: function(total) {
+      _formatTotal(total) {
         return isNaN(total) ? '' : '$' + total.toFixed(2);
-      },
+      }
 
-      _computeHasItem: function(cartLength) {
+      _computeHasItem(cartLength) {
         return cartLength > 0;
-      },
+      }
 
-      _getPluralizedQuantity: function(quantity) {
+      _getPluralizedQuantity(quantity) {
         return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
-      },
+      }
 
-      _visibleChanged: function(visible) {
+      _visibleChanged(visible) {
         if (visible) {
           // Notify the section's title
-          this.fire('change-section', { title: 'Your cart' });
+          this.dispatchEvent(new CustomEvent('change-section', {
+            bubbles: true, composed: true, detail: { title: 'Your cart' }}));
         }
       }
 
-    });
+    }
+
+    customElements.define(ShopCart.is, ShopCart);
 
   </script>
 

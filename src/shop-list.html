@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-category-data.html">
@@ -41,9 +41,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .grid {
-        @apply(--layout-horizontal);
-        @apply(--layout-wrap);
-        @apply(--layout-justified);
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        @apply --layout-justified;
         margin: 0 10px 32px 10px;
         padding: 0;
         list-style: none;
@@ -104,11 +104,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </header>
 
     <ul class="grid" hidden$="[[failure]]">
-      <template is="dom-repeat" items="[[_getListItems(category.items)]]" initial-count="4">
-        <li>
-          <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
-        </li>
-      </template>
+      <dom-repeat items="[[_getListItems(category.items)]]" initial-count="4">
+        <template>
+          <li>
+            <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+          </li>
+        </template>
+      </dom-repeat>
     </ul>
 
     <!--
@@ -124,11 +126,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
-    Polymer({
+    class ShopList extends Polymer.Element {
 
-      is: 'shop-list',
+      static get is() { return 'shop-list'; }
 
-      properties: {
+      static get properties() { return {
 
         category: Object,
 
@@ -136,7 +138,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         routeData: Object,
 
-        visible: Boolean,
+        visible: {
+          type: Boolean,
+          value: false
+        },
 
         offline: {
           type: Boolean,
@@ -145,58 +150,74 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         failure: Boolean
 
-      },
+      }}
 
-      observers: [
+      static get observers() { return [
         '_categoryChanged(category, visible)'
-      ],
+      ]}
 
-      _getListItems: function(items) {
+      connectedCallback() {
+        super.connectedCallback();
+        this.isAttached = true;
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this.isAttached = false;
+      }
+
+      _getListItems(items) {
         // Return placeholder items when the items haven't loaded yet.
         return items || [{},{},{},{},{},{},{},{},{},{}];
-      },
+      }
 
-      _getItemHref: function(item) {
+      _getItemHref(item) {
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
         return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
-      },
+      }
 
-      _getPluralizedQuantity: function(quantity) {
+      _getPluralizedQuantity(quantity) {
         if (!quantity) {
           return '';
         }
-        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        let pluralizedQ = quantity === 1 ? 'item' : 'items';
         return  '(' + quantity + ' ' + pluralizedQ + ')';
-      },
+      }
 
-      _categoryChanged: function(category, visible) {
-        if (visible) {
-          if (!category) {
-            this.fire('show-invalid-url-warning');
-          } else {
-            this.debounce('change-section', function() {
-              // Notify the category and the page's title
-              this.fire('change-section', {
-                category: category.name,
-                title: category.title
-              });
-            });
-          }
+      _categoryChanged(category, visible) {
+        if (!visible) {
+          return;
         }
-      },
+        this._changeSectionDebouncer = Polymer.Debouncer.debounce(this._changeSectionDebouncer,
+          Polymer.Async.microTask, () => {
+            if (category) {
+              // Notify the category and the page's title
+              this.dispatchEvent(new CustomEvent('change-section', {
+                bubbles: true, composed: true, detail: {
+                  category: category.name,
+                  title: category.title
+                }}));
+            } else {
+              this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
+                bubbles: true, composed: true}));
+            }
+          });
+      }
 
-      _tryReconnect: function() {
+      _tryReconnect() {
         this.$.categoryData.refresh();
-      },
+      }
 
-      _offlineChanged: function(offline) {
-        if (!offline) {
+      _offlineChanged(offline) {
+        if (!offline && this.isAttached) {
           this._tryReconnect();
         }
       }
 
-    });
+    }
+
+    customElements.define(ShopList.is, ShopList);
 
   </script>
 

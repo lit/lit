@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 
 <dom-module id="shop-tabs-overlay">
   <template strip-whitespace>
@@ -27,10 +27,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </template>
   <script>
-    Polymer({
-      is: 'shop-tabs-overlay',
 
-      properties: {
+    class ShopTabsOverlay extends Polymer.Element {
+
+      static get is() { return 'shop-tabs-overlay'; }
+
+      static get properties() { return {
         /**
          * The element the overlay should cover.
          */
@@ -38,18 +40,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Object,
           observer: '_targetChanged',
         }
-      },
+      }}
 
-      listeners: {
-        'transitionend': '_onTransitionend',
-      },
-
-      created: function() {
+      constructor() {
+        super();
         this._lastTarget = undefined;
         this._transitionsInFlight = [];
-      },
+      }
 
-      _targetChanged: function(newTarget, oldTarget) {
+      ready() {
+        super.ready();
+        this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
+      }
+
+      _targetChanged(newTarget, oldTarget) {
         if (!this._transitionsInFlight.length) {
           if (this._lastTarget) {
             this._lastTarget.classList.remove('shop-tabs-overlay-static-above');
@@ -58,10 +62,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._move(oldTarget, newTarget);
           this._lastTarget = this.target;
         }
-      },
+      }
 
-      _onTransitionend: function(event) {
-        var index = this._transitionsInFlight.indexOf(event.propertyName);
+      _onTransitionend(event) {
+        let index = this._transitionsInFlight.indexOf(event.propertyName);
         if (index >= 0) {
           this._transitionsInFlight.splice(index, 1);
         }
@@ -69,9 +73,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!this._transitionsInFlight.length) {
           this._moveComplete();
         }
-      },
+      }
 
-      _moveComplete: function() {
+      _moveComplete() {
         if (this._lastTarget !== this.target) {
           this._move(this._lastTarget, this.target);
           this._lastTarget = this.target;
@@ -81,21 +85,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           this.style.display = 'none';
         }
-      },
+      }
 
-      _move: function(oldTarget, newTarget) {
-        var from = oldTarget || newTarget;
-        var to = newTarget || oldTarget;
+      _move(oldTarget, newTarget) {
+        let from = oldTarget || newTarget;
+        let to = newTarget || oldTarget;
         if (!from && !to) return;
 
-        var fromOpacity = oldTarget ? 1 : 0;
-        var toOpacity = newTarget ? 1 : 0;
+        let fromOpacity = oldTarget ? 1 : 0;
+        let toOpacity = newTarget ? 1 : 0;
 
         Polymer.dom.flush();
-        var thisRect = this.getBoundingClientRect();
-        var thisStyle = window.getComputedStyle(this);
-        var fromRect = from.getBoundingClientRect();
-        var toRect = to.getBoundingClientRect();
+        let thisRect = this.getBoundingClientRect();
+        let thisStyle = window.getComputedStyle(this);
+        let fromRect = from.getBoundingClientRect();
+        let toRect = to.getBoundingClientRect();
 
         if (toRect.top === 0 && toRect.right === 0 &&
             toRect.bottom === 0 && toRect.left === 0 &&
@@ -103,20 +107,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.style.transitionProperty = 'none';
           this.style.opacity = toOpacity;
           this._transitionsInFlight = [];
-          this.async(this._moveComplete);
+          Polymer.Async.microTask.run(this._moveComplete.bind(this))
           return;
         } else {
           this.style.transitionProperty = '';
         }
 
-        var top = parseFloat(thisStyle.top || '0') + (fromRect.top - thisRect.top);
-        var right = parseFloat(thisStyle.right || '0') - (fromRect.right - thisRect.right);
-        var bottom = parseFloat(thisStyle.bottom || '0') - (fromRect.bottom - thisRect.bottom);
-        var left = parseFloat(thisStyle.left || '0') + (fromRect.left - thisRect.left);
+        let top = parseFloat(thisStyle.top || '0') + (fromRect.top - thisRect.top);
+        let right = parseFloat(thisStyle.right || '0') - (fromRect.right - thisRect.right);
+        let bottom = parseFloat(thisStyle.bottom || '0') - (fromRect.bottom - thisRect.bottom);
+        let left = parseFloat(thisStyle.left || '0') + (fromRect.left - thisRect.left);
 
         this.style.transitionDuration = '0s';
         this.style.transitionDelay = '0s';
-        var startValues = [
+        let startValues = [
           this.style.top = top + 'px',
           this.style.right = right + 'px',
           this.style.bottom = bottom + 'px',
@@ -129,8 +133,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         bottom -= toRect.bottom - fromRect.bottom;
         left += toRect.left - fromRect.left;
 
-        var durations = [0.2, 0.2, 0.2, 0.2, 0.2];
-        var delays = [0, 0, 0, 0, 0];
+        let durations = [0.2, 0.2, 0.2, 0.2, 0.2];
+        let delays = [0, 0, 0, 0, 0];
         // Delay left / right transitions if element is left / right of the target.
         if (fromRect.left < toRect.left && fromRect.right < toRect.right) {
           delays[3] = 0.1;
@@ -145,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           delays[2] = 0.1;
         }
 
-        var endValues = [
+        let endValues = [
           top + 'px',
           right + 'px',
           bottom + 'px',
@@ -153,23 +157,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           String(toOpacity)
         ];
 
-        var names = ['top', 'right', 'bottom', 'left', 'opacity'];
-        for (var i = 0; i < startValues.length; i++) {
+        let names = ['top', 'right', 'bottom', 'left', 'opacity'];
+        for (let i = 0; i < startValues.length; i++) {
           if (startValues[i] === endValues[i]) continue;
           if (durations[i] === 0 && delays[i] === 0) continue;
           this._transitionsInFlight.push(names[i]);
         }
 
-        this.async(function() {
-          this.style.transitionDuration = durations.map(function(x) { return x + 's'; }).join(', ');
-          this.style.transitionDelay = delays.map(function(x) { return x + 's'; }).join(', ');
+        Polymer.Async.timeOut.run(() => {
+          this.style.transitionDuration = durations.map((x) => { return x + 's'; }).join(', ');
+          this.style.transitionDelay = delays.map((x) => { return x + 's'; }).join(', ');
           this.style.top = top + 'px';
           this.style.right = right + 'px';
           this.style.bottom = bottom + 'px';
           this.style.left = left + 'px';
           this.style.opacity = String(toOpacity);
         }, 1);
-      },
-    });
+      }
+
+    }
+
+    customElements.define(ShopTabsOverlay.is, ShopTabsOverlay);
+
   </script>
 </dom-module>

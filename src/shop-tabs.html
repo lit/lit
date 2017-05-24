@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selectable.html">
 <link rel="import" href="shop-tabs-overlay.html">
@@ -17,8 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template strip-whitespace>
     <style>
       :host {
-        @apply(--layout);
-        @apply(--layout-center-center);
+        @apply --layout;
+        @apply --layout-center-center;
       }
 
       #container {
@@ -26,31 +26,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       shop-tabs-overlay {
-        @apply(--shop-tab-overlay);
+        @apply --shop-tab-overlay;
       }
     </style>
     <div id="container">
       <shop-tabs-overlay id="overlay"></shop-tabs-overlay>
-      <content></content>
+      <slot></slot>
     </div>
   </template>
   <script>
-    Polymer({
-      is: 'shop-tabs',
 
-      behaviors: [
-        Polymer.IronSelectableBehavior
-      ],
+    class ShopTabs extends Polymer.mixinBehaviors(
+      [Polymer.IronSelectableBehavior], Polymer.Element) {
 
-      observers: [
+      static get is() { return 'shop-tabs'; }
+
+      static get observers() { return [
         '_onSelectedItemChanged(selectedItem)'
-      ],
+      ]}
 
-      _onSelectedItemChanged: function(selectedItem) {
+      _onSelectedItemChanged(selectedItem) {
         if (selectedItem === undefined && this.selected) return;
 
         this.$.overlay.target = selectedItem;
-      },
-    });
+      }
+    }
+
+    customElements.define(ShopTabs.is, ShopTabs);
+
   </script>
 </dom-module>

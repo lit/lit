@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
@@ -46,17 +46,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .layout-horizontal {
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       .label {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         line-height: 24px;
         margin: 8px;
       }
 
       .modal-button {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         margin: 16px 8px;
       }
 
@@ -93,62 +93,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
     <div class="layout-horizontal">
       <shop-button class="modal-button">
-        <a href="/cart" on-tap="close" id="viewCartAnchor">View Cart</a>
+        <a href="/cart" on-click="close" id="viewCartAnchor">View Cart</a>
       </shop-button>
       <shop-button class="modal-button">
-        <a href="/checkout" on-tap="close">Checkout</a>
+        <a href="/checkout" on-click="close">Checkout</a>
       </shop-button>
     </div>
 
-    <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" on-tap="close"></paper-icon-button>
+    <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" on-click="close"></paper-icon-button>
 
   </template>
 
   <script>
 
-    Polymer({
+    class ShopCartModal extends Polymer.mixinBehaviors(
+      [Polymer.IronOverlayBehaviorImpl], Polymer.Element) {
 
-      is: 'shop-cart-modal',
+      static get is() { return 'shop-cart-modal'; }
 
-      behaviors: [
-        Polymer.IronOverlayBehaviorImpl
-      ],
-
-      properties: {
+      static get properties() { return {
         withBackdrop: {
           type: Boolean,
           value: true
         }
-      },
+      }}
 
-      hostAttributes: {
-        role: 'dialog',
-        'aria-modal': 'true'
-      },
+      ready() {
+        super.ready();
+        this.setAttribute('role', 'dialog');
+        this.setAttribute('aria-modal', 'true');
+        this.addEventListener('transitionend', (e)=>this._transitionEnd(e));
+        this.addEventListener('iron-overlay-canceled', (e)=>this._onCancel(e));
+      }
 
-      listeners: {
-        'transitionend' : '_transitionEnd',
-        'iron-overlay-canceled': '_onCancel'
-      },
-
-      _renderOpened: function() {
+      _renderOpened() {
         this.restoreFocusOnClose = true;
         this.backdropElement.style.display = 'none';
         this.classList.add('opened');
-      },
+      }
 
-      _renderClosed: function() {
+      _renderClosed() {
         this.classList.remove('opened');
-      },
+      }
 
-      _onCancel: function(e) {
+      _onCancel(e) {
         // Don't restore focus when the overlay is closed after a mouse event
         if (e.detail instanceof MouseEvent) {
           this.restoreFocusOnClose = false;
         }
-      },
+      }
 
-      _transitionEnd: function(e) {
+      _transitionEnd(e) {
         if (e.target !== this || e.propertyName !== 'transform') {
           return;
         }
@@ -159,17 +154,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._finishRenderClosed();
           this.backdropElement.style.display = '';
         }
-      },
+      }
 
       get _focusableNodes() {
         return [this.$.viewCartAnchor, this.$.closeBtn];
-      },
+      }
 
-      refit: Function(),
+      refit() {}
 
-      notifyResize: Function()
+      notifyResize() {}
 
-    });
+    }
+
+    customElements.define(ShopCartModal.is, ShopCartModal);
 
   </script>
 

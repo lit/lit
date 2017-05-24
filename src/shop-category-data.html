@@ -8,44 +8,44 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 
 <dom-module id="shop-category-data">
 
   <script>
   (function() {
-    var categoryList = [
+    let categoryList = [
       {
         name: 'mens_outerwear',
         title: 'Men\'s Outerwear',
-        image: '/images/mens_outerwear.jpg',
+        image: 'images/mens_outerwear.jpg',
         placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXAABAQEAAAAAAAAAAAAAAAAAAAIEAQEAAAAAAAAAAAAAAAAAAAACEAAAAwYHAQAAAAAAAAAAAAAAERMBAhIyYhQhkaEDIwUVNREBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A3dkr5e8tfpwuneJITOzIcmQpit037Bw4mnCVNOpAAQv/2Q=='
       },
       {
         name: 'ladies_outerwear',
         title: 'Ladies Outerwear',
-        image: '/images/ladies_outerwear.jpg',
+        image: 'images/ladies_outerwear.jpg',
         placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWQABAQAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAIDEAABAwMFAQAAAAAAAAAAAAARAAEygRIDIlITMwUVEQEBAAAAAAAAAAAAAAAAAAAAQf/aAAwDAQACEQMRAD8Avqn5meQ0kwk1UyclmLtNj7L4PQoioFf/2Q=='
       },
       {
         name: 'mens_tshirts',
         title: 'Men\'s T-Shirts',
-        image: '/images/mens_tshirts.jpg',
+        image: 'images/mens_tshirts.jpg',
         placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWwABAQEAAAAAAAAAAAAAAAAAAAMEAQEAAAAAAAAAAAAAAAAAAAAAEAABAwEJAAAAAAAAAAAAAAARAAESEyFhodEygjMUBREAAwAAAAAAAAAAAAAAAAAAAEFC/9oADAMBAAIRAxEAPwDb7kupZU1MTGnvOCgxpvzEXTyRElCmf//Z'
       },
       {
         name: 'ladies_tshirts',
         title: 'Ladies T-Shirts',
-        image: '/images/ladies_tshirts.jpg',
+        image: 'images/ladies_tshirts.jpg',
         placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXwABAQEAAAAAAAAAAAAAAAAAAAMFAQEBAAAAAAAAAAAAAAAAAAABAhAAAQIDCQAAAAAAAAAAAAAAEQABITETYZECEjJCAzMVEQACAwAAAAAAAAAAAAAAAAAAATFBgf/aAAwDAQACEQMRAD8AzeADAZiFc5J7BC9Scek3VrtooilSNaf/2Q=='
       }
     ];
 
-    Polymer({
+    class ShopCategoryData extends Polymer.Element {
 
-      is: 'shop-category-data',
+      static get is() { return 'shop-category-data'; }
 
-      properties: {
+      static get properties() { return {
 
         categoryName: String,
 
@@ -75,74 +75,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true,
           readOnly: true
         }
-      },
 
-      _getCategoryObject: function(categoryName) {
-        for (var i = 0, c; c = this.categories[i]; ++i) {
+      }}
+
+      _getCategoryObject(categoryName) {
+        for (let i = 0, c; c = this.categories[i]; ++i) {
           if (c.name === categoryName) {
             return c;
           }
         }
-      },
+      }
 
-      _computeCategory: function(categoryName) {
+      _computeCategory(categoryName) {
         // Fetch the items of the category. Note that the fetch is asynchronous,
         // which means `category.items` may not be set initially (but that path
         // will be notified when the fetch completes).
-        var categoryObj = this._getCategoryObject(categoryName);
+        let categoryObj = this._getCategoryObject(categoryName);
         this._fetchItems(categoryObj, 1);
         return categoryObj;
-      },
+      }
 
-      _computeItem: function(items, itemName) {
-        for (var i = 0, item; item = items[i]; ++i) {
+      _computeItem(items, itemName) {
+        if (!items || !itemName) {
+          return;
+        }
+        for (let i = 0, item; item = items[i]; ++i) {
           if (item.name === itemName) {
             return item;
           }
         }
-      },
+      }
 
-      _fetchItems: function(category, attempts) {
+      _fetchItems(category, attempts) {
         this._setFailure(false);
         // Only fetch the items of a category if it has not been previously set.
         if (!category || category.items) {
           return;
         }
         this._getResource({
-          url: '/data/' + category.name + '.json',
-          onLoad: function(e) {
+          url: 'data/' + category.name + '.json',
+          onLoad(e) {
             this.set('category.items', JSON.parse(e.target.responseText));
           },
-          onError: function(e) {
+          onError(e) {
             this._setFailure(true);
           }
         }, attempts);
-      },
+      }
 
-      _getResource: function(rq, attempts) {
-        var xhr = new XMLHttpRequest();
+      _getResource(rq, attempts) {
+        let xhr = new XMLHttpRequest();
         xhr.addEventListener('load', rq.onLoad.bind(this));
-        xhr.addEventListener('error', function(e) {
+        xhr.addEventListener('error', (e) => {
           // Flaky connections might fail fetching resources
           if (attempts > 1) {
-            this.debounce('_getResource', this._getResource.bind(this, rq, attempts - 1), 200);
+            this._getResourceDebouncer = Polymer.Debouncer.debounce(this._getResourceDebouncer,
+              Polymer.Async.timeOut.after(200), this._getResource.bind(this, rq, attempts - 1));
           } else {
             rq.onError.call(this, e);
           }
-        }.bind(this));
+        });
 
         xhr.open('GET', rq.url);
         xhr.send();
-      },
+      }
 
-      refresh: function() {
+      refresh() {
         if (this.categoryName) {
           // Try at most 3 times to get the items.
           this._fetchItems(this._getCategoryObject(this.categoryName), 3);
         }
       }
 
-    });
+    }
+
+    customElements.define(ShopCategoryData.is, ShopCategoryData);
 
   })();
   </script>

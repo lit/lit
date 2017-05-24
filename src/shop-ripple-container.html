@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-behaviors/paper-ripple-behavior.html">
 
 <dom-module id="shop-ripple-container">
@@ -23,47 +23,52 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: var(--app-accent-color);
       }
     </style>
-    <content></content>
+    <slot></slot>
   </template>
   <script>
-    Polymer({
-      is: 'shop-ripple-container',
 
-      behaviors: [
-        Polymer.PaperRippleBehavior
-      ],
+    class ShopRippleContainer extends Polymer.mixinBehaviors(
+      [Polymer.PaperRippleBehavior], Polymer.Element) {
 
-      listeners: {
-        'down': '_rippleDown',
-        'up': '_rippleUp',
-      },
+      static get is() { return 'shop-ripple-container'; }
 
-      created: function() {
-        this.addEventListener('focus', this._onFocus.bind(this), true);
-        this.addEventListener('blur', this._onBlur.bind(this), true);
+      constructor() {
+        super();
         this._isDown = false;
-      },
+      }
 
-      _onFocus: function(event) {
+      ready() {
+        super.ready();
+        this.addEventListener('focus', (e)=>this._onFocus(e), true);
+        this.addEventListener('blur', (e)=>this._onBlur(e), true);
+        this.addEventListener('down', (e)=>this._rippleDown(e));
+        this.addEventListener('up', (e)=>this._rippleUp(e));
+      }
+
+      _onFocus(event) {
         // Prevent second ripple when clicking causes both focus and down.
         if (!this._isDown) {
           this._rippleDown(event);
         }
-      },
+      }
 
-      _onBlur: function(event) {
+      _onBlur(event) {
         this._rippleUp(event);
-      },
+      }
 
-      _rippleDown: function(event) {
+      _rippleDown(event) {
         this._isDown = true;
         this.getRipple().downAction(event);
-      },
+      }
 
-      _rippleUp: function(event) {
+      _rippleUp(event) {
         this._isDown = false;
         this.getRipple().upAction(event);
-      },
-    });
+      }
+
+    }
+
+    customElements.define(ShopRippleContainer.is, ShopRippleContainer);
+
   </script>
 </dom-module>

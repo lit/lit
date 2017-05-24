@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 
 <dom-module id="shop-cart-data">
@@ -19,17 +19,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
-    Polymer({
+    class ShopCartData extends Polymer.Element {
 
-      is: 'shop-cart-data',
+      static get is() { return 'shop-cart-data'; }
 
-      properties: {
+      static get properties() { return {
 
         cart: {
           type: Array,
-          value: function() {
-            return [];
-          },
+          value: () => [],
           notify: true
         },
 
@@ -45,18 +43,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         }
 
-      },
+      }}
 
-      addItem: function(detail) {
-        var i = this._indexOfEntry(detail.item.name, detail.size);
+      addItem(detail) {
+        let i = this._indexOfEntry(detail.item.name, detail.size);
         if (i !== -1) {
           detail.quantity += this.cart[i].quantity;
         }
         this.setItem(detail);
-      },
+      }
 
-      setItem: function(detail) {
-        var i = this._indexOfEntry(detail.item.name, detail.size);
+      setItem(detail) {
+        let i = this._indexOfEntry(detail.item.name, detail.size);
         if (detail.quantity === 0) {
           // Remove item from cart when the new quantity is 0.
           if (i !== -1) {
@@ -71,36 +69,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.push('cart', detail);
           }
         }
-      },
+      }
 
-      clearCart: function() {
+      clearCart() {
         this.cart = [];
-      },
+      }
 
-      _computeNumItems: function() {
+      _computeNumItems() {
         if (this.cart) {
-          return this.cart.reduce(function(total, entry) {
+          return this.cart.reduce((total, entry) => {
             return total + entry.quantity;
           }, 0);
         }
 
         return 0;
-      },
+      }
 
-      _computeTotal: function() {
+      _computeTotal() {
         if (this.cart) {
-          return this.cart.reduce(function(total, entry) {
+          return this.cart.reduce((total, entry) => {
             return total + entry.quantity * entry.item.price;
           }, 0);
         }
 
         return 0;
-      },
+      }
 
-      _indexOfEntry: function(name, size) {
+      _indexOfEntry(name, size) {
         if (this.cart) {
-          for (var i = 0; i < this.cart.length; ++i) {
-            var entry = this.cart[i];
+          for (let i = 0; i < this.cart.length; ++i) {
+            let entry = this.cart[i];
             if (entry.item.name === name && entry.size === size) {
               return i;
             }
@@ -110,7 +108,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return -1;
       }
 
-    });
+    }
+
+    customElements.define(ShopCartData.is, ShopCartData);
 
   </script>
 

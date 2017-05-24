@@ -12,16 +12,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <base href="/">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
   <title>SHOP</title>
 
-  <link rel="shortcut icon" sizes="32x32" href="/images/shop-icon-32.png">
+  <link rel="shortcut icon" sizes="32x32" href="images/shop-icon-32.png">
 
   <meta name="theme-color" content="#fff">
-  <link rel="manifest" href="/manifest.json">
-
-  <link rel="import" href="/src/shop-app.html" async>
+  <link rel="manifest" href="manifest.json">
 
   <style>
 
@@ -54,23 +53,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <shop-app unresolved>SHOP</shop-app>
 
+  <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href="src/shop-app.html">
+
   <script>
     window.performance && performance.mark && performance.mark('index.html');
-
-    Polymer = {lazyRegister: true, dom: 'shadow'};
-
-    (function() {
-      if ('registerElement' in document
-          && 'import' in document.createElement('link')
-          && 'content' in document.createElement('template')) {
-        // platform is good!
-      } else {
-        // polyfill the platform!
-        var e = document.createElement('script');
-        e.src = '/bower_components/webcomponentsjs/webcomponents-lite.min.js';
-        document.body.appendChild(e);
-      }
-    })();
   </script>
 
 </body>

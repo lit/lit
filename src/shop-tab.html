@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-ripple-container.html">
 
@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 0;
         bottom: 0;
         left: 0;
-        @apply(--shop-tab-overlay);
+        @apply --shop-tab-overlay;
       }
 
       :host(.shop-tabs-overlay-static-above) #overlay {
@@ -41,12 +41,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     <div id="overlay"></div>
     <shop-ripple-container>
-      <content></content>
+      <slot></slot>
     </shop-ripple-container>
   </template>
   <script>
-    Polymer({
-      is: 'shop-tab'
-    });
+    class ShopTab extends Polymer.Element {
+      static get is() { return 'shop-tab'; }
+    }
+
+    customElements.define(ShopTab.is, ShopTab);
   </script>
 </dom-module>

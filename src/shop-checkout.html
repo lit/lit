@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-button.html">
@@ -48,7 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .billing-address-picker {
         margin: 28px 0;
         height: 20px;
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       .billing-address-picker > label {
@@ -57,11 +57,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .grid {
         margin-top: 40px;
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       .grid > section {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .grid > section:not(:first-child) {
@@ -69,17 +69,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .row {
-        @apply(--layout-horizontal);
-        @apply(--layout-end);
+        @apply --layout-horizontal;
+        @apply --layout-end;
       }
 
       .column {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
       }
 
       .row > .flex,
       .input-row > * {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .input-row > *:not(:first-child) {
@@ -115,168 +115,95 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <div class="main-frame">
-      <iron-pages selected="[[state]]" attr-for-selected="state">
+      <iron-pages id="pages" selected="[[state]]" attr-for-selected="state">
         <div state="init">
-          <form
-              id="checkoutForm"
-              is="iron-form"
-              method="post"
-              action="/data/sample_success_response.json"
+          <iron-form id="checkoutForm"
               on-iron-form-response="_didReceiveResponse"
               on-iron-form-presubmit="_willSendRequest">
+            <form method="post" action="data/sample_success_response.json">
 
-            <div class="subsection" visible$="[[!_hasItems]]">
-              <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
-            </div>
+              <div class="subsection" visible$="[[!_hasItems]]">
+                <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
+              </div>
 
-            <header class="subsection" visible$="[[_hasItems]]">
-              <h1>Checkout</h1>
-              <span>Shop is a demo app - form data will not be sent</span>
-            </header>
+              <header class="subsection" visible$="[[_hasItems]]">
+                <h1>Checkout</h1>
+                <span>Shop is a demo app - form data will not be sent</span>
+              </header>
 
-            <div class="subsection grid" visible$="[[_hasItems]]">
-              <section>
-                <h2 id="accountInfoHeading">Account Information</h2>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="email" id="accountEmail" name="accountEmail"
-                        placeholder="Email" autofocus required
-                        aria-labelledby="accountEmailLabel accountInfoHeading">
-                    <shop-md-decorator error-message="Invalid Email" aria-hidden="true">
-                      <label id="accountEmailLabel">Email</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="tel" id="accountPhone" name="accountPhone" pattern="\d{10,}"
-                        placeholder="Phone Number" required
-                        aria-labelledby="accountPhoneLabel accountInfoHeading">
-                    <shop-md-decorator error-message="Invalid Phone Number" aria-hidden="true">
-                      <label id="accountPhoneLabel">Phone Number</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <h2 id="shipAddressHeading">Shipping Address</h2>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="text" id="shipAddress" name="shipAddress" pattern=".{5,}"
-                        placeholder="Address" required
-                        aria-labelledby="shipAddressLabel shipAddressHeading">
-                    <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
-                      <label id="shipAddressLabel">Address</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="text" id="shipCity" name="shipCity" pattern=".{2,}"
-                        placeholder="City" required
-                        aria-labelledby="shipCityLabel shipAddressHeading">
-                    <shop-md-decorator error-message="Invalid City" aria-hidden="true">
-                      <label id="shipCityLabel">City</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="text" id="shipState" name="shipState" pattern=".{2,}"
-                        placeholder="State/Province" required
-                        aria-labelledby="shipStateLabel shipAddressHeading">
-                    <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
-                      <label id="shipStateLabel">State/Province</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                  <shop-input>
-                    <input type="text" id="shipZip" name="shipZip" pattern=".{4,}"
-                        placeholder="Zip/Postal Code" required
-                        aria-labelledby="shipZipLabel shipAddressHeading">
-                    <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
-                      <label id="shipZipLabel">Zip/Postal Code</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <div class="column">
-                  <label id="shipCountryLabel" class="shop-select-label">Country</label>
-                  <shop-select>
-                    <select id="shipCountry" name="shipCountry" required
-                        aria-labelledby="shipCountryLabel shipAddressHeading">
-                      <option value="US" selected>United States</option>
-                      <option value="CA">Canada</option>
-                    </select>
-                    <shop-md-decorator aria-hidden="true">
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-select>
-                </div>
-                <h2 id="billAddressHeading">Billing Address</h2>
-                <div class="billing-address-picker">
-                  <shop-checkbox>
-                    <input type="checkbox" id="setBilling" name="setBilling"
-                        checked$="[[hasBillingAddress]]" on-change="_toggleBillingAddress">
-                    <shop-md-decorator></shop-md-decorator aria-hidden="true">
-                  </shop-checkbox>
-                  <label for="setBilling">Use different billing address</label>
-                </div>
-                <div hidden$="[[!hasBillingAddress]]">
+              <div class="subsection grid" visible$="[[_hasItems]]">
+                <section>
+                  <h2 id="accountInfoHeading">Account Information</h2>
                   <div class="row input-row">
                     <shop-input>
-                      <input type="text" id="billAddress" name="billAddress" pattern=".{5,}"
-                          placeholder="Address" required$="[[hasBillingAddress]]"
-                          autocomplete="billing street-address"
-                          aria-labelledby="billAddressLabel billAddressHeading">
+                      <input type="email" id="accountEmail" name="accountEmail"
+                          placeholder="Email" autofocus required
+                          aria-labelledby="accountEmailLabel accountInfoHeading">
+                      <shop-md-decorator error-message="Invalid Email" aria-hidden="true">
+                        <label id="accountEmailLabel">Email</label>
+                        <shop-underline></shop-underline>
+                      </shop-md-decorator>
+                    </shop-input>
+                  </div>
+                  <div class="row input-row">
+                    <shop-input>
+                      <input type="tel" id="accountPhone" name="accountPhone" pattern="\d{10,}"
+                          placeholder="Phone Number" required
+                          aria-labelledby="accountPhoneLabel accountInfoHeading">
+                      <shop-md-decorator error-message="Invalid Phone Number" aria-hidden="true">
+                        <label id="accountPhoneLabel">Phone Number</label>
+                        <shop-underline></shop-underline>
+                      </shop-md-decorator>
+                    </shop-input>
+                  </div>
+                  <h2 id="shipAddressHeading">Shipping Address</h2>
+                  <div class="row input-row">
+                    <shop-input>
+                      <input type="text" id="shipAddress" name="shipAddress" pattern=".{5,}"
+                          placeholder="Address" required
+                          aria-labelledby="shipAddressLabel shipAddressHeading">
                       <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
-                        <label id="billAddressLabel">Address</label>
+                        <label id="shipAddressLabel">Address</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
                   </div>
                   <div class="row input-row">
                     <shop-input>
-                      <input type="text" id="billCity" name="billCity" pattern=".{2,}"
-                          placeholder="City" required$="[[hasBillingAddress]]"
-                          autocomplete="billing address-level2"
-                          aria-labelledby="billCityLabel billAddressHeading">
+                      <input type="text" id="shipCity" name="shipCity" pattern=".{2,}"
+                          placeholder="City" required
+                          aria-labelledby="shipCityLabel shipAddressHeading">
                       <shop-md-decorator error-message="Invalid City" aria-hidden="true">
-                        <label id="billCityLabel">City</label>
+                        <label id="shipCityLabel">City</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
                   </div>
                   <div class="row input-row">
                     <shop-input>
-                      <input type="text" id="billState" name="billState" pattern=".{2,}"
-                          placeholder="State/Province" required$="[[hasBillingAddress]]"
-                          autocomplete="billing address-level1"
-                          aria-labelledby="billStateLabel billAddressHeading">
+                      <input type="text" id="shipState" name="shipState" pattern=".{2,}"
+                          placeholder="State/Province" required
+                          aria-labelledby="shipStateLabel shipAddressHeading">
                       <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
-                        <label id="billStateLabel">State/Province</label>
+                        <label id="shipStateLabel">State/Province</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
                     <shop-input>
-                      <input type="text" id="billZip" name="billZip" pattern=".{4,}"
-                          placeholder="Zip/Postal Code" required$="[[hasBillingAddress]]"
-                          autocomplete="billing postal-code"
-                          aria-labelledby="billZipLabel billAddressHeading">
+                      <input type="text" id="shipZip" name="shipZip" pattern=".{4,}"
+                          placeholder="Zip/Postal Code" required
+                          aria-labelledby="shipZipLabel shipAddressHeading">
                       <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
-                        <label id="billZipLabel">Zip/Postal Code</label>
+                        <label id="shipZipLabel">Zip/Postal Code</label>
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-input>
                   </div>
                   <div class="column">
-                    <label id="billCountryLabel" class="shop-select-label">Country</label>
+                    <label id="shipCountryLabel" class="shop-select-label">Country</label>
                     <shop-select>
-                      <select id="billCountry" name="billCountry" required$="[[hasBillingAddress]]"
-                          autocomplete="billing country"
-                          aria-labelledby="billCountryLabel billAddressHeading">
+                      <select id="shipCountry" name="shipCountry" required
+                          aria-labelledby="shipCountryLabel shipAddressHeading">
                         <option value="US" selected>United States</option>
                         <option value="CA">Canada</option>
                       </select>
@@ -285,103 +212,176 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                       </shop-md-decorator>
                     </shop-select>
                   </div>
-                </div>
-              </section>
+                  <h2 id="billAddressHeading">Billing Address</h2>
+                  <div class="billing-address-picker">
+                    <shop-checkbox>
+                      <input type="checkbox" id="setBilling" name="setBilling"
+                          checked$="[[hasBillingAddress]]" on-change="_toggleBillingAddress">
+                      <shop-md-decorator></shop-md-decorator aria-hidden="true">
+                    </shop-checkbox>
+                    <label for="setBilling">Use different billing address</label>
+                  </div>
+                  <div hidden$="[[!hasBillingAddress]]">
+                    <div class="row input-row">
+                      <shop-input>
+                        <input type="text" id="billAddress" name="billAddress" pattern=".{5,}"
+                            placeholder="Address" required$="[[hasBillingAddress]]"
+                            autocomplete="billing street-address"
+                            aria-labelledby="billAddressLabel billAddressHeading">
+                        <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
+                          <label id="billAddressLabel">Address</label>
+                          <shop-underline></shop-underline>
+                        </shop-md-decorator>
+                      </shop-input>
+                    </div>
+                    <div class="row input-row">
+                      <shop-input>
+                        <input type="text" id="billCity" name="billCity" pattern=".{2,}"
+                            placeholder="City" required$="[[hasBillingAddress]]"
+                            autocomplete="billing address-level2"
+                            aria-labelledby="billCityLabel billAddressHeading">
+                        <shop-md-decorator error-message="Invalid City" aria-hidden="true">
+                          <label id="billCityLabel">City</label>
+                          <shop-underline></shop-underline>
+                        </shop-md-decorator>
+                      </shop-input>
+                    </div>
+                    <div class="row input-row">
+                      <shop-input>
+                        <input type="text" id="billState" name="billState" pattern=".{2,}"
+                            placeholder="State/Province" required$="[[hasBillingAddress]]"
+                            autocomplete="billing address-level1"
+                            aria-labelledby="billStateLabel billAddressHeading">
+                        <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
+                          <label id="billStateLabel">State/Province</label>
+                          <shop-underline></shop-underline>
+                        </shop-md-decorator>
+                      </shop-input>
+                      <shop-input>
+                        <input type="text" id="billZip" name="billZip" pattern=".{4,}"
+                            placeholder="Zip/Postal Code" required$="[[hasBillingAddress]]"
+                            autocomplete="billing postal-code"
+                            aria-labelledby="billZipLabel billAddressHeading">
+                        <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
+                          <label id="billZipLabel">Zip/Postal Code</label>
+                          <shop-underline></shop-underline>
+                        </shop-md-decorator>
+                      </shop-input>
+                    </div>
+                    <div class="column">
+                      <label id="billCountryLabel" class="shop-select-label">Country</label>
+                      <shop-select>
+                        <select id="billCountry" name="billCountry" required$="[[hasBillingAddress]]"
+                            autocomplete="billing country"
+                            aria-labelledby="billCountryLabel billAddressHeading">
+                          <option value="US" selected>United States</option>
+                          <option value="CA">Canada</option>
+                        </select>
+                        <shop-md-decorator aria-hidden="true">
+                          <shop-underline></shop-underline>
+                        </shop-md-decorator>
+                      </shop-select>
+                    </div>
+                  </div>
+                </section>
 
-              <section>
-                <h2>Payment Method</h2>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="text" id="ccName" name="ccName" pattern=".{3,}"
-                        placeholder="Cardholder Name" required
-                        autocomplete="cc-name">
-                    <shop-md-decorator error-message="Invalid Cardholder Name" aria-hidden="true">
-                      <label for="ccName">Cardholder Name</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <div class="row input-row">
-                  <shop-input>
-                    <input type="tel" id="ccNumber" name="ccNumber" pattern="[\d\s]{15,}"
-                        placeholder="Card Number" required
-                        autocomplete="cc-number">
-                    <shop-md-decorator error-message="Invalid Card Number" aria-hidden="true">
-                      <label for="ccNumber">Card Number</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <div class="row input-row">
-                  <div class="column">
-                    <label for="ccExpMonth">Expiry</label>
+                <section>
+                  <h2>Payment Method</h2>
+                  <div class="row input-row">
+                    <shop-input>
+                      <input type="text" id="ccName" name="ccName" pattern=".{3,}"
+                          placeholder="Cardholder Name" required
+                          autocomplete="cc-name">
+                      <shop-md-decorator error-message="Invalid Cardholder Name" aria-hidden="true">
+                        <label for="ccName">Cardholder Name</label>
+                        <shop-underline></shop-underline>
+                      </shop-md-decorator>
+                    </shop-input>
+                  </div>
+                  <div class="row input-row">
+                    <shop-input>
+                      <input type="tel" id="ccNumber" name="ccNumber" pattern="[\d\s]{15,}"
+                          placeholder="Card Number" required
+                          autocomplete="cc-number">
+                      <shop-md-decorator error-message="Invalid Card Number" aria-hidden="true">
+                        <label for="ccNumber">Card Number</label>
+                        <shop-underline></shop-underline>
+                      </shop-md-decorator>
+                    </shop-input>
+                  </div>
+                  <div class="row input-row">
+                    <div class="column">
+                      <label for="ccExpMonth">Expiry</label>
+                      <shop-select>
+                        <select id="ccExpMonth" name="ccExpMonth" required
+                             autocomplete="cc-exp-month" aria-label="Expiry month">
+                          <option value="01" selected>Jan</option>
+                          <option value="02">Feb</option>
+                          <option value="03">Mar</option>
+                          <option value="04">Apr</option>
+                          <option value="05">May</option>
+                          <option value="06">Jun</option>
+                          <option value="07">Jul</option>
+                          <option value="08">Aug</option>
+                          <option value="09">Sep</option>
+                          <option value="10">Oct</option>
+                          <option value="11">Nov</option>
+                          <option value="12">Dec</option>
+                        </select>
+                        <shop-md-decorator aria-hidden="true">
+                          <shop-underline></shop-underline>
+                        </shop-md-decorator>
+                      </shop-select>
+                    </div>
                     <shop-select>
-                      <select id="ccExpMonth" name="ccExpMonth" required
-                           autocomplete="cc-exp-month" aria-label="Expiry month">
-                        <option value="01" selected>Jan</option>
-                        <option value="02">Feb</option>
-                        <option value="03">Mar</option>
-                        <option value="04">Apr</option>
-                        <option value="05">May</option>
-                        <option value="06">Jun</option>
-                        <option value="07">Jul</option>
-                        <option value="08">Aug</option>
-                        <option value="09">Sep</option>
-                        <option value="10">Oct</option>
-                        <option value="11">Nov</option>
-                        <option value="12">Dec</option>
+                      <select id="ccExpYear" name="ccExpYear" required
+                          autocomplete="cc-exp-year" aria-label="Expiry year">
+                        <option value="2016" selected>2016</option>
+                        <option value="2017">2017</option>
+                        <option value="2018">2018</option>
+                        <option value="2019">2019</option>
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
                       </select>
                       <shop-md-decorator aria-hidden="true">
                         <shop-underline></shop-underline>
                       </shop-md-decorator>
                     </shop-select>
+                    <shop-input>
+                      <input type="tel" id="ccCVV" name="ccCVV" pattern="\d{3,4}"
+                          placeholder="CVV" required
+                          autocomplete="cc-csc">
+                      <shop-md-decorator error-message="Invalid CVV" aria-hidden="true">
+                        <label for="ccCVV">CVV</label>
+                        <shop-underline></shop-underline>
+                      </shop-md-decorator>
+                    </shop-input>
                   </div>
-                  <shop-select>
-                    <select id="ccExpYear" name="ccExpYear" required
-                        autocomplete="cc-exp-year" aria-label="Expiry year">
-                      <option value="2016" selected>2016</option>
-                      <option value="2017">2017</option>
-                      <option value="2018">2018</option>
-                      <option value="2019">2019</option>
-                      <option value="2020">2020</option>
-                      <option value="2021">2021</option>
-                      <option value="2022">2022</option>
-                      <option value="2023">2023</option>
-                      <option value="2024">2024</option>
-                      <option value="2025">2025</option>
-                      <option value="2026">2026</option>
-                    </select>
-                    <shop-md-decorator aria-hidden="true">
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-select>
-                  <shop-input>
-                    <input type="tel" id="ccCVV" name="ccCVV" pattern="\d{3,4}"
-                        placeholder="CVV" required
-                        autocomplete="cc-csc">
-                    <shop-md-decorator error-message="Invalid CVV" aria-hidden="true">
-                      <label for="ccCVV">CVV</label>
-                      <shop-underline></shop-underline>
-                    </shop-md-decorator>
-                  </shop-input>
-                </div>
-                <h2>Order Summary</h2>
-                <template is="dom-repeat" items="[[cart]]" as="entry">
-                  <div class="row order-summary-row">
-                    <div class="flex">[[entry.item.title]]</div>
-                    <div>[[_getEntryTotal(entry)]]</div>
+                  <h2>Order Summary</h2>
+                  <dom-repeat items="[[cart]]" as="entry">
+                    <template>
+                      <div class="row order-summary-row">
+                        <div class="flex">[[entry.item.title]]</div>
+                        <div>[[_getEntryTotal(entry)]]</div>
+                      </div>
+                    </template>
+                  </dom-repeat>
+                  <div class="row total-row">
+                    <div class="flex">Total</div>
+                    <div>[[_formatPrice(total)]]</div>
                   </div>
-                </template>
-                <div class="row total-row">
-                  <div class="flex">Total</div>
-                  <div>[[_formatPrice(total)]]</div>
-                </div>
-                <shop-button responsive id="submitBox">
-                  <input type="button" on-click="_submit" value="Place Order">
-                </shop-button>
-              </section>
-            </div>
-          </form>
+                  <shop-button responsive id="submitBox">
+                    <input type="button" on-click="_submit" value="Place Order">
+                  </shop-button>
+                </section>
+              </div>
+            </form>
+          </iron-form>
         </div>
 
         <!-- Success message UI -->
@@ -408,9 +408,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- Handles the routing for the success and error subroutes -->
     <app-route
+        active="{{routeActive}}"
+        data="{{routeData}}"
         route="[[route]]"
-        pattern="/:state"
-        on-active-changed="_activeRouteHandler">
+        pattern="/:state">
      </app-route>
 
     <!-- Show spinner when waiting for the server to repond -->
@@ -420,11 +421,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
-    Polymer({
+    class ShopCheckout extends Polymer.Element {
 
-      is: 'shop-checkout',
+      static get is() { return 'shop-checkout'; }
 
-      properties: {
+      static get properties() { return {
 
         /**
          * The route for the state. e.g. `success` and `error` are mounted in the
@@ -491,88 +492,100 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Boolean,
           computed: '_computeHasItem(cart.length)'
         }
-      },
 
-      _submit: function(e) {
+      }}
+
+      static get observers() { return [
+        '_updateState(routeActive, routeData)'
+      ]}
+
+      _submit(e) {
         if (this._validateForm()) {
           // To send the form data to the server:
           // 2) Remove the code below.
           // 3) Uncomment `this.$.checkoutForm.submit()`.
 
-          this.$.checkoutForm.fire('iron-form-presubmit', null, { bubbles: false });
+          this.$.checkoutForm.dispatchEvent(new CustomEvent('iron-form-presubmit', {
+            composed: true}));
 
-          this.debounce('_submitForm', function() {
-            this.$.checkoutForm.fire('iron-form-response', {
-              response: {
-                success: 1,
-                successMessage: 'Demo checkout process complete.'
-              }
-            }, { bubbles: false });
-          }, 1000);
+          this._submitFormDebouncer = Polymer.Debouncer.debounce(this._submitFormDebouncer,
+            Polymer.Async.timeOut.after(1000), () => {
+              this.$.checkoutForm.dispatchEvent(new CustomEvent('iron-form-response', {
+                composed: true, detail: {
+                  response: {
+                    success: 1,
+                    successMessage: 'Demo checkout process complete.'
+                  }
+                }}));
+            });
 
           // this.$.checkoutForm.submit();
         }
-      },
+      }
 
       /**
        * Sets the valid state and updates the location.
        */
-      _pushState: function(state) {
+      _pushState(state) {
         this._validState = state;
         this.set('route.path', state);
-      },
+      }
 
       /**
        * Checks that the `:state` subroute is correct. That is, the state has been pushed
        * after receiving response from the server. e.g. Users can only go to `/checkout/success`
        * if the server responsed with a success message.
        */
-      _activeRouteHandler: function(e) {
-        var route = e.target;
-
-        if (e.detail.value) {
-          var state = route.data.state;
+      _updateState(active, routeData) {
+        if (active && routeData) {
+          let state = routeData.state;
           if (this._validState === state) {
             this.state = state;
             this._validState = '';
             return;
           }
         }
-
         this.state = 'init';
-      },
+      }
 
       /**
        * Sets the initial state.
        */
-      _reset: function() {
-        var form = this.$.checkoutForm;
+      _reset() {
+        let form = this.$.checkoutForm;
 
         this._setWaiting(false);
         form.reset();
 
+        let nativeForm = form._form;
+        if (!nativeForm) {
+          return;
+        }
+
         // Remove the `aria-invalid` attribute from the form inputs.
-        for (var el, i = 0; el = form.elements[i], i < form.elements.length; i++) {
+        for (let el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
           el.removeAttribute('aria-invalid');
         }
-      },
+      }
 
       /**
        * Validates the form's inputs and adds the `aria-invalid` attribute to the inputs
        * that don't match the pattern specified in the markup.
        */
-      _validateForm: function() {
-        var form = this.$.checkoutForm;
-        var firstInvalid = false;
+      _validateForm() {
+        let form = this.$.checkoutForm;
+        let firstInvalid = false;
+        let nativeForm = form._form;
 
-        for (var el, i = 0; el = form.elements[i], i < form.elements.length; i++) {
+        for (let el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
           if (el.checkValidity()) {
             el.removeAttribute('aria-invalid');
           } else {
             if (!firstInvalid) {
               // announce error message
               if (el.nextElementSibling) {
-                this.fire('announce', el.nextElementSibling.getAttribute('error-message'));
+                this.dispatchEvent(new CustomEvent('announce', {bubbles: true, composed: true,
+                  detail: el.nextElementSibling.getAttribute('error-message')}));
               }
               if (el.scrollIntoViewIfNeeded) {
                 // safari, chrome
@@ -587,17 +600,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             el.setAttribute('aria-invalid', 'true');
           }
         }
-
         return !firstInvalid;
-      },
+      }
 
       /**
        * Adds the cart data to the payload that will be sent to the server
        * and updates the UI to reflect the waiting state.
        */
-      _willSendRequest: function(e) {
-        var form = e.target;
-        var body = form.request.body;
+      _willSendRequest(e) {
+        let form = e.target;
+        let body = form.ajax && form.ajax.body;
 
         this._setWaiting(true);
 
@@ -609,18 +621,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         body.cartItemsId = [];
         body.cartItemsQuantity = [];
 
-        this.cart.forEach(function(cartItem) {
+        this.cart.forEach((cartItem) => {
           body.cartItemsId.push(cartItem.item.name);
           body.cartItemsQuantity.push(cartItem.quantity);
         });
-      },
+      }
 
       /**
        * Handles the response from the server by checking the response status
        * and transitioning to the success or error UI.
        */
-      _didReceiveResponse: function(e) {
-        var response = e.detail.response;
+      _didReceiveResponse(e) {
+        let response = e.detail.response;
 
         this.response = response;
         this._setWaiting(true);
@@ -628,43 +640,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (response.success) {
           this._pushState('success');
           this._reset();
-          this.fire('clear-cart');
+          this.dispatchEvent(new CustomEvent('clear-cart', {bubbles: true, composed: true}));
         } else {
           this._pushState('error');
         }
-      },
+      }
 
-      _toggleBillingAddress: function(e) {
+      _toggleBillingAddress(e) {
         this.hasBillingAddress = e.target.checked;
 
         if (this.hasBillingAddress) {
           this.$.billAddress.focus();
         }
-      },
+      }
 
-      _computeHasItem: function(cartLength) {
+      _computeHasItem(cartLength) {
         return cartLength > 0;
-      },
+      }
 
-      _formatPrice: function(total) {
+      _formatPrice(total) {
         return isNaN(total) ? '' : '$' + total.toFixed(2);
-      },
+      }
 
-      _getEntryTotal: function(entry) {
+      _getEntryTotal(entry) {
         return this._formatPrice(entry.quantity * entry.item.price);
-      },
+      }
 
-      _visibleChanged: function(visible) {
+      _visibleChanged(visible) {
         if (!visible) {
           return;
         }
         // Reset the UI states
         this._reset();
         // Notify the page's title
-        this.fire('change-section', { title: 'Checkout' });
+        this.dispatchEvent(new CustomEvent('change-section', {
+          bubbles: true, composed: true, detail: { title: 'Checkout' }}));
       }
 
-    });
+    }
+
+    customElements.define(ShopCheckout.is, ShopCheckout);
 
   </script>
 
