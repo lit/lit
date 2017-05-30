@@ -5,7 +5,6 @@
 ##### Prerequisites
 
 Install [polymer-cli](https://github.com/Polymer/polymer-cli):
-(Need at least npm v0.3.0)
 
     npm install -g polymer-cli
 
@@ -15,7 +14,7 @@ Install [polymer-cli](https://github.com/Polymer/polymer-cli):
     mkdir shop
     cd shop
     polymer init shop
-    
+
     # Or cloning direct from GitHub
     git clone https://github.com/Polymer/shop.git
     cd shop
@@ -31,14 +30,38 @@ Install [polymer-cli](https://github.com/Polymer/polymer-cli):
 
 ### Build
 
+Build presets provide an easy way to define common build configurations in your `polymer.json` file. There are 2 build presets we put in `polymer.json` file in Shop:
+
+**es5-bundled**
+
+- js: {minify: true, compile: true}
+- css: {minify: true}
+- html: {minify: true}
+- bundle: true
+- addServiceWorker: true
+- addPushManifest: true
+- insertPrefetchLinks: true
+
+**es6-unbundled**
+
+- js: {minify: true, compile: false}
+- css: {minify: true}
+- html: {minify: true}
+- bundle: false
+- addServiceWorker: true
+- addPushManifest: true
+- insertPrefetchLinks: true
+
+Run the command to build the presets:
+
     polymer build
 
 ### Test the build
 
-This command serves the minified version of the app in an unbundled state, as it would be served by a push-compatible server:
+This command serves the `es5-bundled` build version of the app:
 
-    polymer serve build/unbundled
-    
-This command serves the minified version of the app generated using fragment bundling:
+    polymer serve build/es5-bundled
 
-    polymer serve build/bundled
+This command serves the `es6-unbundled` build version of the app:
+
+    polymer serve build/es6-unbundled
