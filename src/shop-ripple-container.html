@@ -41,8 +41,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         super.ready();
         this.addEventListener('focus', (e)=>this._onFocus(e), true);
         this.addEventListener('blur', (e)=>this._onBlur(e), true);
-        this.addEventListener('down', (e)=>this._rippleDown(e));
-        this.addEventListener('up', (e)=>this._rippleUp(e));
+        Polymer.Gestures.addListener(this, 'down', this._rippleDown);
+        Polymer.Gestures.addListener(this, 'up', this._rippleUp);
       }
 
       _onFocus(event) {
