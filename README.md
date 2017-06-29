@@ -18,7 +18,7 @@ sayHello('Kevin').renderTo(container);
 
 ## How it Works
 
-`html` does not return DOM nodes, like many other HTML with tagged template literal examples, but returns a `TemplateResult` - an object that contains a template and the values from expressions in the template.
+`html` does not return DOM nodes, unlike many other HTML with tagged template literal examples, but returns a `TemplateResult` - an object that contains a template and the values from expressions in the template.
 
 The template is created only the first time `html` is called on a particular template literal. On every subsequent call of `html` on the same template literal the exact same template is returned, only the values change.
 
@@ -96,7 +96,7 @@ class MyElement extends CoolBaseElement {
 }
 ```
 
-## Benefits over HTML templates:
+## Benefits over HTML templates
 
 `lit-html` has basically all of the benefits of HTML-in-JS systems like JSX.
 
