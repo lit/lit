@@ -17,10 +17,6 @@
 // in a Map.
 const templates = new Map<TemplateStringsArray, Template>();
 
-// TemplateInstances keep state to be able to efficiently update a container,
-// we store the instances here.
-const templateInstances = new WeakMap<Node, TemplateInstance>();
-
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
@@ -52,10 +48,10 @@ export class TemplateResult {
    * reevaluate the template literal and call `renderTo` of the new result.
    */
   renderTo(container: Element|DocumentFragment) {
-    let instance = templateInstances.get(container);
+    let instance = container.__templateInstance;
     if (instance === undefined) {
       instance = new TemplateInstance(this.template);
-      templateInstances.set(container, instance);
+      container.__templateInstance = instance;
       instance.appendTo(container, this.values);
     } else {
       instance.update(this.values);
