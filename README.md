@@ -16,6 +16,39 @@ sayHello('Kevin').renderTo(container);
 // updates to <div>Hello Kevin!</div>, but only updates the ${name} part
 ```
 
+## API
+
+### `html(callSite, ...expressions): TemplateResult`
+`html` is a template tag for [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), which parses the literal as HTML and returns a `TemplateResult`.
+
+### `TemplateResult`
+
+`TemplateResult` is a class that holds a `Template` object parsed from a template literal, and the values from its expressions.
+
+#### `renderTo(container): void`
+
+Renders a `TemplateResult`'s tempalte to a container using the result's values. For re-renders, only the dynamic parts are updated.
+
+#### Property `template`
+
+A reference to the parsed `Template` object.
+
+#### Property `values`
+
+The values returned by the tempalte literal's expressions.
+
+## Status
+
+`lit-html` is very new, under initial development, and not production-ready.
+
+ * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 1.0 and Chrome Canary (with the Experimental Web Platform features flag on).
+ * It has a growing test suite, but it has only been run manually on Chrome Canary and Safari 10.1.
+ * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
+ * It has not been benchmarked thouroughly yet.
+ * The API is likely to change, especially `renderTo()` and the `Template` class used by extensions.
+
+Even without a build configuration, `lit-html` minified with `babili` and gzipped measures in at less than 1.5k. We will strive to keep the size extremely small.
+
 ## How it Works
 
 `html` does not return DOM nodes, unlike many other HTML with tagged template literal examples, but returns a `TemplateResult` - an object that contains a template and the values from expressions in the template - which can then be used to create or update DOM.
