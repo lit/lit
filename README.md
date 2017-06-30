@@ -281,36 +281,39 @@ Some examples of possible extensions:
 
 ## API
 
-### Function `html(callSite: TemplateStringsArray, ...expressions: any[]): TemplateResult`
+### Function `html`
+
+`html(callSite: TemplateStringsArray, ...expressions: any[]): TemplateResult`
+
 `html` is a template tag for [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), which parses the literal as HTML and returns a `TemplateResult`.
 
 ### Class `TemplateResult`
 
 `TemplateResult` is a class that holds a `Template` object parsed from a template literal and the values from its expressions.
 
-#### Method `renderTo(container: Element): void`
+  * Method `renderTo(container: Element): void`
 
-Renders a `TemplateResult`'s template to an element using the result's values. For re-renders, only the dynamic parts are updated.
+    Renders a `TemplateResult`'s template to an element using the result's values. For re-renders, only the dynamic parts are updated.
 
-#### Property `template: Template`
+  * Property `template: Template`
 
-A reference to the parsed `Template` object.
+    A reference to the parsed `Template` object.
 
-#### Property `values: any[]`
+  *  Property `values: any[]`
 
-The values returned by the template literal's expressions.
+    The values returned by the template literal's expressions.
 
 ### Class `Template`
 
-#### Property `element: HTMLTemplateElement`
+  *  Property `element: HTMLTemplateElement`
 
-#### Property `parts: Part[]`
+  *  Property `parts: Part[]`
 
 ### Interface `Part`
 
-#### Property `type: string`
+  *  Property `type: string`
 
-#### Method `update(instance: TemplateInstance, node: Node, values: Iterator<any>): void`
+  *  Method `update(instance: TemplateInstance, node: Node, values: Iterator<any>): void`
 
 ## Future Work
 
