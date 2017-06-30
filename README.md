@@ -142,6 +142,20 @@ The `html` template tag is just a variable, probably an imported function. You c
 
 JSX translates to function calls, and can't be manipulated on a per-template basis at runtime. `lit-html` produces a template object at runtime, which can be further processed by libraries like ShadyCSS.
 
+### CSS-compatible syntax
+
+Because template literals use `${}` as the expression delimiter, CSS's use of `{}` isn't interpreted as an expression. You can include style tags in your templates as you would expect:
+
+```javascript
+html`
+  <style>
+    :host {
+      background: burlywood;
+    }
+  </style>
+`
+```
+
 ## Features
 
 ### Simple expressions and literals
