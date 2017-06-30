@@ -106,7 +106,15 @@ export class AttributePart implements TemplatePart {
     for (let i = 0; i < strings.length; i++) {
       text += strings[i];
       if (i < strings.length - 1) {
-        text += values.next().value;
+        const v = values.next().value;
+        if (v && typeof v !== 'string' && v[Symbol.iterator]) {
+          for (const t of v) {
+            // TODO: we need to recursively call getValue into iterables...
+            text += t;
+          }
+        } else {
+          text += v;
+        }
       }
     }
     (node as Element).setAttribute(this.name, text);

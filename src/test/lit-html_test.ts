@@ -157,6 +157,12 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="123"></div>');
       });
 
+      test('renders an array to an attribute', () => {
+        const container = document.createElement('div');
+        html`<div foo=${[1,2,3]}></div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div foo="123"></div>');
+      });
+
       test('renders a combination of stuff', () => {
         const container = document.createElement('div');
         html`
