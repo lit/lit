@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, TemplateResult, AttributePart} from '../lit-html.js';
+import {html, TemplateResult, AttributePart, TemplatePart, TemplateInstance} from '../lit-html.js';
 
 declare const chai: any;
 declare const mocha: any;
@@ -96,13 +96,13 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div></div>');
       });
 
-      test('renders thunks 1', () => {
+      test('renders a thunk', () => {
         const container = document.createElement('div');
         html`<div>${(_:any)=>123}</div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
-      test('renders thunks 2', () => {
+      test('renders chained thunks', () => {
         const container = document.createElement('div');
         html`<div>${(_:any)=>(_:any)=>123}</div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div>123</div>');
@@ -131,6 +131,39 @@ suite('lit-html', () => {
         const container = document.createElement('div');
         html`<div>${[1,2,3].map((i)=>html`${i}`)}</div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div>123</div>');
+      });
+
+      test('renders to an attribute', () => {
+        const container = document.createElement('div');
+        html`<div foo="${'bar'}"></div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div foo="bar"></div>');
+      });
+
+      test('renders to an attribute wihtout quotes', () => {
+        const container = document.createElement('div');
+        html`<div foo=${'bar'}></div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div foo="bar"></div>');
+      });
+
+      test('renders interpolation to an attribute', () => {
+        const container = document.createElement('div');
+        html`<div foo="1${'bar'}2${'baz'}3"></div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
+      });
+
+      test('renders a combination of stuff', () => {
+        const container = document.createElement('div');
+        html`
+            <div foo="${'bar'}">
+              ${'baz'}
+              <p>${'qux'}</p>
+            </div>`
+          .renderTo(container);
+        assert.equal(container.innerHTML, `
+            <div foo="bar">
+              baz
+              <p>qux</p>
+            </div>`);
       });
 
     });
@@ -171,7 +204,7 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>bbbbar</div>');
       });
 
-      test('renders attributes', () => {
+      test('renders and updates attributes', () => {
         const container = document.createElement('div');
         let foo = 'foo';
         let bar = 'bar';
@@ -212,6 +245,63 @@ suite('lit-html', () => {
 
         render(false).renderTo(container);
         assert.equal(container.innerHTML, '<h2>bar</h2>baz');
+      });
+
+    });
+
+    suite('extensibility', () => {
+
+      test('can replace parts with custom types', () => {
+
+        // This test demonstrates how a flavored layer on top of lit-html could
+        // modify the parsed Template to implement different behavior, like setting
+        // properties instead of attributes.
+
+        // Note that because the template parse phase captures the pre-parsed
+        // attribute names from the template strings, we can retreive the original
+        // case of the names!
+
+        class PropertyPart implements TemplatePart {
+          type: 'property';
+          index: number;
+          name: string;
+          strings: string[];
+
+          constructor(index: number, name: string, strings: string[]) {
+            this.index = index;
+            this.name = name;
+            this.strings = strings;
+          }
+
+          update(_instance: TemplateInstance, node: Node, values: Iterator<any>) {
+            console.assert(node.nodeType === Node.ELEMENT_NODE);
+            const s = this.strings;
+
+            if (s[0] === '' && s[s.length - 1] === '') { 
+              // An expression that occupies the whole attribute value will leave
+              // leading and trailing empty strings.
+              (node as any)[this.name] = values.next().value;
+            } else {
+              // Interpolation, so interpolate
+              let text = '';
+              for (let i = 0; i < s.length; i++) {
+                text += s[i];
+                if (i < s.length - 1) {
+                  text += values.next().value;
+                }
+              }
+              (node as any)[this.name] = text;
+            }
+          }
+        }
+
+        const container = document.createElement('div');
+        const t = html`<div someProp="${123}"></div>`;
+        const part = t.template.parts[0] as AttributePart;
+        t.template.parts[0] = new PropertyPart(part.index, part.rawName, part.strings);
+        t.renderTo(container);
+        assert.equal(container.innerHTML, '<div></div>');
+        assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
 
     });

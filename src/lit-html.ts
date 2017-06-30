@@ -31,7 +31,7 @@ export function html(strings: TemplateStringsArray, ...values: any[]): TemplateR
 }
 
 /**
- * The return type of `html`, which holds a template and the values from
+ * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
  */
 export class TemplateResult {
@@ -62,27 +62,87 @@ export class TemplateResult {
 
 const exprMarker = '{{}}';
 
-export interface PartBase {
+/**
+ * A placeholder for a dynamic expression in an HTML template.
+ * 
+ * There are two built-in part types: AttributePart and NodePart. NodeParts
+ * always represent a single dynamic expression, while AttributeParts may
+ * represent as many expressions are contained in the attribute.
+ * 
+ * A Template's parts are mutable, so parts can be replaced or modified
+ * (possibly to implement different template semantics). The contract is that
+ * parts can only be replaced, not removed, added or reordered, and parts must
+ * always consume the correct number of values in their `update()` method.
+ * 
+ * TODO(justinfagnani): That requirement is a little fragile. A
+ * TemplateInstance could instead be more careful about which values it gives
+ * to Part.update().
+ */
+export interface TemplatePart {
   type: string;
   index: number;
+
+  update(instance: TemplateInstance, node: Node, values: Iterator<any>): void;
 }
 
-export interface AttributePart extends PartBase{
+export class AttributePart implements TemplatePart {
   type: 'attribute';
+  index: number;
   name: string;
   rawName: string;
   strings: string[];
+
+  constructor(index: number, name: string, rawName: string, strings: string[]) {
+    this.index = index;
+    this.name = name;
+    this.rawName = rawName;
+    this.strings = strings;
+  }
+
+  update(_instance: TemplateInstance, node: Node, values: Iterator<any>) {
+    console.assert(node.nodeType === Node.ELEMENT_NODE);
+    const strings = this.strings;
+    let text = '';
+    for (let i = 0; i < strings.length; i++) {
+      text += strings[i];
+      if (i < strings.length - 1) {
+        text += values.next().value;
+      }
+    }
+    (node as Element).setAttribute(this.name, text);
+  }
 }
 
-export interface NodePart extends PartBase {
+export class NodePart implements TemplatePart {
   type: 'node';
-}
+  index: number;
 
-export type Part = NodePart | AttributePart;
+  constructor(index: number) {
+    this.index = index;
+  }
+
+  update(instance: TemplateInstance, node: Node, values: Iterator<any>): void {
+    console.assert(node.nodeType === Node.TEXT_NODE);
+
+    const value = values.next().value;
+
+    if (value && typeof value !== 'string' && value[Symbol.iterator]) {
+      const fragment = document.createDocumentFragment();
+      for (const item of value) {
+        const marker = new Text();
+        fragment.appendChild(marker);
+        instance.renderValue(item, marker);
+      }
+      instance.renderValue(fragment, node);          
+    } else {
+      instance.renderValue(value, node);
+    }
+  }
+}
 
 export class Template {
   private _strings: TemplateStringsArray;
-  parts: Part[] = [];
+  parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
   constructor(strings: TemplateStringsArray) {
@@ -98,6 +158,7 @@ export class Template {
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
+    const attributesToRemove = [];
     while (walker.nextNode()) {
       index++;
       const node = walker.currentNode;
@@ -112,14 +173,8 @@ export class Template {
             partIndex += strings.length - 1;
             const match = attributeString.match(/((?:\w|[.\-_])+)=?("|')?$/);
             const rawName = match![1];
-            this.parts.push({
-              type: 'attribute',
-              name: attribute.name,
-              rawName,
-              index,
-              strings,
-            });
-            // TODO: remove the attribute?
+            this.parts.push(new AttributePart(index, attribute.name, rawName, strings));
+            attributesToRemove.push(attribute);
           }
         }
       } else if (node.nodeType === Node.TEXT_NODE) {
@@ -135,7 +190,7 @@ export class Template {
             if (i < strings.length - 1) {
               const partNode = new Text();
               node.parentNode!.insertBefore(partNode, node);
-              this.parts.push({type: 'node',index: index++});
+              this.parts.push(new NodePart(index));
             }
           }
           nodesToRemove.push(node);
@@ -146,6 +201,9 @@ export class Template {
     // Remove text binding nodes after the walk to not disturb the TreeWalker
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
+    }
+    for (const a of attributesToRemove) {
+      a.ownerElement.removeAttribute(a.name);
     }
   }
 
@@ -164,7 +222,7 @@ export class Template {
 
 export class TemplateInstance {
   private _template: Template;
-  private _parts: {part: Part, node: Node}[] = [];
+  private _parts: {part: TemplatePart, node: Node}[] = [];
   private _startNode: Node;
   private _endNode: Node;
 
@@ -176,6 +234,13 @@ export class TemplateInstance {
     const fragment = this._clone();
     this.update(values);
     container.appendChild(fragment);
+  }
+
+  update(values: any[]) {
+    const valuesIterator = this._getValues(values);
+    for (const {part, node} of this._parts) {
+      part.update(this, node, valuesIterator);
+    }
   }
 
   private _getFragment() {
@@ -209,54 +274,27 @@ export class TemplateInstance {
     return fragment;
   }
 
-  update(values: any[]) {
-    let valueIndex = 0;
-    for (const {part, node} of this._parts) {
- 
-      if (part.type === 'attribute') {
-        console.assert(node.nodeType === Node.ELEMENT_NODE);
-        const strings = part.strings;
-        let text = '';
-        for (let i = 0; i < strings.length; i++) {
-          text += strings[i];
-          if (i < strings.length - 1) {
-            text += values[valueIndex++];
-          }
-        }
-        (node as Element).setAttribute(part.name, text);
-      } else {
-        console.assert(node.nodeType === Node.TEXT_NODE);
-
-        const value = this.getValue(values[valueIndex++]);
-
-        if (value && typeof value !== 'string' && value[Symbol.iterator]) {
-          const fragment = document.createDocumentFragment();
-          for (const item of value) {
-            const marker = new Text();
-            fragment.appendChild(marker);
-            this._renderValue(item, marker);
-          }
-          this._renderValue(fragment, node);          
-        } else {
-          this._renderValue(value, node);
+  /**
+   * Converts a raw values array passed to a template tag into an iterator so
+   * that TemplateParts can consume it while updating.
+   * 
+   * Contains a trampoline to evaluate thunks until they return a non-function value.
+   */
+  private * _getValues(values: any[]) {
+    for (let value of values) {
+      while (typeof value === 'function') {
+        try {
+          value = value();
+        } catch (e) {
+          console.error(e);
+          yield;
         }
       }
+      yield value;
     }
   }
 
-  getValue(value: any): any {
-    while (typeof value === 'function') {
-      try {
-        value = value();
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-    }
-    return value;
-  }
-
-  private _renderValue(value: any, node: Node) {
+  renderValue(value: any, node: Node) {
     let templateInstance = node.__templateInstance as TemplateInstance;
     if (templateInstance !== undefined && (!(value instanceof TemplateResult) || templateInstance._template !== value.template)) {
       this._cleanup(node);
