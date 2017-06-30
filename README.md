@@ -16,32 +16,11 @@ sayHello('Kevin').renderTo(container);
 // updates to <div>Hello Kevin!</div>, but only updates the ${name} part
 ```
 
-## API
-
-### `html(callSite, ...expressions): TemplateResult`
-`html` is a template tag for [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), which parses the literal as HTML and returns a `TemplateResult`.
-
-### `TemplateResult`
-
-`TemplateResult` is a class that holds a `Template` object parsed from a template literal, and the values from its expressions.
-
-#### `renderTo(container): void`
-
-Renders a `TemplateResult`'s tempalte to a container using the result's values. For re-renders, only the dynamic parts are updated.
-
-#### Property `template`
-
-A reference to the parsed `Template` object.
-
-#### Property `values`
-
-The values returned by the tempalte literal's expressions.
-
 ## Status
 
 `lit-html` is very new, under initial development, and not production-ready.
 
- * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 1.0 and Chrome Canary (with the Experimental Web Platform features flag on).
+ * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1 and Chrome Canary (with the Experimental Web Platform features flag on).
  * It has a growing test suite, but it has only been run manually on Chrome Canary and Safari 10.1.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
  * It has not been benchmarked thouroughly yet.
@@ -66,7 +45,7 @@ The template object is based on an actual HTML `<template>` element and created 
 
 When a template is rendered it is cloned along with the part metadata. Values are set via `setAttribute()` and `textContent`. Some state is stored on the container to indicate that a template was already rendered there. Subsequent renders use that state to update only the dynamic parts, not the entire template instance.
 
-### Rough Algorithm
+### Rough Algorithm Outline
 
 #### `html`:
 
@@ -271,9 +250,42 @@ Some examples of possible extensions:
  * Event handlers: Specially named attributes can install event handlers.
  * HTML values: `lit-html` sets `textContent` by default. Extensions could allow setting `innerHTML` or injecting existing DOM nodes.
 
-## Small Size
+### Small Size
 
 `lit-html` is less than 1.5k minified and gzipped.
+
+## API
+
+### Function `html(callSite: TemplateStringsArray, ...expressions: any[]): TemplateResult`
+`html` is a template tag for [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), which parses the literal as HTML and returns a `TemplateResult`.
+
+### Class `TemplateResult`
+
+`TemplateResult` is a class that holds a `Template` object parsed from a template literal and the values from its expressions.
+
+#### Method `renderTo(container: Element): void`
+
+Renders a `TemplateResult`'s template to an element using the result's values. For re-renders, only the dynamic parts are updated.
+
+#### Property `template: Template`
+
+A reference to the parsed `Template` object.
+
+#### Property `values: any[]`
+
+The values returned by the template literal's expressions.
+
+### Class `Template`
+
+#### Property `element: HTMLTemplateElement`
+
+#### Property `parts: Part[]`
+
+### Interface `Part`
+
+#### Property `type: string`
+
+#### Method `update(instance: TemplateInstance, node: Node, values: Iterator<any>): void`
 
 ## Future Work
 
