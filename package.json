@@ -1,22 +1,23 @@
 {
   "name": "lit-html",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/lit-html",
   "main": "lib/lit-html.js",
+  "module": "lib/lit-html.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"run polyserve --npm and open a browser w/ module support"
+    "build": "tsc",
+    "test": "echo \"run polyserve --npm and open /test/index.html a browser with module support\""
   },
-  "author": "",
-  "dependencies": {
-    "@types/chai": "^4.0.1",
-    "chai": "^4.0.2"
-  },
+  "author": "The Polymer Authors",
   "devDependencies": {
-    "mocha": "^3.4.2"
+    "@types/chai": "^4.0.1",
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2",
+    "typescript": "^2.4.1"
   }
 }
