@@ -202,3 +202,48 @@ In order to support stateful repeat/if like `dom-repeat` and `dom-if` a value sh
 ### Async Support
 
 Promises and Async Iterables should be supported natively.
+
+### Higher-Order Templates examples
+
+#### `If(cond, then, else)`
+
+An if-directive that retains the `then` and `else` _instances_ for fast switching between the two states, like `<dom-if>`.
+
+Example:
+
+```javascript
+const render = () => html`
+  ${If(state === 'loading',
+    html`<div>Loading...</div>`,
+    html`<p>${message}</p>`)}
+`;
+```
+
+#### `Repeat(items, keyfn, template)`
+
+A loop that supports efficient re-ordering by using item keys.
+
+Example:
+
+```javascript
+const render = () => html`
+  <ul>
+    ${Repeat(items, (i) => i.id, (i, index) => html`
+      <li>${index}: ${i.name}</li>`)}
+  </ul>
+`;
+```
+
+#### `Guard(guardExpr, template)`
+
+Only re-renders an instance if the guard expression has changed since the last render.
+
+Since all expressions in a template literal are evaluated when the literal is evaluated, you may want to only evaluate some expensive expressions when certain other values (probably it's dependencies change). `Guard` would memoize function and only call it if the guard expression changed.
+
+Example:
+
+```javascript
+const render = () => html`
+  <div>Current User: ${Guard(user, () => user.getProfile())}</div>
+`;
+```
