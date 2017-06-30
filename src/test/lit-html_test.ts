@@ -259,6 +259,18 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<h2>bar</h2>baz');
       });
 
+      test('updates arrays', () => {
+        const container = document.createElement('div');
+        let items = [1, 2, 3];
+        const t = () => html`<div>${items}</div>`;
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div>123</div>');
+
+        items = [3, 2, 1];
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div>321</div>');
+      });
+
     });
 
     suite('extensibility', () => {

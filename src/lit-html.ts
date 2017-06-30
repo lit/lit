@@ -48,7 +48,7 @@ export class TemplateResult {
    * reevaluate the template literal and call `renderTo` of the new result.
    */
   renderTo(container: Element|DocumentFragment) {
-    let instance = container.__templateInstance;
+    let instance = container.__templateInstance as TemplateInstance;
     if (instance === undefined) {
       instance = new TemplateInstance(this.template);
       container.__templateInstance = instance;
@@ -231,8 +231,8 @@ export class Template {
 export class TemplateInstance {
   private _template: Template;
   private _parts: {part: TemplatePart, node: Node}[] = [];
-  private _startNode: Node;
-  private _endNode: Node;
+  startNode: Node;
+  endNode: Node;
 
   constructor(template: Template) {
     this._template = template;
@@ -253,8 +253,8 @@ export class TemplateInstance {
 
   private _getFragment() {
     const fragment = this._clone();
-    this._startNode = fragment.insertBefore(new Text(), fragment.firstChild);
-    this._endNode = fragment.appendChild(new Text());
+    this.startNode = fragment.insertBefore(new Text(), fragment.firstChild);
+    this.endNode = fragment.appendChild(new Text());
     return fragment;
   }
 
@@ -309,6 +309,10 @@ export class TemplateInstance {
     }
 
     if (value instanceof DocumentFragment) {
+      node.__templateInstance = {
+        startNode: value.firstChild!,
+        endNode: value.lastChild!,
+      };
       node.parentNode!.insertBefore(value, node.nextSibling);
     } else if (value instanceof TemplateResult) {
       if (templateInstance === undefined || value.template !== templateInstance._template) {
@@ -329,12 +333,12 @@ export class TemplateInstance {
   private _cleanup(node: Node) {
     const instance = node.__templateInstance!;
     // We had a previous template instance here, but don't now: clean up
-    let cleanupNode: Node|null = instance._startNode;
+    let cleanupNode: Node|null = instance.startNode;
     while (cleanupNode !== null) {
       const n = cleanupNode;
       cleanupNode = cleanupNode.nextSibling;
       n.parentNode!.removeChild(n);
-      if (cleanupNode === instance._endNode) {
+      if (n === instance.endNode) {
         break;
       }
     }
@@ -345,7 +349,10 @@ export class TemplateInstance {
 
 declare global {
   interface Node {
-    __templateInstance?: TemplateInstance;
+    __templateInstance?: {
+      startNode: Node;
+      endNode: Node;
+    };
     __startMarker?: Node;
   }
 }
