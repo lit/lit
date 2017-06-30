@@ -255,15 +255,27 @@ const render = () => html`
 
 These features compose so you can include iterables of thunks that return arrays of nested templates, etc...
 
+### Extensibility
+
+`lit-html` is designed to be extended by more opinionated flavors of template syntaxes. For instance, `lit-html` doesn't support declarative event handlers or property setting out-of-the-box. A layer on top can add that while exposing the same API, by wrapping the `html` tag in a new tag and modifying the result.
+
+This is accomplished by allowing the `TemplatePart`s of a template, which are responsible for setting new values into the DOM,  to be replaced with new implementations.
+
+Some examples of possible extensions:
+
+ * Property setting: Attribute expressions in templates could set properties on node.
+ * Event handlers: Specially named attributes can install event handlers.
+ * HTML values: `lit-html` sets `textContent` by default. Extensions could allow setting `innerHTML` or injecting existing DOM nodes.
+
+## Small Size
+
+`lit-html` is less than 1.5k minified and gzipped.
+
 ## Future Work
 
 ### Stateful Values
 
 In order to support stateful repeat/if like `dom-repeat` and `dom-if` a value should be able to control it's rendering somewhat. TBD.
-
-### Layering
-
-`lit-html` doesn't support declarative event handlers or property setting. A layer on top should be able to add that while exposing the same API.
 
 ### Async Support
 
