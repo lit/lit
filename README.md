@@ -205,6 +205,10 @@ const render = () => html`foo is ${foo}`;
 const render = () => html`<div class="${blue}"></div>`;
 ```
 
+### Safety
+
+Because `lit-html` templates are parsed before values are set, they are safer than generating HTML via string-concatenation. Attributes are set via `setAttribute()` and node text via `textContent`, so the structure of template instances cannot be accidentally changed by expression values, and values are automatically escaped.
+
 ### Case-sensitive Attribute Names
 
 Attribute parts store both the HTML-parsed name and the raw name pulled from the string literal. This allows extensions, such as those that might set properties on elements using attribute syntax, to get case-sensitive names.
