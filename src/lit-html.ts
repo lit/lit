@@ -58,6 +58,19 @@ export class TemplateResult {
     }
   }
 
+  renderAt(marker: Node) {
+    let instance = marker.__templateInstance as TemplateInstance;
+    if (instance === undefined) {
+      instance = new TemplateInstance(this.template);
+      marker.__templateInstance = instance;
+      const fragment = instance.getFragment();
+      instance.update(this.values);
+      marker.parentNode!.insertBefore(fragment, marker.nextSibling);
+    } else {
+      instance.update(this.values);
+    }    
+  }
+
 }
 
 const exprMarker = '{{}}';
@@ -82,7 +95,7 @@ export interface TemplatePart {
   type: string;
   index: number;
 
-  update(instance: TemplateInstance, node: Node, values: Iterator<any>): void;
+  update(instance: TemplateInstance, node: Node, values: Values): void;
 }
 
 export class AttributePart implements TemplatePart {
@@ -99,14 +112,14 @@ export class AttributePart implements TemplatePart {
     this.strings = strings;
   }
 
-  update(_instance: TemplateInstance, node: Node, values: Iterator<any>) {
+  update(_instance: TemplateInstance, node: Node, values: Values) {
     console.assert(node.nodeType === Node.ELEMENT_NODE);
     const strings = this.strings;
     let text = '';
     for (let i = 0; i < strings.length; i++) {
       text += strings[i];
       if (i < strings.length - 1) {
-        const v = values.next().value;
+        const v = values.nextValue(node);
         if (v && typeof v !== 'string' && v[Symbol.iterator]) {
           for (const t of v) {
             // TODO: we need to recursively call getValue into iterables...
@@ -129,10 +142,10 @@ export class NodePart implements TemplatePart {
     this.index = index;
   }
 
-  update(instance: TemplateInstance, node: Node, values: Iterator<any>): void {
+  update(instance: TemplateInstance, node: Node, values: Values): void {
     console.assert(node.nodeType === Node.TEXT_NODE);
 
-    const value = values.next().value;
+    const value = values.nextValue(node);
 
     if (value && typeof value !== 'string' && value[Symbol.iterator]) {
       const fragment = document.createDocumentFragment();
@@ -228,9 +241,34 @@ export class Template {
 
 }
 
+export class Values {
+  private _values: Iterator<any>;
+
+  constructor(values: Iterable<any>) {
+    this._values = values[Symbol.iterator]();
+  }
+
+  nextValue(node: Node) {
+    const next = this._values.next();
+    if (next.done) {
+      throw new Error('No more values');
+    }
+    let value = next.value;
+    while (typeof value === 'function') {
+      try {
+        value = value(node);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+    }
+    return value;
+  }
+}
+
 export class TemplateInstance {
-  private _template: Template;
-  private _parts: {part: TemplatePart, node: Node}[] = [];
+  _template: Template;
+  _parts: {part: TemplatePart, node: Node}[] = [];
   startNode: Node;
   endNode: Node;
 
@@ -245,13 +283,13 @@ export class TemplateInstance {
   }
 
   update(values: any[]) {
-    const valuesIterator = this._getValues(values);
+    const valuesList = new Values(values);
     for (const {part, node} of this._parts) {
-      part.update(this, node, valuesIterator);
+      part.update(this, node, valuesList);
     }
   }
 
-  private _getFragment() {
+  getFragment() {
     const fragment = this._clone();
     this.startNode = fragment.insertBefore(new Text(), fragment.firstChild);
     this.endNode = fragment.appendChild(new Text());
@@ -288,21 +326,26 @@ export class TemplateInstance {
    * 
    * Contains a trampoline to evaluate thunks until they return a non-function value.
    */
-  private * _getValues(values: any[]) {
-    for (let value of values) {
-      while (typeof value === 'function') {
-        try {
-          value = value();
-        } catch (e) {
-          console.error(e);
-          yield;
-        }
+  // private * _getValues(values: any[]) {
+  //   for (let value of values) {
+  //     // console.log('value', value, typeof value === 'function');
+  //   }
+  // }
+
+  getValue(value: any, node: Node) {
+    while (typeof value === 'function') {
+      try {
+        value = value(node);
+      } catch (e) {
+        console.error(e);
+        return;
       }
-      yield value;
     }
+    return value;
   }
 
   renderValue(value: any, node: Node) {
+    // console.log('renderValue', value, node);
     let templateInstance = node.__templateInstance as TemplateInstance;
     if (templateInstance !== undefined && (!(value instanceof TemplateResult) || templateInstance._template !== value.template)) {
       this._cleanup(node);
@@ -322,7 +365,7 @@ export class TemplateInstance {
         // TODO: Add keys and check for key equality also
         node.textContent = '';
         templateInstance = node.__templateInstance = new TemplateInstance(value.template);
-        const fragment = templateInstance._getFragment();
+        const fragment = templateInstance.getFragment();
         node.parentNode!.insertBefore(fragment, node.nextSibling);
       }
       templateInstance.update(value.values);

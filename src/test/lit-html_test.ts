@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, TemplateResult, AttributePart, TemplatePart, TemplateInstance} from '../lit-html.js';
+import {html, TemplateResult, AttributePart, TemplatePart, TemplateInstance, Values} from '../lit-html.js';
+import {repeat} from '../repeat.js';
 
 declare const chai: any;
 declare const mocha: any;
@@ -291,7 +292,7 @@ suite('lit-html', () => {
 
       test('updates an element', () => {
         const container = document.createElement('div');
-        let child = document.createElement('p');
+        let child: any = document.createElement('p');
         const t = () => html`<div>${child}<div></div></div>`;
         t().renderTo(container);
         assert.equal(container.innerHTML, '<div><p></p><div></div></div>');
@@ -307,7 +308,7 @@ suite('lit-html', () => {
 
       test('updates an array of elements', () => {
         const container = document.createElement('div');
-        let children = [
+        let children: any = [
           document.createElement('p'),
           document.createElement('a'),
           document.createElement('span')
@@ -351,21 +352,21 @@ suite('lit-html', () => {
             this.strings = strings;
           }
 
-          update(_instance: TemplateInstance, node: Node, values: Iterator<any>) {
+          update(_instance: TemplateInstance, node: Node, values: Values) {
             console.assert(node.nodeType === Node.ELEMENT_NODE);
             const s = this.strings;
 
             if (s[0] === '' && s[s.length - 1] === '') { 
               // An expression that occupies the whole attribute value will leave
               // leading and trailing empty strings.
-              (node as any)[this.name] = values.next().value;
+              (node as any)[this.name] = values.nextValue(node);
             } else {
               // Interpolation, so interpolate
               let text = '';
               for (let i = 0; i < s.length; i++) {
                 text += s[i];
                 if (i < s.length - 1) {
-                  text += values.next().value;
+                  text += values.nextValue(node);
                 }
               }
               (node as any)[this.name] = text;
@@ -380,6 +381,58 @@ suite('lit-html', () => {
         t.renderTo(container);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
+      });
+
+    });
+
+    suite('repeat', () => {
+
+      test.skip('renders an array of values', () => {
+        const container = document.createElement('div');
+        html`
+          <ul>${
+            repeat([1, 2, 3], (i: number) => html`
+              <li>item: ${i}</li>`)}
+          </ul>`.renderTo(container);
+        assert.equal(container.innerHTML, `
+          <ul>
+              <li>item: 1</li>
+              <li>item: 2</li>
+              <li>item: 3</li>
+          </ul>`);
+      });
+
+      test.skip('updates render stable output for keys', () => {
+        const container = document.createElement('div');
+        let items = [1, 2, 3];
+        const t = () => html`
+          <ul>${
+            repeat(items, (i) => i, (i: number) => html`
+              <li>item: ${i}</li>`)}
+          </ul>`;
+        t().renderTo(container);
+        assert.equal(container.innerHTML, `
+          <ul>
+              <li>item: 1</li>
+              <li>item: 2</li>
+              <li>item: 3</li>
+          </ul>`);
+
+        const originalLIs = Array.from(container.querySelectorAll('li'));
+
+        items = [3, 2, 1];
+        t().renderTo(container);
+        assert.equal(container.innerHTML, `
+          <ul>
+              <li>item: 3</li>
+              <li>item: 2</li>
+              <li>item: 1</li>
+          </ul>`);
+        
+        const newLIs = Array.from(container.querySelectorAll('li'));
+        assert.strictEqual(originalLIs[0], newLIs[2]);
+        assert.strictEqual(originalLIs[1], newLIs[1]);
+        assert.strictEqual(originalLIs[2], newLIs[0]);
       });
 
     });
