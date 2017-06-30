@@ -70,6 +70,7 @@ export interface PartBase {
 export interface AttributePart extends PartBase{
   type: 'attribute';
   name: string;
+  rawName: string;
   strings: string[];
 }
 
@@ -95,6 +96,8 @@ export class Template {
     const walker = document.createTreeWalker(this.element.content,
         NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
     let index = -1;
+    let partIndex = 0;
+    const nodesToRemove = [];
     while (walker.nextNode()) {
       index++;
       const node = walker.currentNode;
@@ -105,9 +108,14 @@ export class Template {
           const value = attribute.value;
           const strings = value.split(exprMarker);
           if (strings.length > 1) {
+            const attributeString = this._strings[partIndex];
+            partIndex += strings.length - 1;
+            const match = attributeString.match(/((?:\w|[.\-_])+)=?("|')?$/);
+            const rawName = match![1];
             this.parts.push({
               type: 'attribute',
               name: attribute.name,
+              rawName,
               index,
               strings,
             });
@@ -118,6 +126,7 @@ export class Template {
         const strings = node.nodeValue!.split(exprMarker);
         if (strings.length > 1) {
           // Generate a new text node for each literal and part
+          partIndex += strings.length - 1;
           for (let i = 0; i < strings.length; i++) {
             const string = strings[i];
             const literalNode = new Text(string);
@@ -129,10 +138,14 @@ export class Template {
               this.parts.push({type: 'node',index: index++});
             }
           }
-          node.parentNode!.removeChild(node);
+          nodesToRemove.push(node);
           index--;
         }
       }
+    }
+    // Remove text binding nodes after the walk to not disturb the TreeWalker
+    for (const n of nodesToRemove) {
+      n.parentNode!.removeChild(n);
     }
   }
 

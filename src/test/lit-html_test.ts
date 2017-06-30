@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, TemplateResult} from '../tagz.js';
+import {html, TemplateResult, AttributePart} from '../lit-html.js';
 
 declare const chai: any;
 declare const mocha: any;
@@ -37,6 +37,33 @@ suite('lit-html', () => {
     test('values contain interpolated values', () => {
       const foo = 'foo', bar = 1;
       assert.deepEqual(html`${foo}${bar}`.values, [foo, bar]);
+    });
+
+    test('parses parts for multiple expressions', () => {
+      const result = html`
+        <div a="${1}">
+          <p>${2}</p>
+          ${3}
+          <span a="${4}">${5}</span>
+        </div>`;
+      const parts = result.template.parts;
+      assert.equal(parts.length, 5);
+    });
+
+    test('stores raw names of attributes', () => {
+      const result = html`
+        <div 
+          someProp="${1}"
+          a-nother="${2}"
+          multiParts='${3} ${4}'>
+          <p>${5}</p>
+          <div aThing="${6}"></div>
+        </div>`;
+      const parts = result.template.parts;
+      const names = parts.map((p: AttributePart) => p.name);
+      const rawNames = parts.map((p: AttributePart) => p.rawName);
+      assert.deepEqual(names, ['someprop', 'a-nother', 'multiparts', undefined, 'athing']);
+      assert.deepEqual(rawNames, ['someProp', 'a-nother', 'multiParts', undefined, 'aThing']);
     });
 
   });

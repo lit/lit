@@ -148,6 +148,21 @@ Anything coercible to strings are supported:
 const render = () => html`foo = ${foo}`;
 ```
 
+### Attribute-value Expressions
+
+```javascript
+const render = () => html`<div class="${blue}"></div>`;
+```
+
+### Case-sensitive Attribute Names
+
+Attribute parts store both the HTML-parsed name and the raw name pulled from the string literal. This allows extensions, such as those that might set properties on elements using attribute syntax, to get case-sensitive names.
+
+```javascript
+const render = () => html`<div someProp="${blue}"></div>`;
+render().template.parts[0].rawName === 'someProp';
+```
+
 ### Functions/Thunks
 
 A function value is called with no arguments, in a try/catch block to be safe from exceptions:
