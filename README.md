@@ -1,7 +1,7 @@
 # lit-html
 HTML template literals in JavaScript
 
-`lit-html` lets you describe HTML templates with JavaScript template literals, and efficiently apply those templates to existing DOM.
+`lit-html` lets you describe HTML templates with JavaScript template literals, and efficiently render and re-render those templates to DOM.
 
 ## Example
 
@@ -18,7 +18,7 @@ sayHello('Kevin').renderTo(container);
 
 ## How it Works
 
-`html` does not return DOM nodes, unlike many other HTML with tagged template literal examples, but returns a `TemplateResult` - an object that contains a template and the values from expressions in the template.
+`html` does not return DOM nodes, unlike many other HTML with tagged template literal examples, but returns a `TemplateResult` - an object that contains a template and the values from expressions in the template - which can then be used to create or update DOM.
 
 The template is created only the first time `html` is called on a particular template literal. On every subsequent call of `html` on the same template literal the exact same template is returned, only the values change.
 
@@ -29,9 +29,9 @@ let count = 1;
 const render = () => html`count: ${count++}`;
 ```
 
-The template object is based on an actual HTML `<template>` element and created by setting it's `innerHTML`, utilizing the browsers HTML parser. The HTML is not created by concatenating the expression values, but by adding in special markers. The template object finds and remembers the locations of the markers (called "parts"). This makes the system safer from XSS attacks: a value bound to an attribute can't close the attribute, text content is automatically escaped, etc.
+The template object is based on an actual HTML `<template>` element and created by setting it's `innerHTML`, utilizing the browser's HTML parser. The HTML is not created by concatenating the string literals expression values, but by joining the literal parts with special markers. The template object finds and remembers the locations of the markers (called "parts"). This makes the system safer from XSS attacks: a value bound to an attribute can't close the attribute, text content is automatically escaped, etc.
 
-When a template is rendered it is cloned along with the part metadata. Values are set via `setAttribute()` and `textContent`. Some state is stored on the container to indicate that a template was already rendered there. Subsequent renders use that state to update only the parts, not the entire template instance.
+When a template is rendered it is cloned along with the part metadata. Values are set via `setAttribute()` and `textContent`. Some state is stored on the container to indicate that a template was already rendered there. Subsequent renders use that state to update only the dynamic parts, not the entire template instance.
 
 ### Rough Algorithm
 
@@ -39,19 +39,19 @@ When a template is rendered it is cloned along with the part metadata. Values ar
 
 1. `html` is invoked with `strings` and `values`.
 
-    `strings` are the literal parts as a `TemplateStringsArray`. The same instance is returned for every evaluation of a template literal.
+    `strings` are the string literal parts as a `TemplateStringsArray`. The same instance is returned for every evaluation of a particular template literal.
 
-2. Look up a cached template keyed by `strings`, otherwise
+2. Look up a cached template keyed by `strings`, otherwise...
 
 3. Create a new template:
 
      1. Join `strings` with a special marker, `{{}}`. This creates a template string that looks like a Polymer template with empty expressions.
 
-     2. Create a new `<template>` element and set it's `innerHTML` to the tempalte string.
+     2. Create a new `<template>` element and set its `innerHTML` to the generated template string.
 
-     3. Crawl the `<template>` looking for expressions and remember their location by index in `Part` objects. Text-content expressions create new empty text nodes which are used as placeholders.
+     3. Crawl the `<template>` contents, looking for markers and remember their location by index in `Part` objects. Text-content expressions create new empty text nodes which are used as placeholders.
 
-6. Return a `TemplateResult` with the template and the values.
+4. Return a `TemplateResult` with the template and the values.
 
 #### `TemplateResult.renderTo(container)`:
 
@@ -59,9 +59,9 @@ When a template is rendered it is cloned along with the part metadata. Values ar
 
 2. If an instance exists, check that it's from the same `Template` as this `TemplateResult`
 
-3. If the instance from the same `Template`, remove it's content from `container`
+3. If the instance is from the same `Template`, remove its content from `container`.
 
-4. If an instance doesn't exist, create on from the `Template`:
+4. If an instance doesn't exist for the node, create one from the `Template`:
 
     1. Clone the `Template`'s `<template>` contents.
 
@@ -69,15 +69,15 @@ When a template is rendered it is cloned along with the part metadata. Values ar
 
 5. Update. For every `Part`:
 
-    1.  If it's an attribute part, build up an attibute value then set the attribute.
+    1. If it's an `AttributePart`, build up an attibute value then set the attribute.
     
-    2. If it's a node part, get the value (trampoline thunks, render nested templates, etc), then either append a document fragment or set the `textContent`.
+    2. If it's a `NodePart`, get the value (trampoline thunks, render nested templates, etc), then either append a document fragment or set the `textContent`.
 
 6. If this is the first render, append the result DOM to `container`.
 
 ## Use in Components
 
-HTML template coule easily be the basis for component rendering, similar to JSX in React. A component base class can call an instance method that returns a `TemplateResult` and then apply it to the shadow root:
+HTML templates could easily be the basis for component rendering, similar to JSX in React. A component base class can call an instance method that returns a `TemplateResult` and then apply it to the shadow root:
 
 ```javascript
 class MyElement extends CoolBaseElement {
@@ -98,11 +98,11 @@ class MyElement extends CoolBaseElement {
 
 ## Benefits over HTML templates
 
-`lit-html` has basically all of the benefits of HTML-in-JS systems like JSX.
+`lit-html` has basically all of the benefits of HTML-in-JS systems like JSX, like:
 
 ### Lighter weight
 
-There's no need to load expression parser and evaluator.
+There's no need to load an expression parser and evaluator.
 
 ### Seamless access to data
 
@@ -112,11 +112,15 @@ If the main use of templates is to inject values into HTML, this breaks down a m
 
 ### Faster expression evaluation
 
-They're just JavaScript expressions
+They're just JavaScript expressions.
 
 ### IDE support by default
 
 In a type-checking environment like TypeScript, expressions are checked because they are just regular script. Hover-over docs and code-completion just work as well.
+
+### Case-sensitive parsing
+
+Template literals preserve case, even though the HTML parser doesn't for attribute names. `lit-html` extracts the raw attribute names, which is useful for template syntaxes that use attribute syntax to set properties on elements.
 
 ## Benefits over JSX
 
@@ -126,17 +130,17 @@ No tooling required. Understood by all JS editors and tools.
 
 ### No VDOM overhead
 
-`lit-html` only re-renders the dynamic parts of a template, so it doesn't produce a VDOM tree of the entire template contents, it just produces new values for each expression.
+`lit-html` only re-renders the dynamic parts of a template, so it doesn't produce a VDOM tree of the entire template contents, it just produces new values for each expression. By completely skipping static template parts, it saves work.
 
 ### Scoped
 
 JSX requires that the compiler be configured with the function to compile tags to. You can't mix two different JSX configurations in the same file.
 
-The `html` template tag is just a variable, probably set to a imported function. You can have any number of similar functions in the same JS scope, or set `html` to different implementations.
+The `html` template tag is just a variable, probably an imported function. You can have any number of similar functions in the same JS scope, or set `html` to different implementations.
 
-### Template are values
+### Templates are values
 
-JSX translates to function calls, can can't be manipulated on a per-template basis at runtime. `lit-html` produces a template object at runtime, which can be further processed by libraries like ShadyCSS.
+JSX translates to function calls, and can't be manipulated on a per-template basis at runtime. `lit-html` produces a template object at runtime, which can be further processed by libraries like ShadyCSS.
 
 ## Features
 
@@ -145,7 +149,7 @@ JSX translates to function calls, can can't be manipulated on a per-template bas
 Anything coercible to strings are supported:
 
 ```javascript
-const render = () => html`foo = ${foo}`;
+const render = () => html`foo is ${foo}`;
 ```
 
 ### Attribute-value Expressions
