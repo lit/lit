@@ -16,6 +16,31 @@ sayHello('Kevin').renderTo(container);
 // updates to <div>Hello Kevin!</div>, but only updates the ${name} part
 ```
 
+## Why
+
+`lit-html` has four main goals:
+
+1. Efficient updates of previously rendered DOM.
+2. Easy access the JavaScript state that needs to be injected into DOM.
+3. Standard syntax without required build steps, understandable by standards-compliant tools.
+4. Very small size.
+
+Goal 1 motivate `lit-html`'s method of creating HTML `<template>`s with markers for dynamic sections, rather than the final DOM tree.
+
+For real-world template use-cases, updating existing DOM is just as important as creating the initial DOM. Using JavaScript template literals without a helper like `lit-html` makes it easy to create the initial DOM, but offers no help in efficiently updating it. Developer must either manually find dynamic nodes and update them, or re-render the entire tree by setting `innerHTML`.
+
+Even previous HTML-in-JS proposals like E4X were only concerned with creating a static DOM tree with expression values already interpolated into the contents. That's again, good for initial rendering and not so good for updates.
+
+`lit-html` is able to preserve the static vs dynamic content distinction that JavaScript template literal syntax makes clear, so it can only update the dynamic parts of a template, completely skipping the static parts on re-renders.
+
+This should offer a performance advantage even against VDOM approaches, as most VDOM libraries do not make a distinction between static and dynamic context. The VDOM trees represent the final desired state and then the whole tree is reconciled against a previous state.
+
+Goal 2 drives `lit-html` to HTML-in-JS rather than expressions-in-HTML. Any JavaScript expression can be used in a template, from any scope available where the template is defined.
+
+Goal 3 makes tempalte literals an obvious choice over non-standard syntax like JSX.
+
+Goal 4 is partially acheived by leveraging the built in JavaScript and HTML parsers and not doing anything that would impede using them.
+
 ## Status
 
 `lit-html` is very new, under initial development, and not production-ready.
