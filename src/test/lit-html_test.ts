@@ -133,13 +133,31 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
+      test('renders an element', () => {
+        const container = document.createElement('div');
+        const child = document.createElement('p');
+        html`<div>${child}</div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div><p></p></div>');
+      });
+
+      test('renders an array of elements', () => {
+        const container = document.createElement('div');
+        const children = [
+          document.createElement('p'),
+          document.createElement('a'),
+          document.createElement('span')
+        ];
+        html`<div>${children}</div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div><p></p><a></a><span></span></div>');
+      });
+
       test('renders to an attribute', () => {
         const container = document.createElement('div');
         html`<div foo="${'bar'}"></div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
       });
 
-      test('renders to an attribute wihtout quotes', () => {
+      test('renders to an attribute without quotes', () => {
         const container = document.createElement('div');
         html`<div foo=${'bar'}></div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
@@ -269,6 +287,42 @@ suite('lit-html', () => {
         items = [3, 2, 1];
         t().renderTo(container);
         assert.equal(container.innerHTML, '<div>321</div>');
+      });
+
+      test('updates an element', () => {
+        const container = document.createElement('div');
+        let child = document.createElement('p');
+        const t = () => html`<div>${child}<div></div></div>`;
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div><p></p><div></div></div>');
+
+        child = undefined;
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div><div></div></div>');
+
+        child = new Text('foo');
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div>foo<div></div></div>');
+      });
+
+      test('updates an array of elements', () => {
+        const container = document.createElement('div');
+        let children = [
+          document.createElement('p'),
+          document.createElement('a'),
+          document.createElement('span')
+        ];
+        const t = () => html`<div>${children}</div>`
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div><p></p><a></a><span></span></div>');
+
+        children = null;
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div></div>');
+
+        children = new Text('foo');
+        t().renderTo(container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
     });

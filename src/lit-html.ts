@@ -308,11 +308,12 @@ export class TemplateInstance {
       this._cleanup(node);
     }
 
-    if (value instanceof DocumentFragment) {
-      node.__templateInstance = {
-        startNode: value.firstChild!,
-        endNode: value.lastChild!,
-      };
+    if (value instanceof Node) {
+      const fragment = value instanceof DocumentFragment;
+      // TODO: also deal with empty fragments
+      const startNode = fragment ? value.firstChild! : value;
+      const endNode = fragment ? value.lastChild! : value;
+      node.__templateInstance = {startNode,endNode};
       node.parentNode!.insertBefore(value, node.nextSibling);
     } else if (value instanceof TemplateResult) {
       if (templateInstance === undefined || value.template !== templateInstance._template) {
@@ -333,10 +334,10 @@ export class TemplateInstance {
   private _cleanup(node: Node) {
     const instance = node.__templateInstance!;
     // We had a previous template instance here, but don't now: clean up
-    let cleanupNode: Node|null = instance.startNode;
-    while (cleanupNode !== null) {
-      const n = cleanupNode;
-      cleanupNode = cleanupNode.nextSibling;
+    let nextNode: Node|null = instance.startNode;
+    while (nextNode !== null) {
+      const n = nextNode;
+      nextNode = nextNode.nextSibling;
       n.parentNode!.removeChild(n);
       if (n === instance.endNode) {
         break;
