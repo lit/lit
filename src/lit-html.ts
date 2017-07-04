@@ -58,6 +58,7 @@ export class TemplateResult {
     }
   }
 
+  // TODO: remove in favor of InstancePart.setValue(TemplateResult)
   renderAt(marker: Node) {
     let instance = marker.__templateInstance as TemplateInstance;
     if (instance === undefined) {
@@ -266,6 +267,105 @@ export class Values {
   }
 }
 
+export class InstancePart {
+  startNode: Node;
+  endNode: Node;
+  private _previousValue: any;
+
+  constructor(startNode: Node, endNode: Node) {
+    this.startNode = startNode;
+    this.endNode = endNode;
+  }
+
+  setValue(value: any) {
+    // TODO: don't always clear, especially for Iterables, Nodes and TempalteResults
+    // we want to check if the value only needs updating...
+    this.clear();
+
+    value = this.getValue(value);
+
+    let node: Node|undefined = undefined;
+    if (value instanceof Node) {
+      node = value;
+    } else if (value instanceof TemplateResult) {
+      let instance: TemplateInstance;
+      if (this._previousValue && this._previousValue.template === value.template) {
+        instance = this._previousValue;
+      } else {
+        instance = new TemplateInstance(value.template);
+        node = instance.getFragment();
+      }
+      instance.update(value.values);
+      value = instance;
+    } else if (value && typeof value !== 'string' && value[Symbol.iterator]) {
+      // For an Iterable, we create a new InstancePart per item, then set it's
+      // value to the item. This is a little bit of overhead for every item in
+      // an Iterable, but it lets us recurse easily and update Arrays of
+      // TemplateResults that will be commonly returned from expressions like:
+      // array.map((i) => html`${i}`)
+
+      // We reuse this parts startNode as the first part's startNode, and this
+      // parts endNode as the last part's endNode.
+
+      // TODO: on updates, retrieve the list of parts used last time
+      // Maybe by settings _previousValue to the list of parts?
+      let itemStart = this.startNode;
+      let itemEnd;
+      const values = value[Symbol.iterator]() as Iterator<any>;
+
+      let current = values.next();
+      let next = values.next();
+      while (!current.done) {
+        if (next.done) {
+          // on the last item
+          itemEnd = this.endNode;
+        } else {
+          itemEnd = new Text();
+          this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
+        }
+        const subPart = new InstancePart(itemStart, itemEnd);
+        subPart.setValue(current.value);
+        current = next;
+        next = values.next();
+        itemStart = itemEnd;
+      }
+    } else {
+      node = new Text(value);
+    }
+    if (node !== undefined) {
+      this.endNode.parentNode!.insertBefore(node, this.endNode);
+    }
+    this._previousValue = value;
+  }
+
+  clear() {
+    let node: Node = this.startNode;
+    let next: Node|null = node.nextSibling;
+    while (next !== null && next !== this.endNode) {
+      node = next;
+      next = next.nextSibling;
+      node.parentNode!.removeChild(node);
+    }
+  }
+
+  getValue(value: any) {
+    while (typeof value === 'function') {
+      try {
+        value = value(this);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+    }
+    if (value === null) {
+      return undefined;
+    }
+    return value;
+  }
+
+  // detach(): DocumentFragment ?
+}
+
 export class TemplateInstance {
   _template: Template;
   _parts: {part: TemplatePart, node: Node}[] = [];
@@ -331,18 +431,6 @@ export class TemplateInstance {
   //     // console.log('value', value, typeof value === 'function');
   //   }
   // }
-
-  getValue(value: any, node: Node) {
-    while (typeof value === 'function') {
-      try {
-        value = value(node);
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-    }
-    return value;
-  }
 
   renderValue(value: any, node: Node) {
     // console.log('renderValue', value, node);

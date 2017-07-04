@@ -12,13 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, TemplateResult, AttributePart, TemplatePart, TemplateInstance, Values} from '../lit-html.js';
-import {repeat} from '../repeat.js';
+/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
+/// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-declare const chai: any;
-declare const mocha: any;
-declare const suite: (title: string, fn: Function) => void;
-declare const test: (title: string, fn: Function) => void;
+import {html, TemplateResult, AttributePart, TemplatePart, TemplateInstance, Values, InstancePart} from '../lit-html.js';
+import {repeat} from '../repeat.js';
 
 const assert = chai.assert;
 
@@ -381,6 +379,116 @@ suite('lit-html', () => {
         t.renderTo(container);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
+      });
+
+    });
+
+    suite('InstancePart', () => {
+
+      let container: HTMLElement;
+      let startNode: Node;
+      let endNode: Node;
+      let part: InstancePart;
+
+      setup(() => {
+        container = document.createElement('div');
+        startNode = new Text();
+        endNode = new Text();
+        container.appendChild(startNode);
+        container.appendChild(endNode);
+        part = new InstancePart(startNode, endNode);
+      });
+
+      suite('setValue', () => {
+
+        test('accepts a string', () => {
+          part.setValue('foo');
+          assert.equal(container.innerHTML, 'foo');
+        });
+
+        test('accepts a number', () => {
+          part.setValue(123);
+          assert.equal(container.innerHTML, '123');
+        });
+
+        test('accepts undefined', () => {
+          part.setValue(undefined);
+          assert.equal(container.innerHTML, '');
+        });
+
+        test('accepts null', () => {
+          part.setValue(null);
+          assert.equal(container.innerHTML, '');
+        });
+
+        test('accepts a thunk', () => {
+          part.setValue((_:any)=>123);
+          assert.equal(container.innerHTML, '123');
+        });
+
+        test('accepts chained thunks', () => {
+          part.setValue((_:any)=>(_:any)=>123);
+          assert.equal(container.innerHTML, '123');
+        });
+
+        test('accepts thunks that throw as empty text', () => {
+          part.setValue((_:any)=>{throw new Error('e')});
+          assert.equal(container.innerHTML, '');
+        });
+
+        test('accepts an element', () => {
+          part.setValue(document.createElement('p'));
+          assert.equal(container.innerHTML, '<p></p>');
+        });
+
+        test('accepts arrays', () => {
+          part.setValue([1,2,3]);
+          assert.equal(container.innerHTML, '123');
+        });
+
+        test('accepts nested templates', () => {
+          const partial = html`<h1>${'foo'}</h1>`;
+          part.setValue(partial);
+          assert.equal(container.innerHTML, '<h1>foo</h1>');
+        });
+
+        test('accepts arrays of nested templates', () => {
+          part.setValue([1,2,3].map((i)=>html`${i}`));
+          assert.equal(container.innerHTML, '123');
+        });
+
+        test('accepts an array of elements', () => {
+          const children = [
+            document.createElement('p'),
+            document.createElement('a'),
+            document.createElement('span')
+          ];
+          part.setValue(children);
+          assert.equal(container.innerHTML, '<p></p><a></a><span></span>');
+        });
+
+        test('can be called multiple times', () => {
+          part.setValue('abc');
+          assert.equal(container.innerHTML, 'abc');
+          part.setValue('def');
+          assert.equal(container.innerHTML, 'def');
+        });
+
+      });
+
+      suite('clear', () => {
+
+        test('clears a range', () => {
+          part.clear();
+          assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
+        });
+
+        test('is a no-op on an already empty range', () => {
+          container.insertBefore(new Text('foo'), endNode);
+          part.clear();
+          assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
+        });
+
       });
 
     });
