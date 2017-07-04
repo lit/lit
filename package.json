@@ -19,5 +19,8 @@
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
     "typescript": "^2.4.1"
+  },
+  "dependencies": {
+    "@types/mocha": "^2.2.41"
   }
 }
