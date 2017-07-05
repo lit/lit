@@ -447,8 +447,7 @@ suite('lit-html', () => {
         });
 
         test('accepts nested templates', () => {
-          const partial = html`<h1>${'foo'}</h1>`;
-          part.setValue(partial);
+          part.setValue(html`<h1>${'foo'}</h1>`);
           assert.equal(container.innerHTML, '<h1>foo</h1>');
         });
 
@@ -467,23 +466,51 @@ suite('lit-html', () => {
           assert.equal(container.innerHTML, '<p></p><a></a><span></span>');
         });
 
-        test('can be called multiple times', () => {
+        test('updates when called multiple times with simple values', () => {
           part.setValue('abc');
           assert.equal(container.innerHTML, 'abc');
           part.setValue('def');
           assert.equal(container.innerHTML, 'def');
         });
 
+        test('updates are stable when called multiple times with templates', () => {
+          let value = 'foo';
+          const r = () => html`<h1>${value}</h1>`;
+          part.setValue(r);
+          assert.equal(container.innerHTML, '<h1>foo</h1>');
+          const originalH1 = container.querySelector('h1');
+
+          value = 'bar';
+          part.setValue(r);
+          assert.equal(container.innerHTML, '<h1>bar</h1>');
+          const newH1 = container.querySelector('h1');
+          assert.isTrue(newH1 === originalH1);
+        });
+
+        test('updates are stable when called multiple times with arrays of templates', () => {
+          let items = [1, 2, 3];
+          const r = () => items.map((i)=>html`<li>${i}</li>`);
+          part.setValue(r);
+          assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
+          const originalLIs = Array.from(container.querySelectorAll('li'));
+
+          items = [3, 2, 1];
+          part.setValue(r);
+          assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
+          const newLIs = Array.from(container.querySelectorAll('li'));
+          assert.deepEqual(newLIs, originalLIs);
+        });
+
       });
 
       suite('clear', () => {
 
-        test('clears a range', () => {
+        test('is a no-op on an already empty range', () => {
           part.clear();
           assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
         });
 
-        test('is a no-op on an already empty range', () => {
+        test('clears a range', () => {
           container.insertBefore(new Text('foo'), endNode);
           part.clear();
           assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
@@ -494,6 +521,54 @@ suite('lit-html', () => {
     });
 
     suite('repeat', () => {
+
+      let container: HTMLElement;
+      let startNode: Node;
+      let endNode: Node;
+      let part: InstancePart;
+
+      setup(() => {
+        container = document.createElement('div');
+        startNode = new Text();
+        endNode = new Text();
+        container.appendChild(startNode);
+        container.appendChild(endNode);
+        part = new InstancePart(startNode, endNode);
+      });
+
+      test('accepts an InstancePart to its thunk', () => {
+        const r = repeat([1, 2, 3], (i: number) => html`
+              <li>item: ${i}</li>`);
+        r(part);
+        assert.equal(container.innerHTML, `
+              <li>item: 1</li>
+              <li>item: 2</li>
+              <li>item: 3</li>`);
+      });
+
+      test('updates with key function are stable', () => {
+        let items = [1, 2, 3];
+        const t = () => repeat(items, (i) => i, (i: number) => html`
+              <li>item: ${i}</li>`);
+        t()(part);
+        assert.equal(container.innerHTML, `
+              <li>item: 1</li>
+              <li>item: 2</li>
+              <li>item: 3</li>`);
+        const originalLIs = Array.from(container.querySelectorAll('li'));
+
+        items = [3, 2, 1];
+        t()(part);
+        assert.equal(container.innerHTML, `
+              <li>item: 3</li>
+              <li>item: 2</li>
+              <li>item: 1</li>`);
+        const newLIs = Array.from(container.querySelectorAll('li'));
+        assert.strictEqual(originalLIs[0], newLIs[2]);
+        assert.strictEqual(originalLIs[1], newLIs[1]);
+        assert.strictEqual(originalLIs[2], newLIs[0]);
+      });
+
 
       test.skip('renders an array of values', () => {
         const container = document.createElement('div');

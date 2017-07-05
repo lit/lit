@@ -12,11 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { TemplateResult, TemplateInstance, html } from "./lit-html.js";
+import { InstancePart } from "./lit-html.js";
 
 export type KeyFn<T> = (item: T) => any;
-export type ItemTemplate<T> = (item: T, index: number) => TemplateResult;
-export type RepeatResult = (target: Node) => TemplateResult;
+export type ItemTemplate<T> = (item: T, index: number) => any;
+export type RepeatResult = (part: InstancePart) => any;
+
+const keyMaps = new WeakMap<InstancePart, Map<any, InstancePart>>();
 
 export function repeat<T>(items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): RepeatResult;
 export function repeat<T>(items: T[], template: ItemTemplate<T>): RepeatResult;
@@ -28,45 +30,51 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
-  return function (target: Node): TemplateResult {
-    console.log('target', target);
-    let keyMap = (target as any).__keyMap;
+  return function (part: InstancePart): any {
+    let keyMap = keyMaps.get(part);
     if (keyMap === undefined && keyFn !== undefined) {
-      keyMap = (target as any).__keyMap = new Map();
+      keyMap = new Map();
+      keyMaps.set(part, keyMap);
     }
     let index = 0;
 
-    let currentMarker: Node = target.__templateInstance!.startNode;
-    // TODO: set to node.__templateInstance.startNode?
-    // need to get clearer on marker nodes!
+    let itemStart = part.startNode;
+    let itemEnd;
+    const values = items[Symbol.iterator]() as Iterator<any>;
 
-    const itemInstances: any[] = [];
-    const repeatResult = html`${itemInstances}`;
-
-    for (const item of items) {
-      try {
-        const result = template!(item, index++);
-        const key = keyFn && keyFn(item);
-        let nextMarker = keyFn && keyMap.get(key);
-        if (nextMarker !== undefined) {
-          // add the new marker after the current marker's end range
-          const currentEnd = currentMarker.__templateInstance!.endNode;
-          currentMarker.parentNode!.insertBefore(nextMarker, currentEnd!.nextSibling);
-          const instance = nextMarker.__templateInstance as TemplateInstance;
-          if (instance !== undefined && instance._template === result.template) {
-            instance.update(result.values);
-          }
-        } else {
-          nextMarker = new Text();
-          // add the new marker after the current marker's end range
-          const currentEnd = currentMarker.__templateInstance!.endNode;
-          currentMarker.parentNode!.insertBefore(nextMarker, currentEnd!.nextSibling);
-          result.renderAt(nextMarker);
-        }
-      } catch (e) {
-        console.error(e);
+    let current = values.next();
+    let next = values.next();
+    while (!current.done) {
+      if (next.done) {
+        // on the last item
+        itemEnd = part.endNode;
+      } else {
+        itemEnd = new Text();
+        part.endNode.parentNode!.insertBefore(itemEnd, part.endNode);
       }
+
+      const item = current.value;
+      let result;
+      let key;
+      try {
+        result = template!(item, index++);
+        key = keyFn && keyFn(item);
+      } catch(e) {
+        console.error(e);
+        continue;
+      }
+      let itemPart = keyMap && keyMap.get(key);
+      console.log('key', key, 'itemPart', itemPart);
+      if (itemPart === undefined) {
+        itemPart = new InstancePart(itemStart, itemEnd);
+        if (key !== undefined && keyMap !== undefined) {
+          keyMap.set(key, itemPart!);
+        }
+      }
+      itemPart.setValue(result);
+      current = next;
+      next = values.next();
+      itemStart = itemEnd;
     }
-    return repeatResult;
   };
 }

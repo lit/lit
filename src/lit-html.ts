@@ -278,27 +278,26 @@ export class InstancePart {
   }
 
   setValue(value: any) {
-    // TODO: don't always clear, especially for Iterables, Nodes and TempalteResults
-    // we want to check if the value only needs updating...
-    this.clear();
-
-    value = this.getValue(value);
 
     let node: Node|undefined = undefined;
+    value = this.getValue(value);
+
     if (value instanceof Node) {
+      this.clear();
       node = value;
     } else if (value instanceof TemplateResult) {
       let instance: TemplateInstance;
-      if (this._previousValue && this._previousValue.template === value.template) {
+      if (this._previousValue && this._previousValue._template === value.template) {
         instance = this._previousValue;
       } else {
+        this.clear();
         instance = new TemplateInstance(value.template);
-        node = instance.getFragment();
+        node = instance._clone();
       }
       instance.update(value.values);
-      value = instance;
+      this._previousValue = instance;
     } else if (value && typeof value !== 'string' && value[Symbol.iterator]) {
-      // For an Iterable, we create a new InstancePart per item, then set it's
+      // For an Iterable, we create a new InstancePart per item, then set its
       // value to the item. This is a little bit of overhead for every item in
       // an Iterable, but it lets us recurse easily and update Arrays of
       // TemplateResults that will be commonly returned from expressions like:
@@ -313,6 +312,9 @@ export class InstancePart {
       let itemEnd;
       const values = value[Symbol.iterator]() as Iterator<any>;
 
+      const previousParts = Array.isArray(this._previousValue) ? this._previousValue : undefined;
+      let previousPartsIndex = 0;
+      const itemParts = [];
       let current = values.next();
       let next = values.next();
       while (!current.done) {
@@ -323,22 +325,30 @@ export class InstancePart {
           itemEnd = new Text();
           this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
         }
-        const subPart = new InstancePart(itemStart, itemEnd);
-        subPart.setValue(current.value);
+        let itemPart;
+        if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
+          itemPart = previousParts[previousPartsIndex++];
+        } else {
+          itemPart = new InstancePart(itemStart, itemEnd);
+        }
+        itemPart.setValue(current.value);
+        itemParts.push(itemPart);
         current = next;
         next = values.next();
         itemStart = itemEnd;
       }
+      this._previousValue = itemParts;
     } else {
+      this.clear();
       node = new Text(value);
     }
     if (node !== undefined) {
       this.endNode.parentNode!.insertBefore(node, this.endNode);
     }
-    this._previousValue = value;
   }
 
   clear() {
+    this._previousValue = undefined;
     let node: Node = this.startNode;
     let next: Node|null = node.nextSibling;
     while (next !== null && next !== this.endNode) {
@@ -396,7 +406,7 @@ export class TemplateInstance {
     return fragment;
   }
 
-  private _clone(): DocumentFragment {
+  _clone(): DocumentFragment {
     const fragment = document.importNode(this._template.element.content, true);
 
     if (this._template.parts.length > 0) {
