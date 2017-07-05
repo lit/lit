@@ -473,6 +473,20 @@ suite('lit-html', () => {
           assert.equal(container.innerHTML, 'def');
         });
 
+        test('updates when called multiple times with arrays', () => {
+          part.setValue([1, 2, 3]);
+          assert.equal(container.innerHTML, '123');
+
+          part.setValue([4, 5]);
+          assert.equal(container.innerHTML, '45');
+          // check that we're not leaving orphaned marker nodes around
+          assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+
+          part.setValue([]);
+          assert.equal(container.innerHTML, '');
+          assert.deepEqual([], Array.from(container.childNodes).map((n) => n.nodeValue));
+        });
+
         test('updates are stable when called multiple times with templates', () => {
           let value = 'foo';
           const r = () => html`<h1>${value}</h1>`;

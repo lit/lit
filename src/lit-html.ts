@@ -306,8 +306,6 @@ export class InstancePart {
       // We reuse this parts startNode as the first part's startNode, and this
       // parts endNode as the last part's endNode.
 
-      // TODO: on updates, retrieve the list of parts used last time
-      // Maybe by settings _previousValue to the list of parts?
       let itemStart = this.startNode;
       let itemEnd;
       const values = value[Symbol.iterator]() as Iterator<any>;
@@ -317,27 +315,48 @@ export class InstancePart {
       const itemParts = [];
       let current = values.next();
       let next = values.next();
+
       while (!current.done) {
         if (next.done) {
-          // on the last item
+          // on the last item, reuse this part's endNode
           itemEnd = this.endNode;
         } else {
           itemEnd = new Text();
           this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
         }
+
+        // Reuse a part if we can, otherwise create a new one
         let itemPart;
         if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
           itemPart = previousParts[previousPartsIndex++];
         } else {
           itemPart = new InstancePart(itemStart, itemEnd);
         }
+
         itemPart.setValue(current.value);
         itemParts.push(itemPart);
+
         current = next;
         next = values.next();
         itemStart = itemEnd;
       }
       this._previousValue = itemParts;
+
+      // If the new list is shorter than the old list, clean up:
+      if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
+        const clearStart = previousParts[previousPartsIndex].startNode;
+        const clearEnd = previousParts[previousParts.length - 1].endNode;
+        const clearRange = document.createRange();
+        if (previousPartsIndex === 0) {
+          clearRange.setStartBefore(clearStart);  
+        } else {
+          clearRange.setStartAfter(clearStart);
+        }
+        clearRange.setEndAfter(clearEnd);
+        clearRange.deleteContents();
+        clearRange.detach(); // is this neccessary?
+      }
+
     } else {
       this.clear();
       node = new Text(value);
