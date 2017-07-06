@@ -22,5 +22,6 @@
   },
   "dependencies": {
     "@types/mocha": "^2.2.41"
-  }
+  },
+  "typings": "./lib/lit-html.d.ts"
 }
