@@ -100,12 +100,6 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
-      test('renders chained thunks', () => {
-        const container = document.createElement('div');
-        html`<div>${(_:any)=>(_:any)=>123}</div>`.renderTo(container);
-        assert.equal(container.innerHTML, '<div>123</div>');
-      });
-
       test('renders thunks that throw as empty text', () => {
         const container = document.createElement('div');
         html`<div>${(_:any)=>{throw new Error('e')}}</div>`.renderTo(container);
@@ -435,11 +429,6 @@ suite('lit-html', () => {
 
         test('accepts a thunk', () => {
           part.setValue((_:any)=>123);
-          assert.equal(container.innerHTML, '123');
-        });
-
-        test('accepts chained thunks', () => {
-          part.setValue((_:any)=>(_:any)=>123);
           assert.equal(container.innerHTML, '123');
         });
 

@@ -233,8 +233,6 @@ const render = () => html`foo = ${_=>data.foo}`;
 
 Here, `data.foo` throws because `data` is undefined, but the rest of the template renders.
 
-Thunks are trampolined so they can return other thunks.
-
 ### Arrays/Iterables
 
 ```javascript

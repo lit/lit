@@ -176,19 +176,20 @@ export abstract class Part {
   abstract setValue(value: any): void;
 
   protected _getValue(value: any) {
-  while (typeof value === 'function') {
-    try {
-      value = value(this);
-    } catch (e) {
-      console.error(e);
-      return;
+    if (typeof value === 'function') {
+      try {
+        value = value(this);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
     }
+    if (value === null) {
+      // `null` as the value of Text node will render the string 'null'
+      return undefined;
+    }
+    return value;
   }
-  if (value === null) {
-    return undefined;
-  }
-  return value;
-}
 }
 
 export class AttributePart extends Part {
