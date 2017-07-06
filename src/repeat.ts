@@ -18,7 +18,12 @@ export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
 export type RepeatResult = (part: InstancePart) => any;
 
-const keyMaps = new WeakMap<InstancePart, Map<any, InstancePart>>();
+interface State {
+  keyMap: Map<any, InstancePart>;
+  parts: InstancePart[];
+}
+
+const stateCache = new WeakMap<InstancePart, State>();
 
 export function repeat<T>(items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): RepeatResult;
 export function repeat<T>(items: T[], template: ItemTemplate<T>): RepeatResult;
@@ -31,29 +36,25 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
   }
 
   return function (part: InstancePart): any {
-    let keyMap = keyMaps.get(part);
-    if (keyMap === undefined && keyFn !== undefined) {
-      keyMap = new Map();
-      keyMaps.set(part, keyMap);
+    let state = stateCache.get(part);
+    if (state === undefined) {
+      state = {
+        keyMap: keyFn && new Map(),
+        parts: [],
+      };
+      stateCache.set(part, state);
     }
+    const container = part.startNode.parentNode as HTMLElement|ShadowRoot|DocumentFragment;
+    const oldParts = state.parts;
+    const endParts = new Map<Node, InstancePart>(oldParts.map((p) => [p.endNode, p] as [Node, InstancePart]));
+    const keyMap = state.keyMap;
+
+    const itemParts = [];
     let index = 0;
+    let oldPartsIndex = 0;
+    let currentMarker: Node|undefined;
 
-    let itemStart = part.startNode;
-    let itemEnd;
-    const values = items[Symbol.iterator]() as Iterator<any>;
-
-    let current = values.next();
-    let next = values.next();
-    while (!current.done) {
-      if (next.done) {
-        // on the last item
-        itemEnd = part.endNode;
-      } else {
-        itemEnd = new Text();
-        part.endNode.parentNode!.insertBefore(itemEnd, part.endNode);
-      }
-
-      const item = current.value;
+    for (const item of items) {
       let result;
       let key;
       try {
@@ -63,18 +64,87 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
         console.error(e);
         continue;
       }
-      let itemPart = keyMap && keyMap.get(key);
-      console.log('key', key, 'itemPart', itemPart);
+
+      // Try to reuse a part, either keyed or from the list of previous parts
+      // if there's no keyMap
+      let itemPart = keyMap == undefined ? oldParts[oldPartsIndex++] : keyMap.get(key);
+
       if (itemPart === undefined) {
-        itemPart = new InstancePart(itemStart, itemEnd);
+        // New part, attach it
+        if (currentMarker === undefined) {
+          currentMarker = new Text();
+          container.insertBefore(currentMarker, part.startNode.nextSibling);
+        }
+        const endNode = new Text();
+        container.insertBefore(endNode, currentMarker.nextSibling);
+        itemPart = new InstancePart(currentMarker, endNode);
         if (key !== undefined && keyMap !== undefined) {
           keyMap.set(key, itemPart!);
         }
+      } else {
+        // Existing part, maybe move it
+        const range = document.createRange();
+        range.setStartBefore(itemPart.startNode);
+        range.setEndBefore(itemPart.endNode);
+
+        if (currentMarker === undefined) {
+          // this should be the first part, make sure it's first
+          if (part.startNode.nextSibling !== itemPart.startNode) {
+            // move the whole part
+            // get previous and next parts
+            const previousPart = endParts.get(itemPart.startNode);
+            if (previousPart) {
+              previousPart.endNode = itemPart.endNode;
+              endParts.set(previousPart.endNode, previousPart);
+            }
+            const contents = range.extractContents();
+            if (part.startNode.nextSibling === part.endNode) {
+              // The container part was empty, so we need a new endPart
+              itemPart.endNode = new Text();
+              container.insertBefore(itemPart.endNode, part.startNode.nextSibling);
+            } else {
+              // endNode should equal the startNode of the currently first part
+              itemPart.endNode = part.startNode.nextSibling!;
+            }
+            container.insertBefore(contents, part.startNode.nextSibling);
+          }
+          // else part is in the correct position already
+        } else if (currentMarker !== itemPart.startNode) {
+          // move to correct position
+          const previousPart = endParts.get(itemPart.startNode);
+          if (previousPart) {
+            previousPart.endNode = itemPart.endNode;
+            endParts.set(previousPart.endNode, previousPart);
+          }
+          const contents = range.extractContents();
+          container.insertBefore(contents, currentMarker);            
+        }
+
+        // remove part from oldParts list so it's not cleaned up
+        oldParts.splice(oldParts.indexOf(itemPart), 1);
       }
+      // else part is in the correct position already
+
       itemPart.setValue(result);
-      current = next;
-      next = values.next();
-      itemStart = itemEnd;
+      itemParts.push(itemPart);
+      currentMarker = itemPart.endNode;
     }
+
+    // Cleanup
+    if (oldParts.length > 0) {
+      const clearStart = oldParts[0].startNode;
+      const clearEnd = oldParts[oldParts.length - 1].endNode;
+      const clearRange = document.createRange();
+      if (itemParts.length === 0) {
+        clearRange.setStartBefore(clearStart);  
+      } else {
+        clearRange.setStartAfter(clearStart);
+      }
+      clearRange.setEndAfter(clearEnd);
+      clearRange.deleteContents();
+      clearRange.detach(); // is this neccessary?
+    }
+
+    state.parts = itemParts;
   };
 }

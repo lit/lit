@@ -36,86 +36,176 @@ suite('repeat', () => {
     part = new InstancePart(startNode, endNode);
   });
 
-  test('accepts an InstancePart to its thunk', () => {
-    const r = repeat([1, 2, 3], (i: number) => html`
-          <li>item: ${i}</li>`);
-    r(part);
-    assert.equal(container.innerHTML, `
-          <li>item: 1</li>
-          <li>item: 2</li>
-          <li>item: 3</li>`);
+  suite('keyed', () => {
+
+    test('renderes list', () => {
+      const r = repeat([1, 2, 3], (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      r(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>`);
+    });
+
+    test('shuffles are stable', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>`);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [3, 2, 1];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 3</li>
+            <li>item: 2</li>
+            <li>item: 1</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+      assert.strictEqual(children1[0], children2[2]);
+      assert.strictEqual(children1[1], children2[1]);
+      assert.strictEqual(children1[2], children2[0]);
+    });
+
+    test('can insert an item at the beginning', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+
+      items = [0, 1, 2, 3];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>`);
+    });
+
+    test('can insert an item at the end', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+
+      items = [1, 2, 3, 4];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>
+            <li>item: 4</li>`);
+    });
+
+    test('can replace with an empty list', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+
+      items = [];
+      t()(part);
+      assert.equal(container.innerHTML, ``);
+    });
+
+    test('can remove the first item', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [2, 3];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 2</li>
+            <li>item: 3</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+      assert.strictEqual(children1[1], children2[0]);
+      assert.strictEqual(children1[2], children2[1]);
+    });
+
+    test('can remove the last item', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [1, 2];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 2</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+      assert.strictEqual(children1[0], children2[0]);
+      assert.strictEqual(children1[1], children2[1]);
+    });
+
+    test('can remove a middle item', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [1, 3];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 3</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+      assert.strictEqual(children1[0], children2[0]);
+      assert.strictEqual(children1[2], children2[1]);
+    });
+
   });
 
-  test('updates with key function are stable', () => {
-    let items = [1, 2, 3];
-    const t = () => repeat(items, (i) => i, (i: number) => html`
-          <li>item: ${i}</li>`);
-    t()(part);
-    assert.equal(container.innerHTML, `
-          <li>item: 1</li>
-          <li>item: 2</li>
-          <li>item: 3</li>`);
-    const originalLIs = Array.from(container.querySelectorAll('li'));
+  suite('un-keyed', () => {
 
-    items = [3, 2, 1];
-    t()(part);
-    assert.equal(container.innerHTML, `
-          <li>item: 3</li>
-          <li>item: 2</li>
-          <li>item: 1</li>`);
-    const newLIs = Array.from(container.querySelectorAll('li'));
-    assert.strictEqual(originalLIs[0], newLIs[2]);
-    assert.strictEqual(originalLIs[1], newLIs[1]);
-    assert.strictEqual(originalLIs[2], newLIs[0]);
-  });
+    test('renderes an list', () => {
+      const r = repeat([1, 2, 3], (i: number) => html`
+            <li>item: ${i}</li>`);
+      r(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>`);
+    });
 
+    test('shuffles a list', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>`);
 
-  test.skip('renders an array of values', () => {
-    const container = document.createElement('div');
-    html`
-      <ul>${
-        repeat([1, 2, 3], (i: number) => html`
-          <li>item: ${i}</li>`)}
-      </ul>`.renderTo(container);
-    assert.equal(container.innerHTML, `
-      <ul>
-          <li>item: 1</li>
-          <li>item: 2</li>
-          <li>item: 3</li>
-      </ul>`);
-  });
+      items = [3, 2, 1];
+      t()(part);
+      assert.equal(container.innerHTML, `
+            <li>item: 3</li>
+            <li>item: 2</li>
+            <li>item: 1</li>`);
+    });
 
-  test.skip('updates render stable output for keys', () => {
-    const container = document.createElement('div');
-    let items = [1, 2, 3];
-    const t = () => html`
-      <ul>${
-        repeat(items, (i) => i, (i: number) => html`
-          <li>item: ${i}</li>`)}
-      </ul>`;
-    t().renderTo(container);
-    assert.equal(container.innerHTML, `
-      <ul>
-          <li>item: 1</li>
-          <li>item: 2</li>
-          <li>item: 3</li>
-      </ul>`);
+    test('can replace with an empty list', () => {
+      let items = [1, 2, 3];
+      const t = () => repeat(items, (i: number) => html`
+            <li>item: ${i}</li>`);
+      t()(part);
 
-    const originalLIs = Array.from(container.querySelectorAll('li'));
+      items = [];
+      t()(part);
+      assert.equal(container.innerHTML, ``);
+    });
 
-    items = [3, 2, 1];
-    t().renderTo(container);
-    assert.equal(container.innerHTML, `
-      <ul>
-          <li>item: 3</li>
-          <li>item: 2</li>
-          <li>item: 1</li>
-      </ul>`);
-    
-    const newLIs = Array.from(container.querySelectorAll('li'));
-    assert.strictEqual(originalLIs[0], newLIs[2]);
-    assert.strictEqual(originalLIs[1], newLIs[1]);
-    assert.strictEqual(originalLIs[2], newLIs[0]);
   });
 
 });
