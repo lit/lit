@@ -58,20 +58,6 @@ export class TemplateResult {
     }
   }
 
-  // TODO: remove in favor of InstancePart.setValue(TemplateResult)
-  renderAt(marker: Node) {
-    let instance = marker.__templateInstance as TemplateInstance;
-    if (instance === undefined) {
-      instance = new TemplateInstance(this.template);
-      marker.__templateInstance = instance;
-      const fragment = instance.getFragment();
-      instance.update(this.values);
-      marker.parentNode!.insertBefore(fragment, marker.nextSibling);
-    } else {
-      instance.update(this.values);
-    }    
-  }
-
 }
 
 const exprMarker = '{{}}';
