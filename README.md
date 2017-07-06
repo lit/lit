@@ -271,7 +271,7 @@ Some examples of possible extensions:
 
  * Property setting: Attribute expressions in templates could set properties on node.
  * Event handlers: Specially named attributes can install event handlers.
- * HTML values: `lit-html` sets `textContent` by default. Extensions could allow setting `innerHTML` or injecting existing DOM nodes.
+ * HTML values: `lit-html` creates `Text` nodes by default. Extensions could allow setting `innerHTML`.
 
 ### Small Size
 
@@ -307,11 +307,13 @@ Some examples of possible extensions:
 
   *  Property `parts: Part[]`
 
-### Interface `Part`
+### Abstract Class `Part`
 
-  *  Property `type: string`
+A `Part` is a dynamic section of a `TemplateInstance`. It's value can be set to update the section.
 
-  *  Method `update(instance: TemplateInstance, node: Node, values: Iterator<any>): void`
+Specially support value types are `Node`, `Function`, and `TemplateResult`.
+
+  *  Method `setValue(value: any): void`
 
 ## Future Work
 
