@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {html, InstancePart} from '../lit-html.js';
+import {html, NodePart} from '../lit-html.js';
 import {repeat} from '../repeat.js';
 
 const assert = chai.assert;
@@ -25,7 +25,7 @@ suite('repeat', () => {
   let container: HTMLElement;
   let startNode: Node;
   let endNode: Node;
-  let part: InstancePart;
+  let part: NodePart;
 
   setup(() => {
     container = document.createElement('div');
@@ -33,7 +33,7 @@ suite('repeat', () => {
     endNode = new Text();
     container.appendChild(startNode);
     container.appendChild(endNode);
-    part = new InstancePart(startNode, endNode);
+    part = new NodePart(startNode, endNode);
   });
 
   suite('keyed', () => {

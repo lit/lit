@@ -52,7 +52,9 @@ export class TemplateResult {
     if (instance === undefined) {
       instance = new TemplateInstance(this.template);
       container.__templateInstance = instance;
-      instance.appendTo(container, this.values);
+      const fragment = instance._clone();
+      instance.update(this.values);
+      container.appendChild(fragment);
     } else {
       instance.update(this.values);
     }
@@ -78,73 +80,13 @@ const exprMarker = '{{}}';
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
  */
-export interface TemplatePart {
-  type: string;
-  index: number;
-
-  update(instance: TemplateInstance, node: Node, values: Values): void;
-}
-
-export class AttributePart implements TemplatePart {
-  type: 'attribute';
-  index: number;
-  name: string;
-  rawName: string;
-  strings: string[];
-
-  constructor(index: number, name: string, rawName: string, strings: string[]) {
-    this.index = index;
-    this.name = name;
-    this.rawName = rawName;
-    this.strings = strings;
-  }
-
-  update(_instance: TemplateInstance, node: Node, values: Values) {
-    console.assert(node.nodeType === Node.ELEMENT_NODE);
-    const strings = this.strings;
-    let text = '';
-    for (let i = 0; i < strings.length; i++) {
-      text += strings[i];
-      if (i < strings.length - 1) {
-        const v = values.nextValue(node);
-        if (v && typeof v !== 'string' && v[Symbol.iterator]) {
-          for (const t of v) {
-            // TODO: we need to recursively call getValue into iterables...
-            text += t;
-          }
-        } else {
-          text += v;
-        }
-      }
-    }
-    (node as Element).setAttribute(this.name, text);
-  }
-}
-
-export class NodePart implements TemplatePart {
-  type: 'node';
-  index: number;
-
-  constructor(index: number) {
-    this.index = index;
-  }
-
-  update(instance: TemplateInstance, node: Node, values: Values): void {
-    console.assert(node.nodeType === Node.TEXT_NODE);
-
-    const value = values.nextValue(node);
-
-    if (value && typeof value !== 'string' && value[Symbol.iterator]) {
-      const fragment = document.createDocumentFragment();
-      for (const item of value) {
-        const marker = new Text();
-        fragment.appendChild(marker);
-        instance.renderValue(item, marker);
-      }
-      instance.renderValue(fragment, node);          
-    } else {
-      instance.renderValue(value, node);
-    }
+export class TemplatePart {
+  constructor(
+    public type: string,
+    public index: number,
+    public name?: string,
+    public rawName?: string,
+    public strings?: string[]) {
   }
 }
 
@@ -181,14 +123,15 @@ export class Template {
             partIndex += strings.length - 1;
             const match = attributeString.match(/((?:\w|[.\-_])+)=?("|')?$/);
             const rawName = match![1];
-            this.parts.push(new AttributePart(index, attribute.name, rawName, strings));
+            this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, strings));
             attributesToRemove.push(attribute);
           }
         }
       } else if (node.nodeType === Node.TEXT_NODE) {
         const strings = node.nodeValue!.split(exprMarker);
         if (strings.length > 1) {
-          // Generate a new text node for each literal and part
+          // Generate a new text node for each literal and two for each part,
+          // a start and end
           partIndex += strings.length - 1;
           for (let i = 0; i < strings.length; i++) {
             const string = strings[i];
@@ -196,9 +139,10 @@ export class Template {
             node.parentNode!.insertBefore(literalNode, node);
             index++;
             if (i < strings.length - 1) {
-              const partNode = new Text();
-              node.parentNode!.insertBefore(partNode, node);
-              this.parts.push(new NodePart(index));
+              node.parentNode!.insertBefore(new Text(), node);
+              node.parentNode!.insertBefore(new Text(), node);
+              this.parts.push(new TemplatePart('node', index));
+              index++;
             }
           }
           nodesToRemove.push(node);
@@ -228,45 +172,78 @@ export class Template {
 
 }
 
-export class Values {
-  private _values: Iterator<any>;
+export abstract class Part {
+  abstract setValue(value: any): void;
 
-  constructor(values: Iterable<any>) {
-    this._values = values[Symbol.iterator]();
-  }
-
-  nextValue(node: Node) {
-    const next = this._values.next();
-    if (next.done) {
-      throw new Error('No more values');
+  protected _getValue(value: any) {
+  while (typeof value === 'function') {
+    try {
+      value = value(this);
+    } catch (e) {
+      console.error(e);
+      return;
     }
-    let value = next.value;
-    while (typeof value === 'function') {
-      try {
-        value = value(node);
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-    }
-    return value;
   }
+  if (value === null) {
+    return undefined;
+  }
+  return value;
+}
 }
 
-export class InstancePart {
+export class AttributePart extends Part {
+  element: Element;
+  name: string;
+  rawName: string;
+  strings: string[];
+
+  constructor(element: Element, name: string, rawName: string, strings: string[]) {
+    super();
+    console.assert(element.nodeType === Node.ELEMENT_NODE);
+    this.element = element;
+    this.name = name;
+    this.rawName = rawName;
+    this.strings = strings;
+  }
+
+  setValue(values: any[]): void {
+    const strings = this.strings;
+    let text = '';
+
+    for (let i = 0; i < strings.length; i++) {
+      text += strings[i];
+      if (i < strings.length - 1) {
+        const v = this._getValue(values[i]);
+        if (v && typeof v !== 'string' && v[Symbol.iterator]) {
+          for (const t of v) {
+            // TODO: we need to recursively call getValue into iterables...
+            text += t;
+          }
+        } else {
+          text += v;
+        }
+      }
+    }
+    this.element.setAttribute(this.name, text);
+  }
+  
+}
+
+export class NodePart extends Part {
   startNode: Node;
   endNode: Node;
   private _previousValue: any;
 
   constructor(startNode: Node, endNode: Node) {
+    super();
     this.startNode = startNode;
     this.endNode = endNode;
   }
 
-  setValue(value: any) {
+  setValue(value: any): void {
 
     let node: Node|undefined = undefined;
-    value = this.getValue(value);
+    value = this._getValue(value);
 
     if (value instanceof Node) {
       this.clear();
@@ -316,7 +293,7 @@ export class InstancePart {
         if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
           itemPart = previousParts[previousPartsIndex++];
         } else {
-          itemPart = new InstancePart(itemStart, itemEnd);
+          itemPart = new NodePart(itemStart, itemEnd);
         }
 
         itemPart.setValue(current.value);
@@ -363,27 +340,12 @@ export class InstancePart {
     }
   }
 
-  getValue(value: any) {
-    while (typeof value === 'function') {
-      try {
-        value = value(this);
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-    }
-    if (value === null) {
-      return undefined;
-    }
-    return value;
-  }
-
   // detach(): DocumentFragment ?
 }
 
 export class TemplateInstance {
   _template: Template;
-  _parts: {part: TemplatePart, node: Node}[] = [];
+  _parts: Part[] = [];
   startNode: Node;
   endNode: Node;
 
@@ -391,24 +353,17 @@ export class TemplateInstance {
     this._template = template;
   }
 
-  appendTo(container: Element|DocumentFragment, values: any[]) {
-    const fragment = this._clone();
-    this.update(values);
-    container.appendChild(fragment);
-  }
-
   update(values: any[]) {
-    const valuesList = new Values(values);
-    for (const {part, node} of this._parts) {
-      part.update(this, node, valuesList);
+    let valueIndex = 0;
+    for (const part of this._parts) {
+      if (part instanceof NodePart) {
+        part.setValue(values[valueIndex++]);
+      } else if (part instanceof AttributePart) {
+        const size = part.strings.length - 1;
+        part.setValue(values.slice(valueIndex, size));
+        valueIndex += size;
+      }
     }
-  }
-
-  getFragment() {
-    const fragment = this._clone();
-    this.startNode = fragment.insertBefore(new Text(), fragment.firstChild);
-    this.endNode = fragment.appendChild(new Text());
-    return fragment;
   }
 
   _clone(): DocumentFragment {
@@ -421,75 +376,28 @@ export class TemplateInstance {
       const parts = this._template.parts;
       let index = -1;
       let partIndex = 0;
-      let part = parts[0];
+      let templatePart = parts[0];
       
       while (walker.nextNode() && partIndex < parts.length) {
         index++;
-        if (index === part.index) {
+        if (index === templatePart.index) {
           const node = walker.currentNode;
-          this._parts.push({part, node});
-          part = parts[++partIndex];
+          this._parts.push(this._createPart(templatePart, node));
+          templatePart = parts[++partIndex];
         }
       }
     }
     return fragment;
   }
 
-  /**
-   * Converts a raw values array passed to a template tag into an iterator so
-   * that TemplateParts can consume it while updating.
-   * 
-   * Contains a trampoline to evaluate thunks until they return a non-function value.
-   */
-  // private * _getValues(values: any[]) {
-  //   for (let value of values) {
-  //     // console.log('value', value, typeof value === 'function');
-  //   }
-  // }
-
-  renderValue(value: any, node: Node) {
-    // console.log('renderValue', value, node);
-    let templateInstance = node.__templateInstance as TemplateInstance;
-    if (templateInstance !== undefined && (!(value instanceof TemplateResult) || templateInstance._template !== value.template)) {
-      this._cleanup(node);
-    }
-
-    if (value instanceof Node) {
-      const fragment = value instanceof DocumentFragment;
-      // TODO: also deal with empty fragments
-      const startNode = fragment ? value.firstChild! : value;
-      const endNode = fragment ? value.lastChild! : value;
-      node.__templateInstance = {startNode,endNode};
-      node.parentNode!.insertBefore(value, node.nextSibling);
-    } else if (value instanceof TemplateResult) {
-      if (templateInstance === undefined || value.template !== templateInstance._template) {
-        // We haven't stamped this template to this location, so create
-        // a new instance and insert it.
-        // TODO: Add keys and check for key equality also
-        node.textContent = '';
-        templateInstance = node.__templateInstance = new TemplateInstance(value.template);
-        const fragment = templateInstance.getFragment();
-        node.parentNode!.insertBefore(fragment, node.nextSibling);
-      }
-      templateInstance.update(value.values);
+  _createPart(templatePart: TemplatePart, node: Node): Part {
+    if (templatePart.type === 'attribute') {
+      return new AttributePart(node as Element, templatePart.name!, templatePart.rawName!, templatePart.strings!);
+    } else if (templatePart.type === 'node') {
+      return new NodePart(node, node.nextSibling!);
     } else {
-      node.textContent = value;
+      throw new Error(`unknown part type: ${templatePart.type}`);
     }
-  }
-
-  private _cleanup(node: Node) {
-    const instance = node.__templateInstance!;
-    // We had a previous template instance here, but don't now: clean up
-    let nextNode: Node|null = instance.startNode;
-    while (nextNode !== null) {
-      const n = nextNode;
-      nextNode = nextNode.nextSibling;
-      n.parentNode!.removeChild(n);
-      if (n === instance.endNode) {
-        break;
-      }
-    }
-    node.__templateInstance = undefined;
   }
 
 }

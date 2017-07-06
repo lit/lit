@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {html, TemplateResult, AttributePart, TemplatePart, TemplateInstance, Values, InstancePart} from '../lit-html.js';
+import {html, TemplateResult, TemplatePart, TemplateInstance, NodePart as InstancePart, Part, AttributePart} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -58,8 +58,8 @@ suite('lit-html', () => {
           <div aThing="${6}"></div>
         </div>`;
       const parts = result.template.parts;
-      const names = parts.map((p: AttributePart) => p.name);
-      const rawNames = parts.map((p: AttributePart) => p.rawName);
+      const names = parts.map((p: TemplatePart) => p.name);
+      const rawNames = parts.map((p: TemplatePart) => p.rawName);
       assert.deepEqual(names, ['someprop', 'a-nother', 'multiparts', undefined, 'athing']);
       assert.deepEqual(rawNames, ['someProp', 'a-nother', 'multiParts', undefined, 'aThing']);
     });
@@ -125,6 +125,13 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<h1>foo</h1>bar');
       });
 
+      // test('renders multiple nested templates', () => {
+      //   const container = document.createElement('div');
+      //   const partial = html`<h1>${'foo'}</h1>`;
+      //   html`${partial}${'bar'}${partial}${'baz'}qux`.renderTo(container);
+      //   assert.equal(container.innerHTML, '<h1>foo</h1>bar<h1>foo</h1>bazqux');
+      // });
+
       test('renders arrays of nested templates', () => {
         const container = document.createElement('div');
         html`<div>${[1,2,3].map((i)=>html`${i}`)}</div>`.renderTo(container);
@@ -177,6 +184,12 @@ suite('lit-html', () => {
         const container = document.createElement('div');
         html`<div foo=${[1,2,3]}></div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div foo="123"></div>');
+      });
+
+      test('renders to an attribute and node', () => {
+        const container = document.createElement('div');
+        html`<div foo="${'bar'}">${'baz'}</div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div foo="bar">baz</div>');
       });
 
       test('renders a combination of stuff', () => {
@@ -337,45 +350,45 @@ suite('lit-html', () => {
         // attribute names from the template strings, we can retreive the original
         // case of the names!
 
-        class PropertyPart implements TemplatePart {
-          type: 'property';
-          index: number;
-          name: string;
-          strings: string[];
-
-          constructor(index: number, name: string, strings: string[]) {
-            this.index = index;
-            this.name = name;
-            this.strings = strings;
+        class PropertySettingTemplateInstance extends TemplateInstance {
+          _createPart(templatePart: TemplatePart, node: Node): Part {
+            if (templatePart.type === 'property') {
+              return new PropertyPart(node as Element, templatePart.name!, templatePart.rawName!, templatePart.strings!);
+            }
+            return super._createPart(templatePart, node);
           }
 
-          update(_instance: TemplateInstance, node: Node, values: Values) {
-            console.assert(node.nodeType === Node.ELEMENT_NODE);
-            const s = this.strings;
+        }
 
-            if (s[0] === '' && s[s.length - 1] === '') { 
+        class PropertyPart extends AttributePart {
+
+          setValue(values: any[]): void {
+            const s = this.strings;
+            if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
               // An expression that occupies the whole attribute value will leave
               // leading and trailing empty strings.
-              (node as any)[this.name] = values.nextValue(node);
+              (this.element as any)[this.rawName] = values[0];
             } else {
               // Interpolation, so interpolate
               let text = '';
               for (let i = 0; i < s.length; i++) {
                 text += s[i];
                 if (i < s.length - 1) {
-                  text += values.nextValue(node);
+                  text += values[i];
                 }
               }
-              (node as any)[this.name] = text;
+              (this.element as any)[this.rawName] = text;
             }
           }
         }
 
         const container = document.createElement('div');
         const t = html`<div someProp="${123}"></div>`;
-        const part = t.template.parts[0] as AttributePart;
-        t.template.parts[0] = new PropertyPart(part.index, part.rawName, part.strings);
-        t.renderTo(container);
+        t.template.parts[0].type = 'property';
+        const instance = new PropertySettingTemplateInstance(t.template);
+        const fragment = instance._clone();
+        instance.update(t.values);
+        container.appendChild(fragment);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });

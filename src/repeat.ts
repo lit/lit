@@ -12,18 +12,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { InstancePart } from "./lit-html.js";
+import { NodePart } from "./lit-html.js";
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
-export type RepeatResult = (part: InstancePart) => any;
+export type RepeatResult = (part: NodePart) => any;
 
 interface State {
-  keyMap: Map<any, InstancePart>;
-  parts: InstancePart[];
+  keyMap: Map<any, NodePart>;
+  parts: NodePart[];
 }
 
-const stateCache = new WeakMap<InstancePart, State>();
+const stateCache = new WeakMap<NodePart, State>();
 
 export function repeat<T>(items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): RepeatResult;
 export function repeat<T>(items: T[], template: ItemTemplate<T>): RepeatResult;
@@ -35,7 +35,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
-  return function (part: InstancePart): any {
+  return function (part: NodePart): any {
     let state = stateCache.get(part);
     if (state === undefined) {
       state = {
@@ -46,7 +46,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     }
     const container = part.startNode.parentNode as HTMLElement|ShadowRoot|DocumentFragment;
     const oldParts = state.parts;
-    const endParts = new Map<Node, InstancePart>(oldParts.map((p) => [p.endNode, p] as [Node, InstancePart]));
+    const endParts = new Map<Node, NodePart>(oldParts.map((p) => [p.endNode, p] as [Node, NodePart]));
     const keyMap = state.keyMap;
 
     const itemParts = [];
@@ -77,7 +77,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
         }
         const endNode = new Text();
         container.insertBefore(endNode, currentMarker.nextSibling);
-        itemPart = new InstancePart(currentMarker, endNode);
+        itemPart = new NodePart(currentMarker, endNode);
         if (key !== undefined && keyMap !== undefined) {
           keyMap.set(key, itemPart!);
         }
