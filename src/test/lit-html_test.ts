@@ -64,6 +64,15 @@ suite('lit-html', () => {
       assert.deepEqual(rawNames, ['someProp', 'a-nother', 'multiParts', undefined, 'aThing']);
     });
 
+    test('parses expressions for two attributes of one element', () => {
+      const result = html`<div a="${1}" b="${2}"></div>`;
+      const parts = result.template.parts;
+      assert.equal(parts.length, 2);
+      const instance = new TemplateInstance(result.template);
+      instance._clone();
+      assert.equal(instance._parts.length, 2);
+    })
+
   });
 
   suite('TemplateResult', () => {

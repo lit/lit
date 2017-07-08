@@ -375,16 +375,18 @@ export class TemplateInstance {
           NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
 
       const parts = this._template.parts;
-      let index = -1;
+      let index = 0;
       let partIndex = 0;
       let templatePart = parts[0];
-      
-      while (walker.nextNode() && partIndex < parts.length) {
-        index++;
+      let node = walker.nextNode();
+      console.log(parts);
+      while (node != null && partIndex < parts.length) {
         if (index === templatePart.index) {
-          const node = walker.currentNode;
           this._parts.push(this._createPart(templatePart, node));
           templatePart = parts[++partIndex];
+        } else {
+          index++;
+          node = walker.nextNode();
         }
       }
     }
