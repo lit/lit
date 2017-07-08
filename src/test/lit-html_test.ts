@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {html, TemplateResult, TemplatePart, TemplateInstance, NodePart as InstancePart, Part, AttributePart} from '../lit-html.js';
+import {html, TemplateResult, TemplatePart, TemplateInstance, NodePart, Part, AttributePart} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -398,148 +398,148 @@ suite('lit-html', () => {
 
     });
 
-    suite('InstancePart', () => {
+  });
 
-      let container: HTMLElement;
-      let startNode: Node;
-      let endNode: Node;
-      let part: InstancePart;
+  suite('NodePart', () => {
 
-      setup(() => {
-        container = document.createElement('div');
-        startNode = new Text();
-        endNode = new Text();
-        container.appendChild(startNode);
-        container.appendChild(endNode);
-        part = new InstancePart(startNode, endNode);
+    let container: HTMLElement;
+    let startNode: Node;
+    let endNode: Node;
+    let part: NodePart;
+
+    setup(() => {
+      container = document.createElement('div');
+      startNode = new Text();
+      endNode = new Text();
+      container.appendChild(startNode);
+      container.appendChild(endNode);
+      part = new NodePart(startNode, endNode);
+    });
+
+    suite('setValue', () => {
+
+      test('accepts a string', () => {
+        part.setValue('foo');
+        assert.equal(container.innerHTML, 'foo');
       });
 
-      suite('setValue', () => {
-
-        test('accepts a string', () => {
-          part.setValue('foo');
-          assert.equal(container.innerHTML, 'foo');
-        });
-
-        test('accepts a number', () => {
-          part.setValue(123);
-          assert.equal(container.innerHTML, '123');
-        });
-
-        test('accepts undefined', () => {
-          part.setValue(undefined);
-          assert.equal(container.innerHTML, '');
-        });
-
-        test('accepts null', () => {
-          part.setValue(null);
-          assert.equal(container.innerHTML, '');
-        });
-
-        test('accepts a thunk', () => {
-          part.setValue((_:any)=>123);
-          assert.equal(container.innerHTML, '123');
-        });
-
-        test('accepts thunks that throw as empty text', () => {
-          part.setValue((_:any)=>{throw new Error('e')});
-          assert.equal(container.innerHTML, '');
-        });
-
-        test('accepts an element', () => {
-          part.setValue(document.createElement('p'));
-          assert.equal(container.innerHTML, '<p></p>');
-        });
-
-        test('accepts arrays', () => {
-          part.setValue([1,2,3]);
-          assert.equal(container.innerHTML, '123');
-        });
-
-        test('accepts nested templates', () => {
-          part.setValue(html`<h1>${'foo'}</h1>`);
-          assert.equal(container.innerHTML, '<h1>foo</h1>');
-        });
-
-        test('accepts arrays of nested templates', () => {
-          part.setValue([1,2,3].map((i)=>html`${i}`));
-          assert.equal(container.innerHTML, '123');
-        });
-
-        test('accepts an array of elements', () => {
-          const children = [
-            document.createElement('p'),
-            document.createElement('a'),
-            document.createElement('span')
-          ];
-          part.setValue(children);
-          assert.equal(container.innerHTML, '<p></p><a></a><span></span>');
-        });
-
-        test('updates when called multiple times with simple values', () => {
-          part.setValue('abc');
-          assert.equal(container.innerHTML, 'abc');
-          part.setValue('def');
-          assert.equal(container.innerHTML, 'def');
-        });
-
-        test('updates when called multiple times with arrays', () => {
-          part.setValue([1, 2, 3]);
-          assert.equal(container.innerHTML, '123');
-
-          part.setValue([4, 5]);
-          assert.equal(container.innerHTML, '45');
-          // check that we're not leaving orphaned marker nodes around
-          assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
-
-          part.setValue([]);
-          assert.equal(container.innerHTML, '');
-          assert.deepEqual([], Array.from(container.childNodes).map((n) => n.nodeValue));
-        });
-
-        test('updates are stable when called multiple times with templates', () => {
-          let value = 'foo';
-          const r = () => html`<h1>${value}</h1>`;
-          part.setValue(r);
-          assert.equal(container.innerHTML, '<h1>foo</h1>');
-          const originalH1 = container.querySelector('h1');
-
-          value = 'bar';
-          part.setValue(r);
-          assert.equal(container.innerHTML, '<h1>bar</h1>');
-          const newH1 = container.querySelector('h1');
-          assert.isTrue(newH1 === originalH1);
-        });
-
-        test('updates are stable when called multiple times with arrays of templates', () => {
-          let items = [1, 2, 3];
-          const r = () => items.map((i)=>html`<li>${i}</li>`);
-          part.setValue(r);
-          assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
-          const originalLIs = Array.from(container.querySelectorAll('li'));
-
-          items = [3, 2, 1];
-          part.setValue(r);
-          assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
-          const newLIs = Array.from(container.querySelectorAll('li'));
-          assert.deepEqual(newLIs, originalLIs);
-        });
-
+      test('accepts a number', () => {
+        part.setValue(123);
+        assert.equal(container.innerHTML, '123');
       });
 
-      suite('clear', () => {
+      test('accepts undefined', () => {
+        part.setValue(undefined);
+        assert.equal(container.innerHTML, '');
+      });
 
-        test('is a no-op on an already empty range', () => {
-          part.clear();
-          assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
-        });
+      test('accepts null', () => {
+        part.setValue(null);
+        assert.equal(container.innerHTML, '');
+      });
 
-        test('clears a range', () => {
-          container.insertBefore(new Text('foo'), endNode);
-          part.clear();
-          assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
-        });
+      test('accepts a thunk', () => {
+        part.setValue((_:any)=>123);
+        assert.equal(container.innerHTML, '123');
+      });
 
+      test('accepts thunks that throw as empty text', () => {
+        part.setValue((_:any)=>{throw new Error('e')});
+        assert.equal(container.innerHTML, '');
+      });
+
+      test('accepts an element', () => {
+        part.setValue(document.createElement('p'));
+        assert.equal(container.innerHTML, '<p></p>');
+      });
+
+      test('accepts arrays', () => {
+        part.setValue([1,2,3]);
+        assert.equal(container.innerHTML, '123');
+      });
+
+      test('accepts nested templates', () => {
+        part.setValue(html`<h1>${'foo'}</h1>`);
+        assert.equal(container.innerHTML, '<h1>foo</h1>');
+      });
+
+      test('accepts arrays of nested templates', () => {
+        part.setValue([1,2,3].map((i)=>html`${i}`));
+        assert.equal(container.innerHTML, '123');
+      });
+
+      test('accepts an array of elements', () => {
+        const children = [
+          document.createElement('p'),
+          document.createElement('a'),
+          document.createElement('span')
+        ];
+        part.setValue(children);
+        assert.equal(container.innerHTML, '<p></p><a></a><span></span>');
+      });
+
+      test('updates when called multiple times with simple values', () => {
+        part.setValue('abc');
+        assert.equal(container.innerHTML, 'abc');
+        part.setValue('def');
+        assert.equal(container.innerHTML, 'def');
+      });
+
+      test('updates when called multiple times with arrays', () => {
+        part.setValue([1, 2, 3]);
+        assert.equal(container.innerHTML, '123');
+
+        part.setValue([4, 5]);
+        assert.equal(container.innerHTML, '45');
+        // check that we're not leaving orphaned marker nodes around
+        assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+
+        part.setValue([]);
+        assert.equal(container.innerHTML, '');
+        assert.deepEqual([], Array.from(container.childNodes).map((n) => n.nodeValue));
+      });
+
+      test('updates are stable when called multiple times with templates', () => {
+        let value = 'foo';
+        const r = () => html`<h1>${value}</h1>`;
+        part.setValue(r);
+        assert.equal(container.innerHTML, '<h1>foo</h1>');
+        const originalH1 = container.querySelector('h1');
+
+        value = 'bar';
+        part.setValue(r);
+        assert.equal(container.innerHTML, '<h1>bar</h1>');
+        const newH1 = container.querySelector('h1');
+        assert.isTrue(newH1 === originalH1);
+      });
+
+      test('updates are stable when called multiple times with arrays of templates', () => {
+        let items = [1, 2, 3];
+        const r = () => items.map((i)=>html`<li>${i}</li>`);
+        part.setValue(r);
+        assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
+        const originalLIs = Array.from(container.querySelectorAll('li'));
+
+        items = [3, 2, 1];
+        part.setValue(r);
+        assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
+        const newLIs = Array.from(container.querySelectorAll('li'));
+        assert.deepEqual(newLIs, originalLIs);
+      });
+
+    });
+
+    suite('clear', () => {
+
+      test('is a no-op on an already empty range', () => {
+        part.clear();
+        assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
+      });
+
+      test('clears a range', () => {
+        container.insertBefore(new Text('foo'), endNode);
+        part.clear();
+        assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
       });
 
     });
