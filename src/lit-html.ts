@@ -379,7 +379,6 @@ export class TemplateInstance {
       let partIndex = 0;
       let templatePart = parts[0];
       let node = walker.nextNode();
-      console.log(parts);
       while (node != null && partIndex < parts.length) {
         if (index === templatePart.index) {
           this._parts.push(this._createPart(templatePart, node));
