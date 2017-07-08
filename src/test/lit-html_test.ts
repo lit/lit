@@ -355,8 +355,8 @@ suite('lit-html', () => {
 
         class PropertySettingTemplateInstance extends TemplateInstance {
           _createPart(templatePart: TemplatePart, node: Node): Part {
-            if (templatePart.type === 'property') {
-              return new PropertyPart(node as Element, templatePart.name!, templatePart.rawName!, templatePart.strings!);
+            if (templatePart.type === 'attribute') {
+              return new PropertyPart(node as Element, templatePart.rawName!, templatePart.strings!);
             }
             return super._createPart(templatePart, node);
           }
@@ -370,7 +370,7 @@ suite('lit-html', () => {
             if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
               // An expression that occupies the whole attribute value will leave
               // leading and trailing empty strings.
-              (this.element as any)[this.rawName] = values[0];
+              (this.element as any)[this.name] = values[0];
             } else {
               // Interpolation, so interpolate
               let text = '';
@@ -380,14 +380,13 @@ suite('lit-html', () => {
                   text += values[i];
                 }
               }
-              (this.element as any)[this.rawName] = text;
+              (this.element as any)[this.name] = text;
             }
           }
         }
 
         const container = document.createElement('div');
         const t = html`<div someProp="${123}"></div>`;
-        t.template.parts[0].type = 'property';
         const instance = new PropertySettingTemplateInstance(t.template);
         const fragment = instance._clone();
         instance.update(t.values);

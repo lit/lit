@@ -173,6 +173,8 @@ export class Template {
 }
 
 export abstract class Part {
+  size?: number;
+
   abstract setValue(value: any): void;
 
   protected _getValue(value: any) {
@@ -195,15 +197,13 @@ export abstract class Part {
 export class AttributePart extends Part {
   element: Element;
   name: string;
-  rawName: string;
   strings: string[];
 
-  constructor(element: Element, name: string, rawName: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: string[]) {
     super();
     console.assert(element.nodeType === Node.ELEMENT_NODE);
     this.element = element;
     this.name = name;
-    this.rawName = rawName;
     this.strings = strings;
   }
 
@@ -228,6 +228,10 @@ export class AttributePart extends Part {
     this.element.setAttribute(this.name, text);
   }
   
+  get size(): number {
+    return this.strings.length - 1;
+  }
+
 }
 
 export class NodePart extends Part {
@@ -357,12 +361,11 @@ export class TemplateInstance {
   update(values: any[]) {
     let valueIndex = 0;
     for (const part of this._parts) {
-      if (part instanceof NodePart) {
+      if (part.size === undefined) {
         part.setValue(values[valueIndex++]);
-      } else if (part instanceof AttributePart) {
-        const size = part.strings.length - 1;
-        part.setValue(values.slice(valueIndex, size));
-        valueIndex += size;
+      } else {
+        part.setValue(values.slice(valueIndex, valueIndex + part.size));
+        valueIndex += part.size;
       }
     }
   }
@@ -394,7 +397,7 @@ export class TemplateInstance {
 
   _createPart(templatePart: TemplatePart, node: Node): Part {
     if (templatePart.type === 'attribute') {
-      return new AttributePart(node as Element, templatePart.name!, templatePart.rawName!, templatePart.strings!);
+      return new AttributePart(node as Element, templatePart.name!, templatePart.strings!);
     } else if (templatePart.type === 'node') {
       return new NodePart(node, node.nextSibling!);
     } else {
