@@ -189,10 +189,16 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="123"></div>');
       });
 
-      test('renders to an attribute and node', () => {
+      test('renders to an attribute before a node', () => {
         const container = document.createElement('div');
         html`<div foo="${'bar'}">${'baz'}</div>`.renderTo(container);
         assert.equal(container.innerHTML, '<div foo="bar">baz</div>');
+      });
+
+      test('renders to an attribute after a node', () => {
+        const container = document.createElement('div');
+        html`<div>${'baz'}</div><div foo="${'bar'}"></div>`.renderTo(container);
+        assert.equal(container.innerHTML, '<div>baz</div><div foo="bar"></div>');
       });
 
       test('renders a combination of stuff', () => {

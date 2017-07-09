@@ -146,10 +146,11 @@ export class Template {
             }
           }
           nodesToRemove.push(node);
-          index--;
+          // index--;
         }
       }
     }
+    // console.log('index', index);
     // Remove text binding nodes after the walk to not disturb the TreeWalker
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
