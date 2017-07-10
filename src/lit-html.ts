@@ -120,11 +120,13 @@ export class Template {
           const strings = value.split(exprMarker);
           if (strings.length > 1) {
             const attributeString = this._strings[partIndex];
-            partIndex += strings.length - 1;
-            const match = attributeString.match(/((?:\w|[.\-_])+)=?("|')?$/);
-            const rawName = match![1];
+            // Trim the trailing literal value if this is an interpolation
+            const rawNameString = attributeString.substring(0, attributeString.length - strings[0].length);
+            const match = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/);
+            const rawName = match[1];
             this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, strings));
             attributesToRemove.push(attribute);
+            partIndex += strings.length - 1;
           }
         }
       } else if (node.nodeType === Node.TEXT_NODE) {
