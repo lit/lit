@@ -123,7 +123,7 @@ export class Template {
             // Trim the trailing literal value if this is an interpolation
             const rawNameString = attributeString.substring(0, attributeString.length - strings[0].length);
             const match = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/);
-            const rawName = match[1];
+            const rawName = match![1];
             this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, strings));
             attributesToRemove.push(attribute);
             partIndex += strings.length - 1;
@@ -148,11 +148,10 @@ export class Template {
             }
           }
           nodesToRemove.push(node);
-          // index--;
         }
       }
     }
-    // console.log('index', index);
+
     // Remove text binding nodes after the walk to not disturb the TreeWalker
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
@@ -281,26 +280,36 @@ export class NodePart extends Part {
       let itemEnd;
       const values = value[Symbol.iterator]() as Iterator<any>;
 
-      const previousParts = Array.isArray(this._previousValue) ? this._previousValue : undefined;
+      const previousParts: NodePart[]|undefined = Array.isArray(this._previousValue) ? this._previousValue : undefined;
       let previousPartsIndex = 0;
       const itemParts = [];
       let current = values.next();
       let next = values.next();
 
+      if (current.done) {
+        // Empty iterable, just clear
+        this.clear();
+      }
       while (!current.done) {
-        if (next.done) {
-          // on the last item, reuse this part's endNode
-          itemEnd = this.endNode;
-        } else {
-          itemEnd = new Text();
-          this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
-        }
-
-        // Reuse a part if we can, otherwise create a new one
-        let itemPart;
+        // Reuse a previous part if we can, otherwise create a new one
+        let itemPart: NodePart;
         if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
           itemPart = previousParts[previousPartsIndex++];
+          if (next.done && itemPart.endNode !== this.endNode) {
+            // Since this is the last part we'll use, set it's endNode to the
+            // container's endNode. Setting the value of this part will clean
+            // up any residual nodes from a previously longer iterable.
+            itemPart.endNode = this.endNode;
+          }
+          itemEnd = itemPart.endNode;
         } else {
+          if (next.done) {
+            // on the last item, reuse this part's endNode
+            itemEnd = this.endNode;
+          } else {
+            itemEnd = new Text();
+            this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
+          }
           itemPart = new NodePart(itemStart, itemEnd);
         }
 
@@ -312,22 +321,6 @@ export class NodePart extends Part {
         itemStart = itemEnd;
       }
       this._previousValue = itemParts;
-
-      // If the new list is shorter than the old list, clean up:
-      if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
-        const clearStart = previousParts[previousPartsIndex].startNode;
-        const clearEnd = previousParts[previousParts.length - 1].endNode;
-        const clearRange = document.createRange();
-        if (previousPartsIndex === 0) {
-          clearRange.setStartBefore(clearStart);  
-        } else {
-          clearRange.setStartAfter(clearStart);
-        }
-        clearRange.setEndAfter(clearEnd);
-        clearRange.deleteContents();
-        clearRange.detach(); // is this neccessary?
-      }
-
     } else {
       this.clear();
       node = new Text(value);
@@ -339,16 +332,13 @@ export class NodePart extends Part {
 
   clear() {
     this._previousValue = undefined;
-    let node: Node = this.startNode;
-    let next: Node|null = node.nextSibling;
-    while (next !== null && next !== this.endNode) {
-      node = next;
-      next = next.nextSibling;
-      node.parentNode!.removeChild(node);
-    }
+    const range = document.createRange();
+    range.setStartAfter(this.startNode);
+    range.setEndBefore(this.endNode);
+    range.deleteContents();
+    range.detach();
   }
 
-  // detach(): DocumentFragment ?
 }
 
 export class TemplateInstance {

@@ -461,6 +461,15 @@ suite('lit-html', () => {
       test('accepts arrays', () => {
         part.setValue([1,2,3]);
         assert.equal(container.innerHTML, '123');
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+      });
+
+      test('accepts an empty array', () => {
+        part.setValue([]);
+        assert.equal(container.innerHTML, '');
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
       });
 
       test('accepts nested templates', () => {
@@ -493,15 +502,43 @@ suite('lit-html', () => {
       test('updates when called multiple times with arrays', () => {
         part.setValue([1, 2, 3]);
         assert.equal(container.innerHTML, '123');
-
-        part.setValue([4, 5]);
-        assert.equal(container.innerHTML, '45');
-        // check that we're not leaving orphaned marker nodes around
-        assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+        const n2 = container.childNodes.item(2);
+        const n4 = container.childNodes.item(4);
 
         part.setValue([]);
         assert.equal(container.innerHTML, '');
-        assert.deepEqual([], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+      });
+
+      test('updates when called multiple times with arrays', () => {
+        part.setValue([1, 2, 3]);
+        assert.equal(container.innerHTML, '123');
+        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+
+        part.setValue([4, 5]);
+        assert.equal(container.innerHTML, '45');
+        assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+
+        part.setValue([]);
+        assert.equal(container.innerHTML, '');
+        assert.deepEqual(['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+
+        part.setValue([4, 5]);
+        assert.equal(container.innerHTML, '45');
+        assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
       });
 
       test('updates are stable when called multiple times with templates', () => {
