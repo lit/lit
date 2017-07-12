@@ -38,7 +38,7 @@ suite('repeat', () => {
 
   suite('keyed', () => {
 
-    test('renderes list', () => {
+    test('renders a list', () => {
       const r = repeat([1, 2, 3], (i) => i, (i: number) => html`
             <li>item: ${i}</li>`);
       r(part);

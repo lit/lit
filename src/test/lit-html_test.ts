@@ -472,6 +472,14 @@ suite('lit-html', () => {
         assert.strictEqual(container.lastChild, endNode);
       });
 
+      test('accepts nested arrays', () => {
+        part.setValue([1,[2],3]);
+        assert.equal(container.innerHTML, '123');
+        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+      });
+
       test('accepts nested templates', () => {
         part.setValue(html`<h1>${'foo'}</h1>`);
         assert.equal(container.innerHTML, '<h1>foo</h1>');
@@ -505,8 +513,6 @@ suite('lit-html', () => {
         assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
-        const n2 = container.childNodes.item(2);
-        const n4 = container.childNodes.item(4);
 
         part.setValue([]);
         assert.equal(container.innerHTML, '');
@@ -540,6 +546,21 @@ suite('lit-html', () => {
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
+
+      test('updates nested arrays', () => {
+        part.setValue([1,[2],3]);
+        assert.equal(container.innerHTML, '123');
+        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+
+        part.setValue([[1],2,3]);
+        assert.equal(container.innerHTML, '123');
+        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.strictEqual(container.firstChild, startNode);
+        assert.strictEqual(container.lastChild, endNode);
+      });
+
 
       test('updates are stable when called multiple times with templates', () => {
         let value = 'foo';
