@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {html, TemplateResult, TemplatePart, TemplateInstance, NodePart, Part, AttributePart} from '../lit-html.js';
+import {html, TemplateResult, TemplatePart, TemplateInstance, NodePart, Part, AttributePart, Template} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -349,50 +349,63 @@ suite('lit-html', () => {
 
     suite('extensibility', () => {
 
-      test('can replace parts with custom types', () => {
 
-        // This test demonstrates how a flavored layer on top of lit-html could
-        // modify the parsed Template to implement different behavior, like setting
-        // properties instead of attributes.
+      // These tests demonstrate how a flavored layer on top of lit-html could
+      // modify the parsed Template to implement different behavior, like setting
+      // properties instead of attributes.
 
-        // Note that because the template parse phase captures the pre-parsed
-        // attribute names from the template strings, we can retreive the original
-        // case of the names!
+      // Note that because the template parse phase captures the pre-parsed
+      // attribute names from the template strings, we can retreive the original
+      // case of the names!
 
-        class PropertySettingTemplateInstance extends TemplateInstance {
-          _createPart(templatePart: TemplatePart, node: Node): Part {
-            if (templatePart.type === 'attribute') {
-              return new PropertyPart(node as Element, templatePart.rawName!, templatePart.strings!);
-            }
-            return super._createPart(templatePart, node);
+      class PropertySettingTemplateInstance extends TemplateInstance {
+        _createPart(templatePart: TemplatePart, node: Node): Part {
+          if (templatePart.type === 'attribute') {
+            return new PropertyPart(this, node as Element, templatePart.rawName!, templatePart.strings!);
           }
-
+          return super._createPart(templatePart, node);
         }
+        _createInstance(template: Template) {
+          return new PropertySettingTemplateInstance(template);
+        }
+      }
 
-        class PropertyPart extends AttributePart {
+      class PropertyPart extends AttributePart {
 
-          setValue(values: any[]): void {
-            const s = this.strings;
-            if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
-              // An expression that occupies the whole attribute value will leave
-              // leading and trailing empty strings.
-              (this.element as any)[this.name] = values[0];
-            } else {
-              // Interpolation, so interpolate
-              let text = '';
-              for (let i = 0; i < s.length; i++) {
-                text += s[i];
-                if (i < s.length - 1) {
-                  text += values[i];
-                }
+        setValue(values: any[]): void {
+          const s = this.strings;
+          if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
+            // An expression that occupies the whole attribute value will leave
+            // leading and trailing empty strings.
+            (this.element as any)[this.name] = values[0];
+          } else {
+            // Interpolation, so interpolate
+            let text = '';
+            for (let i = 0; i < s.length; i++) {
+              text += s[i];
+              if (i < s.length - 1) {
+                text += values[i];
               }
-              (this.element as any)[this.name] = text;
             }
+            (this.element as any)[this.name] = text;
           }
         }
+      }
 
+      test('can replace parts with custom types', () => {
         const container = document.createElement('div');
         const t = html`<div someProp="${123}"></div>`;
+        const instance = new PropertySettingTemplateInstance(t.template);
+        const fragment = instance._clone();
+        instance.update(t.values);
+        container.appendChild(fragment);
+        assert.equal(container.innerHTML, '<div></div>');
+        assert.strictEqual((container.firstElementChild as any).someProp, 123);
+      });
+
+      test('works with nested tempaltes', () => {
+        const container = document.createElement('div');
+        const t = html`${html`<div someProp="${123}"></div>`}`;
         const instance = new PropertySettingTemplateInstance(t.template);
         const fragment = instance._clone();
         instance.update(t.values);
@@ -418,7 +431,8 @@ suite('lit-html', () => {
       endNode = new Text();
       container.appendChild(startNode);
       container.appendChild(endNode);
-      part = new NodePart(startNode, endNode);
+      const instance = new TemplateInstance(html``.template);
+      part = new NodePart(instance, startNode, endNode);
     });
 
     suite('setValue', () => {

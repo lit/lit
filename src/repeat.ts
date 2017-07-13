@@ -35,7 +35,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
-  return function (part: NodePart): any {
+  return (part: NodePart): any => {
     let state = stateCache.get(part);
     if (state === undefined) {
       state = {
@@ -77,7 +77,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
         }
         const endNode = new Text();
         container.insertBefore(endNode, currentMarker.nextSibling);
-        itemPart = new NodePart(currentMarker, endNode);
+        itemPart = new NodePart(part.instance, currentMarker, endNode);
         if (key !== undefined && keyMap !== undefined) {
           keyMap.set(key, itemPart!);
         }

@@ -175,7 +175,12 @@ export class Template {
 }
 
 export abstract class Part {
+  instance: TemplateInstance
   size?: number;
+
+  constructor(instance: TemplateInstance) {
+    this.instance = instance;
+  }
 
   abstract setValue(value: any): void;
 
@@ -201,8 +206,8 @@ export class AttributePart extends Part {
   name: string;
   strings: string[];
 
-  constructor(element: Element, name: string, strings: string[]) {
-    super();
+  constructor(instance: TemplateInstance, element: Element, name: string, strings: string[]) {
+    super(instance);
     console.assert(element.nodeType === Node.ELEMENT_NODE);
     this.element = element;
     this.name = name;
@@ -241,8 +246,8 @@ export class NodePart extends Part {
   endNode: Node;
   private _previousValue: any;
 
-  constructor(startNode: Node, endNode: Node) {
-    super();
+  constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
+    super(instance);
     this.startNode = startNode;
     this.endNode = endNode;
   }
@@ -261,7 +266,7 @@ export class NodePart extends Part {
         instance = this._previousValue;
       } else {
         this.clear();
-        instance = new TemplateInstance(value.template);
+        instance = this.instance._createInstance(value.template);
         node = instance._clone();
       }
       instance.update(value.values);
@@ -310,7 +315,7 @@ export class NodePart extends Part {
             itemEnd = new Text();
             this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
           }
-          itemPart = new NodePart(itemStart, itemEnd);
+          itemPart = new NodePart(this.instance, itemStart, itemEnd);
         }
 
         itemPart.setValue(current.value);
@@ -390,22 +395,22 @@ export class TemplateInstance {
 
   _createPart(templatePart: TemplatePart, node: Node): Part {
     if (templatePart.type === 'attribute') {
-      return new AttributePart(node as Element, templatePart.name!, templatePart.strings!);
+      return new AttributePart(this, node as Element, templatePart.name!, templatePart.strings!);
     } else if (templatePart.type === 'node') {
-      return new NodePart(node, node.nextSibling!);
+      return new NodePart(this, node, node.nextSibling!);
     } else {
       throw new Error(`unknown part type: ${templatePart.type}`);
     }
+  }
+
+  _createInstance(template: Template) {
+    return new TemplateInstance(template);
   }
 
 }
 
 declare global {
   interface Node {
-    __templateInstance?: {
-      startNode: Node;
-      endNode: Node;
-    };
-    __startMarker?: Node;
+    __templateInstance?: TemplateInstance;
   }
 }
