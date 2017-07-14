@@ -47,7 +47,7 @@ export class TemplateResult {
    * Renders this template to a container. To update a container with new values,
    * reevaluate the template literal and call `renderTo` of the new result.
    */
-  renderTo(container: Element|DocumentFragment) {
+  renderTo(container: Element|DocumentFragment|ShadowRoot) {
     let instance = container.__templateInstance as TemplateInstance;
     if (instance === undefined) {
       instance = new TemplateInstance(this.template);
@@ -66,16 +66,16 @@ const exprMarker = '{{}}';
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
- * 
+ *
  * There are two built-in part types: AttributePart and NodePart. NodeParts
  * always represent a single dynamic expression, while AttributeParts may
  * represent as many expressions are contained in the attribute.
- * 
+ *
  * A Template's parts are mutable, so parts can be replaced or modified
  * (possibly to implement different template semantics). The contract is that
  * parts can only be replaced, not removed, added or reordered, and parts must
  * always consume the correct number of values in their `update()` method.
- * 
+ *
  * TODO(justinfagnani): That requirement is a little fragile. A
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
@@ -234,7 +234,7 @@ export class AttributePart extends Part {
     }
     this.element.setAttribute(this.name, text);
   }
-  
+
   get size(): number {
     return this.strings.length - 1;
   }
