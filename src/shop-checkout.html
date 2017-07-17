@@ -120,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <iron-form id="checkoutForm"
               on-iron-form-response="_didReceiveResponse"
               on-iron-form-presubmit="_willSendRequest">
-            <form method="post" action="data/sample_success_response.json">
+            <form method="post" action="data/sample_success_response.json" enctype="application/x-www-form-urlencoded">
 
               <div class="subsection" visible$="[[!_hasItems]]">
                 <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
@@ -609,7 +609,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       _willSendRequest(e) {
         let form = e.target;
-        let body = form.ajax && form.ajax.body;
+        let body = form.request && form.request.body;
 
         this._setWaiting(true);
 
