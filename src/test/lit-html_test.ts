@@ -128,6 +128,13 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<h1>foo</h1>bar');
       });
 
+      test('values contain interpolated values', () => {
+        const container = document.createElement('div');
+        const t = html`${'a'},${'b'},${'c'}`;
+        t.renderTo(container);
+        assert.equal(container.innerHTML, 'a,b,c');
+      });
+
       // test('renders multiple nested templates', () => {
       //   const container = document.createElement('div');
       //   const partial = html`<h1>${'foo'}</h1>`;

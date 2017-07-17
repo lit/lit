@@ -144,9 +144,10 @@ export class Template {
               node.parentNode!.insertBefore(new Text(), node);
               node.parentNode!.insertBefore(new Text(), node);
               this.parts.push(new TemplatePart('node', index));
-              index++;
+              index += 2;
             }
           }
+          index--;
           nodesToRemove.push(node);
         }
       }
