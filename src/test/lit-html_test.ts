@@ -216,11 +216,9 @@ suite('lit-html', () => {
               <p>${'qux'}</p>
             </div>`
           .renderTo(container);
-        assert.equal(container.innerHTML, `
-            <div foo="bar">
+        assert.equal(container.innerHTML, `<div foo="bar">
               baz
-              <p>qux</p>
-            </div>`);
+              <p>qux</p></div>`);
       });
 
     });

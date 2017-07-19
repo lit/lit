@@ -149,6 +149,9 @@ export class Template {
           }
           index--;
           nodesToRemove.push(node);
+        } else if (!node.nodeValue!.trim()) {
+          nodesToRemove.push(node);
+          index--;
         }
       }
     }
