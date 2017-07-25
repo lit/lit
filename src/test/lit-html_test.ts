@@ -71,7 +71,19 @@ suite('lit-html', () => {
       const instance = new TemplateInstance(result.template);
       instance._clone();
       assert.equal(instance._parts.length, 2);
-    })
+    });
+
+    test('updates when called multiple times with arrays', () => {
+      const container = document.createElement('div');
+      const ul = (list: string[]) => {
+        var items = list.map(item => html`<li>${item}</li>`);
+        return html`<ul>${items}</ul>`;
+      };
+      ul(['a', 'b', 'c']).renderTo(container);
+      assert.equal(container.innerHTML, '<ul><li>a</li><li>b</li><li>c</li></ul>');
+      ul(['x', 'y']).renderTo(container);
+      assert.equal(container.innerHTML, '<ul><li>x</li><li>y</li></ul>');
+    });
 
   });
 
@@ -540,7 +552,7 @@ suite('lit-html', () => {
         assert.strictEqual(container.lastChild, endNode);
       });
 
-      test('updates when called multiple times with arrays', () => {
+      test('updates when called multiple times with arrays 2', () => {
         part.setValue([1, 2, 3]);
         assert.equal(container.innerHTML, '123');
         assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));

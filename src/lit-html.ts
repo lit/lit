@@ -257,7 +257,6 @@ export class NodePart extends Part {
   }
 
   setValue(value: any): void {
-
     let node: Node|undefined = undefined;
     value = this._getValue(value);
 
@@ -308,6 +307,11 @@ export class NodePart extends Part {
             // Since this is the last part we'll use, set it's endNode to the
             // container's endNode. Setting the value of this part will clean
             // up any residual nodes from a previously longer iterable.
+            const range = document.createRange();
+            range.setStartBefore(itemPart.endNode);
+            range.setEndBefore(this.endNode);
+            range.deleteContents();
+            range.detach();
             itemPart.endNode = this.endNode;
           }
           itemEnd = itemPart.endNode;
