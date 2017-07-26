@@ -42,32 +42,33 @@ export class TemplateResult {
     this.template = template;
     this.values = values;
   }
+}
 
-  /**
-   * Renders this template to a container. To update a container with new values,
-   * reevaluate the template literal and call `renderTo` of the new result.
-   */
-  renderTo(container: Element|DocumentFragment) {
-    let instance = container.__templateInstance as any;
-    if (instance !== undefined &&
-        instance instanceof TemplateInstance &&
-        instance.template === this.template) {
-      instance.update(this.values);
-      return;
-    }
-
-    instance = new TemplateInstance(this.template);
-    container.__templateInstance = instance;
-
-    const fragment = instance._clone();
-    instance.update(this.values);
-
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
-    container.appendChild(fragment);
+/**
+ * Renders a template to a container.
+ * 
+ * To update a container with new values, reevaluate the template literal and
+ * call `render` with the new result.
+ */
+export function render(result: TemplateResult, container: Element|DocumentFragment) {
+  let instance = container.__templateInstance as any;
+  if (instance !== undefined &&
+      instance.template === result.template &&
+      instance instanceof TemplateInstance) {
+    instance.update(result.values);
+    return;
   }
 
+  instance = new TemplateInstance(result.template);
+  container.__templateInstance = instance;
+
+  const fragment = instance._clone();
+  instance.update(result.values);
+
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+  container.appendChild(fragment);
 }
 
 const exprMarker = '{{}}';

@@ -43,11 +43,11 @@ import { TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part, Te
  *     html`<button on-click=${_=> this.onClickHandler}>Buy Now</button>`
  *
  */
-export function renderExtendedTo(result: TemplateResult, container: Element|DocumentFragment) {
+export function render(result: TemplateResult, container: Element|DocumentFragment) {
   let instance = container.__templateInstance as any;
   if (instance !== undefined &&
-      instance instanceof ExtendedTemplateInstance &&
-      instance.template === result.template) {
+      instance.template === result.template &&
+      instance instanceof ExtendedTemplateInstance) {
     instance.update(result.values);
     return;
   }
