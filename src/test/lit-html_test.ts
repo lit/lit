@@ -50,7 +50,7 @@ suite('lit-html', () => {
 
     test('stores raw names of attributes', () => {
       const result = html`
-        <div 
+        <div
           someProp="${1}"
           a-nother="${2}"
           multiParts='${3} ${4}'>
@@ -246,7 +246,7 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>aaa</div>');
         const div = container.firstChild as HTMLDivElement;
         assert.equal(div.tagName, 'DIV');
-        
+
         foo = 'bbb';
         render(t(), container);
         assert.equal(container.innerHTML, '<div>bbb</div>');
@@ -264,7 +264,7 @@ suite('lit-html', () => {
 
         render(t(), container);
         assert.equal(container.innerHTML, '<div>foobar</div>');
-        
+
         foo = 'bbb';
         render(t(), container);
         assert.equal(container.innerHTML, '<div>bbbbar</div>');
@@ -279,7 +279,7 @@ suite('lit-html', () => {
 
         render(t(), container);
         assert.equal(container.innerHTML, '<div a="foo:bar"></div>');
-        
+
         foo = 'bbb';
         render(t(), container);
         assert.equal(container.innerHTML, '<div a="bbb:bar"></div>');
@@ -304,7 +304,7 @@ suite('lit-html', () => {
 
         render(t(true), container);
         assert.equal(container.innerHTML, '<h1>foo</h1>baz');
-        
+
         foo = 'bbb';
         render(t(true), container);
         assert.equal(container.innerHTML, '<h1>bbb</h1>baz');
