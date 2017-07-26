@@ -48,16 +48,24 @@ export class TemplateResult {
    * reevaluate the template literal and call `renderTo` of the new result.
    */
   renderTo(container: Element|DocumentFragment) {
-    let instance = container.__templateInstance as TemplateInstance;
-    if (instance === undefined) {
-      instance = new TemplateInstance(this.template);
-      container.__templateInstance = instance;
-      const fragment = instance._clone();
+    let instance = container.__templateInstance as any;
+    if (instance !== undefined &&
+        instance instanceof TemplateInstance &&
+        instance.template === this.template) {
       instance.update(this.values);
-      container.appendChild(fragment);
-    } else {
-      instance.update(this.values);
+      return;
     }
+
+    instance = new TemplateInstance(this.template);
+    container.__templateInstance = instance;
+
+    const fragment = instance._clone();
+    instance.update(this.values);
+
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    container.appendChild(fragment);
   }
 
 }
@@ -362,6 +370,10 @@ export class TemplateInstance {
 
   constructor(template: Template) {
     this._template = template;
+  }
+
+  get template() {
+    return this._template;
   }
 
   update(values: any[]) {

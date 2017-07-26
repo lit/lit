@@ -22,17 +22,65 @@ const assert = chai.assert;
 
 suite('lit-extended', () => {
   suite('renderExtendedTo', () => {
-    test('reuses an existing TemplateInstance when available', () => {
-      const container = document.createElement('div');
+    test('reuses an existing ExtendedTemplateInstance when available', () => {
+        const container = document.createElement('div');
 
-      // TODO(polymerlabs/lit-html#6): These template chunks shouldn't need
-      // to have dynamic parts, but they do until #6 is fixes.
-      renderExtendedTo(html`<div>${'foo'}</div>`, container);
-      renderExtendedTo(html`<div>${'bar'}</div>`, container);
+        const t = (content: any) => html`<div>${content}</div>`;
 
-      assert.equal(container.children.length, 1);
-      assert.equal(container.children[0].textContent, 'bar');
+        renderExtendedTo(t('foo'), container);
+
+        assert.equal(container.children.length, 1);
+        const fooDiv = container.children[0];
+        assert.equal(fooDiv.textContent, 'foo');
+
+        renderExtendedTo(t('bar'), container);
+
+        assert.equal(container.children.length, 1);
+        const barDiv = container.children[0];
+        assert.equal(barDiv.textContent, 'bar');
+
+        assert.equal(fooDiv, barDiv);
     });
+
+    test('overwrites an existing (plain) TemplateInstance if one exists, ' +
+      'even if it has a matching Template', () => {
+        const container = document.createElement('div');
+
+        const t = () => html`<div>foo</div>`;
+
+        t().renderTo(container);
+
+        assert.equal(container.children.length, 1);
+        const firstDiv = container.children[0];
+        assert.equal(firstDiv.textContent, 'foo');
+
+        renderExtendedTo(t(), container);
+
+        assert.equal(container.children.length, 1);
+        const secondDiv = container.children[0];
+        assert.equal(secondDiv.textContent, 'foo');
+
+        assert.notEqual(firstDiv, secondDiv);
+      });
+
+    test('overwrites an existing ExtendedTemplateInstance if one exists and ' +
+      'does not have a matching Template', () => {
+        const container = document.createElement('div');
+
+        renderExtendedTo(html`<div>foo</div>`, container);
+
+        assert.equal(container.children.length, 1);
+        const fooDiv = container.children[0];
+        assert.equal(fooDiv.textContent, 'foo');
+
+        renderExtendedTo(html`<div>bar</div>`, container);
+
+        assert.equal(container.children.length, 1);
+        const barDiv = container.children[0];
+        assert.equal(barDiv.textContent, 'bar');
+
+        assert.notEqual(fooDiv, barDiv);
+      });
   });
 });
 
