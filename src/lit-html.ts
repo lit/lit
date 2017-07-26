@@ -316,11 +316,7 @@ export class NodePart extends Part {
             // Since this is the last part we'll use, set it's endNode to the
             // container's endNode. Setting the value of this part will clean
             // up any residual nodes from a previously longer iterable.
-            const range = document.createRange();
-            range.setStartBefore(itemPart.endNode);
-            range.setEndBefore(this.endNode);
-            range.deleteContents();
-            range.detach();
+            this.clear(itemPart.endNode);
             itemPart.endNode = this.endNode;
           }
           itemEnd = itemPart.endNode;
@@ -352,15 +348,17 @@ export class NodePart extends Part {
     }
   }
 
-  clear() {
+  clear(startNode :Node = this.startNode) {
     this._previousValue = undefined;
-    const range = document.createRange();
-    range.setStartAfter(this.startNode);
-    range.setEndBefore(this.endNode);
-    range.deleteContents();
-    range.detach();
-  }
 
+    let node = startNode.nextSibling!;
+
+    while (node && node !== this.endNode) {
+      let next = node.nextSibling!;
+      node.parentNode!.removeChild(node);
+      node = next;
+    }
+  }
 }
 
 export class TemplateInstance {
