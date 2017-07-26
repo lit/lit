@@ -49,7 +49,7 @@ export class TemplateResult {
    */
   renderTo(container: Element|DocumentFragment) {
     let instance = container.__templateInstance as any;
-    if (instance &&
+    if (instance !== undefined &&
         instance instanceof TemplateInstance &&
         instance.template === this.template) {
       instance.update(this.values);
