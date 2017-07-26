@@ -48,8 +48,10 @@ export class TemplateResult {
    * reevaluate the template literal and call `renderTo` of the new result.
    */
   renderTo(container: Element|DocumentFragment) {
-    let instance = container.__templateInstance as TemplateInstance|undefined;
-    if (instance && instance.template === this.template) {
+    let instance = container.__templateInstance as any;
+    if (instance &&
+        instance instanceof TemplateInstance &&
+        instance.template === this.template) {
       instance.update(this.values);
       return;
     }

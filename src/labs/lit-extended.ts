@@ -44,8 +44,10 @@ import { TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part, Te
  *
  */
 export function renderExtendedTo(result: TemplateResult, container: Element|DocumentFragment) {
-  let instance = container.__templateInstance as ExtendedTemplateInstance|TemplateInstance|undefined;
-  if (instance && instance.template === result.template) {
+  let instance = container.__templateInstance as any;
+  if (instance &&
+      instance instanceof ExtendedTemplateInstance &&
+      instance.template === result.template) {
     instance.update(result.values);
     return;
   }
