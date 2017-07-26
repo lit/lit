@@ -25,8 +25,10 @@ suite('lit-extended', () => {
     test('reuses an existing TemplateInstance when available', () => {
       const container = document.createElement('div');
 
-      renderExtendedTo(html`<div>foo</div>`, container);
-      renderExtendedTo(html`<div>bar</div>`, container);
+      // TODO(polymerlabs/lit-html#6): These template chunks shouldn't need
+      // to have dynamic parts, but they do until #6 is fixes.
+      renderExtendedTo(html`<div>${'foo'}</div>`, container);
+      renderExtendedTo(html`<div>${'bar'}</div>`, container);
 
       assert.equal(container.children.length, 1);
       assert.equal(container.children[0].textContent, 'bar');
