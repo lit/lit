@@ -339,6 +339,9 @@ export class NodePart extends Part {
         itemStart = itemEnd;
       }
       this._previousValue = itemParts;
+    } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
+        this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
+      this.startNode.nextSibling!.textContent = value;
     } else {
       this.clear();
       node = new Text(value);
