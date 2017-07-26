@@ -9,10 +9,10 @@ HTML template literals in JavaScript
 const sayHello = (name) => html`<div>Hello ${name}!</div>`;
 
 const container = document.querySelector('#container');
-sayHello('Steve').renderTo(container);
+render(sayHello('Steve'), container);
 // renders <div>Hello Steve!</div> to container
 
-sayHello('Kevin').renderTo(container);
+render(sayHello('Kevin'), container);
 // updates to <div>Hello Kevin!</div>, but only updates the ${name} part
 ```
 
@@ -46,10 +46,10 @@ Goal 4 is partially acheived by leveraging the built in JavaScript and HTML pars
 `lit-html` is very new, under initial development, and not production-ready.
 
  * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1 and Chrome Canary (with the Experimental Web Platform features flag on).
- * It has a growing test suite, but it has only been run manually on Chrome Canary and Safari 10.1.
+ * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54 with modules enabled.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
  * It has not been benchmarked thouroughly yet.
- * The API is likely to change, especially `renderTo()` and the `Template` class used by extensions.
+ * The API is likely to change.
 
 Even without a build configuration, `lit-html` minified with `babili` and gzipped measures in at less than 1.5k. We will strive to keep the size extremely small.
 
@@ -63,7 +63,7 @@ To call `html` multiple times on the same template literal, it'll usually be pla
 
 ```javascript
 let count = 1;
-const render = () => html`count: ${count++}`;
+const countTemplate = () => html`count: ${count++}`;
 ```
 
 The template object is based on an actual HTML `<template>` element and created by setting it's `innerHTML`, utilizing the browser's HTML parser. The HTML is not created by concatenating the string literals expression values, but by joining the literal parts with special markers. The template object finds and remembers the locations of the markers (called "parts"). This makes the system safer from XSS attacks: a value bound to an attribute can't close the attribute, text content is automatically escaped, etc.
@@ -90,13 +90,13 @@ When a template is rendered it is cloned along with the part metadata. Values ar
 
 4. Return a `TemplateResult` with the template and the values.
 
-#### `TemplateResult.renderTo(container)`:
+#### `render(result, container)`:
 
 1. Look for an existing `TemplateInstance` on `container`
 
 2. If an instance exists, check that it's from the same `Template` as this `TemplateResult`
 
-3. If the instance is from the same `Template`, remove its content from `container`.
+3. If the instance is not from the same `Template`, remove its content from `container`.
 
 4. If an instance doesn't exist for the node, create one from the `Template`:
 
@@ -289,10 +289,6 @@ Some examples of possible extensions:
 
 `TemplateResult` is a class that holds a `Template` object parsed from a template literal and the values from its expressions.
 
-  * Method `renderTo(container: Element): void`
-
-    Renders a `TemplateResult`'s template to an element using the result's values. For re-renders, only the dynamic parts are updated.
-
   * Property `template: Template`
 
     A reference to the parsed `Template` object.
@@ -300,6 +296,10 @@ Some examples of possible extensions:
   *  Property `values: any[]`
 
     The values returned by the template literal's expressions.
+
+### Function `render(result: TemplateResult, container: Element): void`
+
+Renders a `TemplateResult`'s template to an element using the result's values. For re-renders, only the dynamic parts are updated.
 
 ### Class `Template`
 
@@ -327,7 +327,7 @@ Promises and Async Iterables should be supported natively.
 
 ### Higher-Order Templates examples
 
-#### `If(cond, then, else)`
+#### `when(cond, then, else)`
 
 An if-directive that retains the `then` and `else` _instances_ for fast switching between the two states, like `<dom-if>`.
 
@@ -335,13 +335,13 @@ Example:
 
 ```javascript
 const render = () => html`
-  ${If(state === 'loading',
+  ${when(state === 'loading',
     html`<div>Loading...</div>`,
     html`<p>${message}</p>`)}
 `;
 ```
 
-#### `Repeat(items, keyfn, template)`
+#### `repeat(items, keyfn, template)`
 
 A loop that supports efficient re-ordering by using item keys.
 
@@ -350,13 +350,15 @@ Example:
 ```javascript
 const render = () => html`
   <ul>
-    ${Repeat(items, (i) => i.id, (i, index) => html`
+    ${repeat(items, (i) => i.id, (i, index) => html`
       <li>${index}: ${i.name}</li>`)}
   </ul>
 `;
 ```
 
-#### `Guard(guardExpr, template)`
+Note, initial version is in `lib/labs/repeat.ts`: https://github.com/PolymerLabs/lit-html/blob/master/src/labs/repeat.ts
+
+#### `guard(guardExpr, template)`
 
 Only re-renders an instance if the guard expression has changed since the last render.
 
@@ -366,6 +368,6 @@ Example:
 
 ```javascript
 const render = () => html`
-  <div>Current User: ${Guard(user, () => user.getProfile())}</div>
+  <div>Current User: ${guard(user, () => user.getProfile())}</div>
 `;
 ```
