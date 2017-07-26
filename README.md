@@ -1,4 +1,4 @@
-# lit-html
+# :fire:-html
 HTML template literals in JavaScript
 
 `lit-html` lets you describe HTML templates with JavaScript template literals, and efficiently render and re-render those templates to DOM.
