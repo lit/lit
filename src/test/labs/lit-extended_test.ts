@@ -31,6 +31,25 @@ suite('lit-extended', () => {
       assert.equal(container.children.length, 1);
       assert.equal(container.children[0].textContent, 'bar');
     });
+
+    test('overwrites an existing TemplateInstance if one exists and does ' +
+      'not have a matching Template', () => {
+        const container = document.createElement('div');
+
+        renderExtendedTo(html`<div>foo</div>`, container);
+
+        assert.equal(container.children.length, 1);
+        const fooDiv = container.children[0];
+        assert.equal(fooDiv.textContent, 'foo');
+
+        renderExtendedTo(html`<div>bar</div>`, container);
+
+        assert.equal(container.children.length, 1);
+        const barDiv = container.children[0];
+        assert.equal(barDiv.textContent, 'bar');
+
+        assert.notEqual(fooDiv, barDiv);
+      });
   });
 });
 
