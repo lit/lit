@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
+/// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {html, NodePart, TemplateInstance} from '../lit-html.js';
-import {repeat} from '../repeat.js';
+import {html, NodePart, TemplateInstance} from '../../lit-html.js';
+import {repeat} from '../../labs/repeat.js';
 
 const assert = chai.assert;
 
