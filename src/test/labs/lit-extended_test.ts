@@ -23,13 +23,23 @@ const assert = chai.assert;
 suite('lit-extended', () => {
   suite('renderExtendedTo', () => {
     test('reuses an existing TemplateInstance when available', () => {
-      const container = document.createElement('div');
+        const container = document.createElement('div');
 
-      renderExtendedTo(html`<div>foo</div>`, container);
-      renderExtendedTo(html`<div>bar</div>`, container);
+        const t = (content: any) => html`<div>${content}</div>`;
 
-      assert.equal(container.children.length, 1);
-      assert.equal(container.children[0].textContent, 'bar');
+        renderExtendedTo(t('foo'), container);
+
+        assert.equal(container.children.length, 1);
+        const fooDiv = container.children[0];
+        assert.equal(fooDiv.textContent, 'foo');
+
+        renderExtendedTo(t('bar'), container);
+
+        assert.equal(container.children.length, 1);
+        const barDiv = container.children[0];
+        assert.equal(barDiv.textContent, 'bar');
+
+        assert.equal(fooDiv, barDiv);
     });
 
     test('overwrites an existing TemplateInstance if one exists and does ' +
