@@ -549,6 +549,28 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<p></p><a></a><span></span>');
       });
 
+      test('updates a simple value to a complex one', () => {
+        let value: string|TemplateResult = 'foo';
+        const t = () => html`<div>${value}</div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+
+        value = html`<span>bar</span>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div><span>bar</span></div>');
+      });
+
+      test('updates a complex value to a simple one', () => {
+        let value: string|TemplateResult = html`<span>bar</span>`;
+        const t = () => html`<div>${value}</div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div><span>bar</span></div>');
+
+        value = 'foo';
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+      });
+
       test('updates when called multiple times with simple values', () => {
         part.setValue('abc');
         assert.equal(container.innerHTML, 'abc');
