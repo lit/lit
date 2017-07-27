@@ -50,7 +50,7 @@ suite('lit-html', () => {
 
     test('stores raw names of attributes', () => {
       const result = html`
-        <div 
+        <div
           someProp="${1}"
           a-nother="${2}"
           multiParts='${3} ${4}'>
@@ -246,7 +246,7 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>aaa</div>');
         const div = container.firstChild as HTMLDivElement;
         assert.equal(div.tagName, 'DIV');
-        
+
         foo = 'bbb';
         render(t(), container);
         assert.equal(container.innerHTML, '<div>bbb</div>');
@@ -264,7 +264,7 @@ suite('lit-html', () => {
 
         render(t(), container);
         assert.equal(container.innerHTML, '<div>foobar</div>');
-        
+
         foo = 'bbb';
         render(t(), container);
         assert.equal(container.innerHTML, '<div>bbbbar</div>');
@@ -279,7 +279,7 @@ suite('lit-html', () => {
 
         render(t(), container);
         assert.equal(container.innerHTML, '<div a="foo:bar"></div>');
-        
+
         foo = 'bbb';
         render(t(), container);
         assert.equal(container.innerHTML, '<div a="bbb:bar"></div>');
@@ -304,7 +304,7 @@ suite('lit-html', () => {
 
         render(t(true), container);
         assert.equal(container.innerHTML, '<h1>foo</h1>baz');
-        
+
         foo = 'bbb';
         render(t(true), container);
         assert.equal(container.innerHTML, '<h1>bbb</h1>baz');
@@ -547,6 +547,28 @@ suite('lit-html', () => {
         ];
         part.setValue(children);
         assert.equal(container.innerHTML, '<p></p><a></a><span></span>');
+      });
+
+      test('updates a simple value to a complex one', () => {
+        let value: string|TemplateResult = 'foo';
+        const t = () => html`<div>${value}</div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+
+        value = html`<span>bar</span>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div><span>bar</span></div>');
+      });
+
+      test('updates a complex value to a simple one', () => {
+        let value: string|TemplateResult = html`<span>bar</span>`;
+        const t = () => html`<div>${value}</div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div><span>bar</span></div>');
+
+        value = 'foo';
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test('updates when called multiple times with simple values', () => {

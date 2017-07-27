@@ -46,7 +46,7 @@ export class TemplateResult {
 
 /**
  * Renders a template to a container.
- * 
+ *
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
  */
@@ -75,16 +75,16 @@ const exprMarker = '{{}}';
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
- * 
+ *
  * There are two built-in part types: AttributePart and NodePart. NodeParts
  * always represent a single dynamic expression, while AttributeParts may
  * represent as many expressions are contained in the attribute.
- * 
+ *
  * A Template's parts are mutable, so parts can be replaced or modified
  * (possibly to implement different template semantics). The contract is that
  * parts can only be replaced, not removed, added or reordered, and parts must
  * always consume the correct number of values in their `update()` method.
- * 
+ *
  * TODO(justinfagnani): That requirement is a little fragile. A
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
@@ -247,7 +247,7 @@ export class AttributePart extends Part {
     }
     this.element.setAttribute(this.name, text);
   }
-  
+
   get size(): number {
     return this.strings.length - 1;
   }
@@ -316,11 +316,10 @@ export class NodePart extends Part {
             // Since this is the last part we'll use, set it's endNode to the
             // container's endNode. Setting the value of this part will clean
             // up any residual nodes from a previously longer iterable.
-            const range = document.createRange();
-            range.setStartBefore(itemPart.endNode);
-            range.setEndBefore(this.endNode);
-            range.deleteContents();
-            range.detach();
+
+            // Remove previousSibling, since we want itemPart.endNode to be
+            // removed as part of the clear operation.
+            this.clear(itemPart.endNode.previousSibling!);
             itemPart.endNode = this.endNode;
           }
           itemEnd = itemPart.endNode;
@@ -343,6 +342,9 @@ export class NodePart extends Part {
         itemStart = itemEnd;
       }
       this._previousValue = itemParts;
+    } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
+        this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
+      this.startNode.nextSibling!.textContent = value;
     } else {
       this.clear();
       node = new Text(value);
@@ -352,15 +354,17 @@ export class NodePart extends Part {
     }
   }
 
-  clear() {
+  clear(startNode: Node = this.startNode) {
     this._previousValue = undefined;
-    const range = document.createRange();
-    range.setStartAfter(this.startNode);
-    range.setEndBefore(this.endNode);
-    range.deleteContents();
-    range.detach();
-  }
 
+    let node = startNode.nextSibling!;
+
+    while (node !== null && node !== this.endNode) {
+      let next = node.nextSibling!;
+      node.parentNode!.removeChild(node);
+      node = next;
+    }
+  }
 }
 
 export class TemplateInstance {
