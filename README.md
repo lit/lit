@@ -1,137 +1,211 @@
 # lit-html
-HTML template literals in JavaScript
+HTML templates, via JavaScript template literals
 
-`lit-html` lets you describe HTML templates with JavaScript template literals, and efficiently render and re-render those templates to DOM.
+## Overview
 
-## Example
+`lit-html` lets you write [HTML templates](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) with JavaScript [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), and efficiently render and _re-render_ those templates to DOM.
 
+`lit-html` provides two main exports:
+
+ * `html`: A JavaScript [template tag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
+ * `render()`: A function that renders a `TemplateResult` to a DOM container, such as an element or shadow root.
+
+### Examples
+
+`lit-html` can be used standalone and directly to help manage some DOM:
 ```javascript
-const sayHello = (name) => html`<div>Hello ${name}!</div>`;
+const helloTemplate = (name) => html`<div>Hello ${name}!</div>`;
 
-const container = document.querySelector('#container');
-render(sayHello('Steve'), container);
-// renders <div>Hello Steve!</div> to container
+// renders <div>Hello Steve!</div> to the document body
+render(helloTemplate('Steve'), document.body);
 
-render(sayHello('Kevin'), container);
 // updates to <div>Hello Kevin!</div>, but only updates the ${name} part
+render(helloTemplate('Kevin'), document.body);
 ```
 
-## Why
+But may also be common to use `lit-html` with a component system that calls `render()` for you, similar to React components:
+
+_(this example uses JS Class Fields, an upcoming specification)_
+```javascript
+class MyElement extends CoolLitMixin(HTMLElement) {
+
+  static observedProperties = ['message', 'name'];
+
+  title = `About lit-html`;
+  body = `It's got potential.`;
+
+  // Called by the base-class when properties change, result is passed
+  // to lit-html's render() function.
+  render() {
+    return html`
+      <h1>${this.title}</h1>
+      <p>${this.body}</p>
+    `;
+  }
+}
+```
+
+## Motivation
 
 `lit-html` has four main goals:
 
 1. Efficient updates of previously rendered DOM.
-2. Easy access the JavaScript state that needs to be injected into DOM.
-3. Standard syntax without required build steps, understandable by standards-compliant tools.
+2. Expressiveness and easy access the JavaScript state that needs to be injected into DOM.
+3. Standard JavaScript without required build steps, understandable by standards-compliant tools.
 4. Very small size.
 
-Goal 1 motivate `lit-html`'s method of creating HTML `<template>`s with markers for dynamic sections, rather than the final DOM tree.
+## How it Works
 
-For real-world template use-cases, updating existing DOM is just as important as creating the initial DOM. Using JavaScript template literals without a helper like `lit-html` makes it easy to create the initial DOM, but offers no help in efficiently updating it. Developer must either manually find dynamic nodes and update them, or re-render the entire tree by setting `innerHTML`.
+`lit-html` utilizes some unique properties of HTML `<template>` elements and JavaScript tmplate literals. So it's helpful to understand them first.
 
-Even previous HTML-in-JS proposals like E4X were only concerned with creating a static DOM tree with expression values already interpolated into the contents. That's again, good for initial rendering and not so good for updates.
+### Tagged Template Literals
 
-`lit-html` is able to preserve the static vs dynamic content distinction that JavaScript template literal syntax makes clear, so it can only update the dynamic parts of a template, completely skipping the static parts on re-renders.
+A JavaScript template literal is a string literal that can have other JavaScript expressions embedded in it:
 
-This should offer a performance advantage even against VDOM approaches, as most VDOM libraries do not make a distinction between static and dynamic context. The VDOM trees represent the final desired state and then the whole tree is reconciled against a previous state.
+```javascript
+`My name is ${name}.`
+``` 
 
-Goal 2 drives `lit-html` to HTML-in-JS rather than expressions-in-HTML. Any JavaScript expression can be used in a template, from any scope available where the template is defined.
+A _tagged_ template literal is preceded by a special template tag function:
 
-Goal 3 makes tempalte literals an obvious choice over non-standard syntax like JSX.
+```javascript
+let name = 'Monica';
+tag`My name is ${name}.`
+```
 
-Goal 4 is partially acheived by leveraging the built in JavaScript and HTML parsers and not doing anything that would impede using them.
+Tags are functions of the form: `tag(strings, ...values)`, where `strings` is an immutable array of the literal parts, and values are the results of the embedded expressions.
+
+In the preceding example, `strings` would be `['My name is ', '.']`, and `values` would be `['Monica']`.
+
+### HTML `<template>` Elements
+
+A `<template>` element is an inert tree of DOM (script don't run, images don't load, custom elements aren't upgraded, etc) that can be efficiently cloned. It's usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, but by code at a later time, but it can also be created imperatively with `createElement` and `innerHTML`.
+
+### Template Creation
+
+The first time `html` is called on a particular template literal it does one-time setup work to create the template. It joins all the string parts with a special placeholder, `"{{}}"`, then creates a `<template>` and sets its `innherHTML` to the result. The it walks the template's DOM and extracts the placeholder and remembers their location.
+
+Every call to `html` returns a `TemplateResult` which contains the template created on the first call, and the expression values for the current call.
+
+### Template Rendering
+
+`render()` takes a `TemplateResult` and renders it to a DOM container. On the initial render it clones the template, then walks it using the remembered placeholder positions, to create `Part`s.
+
+A `Part` is a "hole" in the DOM where values can be injected. `lit-html` includes two type of parts by default: `NodePart` and `AttributePart`, which let you set text content and attribute values respectively. The `Part`s, container, and template they were created from are grouped together in an object called a `TemplateInstance`.
+
+Rendering can be customized by providing alternate `render()` implementations whcih create different kinds of `TemplateInstances` and `Part`s, like `PropertyPart` and `EventPart` included in `lib/labs/lit-extended` which let templates set properties and event handlers on elements.
+
+## Performance
+
+`lit-html` is designed to be lightweight and fast (though performance benchmarking is just starting).
+
+ * It utilizies the built-in JS and HTML parsers - it doesn't include any expression or markup parser of it's own.
+ * It only updates the dynamic parts of templates - static parts are untouched, not even walked for diffing, after the initial render.
+ * It uses cloning for initial render.
+
+This should make the approach generally fast and small. Actual science and optimization and still TODOs at this time.
+
+## Features
+
+### Simple expressions and literals
+
+Anything coercible to strings are supported:
+
+```javascript
+const render = () => html`foo is ${foo}`;
+```
+
+### Attribute-value Expressions
+
+```javascript
+const render = () => html`<div class="${blue}"></div>`;
+```
+
+### Safety
+
+Because `lit-html` templates are parsed before values are set, they are safer than generating HTML via string-concatenation. Attributes are set via `setAttribute()` and node text via `textContent`, so the structure of template instances cannot be accidentally changed by expression values, and values are automatically escaped.
+
+_TODO: Add sanitization hooks to disallow inline event handlers, etc._
+
+### Case-sensitive Attribute Names
+
+Attribute parts store both the HTML-parsed name and the raw name pulled from the string literal. This allows extensions, such as those that might set properties on elements using attribute syntax, to get case-sensitive names.
+
+```javascript
+const render = () => html`<div someProp="${blue}"></div>`;
+render().template.parts[0].rawName === 'someProp';
+```
+
+### Arrays/Iterables
+
+```javascript
+const items = [1, 2, 3];
+const render = () => html`items = ${items.map((i) => `item: ${i})}`;
+```
+
+```javascript
+const items = {
+  a: 1,
+  b: 23,
+  c: 456,
+};
+const render = () => html`items = ${Object.entries(items)}`;
+```
+
+### Nested Templates
+
+```javascript
+const header = html`<h1>${title}</h1>`;
+const render = () => html`
+  ${header}
+  <p>And the body</p>
+`;
+```
+
+These features compose so you can include iterables of thunks that return arrays of nested templates, etc...
+
+### Function Values
+
+A function valued expression can be used for error handling and stateful rendering.
+
+If an expression returns a function, the function is called with the `Part` its populating, inside a try/catch block.
+
+This makes it safe from exceptions:
+
+```javascript
+let data;
+const render = () => html`foo = ${_=>data.foo}`;
+```
+
+Here, `data.foo` throws because `data` is undefined, but the rest of the template renders.
+
+And is a useful extension point:
+
+const render = () => html`<div>${(part) => part.setValue((part.previousValue + 1) || 0)}</div>`;
+
+The `repeat()` directive in `lib/labs/repeat.js` uses this API to implement keyed, stable DOM updates.
+
+### Extensibility
+
+`lit-html` is designed to be extended by more opinionated flavors of template syntaxes. For instance, `lit-html` doesn't support declarative event handlers or property setting out-of-the-box. A layer on top can add that while exposing the same API, by implementing a custom `render()` function.
+
+Some examples of possible extensions:
+
+ * Property setting: Attribute expressions in templates could set properties on node.
+ * Event handlers: Specially named attributes can install event handlers.
+ * HTML values: `lit-html` creates `Text` nodes by default. Extensions could allow setting `innerHTML`.
 
 ## Status
 
 `lit-html` is very new, under initial development, and not production-ready.
 
- * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1 and Chrome Canary (with the Experimental Web Platform features flag on).
- * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54 with modules enabled.
+ * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome Canary (coming in 61), and Firefox 54 (behind a flag).
+ * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
  * It has not been benchmarked thouroughly yet.
- * The API is likely to change.
+ * The API may change.
 
-Even without a build configuration, `lit-html` minified with `babili` and gzipped measures in at less than 1.5k. We will strive to keep the size extremely small.
-
-## How it Works
-
-`html` does not return DOM nodes, unlike many other HTML with tagged template literal examples, but returns a `TemplateResult` - an object that contains a template and the values from expressions in the template - which can then be used to create or update DOM.
-
-The template is created only the first time `html` is called on a particular template literal. On every subsequent call of `html` on the same template literal the exact same template is returned, only the values change.
-
-To call `html` multiple times on the same template literal, it'll usually be placed in a function:
-
-```javascript
-let count = 1;
-const countTemplate = () => html`count: ${count++}`;
-```
-
-The template object is based on an actual HTML `<template>` element and created by setting it's `innerHTML`, utilizing the browser's HTML parser. The HTML is not created by concatenating the string literals expression values, but by joining the literal parts with special markers. The template object finds and remembers the locations of the markers (called "parts"). This makes the system safer from XSS attacks: a value bound to an attribute can't close the attribute, text content is automatically escaped, etc.
-
-When a template is rendered it is cloned along with the part metadata. Values are set via `setAttribute()` and `textContent`. Some state is stored on the container to indicate that a template was already rendered there. Subsequent renders use that state to update only the dynamic parts, not the entire template instance.
-
-### Rough Algorithm Outline
-
-#### `html`:
-
-1. `html` is invoked with `strings` and `values`.
-
-    `strings` are the string literal parts as a `TemplateStringsArray`. The same instance is returned for every evaluation of a particular template literal.
-
-2. Look up a cached template keyed by `strings`, otherwise...
-
-3. Create a new template:
-
-     1. Join `strings` with a special marker, `{{}}`. This creates a template string that looks like a Polymer template with empty expressions.
-
-     2. Create a new `<template>` element and set its `innerHTML` to the generated template string.
-
-     3. Crawl the `<template>` contents, looking for markers and remember their location by index in `Part` objects. Text-content expressions create new empty text nodes which are used as placeholders.
-
-4. Return a `TemplateResult` with the template and the values.
-
-#### `render(result, container)`:
-
-1. Look for an existing `TemplateInstance` on `container`
-
-2. If an instance exists, check that it's from the same `Template` as this `TemplateResult`
-
-3. If the instance is not from the same `Template`, remove its content from `container`.
-
-4. If an instance doesn't exist for the node, create one from the `Template`:
-
-    1. Clone the `Template`'s `<template>` contents.
-
-    2. Iterate through the cloned nodes and create new "instance parts" for nodes that have `Part`s. An "instance part" is just a {part, node} record.
-
-5. Update. For every `Part`:
-
-    1. If it's an `AttributePart`, build up an attibute value then set the attribute.
-    
-    2. If it's a `NodePart`, get the value (trampoline thunks, render nested templates, etc), then either append a document fragment or set the `textContent`.
-
-6. If this is the first render, append the result DOM to `container`.
-
-## Use in Components
-
-HTML templates could easily be the basis for component rendering, similar to JSX in React. A component base class can call an instance method that returns a `TemplateResult` and then apply it to the shadow root:
-
-```javascript
-class MyElement extends CoolBaseElement {
-
-  static get observedProperties() {
-    return ['message', 'name'];
-  }
-
-  title = `About lit-html`;
-  body = `It's got potential.`;
-
-  render() { return html`
-    <h1>${this.title}</h1>
-    <p>${this.body}</p>
-  `;}
-}
-```
+Even without a build configuration, `lit-html` minified with `babili` and gzipped measures in at less than 1.7k. We will strive to keep the size extremely small.
 
 ## Benefits over HTML templates
 
@@ -193,133 +267,7 @@ html`
 `
 ```
 
-## Features
-
-### Simple expressions and literals
-
-Anything coercible to strings are supported:
-
-```javascript
-const render = () => html`foo is ${foo}`;
-```
-
-### Attribute-value Expressions
-
-```javascript
-const render = () => html`<div class="${blue}"></div>`;
-```
-
-### Safety
-
-Because `lit-html` templates are parsed before values are set, they are safer than generating HTML via string-concatenation. Attributes are set via `setAttribute()` and node text via `textContent`, so the structure of template instances cannot be accidentally changed by expression values, and values are automatically escaped.
-
-### Case-sensitive Attribute Names
-
-Attribute parts store both the HTML-parsed name and the raw name pulled from the string literal. This allows extensions, such as those that might set properties on elements using attribute syntax, to get case-sensitive names.
-
-```javascript
-const render = () => html`<div someProp="${blue}"></div>`;
-render().template.parts[0].rawName === 'someProp';
-```
-
-### Functions/Thunks
-
-A function value is called with no arguments, in a try/catch block to be safe from exceptions:
-
-```javascript
-let data;
-const render = () => html`foo = ${_=>data.foo}`;
-```
-
-Here, `data.foo` throws because `data` is undefined, but the rest of the template renders.
-
-### Arrays/Iterables
-
-```javascript
-const items = [1, 2, 3];
-const render = () => html`items = ${items.map((i) => `item: ${i})}`;
-```
-
-```javascript
-const items = {
-  a: 1,
-  b: 23,
-  c: 456,
-};
-const render = () => html`items = ${Object.entries(items)}`;
-```
-
-### Nested Templates
-
-```javascript
-const header = html`<h1>${title}</h1>`;
-const render = () => html`
-  ${header}
-  <p>And the body</p>
-`;
-```
-
-These features compose so you can include iterables of thunks that return arrays of nested templates, etc...
-
-### Extensibility
-
-`lit-html` is designed to be extended by more opinionated flavors of template syntaxes. For instance, `lit-html` doesn't support declarative event handlers or property setting out-of-the-box. A layer on top can add that while exposing the same API, by wrapping the `html` tag in a new tag and modifying the result.
-
-This is accomplished by allowing the `TemplatePart`s of a template, which are responsible for setting new values into the DOM,  to be replaced with new implementations.
-
-Some examples of possible extensions:
-
- * Property setting: Attribute expressions in templates could set properties on node.
- * Event handlers: Specially named attributes can install event handlers.
- * HTML values: `lit-html` creates `Text` nodes by default. Extensions could allow setting `innerHTML`.
-
-### Small Size
-
-`lit-html` is less than 1.5k minified and gzipped.
-
-## API
-
-### Function `html`
-
-`html(callSite: TemplateStringsArray, ...expressions: any[]): TemplateResult`
-
-`html` is a template tag for [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), which parses the literal as HTML and returns a `TemplateResult`.
-
-### Class `TemplateResult`
-
-`TemplateResult` is a class that holds a `Template` object parsed from a template literal and the values from its expressions.
-
-  * Property `template: Template`
-
-    A reference to the parsed `Template` object.
-
-  *  Property `values: any[]`
-
-    The values returned by the template literal's expressions.
-
-### Function `render(result: TemplateResult, container: Element): void`
-
-Renders a `TemplateResult`'s template to an element using the result's values. For re-renders, only the dynamic parts are updated.
-
-### Class `Template`
-
-  *  Property `element: HTMLTemplateElement`
-
-  *  Property `parts: Part[]`
-
-### Abstract Class `Part`
-
-A `Part` is a dynamic section of a `TemplateInstance`. It's value can be set to update the section.
-
-Specially support value types are `Node`, `Function`, and `TemplateResult`.
-
-  *  Method `setValue(value: any): void`
-
 ## Future Work
-
-### Stateful Values
-
-In order to support stateful repeat/if like `dom-repeat` and `dom-if` a value should be able to control it's rendering somewhat. TBD.
 
 ### Async Support
 
