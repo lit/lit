@@ -316,7 +316,7 @@ export class NodePart extends Part {
             // Since this is the last part we'll use, set it's endNode to the
             // container's endNode. Setting the value of this part will clean
             // up any residual nodes from a previously longer iterable.
-            this.clear(itemPart.endNode);
+            this.clear(itemPart.endNode.previousSibling!);
             itemPart.endNode = this.endNode;
           }
           itemEnd = itemPart.endNode;
@@ -348,12 +348,12 @@ export class NodePart extends Part {
     }
   }
 
-  clear(startNode :Node = this.startNode) {
+  clear(startNode: Node = this.startNode) {
     this._previousValue = undefined;
 
     let node = startNode.nextSibling!;
 
-    while (node && node !== this.endNode) {
+    while (node !== null && node !== this.endNode) {
       let next = node.nextSibling!;
       node.parentNode!.removeChild(node);
       node = next;
