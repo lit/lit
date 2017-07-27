@@ -37,7 +37,7 @@ This should offer a performance advantage even against VDOM approaches, as most 
 
 Goal 2 drives `lit-html` to HTML-in-JS rather than expressions-in-HTML. Any JavaScript expression can be used in a template, from any scope available where the template is defined.
 
-Goal 3 makes tempalte literals an obvious choice over non-standard syntax like JSX.
+Goal 3 makes template literals an obvious choice over non-standard syntax like JSX.
 
 Goal 4 is partially acheived by leveraging the built in JavaScript and HTML parsers and not doing anything that would impede using them.
 
