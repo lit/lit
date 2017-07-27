@@ -46,7 +46,7 @@ export class TemplateResult {
 
 /**
  * Renders a template to a container.
- * 
+ *
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
  */
@@ -316,6 +316,9 @@ export class NodePart extends Part {
             // Since this is the last part we'll use, set it's endNode to the
             // container's endNode. Setting the value of this part will clean
             // up any residual nodes from a previously longer iterable.
+
+            // Remove previousSibling, since we want itemPart.endNode to be
+            // removed as part of the clear operation.
             this.clear(itemPart.endNode.previousSibling!);
             itemPart.endNode = this.endNode;
           }
