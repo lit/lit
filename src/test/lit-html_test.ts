@@ -19,6 +19,10 @@ import {html, render, TemplateResult, TemplatePart, TemplateInstance, NodePart, 
 
 const assert = chai.assert;
 
+Object.defineProperty(Symbol, 'asyncIterator', {
+  value: Symbol()
+});
+
 suite('lit-html', () => {
 
   suite('html', () => {
@@ -260,6 +264,33 @@ suite('lit-html', () => {
         resolve2!('bar');
         await promise1;
         assert.equal(container.innerHTML, '<div>bar</div>');
+      });
+
+      test('renders an async iterable', async () => {
+        const container = document.createElement('div');
+        let resolve: (v: any) => void;
+        let tick = new Promise((res, _) => resolve = res);
+        const push = async (v: any) => {
+          const currentTick = tick;
+          const r = resolve;
+          tick = new Promise((res, _) => resolve = res);
+          r(v);
+          await currentTick;
+        };
+        async function* iterable() {
+          while (true) {
+            yield await tick;
+          }
+        }
+
+        render(html`<div>${iterable}</div>`, container);
+        assert.equal(container.innerHTML, '<div></div>');
+
+        await push('foo');
+        assert.equal(container.innerHTML, '<div>foo</div>');
+
+        await push('bar');
+        assert.equal(container.innerHTML, '<div>foobar</div>');
       });
 
       test('renders a combination of stuff', () => {
