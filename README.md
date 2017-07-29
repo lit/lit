@@ -162,8 +162,6 @@ const render = () => html`
 `;
 ```
 
-These features compose so you can include iterables of thunks that return arrays of nested templates, etc...
-
 ### Function Values
 
 A function valued expression can be used for error handling and stateful rendering.
@@ -184,6 +182,20 @@ And is a useful extension point:
 const render = () => html`<div>${(part) => part.setValue((part.previousValue + 1) || 0)}</div>`;
 
 The `repeat()` directive in `lib/labs/repeat.js` uses this API to implement keyed, stable DOM updates.
+
+### Promises
+
+Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won't update the template when it finally resolves.
+
+```javascript
+const render = () => html`
+  The response is ${fetch('sample.txt').then((r) => r.text())}.
+`;
+```
+
+### Composability
+
+These features compose so you can render iterables of functions that return arrays of nested templates, etc...
 
 ### Extensibility
 
@@ -269,9 +281,9 @@ html`
 
 ## Future Work
 
-### Async Support
+### Async Iterables Support
 
-Promises and Async Iterables should be supported natively.
+Async Iterables should be supported natively.
 
 ### Higher-Order Templates examples
 
