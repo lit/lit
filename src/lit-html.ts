@@ -350,6 +350,24 @@ export class NodePart extends Part {
         itemStart = itemEnd;
       }
       this._previousValue = itemParts;
+    } else if (value && value[Symbol.asyncIterator]) {
+      this.clear();
+      (async () => {
+        for await (const v of value) {
+          let itemStart = this.startNode;
+          if (this.startNode.nextSibling !== this.endNode) {
+            itemStart = new Text();
+            this.endNode.parentNode!.insertBefore(itemStart, this.endNode);
+          }
+          if (this._previousValue === value) {
+            const itemPart = new NodePart(this.instance, itemStart, this.endNode);
+            itemPart.setValue(v);
+          } else {
+            break;
+          }
+        }
+      })();
+      this._previousValue = value;
     } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
         this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
       this.startNode.nextSibling!.textContent = value;
