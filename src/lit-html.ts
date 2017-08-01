@@ -272,6 +272,7 @@ export class NodePart extends Part {
     if (value instanceof Node) {
       this.clear();
       node = value;
+      this._previousValue = value;
     } else if (value instanceof TemplateResult) {
       let instance: TemplateInstance;
       if (this._previousValue && this._previousValue._template === value.template) {
@@ -283,6 +284,13 @@ export class NodePart extends Part {
       }
       instance.update(value.values);
       this._previousValue = instance;
+    } else if (value && value.then !== undefined) {
+      value.then((v: any) => {
+        if (this._previousValue === value) {
+          this.setValue(v);
+        }
+      });
+      this._previousValue = value;
     } else if (value && typeof value !== 'string' && value[Symbol.iterator]) {
       // For an Iterable, we create a new InstancePart per item, then set its
       // value to the item. This is a little bit of overhead for every item in
@@ -345,9 +353,11 @@ export class NodePart extends Part {
     } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
         this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
       this.startNode.nextSibling!.textContent = value;
+      this._previousValue = value;
     } else {
       this.clear();
       node = new Text(value);
+      this._previousValue = value;
     }
     if (node !== undefined) {
       this.endNode.parentNode!.insertBefore(node, this.endNode);
