@@ -265,102 +265,110 @@ export class NodePart extends Part {
     this.endNode = endNode;
   }
 
+  _insertNodeBeforeEndNode(node: Node) {
+    this.endNode.parentNode!.insertBefore(node, this.endNode);
+  }
+
+  _setNodeValue(value: Node): Node {
+    this.clear();
+    this._insertNodeBeforeEndNode(value);
+
+    return value;
+  }
+
+  _setTextValue(value: string): Node {
+    return this._setNodeValue(new Text(value));
+  }
+
+  _setTemplateResultValue(value: TemplateResult): TemplateInstance {
+    let instance: TemplateInstance;
+    if (this._previousValue && this._previousValue._template === value.template) {
+      instance = this._previousValue;
+    } else {
+      instance = this.instance._createInstance(value.template);
+      this._setNodeValue(instance._clone());
+    }
+    instance.update(value.values);
+    return instance;
+  }
+
+  _setIterableValue(value: any): NodePart[] {
+    // For an Iterable, we create a new InstancePart per item, then set its
+    // value to the item. This is a little bit of overhead for every item in
+    // an Iterable, but it lets us recurse easily and update Arrays of
+    // TemplateResults that will be commonly returned from expressions like:
+    // array.map((i) => html`${i}`)
+
+    // We reuse this parts startNode as the first part's startNode, and this
+    // parts endNode as the last part's endNode.
+
+    let itemStart = this.startNode;
+    let itemEnd;
+    const values = value[Symbol.iterator]() as Iterator<any>;
+
+    const previousParts: NodePart[]|undefined = Array.isArray(this._previousValue) ?
+        this._previousValue : undefined;
+    let previousPartsIndex = 0;
+    const itemParts = [];
+    let current = values.next();
+    let next = values.next();
+
+    if (current.done) {
+      // Empty iterable, just clear
+      this.clear();
+    }
+    while (!current.done) {
+      // Reuse a previous part if we can, otherwise create a new one
+      let itemPart: NodePart;
+      if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
+        itemPart = previousParts[previousPartsIndex++];
+        if (next.done && itemPart.endNode !== this.endNode) {
+          // Since this is the last part we'll use, set it's endNode to the
+          // container's endNode. Setting the value of this part will clean
+          // up any residual nodes from a previously longer iterable.
+
+          // Remove previousSibling, since we want itemPart.endNode to be
+          // removed as part of the clear operation.
+          this.clear(itemPart.endNode.previousSibling!);
+          itemPart.endNode = this.endNode;
+        }
+        itemEnd = itemPart.endNode;
+      } else {
+        if (next.done) {
+          // on the last item, reuse this part's endNode
+          itemEnd = this.endNode;
+        } else {
+          itemEnd = new Text();
+          this._insertNodeBeforeEndNode(itemEnd);
+        }
+        itemPart = new NodePart(this.instance, itemStart, itemEnd);
+      }
+
+      itemPart.setValue(current.value);
+      itemParts.push(itemPart);
+
+      current = next;
+      next = values.next();
+      itemStart = itemEnd;
+    }
+    return itemParts;
+  }
+
   setValue(value: any): void {
-    let node: Node|undefined = undefined;
     value = this._getValue(value);
 
     if (value instanceof Node) {
-      this.clear();
-      node = value;
-      this._previousValue = value;
+      this._previousValue = this._setNodeValue(value);
     } else if (value instanceof TemplateResult) {
-      let instance: TemplateInstance;
-      if (this._previousValue && this._previousValue._template === value.template) {
-        instance = this._previousValue;
-      } else {
-        this.clear();
-        instance = this.instance._createInstance(value.template);
-        node = instance._clone();
-      }
-      instance.update(value.values);
-      this._previousValue = instance;
-    } else if (value && value.then !== undefined) {
-      value.then((v: any) => {
-        if (this._previousValue === value) {
-          this.setValue(v);
-        }
-      });
-      this._previousValue = value;
+      this._previousValue = this._setTemplateResultValue(value);
     } else if (value && typeof value !== 'string' && value[Symbol.iterator]) {
-      // For an Iterable, we create a new InstancePart per item, then set its
-      // value to the item. This is a little bit of overhead for every item in
-      // an Iterable, but it lets us recurse easily and update Arrays of
-      // TemplateResults that will be commonly returned from expressions like:
-      // array.map((i) => html`${i}`)
-
-      // We reuse this parts startNode as the first part's startNode, and this
-      // parts endNode as the last part's endNode.
-
-      let itemStart = this.startNode;
-      let itemEnd;
-      const values = value[Symbol.iterator]() as Iterator<any>;
-
-      const previousParts: NodePart[]|undefined = Array.isArray(this._previousValue) ? this._previousValue : undefined;
-      let previousPartsIndex = 0;
-      const itemParts = [];
-      let current = values.next();
-      let next = values.next();
-
-      if (current.done) {
-        // Empty iterable, just clear
-        this.clear();
-      }
-      while (!current.done) {
-        // Reuse a previous part if we can, otherwise create a new one
-        let itemPart: NodePart;
-        if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
-          itemPart = previousParts[previousPartsIndex++];
-          if (next.done && itemPart.endNode !== this.endNode) {
-            // Since this is the last part we'll use, set it's endNode to the
-            // container's endNode. Setting the value of this part will clean
-            // up any residual nodes from a previously longer iterable.
-
-            // Remove previousSibling, since we want itemPart.endNode to be
-            // removed as part of the clear operation.
-            this.clear(itemPart.endNode.previousSibling!);
-            itemPart.endNode = this.endNode;
-          }
-          itemEnd = itemPart.endNode;
-        } else {
-          if (next.done) {
-            // on the last item, reuse this part's endNode
-            itemEnd = this.endNode;
-          } else {
-            itemEnd = new Text();
-            this.endNode.parentNode!.insertBefore(itemEnd, this.endNode);
-          }
-          itemPart = new NodePart(this.instance, itemStart, itemEnd);
-        }
-
-        itemPart.setValue(current.value);
-        itemParts.push(itemPart);
-
-        current = next;
-        next = values.next();
-        itemStart = itemEnd;
-      }
-      this._previousValue = itemParts;
+      this._previousValue = this._setIterableValue(value);
     } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
         this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
       this.startNode.nextSibling!.textContent = value;
       this._previousValue = value;
     } else {
-      this.clear();
-      node = new Text(value);
-      this._previousValue = value;
-    }
-    if (node !== undefined) {
-      this.endNode.parentNode!.insertBefore(node, this.endNode);
+      this._previousValue = this._setTextValue(value);
     }
   }
 
