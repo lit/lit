@@ -93,7 +93,7 @@ Every call to `html` returns a `TemplateResult` which contains the template crea
 
 A `Part` is a "hole" in the DOM where values can be injected. `lit-html` includes two type of parts by default: `NodePart` and `AttributePart`, which let you set text content and attribute values respectively. The `Part`s, container, and template they were created from are grouped together in an object called a `TemplateInstance`.
 
-Rendering can be customized by providing alternate `render()` implementations whcih create different kinds of `TemplateInstances` and `Part`s, like `PropertyPart` and `EventPart` included in `lib/labs/lit-extended` which let templates set properties and event handlers on elements.
+Rendering can be customized by providing alternate `render()` implementations whcih create different kinds of `TemplateInstances` and `Part`s, like `PropertyPart` and `EventPart` included in `lib/lit-extended.ts` which let templates set properties and event handlers on elements.
 
 ## Performance
 
@@ -181,7 +181,7 @@ And is a useful extension point:
 
 const render = () => html`<div>${(part) => part.setValue((part.previousValue + 1) || 0)}</div>`;
 
-The `repeat()` directive in `lib/labs/repeat.js` uses this API to implement keyed, stable DOM updates.
+The `repeat()` directive in `lib/repeat.js` uses this API to implement keyed, stable DOM updates.
 
 ### Promises
 
@@ -316,7 +316,7 @@ const render = () => html`
 `;
 ```
 
-Note, initial version is in `lib/labs/repeat.ts`: https://github.com/PolymerLabs/lit-html/blob/master/src/labs/repeat.ts
+Note, initial version is in `lib/repeat.ts`: https://github.com/PolymerLabs/lit-html/blob/master/src/lib/repeat.ts
 
 #### `guard(guardExpr, template)`
 
