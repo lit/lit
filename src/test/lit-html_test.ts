@@ -85,6 +85,16 @@ suite('lit-html', () => {
       assert.equal(container.innerHTML, '<ul><li>x</li><li>y</li></ul>');
     });
 
+    test('resists XSS attempt in node values', () => {
+      const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
+      assert(result.template.element.innerHTML, '<div></div>');
+    })
+
+    test('resists XSS attempt in attribute values', () => {
+      const result = html`<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
+      assert(result.template.element.innerHTML, '<div></div>');
+    })
+
   });
 
   suite('TemplateResult', () => {
