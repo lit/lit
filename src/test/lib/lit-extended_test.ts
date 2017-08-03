@@ -16,7 +16,7 @@
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
 import {html, render as renderPlain} from '../../lit-html.js';
-import {render} from '../../labs/lit-extended.js';
+import {render} from '../../lib/lit-extended.js';
 
 const assert = chai.assert;
 

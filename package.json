@@ -4,8 +4,8 @@
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/lit-html",
-  "main": "lib/lit-html.js",
-  "module": "lib/lit-html.js",
+  "main": "lit-html.js",
+  "module": "lit-html.js",
   "directories": {
     "test": "test"
   },
@@ -16,12 +16,10 @@
   "author": "The Polymer Authors",
   "devDependencies": {
     "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
     "typescript": "^2.4.1"
   },
-  "dependencies": {
-    "@types/mocha": "^2.2.41"
-  },
-  "typings": "./lib/lit-html.d.ts"
+  "typings": "./lit-html.d.ts"
 }

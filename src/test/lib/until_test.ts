@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {until} from '../../labs/until.js';
+import {until} from '../../lib/until.js';
 import {html, render} from '../../lit-html.js';
 
 const assert = chai.assert;

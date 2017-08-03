@@ -16,7 +16,7 @@
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
 import {html, NodePart, TemplateInstance} from '../../lit-html.js';
-import {repeat} from '../../labs/repeat.js';
+import {repeat} from '../../lib/repeat.js';
 
 const assert = chai.assert;
 
