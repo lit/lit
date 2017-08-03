@@ -56,7 +56,7 @@ class MyElement extends CoolLitMixin(HTMLElement) {
 
 ## How it Works
 
-`lit-html` utilizes some unique properties of HTML `<template>` elements and JavaScript tmplate literals. So it's helpful to understand them first.
+`lit-html` utilizes some unique properties of HTML `<template>` elements and JavaScript template literals. So it's helpful to understand them first.
 
 ### Tagged Template Literals
 
@@ -83,7 +83,7 @@ A `<template>` element is an inert tree of DOM (script don't run, images don't l
 
 ### Template Creation
 
-The first time `html` is called on a particular template literal it does one-time setup work to create the template. It joins all the string parts with a special placeholder, `"{{}}"`, then creates a `<template>` and sets its `innherHTML` to the result. The it walks the template's DOM and extracts the placeholder and remembers their location.
+The first time `html` is called on a particular template literal it does one-time setup work to create the template. It joins all the string parts with a special placeholder, `"{{}}"`, then creates a `<template>` and sets its `innerHTML` to the result. The it walks the template's DOM and extracts the placeholder and remembers their location.
 
 Every call to `html` returns a `TemplateResult` which contains the template created on the first call, and the expression values for the current call.
 
@@ -93,13 +93,13 @@ Every call to `html` returns a `TemplateResult` which contains the template crea
 
 A `Part` is a "hole" in the DOM where values can be injected. `lit-html` includes two type of parts by default: `NodePart` and `AttributePart`, which let you set text content and attribute values respectively. The `Part`s, container, and template they were created from are grouped together in an object called a `TemplateInstance`.
 
-Rendering can be customized by providing alternate `render()` implementations whcih create different kinds of `TemplateInstances` and `Part`s, like `PropertyPart` and `EventPart` included in `lib/lit-extended.ts` which let templates set properties and event handlers on elements.
+Rendering can be customized by providing alternate `render()` implementations which create different kinds of `TemplateInstances` and `Part`s, like `PropertyPart` and `EventPart` included in `lib/lit-extended.ts` which let templates set properties and event handlers on elements.
 
 ## Performance
 
 `lit-html` is designed to be lightweight and fast (though performance benchmarking is just starting).
 
- * It utilizies the built-in JS and HTML parsers - it doesn't include any expression or markup parser of it's own.
+ * It utilizes the built-in JS and HTML parsers - it doesn't include any expression or markup parser of it's own.
  * It only updates the dynamic parts of templates - static parts are untouched, not even walked for diffing, after the initial render.
  * It uses cloning for initial render.
 
@@ -245,7 +245,7 @@ Some examples of possible extensions:
  * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome Canary (coming in 61), and Firefox 54 (behind a flag).
  * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
- * It has not been benchmarked thouroughly yet.
+ * It has not been benchmarked thoroughly yet.
  * The API may change.
 
 Even without a build configuration, `lit-html` minified with `babili` and gzipped measures in at less than 1.7k. We will strive to keep the size extremely small.
@@ -336,7 +336,7 @@ const render = () => html`
 
 Only re-renders an instance if the guard expression has changed since the last render.
 
-Since all expressions in a template literal are evaluated when the literal is evaluated, you may want to only evaluate some expensive expressions when certain other values (probably it's dependencies change). `Guard` would memoize function and only call it if the guard expression changed.
+Since all expressions in a template literal are evaluated when the literal is evaluated, you may want to only evaluate some expensive expressions when certain other values (probably it's dependencies change). `Guard` would memoize the function and only call it if the guard expression changed.
 
 Example:
 
