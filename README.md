@@ -162,7 +162,7 @@ const render = () => html`
 `;
 ```
 
-### Function Values
+### Function Values / Directives
 
 A function valued expression can be used for error handling and stateful rendering.
 
@@ -181,7 +181,38 @@ And is a useful extension point:
 
 const render = () => html`<div>${(part) => part.setValue((part.previousValue + 1) || 0)}</div>`;
 
-The `repeat()` directive in `lib/repeat.js` uses this API to implement keyed, stable DOM updates.
+lit-html includes a few directives:
+
+#### `repeat(items, keyfn, template)`
+
+A loop that supports efficient re-ordering by using item keys.
+
+Example:
+
+```javascript
+const render = () => html`
+  <ul>
+    ${repeat(items, (i) => i.id, (i, index) => html`
+      <li>${index}: ${i.name}</li>`)}
+  </ul>
+`;
+```
+
+#### `until(promise, defaultContent)`
+
+Renders `defaultContent` until `promise` resolves, then it renders the resolved value of `promise`.
+
+Example:
+
+```javascript
+const render = () => html`
+  <p>
+    ${until(
+        fetch('content.txt').then((r) => r.text()),
+        html`<span>Loading...</span>`)}
+  </p>
+`;
+```
 
 ### Promises
 
@@ -300,23 +331,6 @@ const render = () => html`
     html`<p>${message}</p>`)}
 `;
 ```
-
-#### `repeat(items, keyfn, template)`
-
-A loop that supports efficient re-ordering by using item keys.
-
-Example:
-
-```javascript
-const render = () => html`
-  <ul>
-    ${repeat(items, (i) => i.id, (i, index) => html`
-      <li>${index}: ${i.name}</li>`)}
-  </ul>
-`;
-```
-
-Note, initial version is in `lib/repeat.ts`: https://github.com/PolymerLabs/lit-html/blob/master/src/lib/repeat.ts
 
 #### `guard(guardExpr, template)`
 
