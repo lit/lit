@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/lit-html",
@@ -21,5 +21,5 @@
     "mocha": "^3.4.2",
     "typescript": "^2.4.1"
   },
-  "typings": "./lit-html.d.ts"
+  "typings": "lit-html.d.ts"
 }
