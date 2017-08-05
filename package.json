@@ -11,7 +11,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "echo \"run polyserve --npm and open /test/index.html a browser with module support\""
+    "test": "echo \"run polyserve --npm and open /test/index.html a browser with module support\"",
+    "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
@@ -19,7 +20,9 @@
     "@types/mocha": "^2.2.41",
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
-    "typescript": "^2.4.1"
+    "typescript": "^2.4.1",
+    "uglify-es": "^3.0.27"
   },
-  "typings": "lit-html.d.ts"
+  "typings": "lit-html.d.ts",
+  "dependencies": {}
 }
