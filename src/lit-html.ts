@@ -51,7 +51,7 @@ export class TemplateResult {
  * call `render` with the new result.
  */
 export function render(result: TemplateResult, container: Element|DocumentFragment) {
-  let instance = container.__templateInstance as any;
+  let instance = (container as any).__templateInstance as any;
   if (instance !== undefined &&
       instance.template === result.template &&
       instance instanceof TemplateInstance) {
@@ -60,7 +60,7 @@ export function render(result: TemplateResult, container: Element|DocumentFragme
   }
 
   instance = new TemplateInstance(result.template);
-  container.__templateInstance = instance;
+  (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();
   instance.update(result.values);
@@ -111,9 +111,8 @@ export class Template {
 
   private _parse() {
     this.element = document.createElement('template');
-    this.element.innerHTML = this._getTemplateHtml(this._strings);
-    const walker = document.createTreeWalker(this.element.content,
-        NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+    this.element.innerHTML = this._getHtml(this._strings);
+    const walker = document.createTreeWalker(this.element.content, 5 /* elements & text */);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
@@ -121,7 +120,7 @@ export class Template {
     while (walker.nextNode()) {
       index++;
       const node = walker.currentNode;
-      if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.nodeType === 1 /* ELEMENT_NODE */) {
         const attributes = node.attributes;
         for (let i = 0; i < attributes.length; i++) {
           const attribute = attributes.item(i);
@@ -138,7 +137,7 @@ export class Template {
             partIndex += strings.length - 1;
           }
         }
-      } else if (node.nodeType === Node.TEXT_NODE) {
+      } else if (node.nodeType === 3 /* TEXT_NODE */) {
         const strings = node.nodeValue!.split(exprMarker);
         if (strings.length > 1) {
           // Generate a new text node for each literal and two for each part,
@@ -147,11 +146,12 @@ export class Template {
           for (let i = 0; i < strings.length; i++) {
             const string = strings[i];
             const literalNode = new Text(string);
-            node.parentNode!.insertBefore(literalNode, node);
+            const parent = node.parentNode!;
+            parent.insertBefore(literalNode, node);
             index++;
             if (i < strings.length - 1) {
-              node.parentNode!.insertBefore(new Text(), node);
-              node.parentNode!.insertBefore(new Text(), node);
+              parent.insertBefore(new Text(), node);
+              parent.insertBefore(new Text(), node);
               this.parts.push(new TemplatePart('node', index));
               index += 2;
             }
@@ -174,7 +174,7 @@ export class Template {
     }
   }
 
-  private _getTemplateHtml(strings: TemplateStringsArray): string {
+  private _getHtml(strings: TemplateStringsArray): string {
     const parts = [];
     for (let i = 0; i < strings.length; i++) {
       parts.push(strings[i]);
@@ -221,7 +221,7 @@ export class AttributePart extends Part {
 
   constructor(instance: TemplateInstance, element: Element, name: string, strings: string[]) {
     super(instance);
-    console.assert(element.nodeType === Node.ELEMENT_NODE);
+    console.assert(element.nodeType === 1 /* ELEMENT_NODE */);
     this.element = element;
     this.name = name;
     this.strings = strings;
@@ -269,9 +269,9 @@ export class NodePart extends Part {
     value = this._getValue(value);
 
     if (value instanceof Node) {
-      this._previousValue = this._setNodeValue(value);
+      this._previousValue = this._setNode(value);
     } else if (value instanceof TemplateResult) {
-      this._previousValue = this._setTemplateResultValue(value);
+      this._previousValue = this._setTemplateResult(value);
     } else if (value && value.then !== undefined) {
       value.then((v: any) => {
         if (this._previousValue === value) {
@@ -280,44 +280,44 @@ export class NodePart extends Part {
       });
       this._previousValue = value;
     } else if (value && typeof value !== 'string' && value[Symbol.iterator]) {
-      this._previousValue = this._setIterableValue(value);
+      this._previousValue = this._setIterable(value);
     } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
         this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
       this.startNode.nextSibling!.textContent = value;
       this._previousValue = value;
     } else {
-      this._previousValue = this._setTextValue(value);
+      this._previousValue = this._setText(value);
     }
   }
 
-  private _insertNodeBeforeEndNode(node: Node) {
+  private _insert(node: Node) {
     this.endNode.parentNode!.insertBefore(node, this.endNode);
   }
 
-  private _setNodeValue(value: Node): Node {
+  private _setNode(value: Node): Node {
     this.clear();
-    this._insertNodeBeforeEndNode(value);
+    this._insert(value);
 
     return value;
   }
 
-  private _setTextValue(value: string): Node {
-    return this._setNodeValue(new Text(value));
+  private _setText(value: string): Node {
+    return this._setNode(new Text(value));
   }
 
-  private _setTemplateResultValue(value: TemplateResult): TemplateInstance {
+  private _setTemplateResult(value: TemplateResult): TemplateInstance {
     let instance: TemplateInstance;
     if (this._previousValue && this._previousValue._template === value.template) {
       instance = this._previousValue;
     } else {
       instance = this.instance._createInstance(value.template);
-      this._setNodeValue(instance._clone());
+      this._setNode(instance._clone());
     }
     instance.update(value.values);
     return instance;
   }
 
-  private _setIterableValue(value: any): NodePart[] {
+  private _setIterable(value: any): NodePart[] {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and update Arrays of
@@ -364,7 +364,7 @@ export class NodePart extends Part {
           itemEnd = this.endNode;
         } else {
           itemEnd = new Text();
-          this._insertNodeBeforeEndNode(itemEnd);
+          this._insert(itemEnd);
         }
         itemPart = new NodePart(this.instance, itemStart, itemEnd);
       }
@@ -422,8 +422,7 @@ export class TemplateInstance {
     const fragment = document.importNode(this._template.element.content, true);
 
     if (this._template.parts.length > 0) {
-      const walker = document.createTreeWalker(fragment,
-          NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+      const walker = document.createTreeWalker(fragment, 5 /* elements & text */);
 
       const parts = this._template.parts;
       let index = 0;
@@ -457,10 +456,4 @@ export class TemplateInstance {
     return new TemplateInstance(template);
   }
 
-}
-
-declare global {
-  interface Node {
-    __templateInstance?: TemplateInstance;
-  }
 }
