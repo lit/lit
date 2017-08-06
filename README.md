@@ -29,7 +29,7 @@ _(this example uses JS Class Fields, an upcoming specification)_
 ```javascript
 class MyElement extends CoolLitMixin(HTMLElement) {
 
-  static observedProperties = ['message', 'name'];
+  static observedProperties = ['title', 'body'];
 
   title = `About lit-html`;
   body = `It's got potential.`;
