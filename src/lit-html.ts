@@ -268,10 +268,32 @@ export class NodePart extends Part {
   setValue(value: any): void {
     value = this._getValue(value);
 
-    if (value instanceof Node) {
-      this._previousValue = this._setNode(value);
+    if (value === null ||
+        !(typeof value === 'object' || typeof value === 'function')) {
+      // Handle primitive values
+
+      // If the value didn't change, do nothing
+      if (value === this._previousValue) {
+        return;
+      }
+
+      if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
+          this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
+        // If we only have a single text node between the markers, we can just
+        // set its value, rather than replacing it.
+        // TODO(justinfagnani): Can we just check if _previousValue is
+        // primitive?
+        this.startNode.nextSibling!.textContent = value;
+        this._previousValue = value;
+      } else {
+        this._previousValue = this._setText(value);
+      }
     } else if (value instanceof TemplateResult) {
       this._previousValue = this._setTemplateResult(value);
+    } else if (value[Symbol.iterator]) {
+      this._previousValue = this._setIterable(value);
+    } else if (value instanceof Node) {
+      this._previousValue = this._setNode(value);
     } else if (value && value.then !== undefined) {
       value.then((v: any) => {
         if (this._previousValue === value) {
@@ -279,13 +301,8 @@ export class NodePart extends Part {
         }
       });
       this._previousValue = value;
-    } else if (value && typeof value !== 'string' && value[Symbol.iterator]) {
-      this._previousValue = this._setIterable(value);
-    } else if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
-        this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
-      this.startNode.nextSibling!.textContent = value;
-      this._previousValue = value;
     } else {
+      // Fallback, will render the string representation
       this._previousValue = this._setText(value);
     }
   }
@@ -301,13 +318,14 @@ export class NodePart extends Part {
     return value;
   }
 
-  private _setText(value: string): Node {
-    return this._setNode(new Text(value));
+  private _setText(value: string): string {
+    this._setNode(new Text(value));
+    return value;
   }
 
   private _setTemplateResult(value: TemplateResult): TemplateInstance {
     let instance: TemplateInstance;
-    if (this._previousValue && this._previousValue._template === value.template) {
+    if (this._previousValue && this._previousValue.template === value.template) {
       instance = this._previousValue;
     } else {
       instance = this.instance._createInstance(value.template);
@@ -393,17 +411,13 @@ export class NodePart extends Part {
 }
 
 export class TemplateInstance {
-  _template: Template;
   _parts: Part[] = [];
+  template: Template;
   startNode: Node;
   endNode: Node;
 
   constructor(template: Template) {
-    this._template = template;
-  }
-
-  get template() {
-    return this._template;
+    this.template = template;
   }
 
   update(values: any[]) {
@@ -419,12 +433,12 @@ export class TemplateInstance {
   }
 
   _clone(): DocumentFragment {
-    const fragment = document.importNode(this._template.element.content, true);
+    const fragment = document.importNode(this.template.element.content, true);
 
-    if (this._template.parts.length > 0) {
+    if (this.template.parts.length > 0) {
       const walker = document.createTreeWalker(fragment, 5 /* elements & text */);
 
-      const parts = this._template.parts;
+      const parts = this.template.parts;
       let index = 0;
       let partIndex = 0;
       let templatePart = parts[0];
