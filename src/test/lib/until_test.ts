@@ -30,6 +30,7 @@ suite('until', () => {
     assert.equal(container.innerHTML, '<div><span>loading...</span></div>');
     resolve!('foo');
     await promise;
+    await new Promise((r) => setTimeout(() => r()));
     assert.equal(container.innerHTML, '<div>foo</div>');         
   });
 
