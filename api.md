@@ -44,6 +44,12 @@ Renders a `TemplateResult`'s template to an element using the result's values. F
 
 A `Part` is a dynamic section of a `TemplateInstance`. It's value can be set to update the section.
 
-Specially support value types are `Node`, `Function`, and `TemplateResult`.
+Parts are either single-valued or multi-valued. If they have a `size` property they are multi-valued and take an array of values along with an index of where to start reading in the array.
 
-  *  Method `setValue(value: any): void`
+Specially supported value types are `Node`, `Function`, and `TemplateResult`.
+
+  * Optional Property `size: number`
+
+  *  Method `setValue(value: any | any[], startIndex?: number): void`
+
+  Sets the value of this part. If the part is multi-value, `value` will be an array, and `startIndex` will be a number.

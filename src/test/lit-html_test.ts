@@ -140,16 +140,11 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div></div>');
       });
 
-      test('renders a thunk', () => {
+      test('renders a function', () => {
+        // This test just checks that we don't call the function
         const container = document.createElement('div');
         render(html`<div>${(_:any)=>123}</div>`, container);
-        assert.equal(container.innerHTML, '<div>123</div>');
-      });
-
-      test('renders thunks that throw as empty text', () => {
-        const container = document.createElement('div');
-        render(html`<div>${(_:any)=>{throw new Error('e')}}</div>`, container);
-        assert.equal(container.innerHTML, '<div></div>');
+        assert.equal(container.innerHTML, '<div>(_) =&gt; 123</div>');
       });
 
       test('renders arrays', () => {
@@ -221,10 +216,11 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
       });
 
-      test('renders a thunk to an attribute', () => {
+      test('renders a function to an attribute', () => {
+        // This test just checks that we don't call the function
         const container = document.createElement('div');
         render(html`<div foo=${(_:any)=>123}></div>`, container);
-        assert.equal(container.innerHTML, '<div foo="123"></div>');
+        assert.equal(container.innerHTML, '<div foo="(_) => 123"></div>');
       });
 
       test('renders an array to an attribute', () => {
@@ -586,14 +582,9 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '');
       });
 
-      test('accepts a thunk', () => {
+      test('accepts a function', () => {
         part.setValue((_:any)=>123);
-        assert.equal(container.innerHTML, '123');
-      });
-
-      test('accepts thunks that throw as empty text', () => {
-        part.setValue((_:any)=>{throw new Error('e')});
-        assert.equal(container.innerHTML, '');
+        assert.equal(container.innerHTML, '(_) =&gt; 123');
       });
 
       test('accepts an element', () => {
@@ -730,12 +721,12 @@ suite('lit-html', () => {
       test('updates are stable when called multiple times with templates', () => {
         let value = 'foo';
         const r = () => html`<h1>${value}</h1>`;
-        part.setValue(r);
+        part.setValue(r());
         assert.equal(container.innerHTML, '<h1>foo</h1>');
         const originalH1 = container.querySelector('h1');
 
         value = 'bar';
-        part.setValue(r);
+        part.setValue(r());
         assert.equal(container.innerHTML, '<h1>bar</h1>');
         const newH1 = container.querySelector('h1');
         assert.strictEqual(newH1, originalH1);
@@ -744,12 +735,12 @@ suite('lit-html', () => {
       test('updates are stable when called multiple times with arrays of templates', () => {
         let items = [1, 2, 3];
         const r = () => items.map((i)=>html`<li>${i}</li>`);
-        part.setValue(r);
+        part.setValue(r());
         assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
         const originalLIs = Array.from(container.querySelectorAll('li'));
 
         items = [3, 2, 1];
-        part.setValue(r);
+        part.setValue(r());
         assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
         const newLIs = Array.from(container.querySelectorAll('li'));
         assert.deepEqual(newLIs, originalLIs);

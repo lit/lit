@@ -12,11 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { NodePart } from "../lit-html.js";
+import {directive, DirectiveFn, NodePart} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
-export type RepeatResult = (part: NodePart) => any;
 
 interface State {
   keyMap: Map<any, NodePart>;
@@ -25,9 +24,10 @@ interface State {
 
 const stateCache = new WeakMap<NodePart, State>();
 
-export function repeat<T>(items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): RepeatResult;
-export function repeat<T>(items: T[], template: ItemTemplate<T>): RepeatResult;
-export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>, template?: ItemTemplate<T>): RepeatResult {
+export function repeat<T>(items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn;
+export function repeat<T>(items: T[], template: ItemTemplate<T>): DirectiveFn;
+export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>, template?: ItemTemplate<T>): DirectiveFn {
+
   let keyFn: KeyFn<T>;
   if (arguments.length === 2) {
     template = keyFnOrTemplate;
@@ -35,7 +35,8 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
-  return (part: NodePart): any => {
+  return directive((part: NodePart): any => {
+
     let state = stateCache.get(part);
     if (state === undefined) {
       state = {
@@ -146,5 +147,5 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     }
 
     state.parts = itemParts;
-  };
+  });
 }
