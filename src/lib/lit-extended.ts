@@ -44,7 +44,7 @@ import { TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part, Te
  *
  */
 export function render(result: TemplateResult, container: Element|DocumentFragment) {
-  let instance = container.__templateInstance as any;
+  let instance = (container as any).__templateInstance as any;
   if (instance !== undefined &&
       instance.template === result.template &&
       instance instanceof ExtendedTemplateInstance) {
@@ -53,7 +53,7 @@ export function render(result: TemplateResult, container: Element|DocumentFragme
   }
 
   instance = new ExtendedTemplateInstance(result.template);
-  container.__templateInstance = instance;
+  (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();
   instance.update(result.values);
