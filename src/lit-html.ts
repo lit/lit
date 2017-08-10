@@ -140,24 +140,23 @@ export class Template {
       } else if (node.nodeType === 3 /* TEXT_NODE */) {
         const strings = node.nodeValue!.split(exprMarker);
         if (strings.length > 1) {
-          // Generate a new text node for each literal and two for each part,
-          // a start and end
-          partIndex += strings.length - 1;
-          for (let i = 0; i < strings.length; i++) {
-            const string = strings[i];
-            const literalNode = new Text(string);
-            const parent = node.parentNode!;
-            parent.insertBefore(literalNode, node);
-            index++;
-            if (i < strings.length - 1) {
-              parent.insertBefore(new Text(), node);
-              parent.insertBefore(new Text(), node);
-              this.parts.push(new TemplatePart('node', index));
-              index += 2;
-            }
+          const parent = node.parentNode!;
+          const lastIndex = strings.length - 1;
+
+          // We have a part for each match found
+          partIndex += lastIndex;
+
+          // We keep this current node, but reset its content to the last
+          // literal part. We insert new literal nodes before this so that the
+          // tree walker keeps its position correctly.
+          node.textContent = strings[lastIndex];
+
+          // Generate a new text node for each literal section
+          // These nodes are also used as the markers for node parts
+          for (let i = 0; i < lastIndex; i++) {
+            parent.insertBefore(new Text(strings[i]), node);
+            this.parts.push(new TemplatePart('node', index++));
           }
-          index--;
-          nodesToRemove.push(node);
         } else if (!node.nodeValue!.trim()) {
           nodesToRemove.push(node);
           index--;

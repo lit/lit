@@ -37,6 +37,21 @@ suite('lit-html', () => {
       assert.deepEqual(html`${foo}${bar}`.values, [foo, bar]);
     });
 
+    test('does not create extra empty text nodes', () => {
+      const countNodes = (result: TemplateResult, getNodes: (f: DocumentFragment) => NodeList) => 
+        getNodes(result.template.element.content).length;
+
+      assert.equal(countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes), 2);
+      assert.equal(countNodes(html`${0}`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`a${0}`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`${0}a`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`${0}${0}`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`a${0}${0}`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`${0}b${0}`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`${0}${0}c`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`a${0}b${0}c`, (c) => c.childNodes), 3);
+    });
+
     test('parses parts for multiple expressions', () => {
       const result = html`
         <div a="${1}">
@@ -296,7 +311,7 @@ suite('lit-html', () => {
 
         render(t(), container);
         assert.equal(container.innerHTML, '<div>aaa</div>');
-        const text = container.firstChild!.childNodes[2] as Text;
+        const text = container.firstChild!.childNodes[1] as Text;
         assert.equal(text.textContent, 'aaa');
 
         // Set textContent manually. Since lit-html doesn't dirty checks against
@@ -309,7 +324,7 @@ suite('lit-html', () => {
         // Re-render with the same content, should be a no-op
         render(t(), container);
         assert.equal(container.innerHTML, '<div>bbb</div>');
-        const text2 = container.firstChild!.childNodes[2] as Text;
+        const text2 = container.firstChild!.childNodes[1] as Text;
 
         // The next node should be the same too
         assert.strictEqual(text, text2);
