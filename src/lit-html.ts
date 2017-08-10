@@ -194,8 +194,6 @@ export abstract class Part {
     this.instance = instance;
   }
 
-  abstract setValue(value: any): void;
-
   protected _getValue(value: any) {
     if (typeof value === 'function') {
       try {
@@ -213,10 +211,19 @@ export abstract class Part {
   }
 }
 
-export class AttributePart extends Part {
+export interface SinglePart extends Part {
+  setValue(value: any): void;
+}
+
+export interface MultiPart extends Part {
+  setValue(values: any[], startIndex: number): void;
+}
+
+export class AttributePart extends Part implements MultiPart {
   element: Element;
   name: string;
   strings: string[];
+  size: number;
 
   constructor(instance: TemplateInstance, element: Element, name: string, strings: string[]) {
     super(instance);
@@ -224,16 +231,17 @@ export class AttributePart extends Part {
     this.element = element;
     this.name = name;
     this.strings = strings;
+    this.size = strings.length - 1;
   }
 
-  setValue(values: any[]): void {
+  setValue(values: any[], startIndex: number): void {
     const strings = this.strings;
     let text = '';
 
     for (let i = 0; i < strings.length; i++) {
       text += strings[i];
       if (i < strings.length - 1) {
-        const v = this._getValue(values[i]);
+        const v = this._getValue(values[startIndex + i]);
         if (v && typeof v !== 'string' && v[Symbol.iterator]) {
           for (const t of v) {
             // TODO: we need to recursively call getValue into iterables...
@@ -247,13 +255,9 @@ export class AttributePart extends Part {
     this.element.setAttribute(this.name, text);
   }
 
-  get size(): number {
-    return this.strings.length - 1;
-  }
-
 }
 
-export class NodePart extends Part {
+export class NodePart extends Part implements SinglePart {
   startNode: Node;
   endNode: Node;
   private _previousValue: any;
@@ -423,9 +427,10 @@ export class TemplateInstance {
     let valueIndex = 0;
     for (const part of this._parts) {
       if (part.size === undefined) {
-        part.setValue(values[valueIndex++]);
+        (part as SinglePart).setValue(values[valueIndex]);
+        valueIndex++;
       } else {
-        part.setValue(values.slice(valueIndex, valueIndex + part.size));
+        (part as MultiPart).setValue(values, valueIndex);
         valueIndex += part.size;
       }
     }
