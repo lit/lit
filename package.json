@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc",
     "pretest": "npm run posttest; ln -s node_modules bower_components",
-    "test": "wct",
+    "test": "wct -l chrome",
     "posttest": "rm -f bower_components",
     "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c"
   },
