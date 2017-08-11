@@ -28,4 +28,4 @@ pids
 .npm
 
 # bower_components for testing
-bower_components/
+bower_components
