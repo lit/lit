@@ -37,6 +37,21 @@ suite('lit-html', () => {
       assert.deepEqual(html`${foo}${bar}`.values, [foo, bar]);
     });
 
+    test('does not create extra empty text nodes', () => {
+      const countNodes = (result: TemplateResult, getNodes: (f: DocumentFragment) => NodeList) => 
+        getNodes(result.template.element.content).length;
+
+      assert.equal(countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes), 2);
+      assert.equal(countNodes(html`${0}`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`a${0}`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`${0}a`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`${0}${0}`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`a${0}${0}`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`${0}b${0}`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`${0}${0}c`, (c) => c.childNodes), 3);
+      assert.equal(countNodes(html`a${0}b${0}c`, (c) => c.childNodes), 3);
+    });
+
     test('parses parts for multiple expressions', () => {
       const result = html`
         <div a="${1}">
@@ -287,6 +302,33 @@ suite('lit-html', () => {
     });
 
     suite('update', () => {
+
+      test('dirty checks simple values', () => {
+        const container = document.createElement('div');
+        let foo = 'aaa';
+
+        const t = () => html`<div>${foo}</div>`;
+
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>aaa</div>');
+        const text = container.firstChild!.childNodes[1] as Text;
+        assert.equal(text.textContent, 'aaa');
+
+        // Set textContent manually. Since lit-html doesn't dirty checks against
+        // actual DOM, but again previous part values, this modification should
+        // persist through the next render with the same value.
+        text.textContent = 'bbb';
+        assert.equal(text.textContent, 'bbb');
+        assert.equal(container.innerHTML, '<div>bbb</div>');
+
+        // Re-render with the same content, should be a no-op
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>bbb</div>');
+        const text2 = container.firstChild!.childNodes[1] as Text;
+
+        // The next node should be the same too
+        assert.strictEqual(text, text2);
+      });
 
       test('renders to and updates a container', () => {
         const container = document.createElement('div');
@@ -696,7 +738,7 @@ suite('lit-html', () => {
         part.setValue(r);
         assert.equal(container.innerHTML, '<h1>bar</h1>');
         const newH1 = container.querySelector('h1');
-        assert.isTrue(newH1 === originalH1);
+        assert.strictEqual(newH1, originalH1);
       });
 
       test('updates are stable when called multiple times with arrays of templates', () => {
