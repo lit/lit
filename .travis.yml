@@ -13,4 +13,4 @@ before_script:
 - mkdir -p ~/bin
 - ln -s /usr/bin/google-chrome-beta ~/bin/google-chrome
 - export PATH=$HOME/bin:$PATH
-- npm build
+- npm run build
