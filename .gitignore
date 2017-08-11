@@ -26,3 +26,6 @@ pids
 
 # Optional npm cache directory
 .npm
+
+# bower_components for testing
+bower_components/
