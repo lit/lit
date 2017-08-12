@@ -199,7 +199,7 @@ export abstract class Part {
       try {
         value = value(this);
       } catch (e) {
-        console.error(e);
+        console.warn(e);
         return;
       }
     }

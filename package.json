@@ -11,7 +11,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "echo \"run polyserve --npm and open /test/index.html a browser with module support\"",
+    "pretest": "npm run posttest; ln -s node_modules bower_components",
+    "test": "wct -l chrome",
+    "posttest": "rm -f bower_components",
     "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c"
   },
   "author": "The Polymer Authors",
@@ -21,7 +23,8 @@
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
     "typescript": "^2.4.1",
-    "uglify-es": "^3.0.27"
+    "uglify-es": "^3.0.27",
+    "web-component-tester": "^6.0.1"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}
