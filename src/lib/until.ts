@@ -17,9 +17,8 @@ import { directive, NodePart } from '../lit-html.js';
 /**
  * Display `defaultContent` until `promise` resolves.
  */
-export function until(promise: Promise<any>, defaultContent: any) {
-  return directive(async function(part: NodePart) {
+export const until = (promise: Promise<any>, defaultContent: any) =>
+  directive((part: NodePart) => {
     part.setValue(defaultContent);
-    part.setValue(await promise);
+    return promise;
   });
-}
