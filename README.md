@@ -1,6 +1,8 @@
 # lit-html
 HTML templates, via JavaScript template literals
 
+[![Build Status](https://travis-ci.org/PolymerLabs/lit-html.svg?branch=master)](https://travis-ci.org/PolymerLabs/lit-html)
+
 ## Overview
 
 `lit-html` lets you write [HTML templates](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) with JavaScript [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), and efficiently render and _re-render_ those templates to DOM.
