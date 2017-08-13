@@ -717,6 +717,17 @@ suite('lit-html', () => {
         assert.strictEqual(container.lastChild, endNode);
       });
 
+      test('updates arrays with siblings', () => {
+        let items = [1, 2, 3];
+        const t = () => html`<p></p>${items}<a></a>`;
+
+        render(t(), container);
+        assert.equal(container.innerHTML, '<p></p>123<a></a>');
+
+        items = [1, 2, 3, 4];
+        render(t(), container);
+        assert.equal(container.innerHTML, '<p></p>1234<a></a>');
+      });
 
       test('updates are stable when called multiple times with templates', () => {
         let value = 'foo';
