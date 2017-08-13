@@ -50,16 +50,20 @@ export class TemplateResult {
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
  */
-export function render(result: TemplateResult, container: Element|DocumentFragment) {
+export function render(result: TemplateResult, container: Element|DocumentFragment,
+    partCallback: PartCallback = defaultPartCallback) {
   let instance = (container as any).__templateInstance as any;
+
+  // Repeat render, just call update()
   if (instance !== undefined &&
       instance.template === result.template &&
-      instance instanceof TemplateInstance) {
+      instance._partCallback === partCallback) {
     instance.update(result.values);
     return;
   }
 
-  instance = new TemplateInstance(result.template);
+  // First render, create a new TemplateInstance and append it
+  instance = new TemplateInstance(result.template, partCallback);
   (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();
@@ -322,7 +326,7 @@ export class NodePart extends Part implements SinglePart {
     if (this._previousValue && this._previousValue.template === value.template) {
       instance = this._previousValue;
     } else {
-      instance = this.instance._createInstance(value.template);
+      instance = new TemplateInstance(value.template, this.instance._partCallback);
       this._setNode(instance._clone());
       this._previousValue = instance;
     }
@@ -413,14 +417,30 @@ export class NodePart extends Part implements SinglePart {
   }
 }
 
+
+export type PartCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node) => Part;
+
+export const defaultPartCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node): Part => {
+  if (templatePart.type === 'attribute') {
+    return new AttributePart(instance, node as Element, templatePart.name!, templatePart.strings!);
+  } else if (templatePart.type === 'node') {
+    return new NodePart(instance, node, node.nextSibling!);
+  }
+  throw new Error(`Unknown part type ${templatePart.type}`);
+}
+
+/**
+ * An instance of a `Template` that can be attached to the DOM and updated
+ * with new values.
+ */
 export class TemplateInstance {
   _parts: Part[] = [];
+  _partCallback: PartCallback;
   template: Template;
-  startNode: Node;
-  endNode: Node;
 
-  constructor(template: Template) {
+  constructor(template: Template, partCallback: PartCallback = defaultPartCallback) {
     this.template = template;
+    this._partCallback = partCallback;
   }
 
   update(values: any[]) {
@@ -449,7 +469,7 @@ export class TemplateInstance {
       let node = walker.nextNode();
       while (node != null && partIndex < parts.length) {
         if (index === templatePart.index) {
-          this._parts.push(this._createPart(templatePart, node));
+          this._parts.push(this._partCallback(this, templatePart, node));
           templatePart = parts[++partIndex];
         } else {
           index++;
@@ -458,20 +478,6 @@ export class TemplateInstance {
       }
     }
     return fragment;
-  }
-
-  _createPart(templatePart: TemplatePart, node: Node): Part {
-    if (templatePart.type === 'attribute') {
-      return new AttributePart(this, node as Element, templatePart.name!, templatePart.strings!);
-    } else if (templatePart.type === 'node') {
-      return new NodePart(this, node, node.nextSibling!);
-    } else {
-      throw new Error(`unknown part type: ${templatePart.type}`);
-    }
-  }
-
-  _createInstance(template: Template) {
-    return new TemplateInstance(template);
   }
 
 }

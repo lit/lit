@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part, Template } from '../lit-html.js';
-
+import { render as baseRender, defaultPartCallback, TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part } from '../lit-html.js';
+export { html } from '../lit-html.js';
 /**
  *
- * @param result Renders a `TemplateResult` to a container using an
- * `ExtendedTemplateInstance`, which allows templates to set properties and
- * event handlers.
+ * @param result Renders a `TemplateResult` to a container using the
+ * `extendedPartCallback` PartCallback, which allows templates to set
+ * properties and declarative event handlers.
  *
  * Properties are set by default, instead of attributes. Attribute names in
  * lit-html templates preserve case, so properties are case sensitive. If an
@@ -42,47 +42,24 @@ import { TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part, Te
  *
  */
 export function render(result: TemplateResult, container: Element|DocumentFragment) {
-  let instance = (container as any).__templateInstance as any;
-  if (instance !== undefined &&
-      instance.template === result.template &&
-      instance instanceof ExtendedTemplateInstance) {
-    instance.update(result.values);
-    return;
-  }
-
-  instance = new ExtendedTemplateInstance(result.template);
-  (container as any).__templateInstance = instance;
-
-  const fragment = instance._clone();
-  instance.update(result.values);
-
-  while (container.firstChild) {
-    container.removeChild(container.firstChild);
-  }
-  container.appendChild(fragment);
+  baseRender(result, container, extendedPartCallback);
 }
 
-export class ExtendedTemplateInstance extends TemplateInstance {
-
-  _createPart(templatePart: TemplatePart, node: Node): Part {
-    if (templatePart.type === 'attribute') {
-      if (templatePart.rawName!.startsWith('on-')) {
-        const eventName = templatePart.rawName!.substring(3);
-        return new EventPart(this, node as Element, eventName);
-      }
-      if (templatePart.name!.endsWith('$')) {
-        const name = templatePart.name!.substring(0, templatePart.name!.length - 1);
-        return new AttributePart(this, node as Element, name, templatePart.strings!);
-      }
-      return new PropertyPart(this, node as Element, templatePart.rawName!, templatePart.strings!);
+export const extendedPartCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node): Part => {
+  if (templatePart.type === 'attribute') {
+    if (templatePart.rawName!.startsWith('on-')) {
+      const eventName = templatePart.rawName!.substring(3);
+      return new EventPart(instance, node as Element, eventName);
     }
-    return super._createPart(templatePart, node);
+    if (templatePart.name!.endsWith('$')) {
+      const name = templatePart.name!.substring(0, templatePart.name!.length - 1);
+      return new AttributePart(instance, node as Element, name, templatePart.strings!);
+    }
+    return new PropertyPart(instance, node as Element, templatePart.rawName!, templatePart.strings!);
   }
+  return defaultPartCallback(instance, templatePart, node);
+};
 
-  _createInstance(template: Template) {
-    return new ExtendedTemplateInstance(template);
-  }
-}
 
 export class PropertyPart extends AttributePart {
 
