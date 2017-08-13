@@ -96,7 +96,7 @@ const exprMarker = '{{}}';
 export class TemplatePart {
   constructor(
     public type: string,
-    public index: number,
+    public path: number[],
     public name?: string,
     public rawName?: string,
     public strings?: string[]) {
@@ -104,51 +104,40 @@ export class TemplatePart {
 }
 
 export class Template {
-  private _strings: TemplateStringsArray;
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
   constructor(strings: TemplateStringsArray) {
-    this._strings = strings;
-    this._parse();
-  }
-
-  private _parse() {
     this.element = document.createElement('template');
-    this.element.innerHTML = this._getHtml(this._strings);
-    const walker = document.createTreeWalker(this.element.content, 5 /* elements & text */);
-    let index = -1;
-    let partIndex = 0;
-    const nodesToRemove = [];
-    const attributesToRemove = [];
-    while (walker.nextNode()) {
-      index++;
-      const node = walker.currentNode;
-      if (node.nodeType === 1 /* ELEMENT_NODE */) {
-        const attributes = node.attributes;
-        for (let i = 0; i < attributes.length; i++) {
-          const attribute = attributes.item(i);
-          const value = attribute.value;
-          const strings = value.split(exprMarker);
-          if (strings.length > 1) {
-            const attributeString = this._strings[partIndex];
-            // Trim the trailing literal value if this is an interpolation
-            const rawNameString = attributeString.substring(0, attributeString.length - strings[0].length);
-            const match = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/);
-            const rawName = match![1];
-            this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, strings));
-            attributesToRemove.push(attribute);
-            partIndex += strings.length - 1;
-          }
-        }
-      } else if (node.nodeType === 3 /* TEXT_NODE */) {
-        const strings = node.nodeValue!.split(exprMarker);
+    this.element.innerHTML = this._getHtml(strings);
+
+    const nodesToRemove: Node[] = [];
+    const attributesToRemove: Attr[] = [];
+
+    // The current location in the DOM tree, as an array of child indices
+    const currentPath: number[] = [];
+
+    // What expression we're currently handling
+    let expressionIndex = 0;
+
+    /*
+     * This populates the parts array by traversing the template with a
+     * recursive DFS, and giving each part a path of indices from the root of
+     * the template to the target node.
+     */
+    const findParts = (node: Node, index: number) => {
+      currentPath.push(index);
+      let size = 1;
+      if (node.nodeType === 3 /* TEXT_NODE */) {
+        const value = node.nodeValue!;
+        const strings = value!.split(exprMarker);
         if (strings.length > 1) {
           const parent = node.parentNode!;
-          const lastIndex = strings.length - 1;
+          size = strings.length;
+          const lastIndex = size - 1;
 
           // We have a part for each match found
-          partIndex += lastIndex;
+          expressionIndex += lastIndex;
 
           // We keep this current node, but reset its content to the last
           // literal part. We insert new literal nodes before this so that the
@@ -159,16 +148,55 @@ export class Template {
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
             parent.insertBefore(new Text(strings[i]), node);
-            this.parts.push(new TemplatePart('node', index++));
+            this.parts.push(new TemplatePart('node', currentPath.slice(1)));
+            // Increment the last index on the stack because we just created a
+            // new text node
+            currentPath[currentPath.length - 1] += 1;
           }
-        } else if (!node.nodeValue!.trim()) {
+        } else if (value.trim() === '') {
           nodesToRemove.push(node);
-          index--;
+          size = 0;
+        }
+      } else { /* ELEMENT_NODE or DOCUMENT_FRAGMENT */
+        if (node.nodeType === 1 && node.hasAttributes()) {
+          const attributes = node.attributes;
+          for (let i = 0; i < attributes.length; i++) {
+            const attribute = attributes.item(i);
+            const value = attribute.value;
+
+            // Look for expression markers
+            const attributeStrings = value.split(exprMarker);
+            if (attributeStrings.length > 1) {
+              // Get the template string that preced this attribute expression
+              const attributeString = strings[expressionIndex];
+              // Trim the trailing literal part of the attribute value if this
+              // is an interpolation
+              const rawNameString = attributeString.substring(0, attributeString.length - attributeStrings[0].length);
+              // Extract the attribute name
+              const match = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/);
+              const rawName = match![1];
+              this.parts.push(new TemplatePart('attribute', currentPath.slice(1), attribute.name, rawName, attributeStrings));
+              attributesToRemove.push(attribute);
+              expressionIndex += attributeStrings.length - 1;
+            }
+          }
+        }
+        if (node.hasChildNodes()) {
+          let child = node.firstChild;
+          let i = 0;
+          while (child !== null) {
+            i += findParts(child, i);
+            child = child.nextSibling;
+          }
         }
       }
+      currentPath.pop();
+      return size;
     }
+    findParts(this.element.content, -1);
 
-    // Remove text binding nodes after the walk to not disturb the TreeWalker
+    // Remove empty text nodes and attributes after the walk so as to not
+    // disturb the traversal
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
     }
@@ -459,24 +487,79 @@ export class TemplateInstance {
   _clone(): DocumentFragment {
     const fragment = document.importNode(this.template.element.content, true);
 
-    if (this.template.parts.length > 0) {
-      const walker = document.createTreeWalker(fragment, 5 /* elements & text */);
+    /*
+     * This implements a search that traverses the minimum number of Nodes in a
+     * DOM tree while only using Node.firstChild and Node.nextSibling, which
+     * have been measured to be faster than accessing Node.childNodes.
+     * 
+     * For any given path of childNode indices starting from the root of the
+     * template, we recursively find the parent, then call nextSibling until
+     * we get to the target index.
+     * 
+     * Once found, we cache the index and node, so that the next lookup can be
+     * faster by:
+     * 
+     *  1. Finding the common ancestor of the previously searched path
+     *  2. Starting a traversal of children from that common ancestor from the
+     *     last node found, rather than firstChild
+     * 
+     * This means that any node is only ever visited once.
+     * 
+     * In order for this to work, paths much be searched for in depth-first
+     * order.
+     * 
+     * The overhead of these optimizations probably only matters for larger,
+     * more complex templates, with enough bindings to speard search costs
+     * across them, and the benefit will not show up on micro-bencharks with
+     * small templates. However, it doesn't seem like this slows down
+     * micro-benchmarks.
+     */
+    let nodeStack: [number, Node][] = [];
+    const findNodeAtPath = (path: number[], depth: number): Node|undefined => {
+      // Recurse up the tree to find the parent
+      const parent = (depth === 0) ? fragment : findNodeAtPath(path, depth - 1)!;
 
-      const parts = this.template.parts;
-      let index = 0;
-      let partIndex = 0;
-      let templatePart = parts[0];
-      let node = walker.nextNode();
-      while (node != null && partIndex < parts.length) {
-        if (index === templatePart.index) {
-          this._parts.push(this._partCallback(this, templatePart, node));
-          templatePart = parts[++partIndex];
-        } else {
-          index++;
-          node = walker.nextNode();
+      // The target index we're searching for at this depth
+      const targetIndex = path[depth];
+      let currentIndex;
+      let node;
+
+      if (nodeStack.length > depth) {
+        // If we've cached up to this depth, and the index in the stack at this
+        // depth equals the targetIndex, then just return from the stack.
+        if (nodeStack[depth][0] === targetIndex) {
+          return nodeStack[depth][1];
         }
+
+        // Otherwise, start the search at the last index we used at this level
+        [currentIndex, node] = nodeStack[depth]
+        nodeStack = nodeStack.slice(0, depth);
+      } else {
+        // If the stack didn't have anything at this depth, initialize the search
+        // to the first child
+        currentIndex = 0;
+        node = parent.firstChild;
       }
+
+      // Perform the traversal
+      while (node !== null) {
+        if (currentIndex === targetIndex) {
+          // When we have a hit, cache it
+          nodeStack.push([currentIndex, node]);
+          return node;
+        }
+        node = node.nextSibling;
+        currentIndex++;
+      }
+      // This should never happen
+      return;
     }
+
+    for (const p of this.template.parts) {
+      const node = findNodeAtPath(p.path, p.path.length - 1)!;
+      this._parts.push(this._partCallback(this, p, node));
+    }
+
     return fragment;
   }
 

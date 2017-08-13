@@ -56,11 +56,11 @@ suite('lit-html', () => {
       const result = html`
         <div a="${1}">
           <p>${2}</p>
-          ${3}
-          <span a="${4}">${5}</span>
+          ${3}x${4}
+          <span a="${5}x${6}">${7}x${8}</span>
         </div>`;
       const parts = result.template.parts;
-      assert.equal(parts.length, 5);
+      assert.equal(parts.length, 7);
     });
 
     test('stores raw names of attributes', () => {
