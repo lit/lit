@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api .",
     "pretest": "npm run posttest; ln -s node_modules bower_components",
     "test": "wct -l chrome",
     "posttest": "rm -f bower_components",
@@ -22,6 +23,7 @@
     "@types/mocha": "^2.2.41",
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
+    "typedoc": "^0.8.0",
     "typescript": "^2.4.1",
     "uglify-es": "^3.0.27",
     "web-component-tester": "^6.0.1"
