@@ -34,13 +34,11 @@ import { TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part, Te
  *
  *     html`<button class$="primary">Buy Now</button>`
  *
- * To set an event handler, prefix the attribute name with `on-` and use a
- * function to return the handler, so that the event handler itself is not
- * called as a template directive.
+ * To set an event handler, prefix the attribute name with `on-`:
  *
  * Example:
  *
- *     html`<button on-click=${_=> this.onClickHandler}>Buy Now</button>`
+ *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
  */
 export function render(result: TemplateResult, container: Element|DocumentFragment) {

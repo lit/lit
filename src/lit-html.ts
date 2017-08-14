@@ -186,6 +186,13 @@ export class Template {
 
 }
 
+export type DirectiveFn = (part: Part) => any;
+
+export const directive = <F extends DirectiveFn>(f: F): F => {
+  (f as any).__litDirective = true;
+  return f;
+};
+
 export abstract class Part {
   instance: TemplateInstance
   size?: number;
@@ -195,19 +202,12 @@ export abstract class Part {
   }
 
   protected _getValue(value: any) {
-    if (typeof value === 'function') {
-      try {
-        value = value(this);
-      } catch (e) {
-        console.warn(e);
-        return;
-      }
+    // `null` as the value of a Text node will render the string 'null'
+    // so we convert it to undefined
+    if (typeof value === 'function' && value.__litDirective === true) {
+      value = value(this);
     }
-    if (value === null) {
-      // `null` as the value of Text node will render the string 'null'
-      return undefined;
-    }
-    return value;
+    return value === null ? undefined : value;
   }
 }
 

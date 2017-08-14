@@ -12,14 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { NodePart } from "../lit-html.js";
+import { directive, NodePart } from '../lit-html.js';
 
 /**
  * Display `defaultContent` until `promise` resolves.
  */
-export function until(promise: Promise<any>, defaultContent: any) {
-  return async function(part: NodePart) {
+export const until = (promise: Promise<any>, defaultContent: any) =>
+  directive((part: NodePart) => {
     part.setValue(defaultContent);
-    part.setValue(await promise);
-  }
-}
+    return promise;
+  });

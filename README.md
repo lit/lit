@@ -14,7 +14,7 @@ HTML templates, via JavaScript template literals
 
 ### Examples
 
-`lit-html` can be used standalone and directly to help manage some DOM:
+`lit-html` can be used standalone and directly to help manage DOM:
 ```javascript
 const helloTemplate = (name) => html`<div>Hello ${name}!</div>`;
 
@@ -25,7 +25,7 @@ render(helloTemplate('Steve'), document.body);
 render(helloTemplate('Kevin'), document.body);
 ```
 
-But may also be common to use `lit-html` with a component system that calls `render()` for you, similar to React components:
+But it may also be common to use `lit-html` with a component system that calls `render()` for you, similar to React components:
 
 _(this example uses JS Class Fields, an upcoming specification)_
 ```javascript
@@ -52,7 +52,7 @@ class MyElement extends CoolLitMixin(HTMLElement) {
 `lit-html` has four main goals:
 
 1. Efficient updates of previously rendered DOM.
-2. Expressiveness and easy access the JavaScript state that needs to be injected into DOM.
+2. Expressiveness and easy access to the JavaScript state that needs to be injected into DOM.
 3. Standard JavaScript without required build steps, understandable by standards-compliant tools.
 4. Very small size.
 
@@ -68,7 +68,7 @@ A JavaScript template literal is a string literal that can have other JavaScript
 `My name is ${name}.`
 ``` 
 
-A _tagged_ template literal is preceded by a special template tag function:
+A _tagged_ template literal is prefixed with a special template tag function:
 
 ```javascript
 let name = 'Monica';
@@ -164,24 +164,45 @@ const render = () => html`
 `;
 ```
 
-### Function Values / Directives
+### Directives
 
-A function valued expression can be used for error handling and stateful rendering.
+Directives are functions that can extend lit-html by directly interacting with the Part API.
 
-If an expression returns a function, the function is called with the `Part` its populating, inside a try/catch block.
+Directives will usually be created from factory functions that accept some arguments for values and configuration. Directives are created by passing a function to lit-html's `directive()` function:
 
-This makes it safe from exceptions:
+```javascript
+html`<div>${directive((part) => { part.setValue('Hello')})}</div>`
+```
+
+The `part` argument is a `Part` object with an API for directly managing the dynamic DOM associated with expressions. See the `Part` API in api.md.
+
+Here's an example of a directive that takes a function, and evaluates it in a try/catch to implement exception safe expressions:
+
+```javascript
+const safe = (f) => directive((part) => {
+  try {
+    return f();
+  } catch (e) {
+    console.error(e);
+  }
+});
+```
+
+Now `safe()` can be used to wrap a function:
 
 ```javascript
 let data;
-const render = () => html`foo = ${_=>data.foo}`;
+const render = () => html`foo = ${safe(_=>data.foo)}`;
 ```
 
-Here, `data.foo` throws because `data` is undefined, but the rest of the template renders.
+This example increments a counter on every render:
 
-And is a useful extension point:
-
-const render = () => html`<div>${(part) => part.setValue((part.previousValue + 1) || 0)}</div>`;
+```javascript
+const render = () => html`
+  <div>
+    ${directive((part) => part.setValue((part.previousValue + 1) || 0))}
+  </div>`;
+```
 
 lit-html includes a few directives:
 
