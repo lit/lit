@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {html, render, TemplateResult, TemplatePart, TemplateInstance, NodePart, Part, AttributePart, Template} from '../lit-html.js';
+import {html, render, defaultPartCallback, TemplateResult, TemplatePart, TemplateInstance, NodePart, Part, AttributePart } from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -483,17 +483,12 @@ suite('lit-html', () => {
       // attribute names from the template strings, we can retreive the original
       // case of the names!
 
-      class PropertySettingTemplateInstance extends TemplateInstance {
-        _createPart(templatePart: TemplatePart, node: Node): Part {
+      const partCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node): Part => {
           if (templatePart.type === 'attribute') {
-            return new PropertyPart(this, node as Element, templatePart.rawName!, templatePart.strings!);
+            return new PropertyPart(instance, node as Element, templatePart.rawName!, templatePart.strings!);
           }
-          return super._createPart(templatePart, node);
-        }
-        _createInstance(template: Template) {
-          return new PropertySettingTemplateInstance(template);
-        }
-      }
+          return defaultPartCallback(instance, templatePart, node);
+        };
 
       class PropertyPart extends AttributePart {
 
@@ -520,21 +515,15 @@ suite('lit-html', () => {
       test('can replace parts with custom types', () => {
         const container = document.createElement('div');
         const t = html`<div someProp="${123}"></div>`;
-        const instance = new PropertySettingTemplateInstance(t.template);
-        const fragment = instance._clone();
-        instance.update(t.values);
-        container.appendChild(fragment);
+        render(t, container, partCallback);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
 
-      test('works with nested tempaltes', () => {
+      test('works with nested templates', () => {
         const container = document.createElement('div');
         const t = html`${html`<div someProp="${123}"></div>`}`;
-        const instance = new PropertySettingTemplateInstance(t.template);
-        const fragment = instance._clone();
-        instance.update(t.values);
-        container.appendChild(fragment);
+        render(t, container, partCallback);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
