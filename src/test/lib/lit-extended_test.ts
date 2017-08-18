@@ -22,24 +22,33 @@ const assert = chai.assert;
 
 suite('lit-extended', () => {
   suite('render', () => {
+
+    test('sets properties', () => {
+      const container = document.createElement('div');
+      render(html`<div foo=${123} bar=${456}></div>`, container);
+      const div = container.firstChild!;
+      assert.equal((div as any).foo, 123);
+      assert.equal((div as any).bar, 456);
+    });
+
     test('reuses an existing ExtendedTemplateInstance when available', () => {
-        const container = document.createElement('div');
+      const container = document.createElement('div');
 
-        const t = (content: any) => html`<div>${content}</div>`;
+      const t = (content: any) => html`<div>${content}</div>`;
 
-        render(t('foo'), container);
+      render(t('foo'), container);
 
-        assert.equal(container.children.length, 1);
-        const fooDiv = container.children[0];
-        assert.equal(fooDiv.textContent, 'foo');
+      assert.equal(container.children.length, 1);
+      const fooDiv = container.children[0];
+      assert.equal(fooDiv.textContent, 'foo');
 
-        render(t('bar'), container);
+      render(t('bar'), container);
 
-        assert.equal(container.children.length, 1);
-        const barDiv = container.children[0];
-        assert.equal(barDiv.textContent, 'bar');
+      assert.equal(container.children.length, 1);
+      const barDiv = container.children[0];
+      assert.equal(barDiv.textContent, 'bar');
 
-        assert.equal(fooDiv, barDiv);
+      assert.equal(fooDiv, barDiv);
     });
 
     test('overwrites an existing (plain) TemplateInstance if one exists, ' +

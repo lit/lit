@@ -86,20 +86,20 @@ export class ExtendedTemplateInstance extends TemplateInstance {
 
 export class PropertyPart extends AttributePart {
 
-  setValue(values: any[]): void {
+  setValue(values: any[], startIndex: number): void {
     const s = this.strings;
     let value: any;
     if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
       // An expression that occupies the whole attribute value will leave
       // leading and trailing empty strings.
-      value = this._getValue(values[0]);
+      value = this._getValue(values[startIndex]);
     } else {
       // Interpolation, so interpolate
       value = '';
       for (let i = 0; i < s.length; i++) {
         value += s[i];
         if (i < s.length - 1) {
-          value += this._getValue(values[i]);
+          value += this._getValue(values[startIndex + i]);
         }
       }
     }
