@@ -231,7 +231,6 @@ export class AttributePart extends Part implements MultiPart {
 
   constructor(instance: TemplateInstance, element: Element, name: string, strings: string[]) {
     super(instance);
-    console.assert(element.nodeType === 1 /* ELEMENT_NODE */);
     this.element = element;
     this.name = name;
     this.strings = strings;
@@ -246,7 +245,7 @@ export class AttributePart extends Part implements MultiPart {
       text += strings[i];
       if (i < strings.length - 1) {
         const v = this._getValue(values[startIndex + i]);
-        if (v && typeof v !== 'string' && v[Symbol.iterator]) {
+        if (v && (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
           for (const t of v) {
             // TODO: we need to recursively call getValue into iterables...
             text += t;
@@ -285,7 +284,7 @@ export class NodePart extends Part implements SinglePart {
       this._setText(value);
     } else if (value instanceof TemplateResult) {
       this._setTemplateResult(value);
-    } else if (value[Symbol.iterator]) {
+    } else if (Array.isArray(value) || value[Symbol.iterator]) {
       this._setIterable(value);
     } else if (value instanceof Node) {
       this._setNode(value);
@@ -336,63 +335,55 @@ export class NodePart extends Part implements SinglePart {
   private _setIterable(value: any): void {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
-    // an Iterable, but it lets us recurse easily and update Arrays of
-    // TemplateResults that will be commonly returned from expressions like:
-    // array.map((i) => html`${i}`)
+    // an Iterable, but it lets us recurse easily and efficiently update Arrays
+    // of TemplateResults that will be commonly returned from expressions like:
+    // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
 
-    // We reuse this parts startNode as the first part's startNode, and this
-    // parts endNode as the last part's endNode.
-
-    let itemStart = this.startNode;
-    let itemEnd;
-    const values = value[Symbol.iterator]() as Iterator<any>;
-
-    const previousParts: NodePart[]|undefined = Array.isArray(this._previousValue) ?
-        this._previousValue : undefined;
-    let previousPartsIndex = 0;
-    const itemParts = [];
-    let current = values.next();
-    let next = values.next();
-
-    if (current.done) {
-      // Empty iterable, just clear
+    // If _previousValue is an array, then the previous render was of an iterable
+    // and _previousValue will contain the NodeParts from the previous render.
+    // If _previousValue is not an array, clear this part and make a new array
+    // for NodeParts.
+    if (!Array.isArray(this._previousValue)) {
       this.clear();
+      this._previousValue = [];
     }
-    while (!current.done) {
-      // Reuse a previous part if we can, otherwise create a new one
-      let itemPart: NodePart;
-      if (previousParts !== undefined && previousPartsIndex < previousParts.length) {
-        itemPart = previousParts[previousPartsIndex++];
-        if (next.done && itemPart.endNode !== this.endNode) {
-          // Since this is the last part we'll use, set it's endNode to the
-          // container's endNode. Setting the value of this part will clean
-          // up any residual nodes from a previously longer iterable.
 
-          // Remove previousSibling, since we want itemPart.endNode to be
-          // removed as part of the clear operation.
-          this.clear(itemPart.endNode.previousSibling!);
-          itemPart.endNode = this.endNode;
+    // Lets of keep track of how many items we stamped so we can clear leftover
+    // items from a previous render
+    const itemParts = this._previousValue;
+    let partIndex = 0;
+
+    for (const item of value) {
+      // Try to reuse an existing part
+      let itemPart = itemParts[partIndex];
+
+      // If no existing part, create a new one
+      if (itemPart === undefined) {
+        // If we're creating the first item part, it's startNode should be the
+        // container's startNode
+        let itemStart = this.startNode;
+
+        // If we're not creating the first part, create a new separator marker
+        // node, and fix up the previous part's endNode to point to it
+        if (partIndex > 0) {
+          const previousPart = itemParts[partIndex - 1];
+          itemStart = previousPart.endNode = new Text();
+          this._insert(itemStart);
         }
-        itemEnd = itemPart.endNode;
-      } else {
-        if (next.done) {
-          // on the last item, reuse this part's endNode
-          itemEnd = this.endNode;
-        } else {
-          itemEnd = new Text();
-          this._insert(itemEnd);
-        }
-        itemPart = new NodePart(this.instance, itemStart, itemEnd);
+        itemPart = new NodePart(this.instance, itemStart, this.endNode);
+        itemParts.push(itemPart);
       }
-
-      itemPart.setValue(current.value);
-      itemParts.push(itemPart);
-
-      current = next;
-      next = values.next();
-      itemStart = itemEnd;
+      itemPart.setValue(item);
+      partIndex++;
     }
-    this._previousValue = itemParts;
+    
+    if (partIndex === 0) {
+      this.clear();
+    } else if (partIndex < itemParts.length) {
+      const lastPart = itemParts[partIndex - 1];
+      this.clear(lastPart.endNode.previousSibling!);
+      lastPart.endNode = this.endNode;
+    }
   }
 
   protected _setPromise(value: Promise<any>): void {
