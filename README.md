@@ -240,6 +240,48 @@ const render = () => html`
 `;
 ```
 
+#### `asyncAppend(asyncIterable)` and `asyncReplace(asyncIterable)`
+
+`asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+appending each new value after the previous.
+
+`asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+replacing the previous value with the new value.
+
+Example:
+
+```javascript
+/**
+ * Returns an async iterable that yields the number of seconds since `date`,
+ * approximately every second.
+ */
+async function* secondsAgo(date) {
+  const seconds = (Date.now() - date.getTime()) / 1000;
+  const wholeSeconds = Math.floor(seconds);
+  yield wholeSeconds;
+  yield* await new Promise((res) => {
+    setTimeout(() => {
+      res(secondsAgo(date));
+    }, 1000 - (seconds - wholeSeconds) * 1000);
+  });
+}
+
+render(html`
+  This example started ${asyncReplace(secondsAgo(new Date()))} seconds ago.
+`, document.body);
+```
+
+In the near future, `ReadableStream`s will be async iterables, enabling streaming `fetch()`
+directly into a template:
+
+```javascript
+const streamingResponse = (async () => {
+  const response = await fetch('https://cors-anywhere.herokuapp.com/http://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt');
+  return response.body.getReader();
+})();
+render(html`π is: ${asyncAppend(streamingResponse)}`, document.body);
+```
+
 ### Promises
 
 Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won't update the template when it finally resolves.
