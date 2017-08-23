@@ -104,41 +104,38 @@ export class TemplatePart {
 }
 
 export class Template {
-  private _strings: TemplateStringsArray;
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
   constructor(strings: TemplateStringsArray) {
-    this._strings = strings;
-    this._parse();
-  }
-
-  private _parse() {
     this.element = document.createElement('template');
-    this.element.innerHTML = this._getHtml(this._strings);
+    this.element.innerHTML = strings.join(exprMarker);
     const walker = document.createTreeWalker(this.element.content, 5 /* elements & text */);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
-    const attributesToRemove = [];
+    
     while (walker.nextNode()) {
       index++;
-      const node = walker.currentNode;
+      const node = walker.currentNode as Element;
       if (node.nodeType === 1 /* ELEMENT_NODE */) {
+        if (!node.hasAttributes()) continue;
         const attributes = node.attributes;
         for (let i = 0; i < attributes.length; i++) {
           const attribute = attributes.item(i);
-          const value = attribute.value;
-          const strings = value.split(exprMarker);
-          if (strings.length > 1) {
-            const attributeString = this._strings[partIndex];
+          const attributeStrings = attribute.value.split(exprMarker);
+          if (attributeStrings.length > 1) {
+            // Get the template literal section leading up to the first expression
+            // in this attribute attribute
+            const attributeString = strings[partIndex];
             // Trim the trailing literal value if this is an interpolation
-            const rawNameString = attributeString.substring(0, attributeString.length - strings[0].length);
-            const match = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/);
-            const rawName = match![1];
-            this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, strings));
-            attributesToRemove.push(attribute);
-            partIndex += strings.length - 1;
+            const rawNameString = attributeString.substring(0, attributeString.length - attributeStrings[0].length);
+            // Find the attribute name
+            const rawName = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/)![1];
+            this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, attributeStrings));
+            node.removeAttribute(attribute.name);
+            partIndex += attributeStrings.length - 1;
+            i--;
           }
         }
       } else if (node.nodeType === 3 /* TEXT_NODE */) {
@@ -172,22 +169,17 @@ export class Template {
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
     }
-    for (const a of attributesToRemove) {
-      a.ownerElement.removeAttribute(a.name);
-    }
   }
 
-  private _getHtml(strings: TemplateStringsArray): string {
-    const parts = [];
-    for (let i = 0; i < strings.length; i++) {
-      parts.push(strings[i]);
-      if (i < strings.length - 1) {
-        parts.push(exprMarker);
-      }
-    }
-    return parts.join('');
-  }
+}
 
+export const getValue = (part: Part, value: any) => {
+  // `null` as the value of a Text node will render the string 'null'
+  // so we convert it to undefined
+  if (value != null && value.__litDirective === true) {
+    value = value(part);
+  }
+  return value === null ? undefined : value;
 }
 
 export type DirectiveFn = (part: Part) => any;
@@ -197,22 +189,13 @@ export const directive = <F extends DirectiveFn>(f: F): F => {
   return f;
 };
 
-export abstract class Part {
-  instance: TemplateInstance
+export interface Part {
+  instance: TemplateInstance;
   size?: number;
 
-  constructor(instance: TemplateInstance) {
-    this.instance = instance;
-  }
-
-  protected _getValue(value: any) {
-    // `null` as the value of a Text node will render the string 'null'
-    // so we convert it to undefined
-    if (typeof value === 'function' && value.__litDirective === true) {
-      value = value(this);
-    }
-    return value === null ? undefined : value;
-  }
+  // constructor(instance: TemplateInstance) {
+  //   this.instance = instance;
+  // }
 }
 
 export interface SinglePart extends Part {
@@ -223,14 +206,15 @@ export interface MultiPart extends Part {
   setValue(values: any[], startIndex: number): void;
 }
 
-export class AttributePart extends Part implements MultiPart {
+export class AttributePart implements MultiPart {
+  instance: TemplateInstance;
   element: Element;
   name: string;
   strings: string[];
   size: number;
 
   constructor(instance: TemplateInstance, element: Element, name: string, strings: string[]) {
-    super(instance);
+    this.instance = instance;
     this.element = element;
     this.name = name;
     this.strings = strings;
@@ -244,7 +228,7 @@ export class AttributePart extends Part implements MultiPart {
     for (let i = 0; i < strings.length; i++) {
       text += strings[i];
       if (i < strings.length - 1) {
-        const v = this._getValue(values[startIndex + i]);
+        const v = getValue(this, values[startIndex + i]);
         if (v && (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
           for (const t of v) {
             // TODO: we need to recursively call getValue into iterables...
@@ -260,19 +244,20 @@ export class AttributePart extends Part implements MultiPart {
 
 }
 
-export class NodePart extends Part implements SinglePart {
+export class NodePart implements SinglePart {
+  instance: TemplateInstance;
   startNode: Node;
   endNode: Node;
   private _previousValue: any;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
-    super(instance);
+    this.instance = instance;
     this.startNode = startNode;
     this.endNode = endNode;
   }
 
   setValue(value: any): void {
-    value = this._getValue(value);
+    value = getValue(this, value);
 
     if (value === null ||
         !(typeof value === 'object' || typeof value === 'function')) {
@@ -307,13 +292,14 @@ export class NodePart extends Part implements SinglePart {
   }
 
   private _setText(value: string): void {
-    if (this.startNode.nextSibling! === this.endNode.previousSibling! &&
-        this.startNode.nextSibling!.nodeType === Node.TEXT_NODE) {
+    const node = this.startNode.nextSibling!;
+    if (node === this.endNode.previousSibling &&
+        node.nodeType === Node.TEXT_NODE) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if _previousValue is
       // primitive?
-      this.startNode.nextSibling!.textContent = value;
+      node.textContent = value;
     } else {
       this._setNode(new Text(value));
     }
@@ -379,6 +365,7 @@ export class NodePart extends Part implements SinglePart {
     
     if (partIndex === 0) {
       this.clear();
+      this._previousValue = undefined;
     } else if (partIndex < itemParts.length) {
       const lastPart = itemParts[partIndex - 1];
       this.clear(lastPart.endNode.previousSibling!);
@@ -396,14 +383,9 @@ export class NodePart extends Part implements SinglePart {
   }
 
   clear(startNode: Node = this.startNode) {
-    this._previousValue = undefined;
-
-    let node = startNode.nextSibling!;
-
-    while (node !== null && node !== this.endNode) {
-      let next = node.nextSibling!;
+    let node;
+    while ((node = startNode.nextSibling!) !== this.endNode) {
       node.parentNode!.removeChild(node);
-      node = next;
     }
   }
 }

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { render as baseRender, defaultPartCallback, TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part } from '../lit-html.js';
+import { render as baseRender, getValue, defaultPartCallback, TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part } from '../lit-html.js';
 export { html } from '../lit-html.js';
 /**
  *
@@ -69,14 +69,14 @@ export class PropertyPart extends AttributePart {
     if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
       // An expression that occupies the whole attribute value will leave
       // leading and trailing empty strings.
-      value = this._getValue(values[startIndex]);
+      value = getValue(this, values[startIndex]);
     } else {
       // Interpolation, so interpolate
       value = '';
       for (let i = 0; i < s.length; i++) {
         value += s[i];
         if (i < s.length - 1) {
-          value += this._getValue(values[startIndex + i]);
+          value += getValue(this, values[startIndex + i]);
         }
       }
     }
@@ -84,20 +84,21 @@ export class PropertyPart extends AttributePart {
   }
 }
 
-export class EventPart extends Part {
+export class EventPart implements Part {
 
+  instance: TemplateInstance;
   element: Element;
   eventName: string;
   private _listener: any;
 
   constructor(instance: TemplateInstance, element: Element, eventName: string) {
-    super(instance);
+    this.instance = instance;
     this.element = element;
     this.eventName = eventName;
   }
 
   setValue(value: any): void {
-    const listener = this._getValue(value);
+    const listener = getValue(this, value);
     if (typeof listener !== 'function') {
       console.error('event handlers must be functions', listener);
       return;
