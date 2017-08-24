@@ -69,8 +69,9 @@ export function render(result: TemplateResult, container: Element|DocumentFragme
   const fragment = instance._clone();
   instance.update(result.values);
 
-  while (container.firstChild) {
-    container.removeChild(container.firstChild);
+  let child;
+  while ((child = container.lastChild)) {
+    container.removeChild(child);
   }
   container.appendChild(fragment);
 }
