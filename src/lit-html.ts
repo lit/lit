@@ -75,9 +75,11 @@ export function render(result: TemplateResult, container: Element|DocumentFragme
   container.appendChild(fragment);
 }
 
-/** Unique key to avoid https://github.com/PolymerLabs/lit-html/issues/62 */
-const markerID = Math.random();
-const exprMarker = `{{${markerID}}}`;
+/** 
+ * An expression marker with embedded unique key to avoid 
+ * https://github.com/PolymerLabs/lit-html/issues/62
+ */
+const exprMarker = `{{lit-${Math.random()}}}`;
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
