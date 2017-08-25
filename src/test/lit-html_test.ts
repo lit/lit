@@ -52,6 +52,15 @@ suite('lit-html', () => {
       assert.equal(countNodes(html`a${0}b${0}c`, (c) => c.childNodes), 3);
     });
 
+    test('escapes marker sequences in text nodes', () => {
+      const container = document.createElement('div');
+      const result = html`{{}}`;
+      assert.equal(result.template.parts.length, 0);
+      render(result, container);
+      console.log(container.innerHTML);
+      assert.equal(container.innerHTML, '{{}}');
+    });
+
     test('parses parts for multiple expressions', () => {
       const result = html`
         <div a="${1}">

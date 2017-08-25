@@ -77,7 +77,7 @@ export function render(result: TemplateResult, container: Element|DocumentFragme
 
 /** Unique key to avoid https://github.com/PolymerLabs/lit-html/issues/62 */
 const markerID = Math.random();
-const exprMarker = '{{' + markerID + '}}';
+const exprMarker = `{{${markerID}}}`;
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
