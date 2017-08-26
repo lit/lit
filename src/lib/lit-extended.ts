@@ -99,7 +99,7 @@ export class EventPart implements Part {
 
   setValue(value: any): void {
     const listener = getValue(this, value);
-    if (typeof listener !== 'function') {
+    if (listener !== undefined && typeof listener !== 'function') {
       console.error('event handlers must be functions', listener);
       return;
     }

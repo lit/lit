@@ -90,5 +90,39 @@ suite('lit-extended', () => {
 
         assert.notEqual(fooDiv, barDiv);
       });
+
+    test('adds event listeners', (done) => {
+      const container = document.createElement('div');
+
+      const clickHandler = () => { done(); };
+
+      render(html`<button on-click=${clickHandler}>foo</button>`, container);
+
+      const button = container.querySelector('button');
+      if (button) {
+        button.click();
+      }
+    });
+
+    test('removes event listeners', (done) => {
+      console.error = function () {
+        done(new Error("Console's error logger was called!"))
+      };
+
+      const container = document.createElement('div');
+
+      let clickHandler: any = () => { done(new Error('Click handler was called!')) };
+      render(html`<button on-click=${clickHandler}>foo</button>`, container);
+
+      clickHandler = undefined;
+      render(html`<button on-click=${clickHandler}>foo</button>`, container);
+
+      const button = container.querySelector('button');
+      if (button) {
+        button.click();
+      }
+
+      setTimeout(done, 0)
+    });
   });
 });
