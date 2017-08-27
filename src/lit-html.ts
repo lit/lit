@@ -17,6 +17,7 @@
 // in a Map.
 const templates = new Map<TemplateStringsArray, Template>();
 
+
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
@@ -25,6 +26,26 @@ export function html(strings: TemplateStringsArray, ...values: any[]): TemplateR
   let template = templates.get(strings);
   if (template === undefined) {
     template = new Template(strings);
+    templates.set(strings, template);
+  }
+  return new TemplateResult(template, values);
+}
+
+/**
+ * TypeScript has a problem with precompiling templates literals
+ * https://github.com/Microsoft/TypeScript/issues/17956
+ */
+const __templates = new Map<TemplateStringsArray, Template>();
+export function htmlTS(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
+  const key = strings.join('{{typescript}}');
+  const _strings = __templates.get(key);
+  let template = undefined;
+  if (_strings !== undefined) {
+    template = templates.get(_strings);
+  }
+  if (template === undefined) {
+    template = new Template(strings);
+    __templates.set(key, strings);
     templates.set(strings, template);
   }
   return new TemplateResult(template, values);
