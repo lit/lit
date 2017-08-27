@@ -16,7 +16,7 @@
  * TypeScript has a problem with precompiling templates literals
  * https://github.com/Microsoft/TypeScript/issues/17956
  */
-const shouldCacheTemplates = ((_t) => _t() === _t())(() => ((s) => s)``);
+const shouldCacheTemplates = ((_t: any) => _t() === _t())(() => ((s: any) => s)``);
 
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
