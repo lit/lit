@@ -31,10 +31,10 @@ const cacheTemplates = new Map<string, TemplateStringsArray>();
  */
 export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
   if (shouldCacheTemplates) {
-    let key = strings.join('{{typescriptProblems}}');
-    let _strings = cacheTemplates.get(key)
+    const _key = strings.join('{{typescriptProblems}}');
+    const _strings = cacheTemplates.get(_key)
     if (_strings === undefined) {
-      cacheTemplates.set(key, strings)
+      cacheTemplates.set(_key, strings)
     } else {
       strings = _strings
     }
