@@ -74,7 +74,7 @@ export function repeat<T>(items: Iterable<T>,
       // Try to reuse a part, either keyed or from the list of previous parts
       // if there's no keyMap
       let itemPart =
-          keyMap == undefined ? oldParts[oldPartsIndex++] : keyMap.get(key);
+          keyMap === undefined ? oldParts[oldPartsIndex++] : keyMap.get(key);
 
       if (itemPart === undefined) {
         // New part, attach it

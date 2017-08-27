@@ -115,7 +115,7 @@ suite('lit-html', () => {
     test('updates when called multiple times with arrays', () => {
       const container = document.createElement('div');
       const ul = (list: string[]) => {
-        var items = list.map(item => html`<li>${item}</li>`);
+        const items = list.map((item) => html`<li>${item}</li>`);
         return html`<ul>${items}</ul>`;
       };
       render(ul([ 'a', 'b', 'c' ]), container);
@@ -128,13 +128,13 @@ suite('lit-html', () => {
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
       assert(result.template.element.innerHTML, '<div></div>');
-    })
+    });
 
     test('resists XSS attempt in attribute values', () => {
       const result = html
           `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
       assert(result.template.element.innerHTML, '<div></div>');
-    })
+    });
 
   });
 
@@ -330,7 +330,7 @@ suite('lit-html', () => {
 
       test('dirty checks simple values', () => {
         const container = document.createElement('div');
-        let foo = 'aaa';
+        const foo = 'aaa';
 
         const t = () => html`<div>${foo}</div>`;
 
@@ -377,7 +377,7 @@ suite('lit-html', () => {
       test('renders to and updates sibling parts', () => {
         const container = document.createElement('div');
         let foo = 'foo';
-        let bar = 'bar';
+        const bar = 'bar';
 
         const t = () => html`<div>${foo}${bar}</div>`;
 
@@ -392,7 +392,7 @@ suite('lit-html', () => {
       test('renders and updates attributes', () => {
         const container = document.createElement('div');
         let foo = 'foo';
-        let bar = 'bar';
+        const bar = 'bar';
 
         const t = () => html`<div a="${foo}:${bar}"></div>`;
 
@@ -407,8 +407,8 @@ suite('lit-html', () => {
       test('updates nested templates', () => {
         const container = document.createElement('div');
         let foo = 'foo';
-        let bar = 'bar';
-        let baz = 'baz';
+        const bar = 'bar';
+        const baz = 'baz';
 
         const t =
             (x: boolean) => {
@@ -420,7 +420,7 @@ suite('lit-html', () => {
               }
 
               return html`${partial}${baz}`;
-            }
+            };
 
         render(t(true), container);
         assert.equal(container.innerHTML, '<h1>foo</h1>baz');
@@ -467,7 +467,7 @@ suite('lit-html', () => {
           document.createElement('p'), document.createElement('a'),
           document.createElement('span')
         ];
-        const t = () => html`<div>${children}</div>`
+        const t = () => html`<div>${children}</div>`;
         render(t(), container);
         assert.equal(container.innerHTML,
                      '<div><p></p><a></a><span></span></div>');

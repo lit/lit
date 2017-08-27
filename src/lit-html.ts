@@ -184,7 +184,7 @@ export const getValue =
         value = value(part);
       }
       return value === null ? undefined : value;
-    }
+    };
 
 export type DirectiveFn = (part: Part) => any;
 
@@ -408,7 +408,7 @@ export const defaultPartCallback =
             return new NodePart(instance, node, node.nextSibling!);
           }
           throw new Error(`Unknown part type ${templatePart.type}`);
-        }
+        };
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
