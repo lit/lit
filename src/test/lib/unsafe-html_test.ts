@@ -24,8 +24,10 @@ suite('unsafeHTML', () => {
 
   test('renders HTML', () => {
     const container = document.createElement('div');
-    render(html`<div>before${unsafeHTML('<span>inner</span>after</div>')}`, container);
-    assert.equal(container.innerHTML, '<div>before<span>inner</span>after</div>');
+    render(html`<div>before${unsafeHTML('<span>inner</span>after</div>')}`,
+           container);
+    assert.equal(container.innerHTML,
+                 '<div>before<span>inner</span>after</div>');
   });
 
 });

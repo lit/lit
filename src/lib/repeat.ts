@@ -24,9 +24,12 @@ interface State {
 
 const stateCache = new WeakMap<NodePart, State>();
 
-export function repeat<T>(items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn;
+export function repeat<T>(items: T[], keyFn: KeyFn<T>,
+                          template: ItemTemplate<T>): DirectiveFn;
 export function repeat<T>(items: T[], template: ItemTemplate<T>): DirectiveFn;
-export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>, template?: ItemTemplate<T>): DirectiveFn {
+export function repeat<T>(items: Iterable<T>,
+                          keyFnOrTemplate: KeyFn<T>| ItemTemplate<T>,
+                          template?: ItemTemplate<T>): DirectiveFn {
 
   let keyFn: KeyFn<T>;
   if (arguments.length === 2) {
@@ -40,14 +43,16 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
     let state = stateCache.get(part);
     if (state === undefined) {
       state = {
-        keyMap: keyFn && new Map(),
-        parts: [],
+        keyMap : keyFn && new Map(),
+        parts : [],
       };
       stateCache.set(part, state);
     }
-    const container = part.startNode.parentNode as HTMLElement|ShadowRoot|DocumentFragment;
+    const container = part.startNode.parentNode as HTMLElement | ShadowRoot |
+                      DocumentFragment;
     const oldParts = state.parts;
-    const endParts = new Map<Node, NodePart>(oldParts.map((p) => [p.endNode, p] as [Node, NodePart]));
+    const endParts = new Map<Node, NodePart>(
+        oldParts.map((p) => [p.endNode, p] as [Node, NodePart]));
     const keyMap = state.keyMap;
 
     const itemParts = [];
@@ -59,16 +64,17 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
       let result;
       let key;
       try {
-        result = template!(item, index++);
+        result = template !(item, index++);
         key = keyFn && keyFn(item);
-      } catch(e) {
+      } catch (e) {
         console.error(e);
         continue;
       }
 
       // Try to reuse a part, either keyed or from the list of previous parts
       // if there's no keyMap
-      let itemPart = keyMap == undefined ? oldParts[oldPartsIndex++] : keyMap.get(key);
+      let itemPart =
+          keyMap == undefined ? oldParts[oldPartsIndex++] : keyMap.get(key);
 
       if (itemPart === undefined) {
         // New part, attach it
@@ -102,7 +108,8 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
             if (part.startNode.nextSibling === part.endNode) {
               // The container part was empty, so we need a new endPart
               itemPart.endNode = new Text();
-              container.insertBefore(itemPart.endNode, part.startNode.nextSibling);
+              container.insertBefore(itemPart.endNode,
+                                     part.startNode.nextSibling);
             } else {
               // endNode should equal the startNode of the currently first part
               itemPart.endNode = part.startNode.nextSibling!;
@@ -118,7 +125,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
             endParts.set(previousPart.endNode, previousPart);
           }
           const contents = range.extractContents();
-          container.insertBefore(contents, currentMarker);            
+          container.insertBefore(contents, currentMarker);
         }
 
         // remove part from oldParts list so it's not cleaned up
@@ -137,7 +144,7 @@ export function repeat<T>(items: Iterable<T>, keyFnOrTemplate: KeyFn<T>|ItemTemp
       const clearEnd = oldParts[oldParts.length - 1].endNode;
       const clearRange = document.createRange();
       if (itemParts.length === 0) {
-        clearRange.setStartBefore(clearStart);  
+        clearRange.setStartBefore(clearStart);
       } else {
         clearRange.setStartAfter(clearStart);
       }
