@@ -16,8 +16,8 @@
  * TypeScript has a problem with precompiling templates literals
  * https://github.com/Microsoft/TypeScript/issues/17956
  */
-const t = () => ((s) => s)``;
-const shouldCacheTemplates = t() === t();
+const _t = () => ((s) => s)``;
+const shouldCacheTemplates = _t() === _t();
 
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
@@ -30,21 +30,20 @@ const cacheTemplates = new Map<string, TemplateStringsArray>();
  * render to and update a container.
  */
 export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
-  let key: string = undefined;
-  let template: TemplateStringsArray = undefined;
   if (shouldCacheTemplates) {
-    key = strings.join('{{typescript}}');
-    template = cacheTemplates.get(key)
-  } else {
-    template = templates.get(strings);
+    let key = strings.join('{{typescriptProblems}}');
+    let _strings = cacheTemplates.get(key)
+    if (_strings === undefined) {
+      cacheTemplates.set(key, strings)
+    } else {
+      strings = _strings
+    }
   }
+  let template = templates.get(strings);
 
   if (template === undefined) {
     template = new Template(strings);
     templates.set(strings, template);
-    if (shouldCacheTemplates) {
-      cacheTemplates.set(key, strings);
-    }
   }
 
   return new TemplateResult(template, values);
