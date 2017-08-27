@@ -12,41 +12,41 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * TypeScript has a problem with precompiling templates literals
+ * https://github.com/Microsoft/TypeScript/issues/17956
+ */
+const t = () => ((s) => s)``;
+const shouldCacheTemplates = t() === t();
+
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
 const templates = new Map<TemplateStringsArray, Template>();
+const cacheTemplates = new Map<string, TemplateStringsArray>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
  */
 export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
-  let template = templates.get(strings);
-  if (template === undefined) {
-    template = new Template(strings);
-    templates.set(strings, template);
+  let key: string = undefined;
+  let template: TemplateStringsArray = undefined;
+  if (shouldCacheTemplates) {
+    key = strings.join('{{typescript}}');
+    template = cacheTemplates.get(key)
+  } else {
+    template = templates.get(strings);
   }
-  return new TemplateResult(template, values);
-}
 
-/**
- * TypeScript has a problem with precompiling templates literals
- * https://github.com/Microsoft/TypeScript/issues/17956
- */
-const __templates = new Map<string, TemplateStringsArray>();
-export function htmlTS(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
-  const key = strings.join('{{typescript}}');
-  const _strings = __templates.get(key);
-  let template = undefined;
-  if (_strings !== undefined) {
-    template = templates.get(_strings);
-  }
   if (template === undefined) {
     template = new Template(strings);
-    __templates.set(key, strings);
     templates.set(strings, template);
+    if (shouldCacheTemplates) {
+      cacheTemplates.set(key, strings);
+    }
   }
+
   return new TemplateResult(template, values);
 }
 
