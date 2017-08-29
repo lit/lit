@@ -21,7 +21,7 @@ const cacheTemplates = ((t: any) => t() === t())(() => ((s: TemplateStringsArray
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
-const templates = new Map<TemplateStringsArray | string, Template>();
+const templates = new Map<TemplateStringsArray | string, Template | TemplateStringsArray>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
