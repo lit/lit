@@ -21,7 +21,8 @@ const cacheTemplates = ((t: any) => t() === t())(() => ((s: TemplateStringsArray
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
-const templates = new Map<TemplateStringsArray | string, Template | TemplateStringsArray>();
+const templates = new Map<TemplateStringsArray, Template>();
+const templateString = new Map<string, TemplateStringsArray>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -30,14 +31,14 @@ const templates = new Map<TemplateStringsArray | string, Template | TemplateStri
 export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
   if (cacheTemplates) {
     const _key = strings.join('{{typescriptProblems}}');
-    const _strings: TemplateStringsArray | undefined = templates.get(_key);
+    const _strings = templateString.get(_key);
     if (_strings === undefined) {
-      templates.set(_key, strings);
+      templateString.set(_key, strings);
     } else {
       strings = _strings;
     }
   }
-  let template: Template | undefined = templates.get(strings);
+  let template = templates.get(strings);
 
   if (template === undefined) {
     template = new Template(strings);
