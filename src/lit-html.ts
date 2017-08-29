@@ -30,14 +30,14 @@ const templates = new Map<TemplateStringsArray | string, Template | TemplateStri
 export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
   if (cacheTemplates) {
     const _key = strings.join('{{typescriptProblems}}');
-    const _strings: TemplateStringsArray = templates.get(_key);
+    const _strings: TemplateStringsArray | undefined = templates.get(_key);
     if (_strings === undefined) {
       templates.set(_key, strings);
     } else {
       strings = _strings;
     }
   }
-  let template: Template = templates.get(strings);
+  let template: Template | undefined = templates.get(strings);
 
   if (template === undefined) {
     template = new Template(strings);
