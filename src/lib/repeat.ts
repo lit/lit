@@ -24,13 +24,13 @@ interface State {
 
 const stateCache = new WeakMap<NodePart, State>();
 
-export function repeat<T>(items: T[], keyFn: KeyFn<T>,
-                          template: ItemTemplate<T>): DirectiveFn;
+export function repeat<T>(
+    items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn;
 export function repeat<T>(items: T[], template: ItemTemplate<T>): DirectiveFn;
-export function repeat<T>(items: Iterable<T>,
-                          keyFnOrTemplate: KeyFn<T>| ItemTemplate<T>,
-                          template?: ItemTemplate<T>): DirectiveFn {
-
+export function repeat<T>(
+    items: Iterable<T>,
+    keyFnOrTemplate: KeyFn<T>| ItemTemplate<T>,
+    template?: ItemTemplate<T>): DirectiveFn {
   let keyFn: KeyFn<T>;
   if (arguments.length === 2) {
     template = keyFnOrTemplate;
@@ -43,13 +43,13 @@ export function repeat<T>(items: Iterable<T>,
     let state = stateCache.get(part);
     if (state === undefined) {
       state = {
-        keyMap : keyFn && new Map(),
-        parts : [],
+        keyMap: keyFn && new Map(),
+        parts: [],
       };
       stateCache.set(part, state);
     }
     const container = part.startNode.parentNode as HTMLElement | ShadowRoot |
-                      DocumentFragment;
+        DocumentFragment;
     const oldParts = state.parts;
     const endParts = new Map<Node, NodePart>(
         oldParts.map((p) => [p.endNode, p] as [Node, NodePart]));
@@ -108,8 +108,8 @@ export function repeat<T>(items: Iterable<T>,
             if (part.startNode.nextSibling === part.endNode) {
               // The container part was empty, so we need a new endPart
               itemPart.endNode = new Text();
-              container.insertBefore(itemPart.endNode,
-                                     part.startNode.nextSibling);
+              container.insertBefore(
+                  itemPart.endNode, part.startNode.nextSibling);
             } else {
               // endNode should equal the startNode of the currently first part
               itemPart.endNode = part.startNode.nextSibling!;
@@ -150,7 +150,7 @@ export function repeat<T>(items: Iterable<T>,
       }
       clearRange.setEndAfter(clearEnd);
       clearRange.deleteContents();
-      clearRange.detach(); // is this neccessary?
+      clearRange.detach();  // is this neccessary?
     }
 
     state.parts = itemParts;

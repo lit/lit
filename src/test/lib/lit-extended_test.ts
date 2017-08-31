@@ -51,46 +51,48 @@ suite('lit-extended', () => {
       assert.equal(fooDiv, barDiv);
     });
 
-    test('overwrites an existing (plain) TemplateInstance if one exists, ' +
-             'even if it has a matching Template',
-         () => {
-           const container = document.createElement('div');
+    test(
+        'overwrites an existing (plain) TemplateInstance if one exists, ' +
+            'even if it has a matching Template',
+        () => {
+          const container = document.createElement('div');
 
-           const t = () => html`<div>foo</div>`;
+          const t = () => html`<div>foo</div>`;
 
-           renderPlain(t(), container);
+          renderPlain(t(), container);
 
-           assert.equal(container.children.length, 1);
-           const firstDiv = container.children[0];
-           assert.equal(firstDiv.textContent, 'foo');
+          assert.equal(container.children.length, 1);
+          const firstDiv = container.children[0];
+          assert.equal(firstDiv.textContent, 'foo');
 
-           render(t(), container);
+          render(t(), container);
 
-           assert.equal(container.children.length, 1);
-           const secondDiv = container.children[0];
-           assert.equal(secondDiv.textContent, 'foo');
+          assert.equal(container.children.length, 1);
+          const secondDiv = container.children[0];
+          assert.equal(secondDiv.textContent, 'foo');
 
-           assert.notEqual(firstDiv, secondDiv);
-         });
+          assert.notEqual(firstDiv, secondDiv);
+        });
 
-    test('overwrites an existing ExtendedTemplateInstance if one exists and ' +
-             'does not have a matching Template',
-         () => {
-           const container = document.createElement('div');
+    test(
+        'overwrites an existing ExtendedTemplateInstance if one exists and ' +
+            'does not have a matching Template',
+        () => {
+          const container = document.createElement('div');
 
-           render(html`<div>foo</div>`, container);
+          render(html`<div>foo</div>`, container);
 
-           assert.equal(container.children.length, 1);
-           const fooDiv = container.children[0];
-           assert.equal(fooDiv.textContent, 'foo');
+          assert.equal(container.children.length, 1);
+          const fooDiv = container.children[0];
+          assert.equal(fooDiv.textContent, 'foo');
 
-           render(html`<div>bar</div>`, container);
+          render(html`<div>bar</div>`, container);
 
-           assert.equal(container.children.length, 1);
-           const barDiv = container.children[0];
-           assert.equal(barDiv.textContent, 'bar');
+          assert.equal(container.children.length, 1);
+          const barDiv = container.children[0];
+          assert.equal(barDiv.textContent, 'bar');
 
-           assert.notEqual(fooDiv, barDiv);
-         });
+          assert.notEqual(fooDiv, barDiv);
+        });
   });
 });
