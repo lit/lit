@@ -25,13 +25,17 @@ suite('until', () => {
   test('displays defaultContent immediately', async () => {
     const container = document.createElement('div');
     let resolve: (v: any) => void;
-    const promise = new Promise((res, _) => {resolve = res;});
-    render(html`<div>${until(promise, html`<span>loading...</span>`)}</div>`, container);
+    const promise = new Promise((res, _) => {
+      resolve = res;
+    });
+    render(
+        html`<div>${until(promise, html`<span>loading...</span>`)}</div>`,
+        container);
     assert.equal(container.innerHTML, '<div><span>loading...</span></div>');
     resolve!('foo');
     await promise;
     await new Promise((r) => setTimeout(() => r()));
-    assert.equal(container.innerHTML, '<div>foo</div>');         
+    assert.equal(container.innerHTML, '<div>foo</div>');
   });
 
 });

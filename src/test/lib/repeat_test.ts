@@ -15,8 +15,8 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {html, render} from '../../lit-html.js';
 import {repeat} from '../../lib/repeat.js';
+import {html, render} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -31,23 +31,31 @@ suite('repeat', () => {
   suite('keyed', () => {
 
     test('renders a list', () => {
-      const r = html`${repeat([1, 2, 3], (i) => i, (i: number) => html`
+      const r =
+          html`${repeat([1, 2, 3], (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(r, container);
-      assert.equal(container.innerHTML, `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
     });
 
     test('shuffles are stable', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(t(), container);
-      assert.equal(container.innerHTML, `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
       const children1 = Array.from(container.querySelectorAll('li'));
 
       items = [3, 2, 1];
       render(t(), container);
-      assert.equal(container.innerHTML, `<li>item: 3</li><li>item: 2</li><li>item: 1</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 3</li><li>item: 2</li><li>item: 1</li>`);
       const children2 = Array.from(container.querySelectorAll('li'));
       assert.strictEqual(children1[0], children2[2]);
       assert.strictEqual(children1[1], children2[1]);
@@ -56,29 +64,36 @@ suite('repeat', () => {
 
     test('can insert an item at the beginning', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
       items = [0, 1, 2, 3];
       render(t(), container);
-      assert.equal(container.innerHTML, `<li>item: 0</li><li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 0</li><li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
     });
 
     test('can insert an item at the end', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
       items = [1, 2, 3, 4];
       render(t(), container);
-      assert.equal(container.innerHTML, `<li>item: 1</li><li>item: 2</li><li>item: 3</li><li>item: 4</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li><li>item: 4</li>`);
     });
 
     test('can replace with an empty list', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -89,7 +104,8 @@ suite('repeat', () => {
 
     test('can remove the first item', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -105,7 +121,8 @@ suite('repeat', () => {
 
     test('can remove the last item', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -121,10 +138,11 @@ suite('repeat', () => {
 
     test('can remove a middle item', () => {
       let items = [1, 2, 3];
-      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () =>
+          html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
-            render(t(), container);
+      render(t(), container);
       const children1 = Array.from(container.querySelectorAll('li'));
 
       items = [1, 3];
@@ -143,7 +161,9 @@ suite('repeat', () => {
       const r = html`${repeat([1, 2, 3], (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(r, container);
-      assert.equal(container.innerHTML, `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
     });
 
     test('shuffles a list', () => {
@@ -151,11 +171,15 @@ suite('repeat', () => {
       const t = () => html`${repeat(items, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(t(), container);
-      assert.equal(container.innerHTML, `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
 
       items = [3, 2, 1];
       render(t(), container);
-      assert.equal(container.innerHTML, `<li>item: 3</li><li>item: 2</li><li>item: 1</li>`);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 3</li><li>item: 2</li><li>item: 1</li>`);
     });
 
     test('can replace with an empty list', () => {

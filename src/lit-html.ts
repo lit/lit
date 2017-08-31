@@ -21,7 +21,8 @@ const templates = new Map<TemplateStringsArray, Template>();
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
  */
-export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
+export function html(
+    strings: TemplateStringsArray, ...values: any[]): TemplateResult {
   let template = templates.get(strings);
   if (template === undefined) {
     template = new Template(strings);
@@ -50,13 +51,14 @@ export class TemplateResult {
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
  */
-export function render(result: TemplateResult, container: Element|DocumentFragment,
+export function render(
+    result: TemplateResult,
+    container: Element|DocumentFragment,
     partCallback: PartCallback = defaultPartCallback) {
   let instance = (container as any).__templateInstance as any;
 
   // Repeat render, just call update()
-  if (instance !== undefined &&
-      instance.template === result.template &&
+  if (instance !== undefined && instance.template === result.template &&
       instance._partCallback === partCallback) {
     instance.update(result.values);
     return;
@@ -75,8 +77,8 @@ export function render(result: TemplateResult, container: Element|DocumentFragme
   container.appendChild(fragment);
 }
 
-/** 
- * An expression marker with embedded unique key to avoid 
+/**
+ * An expression marker with embedded unique key to avoid
  * https://github.com/PolymerLabs/lit-html/issues/62
  */
 const exprMarker = `{{lit-${Math.random()}}}`;
@@ -99,11 +101,8 @@ const exprMarker = `{{lit-${Math.random()}}}`;
  */
 export class TemplatePart {
   constructor(
-    public type: string,
-    public index: number,
-    public name?: string,
-    public rawName?: string,
-    public strings?: string[]) {
+      public type: string, public index: number, public name?: string,
+      public rawName?: string, public strings?: string[]) {
   }
 }
 
@@ -114,29 +113,33 @@ export class Template {
   constructor(strings: TemplateStringsArray) {
     this.element = document.createElement('template');
     this.element.innerHTML = strings.join(exprMarker);
-    const walker = document.createTreeWalker(this.element.content, 5 /* elements & text */);
+    const walker = document.createTreeWalker(
+        this.element.content, 5 /* elements & text */);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
-    
+
     while (walker.nextNode()) {
       index++;
       const node = walker.currentNode as Element;
       if (node.nodeType === 1 /* ELEMENT_NODE */) {
-        if (!node.hasAttributes()) continue;
+        if (!node.hasAttributes())
+          continue;
         const attributes = node.attributes;
         for (let i = 0; i < attributes.length; i++) {
           const attribute = attributes.item(i);
           const attributeStrings = attribute.value.split(exprMarker);
           if (attributeStrings.length > 1) {
-            // Get the template literal section leading up to the first expression
-            // in this attribute attribute
+            // Get the template literal section leading up to the first
+            // expression in this attribute attribute
             const attributeString = strings[partIndex];
             // Trim the trailing literal value if this is an interpolation
-            const rawNameString = attributeString.substring(0, attributeString.length - attributeStrings[0].length);
+            const rawNameString = attributeString.substring(
+                0, attributeString.length - attributeStrings[0].length);
             // Find the attribute name
             const rawName = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/)![1];
-            this.parts.push(new TemplatePart('attribute', index, attribute.name, rawName, attributeStrings));
+            this.parts.push(new TemplatePart(
+                'attribute', index, attribute.name, rawName, attributeStrings));
             node.removeAttribute(attribute.name);
             partIndex += attributeStrings.length - 1;
             i--;
@@ -174,7 +177,6 @@ export class Template {
       n.parentNode!.removeChild(n);
     }
   }
-
 }
 
 export const getValue = (part: Part, value: any) => {
@@ -184,7 +186,7 @@ export const getValue = (part: Part, value: any) => {
     value = value(part);
   }
   return value === null ? undefined : value;
-}
+};
 
 export type DirectiveFn = (part: Part) => any;
 
@@ -202,9 +204,7 @@ export interface Part {
   // }
 }
 
-export interface SinglePart extends Part {
-  setValue(value: any): void;
-}
+export interface SinglePart extends Part { setValue(value: any): void; }
 
 export interface MultiPart extends Part {
   setValue(values: any[], startIndex: number): void;
@@ -217,7 +217,9 @@ export class AttributePart implements MultiPart {
   strings: string[];
   size: number;
 
-  constructor(instance: TemplateInstance, element: Element, name: string, strings: string[]) {
+  constructor(
+      instance: TemplateInstance, element: Element, name: string,
+      strings: string[]) {
     this.instance = instance;
     this.element = element;
     this.name = name;
@@ -233,7 +235,8 @@ export class AttributePart implements MultiPart {
       text += strings[i];
       if (i < strings.length - 1) {
         const v = getValue(this, values[startIndex + i]);
-        if (v && (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
+        if (v &&
+            (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
           for (const t of v) {
             // TODO: we need to recursively call getValue into iterables...
             text += t;
@@ -245,7 +248,6 @@ export class AttributePart implements MultiPart {
     }
     this.element.setAttribute(this.name, text);
   }
-
 }
 
 export class NodePart implements SinglePart {
@@ -312,10 +314,12 @@ export class NodePart implements SinglePart {
 
   private _setTemplateResult(value: TemplateResult): void {
     let instance: TemplateInstance;
-    if (this._previousValue && this._previousValue.template === value.template) {
+    if (this._previousValue &&
+        this._previousValue.template === value.template) {
       instance = this._previousValue;
     } else {
-      instance = new TemplateInstance(value.template, this.instance._partCallback);
+      instance =
+          new TemplateInstance(value.template, this.instance._partCallback);
       this._setNode(instance._clone());
       this._previousValue = instance;
     }
@@ -329,10 +333,10 @@ export class NodePart implements SinglePart {
     // of TemplateResults that will be commonly returned from expressions like:
     // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
 
-    // If _previousValue is an array, then the previous render was of an iterable
-    // and _previousValue will contain the NodeParts from the previous render.
-    // If _previousValue is not an array, clear this part and make a new array
-    // for NodeParts.
+    // If _previousValue is an array, then the previous render was of an
+    // iterable and _previousValue will contain the NodeParts from the previous
+    // render. If _previousValue is not an array, clear this part and make a new
+    // array for NodeParts.
     if (!Array.isArray(this._previousValue)) {
       this.clear();
       this._previousValue = [];
@@ -366,7 +370,7 @@ export class NodePart implements SinglePart {
       itemPart.setValue(item);
       partIndex++;
     }
-    
+
     if (partIndex === 0) {
       this.clear();
       this._previousValue = undefined;
@@ -394,17 +398,23 @@ export class NodePart implements SinglePart {
   }
 }
 
+export type PartCallback =
+    (instance: TemplateInstance, templatePart: TemplatePart, node: Node) =>
+        Part;
 
-export type PartCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node) => Part;
-
-export const defaultPartCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node): Part => {
-  if (templatePart.type === 'attribute') {
-    return new AttributePart(instance, node as Element, templatePart.name!, templatePart.strings!);
-  } else if (templatePart.type === 'node') {
-    return new NodePart(instance, node, node.nextSibling!);
-  }
-  throw new Error(`Unknown part type ${templatePart.type}`);
-}
+export const defaultPartCallback =
+    (instance: TemplateInstance,
+     templatePart: TemplatePart,
+     node: Node): Part => {
+      if (templatePart.type === 'attribute') {
+        return new AttributePart(
+            instance, node as Element, templatePart.name!, templatePart.strings!
+        );
+      } else if (templatePart.type === 'node') {
+        return new NodePart(instance, node, node.nextSibling!);
+      }
+      throw new Error(`Unknown part type ${templatePart.type}`);
+    };
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
@@ -415,7 +425,8 @@ export class TemplateInstance {
   _partCallback: PartCallback;
   template: Template;
 
-  constructor(template: Template, partCallback: PartCallback = defaultPartCallback) {
+  constructor(
+      template: Template, partCallback: PartCallback = defaultPartCallback) {
     this.template = template;
     this._partCallback = partCallback;
   }
@@ -437,7 +448,8 @@ export class TemplateInstance {
     const fragment = document.importNode(this.template.element.content, true);
 
     if (this.template.parts.length > 0) {
-      const walker = document.createTreeWalker(fragment, 5 /* elements & text */);
+      const walker =
+          document.createTreeWalker(fragment, 5 /* elements & text */);
 
       const parts = this.template.parts;
       let index = 0;
@@ -456,5 +468,4 @@ export class TemplateInstance {
     }
     return fragment;
   }
-
 }

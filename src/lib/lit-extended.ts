@@ -12,8 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { render as baseRender, getValue, defaultPartCallback, TemplateResult, AttributePart, TemplateInstance, TemplatePart, Part } from '../lit-html.js';
-export { html } from '../lit-html.js';
+import {AttributePart, defaultPartCallback, getValue, Part, render as baseRender, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+
+export {html} from '../lit-html.js';
+
 /**
  *
  * @param result Renders a `TemplateResult` to a container using the
@@ -41,28 +43,35 @@ export { html } from '../lit-html.js';
  *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
  */
-export function render(result: TemplateResult, container: Element|DocumentFragment) {
+export function render(
+    result: TemplateResult, container: Element|DocumentFragment) {
   baseRender(result, container, extendedPartCallback);
 }
 
-export const extendedPartCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node): Part => {
-  if (templatePart.type === 'attribute') {
-    if (templatePart.rawName!.startsWith('on-')) {
-      const eventName = templatePart.rawName!.substring(3);
-      return new EventPart(instance, node as Element, eventName);
-    }
-    if (templatePart.name!.endsWith('$')) {
-      const name = templatePart.name!.substring(0, templatePart.name!.length - 1);
-      return new AttributePart(instance, node as Element, name, templatePart.strings!);
-    }
-    return new PropertyPart(instance, node as Element, templatePart.rawName!, templatePart.strings!);
-  }
-  return defaultPartCallback(instance, templatePart, node);
-};
-
+export const extendedPartCallback =
+    (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
+        Part => {
+          if (templatePart.type === 'attribute') {
+            if (templatePart.rawName!.startsWith('on-')) {
+              const eventName = templatePart.rawName!.substring(3);
+              return new EventPart(instance, node as Element, eventName);
+            }
+            if (templatePart.name!.endsWith('$')) {
+              const name = templatePart.name!.substring(
+                  0, templatePart.name!.length - 1);
+              return new AttributePart(
+                  instance, node as Element, name, templatePart.strings!);
+            }
+            return new PropertyPart(
+                instance,
+                node as Element,
+                templatePart.rawName!,
+                templatePart.strings!);
+          }
+          return defaultPartCallback(instance, templatePart, node);
+        };
 
 export class PropertyPart extends AttributePart {
-
   setValue(values: any[], startIndex: number): void {
     const s = this.strings;
     let value: any;
@@ -85,7 +94,6 @@ export class PropertyPart extends AttributePart {
 }
 
 export class EventPart implements Part {
-
   instance: TemplateInstance;
   element: Element;
   eventName: string;
