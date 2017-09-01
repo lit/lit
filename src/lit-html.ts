@@ -109,7 +109,7 @@ export function render(
  * An expression marker with embedded unique key to avoid
  * https://github.com/PolymerLabs/lit-html/issues/62
  */
-const attributMarker = `{{lit-${Math.random()}}}`;
+const attributeMarker = `{{lit-${Math.random()}}}`;
 
 /**
  * Regex to scan the string preceding an expression to see if we're in a text
@@ -121,7 +121,7 @@ const attributMarker = `{{lit-${Math.random()}}}`;
 const textRegex = />[^<]*$/;
 const textMarkerContent = '_-lit-html-_';
 const textMarker = `<!--${textMarkerContent}-->`;
-const attrOrTextRegex = new RegExp(`${attributMarker}|${textMarker}`);
+const attrOrTextRegex = new RegExp(`${attributeMarker}|${textMarker}`);
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
@@ -158,7 +158,9 @@ export class Template {
     this.element.innerHTML = this._getHtml(strings, svg);
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        this.element.content, 133 /* elements & text & comments */, null as any, false);
+        this.element.content,
+        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT */,
+        null as any, false);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
@@ -166,7 +168,7 @@ export class Template {
     while (walker.nextNode()) {
       index++;
       const node = walker.currentNode as Element;
-      if (node.nodeType === 1 /* ELEMENT_NODE */) {
+      if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
         if (!node.hasAttributes()) {
           continue;
         }
@@ -190,8 +192,8 @@ export class Template {
             i--;
           }
         }
-      } else if (node.nodeType === 3 /* TEXT_NODE */) {
-        const strings = node.nodeValue!.split(attributMarker);
+      } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
+        const strings = node.nodeValue!.split(attributeMarker);
         if (strings.length > 1) {
           const parent = node.parentNode!;
           const lastIndex = strings.length - 1;
@@ -215,7 +217,7 @@ export class Template {
           index--;
         }
       } else if (
-          node.nodeType === 8 /* COMMENT_NODE */ &&
+          node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === textMarkerContent) {
         const parent = node.parentNode!;
         // TODO BEFORE MERGE: use surrounding nodes as markers
@@ -240,18 +242,17 @@ export class Template {
     const l = strings.length;
     const a = new Array((l * 2) - 1);
     let isTextBinding = false;
-    for (let i = 0; i < l; i++) {
+    for (let i = 0; i < l - 1; i++) {
       const s = strings[i];
       a.push(s);
-      if (i < l - 1) {
-        // We're in a text position if the previou string matches the
-        // textRegex. If it doesn't and the previous string has no tags, then
-        // we use the previous text position state.
-        isTextBinding = s.match(textRegex) !== null ||
-            (s.match(/[^<]*/) !== null && isTextBinding);
-        a.push(isTextBinding ? textMarker : attributMarker);
-      }
+      // We're in a text position if the previous string matches the
+      // textRegex. If it doesn't and the previous string has no tags, then
+      // we use the previous text position state.
+      isTextBinding = s.match(textRegex) !== null ||
+          (s.match(/[^<]*/) !== null && isTextBinding);
+      a.push(isTextBinding ? textMarker : attributeMarker);
     }
+    a.push(strings[l - 1]);
     const html = a.join('');
     return svg ? `<svg>${html}</svg>` : html;
   }
