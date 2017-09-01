@@ -107,23 +107,22 @@ export class EventPart implements Part {
 
   setValue(value: any): void {
     const listener = getValue(this, value);
-    if (typeof listener !== 'function') {
-      console.error('event handlers must be functions', listener);
-      return;
-    }
     if (listener === this._listener) {
       return;
     }
-    if (listener === undefined) {
+    if (listener == null) {
       this.element.removeEventListener(this.eventName, this);
-    }
-    if (this._listener === undefined) {
+    } else if (this._listener == null) {
       this.element.addEventListener(this.eventName, this);
     }
     this._listener = listener;
   }
 
   handleEvent(event: Event) {
-    this._listener.call(this.element, event);
+    if (typeof this._listener === 'function') {
+      this._listener.call(this.element, event);
+    } else if (typeof this._listener.handleEvent === 'function') {
+      this._listener.handleEvent(event);
+    }
   }
 }

@@ -94,5 +94,71 @@ suite('lit-extended', () => {
 
           assert.notEqual(fooDiv, barDiv);
         });
+
+    test('adds event listener functions, calls with right this value', () => {
+      const container = document.createElement('div');
+      let thisValue;
+      let event;
+      const listener = function(this: any, e: any) {
+        event = e;
+        thisValue = this;
+      };
+      render(html`<div on-click=${listener}></div>`, container);
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(thisValue, div);
+      assert.instanceOf(event, MouseEvent);
+    });
+
+    test('adds event listener objects, calls with right this value', () => {
+      const container = document.createElement('div');
+      let thisValue;
+      let event;
+      const listener = {
+        handleEvent(e: Event) {
+          event = e;
+          thisValue = this;
+        }
+      };
+      render(html`<div on-click=${listener}></div>`, container);
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(thisValue, listener);
+    });
+
+    test('only adds event listeners once', () => {
+      const container = document.createElement('div');
+      let count = 0;
+      const listener = () => {
+        count++;
+      };
+      const go = () =>
+          render(html`<div on-click=${listener}></div>`, container);
+      go();
+      go();
+      go();
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(count, 1);
+    });
+
+    test('removes event listeners', () => {
+      const container = document.createElement('div');
+      let target;
+      let listener: any = (e: any) => target = e.target;
+      const t = () => html`<div on-click=${listener}></div>`;
+      render(t(), container);
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(target, div);
+
+      listener = null;
+      target = undefined;
+      render(t(), container);
+      div.click();
+      assert.equal(target, undefined);
+    });
+
+
   });
 });
