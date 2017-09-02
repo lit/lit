@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/lit-html",
@@ -13,9 +13,11 @@
     "build": "tsc",
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api .",
     "pretest": "npm run posttest; ln -s node_modules bower_components",
-    "test": "wct -l chrome",
+    "test": "npm run build && wct -l chrome && npm run lint",
     "posttest": "rm -f bower_components",
-    "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c"
+    "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c",
+    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "lint": "tslint --project ./"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
@@ -23,6 +25,7 @@
     "@types/mocha": "^2.2.41",
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
+    "tslint": "^5.7.0",
     "typedoc": "^0.8.0",
     "typescript": "^2.4.1",
     "uglify-es": "^3.0.27",

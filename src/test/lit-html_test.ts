@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {html, render, defaultPartCallback, TemplateResult, TemplatePart, TemplateInstance, NodePart, Part, AttributePart } from '../lit-html.js';
+import {AttributePart, defaultPartCallback, html, NodePart, Part, render, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -38,10 +38,14 @@ suite('lit-html', () => {
     });
 
     test('does not create extra empty text nodes', () => {
-      const countNodes = (result: TemplateResult, getNodes: (f: DocumentFragment) => NodeList) => 
-        getNodes(result.template.element.content).length;
+      const countNodes =
+          (result: TemplateResult,
+           getNodes: (f: DocumentFragment) => NodeList) =>
+              getNodes(result.template.element.content).length;
 
-      assert.equal(countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes), 2);
+      assert.equal(
+          countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes),
+          2);
       assert.equal(countNodes(html`${0}`, (c) => c.childNodes), 2);
       assert.equal(countNodes(html`a${0}`, (c) => c.childNodes), 2);
       assert.equal(countNodes(html`${0}a`, (c) => c.childNodes), 2);
@@ -84,8 +88,11 @@ suite('lit-html', () => {
       const parts = result.template.parts;
       const names = parts.map((p: TemplatePart) => p.name);
       const rawNames = parts.map((p: TemplatePart) => p.rawName);
-      assert.deepEqual(names, ['someprop', 'a-nother', 'multiparts', undefined, 'athing']);
-      assert.deepEqual(rawNames, ['someProp', 'a-nother', 'multiParts', undefined, 'aThing']);
+      assert.deepEqual(
+          names, ['someprop', 'a-nother', 'multiparts', undefined, 'athing']);
+      assert.deepEqual(
+          rawNames,
+          ['someProp', 'a-nother', 'multiParts', undefined, 'aThing']);
     });
 
     test('parses expressions for two attributes of one element', () => {
@@ -100,11 +107,12 @@ suite('lit-html', () => {
     test('updates when called multiple times with arrays', () => {
       const container = document.createElement('div');
       const ul = (list: string[]) => {
-        var items = list.map(item => html`<li>${item}</li>`);
+        const items = list.map((item) => html`<li>${item}</li>`);
         return html`<ul>${items}</ul>`;
       };
       render(ul(['a', 'b', 'c']), container);
-      assert.equal(container.innerHTML, '<ul><li>a</li><li>b</li><li>c</li></ul>');
+      assert.equal(
+          container.innerHTML, '<ul><li>a</li><li>b</li><li>c</li></ul>');
       render(ul(['x', 'y']), container);
       assert.equal(container.innerHTML, '<ul><li>x</li><li>y</li></ul>');
     });
@@ -112,12 +120,13 @@ suite('lit-html', () => {
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
       assert(result.template.element.innerHTML, '<div></div>');
-    })
+    });
 
     test('resists XSS attempt in attribute values', () => {
-      const result = html`<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
+      const result = html
+      `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
       assert(result.template.element.innerHTML, '<div></div>');
-    })
+    });
 
   });
 
@@ -152,13 +161,13 @@ suite('lit-html', () => {
       test('renders a function', () => {
         // This test just checks that we don't call the function
         const container = document.createElement('div');
-        render(html`<div>${(_:any)=>123}</div>`, container);
+        render(html`<div>${(_: any) => 123}</div>`, container);
         assert.equal(container.innerHTML, '<div>(_) =&gt; 123</div>');
       });
 
       test('renders arrays', () => {
         const container = document.createElement('div');
-        render(html`<div>${[1,2,3]}</div>`, container);
+        render(html`<div>${[1, 2, 3]}</div>`, container);
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
@@ -180,12 +189,13 @@ suite('lit-html', () => {
       //   const container = document.createElement('div');
       //   const partial = html`<h1>${'foo'}</h1>`;
       //   html`${partial}${'bar'}${partial}${'baz'}qux`, container);
-      //   assert.equal(container.innerHTML, '<h1>foo</h1>bar<h1>foo</h1>bazqux');
+      //   assert.equal(container.innerHTML,
+      //   '<h1>foo</h1>bar<h1>foo</h1>bazqux');
       // });
 
       test('renders arrays of nested templates', () => {
         const container = document.createElement('div');
-        render(html`<div>${[1,2,3].map((i)=>html`${i}`)}</div>`, container);
+        render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
@@ -204,7 +214,8 @@ suite('lit-html', () => {
           document.createElement('span')
         ];
         render(html`<div>${children}</div>`, container);
-        assert.equal(container.innerHTML, '<div><p></p><a></a><span></span></div>');
+        assert.equal(
+            container.innerHTML, '<div><p></p><a></a><span></span></div>');
       });
 
       test('renders to an attribute', () => {
@@ -228,13 +239,13 @@ suite('lit-html', () => {
       test('renders a function to an attribute', () => {
         // This test just checks that we don't call the function
         const container = document.createElement('div');
-        render(html`<div foo=${(_:any)=>123}></div>`, container);
+        render(html`<div foo=${(_: any) => 123}></div>`, container);
         assert.equal(container.innerHTML, '<div foo="(_) => 123"></div>');
       });
 
       test('renders an array to an attribute', () => {
         const container = document.createElement('div');
-        render(html`<div foo=${[1,2,3]}></div>`, container);
+        render(html`<div foo=${[1, 2, 3]}></div>`, container);
         assert.equal(container.innerHTML, '<div foo="123"></div>');
       });
 
@@ -247,26 +258,33 @@ suite('lit-html', () => {
       test('renders to an attribute after a node', () => {
         const container = document.createElement('div');
         render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
-        assert.equal(container.innerHTML, '<div>baz</div><div foo="bar"></div>');
+        assert.equal(
+            container.innerHTML, '<div>baz</div><div foo="bar"></div>');
       });
 
       test('renders a Promise', async () => {
         const container = document.createElement('div');
         let resolve: (v: any) => void;
-        const promise = new Promise((res, _) => {resolve = res;});
+        const promise = new Promise((res, _) => {
+          resolve = res;
+        });
         render(html`<div>${promise}</div>`, container);
         assert.equal(container.innerHTML, '<div></div>');
         resolve!('foo');
         await promise;
-        assert.equal(container.innerHTML, '<div>foo</div>');      
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test('renders racing Promises correctly', async () => {
         const container = document.createElement('div');
         let resolve1: (v: any) => void;
-        const promise1 = new Promise((res, _) => {resolve1 = res;});
+        const promise1 = new Promise((res, _) => {
+          resolve1 = res;
+        });
         let resolve2: (v: any) => void;
-        const promise2 = new Promise((res, _) => {resolve2 = res;});
+        const promise2 = new Promise((res, _) => {
+          resolve2 = res;
+        });
 
         let promise = promise1;
 
@@ -310,7 +328,7 @@ suite('lit-html', () => {
 
       test('dirty checks simple values', () => {
         const container = document.createElement('div');
-        let foo = 'aaa';
+        const foo = 'aaa';
 
         const t = () => html`<div>${foo}</div>`;
 
@@ -357,7 +375,7 @@ suite('lit-html', () => {
       test('renders to and updates sibling parts', () => {
         const container = document.createElement('div');
         let foo = 'foo';
-        let bar = 'bar';
+        const bar = 'bar';
 
         const t = () => html`<div>${foo}${bar}</div>`;
 
@@ -372,7 +390,7 @@ suite('lit-html', () => {
       test('renders and updates attributes', () => {
         const container = document.createElement('div');
         let foo = 'foo';
-        let bar = 'bar';
+        const bar = 'bar';
 
         const t = () => html`<div a="${foo}:${bar}"></div>`;
 
@@ -387,8 +405,8 @@ suite('lit-html', () => {
       test('updates nested templates', () => {
         const container = document.createElement('div');
         let foo = 'foo';
-        let bar = 'bar';
-        let baz = 'baz';
+        const bar = 'bar';
+        const baz = 'baz';
 
         const t = (x: boolean) => {
           let partial;
@@ -399,7 +417,7 @@ suite('lit-html', () => {
           }
 
           return html`${partial}${baz}`;
-        }
+        };
 
         render(t(true), container);
         assert.equal(container.innerHTML, '<h1>foo</h1>baz');
@@ -447,9 +465,10 @@ suite('lit-html', () => {
           document.createElement('a'),
           document.createElement('span')
         ];
-        const t = () => html`<div>${children}</div>`
+        const t = () => html`<div>${children}</div>`;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><p></p><a></a><span></span></div>');
+        assert.equal(
+            container.innerHTML, '<div><p></p><a></a><span></span></div>');
 
         children = null;
         render(t(), container);
@@ -460,47 +479,53 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
-      test('overwrites an existing TemplateInstance if one exists and does ' +
-        'not have a matching Template', () => {
-          const container = document.createElement('div');
+      test(
+          'overwrites an existing TemplateInstance if one exists and does ' +
+              'not have a matching Template',
+          () => {
+            const container = document.createElement('div');
 
-          render(html`<div>foo</div>`, container);
+            render(html`<div>foo</div>`, container);
 
-          assert.equal(container.children.length, 1);
-          const fooDiv = container.children[0];
-          assert.equal(fooDiv.textContent, 'foo');
+            assert.equal(container.children.length, 1);
+            const fooDiv = container.children[0];
+            assert.equal(fooDiv.textContent, 'foo');
 
-          render(html`<div>bar</div>`, container);
+            render(html`<div>bar</div>`, container);
 
-          assert.equal(container.children.length, 1);
-          const barDiv = container.children[0];
-          assert.equal(barDiv.textContent, 'bar');
+            assert.equal(container.children.length, 1);
+            const barDiv = container.children[0];
+            assert.equal(barDiv.textContent, 'bar');
 
-          assert.notEqual(fooDiv, barDiv);
-        });
+            assert.notEqual(fooDiv, barDiv);
+          });
 
     });
 
     suite('extensibility', () => {
 
-
       // These tests demonstrate how a flavored layer on top of lit-html could
-      // modify the parsed Template to implement different behavior, like setting
-      // properties instead of attributes.
+      // modify the parsed Template to implement different behavior, like
+      // setting properties instead of attributes.
 
       // Note that because the template parse phase captures the pre-parsed
       // attribute names from the template strings, we can retreive the original
       // case of the names!
 
-      const partCallback = (instance: TemplateInstance, templatePart: TemplatePart, node: Node): Part => {
-          if (templatePart.type === 'attribute') {
-            return new PropertyPart(instance, node as Element, templatePart.rawName!, templatePart.strings!);
-          }
-          return defaultPartCallback(instance, templatePart, node);
-        };
+      const partCallback =
+          (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
+              Part => {
+                if (templatePart.type === 'attribute') {
+                  return new PropertyPart(
+                      instance,
+                      node as Element,
+                      templatePart.rawName!,
+                      templatePart.strings!);
+                }
+                return defaultPartCallback(instance, templatePart, node);
+              };
 
       class PropertyPart extends AttributePart {
-
         setValue(values: any[]): void {
           const s = this.strings;
           if (s.length === 2 && s[0] === '' && s[s.length - 1] === '') {
@@ -581,7 +606,7 @@ suite('lit-html', () => {
       });
 
       test('accepts a function', () => {
-        part.setValue((_:any)=>123);
+        part.setValue((_: any) => 123);
         assert.equal(container.innerHTML, '(_) =&gt; 123');
       });
 
@@ -591,7 +616,7 @@ suite('lit-html', () => {
       });
 
       test('accepts arrays', () => {
-        part.setValue([1,2,3]);
+        part.setValue([1, 2, 3]);
         assert.equal(container.innerHTML, '123');
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
@@ -605,9 +630,11 @@ suite('lit-html', () => {
       });
 
       test('accepts nested arrays', () => {
-        part.setValue([1,[2],3]);
+        part.setValue([1, [2], 3]);
         assert.equal(container.innerHTML, '123');
-        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '1', '', '2', '', '3', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -618,7 +645,7 @@ suite('lit-html', () => {
       });
 
       test('accepts arrays of nested templates', () => {
-        part.setValue([1,2,3].map((i)=>html`${i}`));
+        part.setValue([1, 2, 3].map((i) => html`${i}`));
         assert.equal(container.innerHTML, '123');
       });
 
@@ -664,13 +691,16 @@ suite('lit-html', () => {
       test('updates when called multiple times with arrays', () => {
         part.setValue([1, 2, 3]);
         assert.equal(container.innerHTML, '123');
-        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '1', '', '2', '', '3', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([]);
         assert.equal(container.innerHTML, '');
-        assert.deepEqual(['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -678,39 +708,50 @@ suite('lit-html', () => {
       test('updates when called multiple times with arrays 2', () => {
         part.setValue([1, 2, 3]);
         assert.equal(container.innerHTML, '123');
-        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '1', '', '2', '', '3', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([4, 5]);
         assert.equal(container.innerHTML, '45');
-        assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '4', '', '5', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([]);
         assert.equal(container.innerHTML, '');
-        assert.deepEqual(['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([4, 5]);
         assert.equal(container.innerHTML, '45');
-        assert.deepEqual(['', '4', '', '5', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '4', '', '5', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
 
       test('updates nested arrays', () => {
-        part.setValue([1,[2],3]);
+        part.setValue([1, [2], 3]);
         assert.equal(container.innerHTML, '123');
-        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '1', '', '2', '', '3', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
-        part.setValue([[1],2,3]);
+        part.setValue([[1], 2, 3]);
         assert.equal(container.innerHTML, '123');
-        assert.deepEqual(['', '1', '', '2', '', '3', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+        assert.deepEqual(
+            ['', '1', '', '2', '', '3', ''],
+            Array.from(container.childNodes).map((n) => n.nodeValue));
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -727,33 +768,37 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<p></p>1234<a></a>');
       });
 
-      test('updates are stable when called multiple times with templates', () => {
-        let value = 'foo';
-        const r = () => html`<h1>${value}</h1>`;
-        part.setValue(r());
-        assert.equal(container.innerHTML, '<h1>foo</h1>');
-        const originalH1 = container.querySelector('h1');
+      test(
+          'updates are stable when called multiple times with templates',
+          () => {
+            let value = 'foo';
+            const r = () => html`<h1>${value}</h1>`;
+            part.setValue(r());
+            assert.equal(container.innerHTML, '<h1>foo</h1>');
+            const originalH1 = container.querySelector('h1');
 
-        value = 'bar';
-        part.setValue(r());
-        assert.equal(container.innerHTML, '<h1>bar</h1>');
-        const newH1 = container.querySelector('h1');
-        assert.strictEqual(newH1, originalH1);
-      });
+            value = 'bar';
+            part.setValue(r());
+            assert.equal(container.innerHTML, '<h1>bar</h1>');
+            const newH1 = container.querySelector('h1');
+            assert.strictEqual(newH1, originalH1);
+          });
 
-      test('updates are stable when called multiple times with arrays of templates', () => {
-        let items = [1, 2, 3];
-        const r = () => items.map((i)=>html`<li>${i}</li>`);
-        part.setValue(r());
-        assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
-        const originalLIs = Array.from(container.querySelectorAll('li'));
+      test(
+          'updates are stable when called multiple times with arrays of templates',
+          () => {
+            let items = [1, 2, 3];
+            const r = () => items.map((i) => html`<li>${i}</li>`);
+            part.setValue(r());
+            assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
+            const originalLIs = Array.from(container.querySelectorAll('li'));
 
-        items = [3, 2, 1];
-        part.setValue(r());
-        assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
-        const newLIs = Array.from(container.querySelectorAll('li'));
-        assert.deepEqual(newLIs, originalLIs);
-      });
+            items = [3, 2, 1];
+            part.setValue(r());
+            assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
+            const newLIs = Array.from(container.querySelectorAll('li'));
+            assert.deepEqual(newLIs, originalLIs);
+          });
 
     });
 
@@ -761,13 +806,15 @@ suite('lit-html', () => {
 
       test('is a no-op on an already empty range', () => {
         part.clear();
-        assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
+        assert.deepEqual(
+            Array.from(container.childNodes), [startNode, endNode]);
       });
 
       test('clears a range', () => {
         container.insertBefore(new Text('foo'), endNode);
         part.clear();
-        assert.deepEqual(Array.from(container.childNodes), [startNode, endNode]);
+        assert.deepEqual(
+            Array.from(container.childNodes), [startNode, endNode]);
       });
 
     });
