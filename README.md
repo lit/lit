@@ -66,7 +66,7 @@ A JavaScript template literal is a string literal that can have other JavaScript
 
 ```javascript
 `My name is ${name}.`
-``` 
+```
 
 A _tagged_ template literal is prefixed with a special template tag function:
 
@@ -142,7 +142,7 @@ render().template.parts[0].rawName === 'someProp';
 
 ```javascript
 const items = [1, 2, 3];
-const render = () => html`items = ${items.map((i) => `item: ${i})}`;
+const render = () => html`items = ${items.map((i) => `item: ${i}`)}`;
 ```
 
 ```javascript
