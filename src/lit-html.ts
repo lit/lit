@@ -285,6 +285,7 @@ export class NodePart implements SinglePart {
     this.instance = instance;
     this.startNode = startNode;
     this.endNode = endNode;
+    this._previousValue = undefined;
   }
 
   setValue(value: any): void {
