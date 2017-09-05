@@ -251,7 +251,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.dispatchEvent(new CustomEvent('change-section', {
                 bubbles: true, composed: true, detail: {
                   category: item ? item.category : '',
-                  title: item ? item.title : ''
+                  title: item ? item.title : '',
+                  description: item ? item.description.substring(0, 100) : '',
+                  image: item ? this.baseURI + item.image : ''
                 }}));
             })
         }
