@@ -12,11 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * TypeScript has a problem with precompiling templates literals
+ * https://github.com/Microsoft/TypeScript/issues/17956
+ *
+ * TODO(justinfagnani): Run tests compiled to ES5 with both Babel and
+ * TypeScript to verify correctness.
+ */
+const envCachesTemplates =
+    ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s) ``);
+
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
-const templates = new Map<TemplateStringsArray, Template>();
-const svgTemplates = new Map<TemplateStringsArray, Template>();
+const templates = new Map<TemplateStringsArray|string, Template>();
+const svgTemplates = new Map<TemplateStringsArray|string, Template>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -35,12 +45,15 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
 function litTag(
     strings: TemplateStringsArray,
     values: any[],
-    templates: Map<TemplateStringsArray, Template>,
+    templates: Map<TemplateStringsArray|string, Template>,
     isSvg: boolean): TemplateResult {
-  let template = templates.get(strings);
+  const key = envCachesTemplates ?
+      strings :
+      strings.join('{{--uniqueness-workaround--}}');
+  let template = templates.get(key);
   if (template === undefined) {
     template = new Template(strings, isSvg);
-    templates.set(strings, template);
+    templates.set(key, template);
   }
   return new TemplateResult(template, values);
 }
