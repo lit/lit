@@ -15,8 +15,11 @@
 /**
  * TypeScript has a problem with precompiling templates literals
  * https://github.com/Microsoft/TypeScript/issues/17956
+ * 
+ * TODO(justinfagnani): Run tests compiled to ES5 with both Babel and
+ * TypeScript to verify correctness.
  */
-const cacheTemplates = ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s)``);
+const envCachesTemplates = ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s)``);
 
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
@@ -28,7 +31,7 @@ const templates = new Map<TemplateStringsArray|string, Template>();
  * render to and update a container.
  */
 export function html(strings: TemplateStringsArray, ...values: any[]): TemplateResult {
-  const key = cacheTemplates ? strings.join('{{typescriptProblems}}') : strings;
+  const key = envCachesTemplates ? strings : strings.join('{{typescriptProblems}}');
   let template = templates.get(key);
 
   if (template === undefined) {
