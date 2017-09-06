@@ -15,11 +15,12 @@
 /**
  * TypeScript has a problem with precompiling templates literals
  * https://github.com/Microsoft/TypeScript/issues/17956
- * 
+ *
  * TODO(justinfagnani): Run tests compiled to ES5 with both Babel and
  * TypeScript to verify correctness.
  */
-const envCachesTemplates = ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s)``);
+const envCachesTemplates =
+    ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s) ``);
 
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
@@ -46,8 +47,9 @@ function litTag(
     values: any[],
     templates: Map<TemplateStringsArray|string, Template>,
     isSvg: boolean): TemplateResult {
-  
-  const key = envCachesTemplates ? strings : strings.join('{{--uniqueness-workaround--}}');
+  const key = envCachesTemplates ?
+      strings :
+      strings.join('{{--uniqueness-workaround--}}');
   let template = templates.get(key);
   if (template === undefined) {
     template = new Template(strings, isSvg);
