@@ -85,7 +85,7 @@ A `<template>` element is an inert tree of DOM (script don't run, images don't l
 
 ### Template Creation
 
-The first time `html` is called on a particular template literal it does one-time setup work to create the template. It joins all the string parts with a special placeholder, `"{{}}"`, then creates a `<template>` and sets its `innerHTML` to the result. The it walks the template's DOM and extracts the placeholder and remembers their location.
+The first time `html` is called on a particular template literal it does one-time setup work to create the template. It joins all the string parts with a special placeholder, `"{{}}"`, then creates a `<template>` and sets its `innerHTML` to the result. Then it walks the template's DOM and extracts the placeholder and remembers their location.
 
 Every call to `html` returns a `TemplateResult` which contains the template created on the first call, and the expression values for the current call.
 
