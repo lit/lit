@@ -157,7 +157,7 @@ suite('repeat', () => {
 
   suite('un-keyed', () => {
 
-    test('renderes an list', () => {
+    test('renders a list', () => {
       const r = html`${repeat([1, 2, 3], (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(r, container);
@@ -193,6 +193,15 @@ suite('repeat', () => {
       assert.equal(container.innerHTML, ``);
     });
 
-  });
+    test('re-renders a list', () => {
+      const items = [1, 2, 3, 4, 5];
+      const t = () => html`${repeat(items, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
 
+      render(t(), container);
+      render(t(), container);
+      assert.equal(container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li><li>item: 4</li><li>item: 5</li>`);
+    });
+  });
 });
