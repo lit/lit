@@ -57,7 +57,6 @@ export function repeat<T>(
 
     const itemParts = [];
     let index = 0;
-    let oldPartsIndex = 0;
     let currentMarker: Node|undefined;
 
     for (const item of items) {
@@ -74,7 +73,7 @@ export function repeat<T>(
       // Try to reuse a part, either keyed or from the list of previous parts
       // if there's no keyMap
       let itemPart =
-          keyMap === undefined ? oldParts[oldPartsIndex++] : keyMap.get(key);
+          keyMap === undefined ? oldParts[0] : keyMap.get(key);
 
       if (itemPart === undefined) {
         // New part, attach it
