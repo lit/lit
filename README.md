@@ -30,7 +30,7 @@ Install [polymer-cli](https://github.com/Polymer/polymer-cli):
 
 ### Build
 
-Build presets provide an easy way to define common build configurations in your `polymer.json` file. There are 2 build presets we put in `polymer.json` file in Shop:
+Build presets provide an easy way to define common build configurations in your `polymer.json` file. There are 3 build presets we put in `polymer.json` file in Shop:
 
 **es5-bundled**
 
@@ -52,16 +52,22 @@ Build presets provide an easy way to define common build configurations in your 
 - addPushManifest: true
 - insertPrefetchLinks: true
 
+**es6-bundled**
+
+- js: {minify: true, compile: false}
+- css: {minify: true}
+- html: {minify: true}
+- bundle: true
+- addServiceWorker: true
+- addPushManifest: true
+- insertPrefetchLinks: true
+
 Run the command to build the presets:
 
     polymer build
 
 ### Test the build
 
-This command serves the `es5-bundled` build version of the app:
+Use `polymer serve` to serve a specific build preset of the app. For example:
 
     polymer serve build/es5-bundled
-
-This command serves the `es6-unbundled` build version of the app:
-
-    polymer serve build/es6-unbundled
