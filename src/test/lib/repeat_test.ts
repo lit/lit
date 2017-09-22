@@ -62,6 +62,44 @@ suite('repeat', () => {
       assert.strictEqual(children1[2], children2[0]);
     });
 
+    test('swaps are stable', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([1, 2, 3, 4, 5]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [1, 2, 3, 4, 5].map(i => `<li>item: ${i}</li>`).join(''))
+
+      render(t([1, 5, 3, 4, 2]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [1, 5, 3, 4, 2].map(i => `<li>item: ${i}</li>`).join(''))
+    });
+
+    test('can re-render after swap', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([1, 2, 3]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [1, 2, 3].map(i => `<li>item: ${i}</li>`).join(''))
+
+      render(t([3, 2, 1]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [3, 2, 1].map(i => `<li>item: ${i}</li>`).join(''))
+
+      render(t([3, 2, 1]), container);
+    })
+
     test('can insert an item at the beginning', () => {
       let items = [1, 2, 3];
       const t = () =>
