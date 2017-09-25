@@ -144,7 +144,7 @@ export class Template {
     this.element = document.createElement('template');
     this.element.innerHTML = this._getHtml(strings, svg);
     const walker = document.createTreeWalker(
-        this.element.content, 5 /* elements & text */);
+        this.element.content, 5 /* elements & text */, undefined, false);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
@@ -192,7 +192,7 @@ export class Template {
           // Generate a new text node for each literal section
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
-            parent.insertBefore(new Text(strings[i]), node);
+            parent.insertBefore(document.createTextNode(strings[i]), node);
             this.parts.push(new TemplatePart('node', index++));
           }
         } else if (!node.nodeValue!.trim()) {
@@ -346,7 +346,7 @@ export class NodePart implements SinglePart {
       // primitive?
       node.textContent = value;
     } else {
-      this._setNode(new Text(value));
+      this._setNode(document.createTextNode(value));
     }
     this._previousValue = value;
   }
@@ -400,7 +400,7 @@ export class NodePart implements SinglePart {
         // node, and fix up the previous part's endNode to point to it
         if (partIndex > 0) {
           const previousPart = itemParts[partIndex - 1];
-          itemStart = previousPart.endNode = new Text();
+          itemStart = previousPart.endNode = document.createTextNode('');
           this._insert(itemStart);
         }
         itemPart = new NodePart(this.instance, itemStart, this.endNode);
@@ -488,7 +488,7 @@ export class TemplateInstance {
 
     if (this.template.parts.length > 0) {
       const walker =
-          document.createTreeWalker(fragment, 5 /* elements & text */);
+          document.createTreeWalker(fragment, 5 /* elements & text */, undefined, false);
 
       const parts = this.template.parts;
       let index = 0;
