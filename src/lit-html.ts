@@ -143,8 +143,9 @@ export class Template {
     this.svg = svg;
     this.element = document.createElement('template');
     this.element.innerHTML = this._getHtml(strings, svg);
+    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        this.element.content, 5 /* elements & text */, undefined, false);
+        this.element.content, 5 /* elements & text */, (<any>null), false);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove = [];
@@ -487,8 +488,9 @@ export class TemplateInstance {
     const fragment = document.importNode(this.template.element.content, true);
 
     if (this.template.parts.length > 0) {
+      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
       const walker =
-          document.createTreeWalker(fragment, 5 /* elements & text */, undefined, false);
+          document.createTreeWalker(fragment, 5 /* elements & text */, (<any>null), false);
 
       const parts = this.template.parts;
       let index = 0;
