@@ -119,6 +119,7 @@ const attributeMarker = `{{lit-${Math.random()}}}`;
  * `<` closer to the end of the strings, then we're inside a tag.
  */
 const textRegex = />[^<]*$/;
+const hasTagsRegex = /[^<]*/;
 const textMarkerContent = '_-lit-html-_';
 const textMarker = `<!--${textMarkerContent}-->`;
 const attrOrTextRegex = new RegExp(`${attributeMarker}|${textMarker}`);
@@ -240,7 +241,7 @@ export class Template {
    */
   private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
     const l = strings.length;
-    const a = new Array((l * 2) - 1);
+    const a = [];
     let isTextBinding = false;
     for (let i = 0; i < l - 1; i++) {
       const s = strings[i];
@@ -249,7 +250,7 @@ export class Template {
       // textRegex. If it doesn't and the previous string has no tags, then
       // we use the previous text position state.
       isTextBinding = s.match(textRegex) !== null ||
-          (s.match(/[^<]*/) !== null && isTextBinding);
+          (s.match(hasTagsRegex) !== null && isTextBinding);
       a.push(isTextBinding ? textMarker : attributeMarker);
     }
     a.push(strings[l - 1]);
