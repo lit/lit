@@ -164,11 +164,18 @@ export class Template {
         null as any, false);
     let index = -1;
     let partIndex = 0;
-    const nodesToRemove = [];
+    const nodesToRemove: Node[] = [];
+
+    // The actual previous node, accounting for removals: if a node is removed it will
+    // never be the previousNode.
+    let previousNode: Node | undefined;
+    // Used to set previousNode at the top of the loop.
+    let currentNode: Node | undefined;
 
     while (walker.nextNode()) {
       index++;
-      const node = walker.currentNode as Element;
+      previousNode = currentNode;
+      const node = currentNode = walker.currentNode as Element;
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
         if (!node.hasAttributes()) {
           continue;
@@ -215,18 +222,33 @@ export class Template {
           }
         } else if (!node.nodeValue!.trim()) {
           nodesToRemove.push(node);
+          currentNode = previousNode;
           index--;
         }
       } else if (
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === textMarkerContent) {
         const parent = node.parentNode!;
-        // TODO BEFORE MERGE: use surrounding nodes as markers
-        parent.insertBefore(new Text(), node);
-        parent.insertBefore(new Text(), node);
+        // If we don't have a previous node add a marker node.
+        // If the previousSibling is removed, because it's another part placholder, or
+        // empty text, add a marker node.
+        if (node.previousSibling === null || node.previousSibling !== previousNode) {
+          parent.insertBefore(new Text(), node);
+        } else {
+          index--;
+        }
         this.parts.push(new TemplatePart('node', index++));
-        partIndex++;
         nodesToRemove.push(node);
+        currentNode = previousNode;
+        partIndex++;
+        // If we don't have a next node add a marker node.
+        // We don't have to check if the next node is going to be removed, because
+        // that node will induce a marker if so.
+        if (node.nextSibling === null) {
+          parent.insertBefore(new Text(), node);
+        } else {
+          index--;
+        }
       }
     }
 
