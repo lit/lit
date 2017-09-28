@@ -488,9 +488,10 @@ export class TemplateInstance {
     const fragment = document.importNode(this.template.element.content, true);
 
     if (this.template.parts.length > 0) {
-      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-      const walker =
-          document.createTreeWalker(fragment, 5 /* elements & text */, null as any, false);
+      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
+      // null
+      const walker = document.createTreeWalker(
+          fragment, 5 /* elements & text */, null as any, false);
 
       const parts = this.template.parts;
       let index = 0;
