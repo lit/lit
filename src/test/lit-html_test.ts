@@ -134,59 +134,56 @@ suite('lit-html', () => {
 
     suite('first render', () => {
 
+      let container: HTMLElement;
+
+      setup(() => {
+        container = document.createElement('div');
+      });
+
       test('renders a string', () => {
-        const container = document.createElement('div');
         render(html`<div>${'foo'}</div>`, container);
         assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test('renders a number', () => {
-        const container = document.createElement('div');
         render(html`<div>${123}</div>`, container);
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
       test('renders undefined', () => {
-        const container = document.createElement('div');
         render(html`<div>${undefined}</div>`, container);
         assert.equal(container.innerHTML, '<div></div>');
       });
 
       test('renders null', () => {
-        const container = document.createElement('div');
         render(html`<div>${null}</div>`, container);
         assert.equal(container.innerHTML, '<div></div>');
       });
 
       test('renders a function', () => {
         // This test just checks that we don't call the function
-        const container = document.createElement('div');
         render(html`<div>${(_: any) => 123}</div>`, container);
         assert.equal(container.innerHTML, '<div>(_) =&gt; 123</div>');
       });
 
       test('renders arrays', () => {
-        const container = document.createElement('div');
         render(html`<div>${[1, 2, 3]}</div>`, container);
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
       test('renders nested templates', () => {
-        const container = document.createElement('div');
         const partial = html`<h1>${'foo'}</h1>`;
         render(html`${partial}${'bar'}`, container);
         assert.equal(container.innerHTML, '<h1>foo</h1>bar');
       });
 
       test('values contain interpolated values', () => {
-        const container = document.createElement('div');
         const t = html`${'a'},${'b'},${'c'}`;
         render(t, container);
         assert.equal(container.innerHTML, 'a,b,c');
       });
 
       // test('renders multiple nested templates', () => {
-      //   const container = document.createElement('div');
       //   const partial = html`<h1>${'foo'}</h1>`;
       //   html`${partial}${'bar'}${partial}${'baz'}qux`, container);
       //   assert.equal(container.innerHTML,
@@ -194,20 +191,17 @@ suite('lit-html', () => {
       // });
 
       test('renders arrays of nested templates', () => {
-        const container = document.createElement('div');
         render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
         assert.equal(container.innerHTML, '<div>123</div>');
       });
 
       test('renders an element', () => {
-        const container = document.createElement('div');
         const child = document.createElement('p');
         render(html`<div>${child}</div>`, container);
         assert.equal(container.innerHTML, '<div><p></p></div>');
       });
 
       test('renders an array of elements', () => {
-        const container = document.createElement('div');
         const children = [
           document.createElement('p'),
           document.createElement('a'),
@@ -219,51 +213,43 @@ suite('lit-html', () => {
       });
 
       test('renders to an attribute', () => {
-        const container = document.createElement('div');
         render(html`<div foo="${'bar'}"></div>`, container);
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
       });
 
       test('renders to an attribute without quotes', () => {
-        const container = document.createElement('div');
         render(html`<div foo=${'bar'}></div>`, container);
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
       });
 
       test('renders interpolation to an attribute', () => {
-        const container = document.createElement('div');
         render(html`<div foo="1${'bar'}2${'baz'}3"></div>`, container);
         assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
       });
 
       test('renders a function to an attribute', () => {
         // This test just checks that we don't call the function
-        const container = document.createElement('div');
         render(html`<div foo=${(_: any) => 123}></div>`, container);
         assert.equal(container.innerHTML, '<div foo="(_) => 123"></div>');
       });
 
       test('renders an array to an attribute', () => {
-        const container = document.createElement('div');
         render(html`<div foo=${[1, 2, 3]}></div>`, container);
         assert.equal(container.innerHTML, '<div foo="123"></div>');
       });
 
       test('renders to an attribute before a node', () => {
-        const container = document.createElement('div');
         render(html`<div foo="${'bar'}">${'baz'}</div>`, container);
         assert.equal(container.innerHTML, '<div foo="bar">baz</div>');
       });
 
       test('renders to an attribute after a node', () => {
-        const container = document.createElement('div');
         render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
         assert.equal(
             container.innerHTML, '<div>baz</div><div foo="bar"></div>');
       });
 
       test('renders a Promise', async () => {
-        const container = document.createElement('div');
         let resolve: (v: any) => void;
         const promise = new Promise((res, _) => {
           resolve = res;
@@ -276,7 +262,6 @@ suite('lit-html', () => {
       });
 
       test('renders racing Promises correctly', async () => {
-        const container = document.createElement('div');
         let resolve1: (v: any) => void;
         const promise1 = new Promise((res, _) => {
           resolve1 = res;
@@ -311,7 +296,6 @@ suite('lit-html', () => {
       });
 
       test('renders a combination of stuff', () => {
-        const container = document.createElement('div');
         render(html`
             <div foo="${'bar'}">
               ${'baz'}
@@ -335,8 +319,13 @@ suite('lit-html', () => {
 
     suite('update', () => {
 
+      let container: HTMLElement;
+      
+      setup(() => {
+        container = document.createElement('div');
+      });
+      
       test('dirty checks simple values', () => {
-        const container = document.createElement('div');
         const foo = 'aaa';
 
         const t = () => html`<div>${foo}</div>`;
@@ -363,7 +352,6 @@ suite('lit-html', () => {
       });
 
       test('renders to and updates a container', () => {
-        const container = document.createElement('div');
         let foo = 'aaa';
 
         const t = () => html`<div>${foo}</div>`;
@@ -382,7 +370,6 @@ suite('lit-html', () => {
       });
 
       test('renders to and updates sibling parts', () => {
-        const container = document.createElement('div');
         let foo = 'foo';
         const bar = 'bar';
 
@@ -397,7 +384,6 @@ suite('lit-html', () => {
       });
 
       test('renders and updates attributes', () => {
-        const container = document.createElement('div');
         let foo = 'foo';
         const bar = 'bar';
 
@@ -412,7 +398,6 @@ suite('lit-html', () => {
       });
 
       test('updates nested templates', () => {
-        const container = document.createElement('div');
         let foo = 'foo';
         const bar = 'bar';
         const baz = 'baz';
@@ -440,7 +425,6 @@ suite('lit-html', () => {
       });
 
       test('updates arrays', () => {
-        const container = document.createElement('div');
         let items = [1, 2, 3];
         const t = () => html`<div>${items}</div>`;
         render(t(), container);
@@ -468,7 +452,6 @@ suite('lit-html', () => {
       });
 
       test('updates an array of elements', () => {
-        const container = document.createElement('div');
         let children: any = [
           document.createElement('p'),
           document.createElement('a'),
@@ -492,8 +475,7 @@ suite('lit-html', () => {
           'overwrites an existing TemplateInstance if one exists and does ' +
               'not have a matching Template',
           () => {
-            const container = document.createElement('div');
-
+    
             render(html`<div>foo</div>`, container);
 
             assert.equal(container.children.length, 1);
