@@ -320,11 +320,11 @@ suite('lit-html', () => {
     suite('update', () => {
 
       let container: HTMLElement;
-      
+
       setup(() => {
         container = document.createElement('div');
       });
-      
+
       test('dirty checks simple values', () => {
         const foo = 'aaa';
 
@@ -435,8 +435,24 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>321</div>');
       });
 
+      test('updates arrays that shrink then grow', () => {
+        let items: number[];
+        const t = () => html`<div>${items}</div>`;
+
+        items = [1, 2, 3];
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>123</div>');
+
+        items = [4];
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>4</div>');
+
+        items = [5, 6, 7];
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>567</div>');
+      });
+
       test('updates an element', () => {
-        const container = document.createElement('div');
         let child: any = document.createElement('p');
         const t = () => html`<div>${child}<div></div></div>`;
         render(t(), container);
@@ -475,7 +491,7 @@ suite('lit-html', () => {
           'overwrites an existing TemplateInstance if one exists and does ' +
               'not have a matching Template',
           () => {
-    
+
             render(html`<div>foo</div>`, container);
 
             assert.equal(container.children.length, 1);

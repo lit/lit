@@ -382,9 +382,9 @@ export class NodePart implements SinglePart {
       this._previousValue = [];
     }
 
-    // Lets of keep track of how many items we stamped so we can clear leftover
+    // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._previousValue;
+    const itemParts = this._previousValue as any[];
     let partIndex = 0;
 
     for (const item of value) {
@@ -416,6 +416,8 @@ export class NodePart implements SinglePart {
       this._previousValue = undefined;
     } else if (partIndex < itemParts.length) {
       const lastPart = itemParts[partIndex - 1];
+      // Truncate the parts array so _previousValue reflects the current state
+      itemParts.length = partIndex;
       this.clear(lastPart.endNode.previousSibling!);
       lastPart.endNode = this.endNode;
     }
