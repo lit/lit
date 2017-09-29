@@ -61,7 +61,6 @@ suite('lit-html', () => {
       const result = html`{{}}`;
       assert.equal(result.template.parts.length, 0);
       render(result, container);
-      console.log(container.innerHTML);
       assert.equal(container.innerHTML, '{{}}');
     });
 
@@ -140,6 +139,11 @@ suite('lit-html', () => {
         container = document.createElement('div');
       });
 
+      test('removes whitespace-only nodes', () => {
+        render(html`<div>  </div>`, container);
+        assert.equal(container.innerHTML, '<div></div>');
+      });
+
       test('renders a string', () => {
         render(html`<div>${'foo'}</div>`, container);
         assert.equal(container.innerHTML, '<div>foo</div>');
@@ -176,6 +180,67 @@ suite('lit-html', () => {
         render(html`${partial}${'bar'}`, container);
         assert.equal(container.innerHTML, '<h1>foo</h1>bar');
       });
+
+      // This test is slightly incorrect - the parts should have a space
+      // between them, but that's existing bug. This test is here to ensure
+      // that removing the whitespace node doesn't break rendering. The
+      // skipped test following this is the real test.
+      // See https://github.com/PolymerLabs/lit-html/issues/114
+      test('renders parts with whitespace between them', () => {
+        const container = document.createElement('div');
+        render(html`<div>${'foo'} ${'bar'}</div>`, container);
+        console.log(container.innerHTML);
+        assert.equal(container.innerHTML, '<div>foobar</div>');
+      });
+
+      // Un-skip when https://github.com/PolymerLabs/lit-html/issues/114
+      // is fixed
+      test.skip('preserves whitespace between parts', () => {
+        const container = document.createElement('div');
+        render(html`<div>${'foo'} &nbsp;${'bar'}</div>`, container);
+        console.log(container.innerHTML);
+        assert.equal(container.innerHTML, '<div>foo bar</div>');
+      });
+
+      test('renders nested templates within table content', () => {
+        const container = document.createElement('div');
+        let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
+        render(table, container);
+        assert.equal(container.innerHTML, '<table><tr><td></td></tr></table>');
+
+        table = html`<tbody>${html`<tr></tr>`}</tbody>`;
+        render(table, container);
+        assert.equal(container.innerHTML, '<tbody><tr></tr></tbody>');
+
+        table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
+        render(table, container);
+        assert.equal(
+            container.innerHTML,
+            '<table><tbody><tr></tr><tr></tr></tbody></table>');
+
+        table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
+        render(table, container);
+        assert.equal(
+            container.innerHTML,
+            '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
+
+        table = html`<table><tr><td></td>${html`<td></td>`}${
+                                                             html`<td></td>`
+                                                           }</tr></table>`;
+        render(table, container);
+        assert.equal(
+            container.innerHTML,
+            '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
+      });
+
+      test(
+          'renders quoted attributes with the text <table> before an expression',
+          () => {
+            const container = document.createElement('div');
+            const template = html`<div a="<table>${'foo'}"></div>`;
+            render(template, container);
+            assert.equal(container.innerHTML, '<div a="<table>foo"></div>');
+          });
 
       test('values contain interpolated values', () => {
         const t = html`${'a'},${'b'},${'c'}`;
@@ -301,9 +366,7 @@ suite('lit-html', () => {
               ${'baz'}
               <p>${'qux'}</p>
             </div>`, container);
-        assert.equal(container.innerHTML, `<div foo="bar">
-              baz
-              <p>qux</p></div>`);
+        assert.equal(container.innerHTML, `<div foo="bar">baz<p>qux</p></div>`);
       });
 
       test('renders SVG', () => {

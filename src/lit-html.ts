@@ -109,7 +109,20 @@ export function render(
  * An expression marker with embedded unique key to avoid
  * https://github.com/PolymerLabs/lit-html/issues/62
  */
-const exprMarker = `{{lit-${Math.random()}}}`;
+const attributeMarker = `{{lit-${Math.random()}}}`;
+
+/**
+ * Regex to scan the string preceding an expression to see if we're in a text
+ * context, and not an attribute context.
+ *
+ * This works by seeing if we have a `>` not followed by a `<`. If there is a
+ * `<` closer to the end of the strings, then we're inside a tag.
+ */
+const textRegex = />[^<]*$/;
+const hasTagsRegex = /[^<]*/;
+const textMarkerContent = '_-lit-html-_';
+const textMarker = `<!--${textMarkerContent}-->`;
+const attrOrTextRegex = new RegExp(`${attributeMarker}|${textMarker}`);
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
@@ -134,6 +147,7 @@ export class TemplatePart {
   }
 }
 
+
 export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
@@ -145,21 +159,31 @@ export class Template {
     this.element.innerHTML = this._getHtml(strings, svg);
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        this.element.content, 5 /* elements & text */, null as any, false);
+        this.element.content,
+        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT */,
+        null as any, false);
     let index = -1;
     let partIndex = 0;
-    const nodesToRemove = [];
+    const nodesToRemove: Node[] = [];
+
+    // The actual previous node, accounting for removals: if a node is removed it will
+    // never be the previousNode.
+    let previousNode: Node | undefined;
+    // Used to set previousNode at the top of the loop.
+    let currentNode: Node | undefined;
 
     while (walker.nextNode()) {
       index++;
-      const node = walker.currentNode as Element;
-      if (node.nodeType === 1 /* ELEMENT_NODE */) {
-        if (!node.hasAttributes())
+      previousNode = currentNode;
+      const node = currentNode = walker.currentNode as Element;
+      if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
+        if (!node.hasAttributes()) {
           continue;
+        }
         const attributes = node.attributes;
         for (let i = 0; i < attributes.length; i++) {
           const attribute = attributes.item(i);
-          const attributeStrings = attribute.value.split(exprMarker);
+          const attributeStrings = attribute.value.split(attrOrTextRegex);
           if (attributeStrings.length > 1) {
             // Get the template literal section leading up to the first
             // expression in this attribute attribute
@@ -176,8 +200,8 @@ export class Template {
             i--;
           }
         }
-      } else if (node.nodeType === 3 /* TEXT_NODE */) {
-        const strings = node.nodeValue!.split(exprMarker);
+      } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
+        const strings = node.nodeValue!.split(attributeMarker);
         if (strings.length > 1) {
           const parent = node.parentNode!;
           const lastIndex = strings.length - 1;
@@ -198,6 +222,31 @@ export class Template {
           }
         } else if (!node.nodeValue!.trim()) {
           nodesToRemove.push(node);
+          currentNode = previousNode;
+          index--;
+        }
+      } else if (
+          node.nodeType === 8 /* Node.COMMENT_NODE */ &&
+          node.nodeValue === textMarkerContent) {
+        const parent = node.parentNode!;
+        // If we don't have a previous node add a marker node.
+        // If the previousSibling is removed, because it's another part placholder, or
+        // empty text, add a marker node.
+        if (node.previousSibling === null || node.previousSibling !== previousNode) {
+          parent.insertBefore(new Text(), node);
+        } else {
+          index--;
+        }
+        this.parts.push(new TemplatePart('node', index++));
+        nodesToRemove.push(node);
+        currentNode = previousNode;
+        partIndex++;
+        // If we don't have a next node add a marker node.
+        // We don't have to check if the next node is going to be removed, because
+        // that node will induce a marker if so.
+        if (node.nextSibling === null) {
+          parent.insertBefore(new Text(), node);
+        } else {
           index--;
         }
       }
@@ -213,7 +262,21 @@ export class Template {
    * Returns a string of HTML used to create a <template> element.
    */
   private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
-    const html = strings.join(exprMarker);
+    const l = strings.length;
+    const a = [];
+    let isTextBinding = false;
+    for (let i = 0; i < l - 1; i++) {
+      const s = strings[i];
+      a.push(s);
+      // We're in a text position if the previous string matches the
+      // textRegex. If it doesn't and the previous string has no tags, then
+      // we use the previous text position state.
+      isTextBinding = s.match(textRegex) !== null ||
+          (s.match(hasTagsRegex) !== null && isTextBinding);
+      a.push(isTextBinding ? textMarker : attributeMarker);
+    }
+    a.push(strings[l - 1]);
+    const html = a.join('');
     return svg ? `<svg>${html}</svg>` : html;
   }
 }
