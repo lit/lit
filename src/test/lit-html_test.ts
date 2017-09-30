@@ -181,29 +181,17 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<h1>foo</h1>bar');
       });
 
-      // This test is slightly incorrect - the parts should have a space
-      // between them, but that's existing bug. This test is here to ensure
-      // that removing the whitespace node doesn't break rendering. The
-      // skipped test following this is the real test.
-      // See https://github.com/PolymerLabs/lit-html/issues/114
-      test('renders parts with whitespace between them', () => {
-        const container = document.createElement('div');
-        render(html`<div>${'foo'} ${'bar'}</div>`, container);
-        console.log(container.innerHTML);
-        assert.equal(container.innerHTML, '<div>foobar</div>');
+      test('renders parts with whitespace after them', () => {
+        render(html`<div>${'foo'} </div>`, container);
+        assert.equal(container.innerHTML, '<div>foo </div>');
       });
 
-      // Un-skip when https://github.com/PolymerLabs/lit-html/issues/114
-      // is fixed
-      test.skip('preserves whitespace between parts', () => {
-        const container = document.createElement('div');
-        render(html`<div>${'foo'} &nbsp;${'bar'}</div>`, container);
-        console.log(container.innerHTML);
+      test('preserves whitespace between parts', () => {
+        render(html`<div>${'foo'} ${'bar'}</div>`, container);
         assert.equal(container.innerHTML, '<div>foo bar</div>');
       });
 
       test('renders nested templates within table content', () => {
-        const container = document.createElement('div');
         let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
         render(table, container);
         assert.equal(container.innerHTML, '<table><tr><td></td></tr></table>');
@@ -366,7 +354,9 @@ suite('lit-html', () => {
               ${'baz'}
               <p>${'qux'}</p>
             </div>`, container);
-        assert.equal(container.innerHTML, `<div foo="bar">baz<p>qux</p></div>`);
+        assert.equal(container.innerHTML, `<div foo="bar">
+              baz
+              <p>qux</p></div>`);
       });
 
       test('renders SVG', () => {

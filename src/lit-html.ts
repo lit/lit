@@ -201,7 +201,8 @@ export class Template {
           }
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-        const strings = node.nodeValue!.split(attributeMarker);
+        const nodeValue = node.nodeValue!;
+        const strings = nodeValue.split(attributeMarker);
         if (strings.length > 1) {
           const parent = node.parentNode!;
           const lastIndex = strings.length - 1;
@@ -220,10 +221,18 @@ export class Template {
             parent.insertBefore(document.createTextNode(strings[i]), node);
             this.parts.push(new TemplatePart('node', index++));
           }
-        } else if (!node.nodeValue!.trim()) {
-          nodesToRemove.push(node);
-          currentNode = previousNode;
-          index--;
+        } else {
+          // Strip whitespace-only nodes, only between elements, or at the
+          // beginning or end of elements.
+          const previousSibling = node.previousSibling;
+          const nextSibling = node.nextSibling;
+          if ((previousSibling === null || previousSibling.nodeType === 1)
+              && (nextSibling === null || nextSibling.nodeType === 1)
+              && !nodeValue.trim()) {
+            nodesToRemove.push(node);
+            currentNode = previousNode;
+            index--;
+          }
         }
       } else if (
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
