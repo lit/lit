@@ -12,7 +12,6 @@ import '../node_modules/@polymer/iron-selector/iron-selector.js';
 import './shop-category-data.js';
 import './shop-home.js';
 import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/render-status.js';
-import { importHref } from '../node_modules/@polymer/polymer/lib/utils/import-href.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
@@ -391,9 +390,7 @@ class ShopApp extends Element {
         // When a load failed, it triggered a 404 which means we need to
         // eagerly load the 404 page definition
         let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-        importHref(
-          this.resolveUrl('shop-' + page + '.html'),
-          cb, cb, true);
+        import('./shop-' + page + '.js').then(cb);
       }
     }
   }

@@ -1,25 +1,17 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import '../node_modules/@polymer/app-route/app-route.js';
+import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import './shop-category-data.js';
+import './shop-common-styles.js';
+import './shop-image.js';
+import './shop-list-item.js';
+import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-<script type="module" src="../node_modules/@polymer/polymer/polymer-element.js"></script>
-<script type="module" src="../node_modules/@polymer/app-route/app-route.js"></script>
-<script type="module" src="../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js"></script>
-<script type="module" src="./shop-category-data.js"></script>
-<script type="module" src="./shop-common-styles.js"></script>
-<script type="module" src="./shop-image.js"></script>
-<script type="module" src="./shop-list-item.js"></script>
 
-<dom-module id="shop-list">
-
-  <template>
-
+class ShopList extends Element {
+  static get template() {
+    return `
     <style include="shop-common-styles">
 
       .hero-image {
@@ -123,19 +115,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         on-try-reconnect="_tryReconnect"></shop-network-warning>
 
   </template>
-
-  <script type="module">
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-route/app-route.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import './shop-category-data.js';
-import './shop-common-styles.js';
-import './shop-image.js';
-import './shop-list-item.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
-
-class ShopList extends Element {
+  `;
+}
 
   static get is() { return 'shop-list'; }
 
@@ -228,6 +209,3 @@ class ShopList extends Element {
 }
 
 customElements.define(ShopList.is, ShopList);
-</script>
-
-</dom-module>
