@@ -8,14 +8,14 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="shop-button.html">
-<link rel="import" href="shop-category-data.html">
-<link rel="import" href="shop-common-styles.html">
-<link rel="import" href="shop-image.html">
-<link rel="import" href="shop-select.html">
+<script type="module" src="../../../@polymer/polymer/polymer-element.js"></script>
+<script type="module" src="../../../@polymer/app-route/app-route.js"></script>
+<script type="module" src="../../../@polymer/iron-flex-layout/iron-flex-layout.js"></script>
+<script type="module" src="./shop-button.js"></script>
+<script type="module" src="./shop-category-data.js"></script>
+<script type="module" src="./shop-common-styles.js"></script>
+<script type="module" src="./shop-image.js"></script>
+<script type="module" src="./shop-select.js"></script>
 
 <dom-module id="shop-detail">
 
@@ -203,100 +203,109 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </template>
 
-  <script>
+  <script type="module">
+import { Element } from '../../../@polymer/polymer/polymer-element.js';
+import '../../../@polymer/app-route/app-route.js';
+import '../../../@polymer/iron-flex-layout/iron-flex-layout.js';
+import './shop-button.js';
+import './shop-category-data.js';
+import './shop-common-styles.js';
+import './shop-image.js';
+import './shop-select.js';
+import { Debouncer } from '../../../@polymer/polymer/lib/utils/debounce.js';
+import { microTask } from '../../../@polymer/polymer/lib/utils/async.js';
 
-    class ShopDetail extends Polymer.Element {
+class ShopDetail extends Element {
 
-      static get is() { return 'shop-detail'; }
+  static get is() { return 'shop-detail'; }
 
-      static get properties() { return {
+  static get properties() { return {
 
-        item: Object,
+    item: Object,
 
-        route: Object,
+    route: Object,
 
-        routeData: Object,
+    routeData: Object,
 
-        visible: {
-          type: Boolean,
-          value: false
-        },
+    visible: {
+      type: Boolean,
+      value: false
+    },
 
-        offline: {
-          type: Boolean,
-          observer: '_offlineChanged'
-        },
+    offline: {
+      type: Boolean,
+      observer: '_offlineChanged'
+    },
 
-        failure: Boolean
+    failure: Boolean
 
-      }}
+  }}
 
-      static get observers() { return [
-        '_itemChanged(item, visible)'
-      ]}
+  static get observers() { return [
+    '_itemChanged(item, visible)'
+  ]}
 
-      _itemChanged(item, visible) {
-        if (visible) {
-          this._itemChangeDebouncer = Polymer.Debouncer.debounce(this._itemChangeDebouncer,
-            Polymer.Async.microTask, () => {
-              // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
-              // unescape it ("<br>") and set it as innerHTML.
-              let text = item ? item.description : '';
-              this.$.desc.innerHTML = this._unescapeText(text);
+  _itemChanged(item, visible) {
+    if (visible) {
+      this._itemChangeDebouncer = Debouncer.debounce(this._itemChangeDebouncer,
+        microTask, () => {
+          // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
+          // unescape it ("<br>") and set it as innerHTML.
+          let text = item ? item.description : '';
+          this.$.desc.innerHTML = this._unescapeText(text);
 
-              // Reset the select menus.
-              this.$.quantitySelect.value = '1';
-              this.$.sizeSelect.value = 'M';
+          // Reset the select menus.
+          this.$.quantitySelect.value = '1';
+          this.$.sizeSelect.value = 'M';
 
-              this.dispatchEvent(new CustomEvent('change-section', {
-                bubbles: true, composed: true, detail: {
-                  category: item ? item.category : '',
-                  title: item ? item.title : '',
-                  description: item ? item.description.substring(0, 100) : '',
-                  image: item ? this.baseURI + item.image : ''
-                }}));
-            })
-        }
-      }
-
-      _unescapeText(text) {
-        let elem = document.createElement('textarea');
-        elem.innerHTML = text;
-        return elem.textContent;
-      }
-
-      _formatPrice(price) {
-        return price ? '$' + price.toFixed(2) : '';
-      }
-
-      _addToCart() {
-        // This event will be handled by shop-app.
-        this.dispatchEvent(new CustomEvent('add-cart-item', {
-          bubbles: true, composed: true, detail: {
-            item: this.item,
-            quantity: parseInt(this.$.quantitySelect.value, 10),
-            size: this.$.sizeSelect.value
-          }}));
-      }
-
-      _isDefined(item) {
-        return item != null;
-      }
-
-      _tryReconnect() {
-        this.$.categoryData.refresh();
-      }
-
-      _offlineChanged(offline) {
-        if (!offline) {
-          this._tryReconnect();
-        }
-      }
-
+          this.dispatchEvent(new CustomEvent('change-section', {
+            bubbles: true, composed: true, detail: {
+              category: item ? item.category : '',
+              title: item ? item.title : '',
+              description: item ? item.description.substring(0, 100) : '',
+              image: item ? this.baseURI + item.image : ''
+            }}));
+        })
     }
+  }
 
-    customElements.define(ShopDetail.is, ShopDetail);
+  _unescapeText(text) {
+    let elem = document.createElement('textarea');
+    elem.innerHTML = text;
+    return elem.textContent;
+  }
 
-  </script>
+  _formatPrice(price) {
+    return price ? '$' + price.toFixed(2) : '';
+  }
+
+  _addToCart() {
+    // This event will be handled by shop-app.
+    this.dispatchEvent(new CustomEvent('add-cart-item', {
+      bubbles: true, composed: true, detail: {
+        item: this.item,
+        quantity: parseInt(this.$.quantitySelect.value, 10),
+        size: this.$.sizeSelect.value
+      }}));
+  }
+
+  _isDefined(item) {
+    return item != null;
+  }
+
+  _tryReconnect() {
+    this.$.categoryData.refresh();
+  }
+
+  _offlineChanged(offline) {
+    if (!offline) {
+      this._tryReconnect();
+    }
+  }
+
+}
+
+customElements.define(ShopDetail.is, ShopDetail);
+</script>
 
 </dom-module>

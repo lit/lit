@@ -14,11 +14,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>shop-home</title>
 
-  <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../web-component-tester/browser.js"></script>
 
   <!-- Import the element to test -->
-  <link rel="import" href="../src/shop-home.html">
+  <script type="module" src="../src/shop-home.js"></script>
 
 </head>
 <body>
@@ -29,32 +29,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
-  <script>
-    suite('shop-home tests', function() {
-      var home;
+  <script type="module">
+import '../src/shop-home.js';
+import { dom } from '../../../@polymer/polymer/lib/legacy/polymer.dom.js';
+suite('shop-home tests', function() {
+  var home;
 
-      setup(function() {
-        home = fixture('basic');
-      });
+  setup(function() {
+    home = fixture('basic');
+  });
 
-      test('Item lengths should be equalled', function(done) {
-        // Test categories property
-        home.categories = [
-          {name: 'furniture', title: 'Furniture'},
-          {name: 'food', title: 'Food'},
-          {name: 'fashion', title: 'Fashion'}
-        ];
+  test('Item lengths should be equalled', function(done) {
+    // Test categories property
+    home.categories = [
+      {name: 'furniture', title: 'Furniture'},
+      {name: 'food', title: 'Food'},
+      {name: 'fashion', title: 'Fashion'}
+    ];
 
-        // Data bindings will stamp out new DOM asynchronously
-        // so wait to check for updates
-        flush(function() {
-          var items = Polymer.dom(home.root).querySelectorAll('.item');
-          assert.equal(home.categories.length, items.length);
-          done();
-        });
-      })
+    // Data bindings will stamp out new DOM asynchronously
+    // so wait to check for updates
+    flush(function() {
+      var items = dom(home.root).querySelectorAll('.item');
+      assert.equal(home.categories.length, items.length);
+      done();
     });
-  </script>
+  })
+});
+</script>
 
 </body>
 </html>

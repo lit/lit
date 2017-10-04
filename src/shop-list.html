@@ -8,13 +8,13 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="shop-category-data.html">
-<link rel="import" href="shop-common-styles.html">
-<link rel="import" href="shop-image.html">
-<link rel="import" href="shop-list-item.html">
+<script type="module" src="../../../@polymer/polymer/polymer-element.js"></script>
+<script type="module" src="../../../@polymer/app-route/app-route.js"></script>
+<script type="module" src="../../../@polymer/iron-flex-layout/iron-flex-layout.js"></script>
+<script type="module" src="./shop-category-data.js"></script>
+<script type="module" src="./shop-common-styles.js"></script>
+<script type="module" src="./shop-image.js"></script>
+<script type="module" src="./shop-list-item.js"></script>
 
 <dom-module id="shop-list">
 
@@ -124,102 +124,110 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </template>
 
-  <script>
+  <script type="module">
+import { Element } from '../../../@polymer/polymer/polymer-element.js';
+import '../../../@polymer/app-route/app-route.js';
+import '../../../@polymer/iron-flex-layout/iron-flex-layout.js';
+import './shop-category-data.js';
+import './shop-common-styles.js';
+import './shop-image.js';
+import './shop-list-item.js';
+import { Debouncer } from '../../../@polymer/polymer/lib/utils/debounce.js';
+import { microTask } from '../../../@polymer/polymer/lib/utils/async.js';
 
-    class ShopList extends Polymer.Element {
+class ShopList extends Element {
 
-      static get is() { return 'shop-list'; }
+  static get is() { return 'shop-list'; }
 
-      static get properties() { return {
+  static get properties() { return {
 
-        category: Object,
+    category: Object,
 
-        route: Object,
+    route: Object,
 
-        routeData: Object,
+    routeData: Object,
 
-        visible: {
-          type: Boolean,
-          value: false
-        },
+    visible: {
+      type: Boolean,
+      value: false
+    },
 
-        offline: {
-          type: Boolean,
-          observer: '_offlineChanged'
-        },
+    offline: {
+      type: Boolean,
+      observer: '_offlineChanged'
+    },
 
-        failure: Boolean
+    failure: Boolean
 
-      }}
+  }}
 
-      static get observers() { return [
-        '_categoryChanged(category, visible)'
-      ]}
+  static get observers() { return [
+    '_categoryChanged(category, visible)'
+  ]}
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.isAttached = true;
-      }
+  connectedCallback() {
+    super.connectedCallback();
+    this.isAttached = true;
+  }
 
-      disconnectedCallback() {
-        super.disconnectedCallback();
-        this.isAttached = false;
-      }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.isAttached = false;
+  }
 
-      _getListItems(items) {
-        // Return placeholder items when the items haven't loaded yet.
-        return items || [{},{},{},{},{},{},{},{},{},{}];
-      }
+  _getListItems(items) {
+    // Return placeholder items when the items haven't loaded yet.
+    return items || [{},{},{},{},{},{},{},{},{},{}];
+  }
 
-      _getItemHref(item) {
-        // By returning null when `itemId` is undefined, the href attribute won't be set and
-        // the link will be disabled.
-        return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
-      }
+  _getItemHref(item) {
+    // By returning null when `itemId` is undefined, the href attribute won't be set and
+    // the link will be disabled.
+    return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
+  }
 
-      _getPluralizedQuantity(quantity) {
-        if (!quantity) {
-          return '';
-        }
-        let pluralizedQ = quantity === 1 ? 'item' : 'items';
-        return  '(' + quantity + ' ' + pluralizedQ + ')';
-      }
-
-      _categoryChanged(category, visible) {
-        if (!visible) {
-          return;
-        }
-        this._changeSectionDebouncer = Polymer.Debouncer.debounce(this._changeSectionDebouncer,
-          Polymer.Async.microTask, () => {
-            if (category) {
-              // Notify the category and the page's title
-              this.dispatchEvent(new CustomEvent('change-section', {
-                bubbles: true, composed: true, detail: {
-                  category: category.name,
-                  title: category.title,
-                  image: this.baseURI + category.image
-                }}));
-            } else {
-              this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
-                bubbles: true, composed: true}));
-            }
-          });
-      }
-
-      _tryReconnect() {
-        this.$.categoryData.refresh();
-      }
-
-      _offlineChanged(offline) {
-        if (!offline && this.isAttached) {
-          this._tryReconnect();
-        }
-      }
-
+  _getPluralizedQuantity(quantity) {
+    if (!quantity) {
+      return '';
     }
+    let pluralizedQ = quantity === 1 ? 'item' : 'items';
+    return  '(' + quantity + ' ' + pluralizedQ + ')';
+  }
 
-    customElements.define(ShopList.is, ShopList);
+  _categoryChanged(category, visible) {
+    if (!visible) {
+      return;
+    }
+    this._changeSectionDebouncer = Debouncer.debounce(this._changeSectionDebouncer,
+      microTask, () => {
+        if (category) {
+          // Notify the category and the page's title
+          this.dispatchEvent(new CustomEvent('change-section', {
+            bubbles: true, composed: true, detail: {
+              category: category.name,
+              title: category.title,
+              image: this.baseURI + category.image
+            }}));
+        } else {
+          this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
+            bubbles: true, composed: true}));
+        }
+      });
+  }
 
-  </script>
+  _tryReconnect() {
+    this.$.categoryData.refresh();
+  }
+
+  _offlineChanged(offline) {
+    if (!offline && this.isAttached) {
+      this._tryReconnect();
+    }
+  }
+
+}
+
+customElements.define(ShopList.is, ShopList);
+</script>
 
 </dom-module>

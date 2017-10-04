@@ -8,10 +8,10 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="shop-button.html">
-<link rel="import" href="shop-common-styles.html">
-<link rel="import" href="shop-form-styles.html">
+<script type="module" src="../node_modules/@polymer/polymer/polymer-element.js"></script>
+<script type="module" src="./shop-button.js"></script>
+<script type="module" src="./shop-common-styles.js"></script>
+<script type="module" src="./shop-form-styles.js"></script>
 
 <dom-module id="shop-cart">
 
@@ -70,54 +70,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </template>
 
-  <script>
+  <script type="module">
+import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import './shop-button.js';
+import './shop-common-styles.js';
+import './shop-form-styles.js';
 
-    class ShopCart extends Polymer.Element {
+class ShopCart extends Element {
 
-      static get is() { return 'shop-cart'; }
+  static get is() { return 'shop-cart'; }
 
-      static get properties() { return {
+  static get properties() { return {
 
-        total: Number,
+    total: Number,
 
-        cart: Array,
+    cart: Array,
 
-        visible: {
-          type: Boolean,
-          observer: '_visibleChanged'
-        },
+    visible: {
+      type: Boolean,
+      observer: '_visibleChanged'
+    },
 
-        _hasItems: {
-          type: Boolean,
-          computed: '_computeHasItem(cart.length)'
-        }
-
-      }}
-
-      _formatTotal(total) {
-        return isNaN(total) ? '' : '$' + total.toFixed(2);
-      }
-
-      _computeHasItem(cartLength) {
-        return cartLength > 0;
-      }
-
-      _getPluralizedQuantity(quantity) {
-        return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
-      }
-
-      _visibleChanged(visible) {
-        if (visible) {
-          // Notify the section's title
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: { title: 'Your cart' }}));
-        }
-      }
-
+    _hasItems: {
+      type: Boolean,
+      computed: '_computeHasItem(cart.length)'
     }
 
-    customElements.define(ShopCart.is, ShopCart);
+  }}
 
-  </script>
+  _formatTotal(total) {
+    return isNaN(total) ? '' : '$' + total.toFixed(2);
+  }
+
+  _computeHasItem(cartLength) {
+    return cartLength > 0;
+  }
+
+  _getPluralizedQuantity(quantity) {
+    return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+  }
+
+  _visibleChanged(visible) {
+    if (visible) {
+      // Notify the section's title
+      this.dispatchEvent(new CustomEvent('change-section', {
+        bubbles: true, composed: true, detail: { title: 'Your cart' }}));
+    }
+  }
+
+}
+
+customElements.define(ShopCart.is, ShopCart);
+</script>
 
 </dom-module>
