@@ -413,7 +413,7 @@ class ShopApp extends Element {
     // load lazy resources after render and set `loadComplete` when done.
     if (!this.loadComplete) {
       afterNextRender(this, () => {
-        importHref(this.resolveUrl('lazy-resources.html'), () => {
+        import('./lazy-resources.js').then(() => {
           // Register service worker if supported.
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js', {scope: '/'});
