@@ -12,11 +12,13 @@ HTML templates, via JavaScript template literals
  * `html`: A JavaScript [template tag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
  * `render()`: A function that renders a `TemplateResult` to a DOM container, such as an element or shadow root.
 
-### Efficient, Expressive, and Extensible HTML Templates
+### Announcement at Polymer Summit 2017
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=ruql541T7gc">
-    <img src="https://img.youtube.com/vi/ruql541T7gc/0.jpg" alt="Efficient, Expressive, and Extensible HTML Templates video">
+    <img src="https://img.youtube.com/vi/ruql541T7gc/0.jpg" width="256" alt="Efficient, Expressive, and Extensible HTML Templates video">
+    <br>
+    Efficient, Expressive, and Extensible HTML Templates video
   </a>
 </p>
 
