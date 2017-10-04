@@ -1,26 +1,18 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import '../node_modules/@polymer/app-route/app-route.js';
+import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import './shop-button.js';
+import './shop-common-styles.js';
+import './shop-form-styles.js';
+import './shop-input.js';
+import './shop-select.js';
+import './shop-checkbox.js';
+import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-<script type="module" src="../node_modules/@polymer/polymer/polymer-element.js"></script>
-<script type="module" src="../node_modules/@polymer/app-route/app-route.js"></script>
-<script type="module" src="../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js"></script>
-<script type="module" src="./shop-button.js"></script>
-<script type="module" src="./shop-common-styles.js"></script>
-<script type="module" src="./shop-form-styles.js"></script>
-<script type="module" src="./shop-input.js"></script>
-<script type="module" src="./shop-select.js"></script>
-<script type="module" src="./shop-checkbox.js"></script>
-
-<dom-module id="shop-checkout">
-
-  <template>
+class ShopCheckout extends Element {
+  static get template() {
+    return `
     <style include="shop-common-styles shop-button shop-form-styles shop-input shop-select shop-checkbox">
 
       .main-frame {
@@ -416,24 +408,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- Show spinner when waiting for the server to repond -->
     <paper-spinner-lite active="[[waiting]]"></paper-spinner-lite>
-
-  </template>
-
-  <script type="module">
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-route/app-route.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import './shop-button.js';
-import './shop-common-styles.js';
-import './shop-form-styles.js';
-import './shop-input.js';
-import './shop-select.js';
-import './shop-checkbox.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
-
-class ShopCheckout extends Element {
-
+    `;
+  }
   static get is() { return 'shop-checkout'; }
 
   static get properties() { return {
@@ -691,6 +667,3 @@ class ShopCheckout extends Element {
 }
 
 customElements.define(ShopCheckout.is, ShopCheckout);
-</script>
-
-</dom-module>
