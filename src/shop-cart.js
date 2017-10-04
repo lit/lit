@@ -1,22 +1,11 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import './shop-button.js';
+import './shop-common-styles.js';
+import './shop-form-styles.js';
 
-<script type="module" src="../node_modules/@polymer/polymer/polymer-element.js"></script>
-<script type="module" src="./shop-button.js"></script>
-<script type="module" src="./shop-common-styles.js"></script>
-<script type="module" src="./shop-form-styles.js"></script>
-
-<dom-module id="shop-cart">
-
-  <template>
-
+class ShopCart extends Element {
+  static get template() {
+    return `
     <style include="shop-common-styles shop-button shop-form-styles">
 
       .list {
@@ -67,17 +56,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
       </div>
     </div>
-
-  </template>
-
-  <script type="module">
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import './shop-button.js';
-import './shop-common-styles.js';
-import './shop-form-styles.js';
-
-class ShopCart extends Element {
-
+    `;
+  }
   static get is() { return 'shop-cart'; }
 
   static get properties() { return {
@@ -121,6 +101,3 @@ class ShopCart extends Element {
 }
 
 customElements.define(ShopCart.is, ShopCart);
-</script>
-
-</dom-module>
