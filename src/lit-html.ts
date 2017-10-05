@@ -160,17 +160,19 @@ export class Template {
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         this.element.content,
-        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT */,
-        null as any, false);
+        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT */
+        ,
+        null as any,
+        false);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove: Node[] = [];
 
-    // The actual previous node, accounting for removals: if a node is removed it will
-    // never be the previousNode.
-    let previousNode: Node | undefined;
+    // The actual previous node, accounting for removals: if a node is removed
+    // it will never be the previousNode.
+    let previousNode: Node|undefined;
     // Used to set previousNode at the top of the loop.
-    let currentNode: Node | undefined;
+    let currentNode: Node|undefined;
 
     while (walker.nextNode()) {
       index++;
@@ -226,9 +228,11 @@ export class Template {
           // beginning or end of elements.
           const previousSibling = node.previousSibling;
           const nextSibling = node.nextSibling;
-          if ((previousSibling === null || previousSibling.nodeType === 1)
-              && (nextSibling === null || nextSibling.nodeType === 1)
-              && !nodeValue.trim()) {
+          if ((previousSibling === null ||
+               previousSibling.nodeType === 1 /* Node.ELEMENT_NODE */) &&
+              (nextSibling === null ||
+               nextSibling.nodeType === 1 /* Node.ELEMENT_NODE */) &&
+              nodeValue.trim() === '') {
             nodesToRemove.push(node);
             currentNode = previousNode;
             index--;
@@ -239,25 +243,26 @@ export class Template {
           node.nodeValue === textMarkerContent) {
         const parent = node.parentNode!;
         // If we don't have a previous node add a marker node.
-        // If the previousSibling is removed, because it's another part placholder, or
-        // empty text, add a marker node.
-        if (node.previousSibling === null || node.previousSibling !== previousNode) {
+        // If the previousSibling is removed, because it's another part
+        // placholder, or empty text, add a marker node.
+        if (node.previousSibling === null ||
+            node.previousSibling !== previousNode) {
           parent.insertBefore(new Text(), node);
         } else {
           index--;
         }
         this.parts.push(new TemplatePart('node', index++));
         nodesToRemove.push(node);
-        currentNode = previousNode;
-        partIndex++;
         // If we don't have a next node add a marker node.
-        // We don't have to check if the next node is going to be removed, because
-        // that node will induce a marker if so.
+        // We don't have to check if the next node is going to be removed,
+        // because that node will induce a marker if so.
         if (node.nextSibling === null) {
           parent.insertBefore(new Text(), node);
         } else {
           index--;
         }
+        currentNode = previousNode;
+        partIndex++;
       }
     }
 
