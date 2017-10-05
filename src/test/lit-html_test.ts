@@ -368,6 +368,19 @@ suite('lit-html', () => {
         assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
       });
 
+      test('renders templates with comments', () => {
+        const t = html`
+          <div>
+            <!-- this is a comment -->
+            <h1 class="${'foo'}">title</h1>
+            <p>${'foo'}</p>
+            </div>`;
+        render(t, container);
+        assert.equal(container.innerHTML, `<div>
+            <!-- this is a comment -->
+            <h1 class="foo">title</h1><p>foo</p></div>`);
+      });
+
     });
 
     suite('update', () => {
