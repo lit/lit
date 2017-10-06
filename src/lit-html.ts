@@ -160,7 +160,8 @@ export class Template {
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         this.element.content,
-        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT */
+        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
+               NodeFilter.SHOW_TEXT */
         ,
         null as any,
         false);
@@ -570,7 +571,11 @@ export class TemplateInstance {
       // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
       // null
       const walker = document.createTreeWalker(
-          fragment, 5 /* elements & text */, null as any, false);
+          fragment,
+          133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT */
+          ,
+          null as any,
+          false);
 
       const parts = this.template.parts;
       let index = 0;
