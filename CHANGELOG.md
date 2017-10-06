@@ -10,7 +10,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.7.0] - 2017-10-06
+
+* Added the `svg` template tag for creating partial SVG content
+* Support for expressions inside tables and other elements with limited permitted content
+* Only remove whitespace between elements, or at the start or end of elements
+* Fixed bugs with rendering iterables
+* A few IE/Edge fixes. Closer to full support.
 
 ## [0.6.0] - 2017-09-01
 

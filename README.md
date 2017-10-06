@@ -7,6 +7,21 @@ HTML templates, via JavaScript template literals
 
 `lit-html` lets you write [HTML templates](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) with JavaScript [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), and efficiently render and _re-render_ those templates to DOM.
 
+```javascript
+import {html, render} from 'lit-html';
+
+// This is a lit-html template function. It returns a lit-html template.
+const helloTemplate = (name) => html`<div>Hello ${name}!</div>`;
+
+// Call the function with some data, and pass the result to render()
+
+// This renders <div>Hello Steve!</div> to the document body
+render(helloTemplate('Steve'), document.body);
+
+// This updates to <div>Hello Kevin!</div>, but only updates the ${name} part
+render(helloTemplate('Kevin'), document.body);
+```
+
 `lit-html` provides two main exports:
 
  * `html`: A JavaScript [template tag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
@@ -21,41 +36,6 @@ HTML templates, via JavaScript template literals
     Efficient, Expressive, and Extensible HTML Templates video
   </a>
 </p>
-
-### Examples
-
-`lit-html` can be used standalone and directly to help manage DOM:
-```javascript
-const helloTemplate = (name) => html`<div>Hello ${name}!</div>`;
-
-// renders <div>Hello Steve!</div> to the document body
-render(helloTemplate('Steve'), document.body);
-
-// updates to <div>Hello Kevin!</div>, but only updates the ${name} part
-render(helloTemplate('Kevin'), document.body);
-```
-
-But it may also be common to use `lit-html` with a component system that calls `render()` for you, similar to React components:
-
-_(this example uses JS Class Fields, an upcoming specification)_
-```javascript
-class MyElement extends CoolLitMixin(HTMLElement) {
-
-  static observedProperties = ['title', 'body'];
-
-  title = `About lit-html`;
-  body = `It's got potential.`;
-
-  // Called by the base-class when properties change, result is passed
-  // to lit-html's render() function.
-  render() {
-    return html`
-      <h1>${this.title}</h1>
-      <p>${this.body}</p>
-    `;
-  }
-}
-```
 
 ## Motivation
 
@@ -131,6 +111,19 @@ const render = () => html`foo is ${foo}`;
 
 ```javascript
 const render = () => html`<div class="${blue}"></div>`;
+```
+
+### SVG Support
+
+To create partial SVG templates - template that will rendering inside and `<svg>` tag (in the SVG namespace), use the `svg` template tag instead of the `html` template tag:
+
+```javascript
+const grid = svg`
+  <g>
+    ${[0, 10, 20].map((x) => svg`<line x1=${x} y1="0" x2=${x} y2="20"/>`)}
+    ${[0, 10, 20].map((y) => svg`<line x1="0" y1=${y} x2="0" y2=${y}/>`)}
+  </g>
+`;
 ```
 
 ### Safety
