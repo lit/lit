@@ -410,6 +410,9 @@ export class NodePart implements SinglePart {
   }
 
   private _setNode(value: Node): void {
+    if (this._previousValue === value) {
+      return;
+    }
     this.clear();
     this._insert(value);
     this._previousValue = value;
