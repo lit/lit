@@ -9,6 +9,14 @@
   "directories": {
     "test": "test"
   },
+  "files": [
+    "/lit-html.js",
+    "/lit-html.js.map",
+    "/lit-html.d.ts",
+    "/lib/",
+    "/src/",
+    "!/src/test/"
+  ],
   "scripts": {
     "build": "tsc",
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api .",
