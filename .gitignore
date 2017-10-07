@@ -1,6 +1,5 @@
 /node_modules/
 /lib/
-package-lock.json
 
 # Compiler output
 /lit-html.d.ts
