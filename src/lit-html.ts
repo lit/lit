@@ -274,9 +274,9 @@ export class Template {
     }
 
     // Remove text binding nodes after the walk to not disturb the TreeWalker
-    for (const n of nodesToRemove) {
+    nodesToRemove.forEach((n) => {
       n.parentNode!.removeChild(n);
-    }
+    });
   }
 
   /**
@@ -297,7 +297,13 @@ export class Template {
       a.push(isTextBinding ? textMarker : attributeMarker);
     }
     a.push(strings[l - 1]);
-    const html = a.join('');
+    // Example Template: <h2></h2><p>end</p>
+    // On IE11 empty tags like <h2></h2> will not have an empty text node
+    // inside. So the Treewalker will go h2 -> p -> exit. All other
+    // browsers assume that inside there is an empty text. So they go
+    // h2 -> emptyTextNode (that will be filled with data) -> p ...
+    // To force empty text node for IE11 we join with ' '.
+    const html = a.join(' ');
     return svg ? `<svg>${html}</svg>` : html;
   }
 }
@@ -559,7 +565,7 @@ export class TemplateInstance {
 
   update(values: any[]) {
     let valueIndex = 0;
-    for (const part of this._parts) {
+    this._parts.forEach((part) => {
       if (part.size === undefined) {
         (part as SinglePart).setValue(values[valueIndex]);
         valueIndex++;
@@ -567,7 +573,7 @@ export class TemplateInstance {
         (part as MultiPart).setValue(values, valueIndex);
         valueIndex += part.size;
       }
-    }
+    });
   }
 
   _clone(): DocumentFragment {
