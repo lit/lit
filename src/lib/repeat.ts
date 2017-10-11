@@ -77,10 +77,10 @@ export function repeat<T>(
       if (itemPart === undefined) {
         // New part, attach it
         if (currentMarker === undefined) {
-          currentMarker = new Text();
+          currentMarker = document.createTextNode('');
           container.insertBefore(currentMarker, part.startNode.nextSibling);
         }
-        const endNode = new Text();
+        const endNode = document.createTextNode('');
         container.insertBefore(endNode, currentMarker.nextSibling);
         itemPart = new NodePart(part.instance, currentMarker, endNode);
         if (key !== undefined && keyMap !== undefined) {
@@ -105,7 +105,7 @@ export function repeat<T>(
             const contents = range.extractContents();
             if (part.startNode.nextSibling === part.endNode) {
               // The container part was empty, so we need a new endPart
-              itemPart.endNode = new Text();
+              itemPart.endNode = document.createTextNode('');
               container.insertBefore(
                   itemPart.endNode, part.startNode.nextSibling);
             } else {

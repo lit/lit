@@ -248,7 +248,7 @@ export class Template {
         // placholder, or empty text, add a marker node.
         if (node.previousSibling === null ||
             node.previousSibling !== previousNode) {
-          parent.insertBefore(new Text(), node);
+          parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
@@ -258,7 +258,7 @@ export class Template {
         // We don't have to check if the next node is going to be removed,
         // because that node will induce a marker if so.
         if (node.nextSibling === null) {
-          parent.insertBefore(new Text(), node);
+          parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
