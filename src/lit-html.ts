@@ -188,7 +188,7 @@ export class Template {
         // attributes are not guaranteed to be returned in document order. In
         // particular, Edge/IE can return them out of order, so we cannot assume
         // a correspondance between part index and attribute index.
-        
+
         // Do a first pass to count attributes that correspond to parts.
         const attributesWithParts: string[][] = [].filter.call(attributes, (attribute: Attr) =>
           attribute.value.split(attrOrTextRegex).length > 1
