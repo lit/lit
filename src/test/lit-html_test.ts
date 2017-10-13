@@ -528,7 +528,7 @@ suite('lit-html', () => {
         render(t(), container);
         assert.equal(container.innerHTML, '<div><div></div></div>');
 
-        child = new Text('foo');
+        child = document.createTextNode('foo');
         render(t(), container);
         assert.equal(container.innerHTML, '<div>foo<div></div></div>');
       });
@@ -548,7 +548,7 @@ suite('lit-html', () => {
         render(t(), container);
         assert.equal(container.innerHTML, '<div></div>');
 
-        children = new Text('foo');
+        children = document.createTextNode('foo');
         render(t(), container);
         assert.equal(container.innerHTML, '<div>foo</div>');
       });
@@ -648,8 +648,8 @@ suite('lit-html', () => {
 
     setup(() => {
       container = document.createElement('div');
-      startNode = new Text();
-      endNode = new Text();
+      startNode = document.createTextNode('');
+      endNode = document.createTextNode('');
       container.appendChild(startNode);
       container.appendChild(endNode);
       const instance = new TemplateInstance(html``.template);
@@ -884,7 +884,7 @@ suite('lit-html', () => {
       });
 
       test('clears a range', () => {
-        container.insertBefore(new Text('foo'), endNode);
+        container.insertBefore(document.createTextNode('foo'), endNode);
         part.clear();
         assert.deepEqual(
             Array.from(container.childNodes), [startNode, endNode]);

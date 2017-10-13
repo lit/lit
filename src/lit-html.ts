@@ -184,24 +184,30 @@ export class Template {
           continue;
         }
         const attributes = node.attributes;
-        for (let i = 0; i < attributes.length; i++) {
-          const attribute = attributes.item(i);
-          const attributeStrings = attribute.value.split(attrOrTextRegex);
-          if (attributeStrings.length > 1) {
-            // Get the template literal section leading up to the first
-            // expression in this attribute attribute
-            const attributeString = strings[partIndex];
-            // Trim the trailing literal value if this is an interpolation
-            const rawNameString = attributeString.substring(
-                0, attributeString.length - attributeStrings[0].length);
-            // Find the attribute name
-            const rawName = rawNameString.match(/((?:\w|[.\-_$])+)=["']?$/)![1];
-            this.parts.push(new TemplatePart(
-                'attribute', index, attribute.name, rawName, attributeStrings));
-            node.removeAttribute(attribute.name);
-            partIndex += attributeStrings.length - 1;
-            i--;
-          }
+        // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
+        // attributes are not guaranteed to be returned in document order. In
+        // particular, Edge/IE can return them out of order, so we cannot assume
+        // a correspondance between part index and attribute index.
+
+        // Do a first pass to count attributes that correspond to parts.
+        const attributesWithParts: string[][] = [].filter.call(attributes, (attribute: Attr) =>
+          attribute.value.split(attrOrTextRegex).length > 1
+        );
+        // Loop that many times, but don't use loop index for anything.
+        for (let i = 0; i < attributesWithParts.length; i++) {
+          // Get the template literal section leading up to the first
+          // expression in this attribute attribute
+          const stringForPart = strings[partIndex];
+          // Find the attribute name
+          // Trim the trailing literal value if this is an interpolation
+          const attributeNameInPart = stringForPart.match(/((?:\w|[.\-_$])+)=["']?/)![1];
+          // Find the corresponding attribute
+          const attribute = attributes.getNamedItem(attributeNameInPart);
+          const stringsForAttributeValue = attribute.value.split(attrOrTextRegex);
+          this.parts.push(new TemplatePart(
+            'attribute', index, attribute.name, attributeNameInPart, stringsForAttributeValue));
+          node.removeAttribute(attribute.name);
+          partIndex += stringsForAttributeValue.length - 1;
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
         const nodeValue = node.nodeValue!;
@@ -248,7 +254,7 @@ export class Template {
         // placholder, or empty text, add a marker node.
         if (node.previousSibling === null ||
             node.previousSibling !== previousNode) {
-          parent.insertBefore(new Text(), node);
+          parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
@@ -258,7 +264,7 @@ export class Template {
         // We don't have to check if the next node is going to be removed,
         // because that node will induce a marker if so.
         if (node.nextSibling === null) {
-          parent.insertBefore(new Text(), node);
+          parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
