@@ -123,6 +123,8 @@ const hasTagsRegex = /[^<]*/;
 const textMarkerContent = '_-lit-html-_';
 const textMarker = `<!--${textMarkerContent}-->`;
 const attrOrTextRegex = new RegExp(`${attributeMarker}|${textMarker}`);
+const lastAttributeNameRegex =
+    /((?:\w|[.\-_$])+)=(?:[^"']*|(?:["][^"]*)|(?:['][^']*))$/;
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
@@ -190,7 +192,7 @@ export class Template {
         // a correspondance between part index and attribute index.
 
         // Do a first pass to count attributes that correspond to parts.
-        const attributesWithParts: string[][] = [].filter.call(
+        const attributesWithParts: string[][] = Array.prototype.filter.call(
             attributes,
             (attribute: Attr) =>
                 attribute.value.split(attrOrTextRegex).length > 1);
@@ -200,9 +202,8 @@ export class Template {
           // expression in this attribute attribute
           const stringForPart = strings[partIndex];
           // Find the attribute name
-          // Trim the trailing literal value if this is an interpolation
           const attributeNameInPart =
-              stringForPart.match(/((?:\w|[.\-_$])+)=["']?/)![1];
+              stringForPart.match(lastAttributeNameRegex)![1];
           // Find the corresponding attribute
           const attribute = attributes.getNamedItem(attributeNameInPart);
           const stringsForAttributeValue =

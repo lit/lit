@@ -23,17 +23,35 @@ const assert = chai.assert;
 suite('lit-extended', () => {
   suite('render', () => {
 
+    let container: HTMLElement;
+
+    setup(() => {
+      container = document.createElement('div');
+    });
+
     test('sets properties', () => {
-      const container = document.createElement('div');
       render(html`<div foo=${123} bar=${456}></div>`, container);
       const div = container.firstChild!;
       assert.equal((div as any).foo, 123);
       assert.equal((div as any).bar, 456);
     });
 
-    test('reuses an existing ExtendedTemplateInstance when available', () => {
-      const container = document.createElement('div');
+    test('renders to an attribute', () => {
+      render(html`<div foo$="${'bar'}"></div>`, container);
+      assert.equal(container.innerHTML, '<div foo="bar"></div>');
+    });
 
+    test('renders to an attribute without quotes', () => {
+      render(html`<div foo$=${'bar'}></div>`, container);
+      assert.equal(container.innerHTML, '<div foo="bar"></div>');
+    });
+
+    test('renders interpolation to an attribute', () => {
+      render(html`<div foo$="1${'bar'}2${'baz'}3"></div>`, container);
+      assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
+    });
+
+    test('reuses an existing ExtendedTemplateInstance when available', () => {
       const t = (content: any) => html`<div>${content}</div>`;
 
       render(t('foo'), container);
@@ -55,8 +73,6 @@ suite('lit-extended', () => {
         'overwrites an existing (plain) TemplateInstance if one exists, ' +
             'even if it has a matching Template',
         () => {
-          const container = document.createElement('div');
-
           const t = () => html`<div>foo</div>`;
 
           renderPlain(t(), container);
@@ -78,8 +94,6 @@ suite('lit-extended', () => {
         'overwrites an existing ExtendedTemplateInstance if one exists and ' +
             'does not have a matching Template',
         () => {
-          const container = document.createElement('div');
-
           render(html`<div>foo</div>`, container);
 
           assert.equal(container.children.length, 1);
@@ -96,7 +110,6 @@ suite('lit-extended', () => {
         });
 
     test('adds event listener functions, calls with right this value', () => {
-      const container = document.createElement('div');
       let thisValue;
       let event;
       const listener = function(this: any, e: any) {
@@ -111,7 +124,6 @@ suite('lit-extended', () => {
     });
 
     test('adds event listener objects, calls with right this value', () => {
-      const container = document.createElement('div');
       let thisValue;
       let event;
       const listener = {
@@ -127,7 +139,6 @@ suite('lit-extended', () => {
     });
 
     test('only adds event listeners once', () => {
-      const container = document.createElement('div');
       let count = 0;
       const listener = () => {
         count++;
@@ -143,7 +154,6 @@ suite('lit-extended', () => {
     });
 
     test('removes event listeners', () => {
-      const container = document.createElement('div');
       let target;
       let listener: any = (e: any) => target = e.target;
       const t = () => html`<div on-click=${listener}></div>`;
