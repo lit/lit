@@ -165,7 +165,7 @@ suite('lit-html', () => {
       });
 
       test('renders a function as a string', () => {
-        // This test just checks that we don't call the function but render 
+        // This test just checks that we don't call the function but render
         // it's string representation
         const f = (_: any) => 123;
         const temp = document.createElement('template');
@@ -285,7 +285,7 @@ suite('lit-html', () => {
       });
 
       test('renders a function to an attribute', () => {
-        // This test just checks that we don't call the function but render 
+        // This test just checks that we don't call the function but render
         // it's string representation
         // The comma-operator trick keeps the functin from having a name
         // when compiled
@@ -293,7 +293,8 @@ suite('lit-html', () => {
         const temp = document.createElement('div');
         temp.setAttribute('f', f as any);
         render(html`<div foo=${(_: any) => 123}></div>`, container);
-        assert.equal(container.innerHTML, `<div foo="${temp.getAttribute('f')}"></div>`);
+        assert.equal(
+            container.innerHTML, `<div foo="${temp.getAttribute('f')}"></div>`);
       });
 
       test('renders an array to an attribute', () => {
@@ -321,7 +322,7 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div></div>');
         resolve!('foo');
         return promise.then(() => {
-          assert.equal(container.innerHTML, '<div>foo</div>');          
+          assert.equal(container.innerHTML, '<div>foo</div>');
         });
       });
 
@@ -357,7 +358,7 @@ suite('lit-html', () => {
           return promise1.then(() => {
             assert.equal(container.innerHTML, '<div>bar</div>');
           });
-        })
+        });
       });
 
       test('renders a combination of stuff', () => {
@@ -691,7 +692,7 @@ suite('lit-html', () => {
       });
 
       test('accepts a function', () => {
-        // This test just checks that we don't call the function but render 
+        // This test just checks that we don't call the function but render
         // it's string representation
         const f = (_: any) => 123;
         const temp = document.createElement('template');

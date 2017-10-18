@@ -33,11 +33,10 @@ suite('until', () => {
         container);
     assert.equal(container.innerHTML, '<div><span>loading...</span></div>');
     resolve!('foo');
-    return promise
-      .then(() => new Promise((r) => setTimeout(() => r())))
-      .then(() => {
-        assert.equal(container.innerHTML, '<div>foo</div>');        
-      });
+    return promise.then(() => new Promise((r) => setTimeout(() => r())))
+        .then(() => {
+          assert.equal(container.innerHTML, '<div>foo</div>');
+        });
   });
 
 });
