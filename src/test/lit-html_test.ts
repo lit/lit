@@ -312,7 +312,7 @@ suite('lit-html', () => {
             container.innerHTML, '<div>baz</div><div foo="bar"></div>');
       });
 
-      test('renders a Promise', async () => {
+      test('renders a Promise', () => {
         let resolve: (v: any) => void;
         const promise = new Promise((res, _) => {
           resolve = res;
@@ -320,11 +320,12 @@ suite('lit-html', () => {
         render(html`<div>${promise}</div>`, container);
         assert.equal(container.innerHTML, '<div></div>');
         resolve!('foo');
-        await promise;
-        assert.equal(container.innerHTML, '<div>foo</div>');
+        return promise.then(() => {
+          assert.equal(container.innerHTML, '<div>foo</div>');          
+        });
       });
 
-      test('renders racing Promises correctly', async () => {
+      test('renders racing Promises correctly', () => {
         let resolve1: (v: any) => void;
         const promise1 = new Promise((res, _) => {
           resolve1 = res;
@@ -349,13 +350,14 @@ suite('lit-html', () => {
 
         // Resolve the first Promise, should not update the container
         resolve1!('foo');
-        await promise1;
-        assert.equal(container.innerHTML, '<div></div>');
-
-        // Resolve the second Promise, should update the container
-        resolve2!('bar');
-        await promise1;
-        assert.equal(container.innerHTML, '<div>bar</div>');
+        return promise1.then(() => {
+          assert.equal(container.innerHTML, '<div></div>');
+          // Resolve the second Promise, should update the container
+          resolve2!('bar');
+          return promise1.then(() => {
+            assert.equal(container.innerHTML, '<div>bar</div>');
+          });
+        })
       });
 
       test('renders a combination of stuff', () => {
