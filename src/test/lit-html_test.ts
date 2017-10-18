@@ -164,10 +164,14 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div></div>');
       });
 
-      test('renders a function', () => {
-        // This test just checks that we don't call the function
-        render(html`<div>${(_: any) => 123}</div>`, container);
-        assert.equal(container.innerHTML, '<div>(_) =&gt; 123</div>');
+      test('renders a function as a string', () => {
+        // This test just checks that we don't call the function but render 
+        // it's string representation
+        const f = (_: any) => 123;
+        const temp = document.createElement('template');
+        temp.innerHTML = f as any;
+        render(html`${f}`, container);
+        assert.equal(container.innerHTML, temp.innerHTML);
       });
 
       test('renders arrays', () => {
@@ -281,9 +285,15 @@ suite('lit-html', () => {
       });
 
       test('renders a function to an attribute', () => {
-        // This test just checks that we don't call the function
+        // This test just checks that we don't call the function but render 
+        // it's string representation
+        // The comma-operator trick keeps the functin from having a name
+        // when compiled
+        const f = (0 as any, (_: any) => 123);
+        const temp = document.createElement('div');
+        temp.setAttribute('f', f as any);
         render(html`<div foo=${(_: any) => 123}></div>`, container);
-        assert.equal(container.innerHTML, '<div foo="(_) => 123"></div>');
+        assert.equal(container.innerHTML, `<div foo="${temp.getAttribute('f')}"></div>`);
       });
 
       test('renders an array to an attribute', () => {
@@ -679,8 +689,13 @@ suite('lit-html', () => {
       });
 
       test('accepts a function', () => {
-        part.setValue((_: any) => 123);
-        assert.equal(container.innerHTML, '(_) =&gt; 123');
+        // This test just checks that we don't call the function but render 
+        // it's string representation
+        const f = (_: any) => 123;
+        const temp = document.createElement('template');
+        temp.innerHTML = f as any;
+        part.setValue(f);
+        assert.equal(container.innerHTML, temp.innerHTML);
       });
 
       test('accepts an element', () => {
