@@ -490,6 +490,33 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<h2>bar</h2>baz');
       });
 
+      test('updates nested templates with elements', () => {
+        let foo = 'foo';
+        const bar = 'bar';
+        const baz = 'baz';
+
+        const t = (x: boolean) => {
+          let partial;
+          if (x) {
+            partial = html`<h1>${foo}</h1>`;
+          } else {
+            partial = html`<h2>${bar}</h2>`;
+          }
+
+          return html`<a>${baz}</a>${partial}`;
+        };
+
+        render(t(true), container);
+        assert.equal(container.innerHTML, '<a>baz</a><h1>foo</h1>');
+
+        foo = 'bbb';
+        render(t(true), container);
+        assert.equal(container.innerHTML, '<a>baz</a><h1>bbb</h1>');
+
+        render(t(false), container);
+        assert.equal(container.innerHTML, '<a>baz</a><h2>bar</h2>');
+      });
+
       test('updates arrays', () => {
         let items = [1, 2, 3];
         const t = () => html`<div>${items}</div>`;
