@@ -164,14 +164,11 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div></div>');
       });
 
-      test('renders a function as a string', () => {
-        // This test just checks that we don't call the function but render
-        // it's string representation
-        const f = (_: any) => 123;
-        const temp = document.createElement('template');
-        temp.innerHTML = f as any;
+      test('does not call a function bound to text', () => {
+        const f = () => {
+          throw new Error();
+        }
         render(html`${f}`, container);
-        assert.equal(container.innerHTML, temp.innerHTML);
       });
 
       test('renders arrays', () => {
@@ -225,13 +222,19 @@ suite('lit-html', () => {
             '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
       });
 
-      test(
-          'renders quoted attributes with the text <table> before an expression',
+      const testSkipSafari10_0 =
+          (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1)
+              ? test : test.skip;
+      
+      // On Safari 10.0 (but not 10.1), the attribute value "<table>" is
+      // escaped to "&lt;table&gt;". That shouldn't cause this test to
+      // fail, so we skip
+      testSkipSafari10_0(
+          'renders quoted attributes with "<table>" before an expression',
           () => {
-            const container = document.createElement('div');
             const template = html`<div a="<table>${'foo'}"></div>`;
             render(template, container);
-            assert.equal(container.innerHTML, '<div a="<table>foo"></div>');
+            assert.equal(container.innerHTML, `<div a="<table>foo"></div>`);
           });
 
       test('values contain interpolated values', () => {
@@ -284,17 +287,13 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
       });
 
-      test('renders a function to an attribute', () => {
-        // This test just checks that we don't call the function but render
-        // it's string representation
-        // The comma-operator trick keeps the functin from having a name
-        // when compiled
-        const f = (0 as any, (_: any) => 123);
-        const temp = document.createElement('div');
-        temp.setAttribute('f', f as any);
-        render(html`<div foo=${(_: any) => 123}></div>`, container);
-        assert.equal(
-            container.innerHTML, `<div foo="${temp.getAttribute('f')}"></div>`);
+      test('does not call a function bound to an attribute', () => {
+        const f = () => {
+          throw new Error();
+        }
+        render(html`<div foo=${f}></div>`, container);
+        const div = container.querySelector('div')!;
+        assert.isTrue(div.hasAttribute('foo'));
       });
 
       test('renders an array to an attribute', () => {
@@ -692,13 +691,10 @@ suite('lit-html', () => {
       });
 
       test('accepts a function', () => {
-        // This test just checks that we don't call the function but render
-        // it's string representation
-        const f = (_: any) => 123;
-        const temp = document.createElement('template');
-        temp.innerHTML = f as any;
+        const f = () => {
+          throw new Error();
+        }
         part.setValue(f);
-        assert.equal(container.innerHTML, temp.innerHTML);
       });
 
       test('accepts an element', () => {
