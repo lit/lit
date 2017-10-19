@@ -164,10 +164,11 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div></div>');
       });
 
-      test('renders a function', () => {
-        // This test just checks that we don't call the function
-        render(html`<div>${(_: any) => 123}</div>`, container);
-        assert.equal(container.innerHTML, '<div>(_) =&gt; 123</div>');
+      test('does not call a function bound to text', () => {
+        const f = () => {
+          throw new Error();
+        }
+        render(html`${f}`, container);
       });
 
       test('renders arrays', () => {
@@ -221,13 +222,19 @@ suite('lit-html', () => {
             '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
       });
 
-      test(
-          'renders quoted attributes with the text <table> before an expression',
+      const testSkipSafari10_0 =
+          (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1)
+              ? test : test.skip;
+      
+      // On Safari 10.0 (but not 10.1), the attribute value "<table>" is
+      // escaped to "&lt;table&gt;". That shouldn't cause this test to
+      // fail, so we skip
+      testSkipSafari10_0(
+          'renders quoted attributes with "<table>" before an expression',
           () => {
-            const container = document.createElement('div');
             const template = html`<div a="<table>${'foo'}"></div>`;
             render(template, container);
-            assert.equal(container.innerHTML, '<div a="<table>foo"></div>');
+            assert.equal(container.innerHTML, `<div a="<table>foo"></div>`);
           });
 
       test('values contain interpolated values', () => {
@@ -280,10 +287,13 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
       });
 
-      test('renders a function to an attribute', () => {
-        // This test just checks that we don't call the function
-        render(html`<div foo=${(_: any) => 123}></div>`, container);
-        assert.equal(container.innerHTML, '<div foo="(_) => 123"></div>');
+      test('does not call a function bound to an attribute', () => {
+        const f = () => {
+          throw new Error();
+        }
+        render(html`<div foo=${f}></div>`, container);
+        const div = container.querySelector('div')!;
+        assert.isTrue(div.hasAttribute('foo'));
       });
 
       test('renders an array to an attribute', () => {
@@ -302,7 +312,7 @@ suite('lit-html', () => {
             container.innerHTML, '<div>baz</div><div foo="bar"></div>');
       });
 
-      test('renders a Promise', async () => {
+      test('renders a Promise', () => {
         let resolve: (v: any) => void;
         const promise = new Promise((res, _) => {
           resolve = res;
@@ -310,11 +320,12 @@ suite('lit-html', () => {
         render(html`<div>${promise}</div>`, container);
         assert.equal(container.innerHTML, '<div></div>');
         resolve!('foo');
-        await promise;
-        assert.equal(container.innerHTML, '<div>foo</div>');
+        return promise.then(() => {
+          assert.equal(container.innerHTML, '<div>foo</div>');
+        });
       });
 
-      test('renders racing Promises correctly', async () => {
+      test('renders racing Promises correctly', () => {
         let resolve1: (v: any) => void;
         const promise1 = new Promise((res, _) => {
           resolve1 = res;
@@ -339,13 +350,14 @@ suite('lit-html', () => {
 
         // Resolve the first Promise, should not update the container
         resolve1!('foo');
-        await promise1;
-        assert.equal(container.innerHTML, '<div></div>');
-
-        // Resolve the second Promise, should update the container
-        resolve2!('bar');
-        await promise1;
-        assert.equal(container.innerHTML, '<div>bar</div>');
+        return promise1.then(() => {
+          assert.equal(container.innerHTML, '<div></div>');
+          // Resolve the second Promise, should update the container
+          resolve2!('bar');
+          return promise1.then(() => {
+            assert.equal(container.innerHTML, '<div>bar</div>');
+          });
+        });
       });
 
       test('renders a combination of stuff', () => {
@@ -679,8 +691,10 @@ suite('lit-html', () => {
       });
 
       test('accepts a function', () => {
-        part.setValue((_: any) => 123);
-        assert.equal(container.innerHTML, '(_) =&gt; 123');
+        const f = () => {
+          throw new Error();
+        }
+        part.setValue(f);
       });
 
       test('accepts an element', () => {
