@@ -490,7 +490,7 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<h2>bar</h2>baz');
       });
 
-      test('updates nested templates with elements', () => {
+      test('updates nested templates with preceding elements', () => {
         let foo = 'foo';
         const bar = 'bar';
         const baz = 'baz';
