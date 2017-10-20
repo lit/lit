@@ -39,7 +39,7 @@
     "wct-browser-legacy": "^0.0.1-pre.10",
     "web-component-tester": "^6.3.0",
     "@webcomponents/template": "^1.1.0",
-    "get-own-property-symbols": "^0.9.2"
+    "babel-polyfill": "^6.26.0"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}

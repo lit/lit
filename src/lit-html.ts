@@ -281,9 +281,9 @@ export class Template {
     }
 
     // Remove text binding nodes after the walk to not disturb the TreeWalker
-    for (const n of nodesToRemove) {
+    nodesToRemove.forEach((n) => {
       n.parentNode!.removeChild(n);
-    }
+    });
   }
 
   /**
@@ -389,7 +389,7 @@ export class NodePart implements SinglePart {
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
     this.instance = instance;
     this.startNode = startNode;
-    this.endNode = endNode;
+    this.endNode = endNode ? endNode : startNode;
     this._previousValue = undefined;
   }
 
@@ -433,7 +433,8 @@ export class NodePart implements SinglePart {
 
   private _setText(value: string): void {
     const node = this.startNode.nextSibling!;
-    if (node === this.endNode.previousSibling &&
+    if (this.endNode.previousSibling &&
+        node === this.endNode.previousSibling &&
         node.nodeType === Node.TEXT_NODE) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
@@ -528,7 +529,7 @@ export class NodePart implements SinglePart {
 
   clear(startNode: Node = this.startNode) {
     let node;
-    while ((node = startNode.nextSibling!) !== this.endNode) {
+    while (startNode.nextSibling && (node = startNode.nextSibling!) !== this.endNode) {
       node.parentNode!.removeChild(node);
     }
   }
@@ -569,7 +570,7 @@ export class TemplateInstance {
 
   update(values: any[]) {
     let valueIndex = 0;
-    for (const part of this._parts) {
+    this._parts.forEach((part) => {
       if (part.size === undefined) {
         (part as SinglePart).setValue(values[valueIndex]);
         valueIndex++;
@@ -577,11 +578,19 @@ export class TemplateInstance {
         (part as MultiPart).setValue(values, valueIndex);
         valueIndex += part.size;
       }
-    }
+    });
   }
 
   _clone(): DocumentFragment {
     const fragment = document.importNode(this.template.element.content, true);
+
+    // for IE11 we need to manually add empty TextNodes
+    let elements = fragment.querySelectorAll('*');
+    for (let i = 0; i < elements.length; ++i) {
+        if (elements[i].tagName !== 'TD' && elements[i].childNodes.length === 0) {
+            elements[i].appendChild(document.createTextNode(''));
+        }
+    }
 
     if (this.template.parts.length > 0) {
       // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
