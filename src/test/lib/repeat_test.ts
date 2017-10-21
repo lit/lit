@@ -40,6 +40,22 @@ suite('repeat', () => {
           `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
     });
 
+    test('renders a list twice', () => {
+      const t = (items: any[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
+
+      render(t([1, 2, 3]), container);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+
+      render(t([1, 2, 3]), container);
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 1</li><li>item: 2</li><li>item: 3</li>`);
+    });
+
     test('shuffles are stable', () => {
       let items = [1, 2, 3];
       const t = () =>
@@ -60,6 +76,44 @@ suite('repeat', () => {
       assert.strictEqual(children1[0], children2[2]);
       assert.strictEqual(children1[1], children2[1]);
       assert.strictEqual(children1[2], children2[0]);
+    });
+
+    test('swaps are stable', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([1, 2, 3, 4, 5]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [1, 2, 3, 4, 5].map((i) => `<li>item: ${i}</li>`).join(''));
+
+      render(t([1, 5, 3, 4, 2]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [1, 5, 3, 4, 2].map((i) => `<li>item: ${i}</li>`).join(''));
+    });
+
+    test('can re-render after swap', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([1, 2, 3]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [1, 2, 3].map((i) => `<li>item: ${i}</li>`).join(''));
+
+      render(t([3, 2, 1]), container);
+
+      assert.equal(
+          container.innerHTML,
+          [3, 2, 1].map((i) => `<li>item: ${i}</li>`).join(''));
+
+      render(t([3, 2, 1]), container);
     });
 
     test('can insert an item at the beginning', () => {

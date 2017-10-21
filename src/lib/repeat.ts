@@ -43,7 +43,7 @@ export function repeat<T>(
 
     let keyMap = keyMapCache.get(part);
     if (keyMap === undefined) {
-      keyMap = new Map(),
+      keyMap = new Map();
       keyMapCache.set(part, keyMap);
     }
     const container = part.startNode.parentNode as HTMLElement | ShadowRoot |
@@ -56,7 +56,7 @@ export function repeat<T>(
       let key;
       try {
         ++index;
-        result = template!(item, index);
+        result = template !(item, index);
         key = keyFn ? keyFn(item) : index;
       } catch (e) {
         console.error(e);
