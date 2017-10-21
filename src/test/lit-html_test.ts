@@ -482,6 +482,16 @@ suite('lit-html', () => {
             <h1 class="foo">title</h1><p>foo</p></div>`);
       });
 
+      test('renders expressions with preceding elements', () => {
+        render(html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`, container);
+        assert.equal(container.innerHTML, '<a>foo</a><h1>bar</h1>');
+
+        // This is nearly the same test case as above, but was causing a
+        // different stack trace
+        render(html`<a>${'foo'}</a>${'bar'}`, container);
+        assert.equal(container.innerHTML, '<a>foo</a>bar');
+      });
+
     });
 
     suite('update', () => {

@@ -207,8 +207,7 @@ export class Template {
               lastAttributeNameRegex.exec(stringForPart)![1];
           // Find the corresponding attribute
           const attribute = attributes.getNamedItem(attributeNameInPart);
-          const stringsForAttributeValue =
-              attribute.value.split(markerRegex);
+          const stringsForAttributeValue = attribute.value.split(markerRegex);
           this.parts.push(new TemplatePart(
               'attribute',
               index,
@@ -258,20 +257,28 @@ export class Template {
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === marker) {
         const parent = node.parentNode!;
-        // If we don't have a previous node add a marker node.
-        // If the previousSibling is removed, because it's another part
-        // placholder, or empty text, add a marker node.
+        // Add a new marker node to be the startNode of the Part if any of the
+        // following are true:
+        //  * We don't have a previousSibling
+        //  * previousSibling is being removed (thus it's not the
+        //    `previousNode`)
+        //  * previousSibling is not a Text node
+        //
+        // TODO(justinfagnani): We should be able to use the previousNode here
+        // as the marker node and reduce the number of extra nodes we add to a
+        // template. See https://github.com/PolymerLabs/lit-html/issues/147
         const previousSibling = node.previousSibling;
-        if (previousSibling === null || previousSibling !== previousNode) {
+        if (previousSibling === null || previousSibling !== previousNode ||
+            previousSibling.nodeType !== Node.TEXT_NODE) {
           parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
         this.parts.push(new TemplatePart('node', index++));
         nodesToRemove.push(node);
-        // If we don't have a next node add a marker node.
+        // If we don't have a nextSibling add a marker node.
         // We don't have to check if the next node is going to be removed,
-        // because that node will induce a marker if so.
+        // because that node will induce a new marker if so.
         if (node.nextSibling === null) {
           parent.insertBefore(document.createTextNode(''), node);
         } else {
