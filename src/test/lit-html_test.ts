@@ -295,11 +295,11 @@ suite('lit-html', () => {
       // reordering when a attribute binding precedes an attribute literal.
       test('renders attribute binding after attribute binding that moved', () => {
         render(
-            html`<a href="${'foo'}" class="bar"><div id=${''}></div></a>`,
+            html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
             container);
         assert.equal(
             container.innerHTML,
-            `<a class="bar" href="foo"><div id=""></div></a>`);
+            `<a class="bar" href="foo"><div id="a"></div></a>`);
       });
 
       test('renders to an attribute without quotes', () => {
@@ -311,8 +311,10 @@ suite('lit-html', () => {
         render(
             html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
             container);
-        assert.equal(
-            container.innerHTML, '<div foo="Foo" bar="Bar" baz="Baz"></div>');
+        assert.oneOf(container.innerHTML, [
+          '<div foo="Foo" bar="Bar" baz="Baz"></div>',
+          '<div foo="Foo" baz="Baz" bar="Bar"></div>'
+        ]);
       });
 
       test('renders to attributes with attribute-like values', () => {

@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- <script src="../node_modules/wct-browser-legacy/browser.js"></script> -->
+    <link  rel="stylesheet" href="../node_modules/mocha/mocha.css">
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script>
+      mocha.setup('tdd');
+    </script>
+    <script src="../node_modules/get-own-property-symbols/build/get-own-property-symbols.js"></script>
+    <script src="../node_modules/@webcomponents/template/template.js"></script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script type="module" src="./lit-html_test.js"></script>
+    <script type="module" src="./lib/repeat_test.js"></script>
+    <script type="module" src="./lib/until_test.js"></script>
+    <script type="module" src="./lib/lit-extended_test.js"></script>
+    <script type="module" src="./lib/unsafe-html_test.js"></script>
+    <script type="module">
+      mocha.run();
+    </script>
+  </body>
+</html>
