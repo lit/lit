@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="default no-js">
+<html class="default no-js no-csspositionsticky">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -62,8 +62,26 @@
 	</div>
 </header>
 <div class="container container-main">
-	<div class="row">
+	<menu-sticky class="row" style="display: block">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<dl class="tsd-comment-tags">
+						<dt>license</dt>
+						<dd><p>Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+								This code may only be used under the BSD style license found at
+								<a href="http://polymer.github.io/LICENSE.txt">http://polymer.github.io/LICENSE.txt</a>
+								The complete set of authors may be found at
+								<a href="http://polymer.github.io/AUTHORS.txt">http://polymer.github.io/AUTHORS.txt</a>
+								The complete set of contributors may be found at
+								<a href="http://polymer.github.io/CONTRIBUTORS.txt">http://polymer.github.io/CONTRIBUTORS.txt</a>
+								Code distributed by Google as part of the polymer project is also
+								subject to an additional IP rights grant found at
+							<a href="http://polymer.github.io/PATENTS.txt">http://polymer.github.io/PATENTS.txt</a></p>
+						</dd>
+					</dl>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -73,7 +91,6 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lit_html_.attributepart.html" class="tsd-kind-icon">Attribute<wbr>Part</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lit_html_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lit_html_.part.html" class="tsd-kind-icon">Part</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lit_html_.template.html" class="tsd-kind-icon">Template</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lit_html_.templateinstance.html" class="tsd-kind-icon">Template<wbr>Instance</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lit_html_.templatepart.html" class="tsd-kind-icon">Template<wbr>Part</a></li>
@@ -84,21 +101,188 @@
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface tsd-parent-kind-external-module"><a href="../interfaces/_lit_html_.multipart.html" class="tsd-kind-icon">Multi<wbr>Part</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-external-module"><a href="../interfaces/_lit_html_.part.html" class="tsd-kind-icon">Part</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-external-module"><a href="../interfaces/_lit_html_.singlepart.html" class="tsd-kind-icon">Single<wbr>Part</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Type aliases</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="_lit_html_.html#directivefn" class="tsd-kind-icon">Directive<wbr>Fn</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="_lit_html_.html#partcallback" class="tsd-kind-icon">Part<wbr>Callback</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#defaultpartcallback" class="tsd-kind-icon">default<wbr>Part<wbr>Callback</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter"><a href="_lit_html_.html#directive" class="tsd-kind-icon">directive</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#getvalue" class="tsd-kind-icon">get<wbr>Value</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#html" class="tsd-kind-icon">html</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#render" class="tsd-kind-icon">render</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Type aliases</h2>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-external-module">
+					<a name="directivefn" class="tsd-anchor"></a>
+					<h3>Directive<wbr>Fn</h3>
+					<div class="tsd-signature tsd-kind-icon">Directive<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L321">lit-html.ts:321</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>part<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>part: <a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-external-module">
+					<a name="partcallback" class="tsd-anchor"></a>
+					<h3>Part<wbr>Callback</h3>
+					<div class="tsd-signature tsd-kind-icon">Part<wbr>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L537">lit-html.ts:537</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>instance<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a>, templatePart<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templatepart.html" class="tsd-signature-type">TemplatePart</a>, node<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>instance: <a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></h5>
+											</li>
+											<li>
+												<h5>templatePart: <a href="../classes/_lit_html_.templatepart.html" class="tsd-signature-type">TemplatePart</a></h5>
+											</li>
+											<li>
+												<h5>node: <span class="tsd-signature-type">Node</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="defaultpartcallback" class="tsd-anchor"></a>
+					<h3>default<wbr>Part<wbr>Callback</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">default<wbr>Part<wbr>Callback<span class="tsd-signature-symbol">(</span>instance<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a>, templatePart<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templatepart.html" class="tsd-signature-type">TemplatePart</a>, node<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L541">lit-html.ts:541</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>instance: <a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></h5>
+								</li>
+								<li>
+									<h5>templatePart: <a href="../classes/_lit_html_.templatepart.html" class="tsd-signature-type">TemplatePart</a></h5>
+								</li>
+								<li>
+									<h5>node: <span class="tsd-signature-type">Node</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
+					<a name="directive" class="tsd-anchor"></a>
+					<h3>directive</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">directive&lt;F&gt;<span class="tsd-signature-symbol">(</span>f<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L323">lit-html.ts:323</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>F<span class="tsd-signature-symbol">: </span><a href="_lit_html_.html#directivefn" class="tsd-signature-type">DirectiveFn</a></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>f: <span class="tsd-signature-type">F</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">F</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="getvalue" class="tsd-anchor"></a>
+					<h3>get<wbr>Value</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Value<span class="tsd-signature-symbol">(</span>part<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a>, value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L312">lit-html.ts:312</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>part: <a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></h5>
+								</li>
+								<li>
+									<h5>value: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="html" class="tsd-anchor"></a>
 					<h3>html</h3>
@@ -109,7 +293,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lit-html.ts#L24">lit-html.ts:24</a></li>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L35">lit-html.ts:35</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -135,13 +319,13 @@
 					<a name="render" class="tsd-anchor"></a>
 					<h3>render</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templateresult.html" class="tsd-signature-type">TemplateResult</a>, container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templateresult.html" class="tsd-signature-type">TemplateResult</a>, container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span>, partCallback<span class="tsd-signature-symbol">?: </span><a href="_lit_html_.html#partcallback" class="tsd-signature-type">PartCallback</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lit-html.ts#L53">lit-html.ts:53</a></li>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L81">lit-html.ts:81</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -159,14 +343,49 @@
 								<li>
 									<h5>container: <span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span></h5>
 								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> partCallback: <a href="_lit_html_.html#partcallback" class="tsd-signature-type">PartCallback</a><span class="tsd-signature-symbol"> =&nbsp;defaultPartCallback</span></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="svg" class="tsd-anchor"></a>
+					<h3>svg</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">svg<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templateresult.html" class="tsd-signature-type">TemplateResult</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lit-html.ts#L42">lit-html.ts:42</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Interprets a template literal as an SVG template that can efficiently
+									render to and update a container.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/_lit_html_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h4>
+						</li>
+					</ul>
+				</section>
 			</section>
 		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+		<menu-highlight class="col-4 col-menu menu-sticky-wrap">
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
@@ -177,6 +396,9 @@
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="_lib_repeat_.html">"lib/repeat"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="_lib_unsafe_html_.html">"lib/unsafe-<wbr>html"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="_lib_until_.html">"lib/until"</a>
@@ -195,9 +417,6 @@
 						<a href="../classes/_lit_html_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.part.html" class="tsd-kind-icon">Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
 						<a href="../classes/_lit_html_.template.html" class="tsd-kind-icon">Template</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
@@ -213,7 +432,25 @@
 						<a href="../interfaces/_lit_html_.multipart.html" class="tsd-kind-icon">Multi<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+						<a href="../interfaces/_lit_html_.part.html" class="tsd-kind-icon">Part</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="../interfaces/_lit_html_.singlepart.html" class="tsd-kind-icon">Single<wbr>Part</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
+						<a href="_lit_html_.html#directivefn" class="tsd-kind-icon">Directive<wbr>Fn</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
+						<a href="_lit_html_.html#partcallback" class="tsd-kind-icon">Part<wbr>Callback</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_lit_html_.html#defaultpartcallback" class="tsd-kind-icon">default<wbr>Part<wbr>Callback</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
+						<a href="_lit_html_.html#directive" class="tsd-kind-icon">directive</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_lit_html_.html#getvalue" class="tsd-kind-icon">get<wbr>Value</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_lit_html_.html#html" class="tsd-kind-icon">html</a>
@@ -221,10 +458,13 @@
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_lit_html_.html#render" class="tsd-kind-icon">render</a>
 					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a>
+					</li>
 				</ul>
 			</nav>
-		</div>
-	</div>
+		</menu-highlight>
+	</menu-sticky>
 </div>
 <footer class="with-border-bottom">
 	<div class="container">

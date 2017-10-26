@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="default no-js">
+<html class="default no-js no-csspositionsticky">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -62,7 +62,7 @@
 	</div>
 </header>
 <div class="container container-main">
-	<div class="row">
+	<menu-sticky class="row" style="display: block">
 		<div class="col-8 col-content">
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
@@ -72,13 +72,13 @@
 							<h3>Classes</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_lit_extended_.eventpart.html" class="tsd-kind-icon">Event<wbr>Part</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_lit_extended_.extendedtemplateinstance.html" class="tsd-kind-icon">Extended<wbr>Template<wbr>Instance</a></li>
 								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_lit_extended_.propertypart.html" class="tsd-kind-icon">Property<wbr>Part</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_lit_extended_.html#extendedpartcallback" class="tsd-kind-icon">extended<wbr>Part<wbr>Callback</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_lit_extended_.html#render" class="tsd-kind-icon">render</a></li>
 							</ul>
 						</section>
@@ -87,6 +87,35 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+					<a name="extendedpartcallback" class="tsd-anchor"></a>
+					<h3>extended<wbr>Part<wbr>Callback</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+						<li class="tsd-signature tsd-kind-icon">extended<wbr>Part<wbr>Callback<span class="tsd-signature-symbol">(</span>instance<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a>, templatePart<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.templatepart.html" class="tsd-signature-type">TemplatePart</a>, node<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lib/lit-extended.ts#L51">lib/lit-extended.ts:51</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>instance: <a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></h5>
+								</li>
+								<li>
+									<h5>templatePart: <a href="../classes/_lit_html_.templatepart.html" class="tsd-signature-type">TemplatePart</a></h5>
+								</li>
+								<li>
+									<h5>node: <span class="tsd-signature-type">Node</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lit_html_.part.html" class="tsd-signature-type">Part</a></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="render" class="tsd-anchor"></a>
 					<h3>render</h3>
@@ -97,7 +126,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lib/lit-extended.ts#L46">lib/lit-extended.ts:46</a></li>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lib/lit-extended.ts#L46">lib/lit-extended.ts:46</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -107,9 +136,9 @@
 								<li>
 									<h5>result: <a href="../classes/_lit_html_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Renders a <code>TemplateResult</code> to a container using an
-											<code>ExtendedTemplateInstance</code>, which allows templates to set properties and
-										event handlers.</p>
+										<p>Renders a <code>TemplateResult</code> to a container using the
+											<code>extendedPartCallback</code> PartCallback, which allows templates to set
+										properties and declarative event handlers.</p>
 										<p>Properties are set by default, instead of attributes. Attribute names in
 											lit-html templates preserve case, so properties are case sensitive. If an
 											expression takes up an entire attribute value, then the property is set to
@@ -120,11 +149,9 @@
 										attribute name.</p>
 										<p>Example:</p>
 										<pre><code>html`&lt;button <span class="hljs-keyword">class</span>$=<span class="hljs-string">"primary"</span>&gt;Buy Now&lt;/button&gt;`
-</code></pre><p>To set an event handler, prefix the attribute name with <code>on-</code> and use a
-											function to return the handler, so that the event handler itself is not
-										called as a template directive.</p>
+</code></pre><p>To set an event handler, prefix the attribute name with <code>on-</code>:</p>
 										<p>Example:</p>
-										<pre><code><span class="xml">html`<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">on-click</span>=<span class="hljs-string">$</span></span></span><span class="hljs-template-variable">{_=&gt; this.onClickHandler}</span><span class="xml"><span class="hljs-tag">&gt;</span>Buy Now<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>`</span>
+										<pre><code><span class="xml">html`<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">on-click</span>=<span class="hljs-string">$</span></span></span><span class="hljs-template-variable">{(e)=&gt; this.onClickHandler(e)}</span><span class="xml"><span class="hljs-tag">&gt;</span>Buy Now<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>`</span>
 </code></pre>
 									</div>
 								</li>
@@ -138,7 +165,7 @@
 				</section>
 			</section>
 		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+		<menu-highlight class="col-4 col-menu menu-sticky-wrap">
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
@@ -149,6 +176,9 @@
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="_lib_repeat_.html">"lib/repeat"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="_lib_unsafe_html_.html">"lib/unsafe-<wbr>html"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="_lib_until_.html">"lib/until"</a>
@@ -164,18 +194,18 @@
 						<a href="../classes/_lib_lit_extended_.eventpart.html" class="tsd-kind-icon">Event<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_lit_extended_.extendedtemplateinstance.html" class="tsd-kind-icon">Extended<wbr>Template<wbr>Instance</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
 						<a href="../classes/_lib_lit_extended_.propertypart.html" class="tsd-kind-icon">Property<wbr>Part</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_lib_lit_extended_.html#extendedpartcallback" class="tsd-kind-icon">extended<wbr>Part<wbr>Callback</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_lib_lit_extended_.html#render" class="tsd-kind-icon">render</a>
 					</li>
 				</ul>
 			</nav>
-		</div>
-	</div>
+		</menu-highlight>
+	</menu-sticky>
 </div>
 <footer class="with-border-bottom">
 	<div class="container">

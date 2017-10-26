@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="default no-js">
+<html class="default no-js no-csspositionsticky">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -59,7 +59,7 @@
 	</div>
 </header>
 <div class="container container-main">
-	<div class="row">
+	<menu-sticky class="row" style="display: block">
 		<div class="col-8 col-content">
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
@@ -70,6 +70,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-external-module"><a href="modules/_lib_lit_extended_.html" class="tsd-kind-icon">"lib/lit-<wbr>extended"</a></li>
 								<li class="tsd-kind-external-module"><a href="modules/_lib_repeat_.html" class="tsd-kind-icon">"lib/repeat"</a></li>
+								<li class="tsd-kind-external-module"><a href="modules/_lib_unsafe_html_.html" class="tsd-kind-icon">"lib/unsafe-<wbr>html"</a></li>
 								<li class="tsd-kind-external-module"><a href="modules/_lib_until_.html" class="tsd-kind-icon">"lib/until"</a></li>
 								<li class="tsd-kind-external-module"><a href="modules/_lit_html_.html" class="tsd-kind-icon">"lit-<wbr>html"</a></li>
 							</ul>
@@ -78,7 +79,7 @@
 				</section>
 			</section>
 		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+		<menu-highlight class="col-4 col-menu menu-sticky-wrap">
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals current ">
@@ -89,6 +90,9 @@
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_lib_repeat_.html">"lib/repeat"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_lib_unsafe_html_.html">"lib/unsafe-<wbr>html"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="modules/_lib_until_.html">"lib/until"</a>
@@ -102,8 +106,8 @@
 				<ul class="before-current">
 				</ul>
 			</nav>
-		</div>
-	</div>
+		</menu-highlight>
+	</menu-sticky>
 </div>
 <footer class="with-border-bottom">
 	<div class="container">

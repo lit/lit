@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api .",
+    "gen-docs": "typedoc --readme none --mode modules --theme ../typedoc-default-themes/bin/default --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api .",
     "test": "npm run build && wct --npm && npm run lint",
     "quicktest": "wct -l chrome -p --npm",
     "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c",

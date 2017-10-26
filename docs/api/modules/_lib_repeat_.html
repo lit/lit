@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="default no-js">
+<html class="default no-js no-csspositionsticky">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -62,7 +62,7 @@
 	</div>
 </header>
 <div class="container container-main">
-	<div class="row">
+	<menu-sticky class="row" style="display: block">
 		<div class="col-8 col-content">
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
@@ -73,7 +73,6 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="_lib_repeat_.html#itemtemplate" class="tsd-kind-icon">Item<wbr>Template</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="_lib_repeat_.html#keyfn" class="tsd-kind-icon">Key<wbr>Fn</a></li>
-								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="_lib_repeat_.html#repeatresult" class="tsd-kind-icon">Repeat<wbr>Result</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -93,7 +92,7 @@
 					<div class="tsd-signature tsd-kind-icon">Item<wbr>Template<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lib/repeat.ts#L18">lib/repeat.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lib/repeat.ts#L18">lib/repeat.ts:18</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -127,7 +126,7 @@
 					<div class="tsd-signature tsd-kind-icon">Key<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lib/repeat.ts#L17">lib/repeat.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lib/repeat.ts#L17">lib/repeat.ts:17</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -152,37 +151,6 @@
 						</ul>
 					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-external-module">
-					<a name="repeatresult" class="tsd-anchor"></a>
-					<h3>Repeat<wbr>Result</h3>
-					<div class="tsd-signature tsd-kind-icon">Repeat<wbr>Result<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lib/repeat.ts#L19">lib/repeat.ts:19</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-siganture">
-								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias tsd-is-not-exported">
-									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>part<span class="tsd-signature-symbol">: </span><a href="../classes/_lit_html_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
-								</ul>
-								<ul class="tsd-descriptions">
-									<li class="tsd-description">
-										<h4 class="tsd-parameters-title">Parameters</h4>
-										<ul class="tsd-parameters">
-											<li>
-												<h5>part: <a href="../classes/_lit_html_.nodepart.html" class="tsd-signature-type">NodePart</a></h5>
-											</li>
-										</ul>
-										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
@@ -190,14 +158,14 @@
 					<a name="repeat" class="tsd-anchor"></a>
 					<h3>repeat</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">repeat&lt;T&gt;<span class="tsd-signature-symbol">(</span>items<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span>, keyFn<span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#keyfn" class="tsd-signature-type">KeyFn</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, template<span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#itemtemplate" class="tsd-signature-type">ItemTemplate</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#repeatresult" class="tsd-signature-type">RepeatResult</a></li>
-						<li class="tsd-signature tsd-kind-icon">repeat&lt;T&gt;<span class="tsd-signature-symbol">(</span>items<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span>, template<span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#itemtemplate" class="tsd-signature-type">ItemTemplate</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#repeatresult" class="tsd-signature-type">RepeatResult</a></li>
+						<li class="tsd-signature tsd-kind-icon">repeat&lt;T&gt;<span class="tsd-signature-symbol">(</span>items<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span>, keyFn<span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#keyfn" class="tsd-signature-type">KeyFn</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, template<span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#itemtemplate" class="tsd-signature-type">ItemTemplate</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lit_html_.html#directivefn" class="tsd-signature-type">DirectiveFn</a></li>
+						<li class="tsd-signature tsd-kind-icon">repeat&lt;T&gt;<span class="tsd-signature-symbol">(</span>items<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">[]</span>, template<span class="tsd-signature-symbol">: </span><a href="_lib_repeat_.html#itemtemplate" class="tsd-signature-type">ItemTemplate</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lit_html_.html#directivefn" class="tsd-signature-type">DirectiveFn</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lib/repeat.ts#L28">lib/repeat.ts:28</a></li>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lib/repeat.ts#L27">lib/repeat.ts:27</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -218,12 +186,12 @@
 									<h5>template: <a href="_lib_repeat_.html#itemtemplate" class="tsd-signature-type">ItemTemplate</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_lib_repeat_.html#repeatresult" class="tsd-signature-type">RepeatResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_lit_html_.html#directivefn" class="tsd-signature-type">DirectiveFn</a></h4>
 						</li>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/43396bf/src/lib/repeat.ts#L29">lib/repeat.ts:29</a></li>
+									<li>Defined in <a href="https://github.com/PolymerLabs/lit-html/blob/6b05e04/src/lib/repeat.ts#L29">lib/repeat.ts:29</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -241,13 +209,13 @@
 									<h5>template: <a href="_lib_repeat_.html#itemtemplate" class="tsd-signature-type">ItemTemplate</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_lib_repeat_.html#repeatresult" class="tsd-signature-type">RepeatResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="_lit_html_.html#directivefn" class="tsd-signature-type">DirectiveFn</a></h4>
 						</li>
 					</ul>
 				</section>
 			</section>
 		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+		<menu-highlight class="col-4 col-menu menu-sticky-wrap">
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
@@ -258,6 +226,9 @@
 					</li>
 					<li class="current tsd-kind-external-module">
 						<a href="_lib_repeat_.html">"lib/repeat"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="_lib_unsafe_html_.html">"lib/unsafe-<wbr>html"</a>
 					</li>
 					<li class=" tsd-kind-external-module">
 						<a href="_lib_until_.html">"lib/until"</a>
@@ -275,16 +246,13 @@
 					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
 						<a href="_lib_repeat_.html#keyfn" class="tsd-kind-icon">Key<wbr>Fn</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="_lib_repeat_.html#repeatresult" class="tsd-kind-icon">Repeat<wbr>Result</a>
-					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
 						<a href="_lib_repeat_.html#repeat" class="tsd-kind-icon">repeat</a>
 					</li>
 				</ul>
 			</nav>
-		</div>
-	</div>
+		</menu-highlight>
+	</menu-sticky>
 </div>
 <footer class="with-border-bottom">
 	<div class="container">
