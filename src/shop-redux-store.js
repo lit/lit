@@ -26,9 +26,10 @@ const store = createStore(
           result = {
             ...state,
             page,
+            categoryName,
             category,
             itemName,
-            item: findItem(state.category, itemName)
+            item: findItem(category, itemName)
           };
         }
         break;
@@ -36,8 +37,10 @@ const store = createStore(
         {
           const categories = state.categories;
           const categoryIndex = findCategoryIndex(categories, action.categoryName);
-          const category = {...categories[categoryIndex], items: action.data};
-          categories[categoryIndex] = category;
+          categories[categoryIndex] = {...categories[categoryIndex], items: action.data};
+          // The current category may have changed if the user navigated before the
+          // fetch returns, so update the current cateogry/item based on current state.
+          const category = findCategory(categories, state.categoryName);
           result = {
             ...state,
             categories: [...categories],
@@ -47,7 +50,7 @@ const store = createStore(
         }
         break;
     }
-    console.log('reducer', state.category, action, result.category)
+    console.log('reducer', state.item, action, result.item)
     return result;
   },
   {

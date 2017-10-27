@@ -350,6 +350,7 @@ class ShopApp extends Element {
   update() {
     const state = store.getState();
     this.categories = state.categories;
+    this.categoryName = state.categoryName;
     this._routePageChanged(state.page);
   }
   
