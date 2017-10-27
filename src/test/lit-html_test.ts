@@ -403,6 +403,22 @@ suite('lit-html', () => {
         });
       });
 
+      test('renders an attribute after a style binding', () => {
+        render(html`
+            <style>
+              .foo {
+                background: ${'black'};
+              }
+            </style>
+            <a href="/buy/${'foo'}"></a>
+          `, container);
+        assert.equal(container.innerHTML, `<style>
+              .foo {
+                background: black;
+              }
+            </style><a href="/buy/foo"></a>`);
+      });
+
       test('renders a combination of stuff', () => {
         render(html`
             <div foo="${'bar'}">

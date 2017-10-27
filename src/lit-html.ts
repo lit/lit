@@ -202,8 +202,7 @@ export class Template {
           // expression in this attribute attribute
           const stringForPart = strings[partIndex];
           // Find the attribute name
-          const attributeNameInPart =
-              stringForPart.match(lastAttributeNameRegex)![1];
+          const attributeNameInPart = stringForPart.match(lastAttributeNameRegex)![1];
           // Find the corresponding attribute
           const attribute = attributes.getNamedItem(attributeNameInPart);
           const stringsForAttributeValue =
@@ -219,7 +218,7 @@ export class Template {
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
         const nodeValue = node.nodeValue!;
-        const strings = nodeValue.split(attributeMarker);
+        const strings = nodeValue.split(attrOrTextRegex);
         if (strings.length > 1) {
           const parent = node.parentNode!;
           const lastIndex = strings.length - 1;
