@@ -277,9 +277,49 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
       });
 
+      test(
+          'renders to an attribute expression after an attribute literal',
+          () => {
+            render(html`<div a="b" foo="${'bar'}"></div>`, container);
+            assert.equal(container.innerHTML, '<div a="b" foo="bar"></div>');
+          });
+
+      test(
+        'renders to an attribute expression before an attribute literal',
+        () => {
+          render(html`<div foo="${'bar'}" a="b"></div>`, container);
+          assert.equal(container.innerHTML, '<div a="b" foo="bar"></div>');
+        });
+
+      // Regression test for exception in template parsing caused by attributes
+      // reordering when a attribute binding precedes an attribute literal.
+      test('renders attribute binding after attribute binding that moved', () => {
+        render(
+            html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
+            container);
+        assert.equal(
+            container.innerHTML,
+            `<a class="bar" href="foo"><div id="a"></div></a>`);
+      });
+
       test('renders to an attribute without quotes', () => {
         render(html`<div foo=${'bar'}></div>`, container);
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
+      });
+
+      test('renders to multiple attribute expressions', () => {
+        render(
+            html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
+            container);
+        assert.oneOf(container.innerHTML, [
+          '<div foo="Foo" bar="Bar" baz="Baz"></div>',
+          '<div foo="Foo" baz="Baz" bar="Bar"></div>'
+        ]);
+      });
+
+      test('renders to attributes with attribute-like values', () => {
+        render(html`<div foo="bar=${'foo'}"></div>`, container);
+        assert.equal(container.innerHTML, '<div foo="bar=foo"></div>');
       });
 
       test('renders interpolation to an attribute', () => {
