@@ -1,6 +1,5 @@
 import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import './shop-category-data.js';
 import './shop-common-styles.js';
 import './shop-image.js';
 import './shop-list-item.js';

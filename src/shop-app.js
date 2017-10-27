@@ -8,7 +8,6 @@ import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import '../node_modules/@polymer/iron-media-query/iron-media-query.js';
 import '../node_modules/@polymer/iron-pages/iron-pages.js';
 import '../node_modules/@polymer/iron-selector/iron-selector.js';
-import './shop-category-data.js';
 import './shop-home.js';
 import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/render-status.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
