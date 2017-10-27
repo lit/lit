@@ -4,7 +4,6 @@ import '../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall
 import '../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { scroll } from '../node_modules/@polymer/app-layout/helpers/helpers.js';
 import '../node_modules/@polymer/app-route/app-location.js';
-import '../node_modules/@polymer/app-route/app-route.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import '../node_modules/@polymer/iron-media-query/iron-media-query.js';
 import '../node_modules/@polymer/iron-pages/iron-pages.js';
@@ -14,6 +13,8 @@ import './shop-home.js';
 import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/render-status.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
+
+import { store } from './shop-redux-store.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -219,17 +220,11 @@ class ShopApp extends Element {
 
     <shop-analytics key="UA-39334307-16"></shop-analytics>
     <!--
-      app-location and app-route elements provide the state of the URL for the app.
+      app-location provides the state of the URL for the app.
     -->
-    <app-location route="{{route}}"></app-location>
-    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+    <app-location path="{{path}}"></app-location>
 
     <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
-
-    <!--
-      shop-category-data provides the list of categories.
-    -->
-    <shop-category-data categories="{{categories}}"></shop-category-data>
 
     <!--
       shop-cart-data maintains the state of the user's shopping cart (in localstorage) and
@@ -293,9 +288,9 @@ class ShopApp extends Element {
       <!-- home view -->
       <shop-home name="home" categories="[[categories]]"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list name="list" route="[[subroute]]" offline="[[offline]]"></shop-list>
+      <shop-list name="list" offline="[[offline]]"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>
+      <shop-detail name="detail" offline="[[offline]]"></shop-detail>
       <!-- cart view -->
       <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
       <!-- checkout view -->
@@ -342,12 +337,28 @@ class ShopApp extends Element {
   }}
 
   static get observers() { return [
-    '_routePageChanged(routeData.page)'
+    '_pathChanged(path)'
   ]}
 
   constructor() {
     super();
     window.performance && performance.mark && performance.mark('shop-app.created');
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.categories = state.categories;
+    this._routePageChanged(state.page);
+  }
+  
+  _pathChanged(path) {
+    store.dispatch({
+      type: '_pathChanged',
+      path
+    });
   }
 
   ready() {

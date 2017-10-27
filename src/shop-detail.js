@@ -1,5 +1,4 @@
 import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-route/app-route.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-button.js';
 import './shop-category-data.js';
@@ -8,6 +7,8 @@ import './shop-image.js';
 import './shop-select.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+
+import { store } from './shop-redux-store.js';
 
 class ShopDetail extends Element {
   static get template() {
@@ -122,24 +123,6 @@ class ShopDetail extends Element {
 
     </style>
 
-    <!--
-      app-route provides the name of the category and the item.
-    -->
-    <app-route
-        route="[[route]]"
-        pattern="/:category/:item"
-        data="{{routeData}}"></app-route>
-
-    <!--
-      shop-category-data provides the item data for a given category and item name.
-    -->
-    <shop-category-data
-        id="categoryData"
-        category-name="[[routeData.category]]"
-        item-name="[[routeData.item]]"
-        item="{{item}}"
-        failure="{{failure}}"></shop-category-data>
-
     <div id="content" hidden$="[[failure]]">
       <shop-image alt="[[item.title]]" src="[[item.largeImage]]"></shop-image>
       <div class="detail" has-content$="[[_isDefined(item)]]">
@@ -201,10 +184,6 @@ class ShopDetail extends Element {
 
     item: Object,
 
-    route: Object,
-
-    routeData: Object,
-
     visible: {
       type: Boolean,
       value: false
@@ -222,6 +201,18 @@ class ShopDetail extends Element {
   static get observers() { return [
     '_itemChanged(item, visible)'
   ]}
+
+  constructor() {
+    super();
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.item = state.item;
+  }
 
   _itemChanged(item, visible) {
     if (visible) {
@@ -272,7 +263,7 @@ class ShopDetail extends Element {
   }
 
   _tryReconnect() {
-    this.$.categoryData.refresh();
+    // this.$.categoryData.refresh();
   }
 
   _offlineChanged(offline) {

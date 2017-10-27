@@ -1,5 +1,4 @@
 import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-route/app-route.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-category-data.js';
 import './shop-common-styles.js';
@@ -8,6 +7,7 @@ import './shop-list-item.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
+import { store } from './shop-redux-store.js';
 
 class ShopList extends Element {
   static get template() {
@@ -68,23 +68,6 @@ class ShopList extends Element {
 
     </style>
 
-    <!--
-      app-route provides the name of the category.
-    -->
-    <app-route
-        route="[[route]]"
-        pattern="/:category"
-        data="{{routeData}}"></app-route>
-
-    <!--
-      shop-category-data provides the category data for a given category name.
-    -->
-    <shop-category-data
-        id="categoryData"
-        category-name="[[routeData.category]]"
-        category="{{category}}"
-        failure="{{failure}}"></shop-category-data>
-
     <shop-image
         alt="[[category.title]]"
         src="[[category.image]]"
@@ -124,10 +107,6 @@ class ShopList extends Element {
 
     category: Object,
 
-    route: Object,
-
-    routeData: Object,
-
     visible: {
       type: Boolean,
       value: false
@@ -145,6 +124,18 @@ class ShopList extends Element {
   static get observers() { return [
     '_categoryChanged(category, visible)'
   ]}
+  
+  constructor() {
+    super();
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.category = state.category;
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -197,7 +188,7 @@ class ShopList extends Element {
   }
 
   _tryReconnect() {
-    this.$.categoryData.refresh();
+    // this.$.categoryData.refresh();
   }
 
   _offlineChanged(offline) {
