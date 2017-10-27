@@ -29,7 +29,8 @@ const store = createStore(
             categoryName,
             category,
             itemName,
-            item: findItem(category, itemName)
+            item: findItem(category, itemName),
+            checkoutState: 'init'
           };
         }
         break;
@@ -119,11 +120,21 @@ const store = createStore(
         break;
       case 'clear-cart':
         {
+          localStorage.removeItem('shop-cart-data');
           result = {
             ...state,
             cart: [],
             numItems: 0,
             total: 0
+          };
+        }
+        break;
+      case '_checkoutStateChanged':
+        {
+          const checkoutState = action.checkoutState;
+          result = {
+            ...state,
+            checkoutState
           };
         }
         break;

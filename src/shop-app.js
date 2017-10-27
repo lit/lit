@@ -287,7 +287,7 @@ class ShopApp extends Element {
       <!-- cart view -->
       <shop-cart name="cart"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout name="checkout" route="{{subroute}}"></shop-checkout>
+      <shop-checkout name="checkout"></shop-checkout>
 
       <shop-404-warning name="404"></shop-404-warning>
     </iron-pages>
