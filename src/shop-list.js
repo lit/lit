@@ -91,10 +91,7 @@ class ShopList extends Element {
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
-    <shop-network-warning
-        hidden$="[[!failure]]"
-        offline="[[offline]]"
-        on-try-reconnect="_tryReconnect"></shop-network-warning>
+    <shop-network-warning hidden$="[[!failure]]"></shop-network-warning>
 
   </template>
   `;
@@ -109,11 +106,6 @@ class ShopList extends Element {
     visible: {
       type: Boolean,
       value: false
-    },
-
-    offline: {
-      type: Boolean,
-      observer: '_offlineChanged'
     },
 
     failure: Boolean
@@ -134,6 +126,7 @@ class ShopList extends Element {
   update() {
     const state = store.getState();
     this.category = state.category;
+    this.failure = state.failure;
   }
 
   connectedCallback() {
@@ -184,16 +177,6 @@ class ShopList extends Element {
             bubbles: true, composed: true}));
         }
       });
-  }
-
-  _tryReconnect() {
-    // this.$.categoryData.refresh();
-  }
-
-  _offlineChanged(offline) {
-    if (!offline && this.isAttached) {
-      this._tryReconnect();
-    }
   }
 
 }

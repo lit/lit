@@ -169,10 +169,7 @@ class ShopDetail extends Element {
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
-    <shop-network-warning
-        hidden$="[[!failure]]"
-        offline="[[offline]]"
-        on-try-reconnect="_tryReconnect"></shop-network-warning>
+    <shop-network-warning hidden$="[[!failure]]"></shop-network-warning>
     `;
 
   }
@@ -186,11 +183,6 @@ class ShopDetail extends Element {
     visible: {
       type: Boolean,
       value: false
-    },
-
-    offline: {
-      type: Boolean,
-      observer: '_offlineChanged'
     },
 
     failure: Boolean
@@ -211,6 +203,7 @@ class ShopDetail extends Element {
   update() {
     const state = store.getState();
     this.item = state.item;
+    this.failure = state.failure;
   }
 
   _itemChanged(item, visible) {
@@ -262,16 +255,6 @@ class ShopDetail extends Element {
 
   _isDefined(item) {
     return item != null;
-  }
-
-  _tryReconnect() {
-    // this.$.categoryData.refresh();
-  }
-
-  _offlineChanged(offline) {
-    if (!offline) {
-      this._tryReconnect();
-    }
   }
 
 }

@@ -281,9 +281,9 @@ class ShopApp extends Element {
       <!-- home view -->
       <shop-home name="home"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list name="list" offline="[[offline]]"></shop-list>
+      <shop-list name="list"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail name="detail" offline="[[offline]]"></shop-detail>
+      <shop-detail name="detail"></shop-detail>
       <!-- cart view -->
       <shop-cart name="cart"></shop-cart>
       <!-- checkout view -->
@@ -347,8 +347,11 @@ class ShopApp extends Element {
     this.categoryName = state.categoryName;
     this.numItems = state.numItems;
     this._routePageChanged(state.page);
+    // NOTE: Only this element updates state.offline, so no need to update from
+    // state.offline here.
+    // this.offline = state.offline;
   }
-  
+
   _pathChanged(path) {
     store.dispatch({
       type: '_pathChanged',
@@ -442,6 +445,11 @@ class ShopApp extends Element {
           'You are offline' : 'You are online';
       this._networkSnackbar.open();
     }
+
+    store.dispatch({
+      type: '_offlineChanged',
+      offline: this.offline
+    });
   }
 
   _toggleDrawer() {

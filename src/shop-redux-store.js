@@ -5,6 +5,7 @@ const store = createStore(
     let result = state;
 
     switch (action.type) {
+      // window.location changed
       case '_pathChanged':
         {
           const pathParts = action.path.slice(1).split('/');
@@ -12,17 +13,7 @@ const store = createStore(
           const categoryName = pathParts[1];
           const itemName = pathParts[2];
           const category = findCategory(state.categories, categoryName);
-          if (category) {
-            if (!category.items) {
-              fetch(`data/${category.name}.json`)
-              .then(res => res.json())
-              .then(data => store.dispatch({
-                type: '_categoryItemsChanged',
-                categoryName,
-                data
-              }));
-            }
-          }
+          loadCategory(category);
           result = {
             ...state,
             page,
@@ -30,10 +21,12 @@ const store = createStore(
             category,
             itemName,
             item: findItem(category, itemName),
-            checkoutState: 'init'
+            checkoutState: 'init',
+            failure: false
           };
         }
         break;
+      // Response from fetch for categories data.
       case '_categoryItemsChanged':
         {
           const categories = state.categories;
@@ -46,10 +39,12 @@ const store = createStore(
             ...state,
             categories: [...categories],
             category,
-            item: findItem(category, state.itemName)
+            item: findItem(category, state.itemName),
+            failure: false
           };
         }
         break;
+      // Cart initialization/update from another window.
       case '_cartChanged':
         {
           const cart = action.cart;
@@ -61,6 +56,7 @@ const store = createStore(
           };
         }
         break;
+      // Add to cart from detail view.
       case 'add-cart-item':
         {
           const cart = state.cart;
@@ -91,6 +87,7 @@ const store = createStore(
           };
         }
         break;
+      // Update from cart view.
       case 'set-cart-item':
         {
           const cart = state.cart;
@@ -118,6 +115,7 @@ const store = createStore(
           };
         }
         break;
+      // Clear cart after successful checkout.
       case 'clear-cart':
         {
           localStorage.removeItem('shop-cart-data');
@@ -129,6 +127,7 @@ const store = createStore(
           };
         }
         break;
+      // Internal state from checkout flow (init/success/error).
       case '_checkoutStateChanged':
         {
           const checkoutState = action.checkoutState;
@@ -136,6 +135,33 @@ const store = createStore(
             ...state,
             checkoutState
           };
+        }
+        break;
+      // Network error (set to true by unsucessful fetch).
+      case '_failureChanged':
+        {
+          const failure = action.failure;
+          result = {
+            ...state,
+            failure
+          };
+        }
+        break;
+      // Opposite of navigator.onLine (updated by shop-app).
+      case '_offlineChanged':
+        {
+          const offline = action.offline;
+          result = {
+            ...state,
+            offline
+          };
+          if (offline) break;
+        }
+        // Fall through; no break
+      case '_tryReconnect':
+        {
+          const category = findCategory(state.categories, state.categoryName);
+          loadCategory(category)
         }
         break;
     }
@@ -251,6 +277,25 @@ function computeTotal(cart) {
   }
 
   return 0;
+}
+
+function loadCategory(category) {
+  if (category) {
+    const categoryName = category.name;
+    if (!category.items) {
+      fetch(`data/${categoryName}.json`)
+      .then(res => res.json())
+      .then(data => store.dispatch({
+        type: '_categoryItemsChanged',
+        categoryName,
+        data
+      }))
+      .catch(() => store.dispatch({
+        type: '_failureChanged',
+        failure: true
+      }));
+    }
+  }
 }
 
 export { store };
