@@ -225,12 +225,6 @@ class ShopApp extends Element {
 
     <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
-    <!--
-      shop-cart-data maintains the state of the user's shopping cart (in localstorage) and
-      calculates the total amount.
-    -->
-    <shop-cart-data id="cart" cart="{{cart}}" num-items="{{numItems}}" total="{{total}}"></shop-cart-data>
-
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
       <app-toolbar>
         <div class="left-bar-item">
@@ -291,9 +285,9 @@ class ShopApp extends Element {
       <!-- detail view of one item -->
       <shop-detail name="detail" offline="[[offline]]"></shop-detail>
       <!-- cart view -->
-      <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
+      <shop-cart name="cart"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
+      <shop-checkout name="checkout" route="{{subroute}}"></shop-checkout>
 
       <shop-404-warning name="404"></shop-404-warning>
     </iron-pages>
@@ -351,6 +345,7 @@ class ShopApp extends Element {
     const state = store.getState();
     this.categories = state.categories;
     this.categoryName = state.categoryName;
+    this.numItems = state.numItems;
     this._routePageChanged(state.page);
   }
   
@@ -502,19 +497,17 @@ class ShopApp extends Element {
     }
   }
 
-  _onAddCartItem(event) {
+  _onAddCartItem() {
     if (!this._cartModal) {
       this._cartModal = document.createElement('shop-cart-modal');
       this.root.appendChild(this._cartModal);
     }
-    this.$.cart.addItem(event.detail);
     this._cartModal.open();
     this._announce('Item added to the cart');
   }
 
   _onSetCartItem(event) {
     let detail = event.detail;
-    this.$.cart.setItem(detail);
     if (detail.quantity === 0) {
       this._announce('Item deleted');
     } else {
@@ -523,7 +516,6 @@ class ShopApp extends Element {
   }
 
   _onClearCart() {
-    this.$.cart.clearCart();
     this._announce('Cart cleared');
   }
 

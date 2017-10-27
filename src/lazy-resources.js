@@ -11,7 +11,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 // shop-app
 import "./shop-icons.js";
 import "./shop-analytics.js";
-import "./shop-cart-data.js";
 import "./shop-cart-modal.js";
 import "./shop-snackbar.js";
 import "./shop-tabs.js";

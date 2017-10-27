@@ -49,11 +49,100 @@ const store = createStore(
           };
         }
         break;
+      case '_cartChanged':
+        {
+          const cart = action.cart;
+          result = {
+            ...state,
+            cart,
+            numItems: computeNumItems(cart),
+            total: computeTotal(cart)
+          };
+        }
+        break;
+      case 'add-cart-item':
+        {
+          const cart = state.cart;
+          const detail = action.detail;
+          const i = findCartItemIndex(cart, detail.item.name, detail.size);
+          if (i !== -1) {
+            detail.quantity += cart[i].quantity;
+          }
+          if (detail.quantity === 0) {
+            // Remove item from cart when the new quantity is 0.
+            if (i !== -1) {
+              cart.splice(i, 1);
+            }
+          } else {
+            if (i !== -1) {
+              cart.splice(i, 1, detail);
+            } else {
+              cart.push(detail);
+            }
+          }
+
+          localStorage.setItem('shop-cart-data', JSON.stringify(cart));
+          result = {
+            ...state,
+            cart: [...cart],
+            numItems: computeNumItems(cart),
+            total: computeTotal(cart)
+          };
+        }
+        break;
+      case 'set-cart-item':
+        {
+          const cart = state.cart;
+          const detail = action.detail;
+          const i = findCartItemIndex(cart, detail.item.name, detail.size);
+          if (detail.quantity === 0) {
+            // Remove item from cart when the new quantity is 0.
+            if (i !== -1) {
+              cart.splice(i, 1);
+            }
+          } else {
+            if (i !== -1) {
+              cart.splice(i, 1, detail);
+            } else {
+              cart.push(detail);
+            }
+          }
+
+          localStorage.setItem('shop-cart-data', JSON.stringify(cart));
+          result = {
+            ...state,
+            cart: [...cart],
+            numItems: computeNumItems(cart),
+            total: computeTotal(cart)
+          };
+        }
+        break;
+      case 'clear-cart':
+        {
+          result = {
+            ...state,
+            cart: [],
+            numItems: 0,
+            total: 0
+          };
+        }
+        break;
     }
     console.log('reducer', state.item, action, result.item)
     return result;
   },
-  {
+  getInitialState());
+
+window.addEventListener('storage', () => {
+  store.dispatch({
+    type: '_cartChanged',
+    cart: getLocalCartData()
+  });
+});
+
+function getInitialState() {
+  const cart = getLocalCartData();
+  return {
     categories: [
       {
         name: 'mens_outerwear',
@@ -79,8 +168,12 @@ const store = createStore(
         image: 'images/ladies_tshirts.jpg',
         placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXwABAQEAAAAAAAAAAAAAAAAAAAMFAQEBAAAAAAAAAAAAAAAAAAABAhAAAQIDCQAAAAAAAAAAAAAAEQABITETYZECEjJCAzMVEQACAwAAAAAAAAAAAAAAAAAAATFBgf/aAAwDAQACEQMRAD8AzeADAZiFc5J7BC9Scek3VrtooilSNaf/2Q=='
       }
-    ]
-  });
+    ],
+    cart,
+    numItems: computeNumItems(cart),
+    total: computeTotal(cart)
+  };
+}
 
 function findCategoryIndex(categories, categoryName) {
   for (let i = 0, c; c = categories[i]; ++i) {
@@ -104,6 +197,49 @@ function findItem(category, itemName) {
       return item;
     }
   }
+}
+
+function getLocalCartData() {
+  const localCartData = localStorage.getItem('shop-cart-data');
+  try {
+    return JSON.parse(localCartData) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+
+function findCartItemIndex(cart, name, size) {
+  if (cart) {
+    for (let i = 0; i < cart.length; ++i) {
+      let entry = cart[i];
+      if (entry.item.name === name && entry.size === size) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
+function computeNumItems(cart) {
+  if (cart) {
+    return cart.reduce((total, entry) => {
+      return total + entry.quantity;
+    }, 0);
+  }
+
+  return 0;
+}
+
+function computeTotal(cart) {
+  if (cart) {
+    return cart.reduce((total, entry) => {
+      return total + entry.quantity * entry.item.price;
+    }, 0);
+  }
+
+  return 0;
 }
 
 export { store };

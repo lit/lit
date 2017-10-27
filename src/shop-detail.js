@@ -250,11 +250,14 @@ class ShopDetail extends Element {
   _addToCart() {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('add-cart-item', {
-      bubbles: true, composed: true, detail: {
+      bubbles: true, composed: true}));
+    store.dispatch({
+      type: 'add-cart-item',
+      detail: {
         item: this.item,
         quantity: parseInt(this.$.quantitySelect.value, 10),
         size: this.$.sizeSelect.value
-      }}));
+    }});
   }
 
   _isDefined(item) {

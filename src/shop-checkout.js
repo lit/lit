@@ -10,6 +10,8 @@ import './shop-checkbox.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
+import { store } from './shop-redux-store.js';
+
 class ShopCheckout extends Element {
   static get template() {
     return `
@@ -486,6 +488,19 @@ class ShopCheckout extends Element {
     '_updateState(routeActive, routeData)'
   ]}
 
+  constructor() {
+    super();
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.cart = state.cart;
+    this.total = state.total;
+  }
+
   _submit(e) {
     if (this._validateForm()) {
       // To send the form data to the server:
@@ -628,6 +643,9 @@ class ShopCheckout extends Element {
       this._pushState('success');
       this._reset();
       this.dispatchEvent(new CustomEvent('clear-cart', {bubbles: true, composed: true}));
+      store.dispatch({
+        type: 'clear-cart'
+      });
     } else {
       this._pushState('error');
     }

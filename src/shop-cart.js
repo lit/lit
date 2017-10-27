@@ -3,6 +3,8 @@ import './shop-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
+import { store } from './shop-redux-store.js';
+
 class ShopCart extends Element {
   static get template() {
     return `
@@ -77,6 +79,19 @@ class ShopCart extends Element {
     }
 
   }}
+
+  constructor() {
+    super();
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.cart = state.cart;
+    this.total = state.total;
+  }
 
   _formatTotal(total) {
     return isNaN(total) ? '' : '$' + total.toFixed(2);
