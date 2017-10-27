@@ -167,7 +167,7 @@ suite('lit-html', () => {
       test('does not call a function bound to text', () => {
         const f = () => {
           throw new Error();
-        }
+        };
         render(html`${f}`, container);
       });
 
@@ -223,9 +223,10 @@ suite('lit-html', () => {
       });
 
       const testSkipSafari10_0 =
-          (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1)
-              ? test : test.skip;
-      
+          (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1) ?
+          test :
+          test.skip;
+
       // On Safari 10.0 (but not 10.1), the attribute value "<table>" is
       // escaped to "&lt;table&gt;". That shouldn't cause this test to
       // fail, so we skip
@@ -285,22 +286,24 @@ suite('lit-html', () => {
           });
 
       test(
-        'renders to an attribute expression before an attribute literal',
-        () => {
-          render(html`<div foo="${'bar'}" a="b"></div>`, container);
-          assert.equal(container.innerHTML, '<div a="b" foo="bar"></div>');
-        });
+          'renders to an attribute expression before an attribute literal',
+          () => {
+            render(html`<div foo="${'bar'}" a="b"></div>`, container);
+            assert.equal(container.innerHTML, '<div a="b" foo="bar"></div>');
+          });
 
       // Regression test for exception in template parsing caused by attributes
       // reordering when a attribute binding precedes an attribute literal.
-      test('renders attribute binding after attribute binding that moved', () => {
-        render(
-            html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
-            container);
-        assert.equal(
-            container.innerHTML,
-            `<a class="bar" href="foo"><div id="a"></div></a>`);
-      });
+      test(
+          'renders attribute binding after attribute binding that moved',
+          () => {
+            render(
+                html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
+                container);
+            assert.equal(
+                container.innerHTML,
+                `<a class="bar" href="foo"><div id="a"></div></a>`);
+          });
 
       test('renders to an attribute without quotes', () => {
         render(html`<div foo=${'bar'}></div>`, container);
@@ -330,7 +333,7 @@ suite('lit-html', () => {
       test('does not call a function bound to an attribute', () => {
         const f = () => {
           throw new Error();
-        }
+        };
         render(html`<div foo=${f}></div>`, container);
         const div = container.querySelector('div')!;
         assert.isTrue(div.hasAttribute('foo'));
@@ -733,7 +736,7 @@ suite('lit-html', () => {
       test('accepts a function', () => {
         const f = () => {
           throw new Error();
-        }
+        };
         part.setValue(f);
       });
 
