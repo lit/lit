@@ -2,6 +2,8 @@ import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
 import './shop-button.js';
 import './shop-image.js';
 
+import { store } from './shop-redux-store.js';
+
 class ShopHome extends Element {
   static get template() {
     return `
@@ -118,6 +120,18 @@ class ShopHome extends Element {
     }
 
   }}
+
+  constructor() {
+    super();
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.categories = state.categories;
+  }
 
   _visibleChanged(visible) {
     if (visible) {

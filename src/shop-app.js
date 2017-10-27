@@ -279,7 +279,7 @@ class ShopApp extends Element {
 
     <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
       <!-- home view -->
-      <shop-home name="home" categories="[[categories]]"></shop-home>
+      <shop-home name="home"></shop-home>
       <!-- list view of items in a category -->
       <shop-list name="list" offline="[[offline]]"></shop-list>
       <!-- detail view of one item -->
