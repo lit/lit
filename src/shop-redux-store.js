@@ -1,4 +1,8 @@
 import createStore from '../node_modules/@0xcda7a/redux-es6/es/createStore.js';
+import applyMiddleware from '../node_modules/@0xcda7a/redux-es6/es/applyMiddleware.js';
+import thunk from '../node_modules/redux-thunk/es/index.js';
+
+import { findCategory, findCategoryIndex } from './shop-redux-helpers.js';
 
 const store = createStore(
   (state, action) => {
@@ -13,7 +17,6 @@ const store = createStore(
           const categoryName = pathParts[1];
           const itemName = pathParts[2];
           const category = findCategory(state.categories, categoryName);
-          loadCategory(category);
           result = {
             ...state,
             page,
@@ -155,20 +158,14 @@ const store = createStore(
             ...state,
             offline
           };
-          if (offline) break;
-        }
-        // Fall through; no break
-      case '_tryReconnect':
-        {
-          const category = findCategory(state.categories, state.categoryName);
-          loadCategory(category)
         }
         break;
     }
     console.log('reducer', state.item, action, result.item)
     return result;
   },
-  getInitialState());
+  getInitialState(),
+  applyMiddleware(thunk));
 
 window.addEventListener('storage', () => {
   store.dispatch({
@@ -210,19 +207,6 @@ function getInitialState() {
     numItems: computeNumItems(cart),
     total: computeTotal(cart)
   };
-}
-
-function findCategoryIndex(categories, categoryName) {
-  for (let i = 0, c; c = categories[i]; ++i) {
-    if (c.name === categoryName) {
-      return i;
-    }
-  }
-  return null;
-}
-
-function findCategory(categories, categoryName) {
-  return categories[findCategoryIndex(categories, categoryName)] || null;
 }
 
 function findItem(category, itemName) {
@@ -277,25 +261,6 @@ function computeTotal(cart) {
   }
 
   return 0;
-}
-
-function loadCategory(category) {
-  if (category) {
-    const categoryName = category.name;
-    if (!category.items) {
-      fetch(`data/${categoryName}.json`)
-      .then(res => res.json())
-      .then(data => store.dispatch({
-        type: '_categoryItemsChanged',
-        categoryName,
-        data
-      }))
-      .catch(() => store.dispatch({
-        type: '_failureChanged',
-        failure: true
-      }));
-    }
-  }
 }
 
 export { store };

@@ -14,6 +14,7 @@ import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
 import { store } from './shop-redux-store.js';
+import { changePath, changeOffline } from './shop-redux-actions.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -353,10 +354,7 @@ class ShopApp extends Element {
   }
 
   _pathChanged(path) {
-    store.dispatch({
-      type: '_pathChanged',
-      path
-    });
+    store.dispatch(changePath(path));
   }
 
   ready() {
@@ -446,10 +444,7 @@ class ShopApp extends Element {
       this._networkSnackbar.open();
     }
 
-    store.dispatch({
-      type: '_offlineChanged',
-      offline: this.offline
-    });
+    store.dispatch(changeOffline(this.offline));
   }
 
   _toggleDrawer() {

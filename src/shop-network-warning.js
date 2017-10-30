@@ -4,6 +4,7 @@ import './shop-button.js';
 import './shop-icons.js';
 
 import { store } from './shop-redux-store.js';
+import { tryReconnect } from './shop-redux-actions.js';
 
 class ShopNetworkWarning extends Element {
   static get template() {
@@ -71,9 +72,7 @@ class ShopNetworkWarning extends Element {
   }
 
   _tryReconnect() {
-    store.dispatch({
-      type: '_tryReconnect'
-    });
+    store.dispatch(tryReconnect());
   }
 }
 
