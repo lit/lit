@@ -3,7 +3,6 @@ import '../node_modules/@polymer/app-layout/app-header/app-header.js';
 import '../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { scroll } from '../node_modules/@polymer/app-layout/helpers/helpers.js';
-import '../node_modules/@polymer/app-route/app-location.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import '../node_modules/@polymer/iron-media-query/iron-media-query.js';
 import '../node_modules/@polymer/iron-pages/iron-pages.js';
@@ -14,7 +13,8 @@ import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
 import { store } from './shop-redux-store.js';
-import { changePath, changeOffline } from './shop-redux-actions.js';
+import { changeOffline } from './shop-redux-actions.js';
+import './shop-redux-router.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -219,10 +219,6 @@ class ShopApp extends Element {
     </style>
 
     <shop-analytics key="UA-39334307-16"></shop-analytics>
-    <!--
-      app-location provides the state of the URL for the app.
-    -->
-    <app-location path="{{path}}"></app-location>
 
     <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
@@ -330,10 +326,6 @@ class ShopApp extends Element {
     }
   }}
 
-  static get observers() { return [
-    '_pathChanged(path)'
-  ]}
-
   constructor() {
     super();
     window.performance && performance.mark && performance.mark('shop-app.created');
@@ -351,10 +343,6 @@ class ShopApp extends Element {
     // NOTE: Only this element updates state.offline, so no need to update from
     // state.offline here.
     // this.offline = state.offline;
-  }
-
-  _pathChanged(path) {
-    store.dispatch(changePath(path));
   }
 
   ready() {

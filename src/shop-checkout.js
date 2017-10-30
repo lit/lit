@@ -10,6 +10,7 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './shop-redux-store.js';
+import { pushState } from './shop-redux-router.js';
 
 class ShopCheckout extends Element {
   static get template() {
@@ -508,9 +509,8 @@ class ShopCheckout extends Element {
    */
   _pushState(state) {
     // This changes window.location only - it does not affect the checkout state.
-    window.history.pushState({}, '', `${window.location.origin}/checkout/${state}`);
-    window.dispatchEvent(new CustomEvent('location-changed'));
-
+    pushState(`${window.location.origin}/checkout/${state}`);
+    
     // The only way to update checkout state is with the '_checkoutStateChanged'
     // action. This is to prevent an user from navigating directly to the
     // success/error pages.
