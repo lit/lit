@@ -1,8 +1,11 @@
 import createStore from '../node_modules/@0xcda7a/redux-es6/es/createStore.js';
 import applyMiddleware from '../node_modules/@0xcda7a/redux-es6/es/applyMiddleware.js';
+import origCompose from '../node_modules/@0xcda7a/redux-es6/es/compose.js';
 import thunk from '../node_modules/redux-thunk/es/index.js';
 
 import { findCategory, findCategoryIndex } from './shop-redux-helpers.js';
+
+const compose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || origCompose;
 
 const store = createStore(
   (state, action) => {
@@ -90,11 +93,10 @@ const store = createStore(
         }
         break;
     }
-    console.log('reducer', state.item, action, result.item)
     return result;
   },
   getInitialState(),
-  applyMiddleware(thunk));
+  compose(applyMiddleware(thunk)));
 
 window.addEventListener('storage', () => {
   store.dispatch({
