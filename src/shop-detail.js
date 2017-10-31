@@ -8,6 +8,7 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './shop-redux-store.js';
+import { addCartItem } from './shop-redux-actions.js';
 
 class ShopDetail extends Element {
   static get template() {
@@ -244,13 +245,11 @@ class ShopDetail extends Element {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('add-cart-item', {
       bubbles: true, composed: true}));
-    store.dispatch({
-      type: 'add-cart-item',
-      detail: {
-        item: this.item,
-        quantity: parseInt(this.$.quantitySelect.value, 10),
-        size: this.$.sizeSelect.value
-    }});
+    store.dispatch(addCartItem({
+      item: this.item,
+      quantity: parseInt(this.$.quantitySelect.value, 10),
+      size: this.$.sizeSelect.value
+    }));
   }
 
   _isDefined(item) {

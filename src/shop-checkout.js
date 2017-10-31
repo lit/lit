@@ -11,6 +11,7 @@ import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './shop-redux-store.js';
 import { pushState } from './shop-redux-router.js';
+import { clearCart } from './shop-redux-actions.js';
 
 class ShopCheckout extends Element {
   static get template() {
@@ -613,9 +614,7 @@ class ShopCheckout extends Element {
       this._pushState('success');
       this._reset();
       this.dispatchEvent(new CustomEvent('clear-cart', {bubbles: true, composed: true}));
-      store.dispatch({
-        type: 'clear-cart'
-      });
+      store.dispatch(clearCart());
     } else {
       this._pushState('error');
     }

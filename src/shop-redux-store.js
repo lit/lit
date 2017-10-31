@@ -59,77 +59,6 @@ const store = createStore(
           };
         }
         break;
-      // Add to cart from detail view.
-      case 'add-cart-item':
-        {
-          const cart = state.cart;
-          const detail = action.detail;
-          const i = findCartItemIndex(cart, detail.item.name, detail.size);
-          if (i !== -1) {
-            detail.quantity += cart[i].quantity;
-          }
-          if (detail.quantity === 0) {
-            // Remove item from cart when the new quantity is 0.
-            if (i !== -1) {
-              cart.splice(i, 1);
-            }
-          } else {
-            if (i !== -1) {
-              cart.splice(i, 1, detail);
-            } else {
-              cart.push(detail);
-            }
-          }
-
-          localStorage.setItem('shop-cart-data', JSON.stringify(cart));
-          result = {
-            ...state,
-            cart: [...cart],
-            numItems: computeNumItems(cart),
-            total: computeTotal(cart)
-          };
-        }
-        break;
-      // Update from cart view.
-      case 'set-cart-item':
-        {
-          const cart = state.cart;
-          const detail = action.detail;
-          const i = findCartItemIndex(cart, detail.item.name, detail.size);
-          if (detail.quantity === 0) {
-            // Remove item from cart when the new quantity is 0.
-            if (i !== -1) {
-              cart.splice(i, 1);
-            }
-          } else {
-            if (i !== -1) {
-              cart.splice(i, 1, detail);
-            } else {
-              cart.push(detail);
-            }
-          }
-
-          localStorage.setItem('shop-cart-data', JSON.stringify(cart));
-          result = {
-            ...state,
-            cart: [...cart],
-            numItems: computeNumItems(cart),
-            total: computeTotal(cart)
-          };
-        }
-        break;
-      // Clear cart after successful checkout.
-      case 'clear-cart':
-        {
-          localStorage.removeItem('shop-cart-data');
-          result = {
-            ...state,
-            cart: [],
-            numItems: 0,
-            total: 0
-          };
-        }
-        break;
       // Internal state from checkout flow (init/success/error).
       case '_checkoutStateChanged':
         {
@@ -227,20 +156,6 @@ function getLocalCartData() {
   } catch (e) {
     return [];
   }
-}
-
-
-function findCartItemIndex(cart, name, size) {
-  if (cart) {
-    for (let i = 0; i < cart.length; ++i) {
-      let entry = cart[i];
-      if (entry.item.name === name && entry.size === size) {
-        return i;
-      }
-    }
-  }
-
-  return -1;
 }
 
 function computeNumItems(cart) {

@@ -6,6 +6,7 @@ import './shop-image.js';
 import './shop-select.js';
 
 import { store } from './shop-redux-store.js';
+import { setCartItem } from './shop-redux-actions.js';
 
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -223,14 +224,11 @@ class ShopCartItem extends Element {
   _setCartItem(quantity) {
     this.dispatchEvent(new CustomEvent('set-cart-item', {
       bubbles: true, composed: true, detail: { quantity }}));
-    store.dispatch({
-      type: 'set-cart-item',
-      detail: {
-        item: this.entry.item,
-        quantity: quantity,
-        size: this.entry.size
-      }
-    });
+    store.dispatch(setCartItem({
+      item: this.entry.item,
+      quantity: quantity,
+      size: this.entry.size
+    }));
   }
 
   _formatPrice(price) {
