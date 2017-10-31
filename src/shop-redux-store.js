@@ -35,7 +35,7 @@ const store = createStore(
       // Response from fetch for categories data.
       case '_categoryItemsChanged':
         {
-          const categories = state.categories;
+          const categories = state.categories.slice(0);
           const categoryIndex = findCategoryIndex(categories, action.categoryName);
           categories[categoryIndex] = {...categories[categoryIndex], items: action.data};
           // The current category may have changed if the user navigated before the
@@ -43,7 +43,7 @@ const store = createStore(
           const category = findCategory(categories, state.categoryName);
           result = {
             ...state,
-            categories: [...categories],
+            categories,
             category,
             item: findItem(category, state.itemName),
             failure: false

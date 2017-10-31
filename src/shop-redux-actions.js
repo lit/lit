@@ -59,7 +59,7 @@ function loadCategory(category, dispatch) {
 export function addCartItem(detail) {
   return (dispatch, getState) => {
     const state = getState();
-    const cart = state.cart;
+    const cart = state.cart.slice(0);
     const i = findCartItemIndex(cart, detail.item.name, detail.size);
     if (i !== -1) {
       detail.quantity += cart[i].quantity;
@@ -72,7 +72,7 @@ export function addCartItem(detail) {
 export function setCartItem(detail) {
   return (dispatch, getState) => {
     const state = getState();
-    const cart = state.cart;
+    const cart = state.cart.slice(0);
     const i = findCartItemIndex(cart, detail.item.name, detail.size);
     updateCart(dispatch, cart, i, detail);
   };
