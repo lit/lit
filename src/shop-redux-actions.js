@@ -1,21 +1,5 @@
 import { findCategory } from './shop-redux-helpers.js';
 
-export function changePath(path) {
-  return (dispatch, getState) => {
-    const state = getState();
-    const pathParts = path.slice(1).split('/');
-    const page = pathParts[0];
-    const categoryName = pathParts[1];
-    const itemName = pathParts[2];
-    const category = findCategory(state.categories, categoryName);
-    loadCategory(category, dispatch);
-    dispatch({
-      type: '_pathChanged',
-      path
-    });
-  };
-}
-
 export function changeOffline(offline) {
   return (dispatch, getState) => {
     dispatch({
@@ -36,7 +20,7 @@ export function tryReconnect() {
   };
 }
 
-function loadCategory(category, dispatch) {
+export function loadCategory(category, dispatch) {
   if (category) {
     const categoryName = category.name;
     if (!category.items) {

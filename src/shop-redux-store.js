@@ -3,97 +3,63 @@ import applyMiddleware from '../node_modules/@0xcda7a/redux-es6/es/applyMiddlewa
 import origCompose from '../node_modules/@0xcda7a/redux-es6/es/compose.js';
 import thunk from '../node_modules/redux-thunk/es/index.js';
 
-import { findCategory, findCategoryIndex } from './shop-redux-helpers.js';
+import { findCategory, findCategoryIndex, findItem } from './shop-redux-helpers.js';
 
 const compose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || origCompose;
 
-const store = createStore(
-  (state, action) => {
-    let result = state;
+const reducers = {
+  // Response from fetch for categories data.
+  _categoryItemsChanged(state, action) {
+    const categories = state.categories.slice(0);
+    const categoryIndex = findCategoryIndex(categories, action.categoryName);
+    categories[categoryIndex] = {...categories[categoryIndex], items: action.data};
+    // The current category may have changed if the user navigated before the
+    // fetch returns, so update the current cateogry/item based on current state.
+    const category = findCategory(categories, state.categoryName);
+    return {
+      ...state,
+      categories,
+      category,
+      item: findItem(category, state.itemName),
+      failure: false
+    };
+  },
+  // Cart initialization/update from another window.
+  _cartChanged(state, action) {
+    const cart = action.cart;
+    return {
+      ...state,
+      cart,
+      numItems: computeNumItems(cart),
+      total: computeTotal(cart)
+    };
+  },
+  // Network error (set to true by unsucessful fetch).
+  _failureChanged(state, action) {
+    const failure = action.failure;
+    return {
+      ...state,
+      failure
+    };
+  },
+  // Opposite of navigator.onLine (updated by shop-app).
+  _offlineChanged(state, action) {
+    const offline = action.offline;
+    return {
+      ...state,
+      offline
+    };
+  }
+};
 
-    switch (action.type) {
-      // window.location changed
-      case '_pathChanged':
-        {
-          const pathParts = action.path.slice(1).split('/');
-          const page = pathParts[0];
-          const categoryName = pathParts[1];
-          const itemName = pathParts[2];
-          const category = findCategory(state.categories, categoryName);
-          result = {
-            ...state,
-            page,
-            categoryName,
-            category,
-            itemName,
-            item: findItem(category, itemName),
-            checkoutState: 'init',
-            failure: false
-          };
-        }
-        break;
-      // Response from fetch for categories data.
-      case '_categoryItemsChanged':
-        {
-          const categories = state.categories.slice(0);
-          const categoryIndex = findCategoryIndex(categories, action.categoryName);
-          categories[categoryIndex] = {...categories[categoryIndex], items: action.data};
-          // The current category may have changed if the user navigated before the
-          // fetch returns, so update the current cateogry/item based on current state.
-          const category = findCategory(categories, state.categoryName);
-          result = {
-            ...state,
-            categories,
-            category,
-            item: findItem(category, state.itemName),
-            failure: false
-          };
-        }
-        break;
-      // Cart initialization/update from another window.
-      case '_cartChanged':
-        {
-          const cart = action.cart;
-          result = {
-            ...state,
-            cart,
-            numItems: computeNumItems(cart),
-            total: computeTotal(cart)
-          };
-        }
-        break;
-      // Internal state from checkout flow (init/success/error).
-      case '_checkoutStateChanged':
-        {
-          const checkoutState = action.checkoutState;
-          result = {
-            ...state,
-            checkoutState
-          };
-        }
-        break;
-      // Network error (set to true by unsucessful fetch).
-      case '_failureChanged':
-        {
-          const failure = action.failure;
-          result = {
-            ...state,
-            failure
-          };
-        }
-        break;
-      // Opposite of navigator.onLine (updated by shop-app).
-      case '_offlineChanged':
-        {
-          const offline = action.offline;
-          result = {
-            ...state,
-            offline
-          };
-        }
-        break;
-    }
-    return result;
+export function installReducers(r) {
+  Object.assign(reducers, r);
+}
+
+export const store = createStore(
+  (state, action) => {
+    const r = reducers[action.type];
+    return r ? r(state, action) : state;
   },
   getInitialState(),
   compose(applyMiddleware(thunk)));
@@ -140,17 +106,6 @@ function getInitialState() {
   };
 }
 
-function findItem(category, itemName) {
-  if (!category || !category.items || !itemName) {
-    return;
-  }
-  for (let i = 0, item; item = category.items[i]; ++i) {
-    if (item.name === itemName) {
-      return item;
-    }
-  }
-}
-
 function getLocalCartData() {
   const localCartData = localStorage.getItem('shop-cart-data');
   try {
@@ -179,5 +134,3 @@ function computeTotal(cart) {
 
   return 0;
 }
-
-export { store };

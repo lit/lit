@@ -1,5 +1,22 @@
-import { store } from './shop-redux-store.js';
-import { changePath } from './shop-redux-actions.js';
+import { store, installReducers } from './shop-redux-store.js';
+import { loadCategory } from './shop-redux-actions.js';
+import { findCategory, findItem } from './shop-redux-helpers.js';
+
+installReducers({
+  // window.location changed
+  _pathChanged(state, action) {
+    return {
+      ...state,
+      page: action.page,
+      categoryName: action.categoryName,
+      category: action.category,
+      itemName: action.itemName,
+      item: action.item,
+      checkoutState: 'init',
+      failure: false
+    };
+  }
+});
 
 document.body.addEventListener('click', e => {
   if ((e.button !== 0) ||           // Left click only
@@ -30,4 +47,24 @@ export function pushState(href) {
     window.history.pushState({}, '', href);
     dispatch(changePath(window.decodeURIComponent(window.location.pathname)));
   }
+}
+
+function changePath(path) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const pathParts = path.slice(1).split('/');
+    const page = pathParts[0];
+    const categoryName = pathParts[1];
+    const itemName = pathParts[2];
+    const category = findCategory(state.categories, categoryName);
+    loadCategory(category, dispatch);
+    dispatch({
+      type: '_pathChanged',
+      page,
+      categoryName,
+      category,
+      itemName,
+      item: findItem(category, itemName),
+    });
+  };
 }

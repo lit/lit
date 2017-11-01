@@ -9,9 +9,20 @@ import './shop-checkbox.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store } from './shop-redux-store.js';
+import { store, installReducers } from './shop-redux-store.js';
 import { pushState } from './shop-redux-router.js';
 import { clearCart } from './shop-redux-actions.js';
+
+installReducers({
+  // Internal state from checkout flow (init/success/error).
+  _checkoutStateChanged(state, action) {
+    const checkoutState = action.checkoutState;
+    return {
+      ...state,
+      checkoutState
+    };
+  }
+});
 
 class ShopCheckout extends Element {
   static get template() {
