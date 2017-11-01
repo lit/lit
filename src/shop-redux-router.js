@@ -1,5 +1,5 @@
 import { store, installReducers } from './shop-redux-store.js';
-import { loadCategory } from './shop-redux-actions.js';
+import { loadCategory } from './shop-redux-categories.js';
 import { findCategory } from './shop-redux-helpers.js';
 
 installReducers({

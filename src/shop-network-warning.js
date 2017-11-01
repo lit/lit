@@ -4,7 +4,7 @@ import './shop-button.js';
 import './shop-icons.js';
 
 import { store } from './shop-redux-store.js';
-import { tryReconnect } from './shop-redux-actions.js';
+import { tryReconnect } from './shop-redux-categories.js';
 
 class ShopNetworkWarning extends Element {
   static get template() {

@@ -13,7 +13,7 @@ import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
 import { store } from './shop-redux-store.js';
-import { changeOffline } from './shop-redux-actions.js';
+import { changeOffline } from './shop-redux-categories.js';
 import './shop-redux-router.js';
 
 // performance logging
