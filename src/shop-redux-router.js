@@ -34,10 +34,11 @@ document.body.addEventListener('click', e => {
     handleUrlChange();
   }
 });
-const handleUrlChange = () => {
+
+function handleUrlChange() {
   store.dispatch(changePath(window.decodeURIComponent(window.location.pathname)));
 }
-window.addEventListener('popstate', _ => handleUrlChange());
+window.addEventListener('popstate', handleUrlChange);
 handleUrlChange();
 
 export function pushState(href) {

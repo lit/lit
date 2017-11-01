@@ -6,7 +6,7 @@ import './shop-image.js';
 import './shop-select.js';
 
 import { store } from './shop-redux-store.js';
-import { setCartItem } from './shop-redux-actions.js';
+import { setCartItem } from './shop-redux-cart.js';
 
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');

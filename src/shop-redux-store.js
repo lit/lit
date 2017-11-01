@@ -19,16 +19,6 @@ const reducers = {
       failure: false
     };
   },
-  // Cart initialization/update from another window.
-  _cartChanged(state, action) {
-    const cart = action.cart;
-    return {
-      ...state,
-      cart,
-      numItems: computeNumItems(cart),
-      total: computeTotal(cart)
-    };
-  },
   // Network error (set to true by unsucessful fetch).
   _failureChanged(state, action) {
     const failure = action.failure;
@@ -59,15 +49,7 @@ export const store = createStore(
   getInitialState(),
   compose(applyMiddleware(thunk)));
 
-window.addEventListener('storage', () => {
-  store.dispatch({
-    type: '_cartChanged',
-    cart: getLocalCartData()
-  });
-});
-
 function getInitialState() {
-  const cart = getLocalCartData();
   return {
     categories: [
       {
@@ -94,38 +76,6 @@ function getInitialState() {
         image: 'images/ladies_tshirts.jpg',
         placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXwABAQEAAAAAAAAAAAAAAAAAAAMFAQEBAAAAAAAAAAAAAAAAAAABAhAAAQIDCQAAAAAAAAAAAAAAEQABITETYZECEjJCAzMVEQACAwAAAAAAAAAAAAAAAAAAATFBgf/aAAwDAQACEQMRAD8AzeADAZiFc5J7BC9Scek3VrtooilSNaf/2Q=='
       }
-    ],
-    cart,
-    numItems: computeNumItems(cart),
-    total: computeTotal(cart)
+    ]
   };
-}
-
-function getLocalCartData() {
-  const localCartData = localStorage.getItem('shop-cart-data');
-  try {
-    return JSON.parse(localCartData) || [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function computeNumItems(cart) {
-  if (cart) {
-    return cart.reduce((total, entry) => {
-      return total + entry.quantity;
-    }, 0);
-  }
-
-  return 0;
-}
-
-function computeTotal(cart) {
-  if (cart) {
-    return cart.reduce((total, entry) => {
-      return total + entry.quantity * entry.item.price;
-    }, 0);
-  }
-
-  return 0;
 }
