@@ -296,7 +296,7 @@ export class Template {
   private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
     const l = strings.length;
     let html = '';
-    let isTextBinding = false;
+    let isTextBinding = true;
     for (let i = 0; i < l - 1; i++) {
       const s = strings[i];
       html += s;
