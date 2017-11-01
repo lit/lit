@@ -7,6 +7,7 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './shop-redux-store.js';
+import { findCategory } from './shop-redux-helpers.js';
 
 class ShopList extends Element {
   static get template() {
@@ -125,7 +126,7 @@ class ShopList extends Element {
 
   update() {
     const state = store.getState();
-    this.category = state.category;
+    this.category = findCategory(state.categories, state.categoryName);
     this.failure = state.failure;
   }
 

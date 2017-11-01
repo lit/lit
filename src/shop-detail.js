@@ -9,6 +9,7 @@ import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './shop-redux-store.js';
 import { addCartItem } from './shop-redux-actions.js';
+import { findCategory, findItem } from './shop-redux-helpers.js';
 
 class ShopDetail extends Element {
   static get template() {
@@ -203,7 +204,7 @@ class ShopDetail extends Element {
 
   update() {
     const state = store.getState();
-    this.item = state.item;
+    this.item = findItem(findCategory(state.categories, state.categoryName), state.itemName);
     this.failure = state.failure;
   }
 

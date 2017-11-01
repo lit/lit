@@ -3,7 +3,7 @@ import applyMiddleware from '../node_modules/@0xcda7a/redux-es6/es/applyMiddlewa
 import origCompose from '../node_modules/@0xcda7a/redux-es6/es/compose.js';
 import thunk from '../node_modules/redux-thunk/es/index.js';
 
-import { findCategory, findCategoryIndex, findItem } from './shop-redux-helpers.js';
+import { findCategoryIndex } from './shop-redux-helpers.js';
 
 const compose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || origCompose;
 
@@ -13,14 +13,9 @@ const reducers = {
     const categories = state.categories.slice(0);
     const categoryIndex = findCategoryIndex(categories, action.categoryName);
     categories[categoryIndex] = {...categories[categoryIndex], items: action.data};
-    // The current category may have changed if the user navigated before the
-    // fetch returns, so update the current cateogry/item based on current state.
-    const category = findCategory(categories, state.categoryName);
     return {
       ...state,
       categories,
-      category,
-      item: findItem(category, state.itemName),
       failure: false
     };
   },

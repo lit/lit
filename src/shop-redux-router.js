@@ -1,6 +1,6 @@
 import { store, installReducers } from './shop-redux-store.js';
 import { loadCategory } from './shop-redux-actions.js';
-import { findCategory, findItem } from './shop-redux-helpers.js';
+import { findCategory } from './shop-redux-helpers.js';
 
 installReducers({
   // window.location changed
@@ -9,9 +9,7 @@ installReducers({
       ...state,
       page: action.page,
       categoryName: action.categoryName,
-      category: action.category,
       itemName: action.itemName,
-      item: action.item,
       checkoutState: 'init',
       failure: false
     };
@@ -62,9 +60,7 @@ function changePath(path) {
       type: '_pathChanged',
       page,
       categoryName,
-      category,
-      itemName,
-      item: findItem(category, itemName),
+      itemName
     });
   };
 }
