@@ -24,6 +24,12 @@ interface State {
 
 const stateCache = new WeakMap<NodePart, State>();
 
+function cleanMap(part: NodePart, key: any, map: Map<any, NodePart>) {
+  if (!part.startNode.parentNode) {
+    map.delete(key);
+  }
+}
+
 export function repeat<T>(
     items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn;
 export function repeat<T>(items: T[], template: ItemTemplate<T>): DirectiveFn;
@@ -102,6 +108,7 @@ export function repeat<T>(
       range.setStartBefore(currentMarker!);
       range.setEndBefore(part.endNode);
       range.deleteContents();
+      keyMap.forEach(cleanMap);
     }
 
     state.parts = itemParts;
