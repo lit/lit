@@ -517,13 +517,13 @@ export class NodePart implements SinglePart {
     }
   }
 
-  protected _setPromise(value: Promise<any>): void {
+  private _setPromise(value: Promise<any>): void {
+    this._previousValue = value;
     value.then((v: any) => {
       if (this._previousValue === value) {
         this.setValue(v);
       }
     });
-    this._previousValue = value;
   }
 
   clear(startNode: Node = this.startNode) {
