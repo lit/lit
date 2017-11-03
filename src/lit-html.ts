@@ -629,16 +629,10 @@ export const reparentNodes =
      endNode: Node | null,
      container: Node,
      beforeNode: Node | null): void => {
-      if (startNode === null) {
-        return;
-      }
       let node = startNode;
       while (node !== endNode) {
-        const n = node.nextSibling;
-        container.insertBefore(node, beforeNode);
-        if (n === null) {
-          break;
-        }
+        const n = node!.nextSibling;
+        container.insertBefore(node!, beforeNode);
         node = n;
       }
     };
