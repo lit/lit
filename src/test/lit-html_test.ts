@@ -388,6 +388,16 @@ suite('lit-html', () => {
         });
       });
 
+      test('renders a sync thenable', () => {
+        const promise = {
+          then(cb: (foo: string) => void) {
+            cb('foo');
+          }
+        };
+        render(html`<div>${promise}</div>`, container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+      });
+
       test('renders racing Promises correctly', () => {
         let resolve1: (v: any) => void;
         const promise1 = new Promise((res, _) => {
