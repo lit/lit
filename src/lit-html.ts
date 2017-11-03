@@ -155,12 +155,16 @@ export class TemplatePart {
 export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
-  svg: boolean;
 
   constructor(strings: TemplateStringsArray, svg: boolean = false) {
-    this.svg = svg;
-    this.element = document.createElement('template');
-    this.element.innerHTML = this._getHtml(strings, svg);
+    const element = this.element = document.createElement('template');
+    element.innerHTML = this._getHtml(strings, svg);
+    if (svg) {
+      const svgElement = element.content.firstChild!;
+      reparentNodes(svgElement.firstChild, null, element.content, null);
+      element.content.removeChild(svgElement);
+    }
+
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         this.element.content,
@@ -610,14 +614,31 @@ export class TemplateInstance {
         this._parts.push(this._partCallback(this, part, walker.currentNode));
       }
     }
-    if (this.template.svg) {
-      const svgElement = fragment.firstChild!;
-      fragment.removeChild(svgElement);
-      const nodes = svgElement.childNodes;
-      for (let i = 0; i < nodes.length; i++) {
-        fragment.appendChild(nodes.item(i));
-      }
-    }
     return fragment;
   }
 }
+
+/**
+ * Reparents nodes, starting from `startNode` (inclusive) to `endNode`
+ * (exclusive), into another container (could be the same container), before
+ * `beforeNode`. If `beforeNode` is null, it appends the nodes to the
+ * container.
+ */
+export const reparentNodes =
+    (startNode: Node | null,
+     endNode: Node | null,
+     container: Node,
+     beforeNode: Node | null): void => {
+      if (startNode === null) {
+        return;
+      }
+      let node = startNode;
+      while (node !== endNode) {
+        const n = node.nextSibling;
+        container.insertBefore(node, beforeNode);
+        if (n === null) {
+          break;
+        }
+        node = n;
+      }
+    };
