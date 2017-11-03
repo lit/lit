@@ -49,7 +49,7 @@ export function repeat<T>(
     const container = part.startNode.parentNode as HTMLElement | ShadowRoot |
         DocumentFragment;
     let index = -1;
-    let currentMarker = part.startNode.nextSibling;
+    let currentMarker = part.startNode.nextSibling!;
 
     for (const item of items) {
       let result;
@@ -76,14 +76,15 @@ export function repeat<T>(
         }
       } else if (currentMarker !== itemPart.startNode) {
         // Existing part in the wrong position
-        const range = document.createRange();
-        range.setStartBefore(itemPart.startNode);
-        range.setEndAfter(itemPart.endNode);
-        const contents = range.extractContents();
-        container.insertBefore(contents, currentMarker);
+        const end = itemPart.endNode.nextSibling;
+        for (let node = itemPart.startNode; node !== end;) {
+          const n = node.nextSibling!;
+          container.insertBefore(node, currentMarker);
+          node = n;
+        }
       } else {
         // else part is in the correct position already
-        currentMarker = itemPart.endNode.nextSibling;
+        currentMarker = itemPart.endNode.nextSibling!;
       }
 
       itemPart.setValue(result);
@@ -91,10 +92,12 @@ export function repeat<T>(
 
     // Cleanup
     if (currentMarker !== part.endNode) {
-      const range = document.createRange();
-      range.setStartBefore(currentMarker!);
-      range.setEndBefore(part.endNode);
-      range.deleteContents();
+      const end = part.endNode;
+      for (let node = currentMarker; node !== end;) {
+        const n = node.nextSibling!;
+        container.removeChild(node);
+        node = n;
+      }
       keyMap.forEach(cleanMap);
     }
   });
