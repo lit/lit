@@ -143,10 +143,13 @@ suite('lit-extended', () => {
       const listener = () => {
         count++;
       };
+      const wrapped = listener;
       const go = () =>
-          render(html`<div on-click=${listener}></div>`, container);
+          render(html`<div on-click=${wrapped}></div>`, container);
       go();
       go();
+
+      wrapped = () => listener();
       go();
       const div = container.firstChild as HTMLElement;
       div.click();
