@@ -138,22 +138,35 @@ suite('lit-extended', () => {
       assert.equal(thisValue, listener);
     });
 
-    test('only adds event listeners once', () => {
+    test('only adds event listener once', () => {
       let count = 0;
       const listener = () => {
         count++;
       };
-      const wrapped = listener;
-      const go = () =>
-          render(html`<div on-click=${wrapped}></div>`, container);
-      go();
-      go();
+      render(html`<div on-click=${listener}></div>`, container);
+      render(html`<div on-click=${listener}></div>`, container);
 
-      wrapped = () => listener();
-      go();
       const div = container.firstChild as HTMLElement;
       div.click();
       assert.equal(count, 1);
+    });
+
+    test('allows updating event listener', () => {
+      let count1 = 0;
+      const listener1 = () => {
+        count1++;
+      };
+      let count2 = 0;
+      const listener2 = () => {
+        count2++;
+      };
+      render(html`<div on-click=${listener1}></div>`, container);
+      render(html`<div on-click=${listener2}></div>`, container);
+
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(count1, 0);
+      assert.equal(count2, 1);
     });
 
     test('removes event listeners', () => {
