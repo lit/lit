@@ -624,16 +624,10 @@ export const removeNodes =
     (startNode: Node | null,
      endNode: Node | null,
      container: Node): void => {
-      if (startNode === null) {
-        return;
-      }
       let node = startNode;
       while (node !== endNode) {
-        const n = node.nextSibling;
-        container.removeChild(node);
-        if (n === null) {
-          break;
-        }
+        const n = node!.nextSibling;
+        container.removeChild(node!);
         node = n;
       }
     };
