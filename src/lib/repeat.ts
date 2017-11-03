@@ -17,12 +17,7 @@ import {directive, DirectiveFn, NodePart} from '../lit-html.js';
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
 
-interface State {
-  keyMap: Map<any, NodePart>;
-  parts: NodePart[];
-}
-
-const stateCache = new WeakMap<NodePart, State>();
+const keyMapCache = new WeakMap<NodePart, Map<any, NodePart>>();
 
 function cleanMap(part: NodePart, key: any, map: Map<any, NodePart>) {
   if (!part.startNode.parentNode) {
@@ -46,19 +41,13 @@ export function repeat<T>(
 
   return directive((part: NodePart): any => {
 
-    let state = stateCache.get(part);
-    if (state === undefined) {
-      state = {
-        keyMap: new Map(),
-        parts: [],
-      };
-      stateCache.set(part, state);
+    let keyMap = keyMapCache.get(part);
+    if (keyMap === undefined) {
+      keyMap = new Map(),
+      keyMapCache.set(part, keyMap);
     }
     const container = part.startNode.parentNode as HTMLElement | ShadowRoot |
         DocumentFragment;
-    const keyMap = state.keyMap;
-
-    const itemParts = [];
     let index = -1;
     let currentMarker = part.startNode.nextSibling;
 
@@ -76,7 +65,6 @@ export function repeat<T>(
 
       // Try to reuse a part
       let itemPart = keyMap.get(key);
-
       if (itemPart === undefined) {
         const marker = document.createTextNode('');
         const endNode = document.createTextNode('');
@@ -99,7 +87,6 @@ export function repeat<T>(
       }
 
       itemPart.setValue(result);
-      itemParts.push(itemPart);
     }
 
     // Cleanup
@@ -110,7 +97,5 @@ export function repeat<T>(
       range.deleteContents();
       keyMap.forEach(cleanMap);
     }
-
-    state.parts = itemParts;
   });
 }
