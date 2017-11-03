@@ -332,6 +332,14 @@ suite('lit-html', () => {
         ]);
       });
 
+      test('renders attributes bindings after text bindings', () => {
+        render(html`
+          <div>${''}</div>
+          <div foo=${'bar'}></div>
+        `, container);
+        assert.equal(container.innerHTML, '<div></div><div foo="bar"></div>');
+      });
+
       test('renders to attributes with attribute-like values', () => {
         render(html`<div foo="bar=${'foo'}"></div>`, container);
         assert.equal(container.innerHTML, '<div foo="bar=foo"></div>');
