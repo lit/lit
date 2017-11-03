@@ -124,7 +124,7 @@ const lastAttributeNameRegex =
  *   - `string.length`, meaning the last opened tag is unclosed.
  *   - Some positive number < str.length, meaning the index of the closing '>'.
  */
-function findTagClose(str: string) : number {
+function findTagClose(str: string): number {
   const close = str.lastIndexOf('>');
   const open = str.indexOf('<', close + 1);
   return open > -1 ? str.length : close;
@@ -206,7 +206,8 @@ export class Template {
           // expression in this attribute attribute
           const stringForPart = strings[partIndex];
           // Find the attribute name
-          const attributeNameInPart = stringForPart.match(lastAttributeNameRegex)![1];
+          const attributeNameInPart =
+              stringForPart.match(lastAttributeNameRegex)![1];
           // Find the corresponding attribute
           const attribute = attributes.getNamedItem(attributeNameInPart);
           const stringsForAttributeValue =
