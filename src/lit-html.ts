@@ -295,10 +295,10 @@ export class Template {
    * Returns a string of HTML used to create a <template> element.
    */
   private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
-    const l = strings.length;
+    const l = strings.length - 1;
     let html = '';
     let isTextBinding = true;
-    for (let i = 0; i < l - 1; i++) {
+    for (let i = 0; i < l; i++) {
       const s = strings[i];
       html += s;
       // We're in a text position if the previous string closed its tags.
@@ -308,7 +308,7 @@ export class Template {
       isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
       html += isTextBinding ? textMarker : attributeMarker;
     }
-    html += strings[l - 1];
+    html += strings[l];
     return svg ? `<svg>${html}</svg>` : html;
   }
 }
@@ -363,23 +363,23 @@ export class AttributePart implements MultiPart {
 
   setValue(values: any[], startIndex: number): void {
     const strings = this.strings;
+    const l = strings.length - 1;
     let text = '';
 
-    for (let i = 0; i < strings.length; i++) {
+    for (let i = 0; i < l; i++) {
       text += strings[i];
-      if (i < strings.length - 1) {
-        const v = getValue(this, values[startIndex + i]);
-        if (v &&
-            (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
-          for (const t of v) {
-            // TODO: we need to recursively call getValue into iterables...
-            text += t;
-          }
-        } else {
-          text += v;
+      const v = getValue(this, values[startIndex + i]);
+      if (v &&
+          (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
+        for (const t of v) {
+          // TODO: we need to recursively call getValue into iterables...
+          text += t;
         }
+      } else {
+        text += v;
       }
     }
+    text += strings[l];
     this.element.setAttribute(this.name, text);
   }
 }
