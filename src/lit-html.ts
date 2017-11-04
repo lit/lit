@@ -361,7 +361,7 @@ export class AttributePart implements MultiPart {
     this.size = strings.length - 1;
   }
 
-  setValue(values: any[], startIndex: number): void {
+  protected _interpolate(values: any[], startIndex: number) {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
@@ -379,7 +379,11 @@ export class AttributePart implements MultiPart {
         text += v;
       }
     }
-    text += strings[l];
+    return text + strings[l];
+  }
+
+  setValue(values: any[], startIndex: number): void {
+    const text = this._interpolate(values, startIndex);
     this.element.setAttribute(this.name, text);
   }
 }
