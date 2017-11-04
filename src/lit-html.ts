@@ -198,7 +198,7 @@ export class Template {
             count++;
           }
         }
-        while (count--) {
+        while (count-- > 0) {
           // Get the template literal section leading up to the first
           // expression in this attribute attribute
           const stringForPart = strings[partIndex];
