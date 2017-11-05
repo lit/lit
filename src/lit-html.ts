@@ -152,15 +152,21 @@ export class TemplatePart {
 export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
-  svg: boolean;
 
   constructor(strings: TemplateStringsArray, svg: boolean = false) {
-    this.svg = svg;
-    this.element = document.createElement('template');
-    this.element.innerHTML = this._getHtml(strings, svg);
+    const element = this.element = document.createElement('template');
+    element.innerHTML = this._getHtml(strings, svg);
+    const content = element.content;
+
+    if (svg) {
+      const svgElement = content.firstChild!;
+      content.removeChild(svgElement);
+      reparentNodes(content, svgElement.firstChild);
+    }
+
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        this.element.content,
+        content,
         133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
                NodeFilter.SHOW_TEXT */
         ,
@@ -604,17 +610,28 @@ export class TemplateInstance {
         this._parts.push(this._partCallback(this, part, walker.currentNode));
       }
     }
-    if (this.template.svg) {
-      const svgElement = fragment.firstChild!;
-      fragment.removeChild(svgElement);
-      const nodes = svgElement.childNodes;
-      for (let i = 0; i < nodes.length; i++) {
-        fragment.appendChild(nodes.item(i));
-      }
-    }
     return fragment;
   }
 }
+
+/**
+ * Reparents nodes, starting from `startNode` (inclusive) to `endNode`
+ * (exclusive), into another container (could be the same container), before
+ * `beforeNode`. If `beforeNode` is null, it appends the nodes to the
+ * container.
+ */
+export const reparentNodes =
+    (container: Node,
+     start: Node | null,
+     end: Node | null = null,
+     before: Node | null = null): void => {
+      let node = start;
+      while (node !== end) {
+        const n = node!.nextSibling;
+        container.insertBefore(node!, before as Node);
+        node = n;
+      }
+    };
 
 /**
  * Removes nodes, starting from `startNode` (inclusive) to `endNode`
