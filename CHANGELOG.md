@@ -13,7 +13,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 * Allow all valid HTML attribute names, including emoji and Angular-style
-  (foo)= and [foo]= names.
+  `(foo)=` and `[foo]=` names.
+* Drastically improved performance of the `repeat` directive.
+* Fixed an issue with expressions directly following elements.
+* Fixed numerous bugs with the `repeat` directive.
+* Performance improvements for template setup
+* Internal code cleanup
+* Support synchronous thenables
 
 ## [0.7.0] - 2017-10-06
 
