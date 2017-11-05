@@ -569,7 +569,8 @@ export class NodePart implements SinglePart {
   }
 
   clear(startNode: Node = this.startNode) {
-    removeNodes(this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
+    removeNodes(
+        this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
 }
 
@@ -672,13 +673,12 @@ export const reparentNodes =
  * (exclusive), from `container`.
  */
 export const removeNodes =
-    (container: Node,
-     startNode: Node | null,
-     endNode: Node | null = null): void => {
-      let node = startNode;
-      while (node !== endNode) {
-        const n = node!.nextSibling;
-        container.removeChild(node!);
-        node = n;
-      }
-    };
+    (container: Node, startNode: Node | null, endNode: Node | null = null):
+        void => {
+          let node = startNode;
+          while (node !== endNode) {
+            const n = node!.nextSibling;
+            container.removeChild(node!);
+            node = n;
+          }
+        };
