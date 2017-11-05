@@ -110,7 +110,34 @@ const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
 const nodeMarker = `<!--${marker}-->`;
 const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 const nonWhitespace = /[^\s]/;
-const lastAttributeNameRegex = /([\w\-.$]+)=(?:[^"']*|"[^"]*|'[^']*)$/;
+
+/**
+ * This regex extracts the attribute name preceding an attribute-position
+ * expression. It does this by matching the syntax allowed for attributes
+ * against the string literal directly preceding the expression, assuming that
+ * the expression is in an attribute-value position.
+ *
+ * See attributes in the HTML spec:
+ * https://www.w3.org/TR/html5/syntax.html#attributes-0
+ *
+ * "\0-\x1F\x7F-\x9F" are Unicode control characters
+ *
+ * " \x09\x0a\x0c\x0d" are HTML space characters:
+ * https://www.w3.org/TR/html5/infrastructure.html#space-character
+ *
+ * So an attribute is:
+ *  * The name: any character except a control character, space character, ('),
+ *    ("), ">", "=", or "/"
+ *  * Followed by zero or more space characters
+ *  * Followed by "="
+ *  * Followed by zero or more space characters
+ *  * Followed by:
+ *    * Any character except space, ('), ("), "<", ">", "=", or
+ *    * (") then any non-("), or
+ *    * (') then any non-(')
+ */
+const lastAttributeNameRegex =
+    /([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*)$/;
 
 /**
  * Finds the closing index of the last closed HTML tag.
@@ -542,7 +569,8 @@ export class NodePart implements SinglePart {
   }
 
   clear(startNode: Node = this.startNode) {
-    removeNodes(this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
+    removeNodes(
+        this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
 }
 
@@ -645,13 +673,12 @@ export const reparentNodes =
  * (exclusive), from `container`.
  */
 export const removeNodes =
-    (container: Node,
-     startNode: Node | null,
-     endNode: Node | null = null): void => {
-      let node = startNode;
-      while (node !== endNode) {
-        const n = node!.nextSibling;
-        container.removeChild(node!);
-        node = n;
-      }
-    };
+    (container: Node, startNode: Node | null, endNode: Node | null = null):
+        void => {
+          let node = startNode;
+          while (node !== endNode) {
+            const n = node!.nextSibling;
+            container.removeChild(node!);
+            node = n;
+          }
+        };
