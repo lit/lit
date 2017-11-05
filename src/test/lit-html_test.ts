@@ -54,6 +54,9 @@ suite('lit-html', () => {
       assert.equal(countNodes(html`${0}b${0}`, (c) => c.childNodes), 3);
       assert.equal(countNodes(html`${0}${0}c`, (c) => c.childNodes), 3);
       assert.equal(countNodes(html`a${0}b${0}c`, (c) => c.childNodes), 3);
+
+      assert.equal(countNodes(html`<a></a>${0}`, (c) => c.childNodes), 2);
+      assert.equal(countNodes(html`${0}<a></a>`, (c) => c.childNodes), 2);
     });
 
     test('escapes marker sequences in text nodes', () => {

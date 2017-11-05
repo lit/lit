@@ -167,25 +167,18 @@ export class Template {
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         content,
-        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-               NodeFilter.SHOW_TEXT */
+        1157 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
+               NodeFilter.SHOW_TEXT | NodeFilter.SHOW_DOCUMENT_FRAGMENT */
         ,
         null as any,
         false);
     let index = -1;
     let partIndex = 0;
-    const nodesToRemove: Node[] = [];
-
-    // The actual previous node, accounting for removals: if a node is removed
-    // it will never be the previousNode.
-    let previousNode: Node|undefined;
-    // Used to set previousNode at the top of the loop.
-    let currentNode: Node|undefined;
+    let lastPartStart: Node | null = null;
 
     while (walker.nextNode()) {
       index++;
-      previousNode = currentNode;
-      const node = currentNode = walker.currentNode as Element;
+      const node = walker.currentNode as Element;
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
         if (!node.hasAttributes()) {
           continue;
@@ -239,7 +232,7 @@ export class Template {
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
             parent.insertBefore(document.createTextNode(strings[i]), node);
-            this.parts.push(new TemplatePart('node', index++));
+            this.parts.push(new TemplatePart('node', ++index));
           }
         } else {
           // Strip whitespace-only nodes, only between elements, or at the
@@ -251,50 +244,39 @@ export class Template {
               (nextSibling === null ||
                nextSibling.nodeType === 1 /* Node.ELEMENT_NODE */) &&
               !nonWhitespace.test(nodeValue)) {
-            nodesToRemove.push(node);
-            currentNode = previousNode;
+            walker.previousNode();
+            node.parentNode!.removeChild(node);
             index--;
           }
         }
-      } else if (
-          node.nodeType === 8 /* Node.COMMENT_NODE */ &&
-          node.nodeValue === marker) {
+      } else if (node.nodeValue === marker) {
         const parent = node.parentNode!;
         // Add a new marker node to be the startNode of the Part if any of the
         // following are true:
         //  * We don't have a previousSibling
-        //  * previousSibling is being removed (thus it's not the
-        //    `previousNode`)
-        //  * previousSibling is not a Text node
-        //
-        // TODO(justinfagnani): We should be able to use the previousNode here
-        // as the marker node and reduce the number of extra nodes we add to a
-        // template. See https://github.com/PolymerLabs/lit-html/issues/147
-        const previousSibling = node.previousSibling;
-        if (previousSibling === null || previousSibling !== previousNode ||
-            previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createTextNode(''), node);
-        } else {
-          index--;
+        //  * previousSibling is already the start of a Part.
+        let previousSibling = node.previousSibling;
+        if (previousSibling === null || previousSibling === lastPartStart) {
+          previousSibling = document.createTextNode('');
+          parent.insertBefore(previousSibling, node);
+          index++;
         }
-        this.parts.push(new TemplatePart('node', index++));
-        nodesToRemove.push(node);
-        // If we don't have a nextSibling add a marker node.
-        // We don't have to check if the next node is going to be removed,
-        // because that node will induce a new marker if so.
+
+        this.parts.push(new TemplatePart('node', index));
+
+        // If we don't have a nextSibling, add a marker node.
         if (node.nextSibling === null) {
           parent.insertBefore(document.createTextNode(''), node);
         } else {
+          // Decrement, since we'll be removing the node.
           index--;
+          lastPartStart = previousSibling;
         }
-        currentNode = previousNode;
+
+        walker.previousNode();
+        node.parentNode!.removeChild(node);
         partIndex++;
       }
-    }
-
-    // Remove text binding nodes after the walk to not disturb the TreeWalker
-    for (const n of nodesToRemove) {
-      n.parentNode!.removeChild(n);
     }
   }
 
@@ -434,7 +416,7 @@ export class NodePart implements SinglePart {
   }
 
   private _insert(node: Node) {
-    this.endNode.parentNode!.insertBefore(node, this.endNode);
+    this.startNode.parentNode!.insertBefore(node, this.endNode);
   }
 
   private _setNode(value: Node): void {
@@ -448,8 +430,8 @@ export class NodePart implements SinglePart {
 
   private _setText(value: string): void {
     const node = this.startNode.nextSibling!;
-    if (node === this.endNode.previousSibling &&
-        node.nodeType === Node.TEXT_NODE) {
+    if (node.nextSibling === this.endNode &&
+        node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if _previousValue is
@@ -614,7 +596,11 @@ export class TemplateInstance {
           index++;
           walker.nextNode();
         }
-        this._parts.push(this._partCallback(this, part, walker.currentNode));
+        let node = walker.currentNode;
+        if (part.type === 'node') {
+          node = node.previousSibling!;
+        }
+        this._parts.push(this._partCallback(this, part, node));
       }
     }
     return fragment;
@@ -622,10 +608,9 @@ export class TemplateInstance {
 }
 
 /**
- * Reparents nodes, starting from `startNode` (inclusive) to `endNode`
- * (exclusive), into another container (could be the same container), before
- * `beforeNode`. If `beforeNode` is null, it appends the nodes to the
- * container.
+ * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
+ * into another container (could be the same container), before `before`. If
+ * `before` is null, it appends the nodes to the container.
  */
 export const reparentNodes =
     (container: Node,
@@ -641,8 +626,8 @@ export const reparentNodes =
     };
 
 /**
- * Removes nodes, starting from `startNode` (inclusive) to `endNode`
- * (exclusive), from `container`.
+ * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
+ * `container`.
  */
 export const removeNodes =
     (container: Node,
