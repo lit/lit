@@ -12,7 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart} from '../lit-html.js';
+import {
+  directive,
+  DirectiveFn,
+  NodePart,
+  removeNodes,
+  reparentNodes,
+} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -76,12 +82,12 @@ export function repeat<T>(
         }
       } else if (currentMarker !== itemPart.startNode) {
         // Existing part in the wrong position
-        const end = itemPart.endNode.nextSibling;
-        for (let node = itemPart.startNode; node !== end;) {
-          const n = node.nextSibling!;
-          container.insertBefore(node, currentMarker);
-          node = n;
-        }
+        reparentNodes(
+          container,
+          itemPart.startNode,
+          itemPart.endNode.nextSibling!,
+          currentMarker
+        );
       } else {
         // else part is in the correct position already
         currentMarker = itemPart.endNode.nextSibling!;
@@ -92,12 +98,7 @@ export function repeat<T>(
 
     // Cleanup
     if (currentMarker !== part.endNode) {
-      const end = part.endNode;
-      for (let node = currentMarker; node !== end;) {
-        const n = node.nextSibling!;
-        container.removeChild(node);
-        node = n;
-      }
+      removeNodes(container, currentMarker, part.endNode);
       keyMap.forEach(cleanMap);
     }
   });
