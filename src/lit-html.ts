@@ -159,15 +159,17 @@ export class Template {
   constructor(strings: TemplateStringsArray, svg: boolean = false) {
     const element = this.element = document.createElement('template');
     element.innerHTML = this._getHtml(strings, svg);
+    const content = element.content;
+
     if (svg) {
-      const svgElement = element.content.firstChild!;
-      reparentNodes(svgElement.firstChild, null, element.content, null);
-      element.content.removeChild(svgElement);
+      const svgElement = content.firstChild!;
+      content.removeChild(svgElement);
+      reparentNodes(content, svgElement.firstChild);
     }
 
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        this.element.content,
+        content,
         133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
                NodeFilter.SHOW_TEXT */
         ,
@@ -625,14 +627,14 @@ export class TemplateInstance {
  * container.
  */
 export const reparentNodes =
-    (startNode: Node | null,
-     endNode: Node | null,
-     container: Node,
-     beforeNode: Node | null): void => {
-      let node = startNode;
-      while (node !== endNode) {
+    (container: Node,
+     start: Node | null,
+     end: Node | null = null,
+     before: Node | null = null): void => {
+      let node = start;
+      while (node !== end) {
         const n = node!.nextSibling;
-        container.insertBefore(node!, beforeNode);
+        container.insertBefore(node!, before as Node);
         node = n;
       }
     };
