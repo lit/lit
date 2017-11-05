@@ -72,16 +72,7 @@ export const extendedPartCallback =
 
 export class PropertyPart extends AttributePart {
   setValue(values: any[], startIndex: number): void {
-    const s = this.strings;
-    let value: any;
-    if (s.length === 2 && s[0] === '' && s[1] === '') {
-      // An expression that occupies the whole attribute value will leave
-      // leading and trailing empty strings.
-      value = getValue(this, values[startIndex]);
-    } else {
-      // Interpolation, so interpolate
-      value = this._interpolate(values, startIndex);
-    }
+    const value = this._interpolate(values, startIndex);
     (this.element as any)[this.name] = value;
   }
 }

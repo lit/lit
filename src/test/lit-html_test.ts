@@ -256,12 +256,12 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, 'a,b,c');
       });
 
-      // test('renders multiple nested templates', () => {
-      //   const partial = html`<h1>${'foo'}</h1>`;
-      //   html`${partial}${'bar'}${partial}${'baz'}qux`, container);
-      //   assert.equal(container.innerHTML,
-      //   '<h1>foo</h1>bar<h1>foo</h1>bazqux');
-      // });
+      test('renders multiple nested templates', () => {
+        const partial = html`<h1>${'foo'}</h1>`;
+        render(html`${partial}${'bar'}${partial}${'baz'}qux`, container);
+        assert.equal(container.innerHTML,
+        '<h1>foo</h1>bar<h1>foo</h1>bazqux');
+      });
 
       test('renders arrays of nested templates', () => {
         render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
@@ -361,7 +361,14 @@ suite('lit-html', () => {
 
       test('renders an array to an attribute', () => {
         render(html`<div foo=${[1, 2, 3]}></div>`, container);
-        assert.equal(container.innerHTML, '<div foo="123"></div>');
+        assert.equal(container.innerHTML, '<div foo="1,2,3"></div>');
+      });
+
+      test('removes a nullish attribute', () => {
+        render(html`<div foo=${null}></div>`, container);
+        assert.equal(container.innerHTML, '<div></div>');
+        render(html`<div foo=${undefined}></div>`, container);
+        assert.equal(container.innerHTML, '<div></div>');
       });
 
       test('renders to an attribute before a node', () => {
