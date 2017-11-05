@@ -98,7 +98,7 @@ export function render(
   const fragment = instance._clone();
   instance.update(result.values);
 
-  removeNodes(container.firstChild, null, container);
+  removeNodes(container, container.firstChild);
   container.appendChild(fragment);
 }
 
@@ -529,7 +529,7 @@ export class NodePart implements SinglePart {
   }
 
   clear(startNode: Node = this.startNode) {
-    removeNodes(startNode.nextSibling!, this.endNode, startNode.parentNode!);
+    removeNodes(this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
 }
 
@@ -621,9 +621,9 @@ export class TemplateInstance {
  * (exclusive), from `container`.
  */
 export const removeNodes =
-    (startNode: Node | null,
-     endNode: Node | null,
-     container: Node): void => {
+    (container: Node,
+     startNode: Node | null,
+     endNode: Node | null = null): void => {
       let node = startNode;
       while (node !== endNode) {
         const n = node!.nextSibling;
