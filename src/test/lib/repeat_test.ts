@@ -116,6 +116,35 @@ suite('repeat', () => {
       render(t([3, 2, 1]), container);
     });
 
+    test('can render repeated items', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([666, 666]), container);
+      assert.equal(container.innerHTML, `<li>item: 666</li>`);
+    });
+
+    test('can render repeated items with skip', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([666, 777, 666]), container);
+      assert.equal(container.innerHTML, `<li>item: 777</li><li>item: 666</li>`);
+    });
+
+    test('can rerender repeated items', () => {
+      let updates = 0;
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, () => html`
+          <li>item: ${++updates}</li>`)}`;
+
+      render(t([666, 666]), container);
+      assert.equal(updates, 2);
+      assert.equal(container.innerHTML, `<li>item: 2</li>`);
+    });
+
     test('can insert an item at the beginning', () => {
       let items = [1, 2, 3];
       const t = () =>
