@@ -2,12 +2,9 @@
 /lib/
 
 # Compiler output
-/lit-html.d.ts
-/lit-html.js
-/lit-html.js.map
-/test/**/*.d.ts
-/test/**/*.js
-/test/**/*.js.map
+**/*.js
+**/*.d.ts
+**/*.js.map
 
 yarn.lock
 
