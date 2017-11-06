@@ -76,14 +76,11 @@ export function repeat<T>(
         }
       } else if (currentMarker !== itemPart.startNode) {
         // Existing part in the wrong position
-        const end = itemPart.endNode.nextSibling!;
-        if (currentMarker !== end) {
-          reparentNodes(
-              container,
-              itemPart.startNode,
-              end,
-              currentMarker);
-        }
+        reparentNodes(
+            container,
+            itemPart.startNode,
+            itemPart.endNode.nextSibling!,
+            currentMarker);
       } else {
         // else part is in the correct position already
         currentMarker = itemPart.endNode.nextSibling!;
