@@ -14,16 +14,16 @@
 
 import {directive, DirectiveFn, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
 
-export type KeyFn<T> = (item: T) => any;
+export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
 
-const keyMapCache = new WeakMap<NodePart, Map<any, NodePart>>();
+interface PartState {
+  itemPart: NodePart;
+  renderCount: number;
+};
 
-function cleanMap(part: NodePart, key: any, map: Map<any, NodePart>) {
-  if (!part.startNode.parentNode) {
-    map.delete(key);
-  }
-}
+const keyMapCache = new WeakMap<NodePart, WeakMap<any, PartState>>();
+const strongMapCache = new WeakMap<NodePart, Map<any, PartState>>();
 
 export function repeat<T>(
     items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn;
@@ -38,52 +38,58 @@ export function repeat<T>(
   } else if (arguments.length === 3) {
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
+  let renderCount = 0;
 
   return directive((part: NodePart): any => {
 
-    let keyMap = keyMapCache.get(part);
-    if (keyMap === undefined) {
-      keyMap = new Map();
-      keyMapCache.set(part, keyMap);
+    if (!keyMapCache.has(part)) {
+      keyMapCache.set(part, new WeakMap());
+      strongMapCache.set(part, new Map());
     }
+    const keyMap = keyMapCache.get(part)!;
+    const strongMap = strongMapCache.get(part)!;
+
     const container = part.startNode.parentNode as HTMLElement | ShadowRoot |
         DocumentFragment;
-    let index = -1;
+    let index = 0;
     let currentMarker = part.startNode.nextSibling!;
 
     for (const item of items) {
-      let result;
-      let key;
-      try {
-        ++index;
-        result = template !(item, index);
-        key = keyFn ? keyFn(item) : index;
-      } catch (e) {
-        console.error(e);
-        continue;
-      }
+      const result = template !(item, index);
+      const key = keyFn ? keyFn(item, index) : item;
+      const typeMap = typeof key === 'object' ? keyMap : strongMap;
+      index++;
 
       // Try to reuse a part
-      let itemPart = keyMap.get(key);
-      if (itemPart === undefined) {
+      let partState = typeMap.get(key);
+      let itemPart;
+      if (partState === undefined) {
         const marker = document.createTextNode('');
         const endNode = document.createTextNode('');
         container.insertBefore(marker, currentMarker);
         container.insertBefore(endNode, currentMarker);
         itemPart = new NodePart(part.instance, marker, endNode);
         if (key !== undefined) {
-          keyMap.set(key, itemPart);
+          typeMap.set(key, {
+            itemPart,
+            renderCount: renderCount,
+          });
         }
-      } else if (currentMarker !== itemPart.startNode) {
+      } else if (partState.renderCount === renderCount) {
+        // We already rendered this part this time
+        continue;
+      } else if (currentMarker === partState.itemPart.startNode) {
+        // Existing part in correct position already
+        itemPart = partState.itemPart;
+        currentMarker = itemPart.endNode.nextSibling!;
+      } else {
+        itemPart = partState.itemPart;
         // Existing part in the wrong position
         reparentNodes(
             container,
             itemPart.startNode,
             itemPart.endNode.nextSibling!,
             currentMarker);
-      } else {
-        // else part is in the correct position already
-        currentMarker = itemPart.endNode.nextSibling!;
       }
 
       itemPart.setValue(result);
@@ -92,7 +98,15 @@ export function repeat<T>(
     // Cleanup
     if (currentMarker !== part.endNode) {
       removeNodes(container, currentMarker, part.endNode);
-      keyMap.forEach(cleanMap);
+      // Only need to iterate the strongMap, keyMap will clean itself.
+      if (strongMap.size > 0) {
+        strongMap.forEach((partState, key) => {
+          if (partState.renderCount !== renderCount) {
+            strongMap.delete(key);
+          }
+        });
+      }
     }
+    renderCount++;
   });
 }
