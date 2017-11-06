@@ -661,10 +661,6 @@ export const reparentNodes =
      end: Node | null = null,
      before: Node | null = null): void => {
       let node = start;
-      if (before && before === end) {
-        // Prevent a really fun infinite loop.
-        return;
-      }
       while (node !== end) {
         const n = node!.nextSibling;
         container.insertBefore(node!, before as Node);
