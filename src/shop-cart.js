@@ -89,8 +89,10 @@ class ShopCart extends Element {
 
   update() {
     const state = store.getState();
-    this.cart = state.cart;
-    this.total = state.total;
+    this.setProperties({
+      cart: state.cart,
+      total: state.total
+    });
   }
 
   _formatTotal(total) {

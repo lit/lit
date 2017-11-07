@@ -487,9 +487,11 @@ class ShopCheckout extends Element {
 
   update() {
     const state = store.getState();
-    this.cart = state.cart;
-    this.total = state.total;
-    this.state = state.checkoutState;
+    this.setProperties({
+      cart: state.cart,
+      total: state.total,
+      state: state.checkoutState
+    });
   }
 
   _submit(e) {

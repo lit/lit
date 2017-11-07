@@ -204,8 +204,10 @@ class ShopDetail extends Element {
 
   update() {
     const state = store.getState();
-    this.item = findItem(findCategory(state.categories, state.categoryName), state.itemName);
-    this.failure = state.failure;
+    this.setProperties({
+      item: findItem(findCategory(state.categories, state.categoryName), state.itemName),
+      failure: state.failure
+    });
   }
 
   _itemChanged(item, visible) {

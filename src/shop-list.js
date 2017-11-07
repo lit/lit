@@ -126,8 +126,10 @@ class ShopList extends Element {
 
   update() {
     const state = store.getState();
-    this.category = findCategory(state.categories, state.categoryName);
-    this.failure = state.failure;
+    this.setProperties({
+      category: findCategory(state.categories, state.categoryName),
+      failure: state.failure
+    });
   }
 
   connectedCallback() {

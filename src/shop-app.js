@@ -336,10 +336,13 @@ class ShopApp extends Element {
 
   update() {
     const state = store.getState();
-    this.categories = state.categories;
-    this.categoryName = state.categoryName;
-    this.numItems = state.numItems;
-    this._routePageChanged(state.page);
+    this.setProperties({
+      categories: state.categories,
+      categoryName: state.categoryName,
+      numItems: state.numItems,
+      page: state.page || 'home'
+    });
+
     // NOTE: Only this element updates state.offline, so no need to update from
     // state.offline here.
     // this.offline = state.offline;
@@ -364,18 +367,14 @@ class ShopApp extends Element {
     });
   }
 
-  _routePageChanged(page) {
-    if (this.page === 'list') {
+  _pageChanged(page, oldPage) {
+    if (page === 'list') {
       this._listScrollTop = window.pageYOffset;
     }
 
-    this.page = page || 'home';
-
     // Close the drawer - in case the *route* change came from a link in the drawer.
     this.drawerOpened = false;
-  }
 
-  _pageChanged(page, oldPage) {
     if (page != null) {
       // home route is eagerly loaded
       if (page == 'home') {
