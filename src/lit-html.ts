@@ -109,7 +109,6 @@ export function render(
 const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
 const nodeMarker = `<!--${marker}-->`;
 const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
-const nonWhitespace = /[^\s]/;
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
@@ -249,47 +248,33 @@ export class Template {
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
         const nodeValue = node.nodeValue!;
-        if (nodeValue.indexOf(marker) > -1) {
-          const parent = node.parentNode!;
-          const strings = nodeValue.split(markerRegex);
-          const lastIndex = strings.length - 1;
-
-          // We have a part for each match found
-          partIndex += lastIndex;
-
-          // Generate a new text node for each literal section
-          // These nodes are also used as the markers for node parts
-          for (let i = 0; i < lastIndex; i++) {
-            // IE doesn't clone empty text nodes, so use comments instead
-            parent.insertBefore(
-                strings[i] === '' ? document.createComment('') :
-                                    document.createTextNode(strings[i]),
-                node);
-            this.parts.push(new TemplatePart('node', index++));
-          }
-
-          parent.insertBefore(
-              strings[lastIndex] === '' ?
-                  document.createComment('') :
-                  document.createTextNode(strings[lastIndex]),
-              node);
-
-          nodesToRemove.push(node);
-        } else {
-          // Strip whitespace-only nodes, only between elements, or at the
-          // beginning or end of elements.
-          const previousSibling = node.previousSibling;
-          const nextSibling = node.nextSibling;
-          if ((previousSibling === null ||
-               previousSibling.nodeType === 1 /* Node.ELEMENT_NODE */) &&
-              (nextSibling === null ||
-               nextSibling.nodeType === 1 /* Node.ELEMENT_NODE */) &&
-              !nonWhitespace.test(nodeValue)) {
-            nodesToRemove.push(node);
-            currentNode = previousNode;
-            index--;
-          }
+        if (nodeValue.indexOf(marker) < 0) {
+          continue;
         }
+
+        const parent = node.parentNode!;
+        const strings = nodeValue.split(markerRegex);
+        const lastIndex = strings.length - 1;
+
+        // We have a part for each match found
+        partIndex += lastIndex;
+
+        // Generate a new text node for each literal section
+        // These nodes are also used as the markers for node parts
+        for (let i = 0; i < lastIndex; i++) {
+          // IE doesn't clone empty text nodes, so use comments instead
+          previousNode = strings[i] === '' ? document.createComment('') :
+            document.createTextNode(strings[i]);
+          parent.insertBefore(previousNode, node);
+          this.parts.push(new TemplatePart('node', index++));
+        }
+
+        parent.insertBefore(
+            strings[lastIndex] === '' ?
+                document.createComment('') :
+                document.createTextNode(strings[lastIndex]),
+            node);
+        nodesToRemove.push(node);
       } else if (
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === marker) {

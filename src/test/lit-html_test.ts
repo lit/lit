@@ -172,11 +172,6 @@ suite('lit-html', () => {
         container = document.createElement('div');
       });
 
-      test('removes whitespace-only nodes', () => {
-        render(html`<div>  </div>`, container);
-        assert.equal(container.innerHTML, '<div></div>');
-      });
-
       test('renders a string', () => {
         render(html`<div>${'foo'}</div>`, container);
         assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
@@ -363,7 +358,10 @@ suite('lit-html', () => {
           <div>${''}</div>
           <div foo=${'bar'}></div>
         `, container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div><div foo="bar"></div>');
+        assert.equal(container.innerHTML, `
+          <div><!----><!----></div>
+          <div foo="bar"></div>
+        `);
       });
 
       test('renders to attributes with attribute-like values', () => {
@@ -468,11 +466,14 @@ suite('lit-html', () => {
             </style>
             <a href="/buy/${'foo'}"></a>
           `, container);
-        assert.equal(container.innerHTML, `<style>
+        assert.equal(container.innerHTML, `
+            <style>
               .foo {
                 background: black;
               }
-            </style><a href="/buy/foo"></a>`);
+            </style>
+            <a href="/buy/foo"></a>
+          `);
       });
 
       test('renders a combination of stuff', () => {
@@ -481,9 +482,11 @@ suite('lit-html', () => {
               ${'baz'}
               <p>${'qux'}</p>
             </div>`, container);
-        assert.equal(container.innerHTML, `<div foo="bar">
+        assert.equal(container.innerHTML, `
+            <div foo="bar">
               baz
-              <p><!---->qux<!----></p></div>`);
+              <p><!---->qux<!----></p>
+            </div>`);
       });
 
       test('renders SVG', () => {
@@ -501,11 +504,14 @@ suite('lit-html', () => {
             <!-- this is a comment -->
             <h1 class="${'foo'}">title</h1>
             <p>${'foo'}</p>
-            </div>`;
+          </div>`;
         render(t, container);
-        assert.equal(container.innerHTML, `<div>
+        assert.equal(container.innerHTML, `
+          <div>
             <!-- this is a comment -->
-            <h1 class="foo">title</h1><p><!---->foo<!----></p></div>`);
+            <h1 class="foo">title</h1>
+            <p><!---->foo<!----></p>
+          </div>`);
       });
 
       test('renders expressions with preceding elements', () => {
