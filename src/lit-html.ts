@@ -134,9 +134,9 @@ const nonWhitespace = /[^\s]/;
  *  * Followed by:
  *    * Any character except space, ('), ("), "<", ">", "=", or
  *    * (") then any non-("), or
- *    * (') then lastAttributeNameRegexany non-(')
+ *    * (') then any non-(')
  */
-const  =
+const lastAttributeNameRegex =
     /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*)$/;
 
 /**
