@@ -134,10 +134,10 @@ const nonWhitespace = /[^\s]/;
  *  * Followed by:
  *    * Any character except space, ('), ("), "<", ">", "=", or
  *    * (") then any non-("), or
- *    * (') then any non-(')
+ *    * (') then lastAttributeNameRegexany non-(')
  */
-const lastAttributeNameRegex =
-    /([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*)$/;
+const  =
+    /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*)$/;
 
 /**
  * Finds the closing index of the last closed HTML tag.
