@@ -132,7 +132,7 @@ const nonWhitespace = /[^\s]/;
  *  * Followed by "="
  *  * Followed by zero or more space characters
  *  * Followed by:
- *    * Any character except space, ('), ("), "<", ">", "=", or
+ *    * Any character except space, ('), ("), "<", ">", "=", (`), or
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
