@@ -5,10 +5,8 @@ installReducers({
   _cartChanged(state, action) {
     const cart = action.cart;
     return {
-    ...state,
-    cart,
-    numItems: computeNumItems(cart),
-    total: computeTotal(cart)
+      ...state,
+      cart
     };
   }
 });
@@ -97,24 +95,4 @@ function updateCart(dispatch, cart, i, detail) {
     type: '_cartChanged',
     cart
   });
-}
-
-function computeNumItems(cart) {
-  if (cart) {
-    return cart.reduce((total, entry) => {
-      return total + entry.quantity;
-    }, 0);
-  }
-
-  return 0;
-}
-
-function computeTotal(cart) {
-  if (cart) {
-    return cart.reduce((total, entry) => {
-      return total + entry.quantity * entry.item.price;
-    }, 0);
-  }
-
-  return 0;
 }

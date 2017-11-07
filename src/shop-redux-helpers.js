@@ -21,3 +21,23 @@ export function findItem(category, itemName) {
     }
   }
 }
+
+export function computeNumItems(cart) {
+  if (cart) {
+    return cart.reduce((total, entry) => {
+      return total + entry.quantity;
+    }, 0);
+  }
+
+  return 0;
+}
+
+export function computeTotal(cart) {
+  if (cart) {
+    return cart.reduce((total, entry) => {
+      return total + entry.quantity * entry.item.price;
+    }, 0);
+  }
+
+  return 0;
+}

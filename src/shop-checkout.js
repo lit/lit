@@ -12,6 +12,7 @@ import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { store, installReducers } from './shop-redux-store.js';
 import { pushState } from './shop-redux-router.js';
 import { clearCart } from './shop-redux-cart.js';
+import { computeTotal } from './shop-redux-helpers.js';
 
 installReducers({
   // Internal state from checkout flow (init/success/error).
@@ -489,7 +490,7 @@ class ShopCheckout extends Element {
     const state = store.getState();
     this.setProperties({
       cart: state.cart,
-      total: state.total,
+      total: computeTotal(state.cart),
       state: state.checkoutState
     });
   }

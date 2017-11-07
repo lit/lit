@@ -14,6 +14,7 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 
 import { store } from './shop-redux-store.js';
 import { changeOffline } from './shop-redux-categories.js';
+import { computeNumItems } from './shop-redux-helpers.js';
 import './shop-redux-router.js';
 
 // performance logging
@@ -339,7 +340,7 @@ class ShopApp extends Element {
     this.setProperties({
       categories: state.categories,
       categoryName: state.categoryName,
-      numItems: state.numItems,
+      numItems: computeNumItems(state.cart),
       page: state.page || 'home'
     });
 

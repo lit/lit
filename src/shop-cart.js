@@ -4,6 +4,7 @@ import './shop-common-styles.js';
 import './shop-form-styles.js';
 
 import { store } from './shop-redux-store.js';
+import { computeTotal } from './shop-redux-helpers.js';
 
 class ShopCart extends Element {
   static get template() {
@@ -91,7 +92,7 @@ class ShopCart extends Element {
     const state = store.getState();
     this.setProperties({
       cart: state.cart,
-      total: state.total
+      total: computeTotal(state.cart)
     });
   }
 
