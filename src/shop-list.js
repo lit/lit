@@ -6,8 +6,8 @@ import './shop-list-item.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store } from './shop-redux-store.js';
-import { findCategory } from './shop-redux-helpers.js';
+import { store } from './redux/index.js';
+import { getLocationPathPart } from './redux/helpers/location.js';
 
 class ShopList extends Element {
   static get template() {
@@ -75,7 +75,7 @@ class ShopList extends Element {
 
     <header>
       <h1>[[category.title]]</h1>
-      <span>[[_getPluralizedQuantity(category.items.length)]]</span>
+      <span>[[_getPluralizedQuantity(category.items)]]</span>
     </header>
 
     <ul class="grid" hidden$="[[failure]]">
@@ -127,8 +127,8 @@ class ShopList extends Element {
   update() {
     const state = store.getState();
     this.setProperties({
-      category: findCategory(state.categories, state.categoryName),
-      failure: state.failure
+      category: state.categories[getLocationPathPart(state, 1)],
+      failure: state.network.failure
     });
   }
 
@@ -144,7 +144,7 @@ class ShopList extends Element {
 
   _getListItems(items) {
     // Return placeholder items when the items haven't loaded yet.
-    return items || [{},{},{},{},{},{},{},{},{},{}];
+    return items ? Object.values(items) : [{},{},{},{},{},{},{},{},{},{}];
   }
 
   _getItemHref(item) {
@@ -153,7 +153,8 @@ class ShopList extends Element {
     return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
   }
 
-  _getPluralizedQuantity(quantity) {
+  _getPluralizedQuantity(items) {
+    const quantity = items ? Object.keys(items).length : 0;
     if (!quantity) {
       return '';
     }

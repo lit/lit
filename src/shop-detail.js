@@ -7,9 +7,11 @@ import './shop-select.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store } from './shop-redux-store.js';
-import { addCartItem } from './shop-redux-cart.js';
-import { findCategory, findItem } from './shop-redux-helpers.js';
+import { store } from './redux/index.js';
+import { getLocationPathPart } from './redux/helpers/location.js';
+// import { store } from './shop-redux-store.js';
+// import { addCartItem } from './shop-redux-cart.js';
+// import { findCategory, findItem } from './shop-redux-helpers.js';
 
 class ShopDetail extends Element {
   static get template() {
@@ -204,9 +206,11 @@ class ShopDetail extends Element {
 
   update() {
     const state = store.getState();
+    const category = state.categories[getLocationPathPart(state, 1)];
+    const item = category && category.items && category.items[getLocationPathPart(state, 2)];
     this.setProperties({
-      item: findItem(findCategory(state.categories, state.categoryName), state.itemName),
-      failure: state.failure
+      item,
+      failure: state.network.failure
     });
   }
 
@@ -248,11 +252,11 @@ class ShopDetail extends Element {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('add-cart-item', {
       bubbles: true, composed: true}));
-    store.dispatch(addCartItem({
-      item: this.item,
-      quantity: parseInt(this.$.quantitySelect.value, 10),
-      size: this.$.sizeSelect.value
-    }));
+    // store.dispatch(addCartItem({
+    //   item: this.item,
+    //   quantity: parseInt(this.$.quantitySelect.value, 10),
+    //   size: this.$.sizeSelect.value
+    // }));
   }
 
   _isDefined(item) {

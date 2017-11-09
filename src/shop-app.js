@@ -12,10 +12,13 @@ import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/rend
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
-import { store } from './shop-redux-store.js';
-import { changeOffline } from './shop-redux-categories.js';
-import { computeNumItems } from './shop-redux-helpers.js';
-import './shop-redux-router.js';
+// import { store } from './shop-redux-store.js';
+// import { changeOffline } from './shop-redux-categories.js';
+// import { computeNumItems } from './shop-redux-helpers.js';
+// import './shop-redux-router.js';
+
+import { store } from './redux/index.js';
+import { getLocationPathPart } from './redux/helpers/location.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -314,6 +317,11 @@ class ShopApp extends Element {
       value: 0
     },
 
+    offline: {
+      type: Boolean,
+      observer: '_offlineChanged'
+    },
+
     _shouldShowTabs: {
       computed: '_computeShouldShowTabs(page, smallScreen)'
     },
@@ -338,15 +346,12 @@ class ShopApp extends Element {
   update() {
     const state = store.getState();
     this.setProperties({
-      categories: state.categories,
-      categoryName: state.categoryName,
-      numItems: computeNumItems(state.cart),
-      page: state.page || 'home'
+      categories: Object.values(state.categories),
+      categoryName: getLocationPathPart(state, 1),
+      // numItems: computeNumItems(state.cart),
+      page: getLocationPathPart(state, 0) || 'home',
+      offline: !state.network.online
     });
-
-    // NOTE: Only this element updates state.offline, so no need to update from
-    // state.offline here.
-    // this.offline = state.offline;
   }
 
   ready() {
@@ -361,11 +366,6 @@ class ShopApp extends Element {
     this.addEventListener('announce', (e)=>this._onAnnounce(e));
     this.addEventListener('dom-change', (e)=>this._domChange(e));
     this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
-    // listen for online/offline
-    afterNextRender(this, () => {
-      window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
-      window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
-    });
   }
 
   _pageChanged(page, oldPage) {
@@ -410,29 +410,24 @@ class ShopApp extends Element {
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js', {scope: '/'});
           }
-          this._notifyNetworkStatus();
           this.loadComplete = true;
         });
       });
     }
   }
 
-  _notifyNetworkStatus() {
-    let oldOffline = this.offline;
-    this.offline =  !navigator.onLine;
+  _offlineChanged(offline, oldOffline) {
     // Show the snackbar if the user is offline when starting a new session
     // or if the network status changed.
-    if (this.offline || (!this.offline && oldOffline === true)) {
+    if (offline || (!offline && oldOffline === true)) {
       if (!this._networkSnackbar) {
         this._networkSnackbar = document.createElement('shop-snackbar');
         this.root.appendChild(this._networkSnackbar);
       }
-      this._networkSnackbar.innerHTML = this.offline ?
+      this._networkSnackbar.innerHTML = offline ?
           'You are offline' : 'You are online';
       this._networkSnackbar.open();
     }
-
-    store.dispatch(changeOffline(this.offline));
   }
 
   _toggleDrawer() {

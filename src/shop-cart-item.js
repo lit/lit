@@ -222,8 +222,23 @@ class ShopCartItem extends Element {
   }
 
   _setCartItem(quantity) {
-    this.dispatchEvent(new CustomEvent('set-cart-item', {
-      bubbles: true, composed: true, detail: { quantity }}));
+    // Announce "Cart item changed" through screenreader.
+    this.dispatchEvent(new CustomEvent('announce', {
+      bubbles: true, composed: true, detail: 'quantity updated' }));
+    // this.fire('announce', 'Item added to the cart');
+
+    // TODO: consider updating setCartItem/cartItemQuantityUpdated to do a11y announcer as well.
+    // cart = { '1': { category: 'mens_outerwear', itemId: 500, quantity: 3, size: 'M' }, ...}
+    // categories = { 'mens_outerwear' : { items : { 'green_jacket' : { name: 'green jacket' }}}}
+    //
+    // /detail/mens_outerwear/green_jacket
+    //
+    // store.dispatch(cartItemQuantityUpdated({
+    //   category,
+    //   itemId,
+    //   quantity,
+    //   size
+    // }));
     store.dispatch(setCartItem({
       item: this.entry.item,
       quantity: quantity,

@@ -2,7 +2,7 @@ import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
 import './shop-button.js';
 import './shop-image.js';
 
-import { store } from './shop-redux-store.js';
+import { store } from './redux/index.js';
 
 class ShopHome extends Element {
   static get template() {
@@ -130,7 +130,7 @@ class ShopHome extends Element {
 
   update() {
     const state = store.getState();
-    this.categories = state.categories;
+    this.categories = Object.values(state.categories);
   }
 
   _visibleChanged(visible) {
