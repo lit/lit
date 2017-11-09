@@ -10,7 +10,6 @@ import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { store } from './redux/index.js';
 import { getLocationPathPart } from './redux/helpers/location.js';
 import { addCartEntry } from './redux/actions/cart.js';
-// import { findCategory, findItem } from './shop-redux-helpers.js';
 
 class ShopDetail extends Element {
   static get template() {
