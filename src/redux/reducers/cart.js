@@ -1,4 +1,4 @@
-import { UPDATE_CART, ADD_CART_ENTRY, SET_CART_ENTRY } from '../actions/cart.js';
+import { UPDATE_CART, ADD_CART_ENTRY, SET_CART_ENTRY, CLEAR_CART } from '../actions/cart.js';
 
 const cart = (state = {}, action) => {
   switch (action.type) {
@@ -12,6 +12,8 @@ const cart = (state = {}, action) => {
         ...state,
         [action.entryId]: entry(state[action.entryId], action)
       };
+    case CLEAR_CART:
+      return {};
     default:
       return state;
   }

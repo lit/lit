@@ -9,21 +9,11 @@ import './shop-checkbox.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store, installReducers } from './shop-redux-store.js';
-import { pushState } from './shop-redux-router.js';
-import { clearCart } from './shop-redux-cart.js';
-import { computeTotal } from './shop-redux-helpers.js';
-
-installReducers({
-  // Internal state from checkout flow (init/success/error).
-  _checkoutStateChanged(state, action) {
-    const checkoutState = action.checkoutState;
-    return {
-      ...state,
-      checkoutState
-    };
-  }
-});
+import { store } from './redux/index.js';
+import { computeTotal } from './redux/helpers/cart.js';
+import { pushState } from './redux/actions/location.js';
+import { updateCheckoutState } from './redux/actions/checkout.js';
+import { clearCart } from './redux/actions/cart.js';
 
 class ShopCheckout extends Element {
   static get template() {
@@ -489,9 +479,9 @@ class ShopCheckout extends Element {
   update() {
     const state = store.getState();
     this.setProperties({
-      cart: state.cart,
-      total: computeTotal(state.cart),
-      state: state.checkoutState
+      cart: Object.values(state.cart),
+      total: computeTotal(state),
+      state: state.checkout.state
     });
   }
 
@@ -524,15 +514,12 @@ class ShopCheckout extends Element {
    */
   _pushState(state) {
     // This changes window.location only - it does not affect the checkout state.
-    pushState(`${window.location.origin}/checkout/${state}`);
+    store.dispatch(pushState(`${window.location.origin}/checkout/${state}`));
     
-    // The only way to update checkout state is with the '_checkoutStateChanged'
+    // The only way to update checkout state is with the updateCheckoutState
     // action. This is to prevent an user from navigating directly to the
     // success/error pages.
-    store.dispatch({
-      type: '_checkoutStateChanged',
-      checkoutState: state
-    });
+    store.dispatch(updateCheckoutState(state));
   }
 
   /**
@@ -542,7 +529,7 @@ class ShopCheckout extends Element {
     let form = this.$.checkoutForm;
 
     this._setWaiting(false);
-    form.reset();
+    form.reset && form.reset();
 
     let nativeForm = form._form;
     if (!nativeForm) {

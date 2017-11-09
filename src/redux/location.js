@@ -1,4 +1,4 @@
-import { updateLocation } from './actions/location.js';
+import { updateLocation, pushState } from './actions/location.js';
 
 export function installLocation(store) {
   document.body.addEventListener('click', e => {
@@ -15,8 +15,7 @@ export function installLocation(store) {
     let anchor = e.composedPath().filter(n=>n.localName=='a')[0];
     if (anchor && anchor.href.indexOf(origin) === 0) {
       e.preventDefault();
-      window.history.pushState({}, '', anchor.href);
-      handleUrlChange();
+      store.dispatch(pushState(anchor.href));
     }
   });
 

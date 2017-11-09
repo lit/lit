@@ -3,10 +3,12 @@ import categories from './categories.js';
 import location from './location.js';
 import network from './network.js';
 import cart from './cart.js';
+import checkout from './checkout.js';
 
 export default combineReducers({
   categories,
   location,
   network,
-  cart
+  cart,
+  checkout
 });
