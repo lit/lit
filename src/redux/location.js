@@ -1,6 +1,6 @@
 import { updateLocation } from './actions/location.js';
 
-export function installRouter(store) {
+export function installLocation(store) {
   document.body.addEventListener('click', e => {
     if ((e.button !== 0) ||           // Left click only
         (e.metaKey || e.ctrlKey)) {   // No modifiers

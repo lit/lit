@@ -5,8 +5,8 @@ import './shop-icons.js';
 import './shop-image.js';
 import './shop-select.js';
 
-import { store } from './shop-redux-store.js';
-import { setCartItem } from './shop-redux-cart.js';
+import { store } from './redux/index.js';
+import { setCartEntry } from './redux/actions/cart.js';
 
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -239,7 +239,7 @@ class ShopCartItem extends Element {
     //   quantity,
     //   size
     // }));
-    store.dispatch(setCartItem({
+    store.dispatch(setCartEntry({
       item: this.entry.item,
       quantity: quantity,
       size: this.entry.size

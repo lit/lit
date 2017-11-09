@@ -12,13 +12,9 @@ import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/rend
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
-// import { store } from './shop-redux-store.js';
-// import { changeOffline } from './shop-redux-categories.js';
-// import { computeNumItems } from './shop-redux-helpers.js';
-// import './shop-redux-router.js';
-
 import { store } from './redux/index.js';
 import { getLocationPathPart } from './redux/helpers/location.js';
+import { computeNumItems } from './redux/helpers/cart.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -348,7 +344,7 @@ class ShopApp extends Element {
     this.setProperties({
       categories: Object.values(state.categories),
       categoryName: getLocationPathPart(state, 1),
-      // numItems: computeNumItems(state.cart),
+      numItems: computeNumItems(state),
       page: getLocationPathPart(state, 0) || 'home',
       offline: !state.network.online
     });

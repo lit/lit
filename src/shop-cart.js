@@ -3,8 +3,8 @@ import './shop-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
-import { store } from './shop-redux-store.js';
-import { computeTotal } from './shop-redux-helpers.js';
+import { store } from './redux/index.js';
+import { computeTotal } from './redux/helpers/cart.js';
 
 class ShopCart extends Element {
   static get template() {
@@ -91,8 +91,8 @@ class ShopCart extends Element {
   update() {
     const state = store.getState();
     this.setProperties({
-      cart: state.cart,
-      total: computeTotal(state.cart)
+      cart: Object.values(state.cart),
+      total: computeTotal(state)
     });
   }
 

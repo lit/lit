@@ -9,8 +9,7 @@ import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './redux/index.js';
 import { getLocationPathPart } from './redux/helpers/location.js';
-// import { store } from './shop-redux-store.js';
-// import { addCartItem } from './shop-redux-cart.js';
+import { addCartEntry } from './redux/actions/cart.js';
 // import { findCategory, findItem } from './shop-redux-helpers.js';
 
 class ShopDetail extends Element {
@@ -252,11 +251,11 @@ class ShopDetail extends Element {
     // This event will be handled by shop-app.
     this.dispatchEvent(new CustomEvent('add-cart-item', {
       bubbles: true, composed: true}));
-    // store.dispatch(addCartItem({
-    //   item: this.item,
-    //   quantity: parseInt(this.$.quantitySelect.value, 10),
-    //   size: this.$.sizeSelect.value
-    // }));
+    store.dispatch(addCartEntry({
+      item: this.item,
+      quantity: parseInt(this.$.quantitySelect.value, 10),
+      size: this.$.sizeSelect.value
+    }));
   }
 
   _isDefined(item) {
