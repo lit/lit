@@ -6,6 +6,7 @@ import cart from './cart.js';
 import checkout from './checkout.js';
 import announcer from './announcer.js';
 import meta from './meta.js';
+import modal from './modal.js';
 
 export default combineReducers({
   categories,
@@ -14,5 +15,6 @@ export default combineReducers({
   cart,
   checkout,
   announcer,
-  meta
+  meta,
+  modal
 });

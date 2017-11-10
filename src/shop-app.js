@@ -361,6 +361,10 @@ class ShopApp extends Element {
       _a11yLabel: state.announcer.label,
       meta: state.meta
     });
+
+    if (state.modal) {
+      this._openModal();
+    }
   }
 
   ready() {
@@ -368,7 +372,7 @@ class ShopApp extends Element {
     // Custom elements polyfill safe way to indicate an element has been upgraded.
     this.removeAttribute('unresolved');
     // listen for custom events
-    this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
+    // this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
     // this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
     // this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
     // this.addEventListener('change-section', (e)=>this._onChangeSection(e));
@@ -492,7 +496,7 @@ class ShopApp extends Element {
     }
   }
 
-  _onAddCartItem() {
+  _openModal() {
     if (!this._cartModal) {
       this._cartModal = document.createElement('shop-cart-modal');
       this.root.appendChild(this._cartModal);

@@ -247,9 +247,6 @@ class ShopDetail extends Element {
   }
 
   _addToCart() {
-    // This event will be handled by shop-app.
-    this.dispatchEvent(new CustomEvent('add-cart-item', {
-      bubbles: true, composed: true}));
     store.dispatch(addCartEntry({
       item: this.item,
       quantity: parseInt(this.$.quantitySelect.value, 10),

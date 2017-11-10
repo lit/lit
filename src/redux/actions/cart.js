@@ -1,5 +1,6 @@
 import { getEntryId } from '../helpers/cart.js';
 import { announceLabel } from './announcer.js';
+import { displayModal } from './modal.js';
 
 export const UPDATE_CART = 'UPDATE_CART';
 export const ADD_CART_ENTRY = 'ADD_CART_ENTRY';
@@ -20,6 +21,7 @@ export const addCartEntry = (entry) => (dispatch) => {
     entry
   });
   dispatch(announceLabel('Item added to the cart'));
+  dispatch(displayModal());
 };
 
 export const setCartEntry = (entry) => (dispatch) => {
