@@ -8,6 +8,7 @@ import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './redux/index.js';
 import { getLocationPathPart } from './redux/helpers/location.js';
+import { updateMeta } from './redux/actions/meta.js';
 
 class ShopList extends Element {
   static get template() {
@@ -170,12 +171,11 @@ class ShopList extends Element {
       microTask, () => {
         if (category) {
           // Notify the category and the page's title
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {
-              category: category.name,
-              title: category.title,
-              image: this.baseURI + category.image
-            }}));
+          store.dispatch(updateMeta({
+            category: category.name,
+            title: category.title,
+            image: this.baseURI + category.image
+          }));
         } else {
           this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
             bubbles: true, composed: true}));

@@ -14,6 +14,8 @@ import { computeTotal } from './redux/helpers/cart.js';
 import { pushState } from './redux/actions/location.js';
 import { updateCheckoutState } from './redux/actions/checkout.js';
 import { clearCart } from './redux/actions/cart.js';
+import { updateMeta } from './redux/actions/meta.js';
+import { announceLabel } from './redux/actions/announcer.js';
 
 class ShopCheckout extends Element {
   static get template() {
@@ -558,8 +560,7 @@ class ShopCheckout extends Element {
         if (!firstInvalid) {
           // announce error message
           if (el.nextElementSibling) {
-            this.dispatchEvent(new CustomEvent('announce', {bubbles: true, composed: true,
-              detail: el.nextElementSibling.getAttribute('error-message')}));
+            store.dispatch(announceLabel(el.nextElementSibling.getAttribute('error-message')));
           }
           if (el.scrollIntoViewIfNeeded) {
             // safari, chrome
@@ -648,8 +649,7 @@ class ShopCheckout extends Element {
     // Reset the UI states
     this._reset();
     // Notify the page's title
-    this.dispatchEvent(new CustomEvent('change-section', {
-      bubbles: true, composed: true, detail: { title: 'Checkout' }}));
+    store.dispatch(updateMeta({ title: 'Checkout' }));
   }
 
 }

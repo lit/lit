@@ -3,6 +3,7 @@ import './shop-button.js';
 import './shop-image.js';
 
 import { store } from './redux/index.js';
+import { updateMeta } from './redux/actions/meta.js';
 
 class ShopHome extends Element {
   static get template() {
@@ -135,8 +136,7 @@ class ShopHome extends Element {
 
   _visibleChanged(visible) {
     if (visible) {
-      this.dispatchEvent(new CustomEvent('change-section', {
-        bubbles: true, composed: true, detail: {title: 'Home'}}));
+      store.dispatch(updateMeta({title: 'Home'}));
     }
   }
 }

@@ -5,6 +5,7 @@ import './shop-form-styles.js';
 
 import { store } from './redux/index.js';
 import { computeTotal } from './redux/helpers/cart.js';
+import { updateMeta } from './redux/actions/meta.js';
 
 class ShopCart extends Element {
   static get template() {
@@ -111,8 +112,7 @@ class ShopCart extends Element {
   _visibleChanged(visible) {
     if (visible) {
       // Notify the section's title
-      this.dispatchEvent(new CustomEvent('change-section', {
-        bubbles: true, composed: true, detail: { title: 'Your cart' }}));
+      store.dispatch(updateMeta({ title: 'Your cart' }));
     }
   }
 

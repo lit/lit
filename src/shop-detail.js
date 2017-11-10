@@ -10,6 +10,7 @@ import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { store } from './redux/index.js';
 import { getLocationPathPart } from './redux/helpers/location.js';
 import { addCartEntry } from './redux/actions/cart.js';
+import { updateMeta } from './redux/actions/meta.js';
 
 class ShopDetail extends Element {
   static get template() {
@@ -225,13 +226,12 @@ class ShopDetail extends Element {
           this.$.quantitySelect.value = '1';
           this.$.sizeSelect.value = 'M';
 
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {
-              category: item ? item.category : '',
-              title: item ? item.title : '',
-              description: item ? item.description.substring(0, 100) : '',
-              image: item ? this.baseURI + item.image : ''
-            }}));
+          store.dispatch(updateMeta({
+            category: item ? item.category : '',
+            title: item ? item.title : '',
+            description: item ? item.description.substring(0, 100) : '',
+            image: item ? this.baseURI + item.image : ''
+          }));
         })
     }
   }

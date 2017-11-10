@@ -318,6 +318,11 @@ class ShopApp extends Element {
       observer: '_offlineChanged'
     },
 
+    meta: {
+      type: Object,
+      observer: '_metaChanged'
+    },
+
     _shouldShowTabs: {
       computed: '_computeShouldShowTabs(page, smallScreen)'
     },
@@ -341,12 +346,20 @@ class ShopApp extends Element {
 
   update() {
     const state = store.getState();
+    let page = getLocationPathPart(state, 0) || 'home';
+    const categoryName = getLocationPathPart(state, 1);
+    // TODO: determine if page is valid.
+    if (categoryName && Object.keys(state.categories).indexOf(categoryName) === -1) {
+      page = '404';
+    }
     this.setProperties({
       categories: Object.values(state.categories),
-      categoryName: getLocationPathPart(state, 1),
+      categoryName,
       numItems: computeNumItems(state),
-      page: getLocationPathPart(state, 0) || 'home',
-      offline: !state.network.online
+      page,
+      offline: !state.network.online,
+      _a11yLabel: state.announcer.label,
+      meta: state.meta
     });
   }
 
@@ -356,18 +369,19 @@ class ShopApp extends Element {
     this.removeAttribute('unresolved');
     // listen for custom events
     this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
-    this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
-    this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
-    this.addEventListener('change-section', (e)=>this._onChangeSection(e));
-    this.addEventListener('announce', (e)=>this._onAnnounce(e));
-    this.addEventListener('dom-change', (e)=>this._domChange(e));
-    this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
+    // this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
+    // this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
+    // this.addEventListener('change-section', (e)=>this._onChangeSection(e));
+    // this.addEventListener('announce', (e)=>this._onAnnounce(e));
+    // this.addEventListener('dom-change', (e)=>this._domChange(e));
+    // this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
   }
 
   _pageChanged(page, oldPage) {
-    if (page === 'list') {
-      this._listScrollTop = window.pageYOffset;
-    }
+    // TODO: With new redux model, _listScrollTop isn't getting set before page change.
+    // if (page === 'list') {
+    //   this._listScrollTop = window.pageYOffset;
+    // }
 
     // Close the drawer - in case the *route* change came from a link in the drawer.
     this.drawerOpened = false;
@@ -442,30 +456,29 @@ class ShopApp extends Element {
 
   // Elements in the app can notify section changes.
   // Response by a11y announcing the section and syncronizing the category.
-  _onChangeSection(event) {
-    let detail = event.detail;
+  // _onChangeSection(event) {
+  //   let detail = event.detail;
 
-    // Scroll to the top of the page when navigating to a non-list page. For list view,
-    // scroll to the last saved position only if the category has not changed.
-    let scrollTop = 0;
-    if (this.page === 'list') {
-      if (this.categoryName === detail.category) {
-        scrollTop = this._listScrollTop;
-      } else {
-        // Reset the list view scrollTop if the category changed.
-        this._listScrollTop = 0;
-      }
-    }
-    // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
-    // effects during the scroll.
-    scroll({ top: scrollTop, behavior: 'silent' });
-
-    this.categoryName = detail.category || '';
-
+    // TODO: With new redux model, _listScrollTop isn't getting set before page change.
+    // // Scroll to the top of the page when navigating to a non-list page. For list view,
+    // // scroll to the last saved position only if the category has not changed.
+    // let scrollTop = 0;
+    // if (this.page === 'list') {
+    //   if (this.categoryName === detail.category) {
+    //     scrollTop = this._listScrollTop;
+    //   } else {
+    //     // Reset the list view scrollTop if the category changed.
+    //     this._listScrollTop = 0;
+    //   }
+    // }
+    // // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
+    // // effects during the scroll.
+    // scroll({ top: scrollTop, behavior: 'silent' });
+  
+  _metaChanged(detail) {
     // Announce the page's title
     if (detail.title) {
       document.title = detail.title + ' - SHOP';
-      this._announce(detail.title + ', loaded');
       // Set open graph metadata
       this._setMeta('property', 'og:title', detail.title);
       this._setMeta('property', 'og:description', detail.description || document.title);
@@ -485,34 +498,6 @@ class ShopApp extends Element {
       this.root.appendChild(this._cartModal);
     }
     this._cartModal.open();
-    this._announce('Item added to the cart');
-  }
-
-  _onSetCartItem(event) {
-    let detail = event.detail;
-    if (detail.quantity === 0) {
-      this._announce('Item deleted');
-    } else {
-      this._announce('Quantity changed to ' + detail.quantity);
-    }
-  }
-
-  _onClearCart() {
-    this._announce('Cart cleared');
-  }
-
-  // Elements in the app can notify a change to be a11y announced.
-  _onAnnounce(e) {
-    this._announce(e.detail);
-  }
-
-  // A11y announce the given message.
-  _announce(message) {
-    this._a11yLabel = '';
-    this._announceDebouncer = Debouncer.debounce(this._announceDebouncer,
-      timeOut.after(100), () => {
-        this._a11yLabel = message;
-      });
   }
 
   // This is for performance logging only.
@@ -525,10 +510,6 @@ class ShopApp extends Element {
         performance.mark(host.localName + '.domChange');
       }
     }
-  }
-
-  _onFallbackSelectionTriggered() {
-    this.page = '404';
   }
 
   _computeShouldShowTabs(page, smallScreen) {

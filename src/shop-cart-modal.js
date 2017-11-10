@@ -135,7 +135,6 @@ class ShopCartModal extends mixinBehaviors(
     }
     if (this.opened) {
       this._finishRenderOpened();
-      this.fire('announce', 'Item added to the cart');
     } else {
       this._finishRenderClosed();
       this.backdropElement.style.display = '';
