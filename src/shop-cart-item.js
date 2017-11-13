@@ -6,7 +6,7 @@ import './shop-image.js';
 import './shop-select.js';
 
 import { store } from './redux/index.js';
-import { setCartEntry } from './redux/actions/cart.js';
+import { setCartEntry, removeCartEntry } from './redux/actions/cart.js';
 
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -218,10 +218,6 @@ class ShopCartItem extends Element {
   }}
 
   _quantityChange() {
-    this._setCartItem(parseInt(this.$.quantitySelect.value, 10));
-  }
-
-  _setCartItem(quantity) {
     // TODO: consider updating setCartItem/cartItemQuantityUpdated to do a11y announcer as well.
     // cart = { '1': { category: 'mens_outerwear', itemId: 500, quantity: 3, size: 'M' }, ...}
     // categories = { 'mens_outerwear' : { items : { 'green_jacket' : { name: 'green jacket' }}}}
@@ -236,7 +232,7 @@ class ShopCartItem extends Element {
     // }));
     store.dispatch(setCartEntry({
       item: this.entry.item,
-      quantity: quantity,
+      quantity: parseInt(this.$.quantitySelect.value, 10),
       size: this.entry.size
     }));
   }
@@ -246,7 +242,10 @@ class ShopCartItem extends Element {
   }
 
   _removeItem() {
-    this._setCartItem(0);
+    store.dispatch(removeCartEntry({
+      item: this.entry.item,
+      size: this.entry.size
+    }));
   }
 
 }

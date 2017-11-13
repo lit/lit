@@ -5,6 +5,7 @@ import { displayModal } from './modal.js';
 export const UPDATE_CART = 'UPDATE_CART';
 export const ADD_CART_ENTRY = 'ADD_CART_ENTRY';
 export const SET_CART_ENTRY = 'SET_CART_ENTRY';
+export const REMOVE_CART_ENTRY = 'REMOVE_CART_ENTRY';
 export const CLEAR_CART = 'CLEAR_CART';
 
 export const updateCart = (cart) => {
@@ -20,7 +21,7 @@ export const addCartEntry = (entry) => (dispatch) => {
     entryId: getEntryId(entry.item.category, entry.item.name, entry.size),
     entry
   });
-  dispatch(announceLabel('Item added to the cart'));
+  dispatch(announceLabel('Item added to your cart'));
   dispatch(displayModal());
 };
 
@@ -31,6 +32,15 @@ export const setCartEntry = (entry) => (dispatch) => {
     entry
   });
   dispatch(announceLabel(`Quantity changed to ${entry.quantity}`));
+};
+
+export const removeCartEntry = (entry) => (dispatch) => {
+  dispatch({
+    type: REMOVE_CART_ENTRY,
+    entryId: getEntryId(entry.item.category, entry.item.name, entry.size),
+    entry
+  });
+  dispatch(announceLabel(`Item removed from your cart`));
 };
 
 export const clearCart = () => {
