@@ -21,7 +21,7 @@ import "../node_modules/@polymer/app-layout/app-drawer/app-drawer.js";
 // shop-list
 // shop-detail
 import "./shop-network-warning.js";
-import "./shop-404-warning.js";
+import "./shop-404.js";
 
 // shop-cart
 import "./shop-cart-item.js";

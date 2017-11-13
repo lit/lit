@@ -347,11 +347,16 @@ class ShopApp extends Element {
   update() {
     const state = store.getState();
     let page = getLocationPathPart(state, 0) || 'home';
-    const categoryName = getLocationPathPart(state, 1);
-    // TODO: determine if page is valid.
-    if (categoryName && Object.keys(state.categories).indexOf(categoryName) === -1) {
+    let categoryName = null;
+    if (['list', 'detail'].indexOf(page) !== -1) {
+      categoryName = getLocationPathPart(state, 1);
+      if (Object.keys(state.categories).indexOf(categoryName) === -1) {
+        page = '404';
+      }
+    } else if (['home', 'cart', 'checkout'].indexOf(page) === -1) {
       page = '404';
     }
+
     this.setProperties({
       categories: Object.values(state.categories),
       categoryName,
