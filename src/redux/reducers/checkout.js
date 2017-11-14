@@ -1,8 +1,9 @@
-import { RESET_CHECKOUT, UPDATE_CHECKOUT_STATE } from '../actions/checkout.js';
+import { UPDATE_CHECKOUT_STATE } from '../actions/checkout.js';
+import { UPDATE_LOCATION } from '../actions/location.js';
 
 const location = (state = {}, action) => {
   switch (action.type) {
-    case RESET_CHECKOUT:
+    case UPDATE_LOCATION:
       return {
         ...state,
         state: 'init'

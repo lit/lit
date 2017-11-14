@@ -43,13 +43,14 @@ export const getCategoryItems = () => (dispatch, getState) => {
     const category = state.categories[categoryId];
     if (category) {
       if (category.items) {
+        // Consider making network failure a state per category
         dispatch(updateNetworkFailure(false));
       } else {
         fetch(`data/${categoryId}.json`)
         .then(res => res.json())
         .then(items => {
           dispatch(receiveCategoryItems(categoryId, items));
-          dispatch(updateNetworkFailure(false));
+          // dispatch(updateNetworkFailure(false));
         })
         .catch(() => dispatch(updateNetworkFailure(true)));
       }
