@@ -226,12 +226,12 @@ class ShopDetail extends Element {
           this.$.quantitySelect.value = '1';
           this.$.sizeSelect.value = 'M';
 
-          store.dispatch(updateMeta({
-            category: item ? item.category : '',
-            title: item ? item.title : '',
-            description: item ? item.description.substring(0, 100) : '',
-            image: item ? this.baseURI + item.image : ''
-          }));
+          // store.dispatch(updateMeta({
+          //   category: item ? item.category : '',
+          //   title: item ? item.title : '',
+          //   description: item ? item.description.substring(0, 100) : '',
+          //   image: item ? this.baseURI + item.image : ''
+          // }));
         })
     }
   }

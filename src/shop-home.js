@@ -136,7 +136,7 @@ class ShopHome extends Element {
 
   _visibleChanged(visible) {
     if (visible) {
-      store.dispatch(updateMeta({title: 'Home'}));
+      // store.dispatch(updateMeta({title: 'Home'}));
     }
   }
 }

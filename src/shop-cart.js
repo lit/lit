@@ -112,7 +112,7 @@ class ShopCart extends Element {
   _visibleChanged(visible) {
     if (visible) {
       // Notify the section's title
-      store.dispatch(updateMeta({ title: 'Your cart' }));
+      // store.dispatch(updateMeta({ title: 'Your cart' }));
     }
   }
 

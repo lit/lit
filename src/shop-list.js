@@ -171,14 +171,11 @@ class ShopList extends Element {
       microTask, () => {
         if (category) {
           // Notify the category and the page's title
-          store.dispatch(updateMeta({
-            category: category.name,
-            title: category.title,
-            image: this.baseURI + category.image
-          }));
-        } else {
-          this.dispatchEvent(new CustomEvent('show-invalid-url-warning', {
-            bubbles: true, composed: true}));
+          // store.dispatch(updateMeta({
+          //   category: category.name,
+          //   title: category.title,
+          //   image: this.baseURI + category.image
+          // }));
         }
       });
   }

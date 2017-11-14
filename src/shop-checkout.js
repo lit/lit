@@ -649,7 +649,7 @@ class ShopCheckout extends Element {
     // Reset the UI states
     this._reset();
     // Notify the page's title
-    store.dispatch(updateMeta({ title: 'Checkout' }));
+    // store.dispatch(updateMeta({ title: 'Checkout' }));
   }
 
 }
