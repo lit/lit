@@ -6,7 +6,7 @@ import './shop-image.js';
 import './shop-select.js';
 
 import { store } from './redux/index.js';
-import { setCartEntry, removeCartEntry } from './redux/actions/cart.js';
+import { setCartEntryQuantity, removeCartEntry } from './redux/actions/cart.js';
 
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
@@ -230,7 +230,7 @@ class ShopCartItem extends Element {
     //   quantity,
     //   size
     // }));
-    store.dispatch(setCartEntry({
+    store.dispatch(setCartEntryQuantity({
       item: this.entry.item,
       quantity: parseInt(this.$.quantitySelect.value, 10),
       size: this.entry.size

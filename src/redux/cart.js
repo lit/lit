@@ -1,9 +1,9 @@
-import { updateCart } from './actions/cart.js';
+import { updateCartFromLocalStorage } from './actions/cart.js';
 
-const CART_LOCALSTORAGE_KEY = 'shop-cart-data';
+const CART_LOCAL_STORAGE_KEY = 'shop-cart-data';
 
 function getLocalCartData() {
-  const localCartData = localStorage.getItem(CART_LOCALSTORAGE_KEY);
+  const localCartData = localStorage.getItem(CART_LOCAL_STORAGE_KEY);
   try {
     return JSON.parse(localCartData) || {};
   } catch (e) {
@@ -13,13 +13,14 @@ function getLocalCartData() {
 
 export function installCart(store) {
   function handleStorageEvent() {
-    store.dispatch(updateCart(getLocalCartData()));
+    store.dispatch(updateCartFromLocalStorage(getLocalCartData()));
   }
   window.addEventListener('storage', handleStorageEvent);
   handleStorageEvent();
 
   store.subscribe(() => {
     const state = store.getState();
-    localStorage.setItem(CART_LOCALSTORAGE_KEY, JSON.stringify(state.cart));
+    // Note: Setting localStorage does not cause another storage event on same window.
+    localStorage.setItem(CART_LOCAL_STORAGE_KEY, JSON.stringify(state.cart));
   });
 }

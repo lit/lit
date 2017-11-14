@@ -1,3 +1,5 @@
+// TODO: move helpers (selectors) to reducers
+
 export function computeNumItems(state) {
   if (state.cart) {
     return Object.values(state.cart).reduce((total, entry) => {

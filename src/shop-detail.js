@@ -209,7 +209,7 @@ class ShopDetail extends Element {
     const item = category && category.items && category.items[getLocationPathPart(state, 2)];
     this.setProperties({
       item,
-      failure: state.network.failure
+      failure: category && category.failure
     });
   }
 

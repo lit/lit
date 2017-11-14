@@ -1,13 +1,13 @@
-import { CLEAR_LABEL, ANNOUNCE_LABEL } from '../actions/announcer.js';
+import { CLEAR_ANNOUNCER_LABEL, SET_ANNOUNCER_LABEL } from '../actions/announcer.js';
 
 const announcer = (state = {}, action) => {
   switch (action.type) {
-    case CLEAR_LABEL:
+    case CLEAR_ANNOUNCER_LABEL:
       return {
         ...state,
         label: ''
       };
-    case ANNOUNCE_LABEL:
+    case SET_ANNOUNCER_LABEL:
       return {
         ...state,
         label: action.label

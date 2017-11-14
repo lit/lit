@@ -15,6 +15,7 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 import { store } from './redux/index.js';
 import { getLocationPathPart } from './redux/helpers/location.js';
 import { computeNumItems } from './redux/helpers/cart.js';
+import { closeModal } from './redux/actions/modal.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -322,6 +323,11 @@ class ShopApp extends Element {
       type: Object,
       observer: '_metaChanged'
     },
+    
+    modalOpened: {
+      type: Object,
+      observer: '_modalOpenedChanged'
+    },
 
     _shouldShowTabs: {
       computed: '_computeShouldShowTabs(page, smallScreen)'
@@ -364,12 +370,9 @@ class ShopApp extends Element {
       page,
       offline: !state.network.online,
       _a11yLabel: state.announcer.label,
-      meta: state.meta
+      meta: state.meta,
+      modalOpened: state.modal
     });
-
-    if (state.modal) {
-      this._openModal();
-    }
   }
 
   ready() {
@@ -501,12 +504,23 @@ class ShopApp extends Element {
     }
   }
 
-  _openModal() {
-    if (!this._cartModal) {
+  _modalOpenedChanged(opened, oldOpened) {
+    if (opened && !this._cartModal) {
       this._cartModal = document.createElement('shop-cart-modal');
       this.root.appendChild(this._cartModal);
+      this._cartModal.addEventListener('opened-changed', () => {
+        if (!this._cartModal.opened) {
+          // HACK: Don't dispatch if opened became false due to time travelling
+          // (i.e. state is already false).
+          // This seems to be an issue whenever you have UI updating state
+          // (vs. the other way around).
+          if (store.getState().modal) store.dispatch(closeModal());
+        }
+      });
     }
-    this._cartModal.open();
+    if (this._cartModal) {
+      this._cartModal.opened = opened;
+    }
   }
 
   // This is for performance logging only.

@@ -1,16 +1,15 @@
 import { getEntryId } from '../helpers/cart.js';
 import { announceLabel } from './announcer.js';
-import { displayModal } from './modal.js';
 
-export const UPDATE_CART = 'UPDATE_CART';
+export const UPDATE_CART_FROM_LOCAL_STORAGE = 'UPDATE_CART_FROM_LOCAL_STORAGE';
 export const ADD_CART_ENTRY = 'ADD_CART_ENTRY';
-export const SET_CART_ENTRY = 'SET_CART_ENTRY';
+export const SET_CART_ENTRY_QUANTITY = 'SET_CART_ENTRY_QUANTITY';
 export const REMOVE_CART_ENTRY = 'REMOVE_CART_ENTRY';
 export const CLEAR_CART = 'CLEAR_CART';
 
-export const updateCart = (cart) => {
+export const updateCartFromLocalStorage = (cart) => {
   return {
-    type: UPDATE_CART,
+    type: UPDATE_CART_FROM_LOCAL_STORAGE,
     cart
   };
 };
@@ -22,12 +21,11 @@ export const addCartEntry = (entry) => (dispatch) => {
     entry
   });
   dispatch(announceLabel('Item added to your cart'));
-  dispatch(displayModal());
 };
 
-export const setCartEntry = (entry) => (dispatch) => {
+export const setCartEntryQuantity = (entry) => (dispatch) => {
   dispatch({
-    type: SET_CART_ENTRY,
+    type: SET_CART_ENTRY_QUANTITY,
     entryId: getEntryId(entry.item.category, entry.item.name, entry.size),
     entry
   });

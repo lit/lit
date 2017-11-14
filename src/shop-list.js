@@ -127,9 +127,10 @@ class ShopList extends Element {
 
   update() {
     const state = store.getState();
+    const category = state.categories[getLocationPathPart(state, 1)];
     this.setProperties({
-      category: state.categories[getLocationPathPart(state, 1)],
-      failure: state.network.failure
+      category,
+      failure: category && category.failure
     });
   }
 

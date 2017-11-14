@@ -1,17 +1,7 @@
-export const SHOW_MODAL = 'SHOW_MODAL';
-export const HIDE_MODAL = 'HIDE_MODAL';
+export const CLOSE_MODAL = 'CLOSE_MODAL';
 
-let timer = 0;
-
-export const displayModal = (label) => (dispatch) => {
-  dispatch({
-    type: SHOW_MODAL
-  });
-  // Debounce announcements.
-  clearTimeout(timer);
-  timer = setTimeout(() => {
-    dispatch({
-      type: HIDE_MODAL
-    });
-  }, 300);
+export const closeModal = () => {
+  return {
+    type: CLOSE_MODAL
+  };
 };
