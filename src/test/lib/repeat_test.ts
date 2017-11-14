@@ -145,6 +145,19 @@ suite('repeat', () => {
       assert.equal(container.innerHTML, `<li>item: 2</li>`);
     });
 
+    test('can rerender repeated items with no changes', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+          <li>item: ${i}</li>`)}`;
+
+      render(t([666, 666]), container);
+      render(t([666, 666]), container);
+
+      assert.equal(
+          container.innerHTML,
+          `<li>item: 666</li><li>item: 666</li>`);
+    })
+
     test('can insert an item at the beginning', () => {
       let items = [1, 2, 3];
       const t = () =>
