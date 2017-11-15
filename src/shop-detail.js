@@ -9,7 +9,7 @@ import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './redux/index.js';
 import { splitPathSelector } from './redux/reducers/location.js';
-import { currentCategorySelector } from './redux/reducers/categories.js';
+import { currentCategorySelector, currentItemSelector } from './redux/reducers/categories.js';
 import { addCartEntry } from './redux/actions/cart.js';
 import { updateMeta } from './redux/actions/meta.js';
 
@@ -207,9 +207,8 @@ class ShopDetail extends Element {
   update() {
     const state = store.getState();
     const category = currentCategorySelector(state);
-    const item = category && category.items && category.items[splitPathSelector(state)[2]];
     this.setProperties({
-      item,
+      item: currentItemSelector(state),
       failure: category && category.failure
     });
   }

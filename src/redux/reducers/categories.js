@@ -88,6 +88,14 @@ export const currentCategorySelector = createSelector(
   categoriesSelector,
   splitPathSelector,
   (categories, splitPath) => {
-    return ['list', 'detail'].indexOf(splitPath[0]) !== -1 ? categories[splitPath[1]] : null
+    return ['list', 'detail'].indexOf(splitPath[0]) !== -1 ? categories[splitPath[1]] : null;
+  }
+);
+
+export const currentItemSelector = createSelector(
+  currentCategorySelector,
+  splitPathSelector,
+  (category, splitPath) => {
+    return category && category.items && category.items[splitPath[2]];
   }
 );

@@ -23,3 +23,10 @@ export const splitPathSelector = createSelector(
     return path.slice(1).split('/') || [];
   }
 );
+
+export const pageSelector = createSelector(
+  splitPathSelector,
+  splitPath => {
+    return splitPath[0] || 'home';
+  }
+);
