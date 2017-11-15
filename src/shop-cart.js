@@ -70,11 +70,6 @@ class ShopCart extends Element {
 
     cart: Array,
 
-    visible: {
-      type: Boolean,
-      observer: '_visibleChanged'
-    },
-
     _hasItems: {
       type: Boolean,
       computed: '_computeHasItem(cart.length)'
@@ -107,13 +102,6 @@ class ShopCart extends Element {
 
   _getPluralizedQuantity(quantity) {
     return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
-  }
-
-  _visibleChanged(visible) {
-    if (visible) {
-      // Notify the section's title
-      // store.dispatch(updateMeta({ title: 'Your cart' }));
-    }
   }
 
 }

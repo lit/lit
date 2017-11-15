@@ -113,11 +113,6 @@ class ShopHome extends Element {
 
     categories: {
       type: Array
-    },
-
-    visible: {
-      type: Boolean,
-      observer: '_visibleChanged'
     }
 
   }}
@@ -132,12 +127,6 @@ class ShopHome extends Element {
   update() {
     const state = store.getState();
     this.categories = Object.values(state.categories);
-  }
-
-  _visibleChanged(visible) {
-    if (visible) {
-      // store.dispatch(updateMeta({title: 'Home'}));
-    }
   }
 }
 
