@@ -509,12 +509,12 @@ class ShopApp extends Element {
       this._cartModal = document.createElement('shop-cart-modal');
       this.root.appendChild(this._cartModal);
       this._cartModal.addEventListener('opened-changed', () => {
-        if (!this._cartModal.opened) {
-          // HACK: Don't dispatch if opened became false due to time travelling
-          // (i.e. state is already false).
-          // This seems to be an issue whenever you have UI updating state
-          // (vs. the other way around).
-          if (store.getState().modal) store.dispatch(closeModal());
+        // NOTE: Don't dispatch if modal.opened became false due to time
+        // travelling (i.e. state.modal is already false).
+        // This check is generally needed whenever you have both UI updating
+        // state and state updating the same UI.
+        if (!this._cartModal.opened && this.modalOpened) {
+          store.dispatch(closeModal());
         }
       });
     }
