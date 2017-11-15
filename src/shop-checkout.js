@@ -10,7 +10,7 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './redux/index.js';
-import { computeTotal } from './redux/helpers/cart.js';
+import { totalSelector } from './redux/reducers/cart.js';
 import { pushState } from './redux/actions/location.js';
 import { updateCheckoutState } from './redux/actions/checkout.js';
 import { clearCart } from './redux/actions/cart.js';
@@ -482,7 +482,7 @@ class ShopCheckout extends Element {
     const state = store.getState();
     this.setProperties({
       cart: Object.values(state.cart),
-      total: computeTotal(state),
+      total: totalSelector(state),
       state: state.checkout.state
     });
   }

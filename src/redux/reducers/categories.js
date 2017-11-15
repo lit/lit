@@ -3,6 +3,8 @@ import {
   FAIL_CATEGORY_ITEMS,
   REQUEST_CATEGORY_ITEMS
 } from '../actions/categories.js';
+import { createSelector } from '../../../node_modules/reselect/es/index.js';
+import { splitPathSelector } from './location.js';
 
 const INITIAL_CATEGORIES = {
   'mens_outerwear': {
@@ -79,3 +81,13 @@ const category = (state = {}, action) => {
 }
 
 export default categories;
+
+const categoriesSelector = state => state.categories;
+
+export const currentCategorySelector = createSelector(
+  categoriesSelector,
+  splitPathSelector,
+  (categories, splitPath) => {
+    return ['list', 'detail'].indexOf(splitPath[0]) !== -1 ? categories[splitPath[1]] : null
+  }
+);

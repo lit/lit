@@ -1,13 +1,14 @@
 import { fetchCategoryItems } from './categories.js';
+import { currentCategorySelector } from '../reducers/categories.js';
 
 export const UPDATE_LOCATION = 'UPDATE_LOCATION';
 
-export const updateLocation = (path) => (dispatch) => {
+export const updateLocation = (path) => (dispatch, getState) => {
   dispatch({
     type: UPDATE_LOCATION,
     path
   });
-  dispatch(fetchCategoryItems());
+  dispatch(fetchCategoryItems(currentCategorySelector(getState())));
 };
 
 export const pushState = (href) => (dispatch) => {

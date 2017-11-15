@@ -4,7 +4,7 @@ import './shop-common-styles.js';
 import './shop-form-styles.js';
 
 import { store } from './redux/index.js';
-import { computeTotal } from './redux/helpers/cart.js';
+import { totalSelector } from './redux/reducers/cart.js';
 import { updateMeta } from './redux/actions/meta.js';
 
 class ShopCart extends Element {
@@ -93,7 +93,7 @@ class ShopCart extends Element {
     const state = store.getState();
     this.setProperties({
       cart: Object.values(state.cart),
-      total: computeTotal(state)
+      total: totalSelector(state)
     });
   }
 

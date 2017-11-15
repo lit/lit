@@ -5,6 +5,7 @@ import './shop-icons.js';
 
 import { store } from './redux/index.js';
 import { fetchCategoryItems } from './redux/actions/categories.js';
+import { currentCategorySelector } from './redux/reducers/categories.js';
 
 class ShopNetworkWarning extends Element {
   static get template() {
@@ -72,9 +73,7 @@ class ShopNetworkWarning extends Element {
   }
 
   _tryReconnect() {
-    const state = store.getState();
-    // path = state...
-    store.dispatch(fetchCategoryItems());
+    store.dispatch(fetchCategoryItems(currentCategorySelector(store.getState())));
   }
 }
 

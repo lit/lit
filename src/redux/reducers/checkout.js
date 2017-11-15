@@ -1,7 +1,7 @@
 import { UPDATE_CHECKOUT_STATE } from '../actions/checkout.js';
 import { UPDATE_LOCATION } from '../actions/location.js';
 
-const location = (state = {}, action) => {
+const checkout = (state = {}, action) => {
   switch (action.type) {
     case UPDATE_LOCATION:
       return {
@@ -18,4 +18,4 @@ const location = (state = {}, action) => {
   }
 }
 
-export default location;
+export default checkout;

@@ -1,4 +1,5 @@
 import { fetchCategoryItems } from './categories.js';
+import { currentCategorySelector } from '../reducers/categories.js';
 
 export const UPDATE_NETWORK_STATUS = 'UPDATE_NETWORK_STATUS';
 
@@ -8,6 +9,6 @@ export const updateNetworkStatus = (online) => (dispatch, getState) => {
     online
   });
   if (online) {
-    dispatch(fetchCategoryItems());
+    dispatch(fetchCategoryItems(currentCategorySelector(getState())));
   }
 };

@@ -13,8 +13,8 @@ import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
 import { store } from './redux/index.js';
-import { getLocationPathPart } from './redux/helpers/location.js';
-import { computeNumItems } from './redux/helpers/cart.js';
+import { splitPathSelector } from './redux/reducers/location.js';
+import { numItemsSelector } from './redux/reducers/cart.js';
 import { closeModal } from './redux/actions/modal.js';
 
 // performance logging
@@ -352,10 +352,10 @@ class ShopApp extends Element {
 
   update() {
     const state = store.getState();
-    let page = getLocationPathPart(state, 0) || 'home';
+    let page = splitPathSelector(state)[0] || 'home';
     let categoryName = null;
     if (['list', 'detail'].indexOf(page) !== -1) {
-      categoryName = getLocationPathPart(state, 1);
+      categoryName = splitPathSelector(state)[1];
       if (Object.keys(state.categories).indexOf(categoryName) === -1) {
         page = '404';
       }
@@ -366,7 +366,7 @@ class ShopApp extends Element {
     this.setProperties({
       categories: Object.values(state.categories),
       categoryName,
-      numItems: computeNumItems(state),
+      numItems: numItemsSelector(state),
       page,
       offline: !state.network.online,
       _a11yLabel: state.announcer.label,

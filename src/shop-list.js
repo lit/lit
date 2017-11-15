@@ -7,8 +7,8 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from './redux/index.js';
-import { getLocationPathPart } from './redux/helpers/location.js';
 import { updateMeta } from './redux/actions/meta.js';
+import { currentCategorySelector } from './redux/reducers/categories.js';
 
 class ShopList extends Element {
   static get template() {
@@ -127,7 +127,7 @@ class ShopList extends Element {
 
   update() {
     const state = store.getState();
-    const category = state.categories[getLocationPathPart(state, 1)];
+    const category = currentCategorySelector(state);
     this.setProperties({
       category,
       failure: category && category.failure

@@ -1,4 +1,5 @@
 import { UPDATE_LOCATION } from '../actions/location.js';
+import { createSelector } from '../../../node_modules/reselect/es/index.js';
 
 const location = (state = {}, action) => {
   switch (action.type) {
@@ -13,3 +14,12 @@ const location = (state = {}, action) => {
 }
 
 export default location;
+
+const pathSelector = state => state.location.path;
+
+export const splitPathSelector = createSelector(
+  pathSelector,
+  path => {
+    return path.slice(1).split('/') || [];
+  }
+);
