@@ -47,5 +47,5 @@ export const clearCart = () => {
 };
 
 function getEntryId(entry) {
-  return `${entry.categoryId}_$$$_${entry.itemId}_$$$_${entry.size}`;
+  return `${entry.item.category}_$$$_${entry.item.name}_$$$_${entry.size}`;
 }
