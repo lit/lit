@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "gen-dist": "npm run build && rollup -c",
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api .",
     "test": "npm run build && wct --npm && npm run lint",
     "quicktest": "wct -l chrome -p --npm",
@@ -30,16 +31,17 @@
   "devDependencies": {
     "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
+    "@webcomponents/template": "^1.1.0",
     "chai": "^4.0.2",
+    "get-own-property-symbols": "^0.9.2",
     "mocha": "^3.4.2",
+    "rollup": "^0.51.7",
     "tslint": "^5.7.0",
     "typedoc": "^0.8.0",
     "typescript": "^2.4.1",
     "uglify-es": "^3.0.27",
     "wct-browser-legacy": "^0.0.1-pre.10",
-    "web-component-tester": "^6.3.0",
-    "@webcomponents/template": "^1.1.0",
-    "get-own-property-symbols": "^0.9.2"
+    "web-component-tester": "^6.3.0"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}
