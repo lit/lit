@@ -61,6 +61,11 @@ export const extendedPartCallback =
               return new AttributePart(
                   instance, node as Element, name, templatePart.strings!);
             }
+            if (templatePart.name!.endsWith('?')) {
+              const name = templatePart.name!.slice(0, -1);
+              return new FlagAttributePart(
+                  instance, node as Element, name, templatePart.strings!);
+            }
             return new PropertyPart(
                 instance,
                 node as Element,
@@ -112,5 +117,24 @@ export class EventPart implements Part {
     if (listener != null) {
       this.element.addEventListener(this.eventName, listener);
     }
+  }
+}
+
+export class FlagAttributePart extends AttributePart {
+  setValue(values: any[], startIndex: number): void {
+    const s = this.strings;
+    if (s.length !== 2 || s[0] !== '' || s[1] !== '') {
+      // Has to be single expression
+      throw new Error('Flag attributes may only contain a single expression.');
+    }
+
+    const value = values[startIndex];
+    if (typeof value !== 'boolean')
+      throw new Error('Value has to be boolean.');
+
+    if (value)
+      this.element.setAttribute(this.name, '');
+    else
+      this.element.removeAttribute(this.name);
   }
 }

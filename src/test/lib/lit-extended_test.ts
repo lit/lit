@@ -51,6 +51,15 @@ suite('lit-extended', () => {
       assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
     });
 
+    test('renders flag attribute', () => {
+      render(html`<div foo?="${true}"></div>`, container);
+      assert.equal(container.innerHTML, '<div foo=""></div>');
+    });
+    test('does not render flag attribute', () => {
+      render(html`<div foo?="${false}"></div>`, container);
+      assert.equal(container.innerHTML, '<div></div>');
+    });
+
     test('reuses an existing ExtendedTemplateInstance when available', () => {
       const t = (content: any) => html`<div>${content}</div>`;
 
