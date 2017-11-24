@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "PolymerLabs/lit-html",
@@ -10,6 +10,7 @@
     "test": "test"
   },
   "files": [
+    "/dist/",
     "/lit-html.js",
     "/lit-html.js.map",
     "/lit-html.d.ts",
