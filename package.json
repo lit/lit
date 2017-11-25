@@ -24,7 +24,8 @@
     "quicktest": "wct -l chrome -p --npm",
     "checksize": "uglifyjs lit-html.js -mc --toplevel | gzip -9 | wc -c",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
-    "lint": "tslint --project ./"
+    "lint": "tslint --project ./",
+    "prepare": "npm run build"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
