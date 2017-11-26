@@ -24,8 +24,8 @@ render(helloTemplate('Kevin'), document.body);
 
 `lit-html` provides two main exports:
 
- * `html`: A JavaScript [template tag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
- * `render()`: A function that renders a `TemplateResult` to a DOM container, such as an element or shadow root.
+* `html`: A JavaScript [tagged template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
+* `render()`: A function that renders a `TemplateResult` to a DOM container, such as an element or shadow root.
 
 ### Announcement at Polymer Summit 2017
 
@@ -91,9 +91,9 @@ Rendering can be customized by providing alternate `render()` implementations wh
 
 `lit-html` is designed to be lightweight and fast (though performance benchmarking is just starting).
 
- * It utilizes the built-in JS and HTML parsers - it doesn't include any expression or markup parser of it's own.
- * It only updates the dynamic parts of templates - static parts are untouched, not even walked for diffing, after the initial render.
- * It uses cloning for initial render.
+* It utilizes the built-in JS and HTML parsers - it doesn't include any expression or markup parser of it's own.
+* It only updates the dynamic parts of templates - static parts are untouched, not even walked for diffing, after the initial render.
+* It uses cloning for initial render.
 
 This should make the approach generally fast and small. Actual science and optimization and still TODOs at this time.
 
@@ -115,7 +115,7 @@ const render = () => html`<div class="${blue}"></div>`;
 
 ### SVG Support
 
-To create partial SVG templates - template that will rendering inside and `<svg>` tag (in the SVG namespace), use the `svg` template tag instead of the `html` template tag:
+To create partial SVG templates - template that will rendering inside and `<svg>` tag (in the SVG namespace), use the `svg` tagged template literal instead of the `html` tagged template literal:
 
 ```javascript
 const grid = svg`
@@ -260,19 +260,19 @@ These features compose so you can render iterables of functions that return arra
 
 Some examples of possible extensions:
 
- * Property setting: Attribute expressions in templates could set properties on node.
- * Event handlers: Specially named attributes can install event handlers.
- * HTML values: `lit-html` creates `Text` nodes by default. Extensions could allow setting `innerHTML`.
+* Property setting: Attribute expressions in templates could set properties on node.
+* Event handlers: Specially named attributes can install event handlers.
+* HTML values: `lit-html` creates `Text` nodes by default. Extensions could allow setting `innerHTML`.
 
 ## Status
 
 `lit-html` is very new, under initial development, and not production-ready.
 
- * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 54 (behind a flag).
- * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
- * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
- * It has not been benchmarked thoroughly yet.
- * The API may change.
+* It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 54 (behind a flag).
+* It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
+* Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
+* It has not been benchmarked thoroughly yet.
+* The API may change.
 
 Even without a build configuration, `lit-html` minified with `babili` and gzipped measures in at less than 1.7k. We will strive to keep the size extremely small.
 
@@ -316,7 +316,7 @@ No tooling required. Understood by all JS editors and tools.
 
 JSX requires that the compiler be configured with the function to compile tags to. You can't mix two different JSX configurations in the same file.
 
-The `html` template tag is just a variable, probably an imported function. You can have any number of similar functions in the same JS scope, or set `html` to different implementations.
+The `html` tagged template literal is just a variable, probably an imported function. You can have any number of similar functions in the same JS scope, or set `html` to different implementations.
 
 ### Templates are values
 

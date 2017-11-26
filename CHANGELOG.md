@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.7.0] - 2017-10-06
 
-* Added the `svg` template tag for creating partial SVG content
+* Added the `svg` tagged template literal for creating partial SVG content
 * Support for expressions inside tables and other elements with limited permitted content
 * Only remove whitespace between elements, or at the start or end of elements
 * Fixed bugs with rendering iterables
