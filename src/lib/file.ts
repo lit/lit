@@ -1,0 +1,32 @@
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+import {directive, html, NodePart} from '../lit-html.js';
+
+/**
+ * Display `defaultContent` until `promise` resolves.
+ */
+export const file = (file: string, defaultContent: any) =>
+  directive((part: NodePart) => {
+    part.setValue(defaultContent);
+
+    fetch(file).then((res) => res.text())
+      .then((responseContent) => {
+        // Parse responded content
+        const template = document.createElement('div');
+        template.innerHTML = responseContent;
+        // Render it so it would resolve with a templateResult
+        part.setValue(html`${template.childNodes}`);
+      });
+  });
