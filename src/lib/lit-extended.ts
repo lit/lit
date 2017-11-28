@@ -58,7 +58,7 @@ export const extendedPartCallback =
             }
             if (templatePart.name!.endsWith('$')) {
               const name = templatePart.name!.slice(0, -1);
-              return new AttributePart(
+              return new ExtendedAttributePart(
                   instance, node as Element, name, templatePart.strings!);
             }
             return new PropertyPart(
@@ -69,6 +69,23 @@ export const extendedPartCallback =
           }
           return defaultPartCallback(instance, templatePart, node);
         };
+
+export class ExtendedAttributePart extends AttributePart {
+    setValue(values: any[], startIndex: number): void {
+        const s = this.strings;
+        if (s.length == 2 && s[0] == "" && s[1] == "") {
+            const v = values[startIndex];
+            if (v === false || v === null || v === undefined) {
+                this.element.removeAttribute(this.name);
+                return;
+            } else if (v === true) {
+                this.element.setAttribute(this.name, "");
+                return;
+            }
+        } 
+        super.setValue(values, startIndex);
+    }
+}
 
 export class PropertyPart extends AttributePart {
   setValue(values: any[], startIndex: number): void {
