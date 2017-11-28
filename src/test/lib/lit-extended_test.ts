@@ -50,6 +50,35 @@ suite('lit-extended', () => {
       render(html`<div foo$="1${'bar'}2${'baz'}3"></div>`, container);
       assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
     });
+    
+   test('renders flag attribute for true', () => {
+      render(html`<div foo$="${true}"></div>`, container);
+      assert.equal(container.innerHTML, '<div foo=""></div>');
+   });
+   test('renders flag attribute for empty string', () => {
+      render(html`<div foo$="${''}"></div>`, container);
+      assert.equal(container.innerHTML, '<div foo=""></div>');
+   });
+   test('does not render flag attribute for false', () => {
+     render(html`<div foo$="${false}"></div>`, container);
+     assert.equal(container.innerHTML, '<div></div>');
+   });
+   test('does not render flag attribute for null', () => {
+     render(html`<div foo$="${null}"></div>`, container);
+     assert.equal(container.innerHTML, '<div></div>');
+   });
+   test('does not render flag attribute for undefined', () => {
+     render(html`<div foo$="${undefined}"></div>`, container);
+     assert.equal(container.innerHTML, '<div></div>');
+   });
+   test('renders attribute with string true', () => {
+     render(html`<div foo$="${'true'}"></div>`, container);
+     assert.equal(container.innerHTML, '<div foo="true"></div>');
+   });
+   test('renders attribute with string false', () => {
+     render(html`<div foo$="${'false'}"></div>`, container);
+     assert.equal(container.innerHTML, '<div foo="false"></div>');
+   });
 
     test('reuses an existing ExtendedTemplateInstance when available', () => {
       const t = (content: any) => html`<div>${content}</div>`;
