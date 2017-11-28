@@ -16,6 +16,11 @@ import { updateCheckoutState } from './redux/actions/checkout.js';
 import { clearCart } from './redux/actions/cart.js';
 import { updateMeta } from './redux/actions/meta.js';
 import { announceLabel } from './redux/actions/announcer.js';
+import checkout from './redux/reducers/checkout.js';
+
+store.addReducers({
+  checkout
+});
 
 class ShopCheckout extends Element {
   static get template() {

@@ -14,8 +14,6 @@ import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.j
 
 import { store } from './redux/index.js';
 import { splitPathSelector } from './redux/reducers/location.js';
-import { numItemsSelector } from './redux/reducers/cart.js';
-import { closeModal } from './redux/actions/modal.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
@@ -79,8 +77,8 @@ class ShopApp extends Element {
         display: none;
       }
 
-      .cart-btn-container {
-        position: relative;
+      shop-cart-button {
+        display: block;
         width: 40px;
       }
 
@@ -125,22 +123,6 @@ class ShopApp extends Element {
         font-weight: 500;
         text-decoration: none;
         color: var(--app-primary-color);
-      }
-
-      .cart-badge {
-        position: absolute;
-        top: -2px;
-        right: 0;
-        width: 20px;
-        height: 20px;
-        background-color: var(--app-accent-color);
-        border-radius: 50%;
-        color: white;
-        font-size: 12px;
-        font-weight: 500;
-        pointer-events: none;
-        @apply --layout-vertical;
-        @apply --layout-center-center;
       }
 
       .drawer-list {
@@ -233,12 +215,7 @@ class ShopApp extends Element {
           </a>
         </div>
         <div class="logo" main-title=""><a href="/" aria-label="SHOP Home">SHOP</a></div>
-        <div class="cart-btn-container">
-          <a href="/cart" tabindex="-1">
-            <paper-icon-button icon="shopping-cart" aria-label\$="Shopping cart: [[_computePluralizedQuantity(numItems)]]"></paper-icon-button>
-          </a>
-          <div class="cart-badge" aria-hidden="true" hidden\$="[[!numItems]]">[[numItems]]</div>
-        </div>
+        <shop-cart-button></shop-cart-button>
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
@@ -309,11 +286,6 @@ class ShopApp extends Element {
       observer: '_pageChanged'
     },
 
-    numItems: {
-      type: Number,
-      value: 0
-    },
-
     offline: {
       type: Boolean,
       observer: '_offlineChanged'
@@ -366,7 +338,6 @@ class ShopApp extends Element {
     this.setProperties({
       categories: Object.values(state.categories),
       categoryName,
-      numItems: numItemsSelector(state),
       page,
       offline: !state.network.online,
       _a11yLabel: state.announcer.label,
@@ -508,18 +479,6 @@ class ShopApp extends Element {
     if (opened && !this._cartModal) {
       this._cartModal = document.createElement('shop-cart-modal');
       this.root.appendChild(this._cartModal);
-      this._cartModal.addEventListener('opened-changed', () => {
-        // NOTE: Don't dispatch if modal.opened became false due to time
-        // travelling (i.e. state.modal is already false).
-        // This check is generally needed whenever you have both UI updating
-        // state and state updating the same UI.
-        if (!this._cartModal.opened && this.modalOpened) {
-          store.dispatch(closeModal());
-        }
-      });
-    }
-    if (this._cartModal) {
-      this._cartModal.opened = opened;
     }
   }
 

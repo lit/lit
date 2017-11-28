@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 // shop-app
 import "./shop-icons.js";
 import "./shop-analytics.js";
+import "./shop-cart-button.js";
 import "./shop-cart-modal.js";
 import "./shop-snackbar.js";
 import "./shop-tabs.js";
@@ -29,3 +30,12 @@ import "./shop-cart-item.js";
 // shop-checkout
 import "../node_modules/@polymer/iron-form/iron-form.js";
 import "../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
+
+import { store } from './redux/index.js';
+import { installCart } from './redux/cart.js';
+import cart from './redux/reducers/cart.js';
+
+store.addReducers({
+  cart
+});
+installCart(store);

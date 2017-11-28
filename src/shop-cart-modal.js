@@ -5,6 +5,14 @@ import { IronOverlayBehaviorImpl } from '../node_modules/@polymer/iron-overlay-b
 import './shop-button.js';
 import { mixinBehaviors } from '../node_modules/@polymer/polymer/lib/legacy/class.js';
 
+import { store } from './redux/index.js';
+import modal from './redux/reducers/modal.js';
+import { closeModal } from './redux/actions/modal.js';
+
+store.addReducers({
+  modal
+});
+
 class ShopCartModal extends mixinBehaviors(
   [IronOverlayBehaviorImpl], Element) {
   static get template() {
@@ -104,12 +112,35 @@ class ShopCartModal extends mixinBehaviors(
     }
   }}
 
+  constructor() {
+    super();
+
+    store.subscribe(() => this.update());
+    this.update();
+  }
+
+  update() {
+    const state = store.getState();
+    this.setProperties({
+      opened: state.modal
+    });
+  }
+
   ready() {
     super.ready();
     this.setAttribute('role', 'dialog');
     this.setAttribute('aria-modal', 'true');
     this.addEventListener('transitionend', (e)=>this._transitionEnd(e));
     this.addEventListener('iron-overlay-canceled', (e)=>this._onCancel(e));
+    this.addEventListener('opened-changed', () => {
+      // NOTE: Don't dispatch if modal.opened became false due to time
+      // travelling (i.e. state.modal is already false).
+      // This check is generally needed whenever you have both UI updating
+      // state and state updating the same UI.
+      if (!this.opened && store.getState().modal) {
+        store.dispatch(closeModal());
+      }
+    });
   }
 
   _renderOpened() {
