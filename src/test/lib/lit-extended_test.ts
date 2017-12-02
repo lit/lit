@@ -111,7 +111,7 @@ suite('lit-extended', () => {
 
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
-      let event;
+      let event: Event;
       const listener = function(this: any, e: any) {
         event = e;
         thisValue = this;
@@ -120,7 +120,13 @@ suite('lit-extended', () => {
       const div = container.firstChild as HTMLElement;
       div.click();
       assert.equal(thisValue, div);
-      assert.instanceOf(event, MouseEvent);
+
+      // MouseEvent is not a function in IE, so the event cannot be an instance of it
+      if (typeof MouseEvent === 'function') {
+        assert.instanceOf(event!, MouseEvent);
+      } else {
+        assert.isDefined((event! as MouseEvent).initMouseEvent);
+      }
     });
 
     test('adds event listener objects, calls with right this value', () => {
