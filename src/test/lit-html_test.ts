@@ -448,7 +448,7 @@ suite('lit-html', () => {
           assert.equal(container.innerHTML, '<div></div>');
           // Resolve the second Promise, should update the container
           resolve2!('bar');
-          return promise1.then(() => {
+          return promise2.then(() => {
             assert.equal(container.innerHTML, '<div>bar</div>');
           });
         });
