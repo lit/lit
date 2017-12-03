@@ -31,11 +31,11 @@ suite('until', () => {
     render(
         html`<div>${until(promise, html`<span>loading...</span>`)}</div>`,
         container);
-    assert.equal(container.innerHTML, '<div><span>loading...</span></div>');
+    assert.equal(container.innerHTML, '<div><!----><span>loading...</span><!----></div>');
     resolve!('foo');
     return promise.then(() => new Promise((r) => setTimeout(() => r())))
         .then(() => {
-          assert.equal(container.innerHTML, '<div>foo</div>');
+          assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
         });
   });
 
