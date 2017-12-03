@@ -225,7 +225,12 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div>foo bar</div>');
       });
 
-      test('renders nested templates within table content', () => {
+      const testSkipForTemplatePolyfill =
+          ((HTMLTemplateElement as any).decorate != null) ?
+          test.skip :
+          test;
+
+      testSkipForTemplatePolyfill('renders nested templates within table content', () => {
         let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
         render(table, container);
         assert.equal(container.innerHTML, '<table><tr><td></td></tr></table>');
