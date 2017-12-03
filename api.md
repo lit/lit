@@ -4,7 +4,7 @@
 
 `html(strings: TemplateStringsArray, ...expressions: any[]): TemplateResult`
 
-`html` is a template tag for [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), which parses the literal as HTML and returns a `TemplateResult`.
+`html` is a [tagged template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals), which parses the literal as HTML and returns a `TemplateResult`.
 
 ### Class `TemplateResult`
 
