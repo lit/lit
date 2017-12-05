@@ -167,6 +167,16 @@ const render = () => html`
 `;
 ```
 
+### Promises
+
+Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won't update the template when it finally resolves.
+
+```javascript
+const render = () => html`
+  The response is ${fetch('sample.txt').then((r) => r.text())}.
+`;
+```
+
 ### Directives
 
 Directives are functions that can extend lit-html by directly interacting with the Part API.
@@ -240,14 +250,51 @@ const render = () => html`
 `;
 ```
 
-### Promises
+#### `asyncAppend(asyncIterable)` and `asyncReplace(asyncIterable)`
 
-Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won't update the template when it finally resolves.
+JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
+
+lit-html offers two directives to consume asynchronous iterators:
+
+ * `asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+appending each new value after the previous.
+ * `asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+replacing the previous value with the new value.
+
+Example:
 
 ```javascript
-const render = () => html`
-  The response is ${fetch('sample.txt').then((r) => r.text())}.
-`;
+
+const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
+
+/**
+ * Returns an async iterable that yields increasing integers.
+ */
+async function* countUp() {
+  let i = 0;
+  while (true) {
+    yield i++;
+    await wait(1000);
+  }
+}
+
+render(html`
+  Count: <span>${asyncReplace(countUp())}</span>.
+`, document.body);
+```
+
+In the near future, `ReadableStream`s will be async iterables, enabling streaming `fetch()` directly into a template:
+
+```javascript
+// Endpoint that returns a billion digits of PI, streamed.
+const url =
+    'https://cors-anywhere.herokuapp.com/http://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt';
+
+const streamingResponse = (async () => {
+  const response = await fetch(url);
+  return response.body.getReader();
+})();
+render(html`π is: ${asyncAppend(streamingResponse)}`, document.body);
 ```
 
 ### Composability

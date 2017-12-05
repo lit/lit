@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Performance improvements for template setup
 * Internal code cleanup
 * Support synchronous thenables
+* Added the `asyncAppend` and `asyncReplace` directives to handle async iterable values in expressions.
 
 ## [0.7.0] - 2017-10-06
 

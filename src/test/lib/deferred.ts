@@ -12,17 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, NodePart} from '../lit-html.js';
-
 /**
- * Renders the result as HTML, rather than text.
- *
- * Note, this is unsafe to use with any user-provided input that hasn't been
- * sanitized or escaped, as it may lead to cross-site-scripting
- * vulnerabilities.
+ * A helper for creating Promises that can be resolved or rejected after
+ * initial creation.
  */
-export const unsafeHTML = (value: any) => directive((part: NodePart) => {
-  const tmp = document.createElement('template');
-  tmp.innerHTML = value;
-  part.setValue(document.importNode(tmp.content, true));
-});
+export class Deferred<T> {
+  readonly promise: Promise<T>;
+  readonly resolve: (value: T) => void;
+  readonly reject: (error: Error) => void;
+
+  constructor() {
+    this.promise = new Promise<T>((res, rej) => {
+      this.resolve! = res;
+      this.reject! = rej;
+    });
+  }
+}

@@ -354,29 +354,38 @@ export class Template {
   }
 }
 
+/**
+ * Returns a value ready to be inserted into a Part from a user-provided value.
+ *
+ * If the user value is a directive, this invokes the directive with the given
+ * part. If the value is null, it's converted to undefined to work better
+ * with certain DOM APIs, like textContent.
+ */
 export const getValue = (part: Part, value: any) => {
   // `null` as the value of a Text node will render the string 'null'
   // so we convert it to undefined
-  if (value != null && value.__litDirective === true) {
+  if (isDirective(value)) {
     value = value(part);
+    return directiveValue;
   }
   return value === null ? undefined : value;
 };
 
-export type DirectiveFn = (part: Part) => any;
+export type DirectiveFn<P extends Part = Part> = (part: P) => any;
 
-export const directive = <F extends DirectiveFn>(f: F): F => {
+export const directive = <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
   (f as any).__litDirective = true;
   return f;
 };
 
+const isDirective = (o: any) =>
+    typeof o === 'function' && o.__litDirective === true;
+
+const directiveValue = {};
+
 export interface Part {
   instance: TemplateInstance;
   size?: number;
-
-  // constructor(instance: TemplateInstance) {
-  //   this.instance = instance;
-  // }
 }
 
 export interface SinglePart extends Part { setValue(value: any): void; }
@@ -410,7 +419,7 @@ export class AttributePart implements MultiPart {
     for (let i = 0; i < l; i++) {
       text += strings[i];
       const v = getValue(this, values[startIndex + i]);
-      if (v &&
+      if (v && v !== directiveValue &&
           (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
         for (const t of v) {
           // TODO: we need to recursively call getValue into iterables...
@@ -433,7 +442,7 @@ export class NodePart implements SinglePart {
   instance: TemplateInstance;
   startNode: Node;
   endNode: Node;
-  private _previousValue: any;
+  _previousValue: any;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
     this.instance = instance;
@@ -445,7 +454,9 @@ export class NodePart implements SinglePart {
 
   setValue(value: any): void {
     value = getValue(this, value);
-
+    if (value === directiveValue) {
+      return;
+    }
     if (value === null ||
         !(typeof value === 'object' || typeof value === 'function')) {
       // Handle primitive values
@@ -483,6 +494,7 @@ export class NodePart implements SinglePart {
 
   private _setText(value: string): void {
     const node = this.startNode.nextSibling!;
+    value = value === undefined ? '' : value;
     if (node === this.endNode.previousSibling &&
         node.nodeType === Node.TEXT_NODE) {
       // If we only have a single text node between the markers, we can just
@@ -491,7 +503,7 @@ export class NodePart implements SinglePart {
       // primitive?
       node.textContent = value;
     } else {
-      this._setNode(document.createTextNode(value === undefined ? '' : value));
+      this._setNode(document.createTextNode(value));
     }
     this._previousValue = value;
   }
