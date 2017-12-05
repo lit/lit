@@ -35,7 +35,6 @@ import {directive, NodePart} from '../lit-html.js';
 export const asyncReplace =
     <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) =>
         directive(async (part: NodePart) => {
-
           // If we've already set up this particular iterable, we don't need
           // to do anything.
           if (value === part._previousValue) {
@@ -47,12 +46,17 @@ export const asyncReplace =
           const itemPart =
               new NodePart(part.instance, part.startNode, part.endNode);
 
-          part.clear();
           part._previousValue = itemPart;
 
           let i = 0;
 
           for await (let v of value) {
+            // When we get the first value, clear the part. This let's the previous
+            // value display until we can replace it.
+            if (i === 0) {
+              part.clear();
+            }
+
             // Check to make sure that value is the still the current value of
             // the part, and if not bail because a new value owns this part
             if (part._previousValue !== itemPart) {

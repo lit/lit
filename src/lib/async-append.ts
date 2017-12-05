@@ -39,7 +39,6 @@ export const asyncAppend = <T>(
       if (value === part._previousValue) {
         return;
       }
-      part.clear();
       part._previousValue = value;
 
       // We keep track of item Parts across iterations, so that we can
@@ -48,6 +47,12 @@ export const asyncAppend = <T>(
       let i = 0;
 
       for await (let v of value) {
+        // When we get the first value, clear the part. This let's the previous
+        // value display until we can replace it.
+        if (i === 0) {
+          part.clear();
+        }
+
         // Check to make sure that value is the still the current value of
         // the part, and if not bail because a new value owns this part
         if (part._previousValue !== value) {

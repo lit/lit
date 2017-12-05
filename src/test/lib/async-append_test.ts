@@ -82,7 +82,10 @@ suite('asyncAppend', () => {
 
     const iterable2 = new TestAsyncIterable<string>();
     render(t(iterable2), container);
-    assert.equal(container.innerHTML, '<div><!----><!----></div>');
+
+    // The last value is preserved until we receive the first
+    // value from the new iterable
+    assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
 
     await iterable2.push('hello');
     assert.equal(container.innerHTML, '<div><!---->hello<!----></div>');
