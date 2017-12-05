@@ -395,30 +395,28 @@ export class AttributePart implements MultiPart {
     this.size = strings.length - 1;
   }
 
-  protected _interpolate(values: any[], startIndex: number) {
+  protected _interpolate(values: any[], startIndex: number): any {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
 
+    if (l === 1 && strings[0] === '' && strings[1] === '') {
+      return getValue(this, values[startIndex]);
+    }
+
     for (let i = 0; i < l; i++) {
-      text += strings[i];
-      const v = getValue(this, values[startIndex + i]);
-      if (v &&
-          (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
-        for (const t of v) {
-          // TODO: we need to recursively call getValue into iterables...
-          text += t;
-        }
-      } else {
-        text += v;
-      }
+      text += strings[i] + getValue(this, values[startIndex + i]);
     }
     return text + strings[l];
   }
 
   setValue(values: any[], startIndex: number): void {
-    const text = this._interpolate(values, startIndex);
-    this.element.setAttribute(this.name, text);
+    const value = this._interpolate(values, startIndex);
+    if (value == null) {
+      this.element.removeAttribute(this.name);
+    } else {
+      this.element.setAttribute(this.name, String(value));
+    }
   }
 }
 
