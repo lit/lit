@@ -61,6 +61,10 @@ export const extendedPartCallback =
               return new AttributePart(
                   instance, node as Element, name, templatePart.strings!);
             }
+            if (templatePart.name!.endsWith('...')) {
+              return new SpreadPart(
+                  instance, node as Element, templatePart.rawName as string, templatePart.strings!);
+            }
             return new PropertyPart(
                 instance,
                 node as Element,
@@ -69,6 +73,21 @@ export const extendedPartCallback =
           }
           return defaultPartCallback(instance, templatePart, node);
         };
+
+export class SpreadPart extends AttributePart {
+  setValue(values: any[], startIndex: number): void {
+    const properties = values[startIndex];
+    Object.keys(properties).forEach((property) => {
+      const value = properties[property];
+      if (property.endsWith('$')) {
+        const attribute = property!.slice(0, -1);
+        this.element.setAttribute(attribute, value);
+      } else {
+        (this.element as any)[property] = value;
+      }
+    });
+  }
+}
 
 export class PropertyPart extends AttributePart {
   setValue(values: any[], startIndex: number): void {
