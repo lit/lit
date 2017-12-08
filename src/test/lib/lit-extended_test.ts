@@ -191,6 +191,21 @@ suite('lit-extended', () => {
       assert.equal(target, undefined);
     });
 
+    test('spread part sets properties and attributes', () => {
+      const options = { foo: '123', 'bar$': '456' };
+      render(html`<div ...=${options}></div>`, container);
+      const div = container.firstChild!;
+      assert.equal((div as any).foo, 123);
+      assert.equal((div as any).getAttribute('bar'), 456);
+    });
+
+    test('spread part overrides current values', () => {
+      const options = { foo: '123', 'bar$': '456' };
+      render(html`<div foo="100" bar$="200" ...=${options}></div>`, container);
+      const div = container.firstChild!;
+      assert.equal((div as any).foo, 123);
+      assert.equal((div as any).getAttribute('bar'), 456);
+    });
 
   });
 });

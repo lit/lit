@@ -42,6 +42,23 @@ export {html} from '../lit-html.js';
  *
  *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
+ * To set multiple values you can use the spread attribute with `...=${options}`:
+ *   Note: provided spread data will overwrite currently set values
+ *
+ * Example:
+ *
+ *     const options = {
+ *       'id$': 'buy',
+ *       'data-action': 'add-to-cart',
+ *       'active': true
+ *     };
+ *     html`<button class="fanzy" id="my-button" ...=${options}>Buy Now</button>`
+ *
+ * Result:
+ *
+ *     <button class="fanzy" id="buy" data-action="add-to-cart">Buy Now</button>
+ *     document.querySelector('button').active; // true
+ *
  */
 export function render(
     result: TemplateResult, container: Element|DocumentFragment) {
