@@ -26,12 +26,12 @@ function cleanMap(part: NodePart, key: any, map: Map<any, NodePart>) {
 }
 
 export function repeat<T>(
-    items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn;
-export function repeat<T>(items: T[], template: ItemTemplate<T>): DirectiveFn;
+    items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>): DirectiveFn<NodePart>;
+export function repeat<T>(items: T[], template: ItemTemplate<T>): DirectiveFn<NodePart>;
 export function repeat<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T>| ItemTemplate<T>,
-    template?: ItemTemplate<T>): DirectiveFn {
+    template?: ItemTemplate<T>): DirectiveFn<NodePart> {
   let keyFn: KeyFn<T>;
   if (arguments.length === 2) {
     template = keyFnOrTemplate;
@@ -39,7 +39,7 @@ export function repeat<T>(
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
-  return directive((part: Part): any => {
+  return directive((part: NodePart): void => {
     if (!(part instanceof NodePart)) {
       throw new Error('repeat can only be used on NodeParts');
     }
