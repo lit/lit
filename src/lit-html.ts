@@ -19,8 +19,11 @@
  * TODO(justinfagnani): Run tests compiled to ES5 with both Babel and
  * TypeScript to verify correctness.
  */
-const envCachesTemplates =
-    ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s) ``);
+const envCachesTemplates = (() => {
+  const tagFn = (s: TemplateStringsArray) => s;
+  const testFn = () => tagFn``;
+  return testFn() === testFn();
+})();
 
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
