@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, Part, render as baseRender, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {RenderContainer, AttributePart, defaultPartCallback, getValue, Part, render as baseRender, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 export {html} from '../lit-html.js';
 
@@ -44,7 +44,7 @@ export {html} from '../lit-html.js';
  *
  */
 export function render(
-    result: TemplateResult, container: Element|DocumentFragment) {
+    result: TemplateResult, container: RenderContainer) {
   baseRender(result, container, extendedPartCallback);
 }
 
