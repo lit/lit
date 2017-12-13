@@ -22,37 +22,32 @@
 const envCachesTemplates =
     ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s) ``);
 
-// The first argument to JS template tags retain identity across multiple
-// calls to a tag for the same literal, so we can cache work done per literal
-// in a Map.
-const templates = new Map<TemplateStringsArray|string, Template>();
-const svgTemplates = new Map<TemplateStringsArray|string, Template>();
-
 /**
- * Interprets a template literal as an HTML template that can efficiently
- * render to and update a container.
+ * Options that can be passed on to the tag factory.
  */
-export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-    litTag(strings, values, templates, false);
+export interface TagOptions { Template: TemplateConstructor; }
 
-/**
- * Interprets a template literal as an SVG template that can efficiently
- * render to and update a container.
- */
-export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-    litTag(strings, values, svgTemplates, true);
+export const tag = (options: TagOptions) => {
+  // The first argument to JS template tags retain identity across multiple
+  // calls to a tag for the same literal, so we can cache work done per
+  // literal in a Map.
+  const templates = new Map<TemplateStringsArray|string, Template>();
+
+  return (strings: TemplateStringsArray, ...values: any[]) =>
+             litTag(strings, values, templates, options);
+};
 
 function litTag(
     strings: TemplateStringsArray,
     values: any[],
     templates: Map<TemplateStringsArray|string, Template>,
-    isSvg: boolean): TemplateResult {
+    options: TagOptions): TemplateResult {
   const key = envCachesTemplates ?
       strings :
       strings.join('{{--uniqueness-workaround--}}');
   let template = templates.get(key);
   if (template === undefined) {
-    template = new Template(strings, isSvg);
+    template = new options.Template(strings);
     templates.set(key, template);
   }
   return new TemplateResult(template, values);
@@ -174,21 +169,19 @@ export class TemplatePart {
   }
 }
 
-
 export class Template {
-  parts: TemplatePart[] = [];
-  element: HTMLTemplateElement;
+  public parts: TemplatePart[] = [];
+  public element: HTMLTemplateElement;
 
-  constructor(strings: TemplateStringsArray, svg: boolean = false) {
-    const element = this.element = document.createElement('template');
-    element.innerHTML = this._getHtml(strings, svg);
-    const content = element.content;
+  protected index: number;
+  protected partIndex: number;
 
-    if (svg) {
-      const svgElement = content.firstChild!;
-      content.removeChild(svgElement);
-      reparentNodes(content, svgElement.firstChild);
-    }
+  protected previousNode?: Node;
+  protected currentNode?: Node;
+
+  constructor(protected strings: TemplateStringsArray) {
+    const element = this.element = this.createTemplate(strings);
+    const {content} = element;
 
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
@@ -198,116 +191,27 @@ export class Template {
         ,
         null as any,
         false);
-    let index = -1;
-    let partIndex = 0;
+
+    this.index = -1;
+    this.partIndex = 0;
     const nodesToRemove: Node[] = [];
 
     // The actual previous node, accounting for removals: if a node is removed
     // it will never be the previousNode.
-    let previousNode: Node|undefined;
+    this.previousNode = undefined;
     // Used to set previousNode at the top of the loop.
-    let currentNode: Node|undefined;
+    this.currentNode = undefined;
 
     while (walker.nextNode()) {
-      index++;
-      previousNode = currentNode;
-      const node = currentNode = walker.currentNode as Element;
+      this.index++;
+      this.previousNode = this.currentNode;
+      const node = this.currentNode = walker.currentNode;
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-        if (!node.hasAttributes()) {
-          continue;
-        }
-        const attributes = node.attributes;
-        // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
-        // attributes are not guaranteed to be returned in document order. In
-        // particular, Edge/IE can return them out of order, so we cannot assume
-        // a correspondance between part index and attribute index.
-        let count = 0;
-        for (let i = 0; i < attributes.length; i++) {
-          if (attributes[i].value.indexOf(marker) >= 0) {
-            count++;
-          }
-        }
-        while (count-- > 0) {
-          // Get the template literal section leading up to the first
-          // expression in this attribute attribute
-          const stringForPart = strings[partIndex];
-          // Find the attribute name
-          const attributeNameInPart =
-              lastAttributeNameRegex.exec(stringForPart)![1];
-          // Find the corresponding attribute
-          const attribute = attributes.getNamedItem(attributeNameInPart);
-          const stringsForAttributeValue = attribute.value.split(markerRegex);
-          this.parts.push(new TemplatePart(
-              'attribute',
-              index,
-              attribute.name,
-              attributeNameInPart,
-              stringsForAttributeValue));
-          node.removeAttribute(attribute.name);
-          partIndex += stringsForAttributeValue.length - 1;
-        }
+        this.visitElement(node as Element, nodesToRemove);
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-        const nodeValue = node.nodeValue!;
-        if (nodeValue.indexOf(marker) < 0) {
-          continue;
-        }
-
-        const parent = node.parentNode!;
-        const strings = nodeValue.split(markerRegex);
-        const lastIndex = strings.length - 1;
-
-        // We have a part for each match found
-        partIndex += lastIndex;
-
-        // Generate a new text node for each literal section
-        // These nodes are also used as the markers for node parts
-        for (let i = 0; i < lastIndex; i++) {
-          // IE doesn't clone empty text nodes, so use comments instead
-          previousNode = strings[i] === '' ? document.createComment('') :
-            document.createTextNode(strings[i]);
-          parent.insertBefore(previousNode, node);
-          this.parts.push(new TemplatePart('node', index++));
-        }
-
-        parent.insertBefore(
-            strings[lastIndex] === '' ?
-                document.createComment('') :
-                document.createTextNode(strings[lastIndex]),
-            node);
-        nodesToRemove.push(node);
-      } else if (
-          node.nodeType === 8 /* Node.COMMENT_NODE */ &&
-          node.nodeValue === marker) {
-        const parent = node.parentNode!;
-        // Add a new marker node to be the startNode of the Part if any of the
-        // following are true:
-        //  * We don't have a previousSibling
-        //  * previousSibling is being removed (thus it's not the
-        //    `previousNode`)
-        //  * previousSibling is not a Text node
-        //
-        // TODO(justinfagnani): We should be able to use the previousNode here
-        // as the marker node and reduce the number of extra nodes we add to a
-        // template. See https://github.com/PolymerLabs/lit-html/issues/147
-        const previousSibling = node.previousSibling;
-        if (previousSibling === null || previousSibling !== previousNode ||
-            previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createComment(''), node);
-        } else {
-          index--;
-        }
-        this.parts.push(new TemplatePart('node', index++));
-        nodesToRemove.push(node);
-        // If we don't have a nextSibling add a marker node.
-        // We don't have to check if the next node is going to be removed,
-        // because that node will induce a new marker if so.
-        if (node.nextSibling === null) {
-          parent.insertBefore(document.createComment(''), node);
-        } else {
-          index--;
-        }
-        currentNode = previousNode;
-        partIndex++;
+        this.visitText(node as Text, nodesToRemove);
+      } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
+        this.visitComment(node as Comment, nodesToRemove);
       }
     }
 
@@ -317,10 +221,16 @@ export class Template {
     }
   }
 
+  protected createTemplate(strings: TemplateStringsArray): HTMLTemplateElement {
+    const element = document.createElement('template');
+    element.innerHTML = this.getHtml(strings);
+    return element;
+  }
+
   /**
    * Returns a string of HTML used to create a <template> element.
    */
-  private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
+  protected getHtml(strings: TemplateStringsArray): string {
     const l = strings.length - 1;
     let html = '';
     let isTextBinding = true;
@@ -335,8 +245,134 @@ export class Template {
       html += isTextBinding ? nodeMarker : marker;
     }
     html += strings[l];
-    return svg ? `<svg>${html}</svg>` : html;
+    return html;
   }
+
+  protected visitElement(element: Element, _nodesToRemove: Node[]): void {
+    if (!element.hasAttributes()) {
+      return;
+    }
+    const attributes = element.attributes;
+    // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
+    // attributes are not guaranteed to be returned in document order. In
+    // particular, Edge/IE can return them out of order, so we cannot assume
+    // a correspondance between part index and attribute index.
+    let count = 0;
+    for (let i = 0; i < attributes.length; i++) {
+      if (attributes[i].value.indexOf(marker) >= 0) {
+        count++;
+      }
+    }
+    while (count-- > 0) {
+      // Get the template literal section leading up to the first
+      // expression in this attribute attribute
+      const stringForPart = this.strings[this.partIndex];
+      // Find the attribute name
+      const attributeNameInPart =
+          lastAttributeNameRegex.exec(stringForPart)![1];
+      // Find the corresponding attribute
+      const attribute = attributes.getNamedItem(attributeNameInPart);
+      const stringsForAttributeValue = attribute.value.split(markerRegex);
+      this.parts.push(new TemplatePart(
+          'attribute',
+          this.index,
+          attribute.name,
+          attributeNameInPart,
+          stringsForAttributeValue));
+      element.removeAttribute(attribute.name);
+      this.partIndex += stringsForAttributeValue.length - 1;
+    }
+  }
+
+  protected visitText(text: Text, nodesToRemove: Node[]): void {
+    const nodeValue = text.nodeValue!;
+    if (nodeValue.indexOf(marker) < 0) {
+      return;
+    }
+
+    const parent = text.parentNode!;
+    const strings = nodeValue.split(markerRegex);
+    const lastIndex = strings.length - 1;
+
+    // We have a part for each match found
+    this.partIndex += lastIndex;
+
+    // Generate a new text node for each literal section
+    // These nodes are also used as the markers for node parts
+    for (let i = 0; i < lastIndex; i++) {
+      // IE doesn't clone empty text nodes, so use comments instead
+      this.previousNode = strings[i] === '' ?
+          document.createComment('') :
+          document.createTextNode(strings[i]);
+      parent.insertBefore(this.previousNode, text);
+      this.parts.push(new TemplatePart('node', this.index++));
+    }
+
+    parent.insertBefore(
+        strings[lastIndex] === '' ? document.createComment('') :
+                                    document.createTextNode(strings[lastIndex]),
+        text);
+    nodesToRemove.push(text);
+  }
+
+  protected visitComment(comment: Comment, nodesToRemove: Node[]): void {
+    if (comment.nodeValue !== marker) {
+      return;
+    }
+
+    const parent = comment.parentNode!;
+    // Add a new marker node to be the startNode of the Part if any of the
+    // following are true:
+    //  * We don't have a previousSibling
+    //  * previousSibling is being removed (thus it's not the
+    //    `previousNode`)
+    //  * previousSibling is not a Text node
+    //
+    // TODO(justinfagnani): We should be able to use the previousNode here
+    // as the marker node and reduce the number of extra nodes we add to a
+    // template. See https://github.com/PolymerLabs/lit-html/issues/147
+    const previousSibling = comment.previousSibling;
+    if (previousSibling === null || previousSibling !== this.previousNode ||
+        previousSibling.nodeType !== Node.TEXT_NODE) {
+      parent.insertBefore(document.createComment(''), comment);
+    } else {
+      this.index--;
+    }
+    this.parts.push(new TemplatePart('node', this.index++));
+    nodesToRemove.push(comment);
+    // If we don't have a nextSibling add a marker node.
+    // We don't have to check if the next node is going to be removed,
+    // because that node will induce a new marker if so.
+    if (comment.nextSibling === null) {
+      parent.insertBefore(document.createComment(''), comment);
+    } else {
+      this.index--;
+    }
+    this.currentNode = this.previousNode;
+    this.partIndex++;
+  }
+}
+
+export interface TemplateConstructor {
+  new(strings: TemplateStringsArray): Template;
+}
+
+export function SvgTemplate(BaseTemplate: TemplateConstructor): TemplateConstructor {
+  return class extends BaseTemplate {
+    createTemplate(strings: TemplateStringsArray): HTMLTemplateElement {
+      const template = super.createTemplate(strings);
+
+      const svgElement = template.content.firstChild!;
+      template.content.removeChild(svgElement);
+      reparentNodes(template.content, svgElement.firstChild);
+
+      return template;
+    }
+
+    getHtml(strings: TemplateStringsArray): string {
+      return `<svg>${super.getHtml(strings)}</svg>`;
+    }
+  };
 }
 
 /**
@@ -358,10 +394,11 @@ export const getValue = (part: Part, value: any) => {
 
 export type DirectiveFn<P extends Part = Part> = (part: P) => any;
 
-export const directive = <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
-  (f as any).__litDirective = true;
-  return f;
-};
+export const directive =
+    <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
+      (f as any).__litDirective = true;
+      return f;
+    };
 
 const isDirective = (o: any) =>
     typeof o === 'function' && o.__litDirective === true;
@@ -662,9 +699,9 @@ export class TemplateInstance {
  */
 export const reparentNodes =
     (container: Node,
-     start: Node | null,
-     end: Node | null = null,
-     before: Node | null = null): void => {
+     start: Node|null,
+     end: Node|null = null,
+     before: Node|null = null): void => {
       let node = start;
       while (node !== end) {
         const n = node!.nextSibling;
@@ -678,7 +715,7 @@ export const reparentNodes =
  * (exclusive), from `container`.
  */
 export const removeNodes =
-    (container: Node, startNode: Node | null, endNode: Node | null = null):
+    (container: Node, startNode: Node|null, endNode: Node|null = null):
         void => {
           let node = startNode;
           while (node !== endNode) {
@@ -687,3 +724,16 @@ export const removeNodes =
             node = n;
           }
         };
+
+
+/**
+ * Interprets a template literal as an HTML template that can efficiently
+ * render to and update a container.
+ */
+export const html = tag({Template});
+
+/**
+ * Interprets a template literal as an SVG template that can efficiently
+ * render to and update a container.
+ */
+export const svg = tag({Template: SvgTemplate(Template)});
