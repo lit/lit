@@ -74,6 +74,9 @@ export class PropertyPart extends AttributePart {
   setValue(values: any[], startIndex: number): void {
     const s = this.strings;
     let value: any;
+    if (this._equalToPreviousValues(values, startIndex)) {
+      return;
+    }
     if (s.length === 2 && s[0] === '' && s[1] === '') {
       // An expression that occupies the whole attribute value will leave
       // leading and trailing empty strings.
@@ -83,6 +86,8 @@ export class PropertyPart extends AttributePart {
       value = this._interpolate(values, startIndex);
     }
     (this.element as any)[this.name] = value;
+
+    this._previousValues = values;
   }
 }
 
