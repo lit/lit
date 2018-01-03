@@ -364,6 +364,9 @@ const isDirective = (o: any) =>
 
 const directiveValue = {};
 
+const isPrimitiveValue = (value: any) =>
+    value === null || !(typeof value === 'object' || typeof value === 'function');
+
 export interface Part {
   instance: TemplateInstance;
   size?: number;
@@ -381,6 +384,7 @@ export class AttributePart implements MultiPart {
   name: string;
   strings: string[];
   size: number;
+  _previousValues: any;
 
   constructor(
       instance: TemplateInstance, element: Element, name: string,
@@ -390,6 +394,8 @@ export class AttributePart implements MultiPart {
     this.name = name;
     this.strings = strings;
     this.size = strings.length - 1;
+
+    this._previousValues = [];
   }
 
   protected _interpolate(values: any[], startIndex: number) {
@@ -413,9 +419,24 @@ export class AttributePart implements MultiPart {
     return text + strings[l];
   }
 
+  protected _equalToPreviousValues(values: any[], startIndex: number) {
+    for (let i = startIndex; i < startIndex + this.size; i++) {
+      if (this._previousValues[i] !== values[i] || !isPrimitiveValue(values[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   setValue(values: any[], startIndex: number): void {
+    if (this._equalToPreviousValues(values, startIndex)) {
+      return;
+    }
+
     const text = this._interpolate(values, startIndex);
     this.element.setAttribute(this.name, text);
+
+    this._previousValues = values;
   }
 }
 
@@ -437,8 +458,7 @@ export class NodePart implements SinglePart {
     if (value === directiveValue) {
       return;
     }
-    if (value === null ||
-        !(typeof value === 'object' || typeof value === 'function')) {
+    if (isPrimitiveValue(value)) {
       // Handle primitive values
       // If the value didn't change, do nothing
       if (value === this._previousValue) {
