@@ -417,7 +417,20 @@ export class AttributePart implements MultiPart {
     return text + strings[l];
   }
 
+  protected _setBooleanValue(value: boolean) {
+    if (value) {
+      this.element.setAttribute(this.name, this.name);
+    } else {
+      this.element.removeAttribute(this.name);
+    }
+  }
+
   setValue(values: any[], startIndex: number): void {
+    if (this.strings.length === 2 && typeof values[startIndex] === 'boolean') {
+      this._setBooleanValue(values[startIndex]);
+      return;
+    }
+
     const text = this._interpolate(values, startIndex);
     this.element.setAttribute(this.name, text);
   }
