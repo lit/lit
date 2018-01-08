@@ -644,18 +644,6 @@ export class TemplateInstance {
     const parts = this.template.parts;
 
     if (parts.length > 0) {
-      if (envDoesntCloneEmptyTextNodes) {
-        // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
-        // null
-        const textWalker = document.createTreeWalker(
-            fragment, 4 /* NodeFilter.SHOW_TEXT */, null as any, false);
-        while (textWalker.nextNode()) {
-          if (textWalker.currentNode.nodeValue === marker) {
-            textWalker.currentNode.nodeValue = '';
-          }
-        }
-      }
-
       // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
       // null
       const walker = document.createTreeWalker(
@@ -667,13 +655,27 @@ export class TemplateInstance {
           false);
 
       let index = -1;
+      let currentNode: Node;
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         while (index < part.index) {
           index++;
-          walker.nextNode();
+          currentNode = walker.nextNode();
+
+          if (envDoesntCloneEmptyTextNodes &&
+              currentNode.nodeType === 3 /* Node.TEXT_NODE */ &&
+              currentNode.nodeValue === marker) {
+            currentNode.nodeValue = '';
+          }
         }
+
         this._parts.push(this._partCallback(this, part, walker.currentNode));
+      }
+
+      if (envDoesntCloneEmptyTextNodes && (currentNode = walker.nextNode()) &&
+          currentNode.nodeType === 3 /* Node.TEXT_NODE */ &&
+          currentNode.nodeValue === marker) {
+        currentNode.nodeValue = '';
       }
     }
     return fragment;
