@@ -629,7 +629,7 @@ export class TemplateInstance {
     // Clone the node, rather than importing it, to keep the fragment in the
     // template's document. This leaves the fragment inert so custom elements
     // won't upgrade until after the main document adopts the node.
-    const fragment = this.template.element.content.cloneNode(true);
+    const fragment = this.template.element.content.cloneNode(true) as DocumentFragment;
     const parts = this.template.parts;
 
     if (parts.length > 0) {
