@@ -42,20 +42,23 @@ export const html = (strings: TemplateStringsArray, ...values: any[]) =>
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
     litTag(strings, values, svgTemplates, true);
 
-function litTag(
+export function litTag(
     strings: TemplateStringsArray,
     values: any[],
     templates: Map<TemplateStringsArray|string, Template>,
-    isSvg: boolean): TemplateResult {
+    isSvg: boolean,
+    templateClass = Template,
+    templateResultClass = TemplateResult
+  ): TemplateResult {
   const key = envCachesTemplates ?
       strings :
       strings.join('{{--uniqueness-workaround--}}');
   let template = templates.get(key);
   if (template === undefined) {
-    template = new Template(strings, isSvg);
+    template = new templateClass(strings, values, isSvg);
     templates.set(key, template);
   }
-  return new TemplateResult(template, values);
+  return new templateResultClass(template, values);
 }
 
 /**
@@ -179,9 +182,8 @@ export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
-  constructor(strings: TemplateStringsArray, svg: boolean = false) {
-    const element = this.element = document.createElement('template');
-    element.innerHTML = this._getHtml(strings, svg);
+  constructor(strings: TemplateStringsArray, values: any[], svg: boolean = false) {
+    const element = this.element = this.createTemplate(strings, values, svg);
     const content = element.content;
 
     if (svg) {
@@ -209,6 +211,10 @@ export class Template {
     let currentNode: Node|undefined;
 
     while (walker.nextNode()) {
+      // pass over static parts
+      while (values[partIndex] && values[partIndex].__static) {
+        partIndex++;
+      }
       index++;
       previousNode = currentNode;
       const node = currentNode = walker.currentNode as Element;
@@ -317,22 +323,34 @@ export class Template {
     }
   }
 
+  private createTemplate(strings: TemplateStringsArray, values: any[], svg?:boolean) {
+    const element = document.createElement('template');
+    element.innerHTML = this._getHtml(strings, values, svg);
+    return element;
+  }
+
   /**
    * Returns a string of HTML used to create a <template> element.
    */
-  private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
+  private _getHtml(strings: TemplateStringsArray, values: any[], svg?: boolean): string {
     const l = strings.length - 1;
     let html = '';
     let isTextBinding = true;
     for (let i = 0; i < l; i++) {
       const s = strings[i];
       html += s;
-      // We're in a text position if the previous string closed its tags.
-      // If it doesn't have any tags, then we use the previous text position
-      // state.
-      const closing = findTagClose(s);
-      isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
-      html += isTextBinding ? nodeMarker : marker;
+      // pass over static parts
+      const v = values[i];
+      if (v && v.__static) {
+          html += v.__value;
+      } else {
+        // We're in a text position if the previous string closed its tags.
+        // If it doesn't have any tags, then we use the previous text position
+        // state.
+        const closing = findTagClose(s);
+        isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
+        html += isTextBinding ? nodeMarker : marker;
+      }
     }
     html += strings[l];
     return svg ? `<svg>${html}</svg>` : html;
@@ -615,6 +633,10 @@ export class TemplateInstance {
   update(values: any[]) {
     let valueIndex = 0;
     for (const part of this._parts) {
+      // pass over static parts
+      while (values[valueIndex] && values[valueIndex].__static) {
+        valueIndex++;
+      }
       if (part.size === undefined) {
         (part as SinglePart).setValue(values[valueIndex]);
         valueIndex++;
