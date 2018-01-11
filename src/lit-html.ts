@@ -12,16 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * TypeScript has a problem with precompiling templates literals
- * https://github.com/Microsoft/TypeScript/issues/17956
- *
- * TODO(justinfagnani): Run tests compiled to ES5 with both Babel and
- * TypeScript to verify correctness.
- */
-const envCachesTemplates =
-    ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s) ``);
-
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
@@ -33,43 +23,49 @@ const svgTemplates = new Map<TemplateStringsArray|string, Template>();
  * render to and update a container.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-    litTag(strings, values, templates, false);
+  new TemplateResult(strings, values, 'html');
 
 /**
  * Interprets a template literal as an SVG template that can efficiently
  * render to and update a container.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-    litTag(strings, values, svgTemplates, true);
-
-function litTag(
-    strings: TemplateStringsArray,
-    values: any[],
-    templates: Map<TemplateStringsArray|string, Template>,
-    isSvg: boolean): TemplateResult {
-  const key = envCachesTemplates ?
-      strings :
-      strings.join('{{--uniqueness-workaround--}}');
-  let template = templates.get(key);
-  if (template === undefined) {
-    template = new Template(strings, isSvg);
-    templates.set(key, template);
-  }
-  return new TemplateResult(template, values);
-}
+  new TemplateResult(strings, values, 'svg');
 
 /**
  * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
  */
 export class TemplateResult {
-  template: Template;
+  strings: TemplateStringsArray;
   values: any[];
+  type: 'html'|'svg';
 
-  constructor(template: Template, values: any[]) {
-    this.template = template;
+  constructor(strings: TemplateStringsArray, values: any[], type: 'html'|'svg') {
+    this.strings = strings;
     this.values = values;
+    this.type = type;
   }
+}
+
+/**
+ * Only visible for testing.
+ */
+export function _getTemplate(result: TemplateResult) {
+  let templateCache;
+  if (result.type === 'html') {
+    templateCache = templates;
+  } else if (result.type === 'svg') {
+    templateCache = svgTemplates;
+  } else {
+    throw new Error(`unknown template type ${result.type}`);
+  }
+  let template = templateCache.get(result.strings);
+  if (template === undefined) {
+    template = new Template(result.strings, result.type === 'svg');
+    templateCache.set(result.strings, template);
+  }
+  return template;
 }
 
 /**
@@ -82,17 +78,19 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     partCallback: PartCallback = defaultPartCallback) {
+
+  const template = _getTemplate(result);
   let instance = (container as any).__templateInstance as any;
 
   // Repeat render, just call update()
-  if (instance !== undefined && instance.template === result.template &&
+  if (instance !== undefined && instance.template === template &&
       instance._partCallback === partCallback) {
     instance.update(result.values);
     return;
   }
 
   // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(result.template, partCallback);
+  instance = new TemplateInstance(template, partCallback);
   (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();
@@ -489,13 +487,14 @@ export class NodePart implements SinglePart {
   }
 
   private _setTemplateResult(value: TemplateResult): void {
+    const template = _getTemplate(value);
     let instance: TemplateInstance;
     if (this._previousValue &&
-        this._previousValue.template === value.template) {
+        this._previousValue.template === template) {
       instance = this._previousValue;
     } else {
       instance =
-          new TemplateInstance(value.template, this.instance._partCallback);
+          new TemplateInstance(template, this.instance._partCallback);
       this._setNode(instance._clone());
       this._previousValue = instance;
     }
