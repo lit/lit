@@ -30,7 +30,7 @@ const shadyTemplateFactory = (scopeName: string) =>
         templateCache = new Map<TemplateStringsArray, Template>();
         templateCaches.set(cacheKey, templateCache);
       }
-      let template = templateCache.get(result.strings);
+      let template = templateCache.get(result.key);
       if (template === undefined) {
         const element = result.getTemplateElement();
 
@@ -39,7 +39,7 @@ const shadyTemplateFactory = (scopeName: string) =>
         }
 
         template = new Template(result, element);
-        templateCache.set(result.strings, template);
+        templateCache.set(result.key, template);
       }
       return template;
     };

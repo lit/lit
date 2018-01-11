@@ -102,19 +102,22 @@ suite('lit-extended', () => {
         'overwrites an existing (plain) TemplateInstance if one exists, ' +
             'even if it has a matching Template',
         () => {
-          const t = (tag: any) => tag`<div>foo</div>`;
+          // Two templates with the same literals, but different interpretations
+          // under lit-html and lit-extended
+          const plainTemplate = htmlPlain`<div foo="${'bar'}"></div>`;
+          const htmlTemplate = html`<div foo="${'bar'}"></div>`;
 
-          render(t(htmlPlain), container);
+          render(plainTemplate, container);
 
-          assert.equal(container.children.length, 1);
+          assert.equal(container.innerHTML, '<div foo="bar"></div>');
           const firstDiv = container.children[0];
-          assert.equal(firstDiv.textContent, 'foo');
+          assert.equal((firstDiv as any)['foo'], undefined);
 
-          render(t(html), container);
+          render(htmlTemplate, container);
 
-          assert.equal(container.children.length, 1);
+          assert.equal(container.innerHTML, '<div></div>');
           const secondDiv = container.children[0];
-          assert.equal(secondDiv.textContent, 'foo');
+          assert.equal((secondDiv as any)['foo'], 'bar');
 
           assert.notEqual(firstDiv, secondDiv);
         });

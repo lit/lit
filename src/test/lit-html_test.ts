@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult, unsafeStatic} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -23,13 +23,19 @@ suite('lit-html', () => {
 
   suite('html', () => {
 
+    let container: HTMLDivElement;
+
+    setup(() => {
+      container = document.createElement('div');
+    });
+
     test('returns a TemplateResult', () => {
       assert.instanceOf(html``, TemplateResult);
     });
 
     test('TemplateResult.strings are identical for multiple calls', () => {
       const t = () => html``;
-      assert.strictEqual(t().strings, t().strings);
+      assert.strictEqual(t().key, t().key);
     });
 
     test('_getTemplate returns identical templates for multiple calls', () => {
@@ -37,7 +43,6 @@ suite('lit-html', () => {
       assert.strictEqual(
           defaultTemplateFactory(t()), defaultTemplateFactory(t()));
     });
-
 
     test('values contain interpolated values', () => {
       const foo = 'foo', bar = 1;
@@ -64,7 +69,6 @@ suite('lit-html', () => {
     });
 
     test('escapes marker sequences in text nodes', () => {
-      const container = document.createElement('div');
       const result = html`{{}}`;
       assert.equal(defaultTemplateFactory(result).parts.length, 0);
       render(result, container);
@@ -123,28 +127,24 @@ suite('lit-html', () => {
     });
 
     test('parses element-less text expression', () => {
-      const container = document.createElement('div');
       const result = html`<div>${1} ${2}</div>`;
       render(result, container);
       assert.equal(container.innerHTML, '<div>1 2</div>');
     });
 
     test('parses expressions for two child nodes of one element', () => {
-      const container = document.createElement('div');
       const result = html`test`;
       render(result, container);
       assert.equal(container.innerHTML, 'test');
     });
 
     test('parses expressions for two attributes of one element', () => {
-      const container = document.createElement('div');
       const result = html`<div a="${1}" b="${2}"></div>`;
       render(result, container);
       assert.equal(container.innerHTML, '<div a="1" b="2"></div>');
     });
 
     test('updates when called multiple times with arrays', () => {
-      const container = document.createElement('div');
       const ul = (list: string[]) => {
         const items = list.map((item) => html`<li>${item}</li>`);
         return html`<ul>${items}</ul>`;
@@ -165,6 +165,59 @@ suite('lit-html', () => {
       const result = html
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
       assert(defaultTemplateFactory(result).element.innerHTML, '<div></div>');
+    });
+
+    suite('static', () => {
+
+      test('interpolates static values in text position', () => {
+        const t = () => html`<div>${unsafeStatic('<p></p>')}</div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div><p></p></div>');
+      });
+
+      // This fails currently
+      // TODO(justinfagnani): add support for attribute position statics
+      test.skip('interpolates static values in attribute name position', () => {
+        const t = () => html`<div ${unsafeStatic('foo')}="bar"></div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div foo="bar"></div>');
+      });
+
+      test('interpolates static values in tag name position', () => {
+        const t = () => html`<${unsafeStatic('x-foo')}></${unsafeStatic('x-foo')}>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<x-foo></x-foo>');
+      });
+
+      test('static values do not intefere with bindings', () => {
+        const t = () => html`<div>${unsafeStatic('<p></p>')}${'foo'}</div>`;
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div><p></p>foo</div>');
+      });
+
+      test('static values do not cause cache collisions', () => {
+        const t1 = () => html`<div>${unsafeStatic('<p></p>')}</div>`;
+        const t2 = () => html`<div>${unsafeStatic('<span></span>')}</div>`;
+        const container1 = document.createElement('div');
+        const container2 = document.createElement('div');
+        render(t1(), container1);
+        render(t2(), container2);
+        assert.equal(container1.innerHTML, '<div><p></p></div>');
+        assert.equal(container2.innerHTML, '<div><span></span></div>');
+      });
+
+      test('static values cannot change', () => {
+        const t = (value: string) => html`<div>${unsafeStatic(value)}</div>`;
+
+        render(t('foo'), container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+
+        render(t('bar'), container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+
+      });
+
+
     });
 
   });

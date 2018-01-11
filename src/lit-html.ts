@@ -37,7 +37,19 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  * interpolated expressions.
  */
 export class TemplateResult {
-  strings: TemplateStringsArray;
+  /**
+   * A stable key suitable for cache lookups, based on the template literal
+   * the result is generated from.
+   */
+  key: any;
+
+  literalStrings: TemplateStringsArray;
+
+  /**
+   * The string literal parts of the template, including the values of static
+   * expressions.
+   */
+  strings: string[];
   values: any[];
   type: string;
   partCallback: PartCallback;
@@ -45,8 +57,38 @@ export class TemplateResult {
   constructor(
       strings: TemplateStringsArray, values: any[], type: string,
       partCallback: PartCallback = defaultPartCallback) {
-    this.strings = strings;
-    this.values = values;
+    // Convert the strings and values arrays into new arrays where static values
+    // are merged with their previous and next sibling literal strings.
+    // If the original strings and values arrays are sized N+1 and N, and there
+    // are X static values, the new arrays will be length N-X+1 and N-X.
+    let finalStrings: string[] = [];
+    let finalValues = [];
+    const l = strings.length - 1;
+    let previousValueWasStatic = false;
+    for (let i = 0; i < l; i++) {
+      if (previousValueWasStatic) {
+        finalStrings[finalStrings.length - 1] += strings[i];
+      } else {
+        finalStrings.push(strings[i]);
+      }
+      if (values[i] instanceof UnsafeStatic) {
+        // Append statics to the preceding literal part
+        finalStrings[finalStrings.length - 1] += String(values[i].value);
+        previousValueWasStatic = true;
+      } else {
+        finalValues.push(values[i]);
+        previousValueWasStatic = false;
+      }
+    }
+    finalStrings.push(strings[l]);
+
+    // TODO(justinfagnani): we need more benchmarking around the different ways
+    // to implement the template cache keys. It may be better to generate an
+    // object based on the hash codes of individual parts.
+    this.key = finalStrings.join('-lit-');
+    this.literalStrings = strings;
+    this.strings = finalStrings;
+    this.values = finalValues;
     this.type = type;
     this.partCallback = partCallback;
   }
@@ -61,12 +103,16 @@ export class TemplateResult {
     for (let i = 0; i < l; i++) {
       const s = this.strings[i];
       html += s;
-      // We're in a text position if the previous string closed its tags.
-      // If it doesn't have any tags, then we use the previous text position
-      // state.
-      const closing = findTagClose(s);
-      isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
-      html += isTextBinding ? nodeMarker : marker;
+      if (this.values[i] instanceof UnsafeStatic) {
+        html += String(this.values[i].value);
+      } else {
+        // We're in a text position if the previous string closed its tags.
+        // If it doesn't have any tags, then we use the previous text position
+        // state.
+        const closing = findTagClose(s);
+        isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
+        html += isTextBinding ? nodeMarker : marker;
+      }
     }
     html += this.strings[l];
     return html;
@@ -132,10 +178,10 @@ export function defaultTemplateFactory(result: TemplateResult) {
     templateCache = new Map<TemplateStringsArray, Template>();
     templateCaches.set(result.type, templateCache);
   }
-  let template = templateCache.get(result.strings);
+  let template = templateCache.get(result.key);
   if (template === undefined) {
     template = new Template(result, result.getTemplateElement());
-    templateCache.set(result.strings, template);
+    templateCache.set(result.key, template);
   }
   return template;
 }
@@ -159,11 +205,20 @@ export function render(
     container: Element|DocumentFragment,
     templateFactory: TemplateFactory = defaultTemplateFactory) {
   const template = templateFactory(result);
-  let instance = (container as any).__templateInstance as any;
+  let instance = (container as any).__templateInstance as TemplateInstance;
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
       instance._partCallback === result.partCallback) {
+    instance.update(result.values);
+    return;
+  }
+  if (instance !== undefined &&
+      instance.template.literalStrings === result.literalStrings &&
+      instance._partCallback === result.partCallback) {
+    // Oops, we have the same template literal, but different statics.
+    // This is _probably_ an indication that statics changed, so we'll just
+    // update the existing instance ¯\_(ツ)_/¯
     instance.update(result.values);
     return;
   }
@@ -262,11 +317,15 @@ export class TemplatePart {
  * An updateable Template that tracks the location of dynamic parts.
  */
 export class Template {
+  key: any;
+  literalStrings: TemplateStringsArray;
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
   constructor(result: TemplateResult, element: HTMLTemplateElement) {
     this.element = element;
+    this.key = result.key;
+    this.literalStrings = result.literalStrings;
     const content = this.element.content;
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
@@ -291,6 +350,8 @@ export class Template {
       previousNode = currentNode;
       const node = currentNode = walker.currentNode as Element;
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
+        // For an element, we check if it has any attributes with expressions
+        // in value positions
         if (!node.hasAttributes()) {
           continue;
         }
@@ -427,6 +488,52 @@ export const directiveValue = {};
 
 const isPrimitiveValue = (value: any) => value === null ||
     !(typeof value === 'object' || typeof value === 'function');
+
+/**
+ * A value that's interpolated directly into the template before parsing.
+ *
+ * Static values cannot be updated, since they don't define a part and are
+ * effectively merged into the literal part of a lit-html template. Because
+ * they are interpolated before the template is parsed as HTML, static values
+ * may occupy positions in the template that regular interpolations may not,
+ * such as tag and attribute names.
+ *
+ * UnsafeStatic values are inheriently very unsafe, as the name states. They
+ * can break well-formedness assumptions and aren't escaped, and thus a
+ * potential XSS vulnerability if created from user-provided data.
+ *
+ * It's reccomended that no user templates ever use UnsafeStatic directly,
+ * but directive-like functions are written by library authors to validate
+ * and sanitize values for a specific purpose, before wrapping in an
+ * UnsafeStatic value.
+ *
+ * An example would be a `tag()` directive that lets a template contain tags
+ * whose names aren't known until runtime, like:
+ *
+ *     html`<${tag(myTagName)>Whoa</tag(MyElement)>`
+ *
+ * Here, `tag()` should validate that `myTagName` is a valid HTML tag name,
+ * and throw if it contains any illegal characters.
+ */
+export class UnsafeStatic {
+  readonly value: any;
+
+  constructor(value: any) {
+    this.value = value;
+  }
+}
+
+/**
+ * Interpolates a value before template parsing, making the caching the value
+ * with the template and making it available to template pre-processing steps.
+ * 
+ * Static values cannot be updated, since they don't define a part and are
+ * effectively merged into the literal part of a lit-html template. Because
+ * they are interpolated before the template is parsed as HTML, static values
+ * may occupy positions in the template that regular interpolations may not,
+ * such as tag and attribute names.
+ */
+export const unsafeStatic = (value: any) => new UnsafeStatic(value);
 
 export interface Part {
   instance: TemplateInstance;
@@ -585,6 +692,14 @@ export class NodePart implements SinglePart {
     const template = this.instance._getTemplate(value);
     let instance: TemplateInstance;
     if (this._previousValue && this._previousValue.template === template) {
+      instance = this._previousValue;
+    } else if (
+        this._previousValue instanceof TemplateInstance &&
+        this._previousValue.template.literalStrings === value.literalStrings &&
+        this._previousValue._partCallback === value.partCallback) {
+      // Oops, we have the same template literal, but different statics.
+      // This is _probably_ an indication that statics changed, so we'll just
+      // update the existing instance ¯\_(ツ)_/¯
       instance = this._previousValue;
     } else {
       instance = new TemplateInstance(
