@@ -12,15 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, Part, render as baseRender, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, getValue, Part, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
-export {html} from '../lit-html.js';
+export {render} from '../lit-html.js';
 
 /**
- *
- * @param result Renders a `TemplateResult` to a container using the
- * `extendedPartCallback` PartCallback, which allows templates to set
- * properties and declarative event handlers.
+ * Interprets a template literal as a lit-extended HTML template.
+ */
+export const html = (strings: TemplateStringsArray, ...values: any[]) =>
+  new TemplateResult(strings, values, 'html', extendedPartCallback);
+
+/**
+ * Interprets a template literal as a lit-extended SVG template.
+ */
+export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
+  new TemplateResult(strings, values, 'svg', extendedPartCallback);
+
+/**
+ * A PartCallback which allows templates to set properties and declarative
+ * event handlers.
  *
  * Properties are set by default, instead of attributes. Attribute names in
  * lit-html templates preserve case, so properties are case sensitive. If an
@@ -43,11 +53,6 @@ export {html} from '../lit-html.js';
  *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
  */
-export function render(
-    result: TemplateResult, container: Element|DocumentFragment) {
-  baseRender(result, container, extendedPartCallback);
-}
-
 export const extendedPartCallback =
     (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
         Part => {

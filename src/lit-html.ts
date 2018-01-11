@@ -40,11 +40,13 @@ export class TemplateResult {
   strings: TemplateStringsArray;
   values: any[];
   type: 'html'|'svg';
+  partCallback: PartCallback;
 
-  constructor(strings: TemplateStringsArray, values: any[], type: 'html'|'svg') {
+  constructor(strings: TemplateStringsArray, values: any[], type: 'html'|'svg', partCallback: PartCallback = defaultPartCallback) {
     this.strings = strings;
     this.values = values;
     this.type = type;
+    this.partCallback = partCallback;
   }
 }
 
@@ -76,21 +78,20 @@ export function _getTemplate(result: TemplateResult) {
  */
 export function render(
     result: TemplateResult,
-    container: Element|DocumentFragment,
-    partCallback: PartCallback = defaultPartCallback) {
+    container: Element|DocumentFragment) {
 
   const template = _getTemplate(result);
   let instance = (container as any).__templateInstance as any;
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
-      instance._partCallback === partCallback) {
+      instance._partCallback === result.partCallback) {
     instance.update(result.values);
     return;
   }
 
   // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(template, partCallback);
+  instance = new TemplateInstance(template, result.partCallback);
   (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();

@@ -769,18 +769,21 @@ suite('lit-html', () => {
         }
       }
 
+      const testHtml = (strings: TemplateStringsArray, ...values: any[]) =>
+          new TemplateResult(strings, values, 'html', partCallback);
+
       test('can replace parts with custom types', () => {
         const container = document.createElement('div');
-        const t = html`<div someProp="${123}"></div>`;
-        render(t, container, partCallback);
+        const t = testHtml`<div someProp="${123}"></div>`;
+        render(t, container);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
 
       test('works with nested templates', () => {
         const container = document.createElement('div');
-        const t = html`${html`<div someProp="${123}"></div>`}`;
-        render(t, container, partCallback);
+        const t = testHtml`${html`<div someProp="${123}"></div>`}`;
+        render(t, container);
         assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });

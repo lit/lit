@@ -15,8 +15,8 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {render} from '../../lib/lit-extended.js';
-import {html, render as renderPlain} from '../../lit-html.js';
+import {html, render} from '../../lib/lit-extended.js';
+import {html as htmlPlain} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -73,15 +73,15 @@ suite('lit-extended', () => {
         'overwrites an existing (plain) TemplateInstance if one exists, ' +
             'even if it has a matching Template',
         () => {
-          const t = () => html`<div>foo</div>`;
+          const t = (tag: any) => tag`<div>foo</div>`;
 
-          renderPlain(t(), container);
+          render(t(htmlPlain), container);
 
           assert.equal(container.children.length, 1);
           const firstDiv = container.children[0];
           assert.equal(firstDiv.textContent, 'foo');
 
-          render(t(), container);
+          render(t(html), container);
 
           assert.equal(container.children.length, 1);
           const secondDiv = container.children[0];
