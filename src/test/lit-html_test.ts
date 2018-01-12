@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult, _getTemplate} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult, defaultTemplateFactory} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -34,7 +34,7 @@ suite('lit-html', () => {
 
     test('_getTemplate returns identical templates for multiple calls', () => {
       const t = () => html``;
-      assert.strictEqual(_getTemplate(t()), _getTemplate(t()));
+      assert.strictEqual(defaultTemplateFactory(t()), defaultTemplateFactory(t()));
     });
 
 
@@ -47,7 +47,7 @@ suite('lit-html', () => {
       const countNodes =
           (result: TemplateResult,
            getNodes: (f: DocumentFragment) => NodeList) =>
-              getNodes(_getTemplate(result).element.content).length;
+              getNodes(defaultTemplateFactory(result).element.content).length;
 
       assert.equal(
           countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes),
@@ -65,7 +65,7 @@ suite('lit-html', () => {
     test('escapes marker sequences in text nodes', () => {
       const container = document.createElement('div');
       const result = html`{{}}`;
-      assert.equal(_getTemplate(result).parts.length, 0);
+      assert.equal(defaultTemplateFactory(result).parts.length, 0);
       render(result, container);
       assert.equal(container.innerHTML, '{{}}');
     });
@@ -77,7 +77,7 @@ suite('lit-html', () => {
           ${3}
           <span a="${4}">${5}</span>
         </div>`;
-      const parts = _getTemplate(result).parts;
+      const parts = defaultTemplateFactory(result).parts;
       assert.equal(parts.length, 5);
     });
 
@@ -94,7 +94,7 @@ suite('lit-html', () => {
           <p>${9}</p>
           <div aThing="${10}"></div>
         </div>`;
-      const parts = _getTemplate(result).parts;
+      const parts = defaultTemplateFactory(result).parts;
       const names = parts.map((p: TemplatePart) => p.name);
       const rawNames = parts.map((p: TemplatePart) => p.rawName);
       assert.deepEqual(names, [
@@ -157,13 +157,13 @@ suite('lit-html', () => {
 
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
-      assert(_getTemplate(result).element.innerHTML, '<div></div>');
+      assert(defaultTemplateFactory(result).element.innerHTML, '<div></div>');
     });
 
     test('resists XSS attempt in attribute values', () => {
       const result = html
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
-      assert(_getTemplate(result).element.innerHTML, '<div></div>');
+      assert(defaultTemplateFactory(result).element.innerHTML, '<div></div>');
     });
 
   });
@@ -805,7 +805,7 @@ suite('lit-html', () => {
       endNode = document.createTextNode('');
       container.appendChild(startNode);
       container.appendChild(endNode);
-      const instance = new TemplateInstance(_getTemplate(html``));
+      const instance = new TemplateInstance(defaultTemplateFactory(html``), defaultPartCallback, defaultTemplateFactory);
       part = new NodePart(instance, startNode, endNode);
     });
 
