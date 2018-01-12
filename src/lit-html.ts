@@ -259,22 +259,17 @@ export class Template {
         // We have a part for each match found
         partIndex += lastIndex;
 
+        // We keep this current node, but reset its content to the last
+        // literal part. We insert new literal nodes before this so that the
+        // tree walker keeps its position correctly.
+        node.textContent = strings[lastIndex];
+
         // Generate a new text node for each literal section
         // These nodes are also used as the markers for node parts
         for (let i = 0; i < lastIndex; i++) {
-          // IE doesn't clone empty text nodes, so use comments instead
-          previousNode = strings[i] === '' ? document.createComment('') :
-            document.createTextNode(strings[i]);
-          parent.insertBefore(previousNode, node);
+          parent.insertBefore(document.createTextNode(strings[i]), node);
           this.parts.push(new TemplatePart('node', index++));
         }
-
-        parent.insertBefore(
-            strings[lastIndex] === '' ?
-                document.createComment('') :
-                document.createTextNode(strings[lastIndex]),
-            node);
-        nodesToRemove.push(node);
       } else if (
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === marker) {
@@ -292,7 +287,7 @@ export class Template {
         const previousSibling = node.previousSibling;
         if (previousSibling === null || previousSibling !== previousNode ||
             previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createComment(''), node);
+          parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
@@ -302,7 +297,7 @@ export class Template {
         // We don't have to check if the next node is going to be removed,
         // because that node will induce a new marker if so.
         if (node.nextSibling === null) {
-          parent.insertBefore(document.createComment(''), node);
+          parent.insertBefore(document.createTextNode(''), node);
         } else {
           index--;
         }
@@ -433,7 +428,6 @@ export class NodePart implements SinglePart {
     this.instance = instance;
     this.startNode = startNode;
     this.endNode = endNode;
-
     this._previousValue = undefined;
   }
 

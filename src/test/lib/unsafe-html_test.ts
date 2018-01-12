@@ -28,7 +28,7 @@ suite('unsafeHTML', () => {
         html`<div>before${unsafeHTML('<span>inner</span>after</div>')}`,
         container);
     assert.equal(
-        container.innerHTML, '<div>before<span>inner</span>after<!----></div>');
+        container.innerHTML, '<div>before<span>inner</span>after</div>');
   });
 
 });

@@ -119,7 +119,7 @@ suite('lit-html', () => {
       const container = document.createElement('div');
       const result = html`<div>${1} ${2}</div>`;
       render(result, container);
-      assert.equal(container.innerHTML, '<div><!---->1 2<!----></div>');
+      assert.equal(container.innerHTML, '<div>1 2</div>');
     });
 
     test('parses expressions for two child nodes of one element', () => {
@@ -144,9 +144,9 @@ suite('lit-html', () => {
       };
       render(ul(['a', 'b', 'c']), container);
       assert.equal(
-          container.innerHTML, '<ul><!----><li><!---->a<!----></li><li><!---->b<!----></li><li><!---->c<!----></li><!----></ul>');
+          container.innerHTML, '<ul><li>a</li><li>b</li><li>c</li></ul>');
       render(ul(['x', 'y']), container);
-      assert.equal(container.innerHTML, '<ul><!----><li><!---->x<!----></li><li><!---->y<!----></li><!----></ul>');
+      assert.equal(container.innerHTML, '<ul><li>x</li><li>y</li></ul>');
     });
 
     test('resists XSS attempt in node values', () => {
@@ -174,22 +174,22 @@ suite('lit-html', () => {
 
       test('renders a string', () => {
         render(html`<div>${'foo'}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test('renders a number', () => {
         render(html`<div>${123}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!---->123<!----></div>');
+        assert.equal(container.innerHTML, '<div>123</div>');
       });
 
       test('renders undefined', () => {
         render(html`<div>${undefined}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div>');
+        assert.equal(container.innerHTML, '<div></div>');
       });
 
       test('renders null', () => {
         render(html`<div>${null}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div>');
+        assert.equal(container.innerHTML, '<div></div>');
       });
 
       test('does not call a function bound to text', () => {
@@ -201,23 +201,23 @@ suite('lit-html', () => {
 
       test('renders arrays', () => {
         render(html`<div>${[1, 2, 3]}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!---->123<!----></div>');
+        assert.equal(container.innerHTML, '<div>123</div>');
       });
 
       test('renders nested templates', () => {
         const partial = html`<h1>${'foo'}</h1>`;
         render(html`${partial}${'bar'}`, container);
-        assert.equal(container.innerHTML, '<!----><h1><!---->foo<!----></h1><!---->bar<!---->');
+        assert.equal(container.innerHTML, '<h1>foo</h1>bar');
       });
 
       test('renders parts with whitespace after them', () => {
         render(html`<div>${'foo'} </div>`, container);
-        assert.equal(container.innerHTML, '<div><!---->foo </div>');
+        assert.equal(container.innerHTML, '<div>foo </div>');
       });
 
       test('preserves whitespace between parts', () => {
         render(html`<div>${'foo'} ${'bar'}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!---->foo bar<!----></div>');
+        assert.equal(container.innerHTML, '<div>foo bar</div>');
       });
 
       const testSkipForTemplatePolyfill =
@@ -228,23 +228,23 @@ suite('lit-html', () => {
       testSkipForTemplatePolyfill('renders nested templates within table content', () => {
         let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
         render(table, container);
-        assert.equal(container.innerHTML, '<table><!----><tr><!----><td></td><!----></tr><!----></table>');
+        assert.equal(container.innerHTML, '<table><tr><td></td></tr></table>');
 
         table = html`<tbody>${html`<tr></tr>`}</tbody>`;
         render(table, container);
-        assert.equal(container.innerHTML, '<tbody><!----><tr></tr><!----></tbody>');
+        assert.equal(container.innerHTML, '<tbody><tr></tr></tbody>');
 
         table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
         render(table, container);
         assert.equal(
             container.innerHTML,
-            '<table><tbody><tr></tr><!----><tr></tr><!----></tbody></table>');
+            '<table><tbody><tr></tr><tr></tr></tbody></table>');
 
         table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
         render(table, container);
         assert.equal(
             container.innerHTML,
-            '<table><tbody><tr><td></td><!----><td></td><!----></tr></tbody></table>');
+            '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
 
         table = html`<table><tr><td></td>${html`<td></td>`}${
                                                              html`<td></td>`
@@ -252,7 +252,7 @@ suite('lit-html', () => {
         render(table, container);
         assert.equal(
             container.innerHTML,
-            '<table><tbody><tr><td></td><!----><td></td><!----><td></td><!----></tr></tbody></table>');
+            '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
       });
 
       const testSkipSafari10_0 =
@@ -274,7 +274,7 @@ suite('lit-html', () => {
       test('values contain interpolated values', () => {
         const t = html`${'a'},${'b'},${'c'}`;
         render(t, container);
-        assert.equal(container.innerHTML, '<!---->a,b,c<!---->');
+        assert.equal(container.innerHTML, 'a,b,c');
       });
 
       // test('renders multiple nested templates', () => {
@@ -286,13 +286,13 @@ suite('lit-html', () => {
 
       test('renders arrays of nested templates', () => {
         render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!----><!---->1<!----><!---->2<!----><!---->3<!----><!----></div>');
+        assert.equal(container.innerHTML, '<div>123</div>');
       });
 
       test('renders an element', () => {
         const child = document.createElement('p');
         render(html`<div>${child}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!----><p></p><!----></div>');
+        assert.equal(container.innerHTML, '<div><p></p></div>');
       });
 
       test('renders an array of elements', () => {
@@ -303,7 +303,7 @@ suite('lit-html', () => {
         ];
         render(html`<div>${children}</div>`, container);
         assert.equal(
-            container.innerHTML, '<div><!----><p></p><a></a><span></span><!----></div>');
+            container.innerHTML, '<div><p></p><a></a><span></span></div>');
       });
 
       test('renders to an attribute', () => {
@@ -359,7 +359,7 @@ suite('lit-html', () => {
           <div foo=${'bar'}></div>
         `, container);
         assert.equal(container.innerHTML, `
-          <div><!----><!----></div>
+          <div></div>
           <div foo="bar"></div>
         `);
       });
@@ -390,13 +390,13 @@ suite('lit-html', () => {
 
       test('renders to an attribute before a node', () => {
         render(html`<div foo="${'bar'}">${'baz'}</div>`, container);
-        assert.equal(container.innerHTML, '<div foo="bar"><!---->baz<!----></div>');
+        assert.equal(container.innerHTML, '<div foo="bar">baz</div>');
       });
 
       test('renders to an attribute after a node', () => {
         render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
         assert.equal(
-            container.innerHTML, '<div><!---->baz<!----></div><div foo="bar"></div>');
+            container.innerHTML, '<div>baz</div><div foo="bar"></div>');
       });
 
       test('renders a Promise', () => {
@@ -405,10 +405,10 @@ suite('lit-html', () => {
           resolve = res;
         });
         render(html`<div>${promise}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div>');
+        assert.equal(container.innerHTML, '<div></div>');
         resolve!('foo');
         return promise.then(() => {
-          assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
+          assert.equal(container.innerHTML, '<div>foo</div>');
         });
       });
 
@@ -419,7 +419,7 @@ suite('lit-html', () => {
           }
         };
         render(html`<div>${promise}</div>`, container);
-        assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test('renders racing Promises correctly', () => {
@@ -438,21 +438,21 @@ suite('lit-html', () => {
 
         // First render, first Promise, no value
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div>');
+        assert.equal(container.innerHTML, '<div></div>');
 
         promise = promise2;
         // Second render, second Promise, still no value
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div>');
+        assert.equal(container.innerHTML, '<div></div>');
 
         // Resolve the first Promise, should not update the container
         resolve1!('foo');
         return promise1.then(() => {
-          assert.equal(container.innerHTML, '<div><!----><!----></div>');
+          assert.equal(container.innerHTML, '<div></div>');
           // Resolve the second Promise, should update the container
           resolve2!('bar');
           return promise2.then(() => {
-            assert.equal(container.innerHTML, '<div><!---->bar<!----></div>');
+            assert.equal(container.innerHTML, '<div>bar</div>');
           });
         });
       });
@@ -485,7 +485,7 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, `
             <div foo="bar">
               baz
-              <p><!---->qux<!----></p>
+              <p>qux</p>
             </div>`);
       });
 
@@ -510,18 +510,18 @@ suite('lit-html', () => {
           <div>
             <!-- this is a comment -->
             <h1 class="foo">title</h1>
-            <p><!---->foo<!----></p>
+            <p>foo</p>
           </div>`);
       });
 
       test('renders expressions with preceding elements', () => {
         render(html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`, container);
-        assert.equal(container.innerHTML, '<a><!---->foo<!----></a><!----><h1><!---->bar<!----></h1><!---->');
+        assert.equal(container.innerHTML, '<a>foo</a><h1>bar</h1>');
 
         // This is nearly the same test case as above, but was causing a
         // different stack trace
         render(html`<a>${'foo'}</a>${'bar'}`, container);
-        assert.equal(container.innerHTML, '<a><!---->foo<!----></a><!---->bar<!---->');
+        assert.equal(container.innerHTML, '<a>foo</a>bar');
       });
 
     });
@@ -540,7 +540,7 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}</div>`;
 
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->aaa<!----></div>');
+        assert.equal(container.innerHTML, '<div>aaa</div>');
         const text = container.firstChild!.childNodes[1] as Text;
         assert.equal(text.textContent, 'aaa');
 
@@ -549,11 +549,11 @@ suite('lit-html', () => {
         // persist through the next render with the same value.
         text.textContent = 'bbb';
         assert.equal(text.textContent, 'bbb');
-        assert.equal(container.innerHTML, '<div><!---->bbb<!----></div>');
+        assert.equal(container.innerHTML, '<div>bbb</div>');
 
         // Re-render with the same content, should be a no-op
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->bbb<!----></div>');
+        assert.equal(container.innerHTML, '<div>bbb</div>');
         const text2 = container.firstChild!.childNodes[1] as Text;
 
         // The next node should be the same too
@@ -566,13 +566,13 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}</div>`;
 
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->aaa<!----></div>');
+        assert.equal(container.innerHTML, '<div>aaa</div>');
         const div = container.firstChild as HTMLDivElement;
         assert.equal(div.tagName, 'DIV');
 
         foo = 'bbb';
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->bbb<!----></div>');
+        assert.equal(container.innerHTML, '<div>bbb</div>');
         const div2 = container.firstChild as HTMLDivElement;
         // check that only the part changed
         assert.equal(div, div2);
@@ -585,11 +585,11 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}${bar}</div>`;
 
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->foo<!---->bar<!----></div>');
+        assert.equal(container.innerHTML, '<div>foobar</div>');
 
         foo = 'bbb';
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->bbb<!---->bar<!----></div>');
+        assert.equal(container.innerHTML, '<div>bbbbar</div>');
       });
 
       test('renders and updates attributes', () => {
@@ -623,25 +623,25 @@ suite('lit-html', () => {
         };
 
         render(t(true), container);
-        assert.equal(container.innerHTML, '<!----><h1><!---->foo<!----></h1><!---->baz<!---->');
+        assert.equal(container.innerHTML, '<h1>foo</h1>baz');
 
         foo = 'bbb';
         render(t(true), container);
-        assert.equal(container.innerHTML, '<!----><h1><!---->bbb<!----></h1><!---->baz<!---->');
+        assert.equal(container.innerHTML, '<h1>bbb</h1>baz');
 
         render(t(false), container);
-        assert.equal(container.innerHTML, '<!----><h2><!---->bar<!----></h2><!---->baz<!---->');
+        assert.equal(container.innerHTML, '<h2>bar</h2>baz');
       });
 
       test('updates arrays', () => {
         let items = [1, 2, 3];
         const t = () => html`<div>${items}</div>`;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->123<!----></div>');
+        assert.equal(container.innerHTML, '<div>123</div>');
 
         items = [3, 2, 1];
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->321<!----></div>');
+        assert.equal(container.innerHTML, '<div>321</div>');
       });
 
       test('updates arrays that shrink then grow', () => {
@@ -650,30 +650,30 @@ suite('lit-html', () => {
 
         items = [1, 2, 3];
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->123<!----></div>');
+        assert.equal(container.innerHTML, '<div>123</div>');
 
         items = [4];
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->4<!----></div>');
+        assert.equal(container.innerHTML, '<div>4</div>');
 
         items = [5, 6, 7];
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->567<!----></div>');
+        assert.equal(container.innerHTML, '<div>567</div>');
       });
 
       test('updates an element', () => {
         let child: any = document.createElement('p');
         const t = () => html`<div>${child}<div></div></div>`;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><p></p><div></div></div>');
+        assert.equal(container.innerHTML, '<div><p></p><div></div></div>');
 
         child = undefined;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><div></div></div>');
+        assert.equal(container.innerHTML, '<div><div></div></div>');
 
         child = document.createTextNode('foo');
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->foo<div></div></div>');
+        assert.equal(container.innerHTML, '<div>foo<div></div></div>');
       });
 
       test('updates an array of elements', () => {
@@ -685,15 +685,15 @@ suite('lit-html', () => {
         const t = () => html`<div>${children}</div>`;
         render(t(), container);
         assert.equal(
-            container.innerHTML, '<div><!----><p></p><a></a><span></span><!----></div>');
+            container.innerHTML, '<div><p></p><a></a><span></span></div>');
 
         children = null;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><!----></div>');
+        assert.equal(container.innerHTML, '<div></div>');
 
         children = document.createTextNode('foo');
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test(
@@ -774,7 +774,7 @@ suite('lit-html', () => {
         const container = document.createElement('div');
         const t = html`${html`<div someProp="${123}"></div>`}`;
         render(t, container, partCallback);
-        assert.equal(container.innerHTML, '<!----><div></div><!---->');
+        assert.equal(container.innerHTML, '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
 
@@ -859,12 +859,12 @@ suite('lit-html', () => {
 
       test('accepts nested templates', () => {
         part.setValue(html`<h1>${'foo'}</h1>`);
-        assert.equal(container.innerHTML, '<h1><!---->foo<!----></h1>');
+        assert.equal(container.innerHTML, '<h1>foo</h1>');
       });
 
       test('accepts arrays of nested templates', () => {
         part.setValue([1, 2, 3].map((i) => html`${i}`));
-        assert.equal(container.innerHTML, '<!---->1<!----><!---->2<!----><!---->3<!---->');
+        assert.equal(container.innerHTML, '123');
       });
 
       test('accepts an array of elements', () => {
@@ -881,22 +881,22 @@ suite('lit-html', () => {
         let value: string|TemplateResult = 'foo';
         const t = () => html`<div>${value}</div>`;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
+        assert.equal(container.innerHTML, '<div>foo</div>');
 
         value = html`<span>bar</span>`;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><span>bar</span><!----></div>');
+        assert.equal(container.innerHTML, '<div><span>bar</span></div>');
       });
 
       test('updates a complex value to a simple one', () => {
         let value: string|TemplateResult = html`<span>bar</span>`;
         const t = () => html`<div>${value}</div>`;
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!----><span>bar</span><!----></div>');
+        assert.equal(container.innerHTML, '<div><span>bar</span></div>');
 
         value = 'foo';
         render(t(), container);
-        assert.equal(container.innerHTML, '<div><!---->foo<!----></div>');
+        assert.equal(container.innerHTML, '<div>foo</div>');
       });
 
       test('updates when called multiple times with simple values', () => {
@@ -979,11 +979,11 @@ suite('lit-html', () => {
         const t = () => html`<p></p>${items}<a></a>`;
 
         render(t(), container);
-        assert.equal(container.innerHTML, '<p></p><!---->123<a></a>');
+        assert.equal(container.innerHTML, '<p></p>123<a></a>');
 
         items = [1, 2, 3, 4];
         render(t(), container);
-        assert.equal(container.innerHTML, '<p></p><!---->1234<a></a>');
+        assert.equal(container.innerHTML, '<p></p>1234<a></a>');
       });
 
       test(
@@ -992,12 +992,12 @@ suite('lit-html', () => {
             let value = 'foo';
             const r = () => html`<h1>${value}</h1>`;
             part.setValue(r());
-            assert.equal(container.innerHTML, '<h1><!---->foo<!----></h1>');
+            assert.equal(container.innerHTML, '<h1>foo</h1>');
             const originalH1 = container.querySelector('h1');
 
             value = 'bar';
             part.setValue(r());
-            assert.equal(container.innerHTML, '<h1><!---->bar<!----></h1>');
+            assert.equal(container.innerHTML, '<h1>bar</h1>');
             const newH1 = container.querySelector('h1');
             assert.strictEqual(newH1, originalH1);
           });
@@ -1008,12 +1008,12 @@ suite('lit-html', () => {
             let items = [1, 2, 3];
             const r = () => items.map((i) => html`<li>${i}</li>`);
             part.setValue(r());
-            assert.equal(container.innerHTML, '<li><!---->1<!----></li><li><!---->2<!----></li><li><!---->3<!----></li>');
+            assert.equal(container.innerHTML, '<li>1</li><li>2</li><li>3</li>');
             const originalLIs = Array.from(container.querySelectorAll('li'));
 
             items = [3, 2, 1];
             part.setValue(r());
-            assert.equal(container.innerHTML, '<li><!---->3<!----></li><li><!---->2<!----></li><li><!---->1<!----></li>');
+            assert.equal(container.innerHTML, '<li>3</li><li>2</li><li>1</li>');
             const newLIs = Array.from(container.querySelectorAll('li'));
             assert.deepEqual(newLIs, originalLIs);
           });
