@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.8.0] - 2018-01-12
 
 * Allow all valid HTML attribute names, including emoji and Angular-style
   `(foo)=` and `[foo]=` names.
