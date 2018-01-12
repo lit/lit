@@ -22,7 +22,10 @@ import {directive, NodePart} from '../lit-html.js';
  * vulnerabilities.
  */
 export const unsafeHTML = (value: any) => directive((part: NodePart) => {
-  const tmp = document.createElement('template');
-  tmp.innerHTML = value;
-  part.setValue(document.importNode(tmp.content, true));
+  if (part._previousValue !== value) {
+    const tmp = document.createElement('template');
+    tmp.innerHTML = value;
+    part.setValue(document.importNode(tmp.content, true));
+    part._previousValue = value;
+  }
 });
