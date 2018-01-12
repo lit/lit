@@ -131,10 +131,8 @@ suite('lit-extended', () => {
 
     test('adds event listener objects, calls with right this value', () => {
       let thisValue;
-      let event;
       const listener = {
-        handleEvent(e: Event) {
-          event = e;
+        handleEvent(_e: Event) {
           thisValue = this;
         }
       };
