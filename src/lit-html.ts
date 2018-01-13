@@ -15,21 +15,22 @@
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
-const templateCaches = new Map<string, Map<TemplateStringsArray, Template>>();
+export const templateCaches =
+    new Map<string, Map<TemplateStringsArray, Template>>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-  new TemplateResult(strings, values, 'html');
+    new TemplateResult(strings, values, 'html');
 
 /**
  * Interprets a template literal as an SVG template that can efficiently
  * render to and update a container.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-  new SVGTemplateResult(strings, values, 'svg');
+    new SVGTemplateResult(strings, values, 'svg');
 
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -41,7 +42,9 @@ export class TemplateResult {
   type: string;
   partCallback: PartCallback;
 
-  constructor(strings: TemplateStringsArray, values: any[], type: string, partCallback: PartCallback = defaultPartCallback) {
+  constructor(
+      strings: TemplateStringsArray, values: any[], type: string,
+      partCallback: PartCallback = defaultPartCallback) {
     this.strings = strings;
     this.values = values;
     this.type = type;
@@ -103,7 +106,7 @@ export function defaultTemplateFactory(result: TemplateResult) {
   }
   let template = templateCache.get(result.strings);
   if (template === undefined) {
-    template = new Template(result);
+    template = new Template(result, result.getTemplateElement());
     templateCache.set(result.strings, template);
   }
   return template;
@@ -119,7 +122,6 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     getTemplate: TemplateFactory = defaultTemplateFactory) {
-
   const template = getTemplate(result);
   let instance = (container as any).__templateInstance as any;
 
@@ -218,8 +220,8 @@ export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
-  constructor(result: TemplateResult) {
-    this.element = result.getTemplateElement();
+  constructor(result: TemplateResult, element: HTMLTemplateElement) {
+    this.element = element;
     const content = this.element.content;
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
@@ -342,7 +344,6 @@ export class Template {
       n.parentNode!.removeChild(n);
     }
   }
-
 }
 
 /**
@@ -502,12 +503,11 @@ export class NodePart implements SinglePart {
   private _setTemplateResult(value: TemplateResult): void {
     const template = this.instance._getTemplate(value);
     let instance: TemplateInstance;
-    if (this._previousValue &&
-        this._previousValue.template === template) {
+    if (this._previousValue && this._previousValue.template === template) {
       instance = this._previousValue;
     } else {
-      instance =
-          new TemplateInstance(template, this.instance._partCallback, this.instance._getTemplate);
+      instance = new TemplateInstance(
+          template, this.instance._partCallback, this.instance._getTemplate);
       this._setNode(instance._clone());
       this._previousValue = instance;
     }
@@ -615,7 +615,8 @@ export class TemplateInstance {
   template: Template;
 
   constructor(
-      template: Template, partCallback: PartCallback, getTemplate: TemplateFactory) {
+      template: Template, partCallback: PartCallback,
+      getTemplate: TemplateFactory) {
     this.template = template;
     this._partCallback = partCallback;
     this._getTemplate = getTemplate;

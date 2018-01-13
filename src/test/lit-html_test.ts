@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult, defaultTemplateFactory} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, defaultTemplateFactory, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -34,7 +34,8 @@ suite('lit-html', () => {
 
     test('_getTemplate returns identical templates for multiple calls', () => {
       const t = () => html``;
-      assert.strictEqual(defaultTemplateFactory(t()), defaultTemplateFactory(t()));
+      assert.strictEqual(
+          defaultTemplateFactory(t()), defaultTemplateFactory(t()));
     });
 
 
@@ -227,7 +228,10 @@ suite('lit-html', () => {
       });
 
       const testSkipForTemplatePolyfill =
-          ((HTMLTemplateElement as any).decorate != null) ? test.skip : test;
+          ((HTMLTemplateElement as any).decorate != null ||
+           (window as any).ShadyDOM && (window as any).ShadyDOM.inUse) ?
+          test.skip :
+          test;
 
       testSkipForTemplatePolyfill(
           'renders nested templates within table content', () => {
@@ -805,7 +809,10 @@ suite('lit-html', () => {
       endNode = document.createTextNode('');
       container.appendChild(startNode);
       container.appendChild(endNode);
-      const instance = new TemplateInstance(defaultTemplateFactory(html``), defaultPartCallback, defaultTemplateFactory);
+      const instance = new TemplateInstance(
+          defaultTemplateFactory(html``),
+          defaultPartCallback,
+          defaultTemplateFactory);
       part = new NodePart(instance, startNode, endNode);
     });
 

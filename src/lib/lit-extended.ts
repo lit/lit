@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, Part, TemplateInstance, TemplatePart, TemplateResult, SVGTemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 export {render} from '../lit-html.js';
 
@@ -20,13 +20,13 @@ export {render} from '../lit-html.js';
  * Interprets a template literal as a lit-extended HTML template.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-  new TemplateResult(strings, values, 'html', extendedPartCallback);
+    new TemplateResult(strings, values, 'html', extendedPartCallback);
 
 /**
  * Interprets a template literal as a lit-extended SVG template.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-  new SVGTemplateResult(strings, values, 'svg', extendedPartCallback);
+    new SVGTemplateResult(strings, values, 'svg', extendedPartCallback);
 
 /**
  * A PartCallback which allows templates to set properties and declarative
