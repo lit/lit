@@ -385,10 +385,6 @@ html`
 
 ## Future Work
 
-### Async Iterables Support
-
-Async Iterables should be supported natively.
-
 ### Higher-Order Templates examples
 
 #### `when(cond, then, else)`
