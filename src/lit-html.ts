@@ -79,6 +79,13 @@ export class TemplateResult {
   }
 }
 
+/**
+ * A TemplateResult for SVG fragments.
+ *
+ * This class wraps HTMl in an <svg> tag in order to parse its contents in the
+ * SVG namespace, then modifies the template to remove the <svg> tag so that
+ * clones only container the original fragment.
+ */
 export class SVGTemplateResult extends TemplateResult {
   getHTML(): string {
     return `<svg>${super.getHTML()}</svg>`;
@@ -93,10 +100,31 @@ export class SVGTemplateResult extends TemplateResult {
   }
 }
 
+/**
+ * A function type that creates a Template from a TemplateResult.
+ *
+ * This is a hook into the template-creation process for rendering that
+ * requires some modification of templates before their used, like ShadyCSS,
+ * which must add classes to elements and remove styles.
+ *
+ * Templates should be cached as aggressively as possible, so that many
+ * TemplateResults produced from the same expression only do the work of
+ * creating the Template the first time.
+ *
+ * Templates are usually cached by TemplateResult.strings and
+ * TemplateResult.type, but may be cached by other keys if this function
+ * modifies the template.
+ *
+ * Note that currently TemplateFactories must not add, remove, or reorder
+ * expressions, because there is no way to describe such a modification
+ * to render() so that values are interpolated to the correct place in the
+ * template instances.
+ */
 export type TemplateFactory = (result: TemplateResult) => Template;
 
 /**
- * Only visible for testing.
+ * The default TemplateFactory which caches Templates keyed on
+ * result.type and result.strings.
  */
 export function defaultTemplateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
@@ -117,12 +145,20 @@ export function defaultTemplateFactory(result: TemplateResult) {
  *
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
+ *
+ * @param result a TemplateResult created by evaluating a template tag like
+ *     `html` or `svg.
+ * @param container A DOM parent to render to. The entire contents are either
+ *     replaced, or efficiently updated if the same result type was previous
+ *     rendered there.
+ * @param templateFactory a function to create a Template or retreive one from
+ *     cache.
  */
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    getTemplate: TemplateFactory = defaultTemplateFactory) {
-  const template = getTemplate(result);
+    templateFactory: TemplateFactory = defaultTemplateFactory) {
+  const template = templateFactory(result);
   let instance = (container as any).__templateInstance as any;
 
   // Repeat render, just call update()
@@ -133,7 +169,8 @@ export function render(
   }
 
   // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(template, result.partCallback, getTemplate);
+  instance =
+      new TemplateInstance(template, result.partCallback, templateFactory);
   (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();
@@ -144,11 +181,17 @@ export function render(
 }
 
 /**
- * An expression marker with embedded unique key to avoid
- * https://github.com/PolymerLabs/lit-html/issues/62
+ * An expression marker with embedded unique key to avoid collision with
+ * possible text in templates.
  */
 const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
+
+/**
+ * An expression marker used text-posisitions, not attribute positions,
+ * in template.
+ */
 const nodeMarker = `<!--${marker}-->`;
+
 const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 
 /**
@@ -215,7 +258,9 @@ export class TemplatePart {
   }
 }
 
-
+/**
+ * An updateable Template that tracks the location of dynamic parts.
+ */
 export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
