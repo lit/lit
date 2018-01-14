@@ -1,7 +1,7 @@
 # lit-html
 HTML templates, via JavaScript template literals
 
-[![Build Status](https://travis-ci.org/PolymerLabs/lit-html.svg?branch=master)](https://travis-ci.org/PolymerLabs/lit-html)
+[![Build Status](https://travis-ci.org/Polymer/lit-html.svg?branch=master)](https://travis-ci.org/Polymer/lit-html)
 
 ## Overview
 
