@@ -1,0 +1,14 @@
+{
+  "plugins": {
+    "local": {
+      "browserOptions": {
+        "chrome": [
+          "start-maximized",
+          "headless",
+          "disable-gpu",
+          "no-sandbox"
+        ]
+      }
+    }
+  }
+}
