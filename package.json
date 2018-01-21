@@ -3,7 +3,7 @@
   "version": "0.8.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
-  "repository": "PolymerLabs/lit-html",
+  "repository": "Polymer/lit-html",
   "main": "lit-html.js",
   "module": "lit-html.js",
   "directories": {
