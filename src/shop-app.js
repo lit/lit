@@ -378,7 +378,20 @@ class ShopApp extends Element {
         // When a load failed, it triggered a 404 which means we need to
         // eagerly load the 404 page definition
         let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-        import('./shop-' + page + '.js').then(cb);
+        switch (page) {
+          case 'list':
+            import('./shop-list.js').then(cb);
+            break;
+          case 'detail':
+            import('./shop-detail.js').then(cb);
+            break;
+          case 'cart':
+            import('./shop-cart.js').then(cb);
+            break;
+          case 'checkout':
+            import('./shop-checkout.js').then(cb);
+            break;
+        }
       }
     }
   }
