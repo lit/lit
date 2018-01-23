@@ -19,7 +19,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-tabs">
       }
 
       shop-tabs-overlay {
-        @apply --shop-tab-overlay;
+        border-bottom: 2px solid var(--app-accent-color);
       }
     </style>
     <div id="container">

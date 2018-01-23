@@ -24,7 +24,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-tab">
         right: 0;
         bottom: 0;
         left: 0;
-        @apply --shop-tab-overlay;
+        border-bottom: 2px solid var(--app-accent-color);
       }
 
       :host(.shop-tabs-overlay-static-above) #overlay {

@@ -1,4 +1,5 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
 import '../node_modules/@polymer/app-layout/app-header/app-header.js';
 import '../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
@@ -18,9 +19,9 @@ import { splitPathSelector } from './redux/reducers/location.js';
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
 
-class ShopApp extends Element {
-  static get template() {
-    return `
+class ShopApp extends LitElement {
+  render({ categories, categoryName, drawerOpened, page, _a11yLabel, _loadComplete, _smallScreen }) {
+    return html`
     <style>
 
       :host {
@@ -40,7 +41,10 @@ class ShopApp extends Element {
       }
 
       app-header {
-        @apply --layout-fixed-top;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         z-index: 1;
         background-color: rgba(255, 255, 255, 0.95);
         --app-header-shadow: {
@@ -102,9 +106,9 @@ class ShopApp extends Element {
       }
 
       shop-tabs, shop-tab {
-        --shop-tab-overlay: {
+        /*--shop-tab-overlay: {
           border-bottom: 2px solid var(--app-accent-color);
-        };
+        };*/
       }
 
       shop-tabs {
@@ -203,14 +207,12 @@ class ShopApp extends Element {
 
     <shop-analytics key="UA-39334307-16"></shop-analytics>
 
-    <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
-
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
       <app-toolbar>
         <div class="left-bar-item">
-          <paper-icon-button class="menu-btn" icon="menu" on-click="_toggleDrawer" aria-label="Categories">
+          <paper-icon-button class="menu-btn" icon="menu" on-click="${_ => this.drawerOpened = true}" aria-label="Categories">
           </paper-icon-button>
-          <a class="back-btn" href="/list/[[categoryName]]" tabindex="-1">
+          <a class="back-btn" href="/list/${categoryName}" tabindex="-1">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
         </div>
@@ -219,40 +221,35 @@ class ShopApp extends Element {
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      <div id="tabContainer" sticky\$="[[_shouldShowTabs]]" hidden\$="[[!_shouldShowTabs]]">
-        <dom-if if="[[_shouldRenderTabs]]">
-          <template>
-            <shop-tabs selected="[[categoryName]]" attr-for-selected="name">
-              <dom-repeat items="[[categories]]" as="category" initial-count="4">
-                <template>
-                <shop-tab name="[[category.name]]">
-                  <a href="/list/[[category.name]]">[[category.title]]</a>
+      ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && _loadComplete ?
+        html`
+          <div id="tabContainer" sticky>
+            <shop-tabs selected="${categoryName}" attr-for-selected="name">
+              ${repeat(categories, category => html`
+                <shop-tab name="${category.name}">
+                  <a href="/list/${category.name}">${category.title}</a>
                 </shop-tab>
-                </template>
-              </dom-repeat>
+              `)}
             </shop-tabs>
-          </template>
-        </dom-if>
-      </div>
+          </div>
+        ` : null
+      }
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    <dom-if if="[[_shouldRenderDrawer]]">
-      <template>
-      <!-- Two-way bind \`drawerOpened\` since app-drawer can update \`opened\` itself. -->
-      <app-drawer opened="{{drawerOpened}}" swipe-open="" tabindex="0">
-        <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-          <dom-repeat items="[[categories]]" as="category" initial-count="4">
-            <template>
-              <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
-            </template>
-          </dom-repeat>
-        </iron-selector>
-      </app-drawer>
-      </template>
-    </dom-if>
+    ${ _smallScreen && _loadComplete ?
+      html`
+        <app-drawer opened="${drawerOpened}" tabindex="0" on-opened-changed="${e => this.drawerOpened = e.target.opened}">
+          <iron-selector role="navigation" class="drawer-list" selected="${categoryName}" attr-for-selected="name">
+            ${repeat(categories, category => html`
+              <a name="${category.name}" href="/list/${category.name}">${category.title}</a>
+            `)}
+          </iron-selector>
+        </app-drawer>
+      ` : null
+    }
 
-    <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
+    <iron-pages role="main" selected="${page}" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
       <!-- home view -->
       <shop-home name="home"></shop-home>
       <!-- list view of items in a category -->
@@ -273,45 +270,32 @@ class ShopApp extends Element {
     </footer>
 
     <!-- a11y announcer -->
-    <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
+    <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
 `;
   }
 
   static get is() { return 'shop-app'; }
 
   static get properties() { return {
-    page: {
-      type: String,
-      reflectToAttribute: true,
-      observer: '_pageChanged'
-    },
+    page: String,
 
-    offline: {
-      type: Boolean,
-      observer: '_offlineChanged'
-    },
+    offline: Boolean,
 
-    meta: {
-      type: Object,
-      observer: '_metaChanged'
-    },
+    meta: Object,
     
-    modalOpened: {
-      type: Object,
-      observer: '_modalOpenedChanged'
-    },
+    modalOpened: Object,
 
-    _shouldShowTabs: {
-      computed: '_computeShouldShowTabs(page, smallScreen)'
-    },
+    categories: Object,
 
-    _shouldRenderTabs: {
-      computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
-    },
+    categoryName: String,
 
-    _shouldRenderDrawer: {
-      computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
-    }
+    drawerOpened: Boolean,
+
+    _a11yLabel: String,
+
+    _smallScreen: Boolean,
+
+    _loadComplete: Boolean
   }}
 
   constructor() {
@@ -335,15 +319,30 @@ class ShopApp extends Element {
       page = '404';
     }
 
-    this.setProperties({
-      categories: Object.values(state.categories),
-      categoryName,
-      page,
-      offline: !state.network.online,
-      _a11yLabel: state.announcer.label,
-      meta: state.meta,
-      modalOpened: state.modal
-    });
+    if (this.page !== page) {
+      const oldPage = this.page;
+      this._pageChanged(this.page = page, oldPage);
+    }
+
+    if (this.offline === state.network.online) {
+      const oldOffline = this.offline;
+      this._offlineChanged(this.offline = !state.network.online, oldOffline);
+    }
+
+    if (this.meta !== state.meta) {
+      const oldMeta = this.meta;
+      this._metaChanged(this.meta = state.meta, oldMeta);
+    }
+
+    if (this.modalOpened !== state.modal) {
+      const oldModalOpened = this.modalOpened;
+      this._modalOpenedChanged(this.modalOpened = state.modal, oldModalOpened);
+    }
+
+    this.categories = Object.values(state.categories);
+    this.categoryName = categoryName;
+    this._a11yLabel = state.announcer.label;
+    this._loadComplete = state.load && state.load.complete;
   }
 
   ready() {
@@ -358,6 +357,10 @@ class ShopApp extends Element {
     // this.addEventListener('announce', (e)=>this._onAnnounce(e));
     // this.addEventListener('dom-change', (e)=>this._domChange(e));
     // this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
+
+    const mq = window.matchMedia('(max-width: 767px)');
+    mq.addListener(_ => this._smallScreen = mq.matches);
+    this._smallScreen = mq.matches;
   }
 
   _pageChanged(page, oldPage) {
@@ -369,31 +372,31 @@ class ShopApp extends Element {
     // Close the drawer - in case the *route* change came from a link in the drawer.
     this.drawerOpened = false;
 
-    if (page != null) {
-      // home route is eagerly loaded
-      if (page == 'home') {
-        this._pageLoaded(Boolean(oldPage));
-      // other routes are lazy loaded
-      } else {
-        // When a load failed, it triggered a 404 which means we need to
-        // eagerly load the 404 page definition
-        let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-        switch (page) {
-          case 'list':
-            import('./shop-list.js').then(cb);
-            break;
-          case 'detail':
-            import('./shop-detail.js').then(cb);
-            break;
-          case 'cart':
-            import('./shop-cart.js').then(cb);
-            break;
-          case 'checkout':
-            import('./shop-checkout.js').then(cb);
-            break;
-        }
-      }
-    }
+    // if (page != null) {
+    //   // home route is eagerly loaded
+    //   if (page == 'home') {
+    //     this._pageLoaded(Boolean(oldPage));
+    //   // other routes are lazy loaded
+    //   } else {
+    //     // When a load failed, it triggered a 404 which means we need to
+    //     // eagerly load the 404 page definition
+    //     let cb = this._pageLoaded.bind(this, Boolean(oldPage));
+    //     switch (page) {
+    //       case 'list':
+    //         import('./shop-list.js').then(cb);
+    //         break;
+    //       case 'detail':
+    //         import('./shop-detail.js').then(cb);
+    //         break;
+    //       case 'cart':
+    //         import('./shop-cart.js').then(cb);
+    //         break;
+    //       case 'checkout':
+    //         import('./shop-checkout.js').then(cb);
+    //         break;
+    //     }
+    //   }
+    // }
   }
 
   _pageLoaded(shouldResetLayout) {
@@ -408,15 +411,15 @@ class ShopApp extends Element {
   }
 
   _ensureLazyLoaded() {
-    // load lazy resources after render and set `loadComplete` when done.
-    if (!this.loadComplete) {
+    // load lazy resources after render and set `_loadComplete` when done.
+    if (!this._loadComplete) {
       afterNextRender(this, () => {
         import('./lazy-resources.js').then(() => {
           // Register service worker if supported.
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js', {scope: '/'});
           }
-          this.loadComplete = true;
+          this._loadComplete = true;
         });
       });
     }
@@ -434,10 +437,6 @@ class ShopApp extends Element {
           'You are offline' : 'You are online';
       this._networkSnackbar.open();
     }
-  }
-
-  _toggleDrawer() {
-    this.drawerOpened = !this.drawerOpened;
   }
 
   _setMeta(attrName, attrValue, content) {
@@ -505,22 +504,6 @@ class ShopApp extends Element {
         performance.mark(host.localName + '.domChange');
       }
     }
-  }
-
-  _computeShouldShowTabs(page, smallScreen) {
-    return (page === 'home' || page === 'list' || page === 'detail') && !smallScreen;
-  }
-
-  _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {
-    return _shouldShowTabs && loadComplete;
-  }
-
-  _computeShouldRenderDrawer(smallScreen, loadComplete) {
-    return smallScreen && loadComplete;
-  }
-
-  _computePluralizedQuantity(quantity) {
-    return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
   }
 }
 

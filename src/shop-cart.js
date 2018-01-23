@@ -87,7 +87,7 @@ class ShopCart extends Element {
   update() {
     const state = store.getState();
     this.setProperties({
-      cart: Object.values(state.cart),
+      cart: state.cart ? Object.values(state.cart): [],
       total: totalSelector(state)
     });
   }

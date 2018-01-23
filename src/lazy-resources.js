@@ -34,8 +34,12 @@ import "../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
 import { store } from './redux/index.js';
 import { installCart } from './redux/cart.js';
 import cart from './redux/reducers/cart.js';
+import load from './redux/reducers/load.js'
 
 store.addReducers({
-  cart
+  cart,
+  load
 });
 installCart(store);
+
+export { completeLoad } from './redux/actions/load.js';

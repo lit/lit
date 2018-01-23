@@ -17,9 +17,14 @@ export const updateLocation = (path) => (dispatch, getState) => {
   dispatch(fetchCategoryItems(currentCategorySelector(state)));
   switch (pageSelector(state)) {
     case 'home':
+      import('../../lazy-resources.js')
+      .then(module => dispatch(module.completeLoad()));
       dispatch(updateMeta({ title: 'Home' }));
       break;
     case 'list':
+      import('../../shop-list.js')
+      .then(_ => import('../../lazy-resources.js'))
+      .then(module => dispatch(module.completeLoad()));
       const category = currentCategorySelector(state);
       dispatch(updateMeta({
         title: category.title,
@@ -27,6 +32,9 @@ export const updateLocation = (path) => (dispatch, getState) => {
       }));
       break;
     case 'detail':
+      import('../../shop-detail.js')
+      .then(_ => import('../../lazy-resources.js'))
+      .then(module => dispatch(module.completeLoad()));
       const item = currentItemSelector(state);
       // Item is async loaded, so check if it has loaded yet. If not, meta will
       // be updated in REQUEST_CATEGORY_ITEMS instead.
@@ -39,9 +47,15 @@ export const updateLocation = (path) => (dispatch, getState) => {
       }
       break;
     case 'cart':
+      import('../../shop-cart.js')
+      .then(_ => import('../../lazy-resources.js'))
+      .then(module => dispatch(module.completeLoad()));
       dispatch(updateMeta({ title: 'Cart' }));
       break;
     case 'checkout':
+      import('../../shop-checkout.js')
+      .then(_ => import('../../lazy-resources.js'))
+      .then(module => dispatch(module.completeLoad()));
       dispatch(updateMeta({ title: 'Checkout' }));
       break;
   }
