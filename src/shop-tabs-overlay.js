@@ -1,11 +1,10 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { flush } from '../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
 import { microTask, timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = `<dom-module id="shop-tabs-overlay">
-  <template strip-whitespace="">
+class ShopTabsOverlay extends LitElement {
+  render() {
+    return html`
     <style>
       :host {
         position: absolute;
@@ -18,14 +17,8 @@ $_documentContainer.innerHTML = `<dom-module id="shop-tabs-overlay">
         left: 0;
         transition-property: top, right, bottom, left, opacity;
       }
-    </style>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopTabsOverlay extends Element {
+    </style>`;
+  }
 
   static get is() { return 'shop-tabs-overlay'; }
 
@@ -33,10 +26,7 @@ class ShopTabsOverlay extends Element {
     /**
      * The element the overlay should cover.
      */
-    target: {
-      type: Object,
-      observer: '_targetChanged',
-    }
+    target: Object
   }}
 
   constructor() {
@@ -48,6 +38,13 @@ class ShopTabsOverlay extends Element {
   ready() {
     super.ready();
     this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
+  }
+
+  _propertiesChanged(props, changed, oldProps) {
+    if (changed && 'target' in changed) {
+      this._targetChanged(props.target, oldProps.target);
+    }
+    super._propertiesChanged(props, changed, oldProps);
   }
 
   _targetChanged(newTarget, oldTarget) {

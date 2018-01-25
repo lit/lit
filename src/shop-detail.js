@@ -128,7 +128,7 @@ class ShopDetail extends LitElement {
 
     </style>
 
-    ${ !failure ? html`
+    ${ !failure && item ? html`
       <div id="content">
         <shop-image alt="${item.title}" src="${item.largeImage}"></shop-image>
         <div class="detail" has-content="[[_isDefined(item)]]">
@@ -241,8 +241,9 @@ class ShopDetail extends LitElement {
   _addToCart() {
     store.dispatch(addCartEntry({
       item: this.item,
-      quantity: parseInt(this.$.quantitySelect.value, 10),
-      size: this.$.sizeSelect.value
+      // TODO: fix
+      quantity: 2,//parseInt(this.$.quantitySelect.value, 10),
+      size: 'XL'//this.$.sizeSelect.value
     }));
   }
 

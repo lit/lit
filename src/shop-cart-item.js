@@ -1,24 +1,20 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { shopSelectStyle } from './shop-select-style.js';
 import '../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
 import './shop-icons.js';
 import './shop-image.js';
-import './shop-select.js';
 
 import { store } from './redux/index.js';
 import { setCartEntryQuantity, removeCartEntry } from './redux/actions/cart.js';
 
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
-
-$_documentContainer.innerHTML = `<dom-module id="shop-cart-item">
-
-  <template strip-whitespace="">
-
-    <style include="shop-select">
+class ShopCartItem extends LitElement {
+  render({ entry }) {
+    return html`
+    ${ shopSelectStyle }
+    <style>
 
       :host {
-        @apply --layout-horizontal;
+        display: flex;
         position: relative;
         margin-bottom: 24px;
       }
@@ -39,7 +35,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-cart-item">
       }
 
       .name {
-        @apply --layout-flex-auto;
+        flex: auto;
         line-height: 20px;
         font-weight: 500;
         float: left;
@@ -93,14 +89,14 @@ $_documentContainer.innerHTML = `<dom-module id="shop-cart-item">
       }
 
       .flex {
-        @apply --layout-horizontal;
-        @apply --layout-flex-auto;
+        display: flex;
+        flex: auto;
         margin-left: 24px;
       }
 
       .detail {
-        @apply --layout-horizontal;
-        @apply --layout-center;
+        display: flex;
+        align-items: center;
         margin-top: 26px;
         margin-right: 30px;
         height: 20px;
@@ -108,7 +104,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-cart-item">
 
       @media (max-width: 767px) {
         .flex {
-          @apply --layout-vertical;
+          flex-direction: column;
           margin-left: 10px;
         }
 
@@ -119,7 +115,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-cart-item">
         }
 
         .detail {
-          @apply --layout-self-end;
+          align-self: flex-end;
           margin: 10px 10px 0 0;
         }
 
@@ -162,52 +158,47 @@ $_documentContainer.innerHTML = `<dom-module id="shop-cart-item">
 
     </style>
 
-    <a href\$="/detail/[[entry.item.category]]/[[entry.item.name]]" title\$="[[entry.item.title]]">
-      <shop-image src="[[entry.item.image]]" alt="[[entry.item.title]]"></shop-image>
-    </a>
-    <div class="flex">
-      <div class="name">
-        <a href\$="/detail/[[entry.item.category]]/[[entry.item.name]]">[[entry.item.title]]</a>
-      </div>
-      <div class="detail">
-        <div class="quantity">
-          <shop-select>
-            <label prefix="">Qty:</label>
-            <select id="quantitySelect" aria-label="Change quantity" value="[[entry.quantity]]" on-change="_quantityChange">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-              <option value="11">11</option>
-              <option value="12">12</option>
-            </select>
-            <shop-md-decorator aria-hidden="true"></shop-md-decorator>
-          </shop-select>
+    ${ entry && entry.item ? html`
+      <a href="/detail/${entry.item.category}/${entry.item.name}" title="${entry.item.title}">
+        <shop-image src="${entry.item.image}" alt="${entry.item.title}"></shop-image>
+      </a>
+      <div class="flex">
+        <div class="name">
+          <a href="/detail/${entry.item.category}/${entry.item.name}">${entry.item.title}</a>
         </div>
-        <div class="size">Size: <span>[[entry.size]]</span></div>
-        <div class="price">[[_formatPrice(entry.item.price)]]</div>
+        <div class="detail">
+          <div class="quantity">
+            <shop-select>
+              <label prefix="">Qty:</label>
+              <select id="quantitySelect" aria-label="Change quantity" value="${entry.quantity}" on-change="${e => this._quantityChange(e)}">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <shop-md-decorator aria-hidden="true"></shop-md-decorator>
+            </shop-select>
+          </div>
+          <div class="size">Size: <span>${entry.size}</span></div>
+          <div class="price">$${entry.item.price.toFixed(2)}</div>
 
-        <!--
-          Use on-click instead of on-tap to prevent the next cart item to be focused
-        -->
-        <paper-icon-button class="delete-button" icon="close" aria-label\$="Delete item [[entry.item.title]]" on-click="_removeItem"></paper-icon-button>
-      </div>
-    </div>
-  </template>
-
-  
-
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopCartItem extends Element {
+          <!--
+            Use on-click instead of on-tap to prevent the next cart item to be focused
+          -->
+          <paper-icon-button class="delete-button" icon="close" aria-label$="Delete item ${entry.item.title}" on-click="${() => this._removeItem()}"></paper-icon-button>
+        </div>
+      </div>` : null
+    }
+    `;
+  }
 
   static get is() { return 'shop-cart-item'; }
 
@@ -217,7 +208,7 @@ class ShopCartItem extends Element {
 
   }}
 
-  _quantityChange() {
+  _quantityChange(e) {
     // TODO: consider updating setCartItem/cartItemQuantityUpdated to do a11y announcer as well.
     // cart = { '1': { category: 'mens_outerwear', itemId: 500, quantity: 3, size: 'M' }, ...}
     // categories = { 'mens_outerwear' : { items : { 'green_jacket' : { name: 'green jacket' }}}}
@@ -232,7 +223,7 @@ class ShopCartItem extends Element {
     // }));
     store.dispatch(setCartEntryQuantity({
       item: this.entry.item,
-      quantity: parseInt(this.$.quantitySelect.value, 10),
+      quantity: parseInt(e.target.value, 10),
       size: this.entry.size
     }));
   }

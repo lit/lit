@@ -1,12 +1,11 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
 import { store } from './redux/index.js';
 import { numItemsSelector } from './redux/reducers/cart.js';
 
-class ShopCartButton extends Element {
-  static get template() {
-    return `
+class ShopCartButton extends LitElement {
+  render({ numItems }) {
+    return html`
     <style>
 
       :host {
@@ -31,16 +30,17 @@ class ShopCartButton extends Element {
         font-size: 12px;
         font-weight: 500;
         pointer-events: none;
-        @apply --layout-vertical;
-        @apply --layout-center-center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
     </style>
 
     <a href="/cart" tabindex="-1">
-      <paper-icon-button icon="shopping-cart" aria-label\$="Shopping cart: [[_computePluralizedQuantity(numItems)]]"></paper-icon-button>
+      <paper-icon-button icon="shopping-cart" aria-label$="${`Shopping cart: ${numItems} item${numItems > 1 ? 's' : ''}`}"></paper-icon-button>
     </a>
-    <div class="cart-badge" aria-hidden="true" hidden\$="[[!numItems]]">[[numItems]]</div>
+    ${ numItems ? html`<div class="cart-badge" aria-hidden="true">${numItems}</div>`: null }
 `;
   }
 
@@ -59,13 +59,7 @@ class ShopCartButton extends Element {
 
   update() {
     const state = store.getState();
-    this.setProperties({
-      numItems: numItemsSelector(state)
-    });
-  }
-
-  _computePluralizedQuantity(quantity) {
-    return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+    this.numItems = numItemsSelector(state);
   }
 }
 

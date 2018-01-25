@@ -4,8 +4,6 @@ import '../node_modules/@polymer/app-layout/app-header/app-header.js';
 import '../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { scroll } from '../node_modules/@polymer/app-layout/helpers/helpers.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import '../node_modules/@polymer/iron-media-query/iron-media-query.js';
 import '../node_modules/@polymer/iron-pages/iron-pages.js';
 import '../node_modules/@polymer/iron-selector/iron-selector.js';
 import './shop-home.js';
@@ -20,7 +18,7 @@ import { splitPathSelector } from './redux/reducers/location.js';
 window.performance && performance.mark && performance.mark('shop-app - before register');
 
 class ShopApp extends LitElement {
-  render({ categories, categoryName, drawerOpened, page, _a11yLabel, _loadComplete, _smallScreen }) {
+  render({ categories, categoryName, drawerOpened, modalOpened, page, _a11yLabel, _loadComplete, _smallScreen }) {
     return html`
     <style>
 
@@ -271,7 +269,10 @@ class ShopApp extends LitElement {
 
     <!-- a11y announcer -->
     <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
-`;
+
+    <shop-cart-modal></shop-cart-modal>
+    ${ modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
+    `;
   }
 
   static get is() { return 'shop-app'; }
@@ -334,13 +335,9 @@ class ShopApp extends LitElement {
       this._metaChanged(this.meta = state.meta, oldMeta);
     }
 
-    if (this.modalOpened !== state.modal) {
-      const oldModalOpened = this.modalOpened;
-      this._modalOpenedChanged(this.modalOpened = state.modal, oldModalOpened);
-    }
-
     this.categories = Object.values(state.categories);
     this.categoryName = categoryName;
+    this.modalOpened = state.modal;
     this._a11yLabel = state.announcer.label;
     this._loadComplete = state.load && state.load.complete;
   }
@@ -484,13 +481,6 @@ class ShopApp extends LitElement {
       this._setMeta('property', 'twitter:description', detail.description || document.title);
       this._setMeta('property', 'twitter:url', document.location.href);
       this._setMeta('property', 'twitter:image:src', detail.image || this.baseURI + 'images/shop-icon-128.png');
-    }
-  }
-
-  _modalOpenedChanged(opened, oldOpened) {
-    if (opened && !this._cartModal) {
-      this._cartModal = document.createElement('shop-cart-modal');
-      this.root.appendChild(this._cartModal);
     }
   }
 

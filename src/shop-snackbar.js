@@ -1,11 +1,11 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { flush } from '../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 
-class ShopSnackbar extends Element {
-  static get template() {
-    return `
+class ShopSnackbar extends LitElement {
+  render() {
+    return html`
     <style>
       :host {
         display: block;

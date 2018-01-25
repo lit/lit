@@ -1,16 +1,17 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { shopButtonStyle } from './shop-button-style.js';
 import '../node_modules/@polymer/iron-icon/iron-icon.js';
-import './shop-button.js';
 import './shop-icons.js';
 
 import { store } from './redux/index.js';
 import { fetchCategoryItems } from './redux/actions/categories.js';
 import { currentCategorySelector } from './redux/reducers/categories.js';
 
-class ShopNetworkWarning extends Element {
-  static get template() {
-    return `
-    <style include="shop-button">
+class ShopNetworkWarning extends LitElement {
+  render({ offline }) {
+    return html`
+    ${ shopButtonStyle }
+    <style>
 
       :host {
         display: block;
@@ -40,16 +41,16 @@ class ShopNetworkWarning extends Element {
 
     </style>
 
-    <div hidden\$="[[offline]]">
-      <h1>Couldn't reach the server</h1>
-    </div>
-    <div hidden\$="[[!offline]]">
-      <iron-icon icon="perm-scan-wifi"></iron-icon>
-      <h1>No internet connection</h1>
-      <p>Check if your device is connected to a mobile network or WiFi.</p>
+    <div>
+      ${ offline ? html`
+        <iron-icon icon="perm-scan-wifi"></iron-icon>
+        <h1>No internet connection</h1>
+        <p>Check if your device is connected to a mobile network or WiFi.</p>
+        ` : html`<h1>Couldn't reach the server</h1>`
+      }
     </div>
     <shop-button>
-      <button on-click="_tryReconnect">Try Again</button>
+      <button on-click="${() => this._tryReconnect()}">Try Again</button>
     </shop-button>
 `;
   }
