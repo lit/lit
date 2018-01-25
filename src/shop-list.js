@@ -1,4 +1,6 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
+import { shopCommonStyle } from './shop-common-style.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-common-styles.js';
 import './shop-image.js';
@@ -10,10 +12,11 @@ import { store } from './redux/index.js';
 import { updateMeta } from './redux/actions/meta.js';
 import { currentCategorySelector } from './redux/reducers/categories.js';
 
-class ShopList extends Element {
-  static get template() {
-    return `
-    <style include="shop-common-styles">
+class ShopList extends LitElement {
+  render({ category, failure }) {
+    return html`
+    ${ shopCommonStyle }
+    <style>
 
       .hero-image {
         position: relative;
@@ -22,21 +25,11 @@ class ShopList extends Element {
         margin-bottom: 32px;
       }
 
-      .hero-image {
-        --shop-image-img: {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: -9999px;
-          right: -9999px;
-          max-width: none;
-        };
-      }
-
       .grid {
-        @apply --layout-horizontal;
-        @apply --layout-wrap;
-        @apply --layout-justified;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
         margin: 0 10px 32px 10px;
         padding: 0;
         list-style: none;
@@ -70,30 +63,25 @@ class ShopList extends Element {
     </style>
 
     <shop-image
-        alt="[[category.title]]"
-        src="[[category.image]]"
-        placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
+        alt="${category.title}"
+        src="${category.image}"
+        placeholder-img="${category.placeholder}" class="hero-image"></shop-image>
 
     <header>
-      <h1>[[category.title]]</h1>
-      <span>[[_getPluralizedQuantity(category.items)]]</span>
+      <h1>${category.title}</h1>
+      <span>${this._getPluralizedQuantity(category.items)}</span>
     </header>
 
-    <ul class="grid" hidden$="[[failure]]">
-      <dom-repeat items="[[_getListItems(category.items)]]" initial-count="4">
-        <template>
+    ${ !failure ? html`
+      <ul class="grid">
+        ${repeat(this._getListItems(category.items), item => html`
           <li>
-            <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+            <a href$="${this._getItemHref(item)}"><shop-list-item item="${item}"></shop-list-item></a>
           </li>
-        </template>
-      </dom-repeat>
-    </ul>
-
-    <!--
-      shop-network-warning shows a warning message when the items can't be rendered due
-      to network conditions.
-    -->
-    <shop-network-warning hidden$="[[!failure]]"></shop-network-warning>
+        `)}
+      </ul>` : html`
+      <shop-network-warning></shop-network-warning>`
+    }
 
   </template>
   `;
@@ -119,10 +107,8 @@ class ShopList extends Element {
   update() {
     const state = store.getState();
     const category = currentCategorySelector(state);
-    this.setProperties({
-      category,
-      failure: category && category.failure
-    });
+    this.category = category;
+    this.failure = category && category.failure;
   }
 
   connectedCallback() {

@@ -58,6 +58,11 @@ export const updateLocation = (path) => (dispatch, getState) => {
       .then(module => dispatch(module.completeLoad()));
       dispatch(updateMeta({ title: 'Checkout' }));
       break;
+    default:
+      import('../../lazy-resources.js')
+      .then(module => dispatch(module.completeLoad()));
+      dispatch(updateMeta({ title: '404' }));
+      break;
   }
 };
 

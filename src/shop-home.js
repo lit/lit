@@ -1,14 +1,16 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import './shop-button.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
+import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';
 
 import { store } from './redux/index.js';
 import { updateMeta } from './redux/actions/meta.js';
 
-class ShopHome extends Element {
-  static get template() {
-    return `
-    <style include="shop-button">
+class ShopHome extends LitElement {
+  render({ categories }) {
+    return html`
+    ${ shopButtonStyle }
+    <style>
 
       .image-link {
         outline: none;
@@ -53,14 +55,6 @@ class ShopHome extends Element {
         position: relative;
         height: 320px;
         overflow: hidden;
-        --shop-image-img: {
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: -9999px;
-          right: -9999px;
-          max-width: none;
-        };
       }
 
       h2 {
@@ -91,19 +85,15 @@ class ShopHome extends Element {
 
     </style>
 
-    <dom-repeat items="[[categories]]">
-      <template strip-whitespace="">
-        <div class="item">
-          <a class="image-link" href\$="/list/[[item.name]]">
-            <shop-image src="[[item.image]]" alt="[[item.title]]" placeholder-img="[[item.placeholder]]"></shop-image>
-          </a>
-          <h2>[[item.title]]</h2>
-          <shop-button>
-            <a aria-label\$="[[item.title]] Shop Now" href\$="/list/[[item.name]]">Shop Now</a>
-          </shop-button>
-        </div>
-      </template>
-    </dom-repeat>
+    ${repeat(categories, category => html`<div class="item">
+        <a class="image-link" href$="/list/${category.name}">
+          <shop-image src="${category.image}" alt="${category.title}" placeholder-img="${category.placeholder}"></shop-image>
+        </a>
+        <h2>${category.title}</h2>
+        <shop-button>
+          <a aria-label$="${category.title} Shop Now" href$="/list/${category.name}">Shop Now</a>
+        </shop-button>
+      </div>`)}
 `;
   }
 

@@ -21,7 +21,13 @@ class ShopImage extends Element {
         margin: 0 auto;
         opacity: 0;
         transition: 0.5s opacity;
-        @apply --shop-image-img;
+        
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -9999px;
+        right: -9999px;
+        max-width: none;
       }
 
     </style>

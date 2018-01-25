@@ -1,14 +1,14 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 
-class ShopListItem extends Element {
-  static get template() {
-    return `
+class ShopListItem extends LitElement {
+  render({ item }) {
+    return html`
     <style>
 
       :host {
-        @apply --layout-vertical;
-        @apply --layout-center-justified;
+        display: flex;
+        flex-direction: column;
         text-align: center;
         margin: 0 48px;
       }
@@ -40,9 +40,9 @@ class ShopListItem extends Element {
 
     </style>
 
-    <shop-image src="[[item.image]]" alt="[[item.title]]"></shop-image>
-    <div class="title">[[item.title]]</div>
-    <span class="price">[[_formatPrice(item.price)]]</span>
+    <shop-image src="${item.image}" alt="${item.title}"></shop-image>
+    <div class="title">${item.title}</div>
+    <span class="price">${this._formatPrice(item.price)}</span>
 `;
   }
 
