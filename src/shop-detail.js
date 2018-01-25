@@ -3,11 +3,7 @@ import { unsafeHTML } from '../../node_modules/lit-html/lib/unsafe-html.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopSelectStyle } from './shop-select-style.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import './shop-button.js';
-import './shop-common-styles.js';
 import './shop-image.js';
-import './shop-select.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
 

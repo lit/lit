@@ -1,8 +1,6 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
 import { shopCommonStyle } from './shop-common-style.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import './shop-common-styles.js';
 import './shop-image.js';
 import './shop-list-item.js';
 import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
@@ -65,7 +63,7 @@ class ShopList extends LitElement {
     <shop-image
         alt="${category.title}"
         src="${category.image}"
-        placeholder-img="${category.placeholder}" class="hero-image"></shop-image>
+        placeholder="${category.placeholder}" class="hero-image"></shop-image>
 
     <header>
       <h1>${category.title}</h1>

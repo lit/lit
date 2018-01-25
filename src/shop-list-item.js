@@ -1,5 +1,4 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 
 class ShopListItem extends LitElement {
   render({ item }) {

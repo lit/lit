@@ -1,21 +1,27 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
-class ShopImage extends Element {
-  static get template() {
-    return `
+class ShopImage extends LitElement {
+  render({ alt, placeholder, _src, _style }) {
+    return html`
     <style>
 
       :host {
         display: block;
         position: relative;
+      }
+
+      #placeholder {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
         overflow: hidden;
         background-size: cover;
         background-position: center;
       }
 
       img {
-        @apply --layout-fit;
         max-width: 100%;
         max-height: 100%;
         margin: 0 auto;
@@ -32,7 +38,13 @@ class ShopImage extends Element {
 
     </style>
 
-    <img id="img" alt\$="[[alt]]" on-load="_onImgLoad" on-error="_onImgError">
+    <div id="placeholder" style="${`background-image: url('${placeholder}')`}">
+      <img src="${_src}"
+          alt="${alt}"
+          style="${_style}"
+          on-load="${() => this._onImgLoad()}"
+          on-error="${() => this._onImgError()}">
+    </div>
 `;
   }
 
@@ -42,40 +54,40 @@ class ShopImage extends Element {
 
     alt: String,
 
-    src: {
-      type: String,
-      observer: '_srcChanged'
-    },
+    src: String,
 
-    placeholderImg: {
-      type: String,
-      observer: '_placeholderImgChanged'
-    }
+    placeholder: String,
+
+    _src: String,
+
+    _style: String
 
   }}
 
-  _srcChanged(src) {
-    this.$.img.removeAttribute('src');
-    this.$.img.style.transition = '';
-    this.$.img.style.opacity = 0;
-    if (src) {
-      this.$.img.src = src;
+  _propertiesChanged(props, changed, oldProps) {
+    if (changed && 'src' in changed) {
+      this._srcChanged();
+    }
+    super._propertiesChanged(props, changed, oldProps);
+  }
+
+  async _srcChanged() {
+    this._src = '';
+    this._style = 'opacity: 0';
+    await this.nextRendered;
+    if (this.src) {
+      this._src = this.src;
     }
   }
 
   _onImgLoad() {
-    this.$.img.style.transition = '0.5s opacity';
-    this.$.img.style.opacity = 1;
+    this._style = 'transition: 0.5s opacity; opacity: 1';
   }
 
   _onImgError() {
     if (!this.placeholderImg) {
-      this.$.img.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#CCC" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>');
+      this._src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#CCC" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>');
     }
-  }
-
-  _placeholderImgChanged(placeholder) {
-    this.style.backgroundImage = 'url(\'' + placeholder + '\')';
   }
 }
 

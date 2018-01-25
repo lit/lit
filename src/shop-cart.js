@@ -1,16 +1,20 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import './shop-button.js';
-import './shop-common-styles.js';
-import './shop-form-styles.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
+import { shopButtonStyle } from './shop-button-style.js';
+import { shopCommonStyle } from './shop-common-style.js';
+import { shopFormStyle } from './shop-form-style.js';
 
 import { store } from './redux/index.js';
 import { totalSelector } from './redux/reducers/cart.js';
 import { updateMeta } from './redux/actions/meta.js';
 
-class ShopCart extends Element {
-  static get template() {
-    return `
-    <style include="shop-common-styles shop-button shop-form-styles">
+class ShopCart extends LitElement {
+  render({ cart, total }) {
+    return html`
+    ${ shopButtonStyle }
+    ${ shopCommonStyle }
+    ${ shopFormStyle }
+    <style>
 
       .list {
         margin: 40px 0;
@@ -37,27 +41,25 @@ class ShopCart extends Element {
     </style>
 
     <div class="main-frame">
-      <div class="subsection" visible$="[[!_hasItems]]">
-        <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
-      </div>
-      <div class="subsection" visible$="[[_hasItems]]">
-        <header>
-          <h1>Your Cart</h1>
-          <span>([[_getPluralizedQuantity(cart.length)]])</span>
-        </header>
-        <div class="list">
-          <dom-repeat items="[[cart]]" as="entry">
-            <template>
-              <shop-cart-item entry="[[entry]]"></shop-cart-item>
-            </template>
-          </dom-repeat>
-        </div>
-        <div class="checkout-box">
-          Total: <span class="subtotal">[[_formatTotal(total)]]</span>
-          <shop-button responsive>
-            <a href="/checkout">Checkout</a>
-          </shop-button>
-        </div>
+      <div class="subsection">
+        ${ cart.length > 0 ? html`
+            <header>
+              <h1>Your Cart</h1>
+              <span>${`(${cart.length} item${cart.length > 1 ? 's' : ''})`}</span>
+            </header>
+            <div class="list">
+              ${repeat(cart, entry => html`
+                <shop-cart-item entry="${entry}"></shop-cart-item>
+              `)}
+            </div>
+            <div class="checkout-box">
+              Total: <span class="subtotal">${isNaN(total) ? '' : '$' + total.toFixed(2)}</span>
+              <shop-button responsive>
+                <a href="/checkout">Checkout</a>
+              </shop-button>
+            </div>` : html`
+            <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>`
+        }
       </div>
     </div>
     `;
@@ -68,12 +70,7 @@ class ShopCart extends Element {
 
     total: Number,
 
-    cart: Array,
-
-    _hasItems: {
-      type: Boolean,
-      computed: '_computeHasItem(cart.length)'
-    }
+    cart: Array
 
   }}
 
@@ -86,22 +83,8 @@ class ShopCart extends Element {
 
   update() {
     const state = store.getState();
-    this.setProperties({
-      cart: state.cart ? Object.values(state.cart): [],
-      total: totalSelector(state)
-    });
-  }
-
-  _formatTotal(total) {
-    return isNaN(total) ? '' : '$' + total.toFixed(2);
-  }
-
-  _computeHasItem(cartLength) {
-    return cartLength > 0;
-  }
-
-  _getPluralizedQuantity(quantity) {
-    return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+    this.cart = state.cart ? Object.values(state.cart): [];
+    this.total = totalSelector(state);
   }
 
 }

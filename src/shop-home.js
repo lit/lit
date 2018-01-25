@@ -87,7 +87,7 @@ class ShopHome extends LitElement {
 
     ${repeat(categories, category => html`<div class="item">
         <a class="image-link" href$="/list/${category.name}">
-          <shop-image src="${category.image}" alt="${category.title}" placeholder-img="${category.placeholder}"></shop-image>
+          <shop-image src="${category.image}" alt="${category.title}" placeholder="${category.placeholder}"></shop-image>
         </a>
         <h2>${category.title}</h2>
         <shop-button>
