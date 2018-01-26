@@ -1,7 +1,7 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
-import { store } from './redux/index.js';
-import { numItemsSelector } from './redux/reducers/cart.js';
+import { store } from '../store.js';
+import { numItemsSelector } from '../reducers/cart.js';
 
 class ShopCartButton extends LitElement {
   render({ numItems }) {

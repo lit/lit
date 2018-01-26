@@ -4,14 +4,14 @@ import { shopButtonStyle } from './shop-button-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopSelectStyle } from './shop-select-style.js';
 import './shop-image.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { microTask } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store } from './redux/index.js';
-import { splitPathSelector } from './redux/reducers/location.js';
-import { currentCategorySelector, currentItemSelector } from './redux/reducers/categories.js';
-import { addCartEntry } from './redux/actions/cart.js';
-import { updateMeta } from './redux/actions/meta.js';
+import { store } from '../store.js';
+import { splitPathSelector } from '../reducers/location.js';
+import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
+import { addCartEntry } from '../actions/cart.js';
+import { updateMeta } from '../actions/meta.js';
 
 class ShopDetail extends LitElement {
   render({ failure, item }) {

@@ -1,6 +1,6 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import { flush } from '../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
-import { microTask, timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { flush } from '../../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
+import { microTask, timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
 class ShopTabsOverlay extends LitElement {
   render() {

@@ -16,8 +16,8 @@ import "./shop-cart-modal.js";
 import "./shop-snackbar.js";
 import "./shop-tabs.js";
 import "./shop-tab.js";
-import "../node_modules/@polymer/paper-icon-button/paper-icon-button.js";
-import "../node_modules/@polymer/app-layout/app-drawer/app-drawer.js";
+import "../../node_modules/@polymer/paper-icon-button/paper-icon-button.js";
+import "../../node_modules/@polymer/app-layout/app-drawer/app-drawer.js";
 
 // shop-list
 // shop-detail
@@ -28,13 +28,13 @@ import "./shop-404.js";
 import "./shop-cart-item.js";
 
 // shop-checkout
-import "../node_modules/@polymer/iron-form/iron-form.js";
-import "../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
+import "../../node_modules/@polymer/iron-form/iron-form.js";
+import "../../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
 
-import { store } from './redux/index.js';
-import { installCart } from './redux/cart.js';
-import cart from './redux/reducers/cart.js';
-import load from './redux/reducers/load.js'
+import { store } from '../store.js';
+import { installCart } from '../cart.js';
+import cart from '../reducers/cart.js';
+import load from '../reducers/load.js'
 
 store.addReducers({
   cart,
@@ -42,4 +42,4 @@ store.addReducers({
 });
 installCart(store);
 
-export { completeLoad } from './redux/actions/load.js';
+export { completeLoad } from '../actions/load.js';

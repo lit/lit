@@ -1,5 +1,5 @@
-import '../node_modules/@polymer/iron-icon/iron-icon.js';
-import '../node_modules/@polymer/iron-iconset-svg/iron-iconset-svg.js';
+import '../../node_modules/@polymer/iron-icon/iron-icon.js';
+import '../../node_modules/@polymer/iron-iconset-svg/iron-iconset-svg.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

@@ -1,11 +1,11 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { shopSelectStyle } from './shop-select-style.js';
-import '../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
+import '../../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
 import './shop-icons.js';
 import './shop-image.js';
 
-import { store } from './redux/index.js';
-import { setCartEntryQuantity, removeCartEntry } from './redux/actions/cart.js';
+import { store } from '../store.js';
+import { setCartEntryQuantity, removeCartEntry } from '../actions/cart.js';
 
 class ShopCartItem extends LitElement {
   render({ entry }) {

@@ -3,12 +3,12 @@ import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import './shop-image.js';
 import './shop-list-item.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { microTask } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { microTask } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store } from './redux/index.js';
-import { updateMeta } from './redux/actions/meta.js';
-import { currentCategorySelector } from './redux/reducers/categories.js';
+import { store } from '../store.js';
+import { updateMeta } from '../actions/meta.js';
+import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends LitElement {
   render({ category, failure }) {

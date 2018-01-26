@@ -3,8 +3,8 @@ import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';
 
-import { store } from './redux/index.js';
-import { updateMeta } from './redux/actions/meta.js';
+import { store } from '../store.js';
+import { updateMeta } from '../actions/meta.js';
 
 class ShopHome extends LitElement {
   render({ categories }) {

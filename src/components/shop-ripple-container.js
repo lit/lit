@@ -1,7 +1,7 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import { PaperRippleBehavior } from '../node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js';
-import { addListener } from '../node_modules/@polymer/polymer/lib/utils/gestures.js';
-import { mixinBehaviors } from '../node_modules/@polymer/polymer/lib/legacy/class.js';
+import { Element } from '../../node_modules/@polymer/polymer/polymer-element.js';
+import { PaperRippleBehavior } from '../../node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js';
+import { addListener } from '../../node_modules/@polymer/polymer/lib/utils/gestures.js';
+import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

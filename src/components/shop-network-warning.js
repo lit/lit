@@ -1,11 +1,11 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { shopButtonStyle } from './shop-button-style.js';
-import '../node_modules/@polymer/iron-icon/iron-icon.js';
+import '../../node_modules/@polymer/iron-icon/iron-icon.js';
 import './shop-icons.js';
 
-import { store } from './redux/index.js';
-import { fetchCategoryItems } from './redux/actions/categories.js';
-import { currentCategorySelector } from './redux/reducers/categories.js';
+import { store } from '../store.js';
+import { fetchCategoryItems } from '../actions/categories.js';
+import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopNetworkWarning extends LitElement {
   render({ offline }) {

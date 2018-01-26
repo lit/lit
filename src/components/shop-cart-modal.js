@@ -1,13 +1,13 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import '../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
-import { IronOverlayBehaviorImpl } from '../node_modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
+import { Element } from '../../node_modules/@polymer/polymer/polymer-element.js';
+import '../../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import '../../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
+import { IronOverlayBehaviorImpl } from '../../node_modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
 import './shop-button.js';
-import { mixinBehaviors } from '../node_modules/@polymer/polymer/lib/legacy/class.js';
+import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
 
-import { store } from './redux/index.js';
-import modal from './redux/reducers/modal.js';
-import { closeModal } from './redux/actions/modal.js';
+import { store } from '../store.js';
+import modal from '../reducers/modal.js';
+import { closeModal } from '../actions/modal.js';
 
 store.addReducers({
   modal

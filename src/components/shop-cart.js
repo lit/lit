@@ -4,9 +4,9 @@ import { shopButtonStyle } from './shop-button-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
 
-import { store } from './redux/index.js';
-import { totalSelector } from './redux/reducers/cart.js';
-import { updateMeta } from './redux/actions/meta.js';
+import { store } from '../store.js';
+import { totalSelector } from '../reducers/cart.js';
+import { updateMeta } from '../actions/meta.js';
 
 class ShopCart extends LitElement {
   render({ cart, total }) {

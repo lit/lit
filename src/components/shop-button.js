@@ -1,4 +1,4 @@
-import '../node_modules/@polymer/polymer/polymer-element.js';
+import '../../node_modules/@polymer/polymer/polymer-element.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

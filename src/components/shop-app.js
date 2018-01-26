@@ -1,18 +1,18 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
-import '../node_modules/@polymer/app-layout/app-header/app-header.js';
-import '../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
-import '../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
-import { scroll } from '../node_modules/@polymer/app-layout/helpers/helpers.js';
-import '../node_modules/@polymer/iron-pages/iron-pages.js';
-import '../node_modules/@polymer/iron-selector/iron-selector.js';
+import '../../node_modules/@polymer/app-layout/app-header/app-header.js';
+import '../../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
+import '../../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
+import { scroll } from '../../node_modules/@polymer/app-layout/helpers/helpers.js';
+import '../../node_modules/@polymer/iron-pages/iron-pages.js';
+import '../../node_modules/@polymer/iron-selector/iron-selector.js';
 import './shop-home.js';
-import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/render-status.js';
-import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { afterNextRender } from '../../node_modules/@polymer/polymer/lib/utils/render-status.js';
+import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
-import { store } from './redux/index.js';
-import { splitPathSelector } from './redux/reducers/location.js';
+import { store } from '../store.js';
+import { splitPathSelector } from '../reducers/location.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');

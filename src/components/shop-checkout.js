@@ -6,17 +6,17 @@ import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
 import { shopInputStyle } from'./shop-input-style.js';
 import { shopSelectStyle } from './shop-select-style.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
-import { store } from './redux/index.js';
-import { totalSelector } from './redux/reducers/cart.js';
-import { pushState } from './redux/actions/location.js';
-import { updateCheckoutState } from './redux/actions/checkout.js';
-import { clearCart } from './redux/actions/cart.js';
-import { updateMeta } from './redux/actions/meta.js';
-import { announceLabel } from './redux/actions/announcer.js';
-import checkout from './redux/reducers/checkout.js';
+import { store } from '../store.js';
+import { totalSelector } from '../reducers/cart.js';
+import { pushState } from '../actions/location.js';
+import { updateCheckoutState } from '../actions/checkout.js';
+import { clearCart } from '../actions/cart.js';
+import { updateMeta } from '../actions/meta.js';
+import { announceLabel } from '../actions/announcer.js';
+import checkout from '../reducers/checkout.js';
 
 store.addReducers({
   checkout
