@@ -12,12 +12,25 @@ import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js'
 import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
 import { store } from '../store.js';
-import { splitPathSelector } from '../reducers/location.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
+import location, { splitPathSelector } from '../reducers/location.js';
+import network from '../reducers/network.js';
+import { installRouter } from '../../node_modules/redux-helpers/router.js';
+import { installNetwork } from '../network.js';
+import { updateLocation } from '../actions/location.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
 
-class ShopApp extends LitElement {
+store.addReducers({
+  location,
+  network
+});
+
+installRouter(() => store.dispatch(updateLocation(window.decodeURIComponent(window.location.pathname))));
+installNetwork(store);
+
+class ShopApp extends connect(store)(LitElement) {
   render({ categories, categoryName, drawerOpened, modalOpened, page, _a11yLabel, _loadComplete, _smallScreen }) {
     return html`
     <style>
@@ -298,14 +311,6 @@ class ShopApp extends LitElement {
 
     _loadComplete: Boolean
   }}
-
-  constructor() {
-    super();
-    window.performance && performance.mark && performance.mark('shop-app.created');
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

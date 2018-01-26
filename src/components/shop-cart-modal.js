@@ -6,6 +6,7 @@ import './shop-button.js';
 import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import modal from '../reducers/modal.js';
 import { closeModal } from '../actions/modal.js';
 
@@ -13,8 +14,8 @@ store.addReducers({
   modal
 });
 
-class ShopCartModal extends mixinBehaviors(
-  [IronOverlayBehaviorImpl], Element) {
+class ShopCartModal extends connect(store)(mixinBehaviors(
+  [IronOverlayBehaviorImpl], Element)) {
   static get template() {
     return `
     <style include="shop-button">
@@ -111,13 +112,6 @@ class ShopCartModal extends mixinBehaviors(
       value: true
     }
   }}
-
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

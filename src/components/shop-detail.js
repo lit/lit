@@ -8,12 +8,13 @@ import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounc
 import { microTask } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { splitPathSelector } from '../reducers/location.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { addCartEntry } from '../actions/cart.js';
 import { updateMeta } from '../actions/meta.js';
 
-class ShopDetail extends LitElement {
+class ShopDetail extends connect(store)(LitElement) {
   render({ failure, item }) {
     return html`
     ${ shopButtonStyle }
@@ -200,13 +201,6 @@ class ShopDetail extends LitElement {
   static get observers() { return [
     '_itemChanged(item, visible)'
   ]}
-
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

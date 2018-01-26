@@ -1,9 +1,10 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { numItemsSelector } from '../reducers/cart.js';
 
-class ShopCartButton extends LitElement {
+class ShopCartButton extends connect(store)(LitElement) {
   render({ numItems }) {
     return html`
     <style>
@@ -49,13 +50,6 @@ class ShopCartButton extends LitElement {
   static get properties() { return {
     numItems: Number
   }}
-
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

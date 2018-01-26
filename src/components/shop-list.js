@@ -7,10 +7,11 @@ import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounc
 import { microTask } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { updateMeta } from '../actions/meta.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
-class ShopList extends LitElement {
+class ShopList extends connect(store)(LitElement) {
   render({ category, failure }) {
     return html`
     ${ shopCommonStyle }
@@ -94,13 +95,6 @@ class ShopList extends LitElement {
     failure: Boolean
 
   }}
-  
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

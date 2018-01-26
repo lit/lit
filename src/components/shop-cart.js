@@ -5,10 +5,11 @@ import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
 import { updateMeta } from '../actions/meta.js';
 
-class ShopCart extends LitElement {
+class ShopCart extends connect(store)(LitElement) {
   render({ cart, total }) {
     return html`
     ${ shopButtonStyle }
@@ -73,13 +74,6 @@ class ShopCart extends LitElement {
     cart: Array
 
   }}
-
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

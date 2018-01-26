@@ -4,10 +4,11 @@ import '../../node_modules/@polymer/iron-icon/iron-icon.js';
 import './shop-icons.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { fetchCategoryItems } from '../actions/categories.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
-class ShopNetworkWarning extends LitElement {
+class ShopNetworkWarning extends connect(store)(LitElement) {
   render({ offline }) {
     return html`
     ${ shopButtonStyle }
@@ -60,13 +61,6 @@ class ShopNetworkWarning extends LitElement {
   static get properties() { return {
     offline: Boolean
   }}
-  
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

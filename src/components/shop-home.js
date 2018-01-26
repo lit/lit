@@ -4,9 +4,10 @@ import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { updateMeta } from '../actions/meta.js';
 
-class ShopHome extends LitElement {
+class ShopHome extends connect(store)(LitElement) {
   render({ categories }) {
     return html`
     ${ shopButtonStyle }
@@ -106,13 +107,6 @@ class ShopHome extends LitElement {
     }
 
   }}
-
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();

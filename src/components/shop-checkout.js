@@ -10,6 +10,7 @@ import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounc
 import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from '../store.js';
+import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
 import { pushState } from '../actions/location.js';
 import { updateCheckoutState } from '../actions/checkout.js';
@@ -22,7 +23,7 @@ store.addReducers({
   checkout
 });
 
-class ShopCheckout extends LitElement {
+class ShopCheckout extends connect(store)(LitElement) {
   render({ cart, response, state, total, waiting }) {
     return html`
     ${ shopButtonStyle }
@@ -468,13 +469,6 @@ class ShopCheckout extends LitElement {
     }
 
   }}
-
-  constructor() {
-    super();
-
-    store.subscribe(() => this.update());
-    this.update();
-  }
 
   update() {
     const state = store.getState();
