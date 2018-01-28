@@ -36,13 +36,13 @@ suite('until', () => {
         html
         `<div>${until(deferred.promise, html`<span>loading...</span>`)}</div>`,
         container);
-    assert.equal(container.innerHTML, '<div><span>loading...</span></div>');
-    deferred.resolve('foo');
-            return deferred.promise
-                .then(() => new Promise((r) => setTimeout(() => r())))
-                .then(() => {
-                  assert.equal(container.innerHTML, '<div>foo</div>');
-                });
+        assert.equal(container.innerHTML, '<div><span>loading...</span></div>');
+        deferred.resolve('foo');
+        return deferred.promise
+            .then(() => new Promise((r) => setTimeout(() => r())))
+            .then(() => {
+              assert.equal(container.innerHTML, '<div>foo</div>');
+            });
   });
 
   test('renders new Promise over existing Promise', () => {

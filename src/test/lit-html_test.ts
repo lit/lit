@@ -221,39 +221,40 @@ suite('lit-html', () => {
       });
 
       const testSkipForTemplatePolyfill =
-          ((HTMLTemplateElement as any).decorate != null) ?
-          test.skip :
-          test;
+          ((HTMLTemplateElement as any).decorate != null) ? test.skip : test;
 
-      testSkipForTemplatePolyfill('renders nested templates within table content', () => {
-        let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
-        render(table, container);
-        assert.equal(container.innerHTML, '<table><tr><td></td></tr></table>');
+      testSkipForTemplatePolyfill(
+          'renders nested templates within table content', () => {
+            let table =
+                html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
+            render(table, container);
+            assert.equal(
+                container.innerHTML, '<table><tr><td></td></tr></table>');
 
-        table = html`<tbody>${html`<tr></tr>`}</tbody>`;
-        render(table, container);
-        assert.equal(container.innerHTML, '<tbody><tr></tr></tbody>');
+            table = html`<tbody>${html`<tr></tr>`}</tbody>`;
+            render(table, container);
+            assert.equal(container.innerHTML, '<tbody><tr></tr></tbody>');
 
-        table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
-        render(table, container);
-        assert.equal(
-            container.innerHTML,
-            '<table><tbody><tr></tr><tr></tr></tbody></table>');
+            table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
+            render(table, container);
+            assert.equal(
+                container.innerHTML,
+                '<table><tbody><tr></tr><tr></tr></tbody></table>');
 
-        table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
-        render(table, container);
-        assert.equal(
-            container.innerHTML,
-            '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
+            table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
+            render(table, container);
+            assert.equal(
+                container.innerHTML,
+                '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
 
-        table = html`<table><tr><td></td>${html`<td></td>`}${
-                                                             html`<td></td>`
-                                                           }</tr></table>`;
-        render(table, container);
-        assert.equal(
-            container.innerHTML,
-            '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
-      });
+            table = html`<table><tr><td></td>${html`<td></td>`}${
+                                                                 html`<td></td>`
+                                                               }</tr></table>`;
+            render(table, container);
+            assert.equal(
+                container.innerHTML,
+                '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
+          });
 
       const testSkipSafari10_0 =
           (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1) ?

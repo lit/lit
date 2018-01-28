@@ -121,7 +121,8 @@ suite('lit-extended', () => {
       div.click();
       assert.equal(thisValue, div);
 
-      // MouseEvent is not a function in IE, so the event cannot be an instance of it
+      // MouseEvent is not a function in IE, so the event cannot be an instance
+      // of it
       if (typeof MouseEvent === 'function') {
         assert.instanceOf(event!, MouseEvent);
       } else {

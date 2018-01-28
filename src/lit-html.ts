@@ -353,10 +353,11 @@ export const getValue = (part: Part, value: any) => {
 
 export type DirectiveFn<P extends Part = Part> = (part: P) => any;
 
-export const directive = <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
-  (f as any).__litDirective = true;
-  return f;
-};
+export const directive =
+    <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
+      (f as any).__litDirective = true;
+      return f;
+    };
 
 const isDirective = (o: any) =>
     typeof o === 'function' && o.__litDirective === true;
