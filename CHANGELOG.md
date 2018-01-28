@@ -10,7 +10,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+* Refactored how template tags and `render()` are implemented so that all
+  specialization of template syntax is done in tags, not `render()`, allowing
+  for the mixining of templates of different syntaxes, and for hooks in 
+  `render()` to change templates before they're initially processed.
+* Added ShadyCSS support in lib/shady-render.js. It's exported render function
+  will pass templates to ShadyCSS's `prepareTemplate()` function to process style
+  tags and elements in the template for emulate CSS scoping.
 
 ## [0.8.0] - 2018-01-12
 
