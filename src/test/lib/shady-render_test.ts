@@ -31,12 +31,41 @@ suite('shady-render', () => {
         }
       </style>
       <div>Testing...</div>
-    `, container, 'x-foo');
+    `, container, 'scope-1');
+
     assert.equal(container.children.length, 1);
     const div = container.firstElementChild!;
-    assert.equal(div.getAttribute('class'), `style-scope x-foo`);
-    const style = document.querySelector('style[scope="x-foo"]');
+    assert.equal(div.getAttribute('class'), `style-scope scope-1`);
+    const style = document.querySelector('style[scope="scope-1"]');
     assert.isNotNull(style);
+  });
+
+  test('prepares nested templates with ShadyCSS', () => {
+    const container = document.createElement('div');
+    render(html`
+      <style>
+        div {
+          color: red;
+        }
+      </style>
+      <div>Testing...</div>
+      ${html`
+        <style>
+          span {
+            color: blue;
+          }
+        </style>
+        <span>Testing...</span>
+      `}
+    `, container, 'scope-2');
+
+    assert.equal(container.children.length, 2);
+    const div = container.firstElementChild!;
+    assert.equal(div.getAttribute('class'), `style-scope scope-2`);
+    const span = div.nextElementSibling!;
+    assert.equal(span.getAttribute('class'), `style-scope scope-2`);
+    const styles = document.querySelectorAll('style[scope="scope-2"]');
+    assert.equal(styles.length, 2);
   });
 
 });
