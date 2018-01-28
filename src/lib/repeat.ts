@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart, removeNodes, reparentNodes, Part} from '../lit-html.js';
+import {directive, DirectiveFn, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -81,11 +81,7 @@ export function repeat<T>(
         // Existing part in the wrong position
         const end = itemPart.endNode.nextSibling!;
         if (currentMarker !== end) {
-          reparentNodes(
-              container,
-              itemPart.startNode,
-              end,
-              currentMarker);
+          reparentNodes(container, itemPart.startNode, end, currentMarker);
         }
       } else {
         // else part is in the correct position already
