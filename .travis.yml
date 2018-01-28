@@ -11,7 +11,7 @@ cache:
 before_script:
 - npm run build
 script:
-- xvfb-run wct --npm
+- xvfb-run wct --npm --configFile wct-travis.conf.json
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'windows 10/microsoftedge@15' -s 'macos 10.12/safari@10' --npm; fi
 env:
   global:
