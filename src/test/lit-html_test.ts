@@ -343,6 +343,13 @@ suite('lit-html', () => {
         assert.equal(container.innerHTML, '<div foo="bar"></div>');
       });
 
+      test('renders boolean attributes', () => {
+        render(html`<div foo=${true}></div>`, container);
+        assert.equal(container.innerHTML, '<div foo="foo"></div>');
+        render(html`<div foo=${false}></div>`, container);
+        assert.equal(container.innerHTML, '<div></div>');
+      });
+
       test('renders to multiple attribute expressions', () => {
         render(
             html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
