@@ -72,6 +72,10 @@ export class TemplateResult {
   }
 }
 
+export interface RenderContainer extends Element {
+  __templateInstance?: TemplateInstance
+}
+
 /**
  * Renders a template to a container.
  *
@@ -80,20 +84,20 @@ export class TemplateResult {
  */
 export function render(
     result: TemplateResult,
-    container: Element|DocumentFragment,
+    container: RenderContainer,
     partCallback: PartCallback = defaultPartCallback) {
-  let instance = (container as any).__templateInstance as any;
+  let instance = container.__templateInstance;
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === result.template &&
-      instance._partCallback === partCallback) {
+    instance._partCallback === partCallback) {
     instance.update(result.values);
     return;
   }
 
   // First render, create a new TemplateInstance and append it
   instance = new TemplateInstance(result.template, partCallback);
-  (container as any).__templateInstance = instance;
+  container.__templateInstance = instance;
 
   const fragment = instance._clone();
   instance.update(result.values);
