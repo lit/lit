@@ -66,6 +66,11 @@ export const extendedPartCallback =
               return new AttributePart(
                   instance, node as Element, name, templatePart.strings!);
             }
+            if (templatePart.name!.endsWith('?')) {
+              const name = templatePart.name!.slice(0, -1);
+              return new BooleanAttributePart(
+                  instance, node as Element, name, templatePart.strings!);
+            }
             return new PropertyPart(
                 instance,
                 node as Element,
@@ -74,6 +79,30 @@ export const extendedPartCallback =
           }
           return defaultPartCallback(instance, templatePart, node);
         };
+
+/**
+ * Implements a boolean attribute, roughly as defined in the HTML
+ * specification.
+ * 
+ * If the value is truthy, then the attribute is present with a value of
+ * ''. If the value is falsey, the attribute is removed.
+ */
+export class BooleanAttributePart extends AttributePart {
+  setValue(values: any[], startIndex: number): void {
+    const s = this.strings;
+    if (s.length === 2 && s[0] === '' && s[1] === '') {
+      const value = getValue(this, values[startIndex]);
+      if (value) {
+        this.element.setAttribute(this.name, '');
+      } else {
+        this.element.removeAttribute(this.name);
+      }
+    } else {
+      throw new Error(
+          'boolean attributes can only contain a single expression');
+    }
+  }
+}
 
 export class PropertyPart extends AttributePart {
   setValue(values: any[], startIndex: number): void {
