@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
+import {directive, DirectiveFn, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -40,10 +40,6 @@ export function repeat<T>(
   }
 
   return directive((part: NodePart): void => {
-    if (!(part instanceof NodePart)) {
-      throw new Error('repeat can only be used on NodeParts');
-    }
-
     let keyMap = keyMapCache.get(part);
     if (keyMap === undefined) {
       keyMap = new Map();
