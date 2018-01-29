@@ -353,7 +353,7 @@ export const getValue = (part: Part, value: any) => {
 
 export interface DirectiveFn<P=Part> {
   (part: P): void;
-  __litDirective?: boolean;
+  __litDirective?: true;
 }
 
 export const directive = <P=Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
