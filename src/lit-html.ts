@@ -12,64 +12,132 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * TypeScript has a problem with precompiling templates literals
- * https://github.com/Microsoft/TypeScript/issues/17956
- *
- * TODO(justinfagnani): Run tests compiled to ES5 with both Babel and
- * TypeScript to verify correctness.
- */
-const envCachesTemplates =
-    ((t: any) => t() === t())(() => ((s: TemplateStringsArray) => s) ``);
-
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
-const templates = new Map<TemplateStringsArray|string, Template>();
-const svgTemplates = new Map<TemplateStringsArray|string, Template>();
+export const templateCaches =
+    new Map<string, Map<TemplateStringsArray, Template>>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-    litTag(strings, values, templates, false);
+    new TemplateResult(strings, values, 'html');
 
 /**
  * Interprets a template literal as an SVG template that can efficiently
  * render to and update a container.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-    litTag(strings, values, svgTemplates, true);
-
-function litTag(
-    strings: TemplateStringsArray,
-    values: any[],
-    templates: Map<TemplateStringsArray|string, Template>,
-    isSvg: boolean): TemplateResult {
-  const key = envCachesTemplates ?
-      strings :
-      strings.join('{{--uniqueness-workaround--}}');
-  let template = templates.get(key);
-  if (template === undefined) {
-    template = new Template(strings, isSvg);
-    templates.set(key, template);
-  }
-  return new TemplateResult(template, values);
-}
+    new SVGTemplateResult(strings, values, 'svg');
 
 /**
  * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
  */
 export class TemplateResult {
-  template: Template;
+  strings: TemplateStringsArray;
   values: any[];
+  type: string;
+  partCallback: PartCallback;
 
-  constructor(template: Template, values: any[]) {
-    this.template = template;
+  constructor(
+      strings: TemplateStringsArray, values: any[], type: string,
+      partCallback: PartCallback = defaultPartCallback) {
+    this.strings = strings;
     this.values = values;
+    this.type = type;
+    this.partCallback = partCallback;
   }
+
+  /**
+   * Returns a string of HTML used to create a <template> element.
+   */
+  getHTML(): string {
+    const l = this.strings.length - 1;
+    let html = '';
+    let isTextBinding = true;
+    for (let i = 0; i < l; i++) {
+      const s = this.strings[i];
+      html += s;
+      // We're in a text position if the previous string closed its tags.
+      // If it doesn't have any tags, then we use the previous text position
+      // state.
+      const closing = findTagClose(s);
+      isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
+      html += isTextBinding ? nodeMarker : marker;
+    }
+    html += this.strings[l];
+    return html;
+  }
+
+  getTemplateElement(): HTMLTemplateElement {
+    const template = document.createElement('template');
+    template.innerHTML = this.getHTML();
+    return template;
+  }
+}
+
+/**
+ * A TemplateResult for SVG fragments.
+ *
+ * This class wraps HTMl in an <svg> tag in order to parse its contents in the
+ * SVG namespace, then modifies the template to remove the <svg> tag so that
+ * clones only container the original fragment.
+ */
+export class SVGTemplateResult extends TemplateResult {
+  getHTML(): string {
+    return `<svg>${super.getHTML()}</svg>`;
+  }
+  getTemplateElement(): HTMLTemplateElement {
+    const template = super.getTemplateElement();
+    const content = template.content;
+    const svgElement = content.firstChild!;
+    content.removeChild(svgElement);
+    reparentNodes(content, svgElement.firstChild);
+    return template;
+  }
+}
+
+/**
+ * A function type that creates a Template from a TemplateResult.
+ *
+ * This is a hook into the template-creation process for rendering that
+ * requires some modification of templates before their used, like ShadyCSS,
+ * which must add classes to elements and remove styles.
+ *
+ * Templates should be cached as aggressively as possible, so that many
+ * TemplateResults produced from the same expression only do the work of
+ * creating the Template the first time.
+ *
+ * Templates are usually cached by TemplateResult.strings and
+ * TemplateResult.type, but may be cached by other keys if this function
+ * modifies the template.
+ *
+ * Note that currently TemplateFactories must not add, remove, or reorder
+ * expressions, because there is no way to describe such a modification
+ * to render() so that values are interpolated to the correct place in the
+ * template instances.
+ */
+export type TemplateFactory = (result: TemplateResult) => Template;
+
+/**
+ * The default TemplateFactory which caches Templates keyed on
+ * result.type and result.strings.
+ */
+export function defaultTemplateFactory(result: TemplateResult) {
+  let templateCache = templateCaches.get(result.type);
+  if (templateCache === undefined) {
+    templateCache = new Map<TemplateStringsArray, Template>();
+    templateCaches.set(result.type, templateCache);
+  }
+  let template = templateCache.get(result.strings);
+  if (template === undefined) {
+    template = new Template(result, result.getTemplateElement());
+    templateCache.set(result.strings, template);
+  }
+  return template;
 }
 
 /**
@@ -77,22 +145,32 @@ export class TemplateResult {
  *
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
+ *
+ * @param result a TemplateResult created by evaluating a template tag like
+ *     `html` or `svg.
+ * @param container A DOM parent to render to. The entire contents are either
+ *     replaced, or efficiently updated if the same result type was previous
+ *     rendered there.
+ * @param templateFactory a function to create a Template or retreive one from
+ *     cache.
  */
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    partCallback: PartCallback = defaultPartCallback) {
+    templateFactory: TemplateFactory = defaultTemplateFactory) {
+  const template = templateFactory(result);
   let instance = (container as any).__templateInstance as any;
 
   // Repeat render, just call update()
-  if (instance !== undefined && instance.template === result.template &&
-      instance._partCallback === partCallback) {
+  if (instance !== undefined && instance.template === template &&
+      instance._partCallback === result.partCallback) {
     instance.update(result.values);
     return;
   }
 
   // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(result.template, partCallback);
+  instance =
+      new TemplateInstance(template, result.partCallback, templateFactory);
   (container as any).__templateInstance = instance;
 
   const fragment = instance._clone();
@@ -103,11 +181,17 @@ export function render(
 }
 
 /**
- * An expression marker with embedded unique key to avoid
- * https://github.com/PolymerLabs/lit-html/issues/62
+ * An expression marker with embedded unique key to avoid collision with
+ * possible text in templates.
  */
 const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
+
+/**
+ * An expression marker used text-posisitions, not attribute positions,
+ * in template.
+ */
 const nodeMarker = `<!--${marker}-->`;
+
 const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 
 /**
@@ -174,22 +258,16 @@ export class TemplatePart {
   }
 }
 
-
+/**
+ * An updateable Template that tracks the location of dynamic parts.
+ */
 export class Template {
   parts: TemplatePart[] = [];
   element: HTMLTemplateElement;
 
-  constructor(strings: TemplateStringsArray, svg: boolean = false) {
-    const element = this.element = document.createElement('template');
-    element.innerHTML = this._getHtml(strings, svg);
-    const content = element.content;
-
-    if (svg) {
-      const svgElement = content.firstChild!;
-      content.removeChild(svgElement);
-      reparentNodes(content, svgElement.firstChild);
-    }
-
+  constructor(result: TemplateResult, element: HTMLTemplateElement) {
+    this.element = element;
+    const content = this.element.content;
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         content,
@@ -230,7 +308,7 @@ export class Template {
         while (count-- > 0) {
           // Get the template literal section leading up to the first
           // expression in this attribute attribute
-          const stringForPart = strings[partIndex];
+          const stringForPart = result.strings[partIndex];
           // Find the attribute name
           const attributeNameInPart =
               lastAttributeNameRegex.exec(stringForPart)![1];
@@ -310,27 +388,6 @@ export class Template {
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
     }
-  }
-
-  /**
-   * Returns a string of HTML used to create a <template> element.
-   */
-  private _getHtml(strings: TemplateStringsArray, svg?: boolean): string {
-    const l = strings.length - 1;
-    let html = '';
-    let isTextBinding = true;
-    for (let i = 0; i < l; i++) {
-      const s = strings[i];
-      html += s;
-      // We're in a text position if the previous string closed its tags.
-      // If it doesn't have any tags, then we use the previous text position
-      // state.
-      const closing = findTagClose(s);
-      isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
-      html += isTextBinding ? nodeMarker : marker;
-    }
-    html += strings[l];
-    return svg ? `<svg>${html}</svg>` : html;
   }
 }
 
@@ -509,13 +566,13 @@ export class NodePart implements SinglePart {
   }
 
   private _setTemplateResult(value: TemplateResult): void {
+    const template = this.instance._getTemplate(value);
     let instance: TemplateInstance;
-    if (this._previousValue &&
-        this._previousValue.template === value.template) {
+    if (this._previousValue && this._previousValue.template === template) {
       instance = this._previousValue;
     } else {
-      instance =
-          new TemplateInstance(value.template, this.instance._partCallback);
+      instance = new TemplateInstance(
+          template, this.instance._partCallback, this.instance._getTemplate);
       this._setNode(instance._clone());
       this._previousValue = instance;
     }
@@ -619,12 +676,15 @@ export const defaultPartCallback =
 export class TemplateInstance {
   _parts: Part[] = [];
   _partCallback: PartCallback;
+  _getTemplate: TemplateFactory;
   template: Template;
 
   constructor(
-      template: Template, partCallback: PartCallback = defaultPartCallback) {
+      template: Template, partCallback: PartCallback,
+      getTemplate: TemplateFactory) {
     this.template = template;
     this._partCallback = partCallback;
+    this._getTemplate = getTemplate;
   }
 
   update(values: any[]) {

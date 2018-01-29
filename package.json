@@ -31,6 +31,8 @@
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^2.2.46",
+    "@webcomponents/shadycss": "^1.1.0",
+    "@webcomponents/shadydom": "^1.0.11",
     "@webcomponents/template": "^1.2.2",
     "babel-polyfill": "^6.26.0",
     "chai": "^4.1.2",
