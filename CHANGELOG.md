@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Added ShadyCSS support in lib/shady-render.js. It's exported render function
   will pass templates to ShadyCSS's `prepareTemplate()` function to process style
   tags and elements in the template for emulate CSS scoping.
+* lit-extended: Attribute bindings with a `?` suffix on the name now act as boolean
+  attributes. The attribute will be removed for falsey values and set to `''` for
+  truthy values, matching the HTML specification behavior for boolean attributes.
 
 ## [0.8.0] - 2018-01-12
 

@@ -51,6 +51,35 @@ suite('lit-extended', () => {
       assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
     });
 
+    test('renders a boolean attribute as an empty string when truthy', () => {
+      let t = (value: any) => html`<div foo?="${value}"></div>`;
+
+      render(t(true), container);
+      assert.equal(container.innerHTML, '<div foo=""></div>');
+
+      render(t('a'), container);
+      assert.equal(container.innerHTML, '<div foo=""></div>');
+
+      render(t(1), container);
+      assert.equal(container.innerHTML, '<div foo=""></div>');
+    });
+
+    test('removes a boolean attribute when falsey', () => {
+      let t = (value: any) => html`<div foo?="${value}"></div>`;
+
+      render(t(false), container);
+      assert.equal(container.innerHTML, '<div></div>');
+
+      render(t(0), container);
+      assert.equal(container.innerHTML, '<div></div>');
+
+      render(t(null), container);
+      assert.equal(container.innerHTML, '<div></div>');
+
+      render(t(undefined), container);
+      assert.equal(container.innerHTML, '<div></div>');
+    });
+
     test('reuses an existing ExtendedTemplateInstance when available', () => {
       const t = (content: any) => html`<div>${content}</div>`;
 
