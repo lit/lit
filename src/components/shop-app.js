@@ -31,7 +31,7 @@ installRouter(() => store.dispatch(updateLocation(window.decodeURIComponent(wind
 installNetwork(store);
 
 class ShopApp extends connect(store)(LitElement) {
-  render({ categories, categoryName, drawerOpened, modalOpened, page, _a11yLabel, _loadComplete, _smallScreen }) {
+  render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen }) {
     return html`
     <style>
 
@@ -232,7 +232,7 @@ class ShopApp extends connect(store)(LitElement) {
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && _loadComplete ?
+      ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && loadComplete ?
         html`
           <div id="tabContainer" sticky>
             <shop-tabs selected="${categoryName}" attr-for-selected="name">
@@ -248,7 +248,7 @@ class ShopApp extends connect(store)(LitElement) {
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    ${ _smallScreen && _loadComplete ?
+    ${ _smallScreen && loadComplete ?
       html`
         <app-drawer opened="${drawerOpened}" tabindex="0" on-opened-changed="${e => this.drawerOpened = e.target.opened}">
           <iron-selector role="navigation" class="drawer-list" selected="${categoryName}" attr-for-selected="name">
@@ -283,8 +283,8 @@ class ShopApp extends connect(store)(LitElement) {
     <!-- a11y announcer -->
     <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
 
-    <shop-cart-modal></shop-cart-modal>
     ${ modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
+    ${ loadComplete ? html`<shop-snackbar>${offline ? 'You are offline' : 'You are online'}</shop-snackbar>` : null }
     `;
   }
 
@@ -309,8 +309,29 @@ class ShopApp extends connect(store)(LitElement) {
 
     _smallScreen: Boolean,
 
-    _loadComplete: Boolean
+    loadComplete: Boolean
   }}
+
+  _propertiesChanged(props, changed, oldProps) {
+    if (changed) {
+      if ('categoryName' in changed) {
+        this._categoryNameChanged(props.categoryName, oldProps.categoryName);
+      }
+      if ('page' in changed) {
+        this._pageChanged(props.page, oldProps.page);
+      }
+      if ('offline' in changed) {
+        this._offlineChanged(props.offline, oldProps.offline);
+      }
+      if ('meta' in changed) {
+        this._metaChanged(props.meta, oldProps.meta);
+      }
+      if ('loadComplete' in changed) {
+        this._loadCompleteChanged(props.loadComplete, oldProps.loadComplete);
+      }
+    }
+    super._propertiesChanged(props, changed, oldProps);
+  }
 
   update() {
     const state = store.getState();
@@ -325,26 +346,14 @@ class ShopApp extends connect(store)(LitElement) {
       page = '404';
     }
 
-    if (this.page !== page) {
-      const oldPage = this.page;
-      this._pageChanged(this.page = page, oldPage);
-    }
-
-    if (this.offline === state.network.online) {
-      const oldOffline = this.offline;
-      this._offlineChanged(this.offline = !state.network.online, oldOffline);
-    }
-
-    if (this.meta !== state.meta) {
-      const oldMeta = this.meta;
-      this._metaChanged(this.meta = state.meta, oldMeta);
-    }
-
     this.categories = Object.values(state.categories);
     this.categoryName = categoryName;
+    this.loadComplete = state.load && state.load.complete;
+    this.meta = state.meta;
     this.modalOpened = state.modal;
+    this.offline = !state.network.online;
+    this.page = page;
     this._a11yLabel = state.announcer.label;
-    this._loadComplete = state.load && state.load.complete;
   }
 
   ready() {
@@ -365,65 +374,53 @@ class ShopApp extends connect(store)(LitElement) {
     this._smallScreen = mq.matches;
   }
 
+  _categoryNameChanged(categoryName, oldCategoryName) {
+    if (categoryName !== oldCategoryName) {
+      // Reset the list view scrollTop if the category changed.
+      this._listScrollTop = 0;
+    }
+    scroll({ top: 0, behavior: 'silent' });
+  }
+
   _pageChanged(page, oldPage) {
-    // TODO: With new redux model, _listScrollTop isn't getting set before page change.
-    // if (page === 'list') {
-    //   this._listScrollTop = window.pageYOffset;
-    // }
+    if (oldPage === 'list') {
+      this._listScrollTop = window.pageYOffset;
+    }
+
+    // Scroll to the top of the page when navigating to a non-list page. For list view,
+    // scroll to the last saved position only if the category has not changed (see
+    // _categoryNameChanged).
+    let scrollTop = 0;
+    if (page === 'list') {
+      scrollTop = this._listScrollTop;
+    }
+    // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
+    // effects during the scroll.
+    scroll({ top: scrollTop, behavior: 'silent' });
 
     // Close the drawer - in case the *route* change came from a link in the drawer.
     this.drawerOpened = false;
 
-    // if (page != null) {
-    //   // home route is eagerly loaded
-    //   if (page == 'home') {
-    //     this._pageLoaded(Boolean(oldPage));
-    //   // other routes are lazy loaded
-    //   } else {
-    //     // When a load failed, it triggered a 404 which means we need to
-    //     // eagerly load the 404 page definition
-    //     let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-    //     switch (page) {
-    //       case 'list':
-    //         import('./shop-list.js').then(cb);
-    //         break;
-    //       case 'detail':
-    //         import('./shop-detail.js').then(cb);
-    //         break;
-    //       case 'cart':
-    //         import('./shop-cart.js').then(cb);
-    //         break;
-    //       case 'checkout':
-    //         import('./shop-checkout.js').then(cb);
-    //         break;
-    //     }
-    //   }
-    // }
-  }
-
-  _pageLoaded(shouldResetLayout) {
-    this._ensureLazyLoaded();
-    if (shouldResetLayout) {
+    if (oldPage) {
       // The size of the header depends on the page (e.g. on some pages the tabs
       // do not appear), so reset the header's layout only when switching pages.
       timeOut.run(() => {
-        this.$.header.resetLayout();
+        const header = this.shadowRoot.querySelector('#header');
+        header.resetLayout();
       }, 1);
     }
   }
 
-  _ensureLazyLoaded() {
-    // load lazy resources after render and set `_loadComplete` when done.
-    if (!this._loadComplete) {
-      afterNextRender(this, () => {
-        import('./lazy-resources.js').then(() => {
-          // Register service worker if supported.
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-          }
-          this._loadComplete = true;
-        });
-      });
+  _loadCompleteChanged(loadComplete, oldLoadComplete) {
+    if (loadComplete) {
+      // Register service worker if supported.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js', {scope: '/'});
+      }
+      timeOut.run(() => {
+        const header = this.shadowRoot.querySelector('#header');
+        header.resetLayout();
+      }, 1);
     }
   }
 
@@ -431,13 +428,8 @@ class ShopApp extends connect(store)(LitElement) {
     // Show the snackbar if the user is offline when starting a new session
     // or if the network status changed.
     if (offline || (!offline && oldOffline === true)) {
-      if (!this._networkSnackbar) {
-        this._networkSnackbar = document.createElement('shop-snackbar');
-        this.root.appendChild(this._networkSnackbar);
-      }
-      this._networkSnackbar.innerHTML = offline ?
-          'You are offline' : 'You are online';
-      this._networkSnackbar.open();
+      const networkSnackbar = this.shadowRoot.querySelector('shop-snackbar');
+      networkSnackbar.open();
     }
   }
 
@@ -450,27 +442,6 @@ class ShopApp extends connect(store)(LitElement) {
     }
     element.setAttribute('content', content || '');
   }
-
-  // Elements in the app can notify section changes.
-  // Response by a11y announcing the section and syncronizing the category.
-  // _onChangeSection(event) {
-  //   let detail = event.detail;
-
-    // TODO: With new redux model, _listScrollTop isn't getting set before page change.
-    // // Scroll to the top of the page when navigating to a non-list page. For list view,
-    // // scroll to the last saved position only if the category has not changed.
-    // let scrollTop = 0;
-    // if (this.page === 'list') {
-    //   if (this.categoryName === detail.category) {
-    //     scrollTop = this._listScrollTop;
-    //   } else {
-    //     // Reset the list view scrollTop if the category changed.
-    //     this._listScrollTop = 0;
-    //   }
-    // }
-    // // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
-    // // effects during the scroll.
-    // scroll({ top: scrollTop, behavior: 'silent' });
   
   _metaChanged(detail) {
     // Announce the page's title

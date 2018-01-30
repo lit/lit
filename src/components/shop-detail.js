@@ -132,7 +132,7 @@ class ShopDetail extends connect(store)(LitElement) {
     ${ !failure && item ? html`
       <div id="content">
         <shop-image alt="${item.title}" src="${item.largeImage}"></shop-image>
-        <div class="detail" has-content="[[_isDefined(item)]]">
+        <div class="detail" has-content>
           <h1>${item.title}</h1>
           <div class="price">${this._formatPrice(item.price)}</div>
           <div class="pickers">
@@ -213,9 +213,11 @@ class ShopDetail extends connect(store)(LitElement) {
     if (visible) {
       this._itemChangeDebouncer = Debouncer.debounce(this._itemChangeDebouncer,
         microTask, () => {
+          const quantitySelect = this.shadowRoot.querySelector('#quantitySelect');
+          const sizeSelect = this.shadowRoot.querySelector('#sizeSelect');
           // Reset the select menus.
-          this.$.quantitySelect.value = '1';
-          this.$.sizeSelect.value = 'M';
+          quantitySelect.value = '1';
+          sizeSelect.value = 'M';
         })
     }
   }
@@ -233,11 +235,12 @@ class ShopDetail extends connect(store)(LitElement) {
   }
 
   _addToCart() {
+    const quantitySelect = this.shadowRoot.querySelector('#quantitySelect');
+    const sizeSelect = this.shadowRoot.querySelector('#sizeSelect');
     store.dispatch(addCartEntry({
       item: this.item,
-      // TODO: fix
-      quantity: 2,//parseInt(this.$.quantitySelect.value, 10),
-      size: 'XL'//this.$.sizeSelect.value
+      quantity: parseInt(quantitySelect.value, 10),
+      size: sizeSelect.value
     }));
   }
 
