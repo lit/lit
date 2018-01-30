@@ -1,7 +1,7 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
 class ShopListItem extends LitElement {
-  render({ item }) {
+  render({ item = {} }) {
     return html`
     <style>
 

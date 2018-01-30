@@ -13,6 +13,7 @@ import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(LitElement) {
   render({ category, failure }) {
+    category = category || {};
     return html`
     ${ shopCommonStyle }
     <style>
