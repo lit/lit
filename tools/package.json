@@ -1,0 +1,15 @@
+{
+  "name": "lit-html-tools",
+  "private": true,
+  "dependencies": {
+    "@types/fs-extra": "^5.0.0",
+    "@types/glob": "^5.0.35",
+    "@types/marked": "^0.3.0",
+    "@types/prismjs": "^1.9.0",
+    "front-matter": "^2.3.0",
+    "fs-extra": "^5.0.0",
+    "glob": "^7.1.2",
+    "marked": "^0.3.12",
+    "prismjs": "^1.10.0"
+  }
+}
