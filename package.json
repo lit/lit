@@ -22,7 +22,7 @@
     "@polymer/paper-icon-button": "^3.0.0-pre.4",
     "@polymer/paper-spinner": "^3.0.0-pre.4",
     "@polymer/polymer": "^3.0.0-pre.4",
-    "redux-helpers": "webcomponents/redux-helpers",
+    "redux-helpers": "polymerlabs/redux-helpers",
     "redux-thunk": "^2.2.0",
     "reselect": "^3.0.1"
   },
