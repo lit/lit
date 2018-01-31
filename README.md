@@ -37,6 +37,60 @@ render(helloTemplate('Kevin'), document.body);
   </a>
 </p>
 
+## Getting Started
+
+Lit is based on ES6 Modules. If you're using NPM in your project, installing and using Lit is straightforward:
+
+```bash
+> npm install lit-html
+```
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+        type="module"
+        src="node_modules/lit-html/lit-html.js"></script>
+  </head>
+  <body>
+  </body>
+</html>
+```
+
+If you'd prefer not to use NPM, hot-loading Lit from [`unpkg.com`] is straightforward:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+        type="module"
+        src="https://unpkg.com/lit-html@0.7.1/lib/lit-extended.js?module"
+    ></script>
+  </head>
+  <body>
+  </body>
+</html>
+```
+
+Importing from your module script is similarly straightforward:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="module">
+        import { html, render} from
+            "https://unpkg.com/lit-html@0.7.1/lib/lit-extended.js?module";
+        // ...
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
+```
+
 ## Motivation
 
 `lit-html` has four main goals:
