@@ -13,8 +13,12 @@ const glob = promisify(globcb);
  */
 class CustomRenderer extends marked.Renderer {
   code(code: string, language: string, _isEscaped: boolean) {
+    const prismLanguage = Prism.languages[language];
+    const highlighted = (prismLanguage === undefined)
+      ? code
+      : Prism.highlight(code, prismLanguage);
     return html`<pre class="code language-${language}" language="${language}">
-${Prism.highlight(code, Prism.languages[language])}
+${highlighted}
 </pre>`;
   }
 }
@@ -25,7 +29,7 @@ marked.setOptions({
 const docsOutDir = path.resolve(__dirname, '../../docs');
 const docsSrcDir = path.resolve(__dirname, '../../docs-src');
 const root = 'lit-html';
-
+ 
 type FileData = {
   path: path.ParsedPath;
   attributes: any;

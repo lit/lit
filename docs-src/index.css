@@ -138,7 +138,7 @@ section.cards {
 div.card {
   box-sizing: border-box;
   background: var(--card-background);
-  padding: 5px;
+  padding: 8px;
   color: var(--secondary-text-color);
   font-size: .9em;
 }
@@ -148,9 +148,9 @@ div.card > h3 {
   margin: 0 0 5px 0 ;
 }
 
-@media screen and (min-width: 700px) {
+@media screen and (min-width: 740px) {
   main, #top-nav {
-    width: 700px;
+    width: 740px;
   }
 }
 

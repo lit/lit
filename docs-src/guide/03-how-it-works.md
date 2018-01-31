@@ -2,7 +2,9 @@
 title: How it Works
 ---
 
-# HTML Templates
+# How it Works
 
-# JavaScript Template Literals
+## HTML Templates
+
+## JavaScript Template Literals
 

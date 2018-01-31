@@ -30,21 +30,10 @@
           
 
             <li>
-              <a href="/lit-html/guide/02-directives/">
-                02-directives
-              </a>
-              
-      <ul>
-        
-            <li>
-              <a href="/lit-html/guide/02-directives/index.html">
+              <a href="/lit-html/guide/02-directives.html">
                 Directives
               </a>
               
-            </li>
-          
-      </ul>
-    
             </li>
           
 
@@ -71,15 +60,56 @@
   </nav>
 
       <main>
-        <h1 id="what-is-lit-html-">What is lit-html?</h1>
+        <h1 id="introduction">Introduction</h1>
+<h2 id="what-is-lit-html-">What is lit-html?</h2>
 <p>lit-html is a simple, modern, safe, small and fast HTML templating library for JavaScript.</p>
-<p>lit-html lets you write HTML templates in JavaScript using <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">template literals</a> with embedded expressions, then efficiently render, and <em>re-render</em> those templates together with data to create DOM.</p>
-<p>lit-html is not a framework, nor does it include a component model. If focuses on one thing and one thing only: creating and updating DOM. It can be used standalone for simple tasks, or combined with a framework or component model, like Web Components, for a full-featured UI development platform.</p>
-<h1 id="lit-html-templates">lit-html Templates</h1>
-<p>lit-html templates are tagged template literals - they look like JavaScript strings but are enclosed in backticks (<code>`</code>) instead of quotes - tagged with lit-html&#39;s <code>html</code> tag.</p>
+<p>lit-html lets you write HTML templates in JavaScript using <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">template literals</a> with embedded JavaScript expressions. Behind the scenes lit-html creates HTML <code>&lt;template&gt;</code> elements from your JavaScript templates and processes them so that it knows exactly where to insert and update the values from expressions.</p>
+<h2 id="lit-html-templates">lit-html Templates</h2>
+<p>lit-html templates are tagged template literals - they look like JavaScript strings but are enclosed in backticks (<code>`</code>) instead of quotes - and tagged with lit-html&#39;s <code>html</code> tag:</p>
 <pre class="code language-js" language="js">
 html<span class="token template-string"><span class="token string">`&lt;h1>Hello </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&lt;/h1>`</span></span>
-</pre>
+</pre><p>Since lit-html templates almost always need to merge in data from JavaScript values, and be able to update DOM when that data changes, they&#39;ll most often be written within functions that take some data and return a lit-html template, so that the function can be called multiple times:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">let</span> <span class="token function-variable function">myTemplate</span> <span class="token operator">=</span> <span class="token punctuation">(</span>data<span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`
+  &lt;h1></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>data<span class="token punctuation">.</span>title<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&lt;/h1>
+  &lt;p></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>data<span class="token punctuation">.</span>body<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&lt;/p>`</span></span><span class="token punctuation">;</span>
+</pre><p>lit-html is <em>lazily</em> rendered. Calling this function will evaluate the template literal using lit-html <code>html</code> tag, and return a <code>TemplateResult</code> - a record of the template to render and data to render it with. <code>TemplateResults</code> are very cheap to produce and no real work actually happens until they are <em>rendered</em> to the DOM.</p>
+<h2 id="rendering">Rendering</h2>
+<p>To render a <code>TempalteResult</code>, call the <code>render()</code> function with a result and DOM container to render to:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token function">myTemplate</span><span class="token punctuation">(</span><span class="token punctuation">{</span>title<span class="token punctuation">:</span> <span class="token string">'Hello'</span><span class="token punctuation">,</span> body<span class="token punctuation">:</span> <span class="token string">'lit-html is cool'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">render</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> document<span class="token punctuation">.</span>body<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><h2 id="template-dialects-lit-html-vs-lit-extended">Template Dialects: lit-html vs lit-extended</h2>
+<p>lit-html allows extensive customization of template features and syntax through what are called &quot;part callbacks&quot;. lit-html includes a core and very un-opinionated template dialect in the <code>lit-html.js</code> module which only supports the basic features of HTML: attributes and text content.</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> result <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`&lt;p>This template only supports attributes and text&lt;/p>`</span></span><span class="token punctuation">;</span>
+</pre><p>lit-html also includes a module at <code>lib/lit-extended.js</code> which implements a more opinionated, feature-rich dialect called inspired by Polymer&#39;s template syntax. It sets properties instead of attributes by default and allows for declarative event handlers, attributes and boolean attributes.</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html/lib/lit-extended.js'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> result <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`
+  &lt;p>
+    This template sets properties by default, which is great for custom elements:
+
+      &lt;my-element items=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>&lt;/my-element>
+
+    Attributes can be set with a $ suffix on the attribute name:
+
+      &lt;p class$="important">I have class&lt;/p>
+
+    Events can be added with on- prefixed attribute names:
+
+      &lt;button on-click=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span> <span class="token operator">=></span> window<span class="token punctuation">.</span><span class="token function">alert</span><span class="token punctuation">(</span><span class="token string">'clicked'</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>Click Me&lt;/button>
+
+    Boolean attributes can be toggled by adding a ? suffix:
+
+      &lt;span hidden?=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>hide<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>I'm not hidden&lt;/span>
+  &lt;/p>`</span></span><span class="token punctuation">;</span>
+</pre><p>In lit-html the type of template you write is determined by the <code>html</code> tag you use. If you import <code>html</code> from <code>lit-html.js</code>, you&#39;re using the basic core library. If you import <code>html</code> from <code>lib/lit-extended.js</code>, you&#39;re using lit-extended.</p>
+<p>You can mix and match templates using different dialects and they will behave as intended.</p>
+
       <main>
       <footer>
         <p>© 2018 Polymer Authors. Code Licensed under the BSD License. Documentation licensed under CC BY 3.0.</p>
