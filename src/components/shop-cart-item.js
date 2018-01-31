@@ -10,8 +10,8 @@ import { setCartEntryQuantity, removeCartEntry } from '../actions/cart.js';
 class ShopCartItem extends LitElement {
   render({ entry }) {
     return html`
-    ${ shopSelectStyle }
     <style>
+      ${shopSelectStyle}
 
       :host {
         display: flex;

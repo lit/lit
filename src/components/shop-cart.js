@@ -11,10 +11,10 @@ import { totalSelector } from '../reducers/cart.js';
 class ShopCart extends connect(store)(LitElement) {
   render({ cart, total }) {
     return html`
-    ${ shopButtonStyle }
-    ${ shopCommonStyle }
-    ${ shopFormStyle }
     <style>
+      ${shopButtonStyle}
+      ${shopCommonStyle}
+      ${shopFormStyle}
 
       .list {
         margin: 40px 0;

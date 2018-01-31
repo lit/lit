@@ -9,8 +9,8 @@ import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 class ShopHome extends connect(store)(LitElement) {
   render({ categories }) {
     return html`
-    ${ shopButtonStyle }
     <style>
+      ${shopButtonStyle}
 
       .image-link {
         outline: none;

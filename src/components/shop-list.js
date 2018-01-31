@@ -12,8 +12,8 @@ class ShopList extends connect(store)(LitElement) {
   render({ category, failure }) {
     category = category || {};
     return html`
-    ${ shopCommonStyle }
     <style>
+      ${shopCommonStyle}
 
       .hero-image {
         position: relative;

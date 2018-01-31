@@ -25,13 +25,13 @@ store.addReducers({
 class ShopCheckout extends connect(store)(LitElement) {
   render({ cart, response, state, total, waiting }) {
     return html`
-    ${ shopButtonStyle }
-    ${ shopCheckboxStyle }
-    ${ shopCommonStyle }
-    ${ shopFormStyle }
-    ${ shopInputStyle }
-    ${ shopSelectStyle }
     <style>
+      ${shopButtonStyle}
+      ${shopCheckboxStyle}
+      ${shopCommonStyle}
+      ${shopFormStyle}
+      ${shopInputStyle}
+      ${shopSelectStyle}
 
       .main-frame {
         transition: opacity 0.5s;

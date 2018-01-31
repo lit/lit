@@ -1,8 +1,4 @@
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-
-export const shopSelectStyle = html`
-<style>
-
+export const shopSelectStyle = `
 shop-select {
   display: inline-block;
   position: relative;
@@ -92,6 +88,4 @@ shop-select > [prefix] {
   line-height: 16px;
   color: var(--app-secondary-color);
   pointer-events: none;
-}
-
-</style>`;
+}`;

@@ -1,8 +1,4 @@
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-
-export const shopCheckboxStyle = html`
-<style>
-
+export const shopCheckboxStyle = `
 shop-checkbox {
   display: inline-block;
   width: 14px;
@@ -66,6 +62,4 @@ shop-checkbox > shop-md-decorator::before {
 shop-checkbox > input[type=checkbox]:focus + shop-md-decorator::before {
   -webkit-transform: scale3d(1, 1, 1);
   transform: scale3d(1, 1, 1);
-}
-
-</style>`;
+}`;

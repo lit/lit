@@ -1,8 +1,4 @@
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-
-export const shopFormStyle = html`
-<style>
-
+export const shopFormStyle = `
 :host {
   display: block;
 }
@@ -22,6 +18,4 @@ export const shopFormStyle = html`
 
 h2 {
   font-size: 13px;
-}
-
-</style>`;
+}`;

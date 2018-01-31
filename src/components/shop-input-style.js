@@ -1,8 +1,4 @@
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-
-export const shopInputStyle = html`
-<style>
-
+export const shopInputStyle = `
 shop-input {
   display: inline-block;
   margin: 20px 0;
@@ -194,6 +190,4 @@ shop-input > input:not(:focus):required:valid + shop-md-decorator > label {
   -webkit-transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
   transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
   opacity: 1;
-}
-
-</style>`;
+}`;

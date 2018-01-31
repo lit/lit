@@ -14,10 +14,10 @@ import { addCartEntry } from '../actions/cart.js';
 class ShopDetail extends connect(store)(LitElement) {
   render({ failure, item }) {
     return html`
-    ${ shopButtonStyle }
-    ${ shopCommonStyle }
-    ${ shopSelectStyle }
     <style>
+      ${shopButtonStyle}
+      ${shopCommonStyle}
+      ${shopSelectStyle}
 
       :host {
         display: block;

@@ -6,8 +6,8 @@ import './shop-icons.js';
 class Shop404Warning extends LitElement {
   render() {
     return html`
-    ${ shopButtonStyle }
     <style>
+      ${shopButtonStyle}
 
       :host {
         display: block;

@@ -11,8 +11,8 @@ import { currentCategorySelector } from '../reducers/categories.js';
 class ShopNetworkWarning extends connect(store)(LitElement) {
   render({ offline }) {
     return html`
-    ${ shopButtonStyle }
     <style>
+      ${shopButtonStyle}
 
       :host {
         display: block;

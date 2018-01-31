@@ -1,8 +1,4 @@
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-
-export const shopButtonStyle = html`
-<style>
-
+export const shopButtonStyle = `
 shop-button {
   display: inline-block;
 }
@@ -60,6 +56,4 @@ shop-button > *:active {
     background-color: var(--app-accent-color);
   }
 
-}
-
-</style>`;
+}`;

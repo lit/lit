@@ -2,8 +2,8 @@ import { Element } from '../../node_modules/@polymer/polymer/polymer-element.js'
 import '../../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import '../../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
 import { IronOverlayBehaviorImpl } from '../../node_modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
-import './shop-button.js';
 import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
+import { shopButtonStyle } from './shop-button-style.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
@@ -18,7 +18,8 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
   [IronOverlayBehaviorImpl], Element)) {
   static get template() {
     return `
-    <style include="shop-button">
+    <style>
+      ${shopButtonStyle}
 
       :host {
         display: block;

@@ -1,8 +1,4 @@
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-
-export const shopCommonStyle = html`
-<style>
-
+export const shopCommonStyle = `
 [hidden] {
   display: none !important;
 }
@@ -32,6 +28,4 @@ header > shop-button[responsive] {
     font-size: 1.1em;
   }
 
-}
-
-</style>`;
+}`;
