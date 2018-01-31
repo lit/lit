@@ -7,7 +7,6 @@ import { shopFormStyle } from './shop-form-style.js';
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
-import { updateMeta } from '../actions/meta.js';
 
 class ShopCart extends connect(store)(LitElement) {
   render({ cart, total }) {

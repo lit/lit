@@ -9,7 +9,6 @@ import '../../node_modules/@polymer/iron-selector/iron-selector.js';
 import './shop-home.js';
 import { afterNextRender } from '../../node_modules/@polymer/polymer/lib/utils/render-status.js';
 import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
-import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
@@ -18,9 +17,6 @@ import network from '../reducers/network.js';
 import { installRouter } from '../../node_modules/redux-helpers/router.js';
 import { installNetwork } from '../network.js';
 import { updateLocation } from '../actions/location.js';
-
-// performance logging
-window.performance && performance.mark && performance.mark('shop-app - before register');
 
 store.addReducers({
   location,
@@ -326,9 +322,6 @@ class ShopApp extends connect(store)(LitElement) {
       if ('meta' in changed) {
         this._metaChanged(props.meta, oldProps.meta);
       }
-      if ('loadComplete' in changed) {
-        this._loadCompleteChanged(props.loadComplete, oldProps.loadComplete);
-      }
     }
     super._propertiesChanged(props, changed, oldProps);
   }
@@ -348,7 +341,6 @@ class ShopApp extends connect(store)(LitElement) {
 
     this.categories = Object.values(state.categories);
     this.categoryName = categoryName;
-    this.loadComplete = state.load && state.load.complete;
     this.meta = state.meta;
     this.modalOpened = state.modal;
     this.offline = !state.network.online;
@@ -375,14 +367,12 @@ class ShopApp extends connect(store)(LitElement) {
   }
 
   _categoryNameChanged(categoryName, oldCategoryName) {
-    if (categoryName !== oldCategoryName) {
-      // Reset the list view scrollTop if the category changed.
-      this._listScrollTop = 0;
-    }
+    // Reset the list view scrollTop if the category changed.
+    this._listScrollTop = 0;
     scroll({ top: 0, behavior: 'silent' });
   }
 
-  _pageChanged(page, oldPage) {
+  async _pageChanged(page, oldPage) {
     if (oldPage === 'list') {
       this._listScrollTop = window.pageYOffset;
     }
@@ -401,6 +391,22 @@ class ShopApp extends connect(store)(LitElement) {
     // Close the drawer - in case the *route* change came from a link in the drawer.
     this.drawerOpened = false;
 
+    switch (page) {
+      case 'list':
+        await import('../components/shop-list.js');
+        break;
+      case 'detail':
+        await import('../components/shop-detail.js');
+        break;
+      case 'cart':
+        await import('../components/shop-cart.js');
+        break;
+      case 'checkout':
+        await import('../components/shop-checkout.js');
+        break;
+    }
+
+    this._ensureLazyLoaded();
     if (oldPage) {
       // The size of the header depends on the page (e.g. on some pages the tabs
       // do not appear), so reset the header's layout only when switching pages.
@@ -411,16 +417,18 @@ class ShopApp extends connect(store)(LitElement) {
     }
   }
 
-  _loadCompleteChanged(loadComplete, oldLoadComplete) {
-    if (loadComplete) {
-      // Register service worker if supported.
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-      }
-      timeOut.run(() => {
-        const header = this.shadowRoot.querySelector('#header');
-        header.resetLayout();
-      }, 1);
+  _ensureLazyLoaded() {
+    // load lazy resources after render and set `loadComplete` when done.
+    if (!this.loadComplete) {
+      afterNextRender(this, () => {
+        import('./lazy-resources.js').then(() => {
+          // Register service worker if supported.
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js', {scope: '/'});
+          }
+          this.loadComplete = true;
+        });
+      });
     }
   }
 
@@ -457,18 +465,6 @@ class ShopApp extends connect(store)(LitElement) {
       this._setMeta('property', 'twitter:description', detail.description || document.title);
       this._setMeta('property', 'twitter:url', document.location.href);
       this._setMeta('property', 'twitter:image:src', detail.image || this.baseURI + 'images/shop-icon-128.png');
-    }
-  }
-
-  // This is for performance logging only.
-  _domChange(e) {
-    if (window.performance && performance.mark && !this.__loggedDomChange) {
-      let target = e.composedPath()[0];
-      let host = target.getRootNode().host;
-      if (host && host.localName.match(this.page)) {
-        this.__loggedDomChange = true;
-        performance.mark(host.localName + '.domChange');
-      }
     }
   }
 }

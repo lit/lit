@@ -15,7 +15,6 @@ import { totalSelector } from '../reducers/cart.js';
 import { pushState } from '../actions/location.js';
 import { updateCheckoutState } from '../actions/checkout.js';
 import { clearCart } from '../actions/cart.js';
-import { updateMeta } from '../actions/meta.js';
 import { announceLabel } from '../actions/announcer.js';
 import checkout from '../reducers/checkout.js';
 

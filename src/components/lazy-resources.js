@@ -34,12 +34,8 @@ import "../../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
 import { store } from '../store.js';
 import { installCart } from '../cart.js';
 import cart from '../reducers/cart.js';
-import load from '../reducers/load.js'
 
 store.addReducers({
-  cart,
-  load
+  cart
 });
 installCart(store);
-
-export { completeLoad } from '../actions/load.js';

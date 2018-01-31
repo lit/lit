@@ -4,15 +4,12 @@ import { shopButtonStyle } from './shop-button-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopSelectStyle } from './shop-select-style.js';
 import './shop-image.js';
-import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { microTask } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { splitPathSelector } from '../reducers/location.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { addCartEntry } from '../actions/cart.js';
-import { updateMeta } from '../actions/meta.js';
 
 class ShopDetail extends connect(store)(LitElement) {
   render({ failure, item }) {
@@ -189,37 +186,17 @@ class ShopDetail extends connect(store)(LitElement) {
 
     item: Object,
 
-    visible: {
-      type: Boolean,
-      value: false
-    },
+    visible: Boolean,
 
     failure: Boolean
 
   }}
-
-  static get observers() { return [
-    '_itemChanged(item, visible)'
-  ]}
 
   update() {
     const state = store.getState();
     const category = currentCategorySelector(state);
     this.item = currentItemSelector(state);
     this.failure = category && category.failure;
-  }
-
-  _itemChanged(item, visible) {
-    if (visible) {
-      this._itemChangeDebouncer = Debouncer.debounce(this._itemChangeDebouncer,
-        microTask, () => {
-          const quantitySelect = this.shadowRoot.querySelector('#quantitySelect');
-          const sizeSelect = this.shadowRoot.querySelector('#sizeSelect');
-          // Reset the select menus.
-          quantitySelect.value = '1';
-          sizeSelect.value = 'M';
-        })
-    }
   }
 
   _unescapeText(text) {

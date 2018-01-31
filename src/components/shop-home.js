@@ -5,7 +5,6 @@ import './shop-image.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
-import { updateMeta } from '../actions/meta.js';
 
 class ShopHome extends connect(store)(LitElement) {
   render({ categories }) {
@@ -102,9 +101,7 @@ class ShopHome extends connect(store)(LitElement) {
 
   static get properties() { return {
 
-    categories: {
-      type: Array
-    }
+    categories: Array
 
   }}
 
