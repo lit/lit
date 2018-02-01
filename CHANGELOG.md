@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.9.0] - 2018-02-01
 
 * Refactored how template tags and `render()` are implemented so that all
   specialization of template syntax is done in tags, not `render()`, allowing
