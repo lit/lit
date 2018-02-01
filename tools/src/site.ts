@@ -1,3 +1,18 @@
+/**
+ * @license
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+import * as childProcess from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import globcb = require('glob');
@@ -7,6 +22,7 @@ import marked = require('marked');
 import Prism = require('prismjs');
 
 const glob = promisify(globcb);
+const exec = promisify(childProcess.exec);
 
 /**
  * Adds classes to the <pre> elements
@@ -68,6 +84,8 @@ async function generateDocs() {
 
   fs.copyFileSync(path.join(docsSrcDir, 'index.css'), path.join(docsOutDir, 'index.css'));
   fs.copyFileSync(path.resolve(__dirname, '../node_modules/prismjs/themes/prism-okaidia.css'), path.join(docsOutDir, 'prism.css'));
+
+  await exec('npm run gen-docs', {cwd: '../'});
 }
 
 /**

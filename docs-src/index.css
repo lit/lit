@@ -41,6 +41,8 @@ main {
   display: inline-block;
   padding: 10px;
   text-transform: uppercase;
+  box-sizing: border-box;
+  height: 48px;
 }
 
 #top-nav > ul > li.selected, #top-nav > ul > li:hover {
