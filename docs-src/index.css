@@ -80,6 +80,23 @@ main {
   font-weight: 600;
 }
 
+#side-nav li.page {
+  font-size: .85em;
+  color: var(--secondary-text-color);
+}
+
+/* #side-nav li[level="1"] {
+  padding-left: 0px;
+}
+
+#side-nav li[level="2"] {
+  padding-left: 8px;
+}
+
+#side-nav li[level="3"] {
+  padding-left: 16px;
+} */
+
 a {
   color: var(--accent-color);
 }

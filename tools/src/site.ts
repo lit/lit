@@ -193,13 +193,12 @@ const sideNav = (pagePath: string, files: Map<string, FileData>) => {
 
   const renderPageOutline = (data: FileData) => {
     const tokens = marked.lexer(data.body);
-    const headers = tokens.filter((t) => t.type === 'heading' && t.depth < 3) as marked.Tokens.Heading[];
+    const headers = tokens.filter((t) => t.type === 'heading' && t.depth === 2) as marked.Tokens.Heading[];
 
-    let level = 0;
     return html`
       <ul>
         ${headers.map((header) => {
-          return html`<li><a href="#${getId(header.text)}">${header.text.replace('<', '&lt;')}</a></li>`;
+          return html`<li class="page" level="${header.depth}"><a href="#${getId(header.text)}">${header.text.replace('<', '&lt;')}</a></li>`;
         })}
       </ul>
     `;
