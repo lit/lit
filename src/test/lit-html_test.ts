@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, defaultTemplateFactory, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 const assert = chai.assert;
 
@@ -533,6 +533,24 @@ suite('lit-html', () => {
         // different stack trace
         render(html`<a>${'foo'}</a>${'bar'}`, container);
         assert.equal(container.innerHTML, '<a>foo</a>bar');
+      });
+
+      test('renders directives on NodeParts', () => {
+        const fooDirective = directive((part: NodePart) => {
+          part.setValue('foo');
+        });
+
+        render(html`<div>${fooDirective}</div>`, container);
+        assert.equal(container.innerHTML, '<div>foo</div>');
+      });
+
+      test('renders directives on AttributeParts', () => {
+        const fooDirective = directive((part: AttributePart) => {
+          part.element.setAttribute(part.name, 'foo');
+        });
+
+        render(html`<div foo="${fooDirective}"></div>`, container);
+        assert.equal(container.innerHTML, '<div foo="foo"></div>');
       });
 
     });
