@@ -61,8 +61,39 @@
 
       <main>
         <h1 id="how-it-works">How it Works</h1>
-<h2 id="html-templates">HTML Templates</h2>
-<h2 id="javascript-template-literals">JavaScript Template Literals</h2>
+<p><code>lit-html</code> utilizes some unique properties of JavaScript template literals and HTML <code>&lt;template&gt;</code> elements to function and achieve fast performance. So it&#39;s helpful to understand them first.</p>
+<h2 id="tagged-template-literals">Tagged Template Literals</h2>
+<p>A JavaScript template literal is a string literal that can have JavaScript expressions embedded in it:</p>
+<pre class="code language-js" language="js">
+<span class="token template-string"><span class="token string">`My name is </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">.`</span></span>
+</pre><p>The literal uses backticks instead of quotes, and can span multiple lines. The part inside the <code>${}</code> can be <em>any</em> JavaScript expression.</p>
+<p>A <em>tagged</em> template literal is prefixed with a special template tag function:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">let</span> name <span class="token operator">=</span> <span class="token string">'Monica'</span><span class="token punctuation">;</span>
+tag<span class="token template-string"><span class="token string">`My name is </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">.`</span></span>
+</pre><p>Tags are functions that take the literal strings of the template and values of the embedded expressions, and return a new value. This can be any kind of value, not just strings. lit-html returns an object representing the template, called a <code>TemplateResult</code>.</p>
+<p>The key features of template tags that lit-html utilizes to make updates fast is that the object holding the literals strings of the template is <em>exactly</em> the same for every call to the tag for a particular template.</p>
+<p>This means that the strings can be used as a key into a cache so that lit-html can do the template preparation just once, the first time it renders a template, and updates skip that work.</p>
+<h2 id="html-template-elements">HTML <code>&lt;template&gt;</code> Elements</h2>
+<p>A <code>&lt;template&gt;</code> element is an inert fragment of DOM. Inside a <code>&lt;template&gt;</code>, script don&#39;t run, images don&#39;t load, custom elements aren&#39;t upgraded, etc. <code>&lt;template&gt;</code>s can be efficiently cloned. They&#39;re usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, and will be managed by code at a later time, but it can also be created imperatively with <code>createElement</code> and <code>innerHTML</code>.</p>
+<p>lit-html creates HTML <code>&lt;template&gt;</code> elements from the tagged template literals, and then clone&#39;s them to create new DOM.</p>
+<h2 id="template-creation">Template Creation</h2>
+<p>The first time a particular lit-html template is rendered anywhere in the application, lit-html does one-time setup work to create the HTML template behind the scenes. It joins all the literal parts with a special placeholder, similar to <code>&quot;{{}}&quot;</code>, then creates a <code>&lt;template&gt;</code> and sets its <code>innerHTML</code> to the result.</p>
+<p>If we start with a template like this:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">let</span> <span class="token function-variable function">header</span> <span class="token operator">=</span> <span class="token punctuation">(</span>title<span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`&lt;h1></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>title<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&lt;/h1>`</span></span><span class="token punctuation">;</span>
+</pre><p>lit-html will generate the following HTML:</p>
+<pre class="code language-html" language="html">
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span>{{}}<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span>
+</pre><p>And create a <code>&lt;template&gt;</code> from that.</p>
+<p>Then lit-html walks the template&#39;s DOM and extracts the placeholder and remembers their location. The final template doesn&#39;t contain the placeholders:</p>
+<pre class="code language-html" language="html">
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span>
+</pre><p>And there&#39;s an auxillary table of where the expressions were:</p>
+<p><code>[{type: &#39;node&#39;, index: 1}]</code></p>
+<h2 id="template-rendering">Template Rendering</h2>
+<p><code>render()</code> takes a <code>TemplateResult</code> and renders it to a DOM container. On the initial render it clones the template, then walks it using the remembered placeholder positions, to create <code>Part</code> objects.</p>
+<p>A <code>Part</code> is a &quot;hole&quot; in the DOM where values can be injected. lit-html includes two type of parts by default: <code>NodePart</code> and <code>AttributePart</code>, which let you set text content and attribute values respectively. The <code>Part</code>s, container, and template they were created from are grouped together in an object called a <code>TemplateInstance</code>.</p>
 
       <main>
       <footer>
