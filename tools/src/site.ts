@@ -199,7 +199,7 @@ const sideNav = (pagePath: string, files: Map<string, FileData>) => {
     return html`
       <ul>
         ${headers.map((header) => {
-          return html`<li><a href="#${getId(header.text)}">${header.text}</a></li>`;
+          return html`<li><a href="#${getId(header.text)}">${header.text.replace('<', '&lt;')}</a></li>`;
         })}
       </ul>
     `;
