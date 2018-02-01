@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * lit-extended: Attribute bindings with a `?` suffix on the name now act as boolean
   attributes. The attribute will be removed for falsey values and set to `''` for
   truthy values, matching the HTML specification behavior for boolean attributes.
+* Fixed a bug where directives rendered incorrectly on AttributeParts and PropertyParts
 
 ## [0.8.0] - 2018-01-12
 

@@ -419,10 +419,14 @@ export const directive =
 const isDirective = (o: any) =>
     typeof o === 'function' && o.__litDirective === true;
 
-const directiveValue = {};
+/**
+ * A sentinel value that signals that a value was handled by a directive and
+ * should not be written to the DOM.
+ */
+export const directiveValue = {};
 
-const isPrimitiveValue = (value: any) =>
-    value === null || !(typeof value === 'object' || typeof value === 'function');
+const isPrimitiveValue = (value: any) => value === null ||
+    !(typeof value === 'object' || typeof value === 'function');
 
 export interface Part {
   instance: TemplateInstance;
@@ -478,7 +482,8 @@ export class AttributePart implements MultiPart {
 
   protected _equalToPreviousValues(values: any[], startIndex: number) {
     for (let i = startIndex; i < startIndex + this.size; i++) {
-      if (this._previousValues[i] !== values[i] || !isPrimitiveValue(values[i])) {
+      if (this._previousValues[i] !== values[i] ||
+          !isPrimitiveValue(values[i])) {
         return false;
       }
     }
@@ -489,10 +494,21 @@ export class AttributePart implements MultiPart {
     if (this._equalToPreviousValues(values, startIndex)) {
       return;
     }
-
-    const text = this._interpolate(values, startIndex);
-    this.element.setAttribute(this.name, text);
-
+    const s = this.strings;
+    let value: any;
+    if (s.length === 2 && s[0] === '' && s[1] === '') {
+      // An expression that occupies the whole attribute value will leave
+      // leading and trailing empty strings.
+      value = getValue(this, values[startIndex]);
+      if (Array.isArray(value)) {
+        value = value.join('');
+      }
+    } else {
+      value = this._interpolate(values, startIndex);
+    }
+    if (value !== directiveValue) {
+      this.element.setAttribute(this.name, value);
+    }
     this._previousValues = values;
   }
 }

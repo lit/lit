@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, directiveValue, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 export {render} from '../lit-html.js';
 
@@ -83,7 +83,7 @@ export const extendedPartCallback =
 /**
  * Implements a boolean attribute, roughly as defined in the HTML
  * specification.
- * 
+ *
  * If the value is truthy, then the attribute is present with a value of
  * ''. If the value is falsey, the attribute is removed.
  */
@@ -92,6 +92,9 @@ export class BooleanAttributePart extends AttributePart {
     const s = this.strings;
     if (s.length === 2 && s[0] === '' && s[1] === '') {
       const value = getValue(this, values[startIndex]);
+      if (value === directiveValue) {
+        return;
+      }
       if (value) {
         this.element.setAttribute(this.name, '');
       } else {
@@ -119,7 +122,9 @@ export class PropertyPart extends AttributePart {
       // Interpolation, so interpolate
       value = this._interpolate(values, startIndex);
     }
-    (this.element as any)[this.name] = value;
+    if (value !== directiveValue) {
+      (this.element as any)[this.name] = value;
+    }
 
     this._previousValues = values;
   }

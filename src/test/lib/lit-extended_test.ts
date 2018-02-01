@@ -15,8 +15,8 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {html, render} from '../../lib/lit-extended.js';
-import {html as htmlPlain} from '../../lit-html.js';
+import {html, PropertyPart, render} from '../../lib/lit-extended.js';
+import {directive, html as htmlPlain} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -219,6 +219,15 @@ suite('lit-extended', () => {
       assert.equal(target, undefined);
     });
 
+    test('renders directives on PropertyParts', () => {
+      const fooDirective = directive((part: PropertyPart) => {
+        (part.element as any)[part.name] = 1234;
+      });
+
+      render(html`<div foo="${fooDirective}"></div>`, container);
+      assert.equal(container.innerHTML, '<div></div>');
+      assert.equal((container.firstElementChild as any).foo, 1234);
+    });
 
   });
 });
