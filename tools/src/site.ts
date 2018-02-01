@@ -29,9 +29,10 @@ marked.setOptions({
 const docsOutDir = path.resolve(__dirname, '../../docs');
 const docsSrcDir = path.resolve(__dirname, '../../docs-src');
 const root = 'lit-html';
- 
+
 type FileData = {
   path: path.ParsedPath;
+  outPath: string;
   attributes: any;
   body: string;
 }
@@ -45,23 +46,23 @@ async function generateDocs() {
     const filePath = path.parse(fileName);
     const content = await fs.readFile(path.join(docsSrcDir, fileName), 'utf-8');
     const pageData = frontMatter(content);
+    const outPath = `${filePath.dir}/${stripOrdering(filePath.name)}.html`;
 
     return [fileName, {
       path: filePath,
+      outPath,
       attributes: pageData.attributes,
       body: pageData.body,
     }] as [string, FileData];
   })));
 
-  const guideOutline = getOutline(files);
-
   for (const fileData of files.values()) {
     const outDir = path.join(docsOutDir, fileData.path.dir);
     await fs.mkdirs(outDir);
     const body = marked(fileData.body);
-    const section = fileData.path.dir.split(path.sep)[0] || 'home';
-    const outContent = page(section, body, guideOutline);
-    const outPath = path.join(docsOutDir, fileData.path.dir, `${fileData.path.name}.html`);
+    // const section = fileData.path.dir.split(path.sep)[0] || 'home';
+    const outContent = page(fileData.outPath, body, files);
+    const outPath = path.join(docsOutDir, fileData.outPath);
     fs.writeFile(outPath, outContent);
   }
 
@@ -72,7 +73,7 @@ async function generateDocs() {
 /**
  * The main page template
  */
-const page = (pagePath: string, content: string, outline: Outline) => html`
+const page = (pagePath: string, content: string, files: Map<string, FileData>) => html`
   <!doctype html>
 
   <html>
@@ -81,7 +82,7 @@ const page = (pagePath: string, content: string, outline: Outline) => html`
       <link rel="stylesheet" href="/${root}/prism.css">
     </head>
     <body>
-      ${sideNav(pagePath, outline)}
+      ${sideNav(pagePath, files)}
       ${topNav(pagePath.split('/')[0])}
       <main>
         ${content}
@@ -114,11 +115,12 @@ type OutlineData = FileData|Outline;
  * The outline is a set of nested maps of filenames to file data.
  * The output is sorted with index first, then alpha-by-name
  */
-const getOutline = (files: Map<string, FileData>) => {
+const getOutline = (pagePath: string, files: Map<string, FileData>) => {
 
   const outline: Outline = new Map();
 
   for (const fileData of files.values()) {
+
     const parts = fileData.path.dir.split(path.sep);
     let parent = outline;
 
@@ -155,7 +157,7 @@ const getOutline = (files: Map<string, FileData>) => {
   return sortOutline(outline, new Map());
 }
 
-const sideNav = (pagePath: string, outline: Outline) => {
+const sideNav = (pagePath: string, files: Map<string, FileData>) => {
   // Side nav is only rendered for the guide
   if (!pagePath.startsWith('guide')) {
     return '';
@@ -173,13 +175,14 @@ const sideNav = (pagePath: string, outline: Outline) => {
           const isFile = !(data instanceof Map);
           let url = `/${root}/${fileData.path.dir}/`;
           if (isFile) {
-            url = url + `${fileData.path.name}.html`;
+            url = url + `${stripOrdering(fileData.path.name)}.html`;
           }
           return html`
-            <li>
+            <li class="${pagePath === fileData.outPath ? 'selected' : ''}">
               <a href="${url}">
                 ${isFile ? fileData.attributes['title'] : name}
               </a>
+              ${isFile && pagePath === fileData.outPath ? renderPageOutline(data as FileData) : ''}
               ${isFile ? '' : renderOutline(data as Outline)}
             </li>
           `;
@@ -188,10 +191,24 @@ const sideNav = (pagePath: string, outline: Outline) => {
     `;
   };
 
+  const renderPageOutline = (data: FileData) => {
+    const tokens = marked.lexer(data.body);
+    const headers = tokens.filter((t) => t.type === 'heading' && t.depth < 3) as marked.Tokens.Heading[];
+
+    let level = 0;
+    return html`
+      <ul>
+        ${headers.map((header) => {
+          return html`<li><a href="#${getId(header.text)}">${header.text}</a></li>`;
+        })}
+      </ul>
+    `;
+  }
+
   return html`
     <nav id="side-nav">
       <h1>Guide</h1>
-      ${renderOutline(outline.get('guide') as Outline)}
+      ${renderOutline(getOutline(pagePath, files).get('guide') as Outline)}
     </nav>
   `;
 }
@@ -199,5 +216,9 @@ const sideNav = (pagePath: string, outline: Outline) => {
 // Nearly no-op template tag to get syntax highlighting and support Arrays.
 const html = (strings: TemplateStringsArray, ...values: any[]) => 
     values.reduce((acc, v, i) => acc + (Array.isArray(v) ? v.join('\n') : String(v)) + strings[i + 1], strings[0]);
+
+const stripOrdering = (filename: string) => filename.replace(/^\d+-/, '');
+
+const getId = (s: string) => s.toLowerCase().replace(/[^\w]+/g, '-');
 
 generateDocs();

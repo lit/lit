@@ -76,6 +76,10 @@ main {
   padding: 5px 0;
 }
 
+#side-nav li.selected > a {
+  font-weight: 600;
+}
+
 a {
   color: var(--accent-color);
 }

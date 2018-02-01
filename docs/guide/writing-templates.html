@@ -1,0 +1,294 @@
+
+  <!doctype html>
+
+  <html>
+    <head>
+      <link rel="stylesheet" href="/lit-html/index.css">
+      <link rel="stylesheet" href="/lit-html/prism.css">
+    </head>
+    <body>
+      
+    <nav id="side-nav">
+      <h1>Guide</h1>
+      
+      <ul>
+        
+            <li class="">
+              <a href="/lit-html/guide/index.html">
+                Introduction
+              </a>
+              
+              
+            </li>
+          
+
+            <li class="">
+              <a href="/lit-html/guide/getting-started.html">
+                Getting Started
+              </a>
+              
+              
+            </li>
+          
+
+            <li class="selected">
+              <a href="/lit-html/guide/writing-templates.html">
+                Writing Templates
+              </a>
+              
+      <ul>
+        <li><a href="#writing-templates">Writing Templates</a></li>
+<li><a href="#lit-html-or-lit-extended">lit-html or lit-extended</a></li>
+<li><a href="#thinking-functionally">Thinking Functionally</a></li>
+<li><a href="#template-structure">Template Structure</a></li>
+<li><a href="#binding-types">Binding Types</a></li>
+<li><a href="#supported-types">Supported Types</a></li>
+<li><a href="#conditionals-ifs-and-loops">Conditionals: Ifs and Loops</a></li>
+<li><a href="#directives">Directives</a></li>
+      </ul>
+    
+              
+            </li>
+          
+
+            <li class="">
+              <a href="/lit-html/guide/how-it-works.html">
+                How it Works
+              </a>
+              
+              
+            </li>
+          
+      </ul>
+    
+    </nav>
+  
+      
+  <nav id="top-nav">
+    <div class="icon-large">lit-html</div>
+    <ul>
+      <li ><a href="/lit-html/">Home</a></li>
+      <li class="selected"><a href="/lit-html/guide">Guide</a></li>
+      <li ><a href="/lit-html/api">API</a></li>
+      <li><a href="https://github.com/Polymer/lit-html">GitHub</a></li>
+    </ul>
+  </nav>
+
+      <main>
+        <h1 id="writing-templates">Writing Templates</h1>
+<p>This section covers writing lit-html templates</p>
+<h2 id="lit-html-or-lit-extended">lit-html or lit-extended</h2>
+<p>One of the first choices to make is whether to choose core lit-html templates, or lit-extended templates. lit-extended offers a few conveniences and is particularly useful for custom elements. It adds:</p>
+<ul>
+<li>Declarative property setting, using attribute syntax</li>
+<li>Opt-in attribute setting with the <code>name$=${}</code> syntax</li>
+<li>Opt-in boolean attributes with the <code>name?=${}</code> syntax</li>
+<li>Declarative event handler support with the <code>on-*=${}</code> syntax</li>
+</ul>
+<p>You import the lit-extended <code>html</code> tag from <code>lib/lit-extended.js</code>:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">}</span> <span class="token keyword">from</span> `lit<span class="token operator">-</span>html<span class="token operator">/</span>lib<span class="token operator">/</span>lit<span class="token operator">-</span>extended<span class="token punctuation">.</span>js'<span class="token punctuation">;</span>
+</pre><p>Because of the usefulness of these additional features, lit-extended is recommended for most users.</p>
+<h2 id="thinking-functionally">Thinking Functionally</h2>
+<p>lit-html is ideal for use in a functional approach to describing UIs. If you think of UI as a function of data, commonly expressed as <code>UI = f(data)</code>, you can write lit-html templates that mirror this exactly:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">let</span> <span class="token function-variable function">ui</span> <span class="token operator">=</span> <span class="token punctuation">(</span>data<span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`...</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>data<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">...`</span></span><span class="token punctuation">;</span>
+</pre><p>This kind of function can be called any time data changes, and is extremely cheap to call. The only thing that lit-html does in the <code>html</code> tag is forward the arguments to the templates.</p>
+<p>When the result is rendered, lit only updates the expressions whose values have changed since the previous render.</p>
+<p>This leads to an easy to write and reason about model: always try to describe your UI as a simple function of the data it depends on, an avoid caching intermediate state, or doing manual DOM manipulation. lit-html will almost always be fast enough with the simplest description of your UI.</p>
+<h2 id="template-structure">Template Structure</h2>
+<p>lit-html templates are parsed by the built-in HTML parser before any values are interpolated. This means that the required structure of templates is determined by the HTML specification, and expressions can only occur in certain places.</p>
+<p>The HTML parser in browsers never throws exceptions for malformed HTML. Instead, the specification defines how all malformed HTML cases are handled and what the resulting DOM should be. Most cases of malformed templates are not detectable by lit-html - the only side-effect will be that templates do not behave as you expected - so take extra care to properly structure templates.</p>
+<p>Follow these rules for well-formed templates:</p>
+<ul>
+<li>Templates must be well-formed when all expressions are replaced by empty values.</li>
+<li>Expressions can only occur in attribute-value and text-content positions</li>
+<li>Expressions cannot appear where tag or attribute names would appear</li>
+<li>Templates can have multiple top-level elements and text</li>
+<li>Templates should not contain unclosed elements - they will be closed by the HTML parser</li>
+</ul>
+<h2 id="binding-types">Binding Types</h2>
+<p>Expressions can occur only in attribute value or text content positions, but in lit-extended a few different binding types use expressions in attribute value positions. Each binding types supports different types of values. In total, theses are the types of bindings:</p>
+<ul>
+<li>Attribute bindings: All values are converted to strings</li>
+<li>Property bindings: Any type of value</li>
+<li>Event handler bindings: Event handler functions only</li>
+<li>Text content bindings: TemplateResults, Nodes. Other types converted to strings.</li>
+</ul>
+<h2 id="supported-types">Supported Types</h2>
+<p>lit-html expressions accept a large range of value types.</p>
+<h3 id="primitive-values-string-number-boolean-null-undefined">Primitive Values: String, Number, Boolean, null, undefined</h3>
+<p>Primitives values are converted to strings when interpolated. They are checked for equality to the previous value so that the DOM is not updated if the value hasn&#39;t changed.</p>
+<h3 id="templateresult">TemplateResult</h3>
+<p>Templates can be nested by passing a <code>TemplateResult</code> as a value of an expression:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">const</span> header <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`&lt;h1>Header&lt;/h1>`</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> page <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`
+  </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>header<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
+  &lt;p>This is some text&lt;/p>
+`</span></span><span class="token punctuation">;</span>
+</pre><h3 id="node">Node</h3>
+<p>Any DOM Node can be passed to a text position expression. The node is attached to the DOM tree at that point, and so removed from any current parent:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">const</span> div <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">createElement</span><span class="token punctuation">(</span><span class="token string">'div'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> page <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`
+  </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>div<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
+  &lt;p>This is some text&lt;/p>
+`</span></span><span class="token punctuation">;</span>
+</pre><h3 id="arrays-iterables">Arrays / Iterables</h3>
+<p>Arrays and Iterables of supported types are supported as well. They can be mixed values of different supported types.</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> items <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`items = ${items.map((i) => `</span></span>item<span class="token punctuation">:</span> $<span class="token punctuation">{</span>i<span class="token punctuation">}</span><span class="token template-string"><span class="token string">`)}`</span></span><span class="token punctuation">;</span>
+</pre><pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> items <span class="token operator">=</span> <span class="token punctuation">{</span>
+  a<span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+  b<span class="token punctuation">:</span> <span class="token number">23</span><span class="token punctuation">,</span>
+  c<span class="token punctuation">:</span> <span class="token number">456</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`items = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>Object<span class="token punctuation">.</span><span class="token function">entries</span><span class="token punctuation">(</span>items<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">`</span></span><span class="token punctuation">;</span>
+</pre><h3 id="promises">Promises</h3>
+<p>Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won&#39;t update the template when it finally resolves.</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`
+  The response is </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">fetch</span><span class="token punctuation">(</span><span class="token string">'sample.txt'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span> <span class="token operator">=></span> r<span class="token punctuation">.</span><span class="token function">text</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">.
+`</span></span><span class="token punctuation">;</span>
+</pre><h2 id="conditionals-ifs-and-loops">Conditionals: Ifs and Loops</h2>
+<p>lit-html has no built-in control-flow constructs. Instead you use normal JavaScript expressions and statements:</p>
+<h3 id="ifs-with-ternary-operators">Ifs with ternary operators</h3>
+<p>Ternary expressions are a great way to add inline-conditionals:</p>
+<pre class="code language-js" language="js">
+html<span class="token template-string"><span class="token string">`
+  ${user.isloggedIn
+      ? html`</span></span>Welcome $<span class="token punctuation">{</span>user<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token template-string"><span class="token string">`
+      : html`</span></span>Please log <span class="token keyword">in</span><span class="token template-string"><span class="token string">`
+  }
+`</span></span>
+</pre><h3 id="ifs-with-if-statements">Ifs with if-statements</h3>
+<p>You can express conditional logic with if statements outside of a template to compute values to use inside of the template:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">let</span> userMessage<span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span>user<span class="token punctuation">.</span>isloggedIn<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  userMessage <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`Welcome </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>user<span class="token punctuation">.</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">`</span></span>
+<span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+  userMessage <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`Please log in`</span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+html<span class="token template-string"><span class="token string">`
+  </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>userMessage<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
+`</span></span>
+</pre><h3 id="loops-with-array-map">Loops with Array.map</h3>
+<p>To render lists, <code>Array.map</code> can be used to transform a list of data into a list of templates:</p>
+<pre class="code language-js" language="js">
+html<span class="token template-string"><span class="token string">`
+  &lt;ul>
+    ${items.map((i) => html`</span></span><span class="token operator">&lt;</span>li<span class="token operator">></span>$<span class="token punctuation">{</span>i<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>li<span class="token operator">></span><span class="token punctuation">)</span><span class="token punctuation">}</span>
+  <span class="token operator">&lt;</span><span class="token operator">/</span>ul<span class="token operator">></span>
+`
+</pre><h3 id="looping-statements">Looping statements</h3>
+<pre class="code language-js" language="js">
+<span class="token keyword">const</span> itemTemplates <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> i <span class="token keyword">of</span> items<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  itemTemplates<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>html<span class="token template-string"><span class="token string">`&lt;li></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>i<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&lt;/li>`</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+html<span class="token template-string"><span class="token string">`
+  &lt;ul>
+    </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>itemTemplates<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
+  &lt;/ul>
+`</span></span>
+</pre><h2 id="directives">Directives</h2>
+<p>Directives are functions that can extend lit-html by directly interacting with the Part API.</p>
+<p>Directives will usually be created from factory functions that accept some arguments for values and configuration. Directives are created by passing a function to lit-html&#39;s <code>directive()</code> function:</p>
+<pre class="code language-javascript" language="javascript">
+html<span class="token template-string"><span class="token string">`&lt;div></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">directive</span><span class="token punctuation">(</span><span class="token punctuation">(</span>part<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span> part<span class="token punctuation">.</span><span class="token function">setValue</span><span class="token punctuation">(</span><span class="token string">'Hello'</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">)}&lt;/div>`</span></span>
+</pre><p>The <code>part</code> argument is a <code>Part</code> object with an API for directly managing the dynamic DOM associated with expressions. See the <code>Part</code> API in api.md.</p>
+<p>Here&#39;s an example of a directive that takes a function, and evaluates it in a try/catch to implement exception safe expressions:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> <span class="token function-variable function">safe</span> <span class="token operator">=</span> <span class="token punctuation">(</span>f<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">directive</span><span class="token punctuation">(</span><span class="token punctuation">(</span>part<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token function">f</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><p>Now <code>safe()</code> can be used to wrap a function:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">let</span> data<span class="token punctuation">;</span>
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`foo = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">safe</span><span class="token punctuation">(</span>_<span class="token operator">=></span>data<span class="token punctuation">.</span>foo<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">`</span></span><span class="token punctuation">;</span>
+</pre><p>This example increments a counter on every render:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`
+  &lt;div>
+    </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">directive</span><span class="token punctuation">(</span><span class="token punctuation">(</span>part<span class="token punctuation">)</span> <span class="token operator">=></span> part<span class="token punctuation">.</span><span class="token function">setValue</span><span class="token punctuation">(</span><span class="token punctuation">(</span>part<span class="token punctuation">.</span>previousValue <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
+  &lt;/div>`</span></span><span class="token punctuation">;</span>
+</pre><p>lit-html includes a few directives:</p>
+<h4 id="-repeat-items-keyfn-template-"><code>repeat(items, keyfn, template)</code></h4>
+<p>A loop that supports efficient re-ordering by using item keys.</p>
+<p>Example:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`
+  &lt;ul>
+    ${repeat(items, (i) => i.id, (i, index) => html`</span></span>
+      <span class="token operator">&lt;</span>li<span class="token operator">></span>$<span class="token punctuation">{</span>index<span class="token punctuation">}</span><span class="token punctuation">:</span> $<span class="token punctuation">{</span>i<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>li<span class="token operator">></span><span class="token template-string"><span class="token string">`)}
+  &lt;/ul>
+`</span></span><span class="token punctuation">;</span>
+</pre><h4 id="-until-promise-defaultcontent-"><code>until(promise, defaultContent)</code></h4>
+<p>Renders <code>defaultContent</code> until <code>promise</code> resolves, then it renders the resolved value of <code>promise</code>.</p>
+<p>Example:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`
+  &lt;p>
+    ${until(
+        fetch('content.txt').then((r) => r.text()),
+        html`</span></span><span class="token operator">&lt;</span>span<span class="token operator">></span>Loading<span class="token operator">...</span><span class="token operator">&lt;</span><span class="token operator">/</span>span<span class="token operator">></span><span class="token template-string"><span class="token string">`)}
+  &lt;/p>
+`</span></span><span class="token punctuation">;</span>
+</pre><h4 id="-asyncappend-asynciterable-and-asyncreplace-asynciterable-"><code>asyncAppend(asyncIterable)</code> and <code>asyncReplace(asyncIterable)</code></h4>
+<p>JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to <code>next()</code>, but with asynchronous iterators <code>next()</code> returns a <code>Promise</code>, allowing the iterator to provide the item when it&#39;s ready.</p>
+<p>lit-html offers two directives to consume asynchronous iterators:</p>
+<ul>
+<li><code>asyncAppend</code> renders the values of an <a href="https://github.com/tc39/proposal-async-iteration">async iterable</a>,
+appending each new value after the previous.</li>
+<li><code>asyncReplace</code> renders the values of an <a href="https://github.com/tc39/proposal-async-iteration">async iterable</a>,
+replacing the previous value with the new value.</li>
+</ul>
+<p>Example:</p>
+<pre class="code language-javascript" language="javascript">
+
+<span class="token keyword">const</span> <span class="token function-variable function">wait</span> <span class="token operator">=</span> <span class="token punctuation">(</span>t<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token keyword">new</span> <span class="token class-name">Promise</span><span class="token punctuation">(</span><span class="token punctuation">(</span>resolve<span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token function">setTimeout</span><span class="token punctuation">(</span>resolve<span class="token punctuation">,</span> t<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/**
+ * Returns an async iterable that yields increasing integers.
+ */</span>
+<span class="token keyword">async</span> <span class="token keyword">function</span><span class="token operator">*</span> <span class="token function">countUp</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">yield</span> i<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token keyword">await</span> <span class="token function">wait</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">render</span><span class="token punctuation">(</span>html<span class="token template-string"><span class="token string">`
+  Count: &lt;span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">asyncReplace</span><span class="token punctuation">(</span><span class="token function">countUp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&lt;/span>.
+`</span></span><span class="token punctuation">,</span> document<span class="token punctuation">.</span>body<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><p>In the near future, <code>ReadableStream</code>s will be async iterables, enabling streaming <code>fetch()</code> directly into a template:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token comment">// Endpoint that returns a billion digits of PI, streamed.</span>
+<span class="token keyword">const</span> url <span class="token operator">=</span>
+    <span class="token string">'https://cors-anywhere.herokuapp.com/http://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> streamingResponse <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> response <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">fetch</span><span class="token punctuation">(</span>url<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> response<span class="token punctuation">.</span>body<span class="token punctuation">.</span><span class="token function">getReader</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">render</span><span class="token punctuation">(</span>html<span class="token template-string"><span class="token string">`π is: </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">asyncAppend</span><span class="token punctuation">(</span>streamingResponse<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">`</span></span><span class="token punctuation">,</span> document<span class="token punctuation">.</span>body<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre>
+      <main>
+      <footer>
+        <p>© 2018 Polymer Authors. Code Licensed under the BSD License. Documentation licensed under CC BY 3.0.</p>
+      </footer>
+    </body>
+  </html>
