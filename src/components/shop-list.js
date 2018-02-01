@@ -73,7 +73,7 @@ class ShopList extends connect(store)(LitElement) {
       <ul class="grid">
         ${repeat(this._getListItems(category.items), item => html`
           <li>
-            <a href$="${this._getItemHref(item)}"><shop-list-item item="${item}"></shop-list-item></a>
+            <a href="/detail/${category.name}/${item.name}"><shop-list-item item="${item}"></shop-list-item></a>
           </li>
         `)}
       </ul>` : html`
@@ -114,12 +114,6 @@ class ShopList extends connect(store)(LitElement) {
   _getListItems(items) {
     // Return placeholder items when the items haven't loaded yet.
     return items ? Object.values(items) : [{},{},{},{},{},{},{},{},{},{}];
-  }
-
-  _getItemHref(item) {
-    // By returning null when `itemId` is undefined, the href attribute won't be set and
-    // the link will be disabled.
-    return item.name ? ['/detail', this.category.name, item.name].join('/') : null;
   }
 
   _getPluralizedQuantity(items) {

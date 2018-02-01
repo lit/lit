@@ -29,7 +29,7 @@ export const updateLocation = (path) => (dispatch, getState) => {
     case 'detail':
       const item = currentItemSelector(state);
       // Item is async loaded, so check if it has loaded yet. If not, meta will
-      // be updated in REQUEST_CATEGORY_ITEMS instead.
+      // be updated later in the receiveCategoryItems action.
       if (item) {
         dispatch(updateMeta({
           title: item.title,
