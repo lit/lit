@@ -228,10 +228,6 @@ class ShopCartItem extends LitElement {
     }));
   }
 
-  _formatPrice(price) {
-    return price ? '$' + price.toFixed(2) : '';
-  }
-
   _removeItem() {
     store.dispatch(removeCartEntry({
       item: this.entry.item,

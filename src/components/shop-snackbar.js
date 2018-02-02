@@ -1,7 +1,4 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import { flush } from '../../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
-import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
 
 class ShopSnackbar extends LitElement {
   render() {
@@ -51,17 +48,6 @@ class ShopSnackbar extends LitElement {
   }
 
   static get is() { return 'shop-snackbar'; }
-
-  open() {
-    flush();
-    this.offsetHeight && this.classList.add('opened');
-    this._closeDebouncer = Debouncer.debounce(this._closeDebouncer,
-      timeOut.after(4000), this.close.bind(this));
-  }
-
-  close() {
-    this.classList.remove('opened');
-  }
 }
 
 customElements.define(ShopSnackbar.is, ShopSnackbar);

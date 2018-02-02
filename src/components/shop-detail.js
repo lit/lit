@@ -126,56 +126,54 @@ class ShopDetail extends connect(store)(LitElement) {
 
     </style>
 
-    ${ !failure && item ? html`
-      <div id="content">
-        <shop-image alt="${item.title}" src="${item.largeImage}"></shop-image>
-        <div class="detail" has-content>
-          <h1>${item.title}</h1>
-          <div class="price">${this._formatPrice(item.price)}</div>
-          <div class="pickers">
-            <shop-select>
-              <label id="sizeLabel" prefix>Size</label>
-              <select id="sizeSelect" aria-labelledby="sizeLabel">
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M" selected>M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
-              <shop-md-decorator aria-hidden="true">
-                <shop-underline></shop-underline>
-              </shop-md-decorator>
-            </shop-select>
-            <shop-select>
-              <label id="quantityLabel" prefix>Quantity</label>
-              <select id="quantitySelect" aria-labelledby="quantityLabel">
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-              <shop-md-decorator aria-hidden="true">
-                <shop-underline></shop-underline>
-              </shop-md-decorator>
-            </shop-select>
-          </div>
-          <div class="description">
-            <h2>Description</h2>
-            <p>${ item ? unsafeHTML(this._unescapeText(item.description)) : null }</p>
-          </div>
-          <shop-button responsive>
-            <button on-click="${() => this._addToCart()}" aria-label="Add this item to cart">Add to Cart</button>
-          </shop-button>
+    <div id="content" hidden="${failure || !item}">
+      <shop-image alt="${item.title}" src="${item.largeImage}"></shop-image>
+      <div class="detail" has-content>
+        <h1>${item.title}</h1>
+        <div class="price">$${item.price && item.price.toFixed(2)}</div>
+        <div class="pickers">
+          <shop-select>
+            <label id="sizeLabel" prefix>Size</label>
+            <select id="sizeSelect" aria-labelledby="sizeLabel">
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M" selected>M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+            <shop-md-decorator aria-hidden="true">
+              <shop-underline></shop-underline>
+            </shop-md-decorator>
+          </shop-select>
+          <shop-select>
+            <label id="quantityLabel" prefix>Quantity</label>
+            <select id="quantitySelect" aria-labelledby="quantityLabel">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+            <shop-md-decorator aria-hidden="true">
+              <shop-underline></shop-underline>
+            </shop-md-decorator>
+          </shop-select>
         </div>
+        <div class="description">
+          <h2>Description</h2>
+          <p>${ item ? unsafeHTML(this._unescapeText(item.description)) : null }</p>
+        </div>
+        <shop-button responsive>
+          <button on-click="${() => this._addToCart()}" aria-label="Add this item to cart">Add to Cart</button>
+        </shop-button>
       </div>
-    ` : html`
-      <!--
-        shop-network-warning shows a warning message when the items can't be rendered due
-        to network conditions.
-      -->
-      <shop-network-warning hidden$="[[!failure]]"></shop-network-warning>
-    `}
+    </div>
+    
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+    <shop-network-warning hidden="${!failure}"></shop-network-warning>
     `;
 
   }
@@ -195,7 +193,7 @@ class ShopDetail extends connect(store)(LitElement) {
   update() {
     const state = store.getState();
     const category = currentCategorySelector(state);
-    this.item = currentItemSelector(state);
+    this.item = currentItemSelector(state) || {};
     this.failure = category && category.failure;
   }
 
@@ -205,10 +203,6 @@ class ShopDetail extends connect(store)(LitElement) {
     let elem = document.createElement('textarea');
     elem.innerHTML = text;
     return elem.textContent;
-  }
-
-  _formatPrice(price) {
-    return price ? '$' + price.toFixed(2) : '';
   }
 
   _addToCart() {

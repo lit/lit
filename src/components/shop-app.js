@@ -27,7 +27,7 @@ installRouter(() => store.dispatch(updateLocation(window.decodeURIComponent(wind
 installNetwork(store);
 
 class ShopApp extends connect(store)(LitElement) {
-  render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen }) {
+  render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen, _snackbarOpened }) {
     return html`
     <style>
 
@@ -99,23 +99,9 @@ class ShopApp extends connect(store)(LitElement) {
         overflow: hidden;
       }
 
-      :host(:not([page=detail])) .back-btn {
-        display: none;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
       #tabContainer {
         position: relative;
         height: 66px;
-      }
-
-      shop-tabs, shop-tab {
-        /*--shop-tab-overlay: {
-          border-bottom: 2px solid var(--app-accent-color);
-        };*/
       }
 
       shop-tabs {
@@ -217,9 +203,13 @@ class ShopApp extends connect(store)(LitElement) {
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
       <app-toolbar>
         <div class="left-bar-item">
-          <paper-icon-button class="menu-btn" icon="menu" on-click="${_ => this.drawerOpened = true}" aria-label="Categories">
+          <paper-icon-button class="menu-btn" icon="menu"
+              on-click="${_ => this.drawerOpened = true}"
+              aria-label="Categories"
+              hidden="${page === 'detail'}">
           </paper-icon-button>
-          <a class="back-btn" href="/list/${categoryName}" tabindex="-1">
+          <a class="back-btn" href="/list/${categoryName}" tabindex="-1"
+              hidden="${page !== 'detail'}">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
         </div>
@@ -280,7 +270,7 @@ class ShopApp extends connect(store)(LitElement) {
     <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
 
     ${ modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
-    ${ loadComplete ? html`<shop-snackbar>${offline ? 'You are offline' : 'You are online'}</shop-snackbar>` : null }
+    ${ loadComplete ? html`<shop-snackbar class$="${_snackbarOpened ? 'opened' : ''}">${offline ? 'You are offline' : 'You are online'}</shop-snackbar>` : null }
     `;
   }
 
@@ -304,6 +294,8 @@ class ShopApp extends connect(store)(LitElement) {
     _a11yLabel: String,
 
     _smallScreen: Boolean,
+
+    _snackbarOpened: Boolean,
 
     loadComplete: Boolean
   }}
@@ -436,8 +428,9 @@ class ShopApp extends connect(store)(LitElement) {
     // Show the snackbar if the user is offline when starting a new session
     // or if the network status changed.
     if (offline || (!offline && oldOffline === true)) {
-      const networkSnackbar = this.shadowRoot.querySelector('shop-snackbar');
-      networkSnackbar.open();
+      this._snackbarOpened = true;
+      window.clearTimeout(this._snackbarTimer);
+      this._snackbarTimer = window.setTimeout(() => this._snackbarOpened = false, 4000);
     }
   }
 
