@@ -19,7 +19,6 @@ import serve = require('koa-static');
 
 const app = new koa();
 const docsDir = path.resolve(__dirname, '../../docs');
-console.log('serving directory', docsDir);
 app.use(mount('/lit-html/', serve(docsDir)));
 const server = app.listen();
 console.log(`lit-html docs server listening at ${server.address().port}`);

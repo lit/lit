@@ -84,7 +84,7 @@ async function generateDocs() {
 
   fs.copyFileSync(path.join(docsSrcDir, 'index.css'), path.join(docsOutDir, 'index.css'));
   fs.copyFileSync(path.resolve(__dirname, '../node_modules/prismjs/themes/prism-okaidia.css'), path.join(docsOutDir, 'prism.css'));
-
+  await fs.writeFile(path.join(docsOutDir, '.nojekyll'), '');
   await exec('npm run gen-docs', {cwd: '../'});
 }
 
