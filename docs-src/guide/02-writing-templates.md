@@ -136,7 +136,7 @@ html`
       ? html`Welcome ${user.name}`
       : html`Please log in`
   }
-`
+`;
 ```
 
 ### Ifs with if-statements
@@ -146,7 +146,7 @@ You can express conditional logic with if statements outside of a template to co
 ```js
 let userMessage;
 if (user.isloggedIn) {
-  userMessage = html`Welcome ${user.name}`
+  userMessage = html`Welcome ${user.name}`;
 } else {
   userMessage = html`Please log in`;
 }
@@ -164,9 +164,9 @@ To render lists, `Array.map` can be used to transform a list of data into a list
 ```js
 html`
   <ul>
-    ${items.map((i) => html`<li>${i}</li>)}
+    ${items.map((i) => html`<li>${i}</li>`)}
   </ul>
-`
+`;
 ```
 
 ### Looping statements
@@ -181,7 +181,7 @@ html`
   <ul>
     ${itemTemplates}
   </ul>
-`
+`;
 ```
 
 ## Directives

@@ -67,8 +67,8 @@
     <div class="icon-large">lit-html</div>
     <ul>
       <li ><a href="/lit-html/">Home</a></li>
-      <li class="selected"><a href="/lit-html/guide">Guide</a></li>
-      <li ><a href="/lit-html/api">API</a></li>
+      <li class="selected"><a href="/lit-html/guide/">Guide</a></li>
+      <li ><a href="/lit-html/api/">API</a></li>
       <li><a href="https://github.com/Polymer/lit-html">GitHub</a></li>
     </ul>
   </nav>
@@ -163,13 +163,13 @@ html<span class="token template-string"><span class="token string">`
       ? html`</span></span>Welcome $<span class="token punctuation">{</span>user<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token template-string"><span class="token string">`
       : html`</span></span>Please log <span class="token keyword">in</span><span class="token template-string"><span class="token string">`
   }
-`</span></span>
+`</span></span><span class="token punctuation">;</span>
 </pre><h3 id="ifs-with-if-statements">Ifs with if-statements</h3>
 <p>You can express conditional logic with if statements outside of a template to compute values to use inside of the template:</p>
 <pre class="code language-js" language="js">
 <span class="token keyword">let</span> userMessage<span class="token punctuation">;</span>
 <span class="token keyword">if</span> <span class="token punctuation">(</span>user<span class="token punctuation">.</span>isloggedIn<span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  userMessage <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`Welcome </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>user<span class="token punctuation">.</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">`</span></span>
+  userMessage <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`Welcome </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>user<span class="token punctuation">.</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">`</span></span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
   userMessage <span class="token operator">=</span> html<span class="token template-string"><span class="token string">`Please log in`</span></span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span>
@@ -183,9 +183,9 @@ html<span class="token template-string"><span class="token string">`
 <pre class="code language-js" language="js">
 html<span class="token template-string"><span class="token string">`
   &lt;ul>
-    ${items.map((i) => html`</span></span><span class="token operator">&lt;</span>li<span class="token operator">></span>$<span class="token punctuation">{</span>i<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>li<span class="token operator">></span><span class="token punctuation">)</span><span class="token punctuation">}</span>
-  <span class="token operator">&lt;</span><span class="token operator">/</span>ul<span class="token operator">></span>
-`
+    ${items.map((i) => html`</span></span><span class="token operator">&lt;</span>li<span class="token operator">></span>$<span class="token punctuation">{</span>i<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>li<span class="token operator">></span><span class="token template-string"><span class="token string">`)}
+  &lt;/ul>
+`</span></span><span class="token punctuation">;</span>
 </pre><h3 id="looping-statements">Looping statements</h3>
 <pre class="code language-js" language="js">
 <span class="token keyword">const</span> itemTemplates <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
@@ -197,7 +197,7 @@ html<span class="token template-string"><span class="token string">`
   &lt;ul>
     </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>itemTemplates<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
   &lt;/ul>
-`</span></span>
+`</span></span><span class="token punctuation">;</span>
 </pre><h2 id="directives">Directives</h2>
 <p>Directives are functions that can extend lit-html by directly interacting with the Part API.</p>
 <p>Directives will usually be created from factory functions that accept some arguments for values and configuration. Directives are created by passing a function to lit-html&#39;s <code>directive()</code> function:</p>

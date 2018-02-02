@@ -117,8 +117,8 @@ const topNav = (section: string) => html`
     <div class="icon-large">lit-html</div>
     <ul>
       <li ${section === 'home' ? 'class="selected"' : ''}><a href="/${root}/">Home</a></li>
-      <li ${section === 'guide' ? 'class="selected"' : ''}><a href="/${root}/guide">Guide</a></li>
-      <li ${section === 'api' ? 'class="selected"' : ''}><a href="/${root}/api">API</a></li>
+      <li ${section === 'guide' ? 'class="selected"' : ''}><a href="/${root}/guide/">Guide</a></li>
+      <li ${section === 'api' ? 'class="selected"' : ''}><a href="/${root}/api/">API</a></li>
       <li><a href="https://github.com/Polymer/lit-html">GitHub</a></li>
     </ul>
   </nav>
