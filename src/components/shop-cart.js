@@ -53,7 +53,7 @@ class ShopCart extends connect(store)(LitElement) {
               `)}
             </div>
             <div class="checkout-box">
-              Total: <span class="subtotal">${isNaN(total) ? '' : '$' + total.toFixed(2)}</span>
+              Total: <span class="subtotal">$${total.toFixed(2)}</span>
               <shop-button responsive>
                 <a href="/checkout">Checkout</a>
               </shop-button>

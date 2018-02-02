@@ -130,7 +130,7 @@ class ShopDetail extends connect(store)(LitElement) {
       <shop-image alt="${item.title}" src="${item.largeImage}"></shop-image>
       <div class="detail" has-content>
         <h1>${item.title}</h1>
-        <div class="price">$${item.price && item.price.toFixed(2)}</div>
+        <div class="price">${item.price ? `$${item.price.toFixed(2)}` : null}</div>
         <div class="pickers">
           <shop-select>
             <label id="sizeLabel" prefix>Size</label>

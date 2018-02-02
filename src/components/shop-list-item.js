@@ -41,7 +41,7 @@ class ShopListItem extends LitElement {
 
     <shop-image src="${item.image}" alt="${item.title}"></shop-image>
     <div class="title">${item.title}</div>
-    <span class="price">${this._formatPrice(item.price)}</span>
+    <span class="price">${item.price ? `$${item.price.toFixed(2)}` : null}</span>
 `;
   }
 
@@ -52,10 +52,6 @@ class ShopListItem extends LitElement {
     item: Object
 
   }}
-
-  _formatPrice(price) {
-    return price ? '$' + price.toFixed(2) : '';
-  }
 }
 
 customElements.define(ShopListItem.is, ShopListItem);

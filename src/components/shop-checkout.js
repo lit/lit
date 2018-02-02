@@ -381,7 +381,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                     `)}
                     <div class="row total-row">
                       <div class="flex">Total</div>
-                      <div>${isNaN(total) ? '' : '$' + total.toFixed(2)}</div>
+                      <div>${total.toFixed(2)}</div>
                     </div>
                     <shop-button responsive id="submitBox">
                       <input type="button" on-click="${e => this._submit()}" value="Place Order">
