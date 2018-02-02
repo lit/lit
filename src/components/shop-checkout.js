@@ -23,7 +23,7 @@ store.addReducers({
 });
 
 class ShopCheckout extends connect(store)(LitElement) {
-  render({ cart, response, state, total, waiting }) {
+  render({ cart, response, state, total, waiting, hasBillingAddress }) {
     return html`
     <style>
       ${shopButtonStyle}
@@ -226,16 +226,16 @@ class ShopCheckout extends connect(store)(LitElement) {
                     <div class="billing-address-picker">
                       <shop-checkbox>
                         <input type="checkbox" id="setBilling" name="setBilling"
-                            checked$="[[hasBillingAddress]]" on-change="_toggleBillingAddress">
+                            checked="${hasBillingAddress}" on-change="${e => this.hasBillingAddress = e.target.checked}">
                         <shop-md-decorator></shop-md-decorator aria-hidden="true">
                       </shop-checkbox>
                       <label for="setBilling">Use different billing address</label>
                     </div>
-                    <div hidden$="[[!hasBillingAddress]]">
+                    ${hasBillingAddress ? html`
                       <div class="row input-row">
                         <shop-input>
                           <input type="text" id="billAddress" name="billAddress" pattern=".{5,}"
-                              placeholder="Address" required$="[[hasBillingAddress]]"
+                              placeholder="Address" required="${hasBillingAddress}"
                               autocomplete="billing street-address"
                               aria-labelledby="billAddressLabel billAddressHeading">
                           <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
@@ -247,7 +247,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                       <div class="row input-row">
                         <shop-input>
                           <input type="text" id="billCity" name="billCity" pattern=".{2,}"
-                              placeholder="City" required$="[[hasBillingAddress]]"
+                              placeholder="City" required="${hasBillingAddress}"
                               autocomplete="billing address-level2"
                               aria-labelledby="billCityLabel billAddressHeading">
                           <shop-md-decorator error-message="Invalid City" aria-hidden="true">
@@ -259,7 +259,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                       <div class="row input-row">
                         <shop-input>
                           <input type="text" id="billState" name="billState" pattern=".{2,}"
-                              placeholder="State/Province" required$="[[hasBillingAddress]]"
+                              placeholder="State/Province" required="${hasBillingAddress}"
                               autocomplete="billing address-level1"
                               aria-labelledby="billStateLabel billAddressHeading">
                           <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
@@ -269,7 +269,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                         </shop-input>
                         <shop-input>
                           <input type="text" id="billZip" name="billZip" pattern=".{4,}"
-                              placeholder="Zip/Postal Code" required$="[[hasBillingAddress]]"
+                              placeholder="Zip/Postal Code" required="${hasBillingAddress}"
                               autocomplete="billing postal-code"
                               aria-labelledby="billZipLabel billAddressHeading">
                           <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
@@ -281,7 +281,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                       <div class="column">
                         <label id="billCountryLabel" class="shop-select-label">Country</label>
                         <shop-select>
-                          <select id="billCountry" name="billCountry" required$="[[hasBillingAddress]]"
+                          <select id="billCountry" name="billCountry" required="${hasBillingAddress}"
                               autocomplete="billing country"
                               aria-labelledby="billCountryLabel billAddressHeading">
                             <option value="US" selected>United States</option>
@@ -292,7 +292,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                           </shop-md-decorator>
                         </shop-select>
                       </div>
-                    </div>
+                    ` : null}
                   </section>
 
                   <section>
@@ -384,7 +384,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                       <div>${isNaN(total) ? '' : '$' + total.toFixed(2)}</div>
                     </div>
                     <shop-button responsive id="submitBox">
-                      <input type="button" on-click="_submit" value="Place Order">
+                      <input type="button" on-click="${e => this._submit()}" value="Place Order">
                     </shop-button>
                   </section>
                 </div>`
@@ -428,9 +428,7 @@ class ShopCheckout extends connect(store)(LitElement) {
      * The state of the form. Valid values are:
      * `init`, `success` and `error`.
      */
-    state: {
-      type: String
-    },
+    state: String,
 
     /**
      * An array containing the items in the cart.
@@ -445,18 +443,12 @@ class ShopCheckout extends connect(store)(LitElement) {
     /**
      * If true, the user must enter a billing address.
      */
-    hasBillingAddress: {
-      type: Boolean,
-      value: false
-    },
+    hasBillingAddress: Boolean,
 
     /**
      * If true, shop-checkout is currently visible on the screen.
      */
-    visible: {
-      type: Boolean,
-      observer: '_visibleChanged'
-    },
+    visible: Boolean,
 
     /**
      * True when waiting for the server to repond.
@@ -476,18 +468,19 @@ class ShopCheckout extends connect(store)(LitElement) {
     this.state = state.checkout.state;
   }
 
-  _submit(e) {
-    if (this._validateForm()) {
+  _submit() {
+    const checkoutForm = this.shadowRoot.querySelector('#checkoutForm');
+    if (this._validateForm(checkoutForm)) {
       // To send the form data to the server:
       // 2) Remove the code below.
-      // 3) Uncomment `this.$.checkoutForm.submit()`.
+      // 3) Uncomment `checkoutForm.submit()`.
 
-      this.$.checkoutForm.dispatchEvent(new CustomEvent('iron-form-presubmit', {
+      checkoutForm.dispatchEvent(new CustomEvent('iron-form-presubmit', {
         composed: true}));
 
       this._submitFormDebouncer = Debouncer.debounce(this._submitFormDebouncer,
         timeOut.after(1000), () => {
-          this.$.checkoutForm.dispatchEvent(new CustomEvent('iron-form-response', {
+          checkoutForm.dispatchEvent(new CustomEvent('iron-form-response', {
             composed: true, detail: {
               response: {
                 success: 1,
@@ -496,7 +489,7 @@ class ShopCheckout extends connect(store)(LitElement) {
             }}));
         });
 
-      // this.$.checkoutForm.submit();
+      // checkoutForm.submit();
     }
   }
 
@@ -514,31 +507,10 @@ class ShopCheckout extends connect(store)(LitElement) {
   }
 
   /**
-   * Sets the initial state.
-   */
-  _reset() {
-    let form = this.$.checkoutForm;
-
-    this._setWaiting(false);
-    form.reset && form.reset();
-
-    let nativeForm = form._form;
-    if (!nativeForm) {
-      return;
-    }
-
-    // Remove the `aria-invalid` attribute from the form inputs.
-    for (let el, i = 0; el = nativeForm.elements[i], i < nativeForm.elements.length; i++) {
-      el.removeAttribute('aria-invalid');
-    }
-  }
-
-  /**
    * Validates the form's inputs and adds the `aria-invalid` attribute to the inputs
    * that don't match the pattern specified in the markup.
    */
-  _validateForm() {
-    let form = this.$.checkoutForm;
+  _validateForm(form) {
     let firstInvalid = false;
     let nativeForm = form._form;
 
@@ -617,14 +589,6 @@ class ShopCheckout extends connect(store)(LitElement) {
     if (this.hasBillingAddress) {
       this.$.billAddress.focus();
     }
-  }
-
-  _visibleChanged(visible) {
-    if (!visible) {
-      return;
-    }
-    // Reset the UI states
-    this._reset();
   }
 
 }
