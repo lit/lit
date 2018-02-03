@@ -91,7 +91,7 @@ Rendering can be customized by providing alternate `render()` implementations wh
 
 `lit-html` is designed to be lightweight and fast (though performance benchmarking is just starting).
 
- * It utilizes the built-in JS and HTML parsers - it doesn't include any expression or markup parser of it's own.
+ * It utilizes the built-in JS and HTML parsers - it doesn't include any expression or markup parser of its own.
  * It only updates the dynamic parts of templates - static parts are untouched, not even walked for diffing, after the initial render.
  * It uses cloning for initial render.
 
