@@ -525,6 +525,37 @@ suite('lit-html', () => {
           </div>`);
       });
 
+      test('render style tags with expressions correctly', () => {
+        const color = 'red';
+        const t = html`
+          <style>
+            h1: {
+              color: ${color};
+            }
+          </style>`;
+        render(t, container);
+        assert.equal(container.innerHTML, `
+          <style>
+            h1: {
+              color: red;
+            }
+          </style>`);
+      });
+
+      test('renders an attribute after empty style node binding', () => {
+        // This test is sensitive to the exact binding in the style tag.
+        // Make sure the binding takes up the whole element with no text
+        // on either side of it
+        render(html`
+            <style>${'bar'}</style>
+            <a href="/buy/${'foo'}"></a>
+          `, container);
+          assert.equal(container.innerHTML, `
+            <style>bar</style>
+            <a href="/buy/foo"></a>
+          `);
+      });
+
       test('renders expressions with preceding elements', () => {
         render(html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`, container);
         assert.equal(container.innerHTML, '<a>foo</a><h1>bar</h1>');
@@ -563,6 +594,20 @@ suite('lit-html', () => {
         container = document.createElement('div');
       });
 
+      test('sanity check one', () => {
+        // bump line numbers
+        const foo = 'aaa';
+
+        const t = () => html`<div>${foo}</div>`;
+
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>aaa</div>');
+        const text = container.firstChild!.childNodes[1] as Text;
+        text.textContent = 'bbb';
+        render(t(), container);
+        assert.equal(container.innerHTML, '<div>bbb</div>');
+      });
+
       test('dirty checks simple values', () => {
         const foo = 'aaa';
 
@@ -573,7 +618,7 @@ suite('lit-html', () => {
         const text = container.firstChild!.childNodes[1] as Text;
         assert.equal(text.textContent, 'aaa');
 
-        // Set textContent manually. Since lit-html doesn't dirty checks against
+        // Set textContent manually. Since lit-html doesn't dirty check against
         // actual DOM, but again previous part values, this modification should
         // persist through the next render with the same value.
         text.textContent = 'bbb';

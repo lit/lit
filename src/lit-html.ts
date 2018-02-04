@@ -337,17 +337,23 @@ export class Template {
         // We have a part for each match found
         partIndex += lastIndex;
 
-        // We keep this current node, but reset its content to the last
-        // literal part. We insert new literal nodes before this so that the
-        // tree walker keeps its position correctly.
-        node.textContent = strings[lastIndex];
-
         // Generate a new text node for each literal section
         // These nodes are also used as the markers for node parts
         for (let i = 0; i < lastIndex; i++) {
-          parent.insertBefore(document.createTextNode(strings[i]), node);
+          console.log(parent.nodeName);
+          parent.insertBefore(
+              (strings[i] === '')
+                  ? document.createComment('')
+                  : document.createTextNode(strings[i]),
+              node);
           this.parts.push(new TemplatePart('node', index++));
         }
+        parent.insertBefore(
+            strings[lastIndex] === '' ?
+                document.createComment('') :
+                document.createTextNode(strings[lastIndex]),
+            node);
+        nodesToRemove.push(node);
       } else if (
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === marker) {
@@ -365,7 +371,7 @@ export class Template {
         const previousSibling = node.previousSibling;
         if (previousSibling === null || previousSibling !== previousNode ||
             previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createTextNode(''), node);
+          parent.insertBefore(document.createComment(''), node);
         } else {
           index--;
         }
@@ -375,7 +381,7 @@ export class Template {
         // We don't have to check if the next node is going to be removed,
         // because that node will induce a new marker if so.
         if (node.nextSibling === null) {
-          parent.insertBefore(document.createTextNode(''), node);
+          parent.insertBefore(document.createComment(''), node);
         } else {
           index--;
         }
@@ -738,7 +744,19 @@ export class TemplateInstance {
           index++;
           walker.nextNode();
         }
-        this._parts.push(this._partCallback(this, part, walker.currentNode));
+        let node = walker.currentNode;
+        // Swap the comment placeholders for empty text nodes
+        // The nextSibling of the part placeholder is the part endNode
+        if (node.nextSibling !== null && node.nextSibling!.nodeType === 8) {
+          node.parentNode!.replaceChild(document.createTextNode(''), node.nextSibling!);
+        }
+        // The part placeholder is the part startNode
+        if (node.nodeType === 8) {
+          node = document.createTextNode('');
+          walker.currentNode.parentNode!.replaceChild(node, walker.currentNode);
+          walker.currentNode = node;
+        }
+        this._parts.push(this._partCallback(this, part, node));
       }
     }
     return fragment;
