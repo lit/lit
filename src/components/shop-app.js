@@ -84,10 +84,6 @@ class ShopApp extends connect(store)(LitElement) {
         width: 40px;
       }
 
-      .menu-btn {
-        display: none;
-      }
-
       shop-cart-button {
         display: block;
         width: 40px;
@@ -186,14 +182,6 @@ class ShopApp extends connect(store)(LitElement) {
         :host {
           padding-top: 64px;
         }
-
-        .menu-btn {
-          display: block;
-        }
-
-        :host([page=detail]) .menu-btn {
-          display: none;
-        }
       }
 
     </style>
@@ -206,7 +194,7 @@ class ShopApp extends connect(store)(LitElement) {
           <paper-icon-button class="menu-btn" icon="menu"
               on-click="${_ => this.drawerOpened = true}"
               aria-label="Categories"
-              hidden="${page === 'detail'}">
+              hidden="${!_smallScreen || page === 'detail'}">
           </paper-icon-button>
           <a class="back-btn" href="/list/${categoryName}" tabindex="-1"
               hidden="${page !== 'detail'}">
