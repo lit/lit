@@ -20,7 +20,7 @@ const pathSelector = state => state.location.path;
 export const splitPathSelector = createSelector(
   pathSelector,
   path => {
-    return path.slice(1).split('/') || [];
+    return (path || '').slice(1).split('/');
   }
 );
 

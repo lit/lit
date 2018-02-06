@@ -7,6 +7,8 @@ import { lazyReducerEnhancer } from '../../node_modules/redux-helpers/lazyReduce
 import categories from './reducers/categories.js';
 import announcer from './reducers/announcer.js';
 import meta from './reducers/meta.js';
+import location from './reducers/location.js';
+import network from './reducers/network.js';
 
 const compose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || origCompose;
 
@@ -19,5 +21,7 @@ store.addReducers({
   categories,
   announcer,
   meta,
+  location,
+  network
 });
 

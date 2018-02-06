@@ -12,19 +12,13 @@ import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js'
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
-import location, { splitPathSelector } from '../reducers/location.js';
-import network from '../reducers/network.js';
+import { pageSelector } from '../reducers/location.js';
+import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { installRouter } from '../../node_modules/redux-helpers/router.js';
 import { installNetwork } from '../network.js';
 import { updateLocation } from '../actions/location.js';
-
-store.addReducers({
-  location,
-  network
-});
-
-installRouter(() => store.dispatch(updateLocation(window.decodeURIComponent(window.location.pathname))));
-installNetwork(store);
+import { updateMeta } from '../actions/meta.js';
+import { fetchCategoryItems, fetchCategories } from '../actions/categories.js';
 
 class ShopApp extends connect(store)(LitElement) {
   render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen, _snackbarOpened }) {
@@ -306,21 +300,37 @@ class ShopApp extends connect(store)(LitElement) {
     super._propertiesChanged(props, changed, oldProps);
   }
 
+  constructor() {
+    super();
+
+    installRouter(() => this._updateLocation());
+    installNetwork(store);
+    store.dispatch(fetchCategories());
+  }
+
   update() {
     const state = store.getState();
-    let page = splitPathSelector(state)[0] || 'home';
-    let categoryName = null;
-    if (['list', 'detail'].indexOf(page) !== -1) {
-      categoryName = splitPathSelector(state)[1];
-      if (Object.keys(state.categories).indexOf(categoryName) === -1) {
+
+    this._category = currentCategorySelector(state);
+    this._item = currentItemSelector(state);
+    let page = pageSelector(state);
+    switch (page) {
+      case 'list':
+        if (!this._category) page = '404';
+        break;
+      case 'detail':
+        if (!this._item) page = '404';
+        break;
+      case 'home':
+      case 'cart':
+      case 'checkout':
+        break;
+      default:
         page = '404';
-      }
-    } else if (['home', 'cart', 'checkout'].indexOf(page) === -1) {
-      page = '404';
     }
 
     this.categories = Object.values(state.categories);
-    this.categoryName = categoryName;
+    this.categoryName = this._category ? this._category.name : null;
     this.meta = state.meta;
     this.modalOpened = state.modal;
     this.offline = !state.network.online;
@@ -347,6 +357,8 @@ class ShopApp extends connect(store)(LitElement) {
   }
 
   _categoryNameChanged(categoryName, oldCategoryName) {
+    store.dispatch(fetchCategoryItems(this._category));
+
     // Reset the list view scrollTop if the category changed.
     this._listScrollTop = 0;
     scroll({ top: 0, behavior: 'silent' });
@@ -368,22 +380,39 @@ class ShopApp extends connect(store)(LitElement) {
     // effects during the scroll.
     scroll({ top: scrollTop, behavior: 'silent' });
 
-    // Close the drawer - in case the *route* change came from a link in the drawer.
-    this.drawerOpened = false;
-
     switch (page) {
+      case 'home':
+        store.dispatch(updateMeta({ title: 'Home' }));
+        break;
       case 'list':
         await import('../components/shop-list.js');
+        store.dispatch(updateMeta({
+          title: this._category.title,
+          image: document.baseURI + this._category.image
+        }));
         break;
       case 'detail':
         await import('../components/shop-detail.js');
+        // Item is async loaded, so check if it has loaded yet. If not, meta will
+        // be updated later in the receiveCategoryItems action.
+        if (this._item) {
+          store.dispatch(updateMeta({
+            title: this._item.title,
+            description: this._item.description.substring(0, 100),
+            image: document.baseURI + this._item.image
+          }));
+        }
         break;
       case 'cart':
         await import('../components/shop-cart.js');
+        store.dispatch(updateMeta({ title: 'Cart' }));
         break;
       case 'checkout':
         await import('../components/shop-checkout.js');
+        store.dispatch(updateMeta({ title: 'Checkout' }));
         break;
+      default:
+        store.dispatch(updateMeta({ title: '404' }));
     }
 
     this._ensureLazyLoaded();
@@ -410,6 +439,13 @@ class ShopApp extends connect(store)(LitElement) {
         });
       });
     }
+  }
+
+  _updateLocation() {
+    store.dispatch(updateLocation(window.decodeURIComponent(window.location.pathname)));
+
+    // Close the drawer - in case the *route* change came from a link in the drawer.
+    this.drawerOpened = false;
   }
 
   _offlineChanged(offline, oldOffline) {
