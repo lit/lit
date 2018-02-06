@@ -115,7 +115,7 @@ const render = () => html`<div class="${blue}"></div>`;
 
 ### SVG Support
 
-To create partial SVG templates - template that will rendering inside and `<svg>` tag (in the SVG namespace), use the `svg` template tag instead of the `html` template tag:
+To create partial SVG templates (templates that will render inside an `<svg>` tag in the SVG namespace), use the `svg` template tag instead of the `html` template tag:
 
 ```javascript
 const grid = svg`
