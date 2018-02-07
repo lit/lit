@@ -17,7 +17,6 @@ import './shop-image.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
-import { splitPathSelector } from '../reducers/location.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { addCartEntry } from '../actions/cart.js';
 
