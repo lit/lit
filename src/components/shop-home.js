@@ -115,7 +115,7 @@ class ShopHome extends connect(store)(LitElement) {
 
   }}
 
-  update() {
+  stateChanged() {
     const state = store.getState();
     this.categories = Object.values(state.categories);
   }

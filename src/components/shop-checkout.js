@@ -471,7 +471,7 @@ class ShopCheckout extends connect(store)(LitElement) {
 
   }}
 
-  update() {
+  stateChanged() {
     const state = store.getState();
     this.cart = state.cart ? Object.values(state.cart) : [];
     this.total = totalSelector(state);

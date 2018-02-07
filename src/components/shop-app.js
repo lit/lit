@@ -320,7 +320,7 @@ class ShopApp extends connect(store)(LitElement) {
     store.dispatch(fetchCategories());
   }
 
-  update() {
+  stateChanged() {
     const state = store.getState();
 
     this._category = currentCategorySelector(state);

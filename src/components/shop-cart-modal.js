@@ -124,7 +124,7 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
     }
   }}
 
-  update() {
+  stateChanged() {
     const state = store.getState();
     this.setProperties({
       opened: state.modal

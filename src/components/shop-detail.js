@@ -199,7 +199,7 @@ class ShopDetail extends connect(store)(LitElement) {
 
   }}
 
-  update() {
+  stateChanged() {
     const state = store.getState();
     const category = currentCategorySelector(state);
     this.item = currentItemSelector(state) || {};

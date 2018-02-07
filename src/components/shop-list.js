@@ -104,7 +104,7 @@ class ShopList extends connect(store)(LitElement) {
 
   }}
 
-  update() {
+  stateChanged() {
     const state = store.getState();
     const category = currentCategorySelector(state);
     this.category = category;
