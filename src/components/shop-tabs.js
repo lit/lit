@@ -1,17 +1,14 @@
-import { Element } from '../../node_modules/@polymer/polymer/polymer-element.js';
-import '../../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import { IronSelectableBehavior } from '../../node_modules/@polymer/iron-selector/iron-selectable.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import './shop-tabs-overlay.js';
-import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = `<dom-module id="shop-tabs">
-  <template strip-whitespace="">
+class ShopTabs extends LitElement {
+  render() {
+    return html`
     <style>
       :host {
-        @apply --layout;
-        @apply --layout-center-center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       #container {
@@ -23,29 +20,19 @@ $_documentContainer.innerHTML = `<dom-module id="shop-tabs">
       }
     </style>
     <div id="container">
-      <shop-tabs-overlay id="overlay"></shop-tabs-overlay>
+      <shop-tabs-overlay target="${this.children[this.selectedIndex]}"></shop-tabs-overlay>
       <slot></slot>
-    </div>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopTabs extends mixinBehaviors(
-  [IronSelectableBehavior], Element) {
+    </div>`;
+  }
 
   static get is() { return 'shop-tabs'; }
 
-  static get observers() { return [
-    '_onSelectedItemChanged(selectedItem)'
-  ]}
-
-  _onSelectedItemChanged(selectedItem) {
-    if (selectedItem === undefined && this.selected) return;
-
-    this.$.overlay.target = selectedItem;
-  }
+  static get properties() { return {
+    /**
+     * The index of the selected element.
+     */
+    selectedIndex: Number
+  }}
 }
 
 customElements.define(ShopTabs.is, ShopTabs);

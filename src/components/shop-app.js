@@ -4,8 +4,6 @@ import '../../node_modules/@polymer/app-layout/app-header/app-header.js';
 import '../../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '../../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { scroll } from '../../node_modules/@polymer/app-layout/helpers/helpers.js';
-import '../../node_modules/@polymer/iron-pages/iron-pages.js';
-import '../../node_modules/@polymer/iron-selector/iron-selector.js';
 import './shop-home.js';
 import { afterNextRender } from '../../node_modules/@polymer/polymer/lib/utils/render-status.js';
 import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
@@ -113,7 +111,7 @@ class ShopApp extends connect(store)(LitElement) {
       }
 
       .drawer-list {
-        margin: 0 20px;
+        margin: 20px 0;
       }
 
       .drawer-list a {
@@ -124,7 +122,7 @@ class ShopApp extends connect(store)(LitElement) {
         color: var(--app-secondary-color);
       }
 
-      .drawer-list a.iron-selected {
+      .drawer-list a.active {
         color: black;
         font-weight: bold;
       }
@@ -137,9 +135,13 @@ class ShopApp extends connect(store)(LitElement) {
         z-index: 3;
       }
 
-      iron-pages {
+      main {
         max-width: 1440px;
         margin: 0 auto;
+      }
+
+      main .hidden {
+        display: none;
       }
 
       footer {
@@ -203,7 +205,7 @@ class ShopApp extends connect(store)(LitElement) {
       ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && loadComplete ?
         html`
           <div id="tabContainer" sticky>
-            <shop-tabs selected="${categoryName}" attr-for-selected="name">
+            <shop-tabs selectedIndex="${categories.map(c => c.name).indexOf(categoryName)}">
               ${repeat(categories, category => html`
                 <shop-tab name="${category.name}">
                   <a href="/list/${category.name}">${category.title}</a>
@@ -219,29 +221,29 @@ class ShopApp extends connect(store)(LitElement) {
     ${ _smallScreen && loadComplete ?
       html`
         <app-drawer opened="${drawerOpened}" tabindex="0" on-opened-changed="${e => this.drawerOpened = e.target.opened}">
-          <iron-selector role="navigation" class="drawer-list" selected="${categoryName}" attr-for-selected="name">
+          <nav class="drawer-list">
             ${repeat(categories, category => html`
-              <a name="${category.name}" href="/list/${category.name}">${category.title}</a>
+              <a class$="${category.name === categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
             `)}
-          </iron-selector>
+          </nav>
         </app-drawer>
       ` : null
     }
 
-    <iron-pages role="main" selected="${page}" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
+    <main>
       <!-- home view -->
-      <shop-home name="home"></shop-home>
+      <shop-home class$="${page !== 'home' ? 'hidden' : ''}"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list name="list"></shop-list>
+      <shop-list class$="${page !== 'list' ? 'hidden' : ''}"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail name="detail"></shop-detail>
+      <shop-detail class$="${page !== 'detail' ? 'hidden' : ''}"></shop-detail>
       <!-- cart view -->
-      <shop-cart name="cart"></shop-cart>
+      <shop-cart class$="${page !== 'cart' ? 'hidden' : ''}"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout name="checkout"></shop-checkout>
+      <shop-checkout class$="${page !== 'checkout' ? 'hidden' : ''}"></shop-checkout>
 
-      <shop-404-warning name="404"></shop-404-warning>
-    </iron-pages>
+      <shop-404-warning class$="${page !== '404' ? 'hidden' : ''}"></shop-404-warning>
+    </main>
 
     <footer>
       <a href="https://www.polymer-project.org/1.0/toolbox/">Made by Polymer</a>
@@ -418,7 +420,7 @@ class ShopApp extends connect(store)(LitElement) {
     this._ensureLazyLoaded();
     if (oldPage) {
       // The size of the header depends on the page (e.g. on some pages the tabs
-      // do not appear), so reset the header's layout only when switching pages.
+      // do not appear), so reset the header's layout when switching pages.
       timeOut.run(() => {
         const header = this.shadowRoot.querySelector('#header');
         header.resetLayout();
@@ -436,6 +438,12 @@ class ShopApp extends connect(store)(LitElement) {
             navigator.serviceWorker.register('service-worker.js', {scope: '/'});
           }
           this.loadComplete = true;
+          // The size of the header depends on the page and whether tabs have loaded,
+          // so reset the header's layout after load completes.
+          timeOut.run(() => {
+            const header = this.shadowRoot.querySelector('#header');
+            header.resetLayout();
+          }, 1);
         });
       });
     }
