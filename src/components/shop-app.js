@@ -388,18 +388,22 @@ class ShopApp extends connect(store)(LitElement) {
         break;
       case 'list':
         await import('../components/shop-list.js');
-        store.dispatch(updateMeta({
-          title: this._category.title,
-          image: document.baseURI + this._category.image
-        }));
+        if (this._category) {
+          store.dispatch(updateMeta({
+            title: this._category.title,
+            image: document.baseURI + this._category.image
+          }));
+        }
         break;
       case 'detail':
         await import('../components/shop-detail.js');
-        store.dispatch(updateMeta({
-          title: this._item.title,
-          description: this._item.description.substring(0, 100),
-          image: document.baseURI + this._item.image
-        }));
+        if (this._item) {
+          store.dispatch(updateMeta({
+            title: this._item.title,
+            description: this._item.description.substring(0, 100),
+            image: document.baseURI + this._item.image
+          }));
+        }
         break;
       case 'cart':
         await import('../components/shop-cart.js');
