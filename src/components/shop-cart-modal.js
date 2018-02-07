@@ -9,7 +9,6 @@
  */
 
 import { Element } from '../../node_modules/@polymer/polymer/polymer-element.js';
-import '../../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
 import '../../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
 import { IronOverlayBehaviorImpl } from '../../node_modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
 import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
@@ -57,17 +56,18 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
       }
 
       .layout-horizontal {
-        @apply --layout-horizontal;
+        display: flex;
+        flex-direction: row;
       }
 
       .label {
-        @apply --layout-flex;
+        flex: 1;
         line-height: 24px;
         margin: 8px;
       }
 
       .modal-button {
-        @apply --layout-flex;
+        flex: 1;
         margin: 16px 8px;
       }
 
