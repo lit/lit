@@ -8,13 +8,9 @@
   "dependencies": {
     "@0xcda7a/redux-es6": "^3.7.2",
     "@polymer/app-layout": "^3.0.0-pre.8",
-    "@polymer/app-route": "^3.0.0-pre.8",
-    "@polymer/app-storage": "^3.0.0-pre.8",
-    "@polymer/iron-flex-layout": "^3.0.0-pre.8",
     "@polymer/iron-form": "^3.0.0-pre.8",
     "@polymer/iron-icon": "^3.0.0-pre.8",
     "@polymer/iron-iconset-svg": "^3.0.0-pre.8",
-    "@polymer/iron-media-query": "^3.0.0-pre.8",
     "@polymer/iron-overlay-behavior": "^3.0.0-pre.8",
     "@polymer/lit-element": "^0.1.0",
     "@polymer/paper-icon-button": "^3.0.0-pre.8",
