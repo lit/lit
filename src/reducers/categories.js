@@ -67,7 +67,13 @@ export const currentCategorySelector = createSelector(
   categoriesSelector,
   splitPathSelector,
   (categories, splitPath) => {
-    return ['list', 'detail'].indexOf(splitPath[0]) !== -1 ? categories[splitPath[1]] : null;
+    if (['list', 'detail'].indexOf(splitPath[0]) !== -1) {
+      // Empty object means categories are loading and category may exist, whereas
+      // undefined means categories have loaded but category doesn't exist.
+      return Object.values(categories).length === 0 ? {} : categories[splitPath[1]];
+    } else {
+      return null;
+    }
   }
 );
 
@@ -75,6 +81,12 @@ export const currentItemSelector = createSelector(
   currentCategorySelector,
   splitPathSelector,
   (category, splitPath) => {
-    return category && category.items && category.items[splitPath[2]];
+    if (splitPath[0] === 'detail') {
+      // Empty object means category is loading and item may exist, whereas
+      // undefined means category has loaded but item doesn't exist.
+      return !category || !category.items ? {} : category.items[splitPath[2]];
+    } else {
+      return null;
+    }
   }
 );

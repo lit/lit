@@ -321,7 +321,7 @@ class ShopApp extends connect(store)(LitElement) {
         if (!this._category) page = '404';
         break;
       case 'detail':
-        if (!this._item) page = '404';
+        if (!this._category || !this._item) page = '404';
         break;
       case 'home':
       case 'cart':
@@ -395,15 +395,11 @@ class ShopApp extends connect(store)(LitElement) {
         break;
       case 'detail':
         await import('../components/shop-detail.js');
-        // Item is async loaded, so check if it has loaded yet. If not, meta will
-        // be updated later in the receiveCategoryItems action.
-        if (this._item) {
-          store.dispatch(updateMeta({
-            title: this._item.title,
-            description: this._item.description.substring(0, 100),
-            image: document.baseURI + this._item.image
-          }));
-        }
+        store.dispatch(updateMeta({
+          title: this._item.title,
+          description: this._item.description.substring(0, 100),
+          image: document.baseURI + this._item.image
+        }));
         break;
       case 'cart':
         await import('../components/shop-cart.js');
