@@ -14,7 +14,7 @@ import {
   FAIL_CATEGORY_ITEMS,
   REQUEST_CATEGORY_ITEMS
 } from '../actions/categories.js';
-import { createSelector } from '../../../node_modules/reselect/es/index.js';
+import { createSelector } from '../../node_modules/reselect/es/index.js';
 import { splitPathSelector } from './location.js';
 
 const categories = (state = {}, action) => {
