@@ -15,7 +15,7 @@ import {
   REMOVE_CART_ENTRY,
   CLEAR_CART
 } from '../actions/cart.js';
-import { createSelector } from '../../../node_modules/reselect/es/index.js';
+import { createSelector } from '../../node_modules/reselect/es/index.js';
 
 const cart = (state = {}, action) => {
   switch (action.type) {
@@ -68,7 +68,7 @@ export const numItemsSelector = createSelector(
         return total + entry.quantity;
       }, 0);
     }
-  
+
     return 0;
   }
 )
@@ -81,7 +81,7 @@ export const totalSelector = createSelector(
         return total + entry.quantity * entry.item.price;
       }, 0);
     }
-  
+
     return 0;
   }
 )

@@ -9,7 +9,7 @@
  */
 
 import { UPDATE_LOCATION } from '../actions/location.js';
-import { createSelector } from '../../../node_modules/reselect/es/index.js';
+import { createSelector } from '../../node_modules/reselect/es/index.js';
 
 const location = (state = {}, action) => {
   switch (action.type) {

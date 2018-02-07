@@ -34,4 +34,3 @@ store.addReducers({
   location,
   network
 });
-
