@@ -28,7 +28,6 @@ import "./shop-404.js";
 import "./shop-cart-item.js";
 
 // shop-checkout
-import "../../node_modules/@polymer/iron-form/iron-form.js";
 import "../../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
 
 import { store } from '../store.js';

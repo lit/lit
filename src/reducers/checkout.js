@@ -13,6 +13,7 @@ import { UPDATE_LOCATION } from '../actions/location.js';
 
 const checkout = (state = {}, action) => {
   switch (action.type) {
+    // Any navigation should reset the checkout form.
     case UPDATE_LOCATION:
       return {
         ...state,

@@ -16,8 +16,3 @@ export const updateLocation = (path) => {
     path
   };
 };
-
-export const pushState = (href) => (dispatch) => {
-  window.history.pushState({}, '', href);
-  dispatch(updateLocation(window.decodeURIComponent(window.location.pathname)));
-};
