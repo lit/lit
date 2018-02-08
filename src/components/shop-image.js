@@ -11,7 +11,7 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
 class ShopImage extends LitElement {
-  render({ alt, placeholder, _src, _style }) {
+  render({ alt, placeholder, src, _style }) {
     return html`
     <style>
 
@@ -48,10 +48,8 @@ class ShopImage extends LitElement {
 
     </style>
 
-    <div id="placeholder" style="${`background-image: url('${placeholder}')`}">
-      <img src="${_src}"
-          alt="${alt}"
-          style="${_style}"
+    <div id="placeholder" style$="${placeholder ? `background-image: url('${placeholder}')` : ''}">
+      <img src="${src}" alt="${alt}" style="${_style}"
           on-load="${() => this._onImgLoad()}"
           on-error="${() => this._onImgError()}">
     </div>
@@ -68,8 +66,6 @@ class ShopImage extends LitElement {
 
     placeholder: String,
 
-    _src: String,
-
     _style: String
 
   }}
@@ -81,13 +77,8 @@ class ShopImage extends LitElement {
     super._propertiesChanged(props, changed, oldProps);
   }
 
-  async _srcChanged() {
-    this._src = '';
-    this._style = 'opacity: 0';
-    await this.nextRendered;
-    if (this.src) {
-      this._src = this.src;
-    }
+  _srcChanged() {
+    this._style = 'transition: none; opacity: 0';
   }
 
   _onImgLoad() {
@@ -96,7 +87,7 @@ class ShopImage extends LitElement {
 
   _onImgError() {
     if (!this.placeholderImg) {
-      this._src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#CCC" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>');
+      this.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#CCC" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>');
     }
   }
 }
