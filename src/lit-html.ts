@@ -528,6 +528,11 @@ export class NodePart implements SinglePart {
 
   setValue(value: any): void {
     value = getValue(this, value);
+    if (value === '$NO_OP') {
+      // $NO_OP indicates already from the component that nothing was changed
+      // eg. if the application using lit-html already uses a caching layer
+      return
+    }
     if (value === directiveValue) {
       return;
     }
