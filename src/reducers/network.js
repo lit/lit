@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { UPDATE_NETWORK_STATUS } from '../actions/network.js';
+import { UPDATE_NETWORK_STATUS, OPEN_SNACKBAR, CLOSE_SNACKBAR } from '../actions/network.js';
 
 const network = (state = {}, action) => {
   switch (action.type) {
@@ -17,6 +17,16 @@ const network = (state = {}, action) => {
         ...state,
         online: action.online
       };
+    case OPEN_SNACKBAR:
+      return {
+        ...state,
+        snackbarOpened: true
+      }
+    case CLOSE_SNACKBAR:
+      return {
+        ...state,
+        snackbarOpened: false
+      }
     default:
       return state;
   }

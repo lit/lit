@@ -14,7 +14,7 @@ import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
+import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 
 class ShopHome extends connect(store)(LitElement) {
   render({ categories }) {

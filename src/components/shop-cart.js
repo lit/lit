@@ -15,7 +15,7 @@ import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
+import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
 
 class ShopCart extends connect(store)(LitElement) {

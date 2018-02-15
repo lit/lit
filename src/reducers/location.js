@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { UPDATE_LOCATION } from '../actions/location.js';
+import { UPDATE_LOCATION, RECEIVE_LAZY_RESOURCES, SET_PATH_IS_VALID, SET_PATH_IS_INVALID } from '../actions/location.js';
 import { createSelector } from '../../node_modules/reselect/es/index.js';
 
 const location = (state = {}, action) => {
@@ -18,6 +18,21 @@ const location = (state = {}, action) => {
         ...state,
         path: action.path
       };
+    case RECEIVE_LAZY_RESOURCES:
+      return {
+        ...state,
+        lazyResourcesLoadComplete: true
+      }
+    case SET_PATH_IS_VALID:
+      return {
+        ...state,
+        validPath: true
+      }
+    case SET_PATH_IS_INVALID:
+      return {
+        ...state,
+        validPath: false
+      }
     default:
       return state;
   }

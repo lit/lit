@@ -15,7 +15,7 @@ import './shop-image.js';
 import './shop-list-item.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
+import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(LitElement) {

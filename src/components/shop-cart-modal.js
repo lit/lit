@@ -15,7 +15,7 @@ import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/c
 import { shopButtonStyle } from './shop-button-style.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
+import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import modal from '../reducers/modal.js';
 import { closeModal } from '../actions/modal.js';
 

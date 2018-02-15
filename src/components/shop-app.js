@@ -14,22 +14,36 @@ import '../../node_modules/@polymer/app-layout/app-header/app-header.js';
 import '../../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '../../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { scroll } from '../../node_modules/@polymer/app-layout/helpers/helpers.js';
-import './shop-home.js';
-import { afterNextRender } from '../../node_modules/@polymer/polymer/lib/utils/render-status.js';
-import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
+
+import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
+import { installRouter } from '../../node_modules/pwa-helpers/router.js';
+import { updateSEOMetadata } from '../../node_modules/pwa-helpers/seo-metadata.js';
+import { installOfflineWatcher } from '../../node_modules/pwa-helpers/network.js';
+import { installMediaQueryWatcher } from '../../node_modules/pwa-helpers/media-query.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
 import { pageSelector } from '../reducers/location.js';
-import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
-import { installRouter } from '../../node_modules/redux-helpers/router.js';
-import { installNetwork } from '../network.js';
+import { currentCategorySelector } from '../reducers/categories.js';
 import { updateLocation } from '../actions/location.js';
-import { updateMeta } from '../actions/meta.js';
-import { fetchCategoryItems, fetchCategories } from '../actions/categories.js';
+import { updateNetworkStatus, showSnackbar } from '../actions/network.js';
+import { fetchCategories } from '../actions/categories.js';
+
+import './shop-home.js';
 
 class ShopApp extends connect(store)(LitElement) {
-  render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen, _snackbarOpened }) {
+  render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen, _snackbarOpened, meta }) {
+
+    // TODO: Not very efficient right now as this will get called even if meta didn't change.
+    // We are working on coming up a better way to do this more efficiently.
+    if (meta) {
+      updateSEOMetadata({
+        title: meta.title,
+        description: meta.description || meta.title,
+        url: document.location.href,
+        image: meta.image || this.baseURI + 'images/shop-icon-128.png'
+      })
+    }
+
     return html`
     <style>
 
@@ -276,7 +290,7 @@ class ShopApp extends connect(store)(LitElement) {
     offline: Boolean,
 
     meta: Object,
-    
+
     modalOpened: Object,
 
     categories: Object,
@@ -294,59 +308,40 @@ class ShopApp extends connect(store)(LitElement) {
     loadComplete: Boolean
   }}
 
-  _propertiesChanged(props, changed, oldProps) {
-    if (changed) {
-      if ('categoryName' in changed) {
-        this._categoryNameChanged(props.categoryName, oldProps.categoryName);
-      }
-      if ('page' in changed) {
-        this._pageChanged(props.page, oldProps.page);
-      }
-      if ('offline' in changed) {
-        this._offlineChanged(props.offline, oldProps.offline);
-      }
-      if ('meta' in changed) {
-        this._metaChanged(props.meta, oldProps.meta);
-      }
+  didRender(props, changed, oldProps) {
+    if ('page' in changed || 'categoryName' in changed) {
+      // TODO: For list view, scroll to the last saved position only if the category has not changed
+      scroll({ top: 0, behavior: 'silent' });
     }
-    super._propertiesChanged(props, changed, oldProps);
+    if ('page' in changed) {
+      // TODO: Remove this when app-header updated to use ResizeObserver so we can avoid this bit.
+      // The size of the header depends on the page (e.g. on some pages the tabs
+      // do not appear), so reset the header's layout when switching pages.
+      const header = this.shadowRoot.querySelector('#header');
+      header.resetLayout();
+    }
   }
 
   constructor() {
     super();
 
-    installRouter(() => this._updateLocation());
-    installNetwork(store);
     store.dispatch(fetchCategories());
+    installRouter(() => this._updateLocation());
+    installOfflineWatcher((offline) => this._offlineChanged(offline));
+    installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
   }
 
   stateChanged() {
     const state = store.getState();
-
-    this._category = currentCategorySelector(state);
-    this._item = currentItemSelector(state);
-    let page = pageSelector(state);
-    switch (page) {
-      case 'list':
-        if (!this._category) page = '404';
-        break;
-      case 'detail':
-        if (!this._category || !this._item) page = '404';
-        break;
-      case 'home':
-      case 'cart':
-      case 'checkout':
-        break;
-      default:
-        page = '404';
-    }
-
+    const category = currentCategorySelector(state);
+    this.page = state.location.validPath ? pageSelector(state) : '404';
     this.categories = Object.values(state.categories);
-    this.categoryName = this._category ? this._category.name : null;
+    this.categoryName = category ? category.name : null;
     this.meta = state.meta;
     this.modalOpened = state.modal;
     this.offline = !state.network.online;
-    this.page = page;
+    this._snackbarOpened = state.network.snackbarOpened;
+    this.loadComplete = state.location.lazyResourcesLoadComplete;
     this._a11yLabel = state.announcer.label;
   }
 
@@ -354,109 +349,6 @@ class ShopApp extends connect(store)(LitElement) {
     super.ready();
     // Custom elements polyfill safe way to indicate an element has been upgraded.
     this.removeAttribute('unresolved');
-    // listen for custom events
-    // this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
-    // this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
-    // this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
-    // this.addEventListener('change-section', (e)=>this._onChangeSection(e));
-    // this.addEventListener('announce', (e)=>this._onAnnounce(e));
-    // this.addEventListener('dom-change', (e)=>this._domChange(e));
-    // this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
-
-    const mq = window.matchMedia('(max-width: 767px)');
-    mq.addListener(_ => this._smallScreen = mq.matches);
-    this._smallScreen = mq.matches;
-  }
-
-  _categoryNameChanged(categoryName, oldCategoryName) {
-    store.dispatch(fetchCategoryItems(this._category));
-
-    // Reset the list view scrollTop if the category changed.
-    this._listScrollTop = 0;
-    scroll({ top: 0, behavior: 'silent' });
-  }
-
-  async _pageChanged(page, oldPage) {
-    if (oldPage === 'list') {
-      this._listScrollTop = window.pageYOffset;
-    }
-
-    // Scroll to the top of the page when navigating to a non-list page. For list view,
-    // scroll to the last saved position only if the category has not changed (see
-    // _categoryNameChanged).
-    let scrollTop = 0;
-    if (page === 'list') {
-      scrollTop = this._listScrollTop;
-    }
-    // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
-    // effects during the scroll.
-    scroll({ top: scrollTop, behavior: 'silent' });
-
-    switch (page) {
-      case 'home':
-        store.dispatch(updateMeta({ title: 'Home' }));
-        break;
-      case 'list':
-        await import('../components/shop-list.js');
-        if (this._category) {
-          store.dispatch(updateMeta({
-            title: this._category.title,
-            image: document.baseURI + this._category.image
-          }));
-        }
-        break;
-      case 'detail':
-        await import('../components/shop-detail.js');
-        if (this._item) {
-          store.dispatch(updateMeta({
-            title: this._item.title,
-            description: this._item.description.substring(0, 100),
-            image: document.baseURI + this._item.image
-          }));
-        }
-        break;
-      case 'cart':
-        await import('../components/shop-cart.js');
-        store.dispatch(updateMeta({ title: 'Cart' }));
-        break;
-      case 'checkout':
-        await import('../components/shop-checkout.js');
-        store.dispatch(updateMeta({ title: 'Checkout' }));
-        break;
-      default:
-        store.dispatch(updateMeta({ title: '404' }));
-    }
-
-    this._ensureLazyLoaded();
-    if (oldPage) {
-      // The size of the header depends on the page (e.g. on some pages the tabs
-      // do not appear), so reset the header's layout when switching pages.
-      timeOut.run(() => {
-        const header = this.shadowRoot.querySelector('#header');
-        header.resetLayout();
-      }, 1);
-    }
-  }
-
-  _ensureLazyLoaded() {
-    // load lazy resources after render and set `loadComplete` when done.
-    if (!this.loadComplete) {
-      afterNextRender(this, () => {
-        import('./lazy-resources.js').then(() => {
-          // Register service worker if supported.
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-          }
-          this.loadComplete = true;
-          // The size of the header depends on the page and whether tabs have loaded,
-          // so reset the header's layout after load completes.
-          timeOut.run(() => {
-            const header = this.shadowRoot.querySelector('#header');
-            header.resetLayout();
-          }, 1);
-        });
-      });
-    }
   }
 
   _updateLocation() {
@@ -466,41 +358,16 @@ class ShopApp extends connect(store)(LitElement) {
     this.drawerOpened = false;
   }
 
-  _offlineChanged(offline, oldOffline) {
-    // Show the snackbar if the user is offline when starting a new session
-    // or if the network status changed.
-    if (offline || (!offline && oldOffline === true)) {
-      this._snackbarOpened = true;
-      window.clearTimeout(this._snackbarTimer);
-      this._snackbarTimer = window.setTimeout(() => this._snackbarOpened = false, 4000);
-    }
-  }
+  _offlineChanged(offline) {
+    const previousOffline = this.offline;
+    store.dispatch(updateNetworkStatus(!offline));
 
-  _setMeta(attrName, attrValue, content) {
-    let element = document.head.querySelector(`meta[${attrName}="${attrValue}"]`);
-    if (!element) {
-      element = document.createElement('meta');
-      element.setAttribute(attrName, attrValue);
-      document.head.appendChild(element);
+    // Don't show the snackbar on the first load of the page.
+    if (previousOffline === undefined) {
+      return;
     }
-    element.setAttribute('content', content || '');
-  }
-  
-  _metaChanged(detail) {
-    // Announce the page's title
-    if (detail.title) {
-      document.title = detail.title + ' - SHOP';
-      // Set open graph metadata
-      this._setMeta('property', 'og:title', detail.title);
-      this._setMeta('property', 'og:description', detail.description || document.title);
-      this._setMeta('property', 'og:url', document.location.href);
-      this._setMeta('property', 'og:image', detail.image || this.baseURI + 'images/shop-icon-128.png');
-      // Set twitter card metadata
-      this._setMeta('property', 'twitter:title', detail.title);
-      this._setMeta('property', 'twitter:description', detail.description || document.title);
-      this._setMeta('property', 'twitter:url', document.location.href);
-      this._setMeta('property', 'twitter:image:src', detail.image || this.baseURI + 'images/shop-icon-128.png');
-    }
+
+    store.dispatch(showSnackbar());
   }
 }
 

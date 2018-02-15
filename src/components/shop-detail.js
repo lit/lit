@@ -16,7 +16,7 @@ import { shopSelectStyle } from './shop-select-style.js';
 import './shop-image.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/redux-helpers/connect-mixin.js';
+import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { addCartEntry } from '../actions/cart.js';
 
@@ -177,7 +177,7 @@ class ShopDetail extends connect(store)(LitElement) {
         </shop-button>
       </div>
     </div>
-    
+
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.

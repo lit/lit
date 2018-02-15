@@ -13,7 +13,7 @@ import applyMiddleware from '../node_modules/@0xcda7a/redux-es6/es/applyMiddlewa
 import origCompose from '../node_modules/@0xcda7a/redux-es6/es/compose.js';
 import combineReducers from '../node_modules/@0xcda7a/redux-es6/es/combineReducers.js';
 import thunk from '../node_modules/redux-thunk/es/index.js';
-import { lazyReducerEnhancer } from '../node_modules/redux-helpers/lazy-reducer-enhancer.js';
+import { lazyReducerEnhancer } from '../node_modules/pwa-helpers/lazy-reducer-enhancer.js';
 import categories from './reducers/categories.js';
 import announcer from './reducers/announcer.js';
 import meta from './reducers/meta.js';

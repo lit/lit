@@ -12,6 +12,8 @@ import { fetchCategoryItems } from './categories.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 export const UPDATE_NETWORK_STATUS = 'UPDATE_NETWORK_STATUS';
+export const OPEN_SNACKBAR = 'OPEN_SNACKBAR';
+export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
 
 export const updateNetworkStatus = (online) => (dispatch, getState) => {
   dispatch({
@@ -21,4 +23,15 @@ export const updateNetworkStatus = (online) => (dispatch, getState) => {
   if (online) {
     dispatch(fetchCategoryItems(currentCategorySelector(getState())));
   }
+};
+
+let snackbarTimer;
+
+export const showSnackbar = () => (dispatch) => {
+  dispatch({
+    type: OPEN_SNACKBAR
+  });
+  clearTimeout(snackbarTimer);
+  snackbarTimer = setTimeout(() =>
+    dispatch({ type: CLOSE_SNACKBAR }), 3000);
 };
