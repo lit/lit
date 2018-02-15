@@ -49,46 +49,55 @@ export class TemplateResult {
    * The string literal parts of the template, including the values of static
    * expressions.
    */
-  strings: string[];
-  values: any[];
+  strings: ReadonlyArray<string>;
+  values: ReadonlyArray<any>;
   type: string;
   partCallback: PartCallback;
 
   constructor(
       strings: TemplateStringsArray, values: any[], type: string,
       partCallback: PartCallback = defaultPartCallback) {
-    // Convert the strings and values arrays into new arrays where static values
-    // are merged with their previous and next sibling literal strings.
-    // If the original strings and values arrays are sized N+1 and N, and there
-    // are X static values, the new arrays will be length N-X+1 and N-X.
-    let finalStrings: string[] = [];
-    let finalValues = [];
-    const l = strings.length - 1;
-    let previousValueWasStatic = false;
-    for (let i = 0; i < l; i++) {
-      if (previousValueWasStatic) {
-        finalStrings[finalStrings.length - 1] += strings[i];
-      } else {
-        finalStrings.push(strings[i]);
-      }
-      if (values[i] instanceof UnsafeStatic) {
-        // Append statics to the preceding literal part
-        finalStrings[finalStrings.length - 1] += String(values[i].value);
-        previousValueWasStatic = true;
-      } else {
-        finalValues.push(values[i]);
-        previousValueWasStatic = false;
-      }
-    }
-    finalStrings.push(strings[l]);
 
-    // TODO(justinfagnani): we need more benchmarking around the different ways
-    // to implement the template cache keys. It may be better to generate an
-    // object based on the hash codes of individual parts.
-    this.key = finalStrings.join('-lit-');
+    const hasStatics = values.some((v) => v instanceof UnsafeStatic);
+
+    if (hasStatics) {
+      // Convert the strings and values arrays into new arrays where static values
+      // are merged with their previous and next sibling literal strings.
+      // If the original strings and values arrays are sized N+1 and N, and there
+      // are X static values, the new arrays will be length N-X+1 and N-X.
+      let finalStrings: string[] = [];
+      let finalValues = [];
+      const l = strings.length - 1;
+      let previousValueWasStatic = false;
+      for (let i = 0; i < l; i++) {
+        if (previousValueWasStatic) {
+          finalStrings[finalStrings.length - 1] += strings[i];
+        } else {
+          finalStrings.push(strings[i]);
+        }
+        if (values[i] instanceof UnsafeStatic) {
+          // Append statics to the preceding literal part
+          finalStrings[finalStrings.length - 1] += String(values[i].value);
+          previousValueWasStatic = true;
+        } else {
+          finalValues.push(values[i]);
+          previousValueWasStatic = false;
+        }
+      }
+      finalStrings.push(strings[l]);
+
+      // TODO(justinfagnani): we need more benchmarking around the different ways
+      // to implement the template cache keys. It may be better to generate an
+      // object based on the hash codes of individual parts.
+      this.key = finalStrings.join('-lit-');
+      this.strings = finalStrings;
+      this.values = finalValues;
+    } else {
+      this.key = strings;
+      this.strings = strings;
+      this.values = values;
+    }
     this.literalStrings = strings;
-    this.strings = finalStrings;
-    this.values = finalValues;
     this.type = type;
     this.partCallback = partCallback;
   }
@@ -543,7 +552,7 @@ export interface Part {
 export interface SinglePart extends Part { setValue(value: any): void; }
 
 export interface MultiPart extends Part {
-  setValue(values: any[], startIndex: number): void;
+  setValue(values: ReadonlyArray<any>, startIndex: number): void;
 }
 
 export class AttributePart implements MultiPart {
@@ -818,7 +827,7 @@ export class TemplateInstance {
     this._getTemplate = getTemplate;
   }
 
-  update(values: any[]) {
+  update(values: ReadonlyArray<any>) {
     let valueIndex = 0;
     for (const part of this._parts) {
       if (part.size === undefined) {
