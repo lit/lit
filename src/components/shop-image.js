@@ -11,7 +11,7 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 
 class ShopImage extends LitElement {
-  render({ alt, placeholder, src, _style }) {
+  render({ alt, placeholder, src, _loaded }) {
     return html`
     <style>
 
@@ -36,7 +36,7 @@ class ShopImage extends LitElement {
         max-height: 100%;
         margin: 0 auto;
         opacity: 0;
-        transition: 0.5s opacity;
+        transition: none;
         
         position: absolute;
         top: 0;
@@ -46,11 +46,16 @@ class ShopImage extends LitElement {
         max-width: none;
       }
 
+      img.loaded {
+        opacity: 1;
+        transition: 0.5s opacity;
+      }
+
     </style>
 
     <div id="placeholder" style$="${placeholder ? `background-image: url('${placeholder}')` : ''}">
-      <img src="${src}" alt="${alt}" style="${_style}"
-          on-load="${() => this._onImgLoad()}"
+      <img src="${src}" alt="${alt}" class$="${_loaded ? 'loaded' : ''}"
+          on-load="${() => this._loaded = true}"
           on-error="${() => this._onImgError()}">
     </div>
 `;
@@ -66,27 +71,19 @@ class ShopImage extends LitElement {
 
     placeholder: String,
 
-    _style: String
+    _loaded: Boolean
 
   }}
 
   _propertiesChanged(props, changed, oldProps) {
     if (changed && 'src' in changed) {
-      this._srcChanged();
+      this._loaded = false;
     }
     super._propertiesChanged(props, changed, oldProps);
   }
 
-  _srcChanged() {
-    this._style = 'transition: none; opacity: 0';
-  }
-
-  _onImgLoad() {
-    this._style = 'transition: 0.5s opacity; opacity: 1';
-  }
-
   _onImgError() {
-    if (!this.placeholderImg) {
+    if (!this.placeholder) {
       this.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#CCC" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>');
     }
   }
