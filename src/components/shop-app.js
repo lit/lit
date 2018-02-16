@@ -25,13 +25,13 @@ import { store } from '../store.js';
 import { pageSelector } from '../reducers/location.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 import { updateLocation } from '../actions/location.js';
-import { updateNetworkStatus, showSnackbar } from '../actions/network.js';
+import { updateNetworkStatus } from '../actions/network.js';
 import { fetchCategories } from '../actions/categories.js';
 
 import './shop-home.js';
 
 class ShopApp extends connect(store)(LitElement) {
-  render({ categories, categoryName, drawerOpened, loadComplete, modalOpened, offline, page, _a11yLabel, _smallScreen, _snackbarOpened, meta }) {
+  render({ categories, categoryName, lazyResourcesLoaded, modalOpened, offline, snackbarOpened, page, a11yLabel, meta, _drawerOpened, _smallScreen }) {
 
     // TODO: Not very efficient right now as this will get called even if meta didn't change.
     // We are working on coming up a better way to do this more efficiently.
@@ -212,7 +212,7 @@ class ShopApp extends connect(store)(LitElement) {
       <app-toolbar>
         <div class="left-bar-item">
           <paper-icon-button class="menu-btn" icon="menu"
-              on-click="${_ => this.drawerOpened = true}"
+              on-click="${_ => this._drawerOpened = true}"
               aria-label="Categories"
               hidden="${!_smallScreen || page === 'detail'}">
           </paper-icon-button>
@@ -226,7 +226,7 @@ class ShopApp extends connect(store)(LitElement) {
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && loadComplete ?
+      ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && lazyResourcesLoaded ?
         html`
           <div id="tabContainer" sticky>
             <shop-tabs selectedIndex="${categories.map(c => c.name).indexOf(categoryName)}">
@@ -242,9 +242,9 @@ class ShopApp extends connect(store)(LitElement) {
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    ${ _smallScreen && loadComplete ?
+    ${ _smallScreen && lazyResourcesLoaded ?
       html`
-        <app-drawer opened="${drawerOpened}" tabindex="0" on-opened-changed="${e => this.drawerOpened = e.target.opened}">
+        <app-drawer opened="${_drawerOpened}" tabindex="0" on-opened-changed="${e => this._drawerOpened = e.target.opened}">
           <nav class="drawer-list">
             ${repeat(categories, category => html`
               <a class$="${category.name === categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
@@ -275,10 +275,15 @@ class ShopApp extends connect(store)(LitElement) {
     </footer>
 
     <!-- a11y announcer -->
-    <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
+    <div class="announcer" aria-live="assertive">${a11yLabel}</div>
 
     ${ modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
-    ${ loadComplete ? html`<shop-snackbar class$="${_snackbarOpened ? 'opened' : ''}">${offline ? 'You are offline' : 'You are online'}</shop-snackbar>` : null }
+    ${ lazyResourcesLoaded ? html`
+      <shop-snackbar class$="${snackbarOpened ? 'opened' : ''}">
+        ${offline ? 'You are offline' : 'You are online'}
+      </shop-snackbar>
+      ` : null
+    }
     `;
   }
 
@@ -289,6 +294,8 @@ class ShopApp extends connect(store)(LitElement) {
 
     offline: Boolean,
 
+    snackbarOpened: Boolean,
+
     meta: Object,
 
     modalOpened: Object,
@@ -297,15 +304,13 @@ class ShopApp extends connect(store)(LitElement) {
 
     categoryName: String,
 
-    drawerOpened: Boolean,
+    a11yLabel: String,
 
-    _a11yLabel: String,
+    lazyResourcesLoaded: Boolean,
+
+    _drawerOpened: Boolean,
 
     _smallScreen: Boolean,
-
-    _snackbarOpened: Boolean,
-
-    loadComplete: Boolean
   }}
 
   didRender(props, changed, oldProps) {
@@ -322,52 +327,36 @@ class ShopApp extends connect(store)(LitElement) {
     }
   }
 
-  constructor() {
-    super();
+  ready() {
+    super.ready();
 
     store.dispatch(fetchCategories());
     installRouter(() => this._updateLocation());
-    installOfflineWatcher((offline) => this._offlineChanged(offline));
+    installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
+
+    // Custom elements polyfill safe way to indicate an element has been upgraded.
+    this.removeAttribute('unresolved');
   }
 
-  stateChanged() {
-    const state = store.getState();
+  stateChanged(state) {
     const category = currentCategorySelector(state);
     this.page = state.location.validPath ? pageSelector(state) : '404';
     this.categories = Object.values(state.categories);
     this.categoryName = category ? category.name : null;
     this.meta = state.meta;
     this.modalOpened = state.modal;
-    this.offline = !state.network.online;
-    this._snackbarOpened = state.network.snackbarOpened;
-    this.loadComplete = state.location.lazyResourcesLoadComplete;
-    this._a11yLabel = state.announcer.label;
-  }
-
-  ready() {
-    super.ready();
-    // Custom elements polyfill safe way to indicate an element has been upgraded.
-    this.removeAttribute('unresolved');
+    this.lazyResourcesLoaded = state.location.lazyResourcesLoaded;
+    this.a11yLabel = state.announcer.label;
+    this.offline = state.network.offline;
+    this.snackbarOpened = state.network.snackbarOpened;
   }
 
   _updateLocation() {
     store.dispatch(updateLocation(window.decodeURIComponent(window.location.pathname)));
 
     // Close the drawer - in case the *route* change came from a link in the drawer.
-    this.drawerOpened = false;
-  }
-
-  _offlineChanged(offline) {
-    const previousOffline = this.offline;
-    store.dispatch(updateNetworkStatus(!offline));
-
-    // Don't show the snackbar on the first load of the page.
-    if (previousOffline === undefined) {
-      return;
-    }
-
-    store.dispatch(showSnackbar());
+    this._drawerOpened = false;
   }
 }
 

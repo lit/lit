@@ -8,20 +8,17 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { UPDATE_NETWORK_STATUS, OPEN_SNACKBAR, CLOSE_SNACKBAR } from '../actions/network.js';
+import { UPDATE_NETWORK_STATUS, CLOSE_SNACKBAR } from '../actions/network.js';
 
 const network = (state = {}, action) => {
   switch (action.type) {
     case UPDATE_NETWORK_STATUS:
       return {
         ...state,
-        online: action.online
+        offline: action.offline,
+        // Don't show the snackbar on the first load of the page if online.
+        snackbarOpened: action.offline || (state.offline !== undefined)
       };
-    case OPEN_SNACKBAR:
-      return {
-        ...state,
-        snackbarOpened: true
-      }
     case CLOSE_SNACKBAR:
       return {
         ...state,

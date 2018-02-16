@@ -21,7 +21,7 @@ const location = (state = {}, action) => {
     case RECEIVE_LAZY_RESOURCES:
       return {
         ...state,
-        lazyResourcesLoadComplete: true
+        lazyResourcesLoaded: true
       }
     case SET_PATH_IS_VALID:
       return {
