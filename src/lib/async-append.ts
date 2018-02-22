@@ -47,7 +47,7 @@ export const asyncAppend = <T>(
       let i = 0;
 
       for await (let v of value) {
-        // When we get the first value, clear the part. This let's the previous
+        // When we get the first value, clear the part. This lets the previous
         // value display until we can replace it.
         if (i === 0) {
           part.clear();
