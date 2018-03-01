@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { updateCartFromLocalStorage } from './actions/cart.js';
+import { setCart } from './actions/cart.js';
 
 const CART_LOCAL_STORAGE_KEY = 'shop-cart-data';
 
@@ -23,7 +23,7 @@ function getLocalCartData() {
 
 export function installCart(store) {
   function handleStorageEvent() {
-    store.dispatch(updateCartFromLocalStorage(getLocalCartData()));
+    store.dispatch(setCart(getLocalCartData()));
   }
   window.addEventListener('storage', handleStorageEvent);
   handleStorageEvent();

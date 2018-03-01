@@ -15,7 +15,7 @@ import './shop-icons.js';
 import './shop-image.js';
 
 import { store } from '../store.js';
-import { setCartEntryQuantity, removeCartEntry } from '../actions/cart.js';
+import { editCart, removeFromCart } from '../actions/cart.js';
 
 class ShopCartItem extends LitElement {
   render({ entry }) {
@@ -231,7 +231,7 @@ class ShopCartItem extends LitElement {
     //   quantity,
     //   size
     // }));
-    store.dispatch(setCartEntryQuantity({
+    store.dispatch(editCart({
       item: this.entry.item,
       quantity: parseInt(e.target.value, 10),
       size: this.entry.size
@@ -239,7 +239,7 @@ class ShopCartItem extends LitElement {
   }
 
   _removeItem() {
-    store.dispatch(removeCartEntry({
+    store.dispatch(removeFromCart({
       item: this.entry.item,
       size: this.entry.size
     }));

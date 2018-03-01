@@ -9,11 +9,11 @@
  */
 
 import { CLOSE_MODAL } from '../actions/modal.js';
-import { ADD_CART_ENTRY } from '../actions/cart.js';
+import { ADD_TO_CART } from '../actions/cart.js';
 
 const modal = (state = false, action) => {
   switch (action.type) {
-    case ADD_CART_ENTRY:
+    case ADD_TO_CART:
       return true;
     case CLOSE_MODAL:
       return false;

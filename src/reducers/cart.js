@@ -9,27 +9,27 @@
  */
 
 import {
-  UPDATE_CART_FROM_LOCAL_STORAGE,
-  ADD_CART_ENTRY,
-  SET_CART_ENTRY_QUANTITY,
-  REMOVE_CART_ENTRY,
+  SET_CART,
+  ADD_TO_CART,
+  EDIT_CART,
+  REMOVE_FROM_CART,
   CLEAR_CART
 } from '../actions/cart.js';
 import { createSelector } from '../../node_modules/reselect/es/index.js';
 
 const cart = (state = {}, action) => {
   switch (action.type) {
-    case UPDATE_CART_FROM_LOCAL_STORAGE:
+    case SET_CART:
       return {
         ...action.cart
       };
-    case ADD_CART_ENTRY:
-    case SET_CART_ENTRY_QUANTITY:
+    case ADD_TO_CART:
+    case EDIT_CART:
       return {
         ...state,
         [action.entryId]: entry(state[action.entryId], action)
       };
-    case REMOVE_CART_ENTRY:
+    case REMOVE_FROM_CART:
       const result = {...state};
       delete result[action.entryId];
       return result;
@@ -42,12 +42,12 @@ const cart = (state = {}, action) => {
 
 const entry = (state = {}, action) => {
   switch (action.type) {
-    case ADD_CART_ENTRY:
+    case ADD_TO_CART:
       return {
         ...action.entry,
         quantity: (state.quantity || 0) + action.entry.quantity
       };
-    case SET_CART_ENTRY_QUANTITY:
+    case EDIT_CART:
       return {
         ...action.entry
       };

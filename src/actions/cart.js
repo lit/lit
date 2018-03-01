@@ -10,40 +10,40 @@
 
 import { announceLabel } from './announcer.js';
 
-export const UPDATE_CART_FROM_LOCAL_STORAGE = 'UPDATE_CART_FROM_LOCAL_STORAGE';
-export const ADD_CART_ENTRY = 'ADD_CART_ENTRY';
-export const SET_CART_ENTRY_QUANTITY = 'SET_CART_ENTRY_QUANTITY';
-export const REMOVE_CART_ENTRY = 'REMOVE_CART_ENTRY';
+export const SET_CART = 'SET_CART';
+export const ADD_TO_CART = 'ADD_TO_CART';
+export const EDIT_CART = 'EDIT_CART';
+export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
 export const CLEAR_CART = 'CLEAR_CART';
 
-export const updateCartFromLocalStorage = (cart) => {
+export const setCart = (cart) => {
   return {
-    type: UPDATE_CART_FROM_LOCAL_STORAGE,
+    type: SET_CART,
     cart
   };
 };
 
-export const addCartEntry = (entry) => (dispatch) => {
+export const addToCart = (entry) => (dispatch) => {
   dispatch({
-    type: ADD_CART_ENTRY,
+    type: ADD_TO_CART,
     entryId: getEntryId(entry),
     entry
   });
   dispatch(announceLabel('Item added to your cart'));
 };
 
-export const setCartEntryQuantity = (entry) => (dispatch) => {
+export const editCart = (entry) => (dispatch) => {
   dispatch({
-    type: SET_CART_ENTRY_QUANTITY,
+    type: EDIT_CART,
     entryId: getEntryId(entry),
     entry
   });
   dispatch(announceLabel(`Quantity changed to ${entry.quantity}`));
 };
 
-export const removeCartEntry = (entry) => (dispatch) => {
+export const removeFromCart = (entry) => (dispatch) => {
   dispatch({
-    type: REMOVE_CART_ENTRY,
+    type: REMOVE_FROM_CART,
     entryId: getEntryId(entry),
     entry
   });

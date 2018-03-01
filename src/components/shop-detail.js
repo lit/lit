@@ -18,7 +18,7 @@ import './shop-image.js';
 import { store } from '../store.js';
 import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
-import { addCartEntry } from '../actions/cart.js';
+import { addToCart } from '../actions/cart.js';
 
 class ShopDetail extends connect(store)(LitElement) {
   render({ failure, item }) {
@@ -217,7 +217,7 @@ class ShopDetail extends connect(store)(LitElement) {
   _addToCart() {
     const quantitySelect = this.shadowRoot.querySelector('#quantitySelect');
     const sizeSelect = this.shadowRoot.querySelector('#sizeSelect');
-    store.dispatch(addCartEntry({
+    store.dispatch(addToCart({
       item: this.item,
       quantity: parseInt(quantitySelect.value, 10),
       size: sizeSelect.value
