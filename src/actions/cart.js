@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { announceLabel } from './announcer.js';
+import { announceLabel } from './app.js';
 
 export const SET_CART = 'SET_CART';
 export const ADD_TO_CART = 'ADD_TO_CART';

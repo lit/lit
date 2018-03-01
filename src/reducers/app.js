@@ -8,10 +8,43 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { UPDATE_NETWORK_STATUS, CLOSE_SNACKBAR } from '../actions/network.js';
+import {
+  CLEAR_ANNOUNCER_LABEL,
+  SET_ANNOUNCER_LABEL,
+  CLOSE_MODAL,
+  UPDATE_META,
+  UPDATE_NETWORK_STATUS,
+  CLOSE_SNACKBAR
+} from '../actions/app.js';
+import { ADD_TO_CART } from '../actions/cart.js';
 
-const network = (state = {}, action) => {
+const app = (state = {}, action) => {
   switch (action.type) {
+    case CLEAR_ANNOUNCER_LABEL:
+      return {
+        ...state,
+        announcerLabel: ''
+      };
+    case SET_ANNOUNCER_LABEL:
+      return {
+        ...state,
+        announcerLabel: action.label
+      };
+    case ADD_TO_CART:
+      return {
+        ...state,
+        cartModalOpened: true
+      };
+    case CLOSE_MODAL:
+      return {
+        ...state,
+        cartModalOpened: false
+      };
+    case UPDATE_META:
+      return {
+        ...state,
+        meta: action.meta
+      };
     case UPDATE_NETWORK_STATUS:
       return {
         ...state,
@@ -23,10 +56,10 @@ const network = (state = {}, action) => {
       return {
         ...state,
         snackbarOpened: false
-      }
+      };
     default:
       return state;
   }
 }
 
-export default network;
+export default app;

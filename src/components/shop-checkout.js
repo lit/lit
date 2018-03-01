@@ -24,7 +24,7 @@ import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
 import { updateCheckoutState } from '../actions/checkout.js';
 import { clearCart } from '../actions/cart.js';
-import { announceLabel } from '../actions/announcer.js';
+import { announceLabel } from '../actions/app.js';
 import checkout from '../reducers/checkout.js';
 
 store.addReducers({

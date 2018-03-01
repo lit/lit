@@ -25,7 +25,7 @@ import { store } from '../store.js';
 import { pageSelector } from '../reducers/location.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 import { updateLocation } from '../actions/location.js';
-import { updateNetworkStatus } from '../actions/network.js';
+import { updateNetworkStatus } from '../actions/app.js';
 import { fetchCategories } from '../actions/categories.js';
 
 import './shop-home.js';
@@ -344,12 +344,12 @@ class ShopApp extends connect(store)(LitElement) {
     this.page = state.location.validPath ? pageSelector(state) : '404';
     this.categories = Object.values(state.categories);
     this.categoryName = category ? category.name : null;
-    this.meta = state.meta;
-    this.modalOpened = state.modal;
+    this.meta = state.app.meta;
+    this.modalOpened = state.app.cartModalOpened;
     this.lazyResourcesLoaded = state.location.lazyResourcesLoaded;
-    this.a11yLabel = state.announcer.label;
-    this.offline = state.network.offline;
-    this.snackbarOpened = state.network.snackbarOpened;
+    this.a11yLabel = state.app.announcerLabel;
+    this.offline = state.app.offline;
+    this.snackbarOpened = state.app.snackbarOpened;
   }
 
   _updateLocation() {

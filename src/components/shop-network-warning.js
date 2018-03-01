@@ -74,7 +74,7 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
 
   stateChanged() {
     const state = store.getState();
-    this.offline = state.network.offline;
+    this.offline = state.app.offline;
   }
 
   _tryReconnect() {

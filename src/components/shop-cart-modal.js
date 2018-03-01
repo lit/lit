@@ -16,12 +16,7 @@ import { shopButtonStyle } from './shop-button-style.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
-import modal from '../reducers/modal.js';
-import { closeModal } from '../actions/modal.js';
-
-store.addReducers({
-  modal
-});
+import { closeModal } from '../actions/app.js';
 
 class ShopCartModal extends connect(store)(mixinBehaviors(
   [IronOverlayBehaviorImpl], Element)) {
@@ -127,7 +122,7 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
   stateChanged() {
     const state = store.getState();
     this.setProperties({
-      opened: state.modal
+      opened: state.app.cartModalOpened
     });
   }
 
@@ -142,7 +137,7 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
       // travelling (i.e. state.modal is already false).
       // This check is generally needed whenever you have both UI updating
       // state and state updating the same UI.
-      if (!this.opened && store.getState().modal) {
+      if (!this.opened && store.getState().app.cartModalOpened) {
         store.dispatch(closeModal());
       }
     });

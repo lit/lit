@@ -10,8 +10,8 @@
 
 import { pageSelector } from '../reducers/location.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
-import { fetchCategoryItems, fetchCategories } from '../actions/categories.js';
-import { updateMeta } from '../actions/meta.js';
+import { fetchCategoryItems, fetchCategories } from './categories.js';
+import { updateMeta } from './app.js';
 
 export const UPDATE_LOCATION = 'UPDATE_LOCATION';
 export const RECEIVE_LAZY_RESOURCES = 'RECEIVE_LAZY_RESOURCES';
@@ -65,6 +65,9 @@ const loadPage = (page, category, item) => async (dispatch) => {
       break;
     case 'detail':
       await import('../components/shop-detail.js');
+      if (category) {
+        dispatch(fetchCategoryItems(category));
+      }
       if (item && item.title) {
         dispatch(updateMeta({
           title: item.title,

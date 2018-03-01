@@ -9,7 +9,7 @@
  */
 
 import { pageSelector } from '../reducers/location.js';
-import { updateMeta } from './meta.js';
+import { updateMeta } from './app.js';
 import { currentItemSelector } from '../reducers/categories.js';
 
 export const RECEIVE_CATEGORIES = 'RECEIVE_CATEGORIES';
