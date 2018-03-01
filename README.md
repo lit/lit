@@ -11,7 +11,7 @@ HTML templates, via JavaScript template literals
 import {html, render} from 'lit-html';
 
 // This is a lit-html template function. It returns a lit-html template.
-const helloTemplate = (name) => html`<div>Hello ${name}!</div>`;
+const helloTemplate = name => html`<div>Hello ${name}!</div>`;
 
 // Call the function with some data, and pass the result to render()
 
@@ -104,13 +104,13 @@ This should make the approach generally fast and small. Actual science and optim
 Anything coercible to strings are supported:
 
 ```javascript
-const render = () => html`foo is ${foo}`;
+const render = foo => html`foo is ${foo}`;
 ```
 
 ### Attribute-value Expressions
 
 ```javascript
-const render = () => html`<div class="${blue}"></div>`;
+const render = blue => html`<div class="${blue}"></div>`;
 ```
 
 ### SVG Support
@@ -120,8 +120,8 @@ To create partial SVG templates - template that will rendering inside and `<svg>
 ```javascript
 const grid = svg`
   <g>
-    ${[0, 10, 20].map((x) => svg`<line x1=${x} y1="0" x2=${x} y2="20"/>`)}
-    ${[0, 10, 20].map((y) => svg`<line x1="0" y1=${y} x2="0" y2=${y}/>`)}
+    ${[0, 10, 20].map(x => svg`<line x1=${x} y1="0" x2=${x} y2="20"/>`)}
+    ${[0, 10, 20].map(y => svg`<line x1="0" y1=${y} x2="0" y2=${y}/>`)}
   </g>
 `;
 ```
@@ -160,9 +160,9 @@ const render = () => html`items = ${Object.entries(items)}`;
 ### Nested Templates
 
 ```javascript
-const header = html`<h1>${title}</h1>`;
+const header = title => html`<h1>${title}</h1>`;
 const render = () => html`
-  ${header}
+  ${header('lit')}
   <p>And the body</p>
 `;
 ```
@@ -182,9 +182,9 @@ The `part` argument is a `Part` object with an API for directly managing the dyn
 Here's an example of a directive that takes a function, and evaluates it in a try/catch to implement exception safe expressions:
 
 ```javascript
-const safe = (f) => directive((part) => {
+const safe = func => directive(part => {
   try {
-    return f();
+    return func();
   } catch (e) {
     console.error(e);
   }
