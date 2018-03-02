@@ -12,11 +12,13 @@ import {
   CLEAR_ANNOUNCER_LABEL,
   SET_ANNOUNCER_LABEL,
   CLOSE_MODAL,
-  UPDATE_META,
   UPDATE_NETWORK_STATUS,
   CLOSE_SNACKBAR
 } from '../actions/app.js';
 import { ADD_TO_CART } from '../actions/cart.js';
+import { currentCategorySelector, currentItemSelector } from './categories.js';
+import { pageSelector } from './location.js';
+import { createSelector } from '../../node_modules/reselect/es/index.js';
 
 const app = (state = {}, action) => {
   switch (action.type) {
@@ -40,11 +42,6 @@ const app = (state = {}, action) => {
         ...state,
         cartModalOpened: false
       };
-    case UPDATE_META:
-      return {
-        ...state,
-        meta: action.meta
-      };
     case UPDATE_NETWORK_STATUS:
       return {
         ...state,
@@ -63,3 +60,33 @@ const app = (state = {}, action) => {
 }
 
 export default app;
+
+export const metaSelector = createSelector(
+  pageSelector,
+  currentCategorySelector,
+  currentItemSelector,
+  (page, category, item) => {
+    switch (page) {
+      case 'home':
+        return { title: 'Home' };
+      case 'list':
+        return category ? {
+          title: category.title,
+          image: document.baseURI + category.image
+        } : null;
+      case 'detail':
+        return item && item.title ? {
+          title: item.title,
+          description: item.description.substring(0, 100),
+          image: document.baseURI + item.image
+        } : null;
+        break;
+      case 'cart':
+        return { title: 'Cart' };
+      case 'checkout':
+        return { title: 'Checkout' };
+      default:
+        return { title: '404' };
+    }
+  }
+);

@@ -9,8 +9,8 @@
  */
 
 import { pageSelector } from '../reducers/location.js';
-import { updateMeta } from './app.js';
 import { currentItemSelector } from '../reducers/categories.js';
+import { announceLabel } from './app.js';
 
 export const RECEIVE_CATEGORIES = 'RECEIVE_CATEGORIES';
 export const REQUEST_CATEGORY_ITEMS = 'REQUEST_CATEGORY_ITEMS';
@@ -52,12 +52,20 @@ export const fetchCategories = () => (dispatch) => {
   });
 };
 
-export const fetchCategoryItems = (category) => (dispatch) => {
+export const fetchCategoryItems = (category) => (dispatch, getState) => {
   if (category && category.name && !category.items && !category.isFetching) {
     dispatch(requestCategoryItems(category.name));
     return fetch(`data/${category.name}.json`)
       .then(res => res.json())
-      .then(items => dispatch(receiveCategoryItems(category.name, items)))
+      .then(items => {
+        dispatch(receiveCategoryItems(category.name, items));
+        const state = getState();
+        const page = pageSelector(state);
+        if (page === 'detail') {
+          const item = currentItemSelector(state);
+          dispatch(announceLabel(`${item.title}, loaded`));
+        }
+      })
       .catch(() => dispatch(failCategoryItems(category.name)));
   }
 };

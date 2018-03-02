@@ -24,6 +24,7 @@ import { installMediaQueryWatcher } from '../../node_modules/pwa-helpers/media-q
 import { store } from '../store.js';
 import { pageSelector } from '../reducers/location.js';
 import { currentCategorySelector } from '../reducers/categories.js';
+import { metaSelector } from '../reducers/app.js';
 import { updateLocation } from '../actions/location.js';
 import { updateNetworkStatus } from '../actions/app.js';
 import { fetchCategories } from '../actions/categories.js';
@@ -344,7 +345,7 @@ class ShopApp extends connect(store)(LitElement) {
     this.page = state.location.validPath ? pageSelector(state) : '404';
     this.categories = Object.values(state.categories);
     this.categoryName = category ? category.name : null;
-    this.meta = state.app.meta;
+    this.meta = metaSelector(state);
     this.modalOpened = state.app.cartModalOpened;
     this.lazyResourcesLoaded = state.location.lazyResourcesLoaded;
     this.a11yLabel = state.app.announcerLabel;

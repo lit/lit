@@ -11,7 +11,7 @@
 import { pageSelector } from '../reducers/location.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { fetchCategoryItems, fetchCategories } from './categories.js';
-import { updateMeta } from './app.js';
+import { announceLabel } from './app.js';
 
 export const UPDATE_LOCATION = 'UPDATE_LOCATION';
 export const RECEIVE_LAZY_RESOURCES = 'RECEIVE_LAZY_RESOURCES';
@@ -51,16 +51,13 @@ export const updateLocation = (path) => (dispatch, getState) => {
 const loadPage = (page, category, item) => async (dispatch) => {
   switch (page) {
     case 'home':
-      dispatch(updateMeta({ title: 'Home' }));
+      dispatch(announceLabel(`Home, loaded`));
       break;
     case 'list':
       await import('../components/shop-list.js');
       if (category) {
         dispatch(fetchCategoryItems(category));
-        dispatch(updateMeta({
-          title: category.title,
-          image: document.baseURI + category.image
-        }));
+        dispatch(announceLabel(`${category.title}, loaded`));
       }
       break;
     case 'detail':
@@ -68,24 +65,21 @@ const loadPage = (page, category, item) => async (dispatch) => {
       if (category) {
         dispatch(fetchCategoryItems(category));
       }
+      // If category has not loaded yet, item will be announced by fetchCategoryItems.
       if (item && item.title) {
-        dispatch(updateMeta({
-          title: item.title,
-          description: item.description.substring(0, 100),
-          image: document.baseURI + item.image
-        }));
+        dispatch(announceLabel(`${item.title}, loaded`));
       }
       break;
     case 'cart':
       await import('../components/shop-cart.js');
-      dispatch(updateMeta({ title: 'Cart' }));
+      dispatch(announceLabel(`Cart, loaded`));
       break;
     case 'checkout':
       await import('../components/shop-checkout.js');
-      dispatch(updateMeta({ title: 'Checkout' }));
+      dispatch(announceLabel(`Checkout, loaded`));
       break;
     default:
-      dispatch(updateMeta({ title: '404' }));
+      dispatch(announceLabel(`Page not found`));
   }
 
   if (page === '404') {

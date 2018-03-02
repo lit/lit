@@ -15,7 +15,6 @@
 export const SET_ANNOUNCER_LABEL = 'SET_ANNOUNCER_LABEL';
 export const CLEAR_ANNOUNCER_LABEL = 'CLEAR_ANNOUNCER_LABEL';
 export const CLOSE_MODAL = 'CLOSE_MODAL';
-export const UPDATE_META = 'UPDATE_META';
 export const UPDATE_NETWORK_STATUS = 'UPDATE_NETWORK_STATUS';
 export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
 
@@ -48,15 +47,6 @@ export const closeModal = () => {
     type: CLOSE_MODAL
   };
 };
-
-export const updateMeta = (meta) => (dispatch) => {
-  dispatch({
-    type: UPDATE_META,
-    meta
-  });
-  dispatch(announceLabel(`${meta.title}, loaded`));
-};
-
 
 let snackbarTimer = 0;
 
