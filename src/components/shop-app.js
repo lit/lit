@@ -17,7 +17,7 @@ import { scroll } from '../../node_modules/@polymer/app-layout/helpers/helpers.j
 
 import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { installRouter } from '../../node_modules/pwa-helpers/router.js';
-import { updateSEOMetadata } from '../../node_modules/pwa-helpers/seo-metadata.js';
+import { updateMetadata } from '../../node_modules/pwa-helpers/metadata.js';
 import { installOfflineWatcher } from '../../node_modules/pwa-helpers/network.js';
 import { installMediaQueryWatcher } from '../../node_modules/pwa-helpers/media-query.js';
 
@@ -37,7 +37,7 @@ class ShopApp extends connect(store)(LitElement) {
     // TODO: Not very efficient right now as this will get called even if meta didn't change.
     // We are working on coming up a better way to do this more efficiently.
     if (meta) {
-      updateSEOMetadata({
+      updateMetadata({
         title: meta.title,
         description: meta.description || meta.title,
         url: document.location.href,
