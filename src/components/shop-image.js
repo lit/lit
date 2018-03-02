@@ -77,7 +77,7 @@ class ShopImage extends LitElement {
 
   _propertiesChanged(props, changed, oldProps) {
     if (changed && 'src' in changed) {
-      this._loaded = false;
+      props._loaded = false;
     }
     super._propertiesChanged(props, changed, oldProps);
   }
