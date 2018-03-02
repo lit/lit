@@ -98,10 +98,6 @@ const ensureLazyLoaded = () => (dispatch) => {
   if (!lazyLoadComplete) {
     requestAnimationFrame(() => {
       import('../components/lazy-resources.js').then(() => {
-        // Register service worker if supported.
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-        }
         lazyLoadComplete = true;
         dispatch({
           type: RECEIVE_LAZY_RESOURCES

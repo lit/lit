@@ -59,5 +59,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
   <script type="module" src="/src/components/shop-app.js"></script>
 
+  <script>
+    if ('serviceWorker' in window.navigator) {
+      window.addEventListener('load', function() {
+        window.navigator.serviceWorker.register('/service-worker.js')
+      });
+    }
+  </script>
+
 </body>
 </html>
