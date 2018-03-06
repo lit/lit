@@ -147,7 +147,7 @@ export function defaultTemplateFactory(result: TemplateResult) {
  * call `render` with the new result.
  *
  * @param result a TemplateResult created by evaluating a template tag like
- *     `html` or `svg.
+ *     `html` or `svg`.
  * @param container A DOM parent to render to. The entire contents are either
  *     replaced, or efficiently updated if the same result type was previous
  *     rendered there.
