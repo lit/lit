@@ -120,8 +120,8 @@ To create partial SVG templates - template that will rendering inside and `<svg>
 ```javascript
 const grid = svg`
   <g>
-    ${[0, 10, 20].map((x) => svg`<line x1=${x} y1="0" x2=${x} y2="20"/>`)}
-    ${[0, 10, 20].map((y) => svg`<line x1="0" y1=${y} x2="0" y2=${y}/>`)}
+    ${[0, 10, 20].map((x) => svg`<line x1=${x} y1="0" x2=${x} y2="20" stroke="#000"/>`)}
+    ${[0, 10, 20].map((y) => svg`<line x1="0" y1=${y} x2="20" y2=${y} stroke="#000"/>`)}
   </g>
 `;
 ```
