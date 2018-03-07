@@ -15,7 +15,7 @@ import './shop-icons.js';
 
 import { store } from '../store.js';
 import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
-import { fetchCategoryItems } from '../actions/categories.js';
+import { fetchCategoryItemsIfNeeded } from '../actions/categories.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopNetworkWarning extends connect(store)(LitElement) {
@@ -78,7 +78,8 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
   }
 
   _tryReconnect() {
-    store.dispatch(fetchCategoryItems(currentCategorySelector(store.getState())));
+    // TODO: This won't trigger the announceLabel action.
+    store.dispatch(fetchCategoryItemsIfNeeded(currentCategorySelector(store.getState())));
   }
 }
 

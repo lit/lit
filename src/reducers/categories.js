@@ -15,7 +15,6 @@ import {
   REQUEST_CATEGORY_ITEMS
 } from '../actions/categories.js';
 import { createSelector } from '../../node_modules/reselect/es/index.js';
-import { splitPathSelector } from './location.js';
 
 const categories = (state = {}, action) => {
   switch (action.type) {
@@ -73,30 +72,18 @@ export default categories;
 
 const categoriesSelector = state => state.categories;
 
+const categoryNameSelector = state => state.app.categoryName;
+
 export const currentCategorySelector = createSelector(
   categoriesSelector,
-  splitPathSelector,
-  (categories, splitPath) => {
-    if (['list', 'detail'].indexOf(splitPath[0]) !== -1) {
-      // Empty object means categories are loading and category may exist, whereas
-      // undefined means categories have loaded but category doesn't exist.
-      return Object.values(categories).length === 0 ? {} : categories[splitPath[1]];
-    } else {
-      return null;
-    }
-  }
+  categoryNameSelector,
+  (categories, categoryName) => (categories && categoryName ? categories[categoryName]: null)
 );
+
+const itemNameSelector = state => state.app.itemName;
 
 export const currentItemSelector = createSelector(
   currentCategorySelector,
-  splitPathSelector,
-  (category, splitPath) => {
-    if (splitPath[0] === 'detail') {
-      // Empty object means category is loading and item may exist, whereas
-      // undefined means category has loaded but item doesn't exist.
-      return !category || !category.items ? {} : category.items[splitPath[2]];
-    } else {
-      return null;
-    }
-  }
+  itemNameSelector,
+  (category, itemName) => (category && category.items && itemName ? category.items[itemName] : null)
 );

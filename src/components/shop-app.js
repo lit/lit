@@ -22,12 +22,9 @@ import { installOfflineWatcher } from '../../node_modules/pwa-helpers/network.js
 import { installMediaQueryWatcher } from '../../node_modules/pwa-helpers/media-query.js';
 
 import { store } from '../store.js';
-import { pageSelector } from '../reducers/location.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 import { metaSelector } from '../reducers/app.js';
-import { updateLocation } from '../actions/location.js';
-import { updateNetworkStatus } from '../actions/app.js';
-import { fetchCategories } from '../actions/categories.js';
+import { updateLocation, updateNetworkStatus } from '../actions/app.js';
 
 import './shop-home.js';
 
@@ -331,7 +328,6 @@ class ShopApp extends connect(store)(LitElement) {
   ready() {
     super.ready();
 
-    store.dispatch(fetchCategories());
     installRouter(() => this._updateLocation());
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
@@ -342,12 +338,12 @@ class ShopApp extends connect(store)(LitElement) {
 
   stateChanged(state) {
     const category = currentCategorySelector(state);
-    this.page = state.location.validPath ? pageSelector(state) : '404';
+    this.page = state.app.page;
     this.categories = Object.values(state.categories);
     this.categoryName = category ? category.name : null;
     this.meta = metaSelector(state);
     this.modalOpened = state.app.cartModalOpened;
-    this.lazyResourcesLoaded = state.location.lazyResourcesLoaded;
+    this.lazyResourcesLoaded = state.app.lazyResourcesLoaded;
     this.a11yLabel = state.app.announcerLabel;
     this.offline = state.app.offline;
     this.snackbarOpened = state.app.snackbarOpened;

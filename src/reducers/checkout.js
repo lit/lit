@@ -9,7 +9,7 @@
  */
 
 import { UPDATE_CHECKOUT_STATE } from '../actions/checkout.js';
-import { UPDATE_LOCATION } from '../actions/location.js';
+import { UPDATE_LOCATION } from '../actions/app.js';
 
 const checkout = (state = {}, action) => {
   switch (action.type) {

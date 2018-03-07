@@ -9,6 +9,8 @@
  */
 
 import {
+  UPDATE_LOCATION,
+  RECEIVE_LAZY_RESOURCES,
   CLEAR_ANNOUNCER_LABEL,
   SET_ANNOUNCER_LABEL,
   CLOSE_MODAL,
@@ -17,11 +19,22 @@ import {
 } from '../actions/app.js';
 import { ADD_TO_CART } from '../actions/cart.js';
 import { currentCategorySelector, currentItemSelector } from './categories.js';
-import { pageSelector } from './location.js';
 import { createSelector } from '../../node_modules/reselect/es/index.js';
 
 const app = (state = {}, action) => {
   switch (action.type) {
+    case UPDATE_LOCATION:
+      return {
+        ...state,
+        page: action.page,
+        categoryName: action.categoryName,
+        itemName: action.itemName
+      };
+    case RECEIVE_LAZY_RESOURCES:
+      return {
+        ...state,
+        lazyResourcesLoaded: true
+      };
     case CLEAR_ANNOUNCER_LABEL:
       return {
         ...state,
@@ -60,6 +73,8 @@ const app = (state = {}, action) => {
 }
 
 export default app;
+
+const pageSelector = state => state.app.page;
 
 export const metaSelector = createSelector(
   pageSelector,

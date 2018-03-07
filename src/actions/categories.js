@@ -8,10 +8,6 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { pageSelector } from '../reducers/location.js';
-import { currentItemSelector } from '../reducers/categories.js';
-import { announceLabel } from './app.js';
-
 export const RECEIVE_CATEGORIES = 'RECEIVE_CATEGORIES';
 export const REQUEST_CATEGORY_ITEMS = 'REQUEST_CATEGORY_ITEMS';
 export const RECEIVE_CATEGORY_ITEMS = 'RECEIVE_CATEGORY_ITEMS';
@@ -44,29 +40,31 @@ const INITIAL_CATEGORIES = {
   }
 };
 
-export const fetchCategories = () => (dispatch) => {
+export const fetchCategoriesIfNeeded = () => (dispatch, getState) => {
   // This can be dispatched async if needed (e.g. after a fetch() request).
-  dispatch({
-    type: RECEIVE_CATEGORIES,
-    categories: INITIAL_CATEGORIES
+  return new Promise((resolve) => {
+    const categories = getState().categories;
+    if (Object.keys(categories).length) {
+      resolve();
+    } else {
+      dispatch({
+        type: RECEIVE_CATEGORIES,
+        categories: INITIAL_CATEGORIES
+      });
+      resolve();
+    }
   });
 };
 
-export const fetchCategoryItems = (category) => (dispatch, getState) => {
+export const fetchCategoryItemsIfNeeded = (category) => (dispatch, getState) => {
   if (category && category.name && !category.items && !category.isFetching) {
     dispatch(requestCategoryItems(category.name));
     return fetch(`data/${category.name}.json`)
       .then(res => res.json())
-      .then(items => {
-        dispatch(receiveCategoryItems(category.name, items));
-        const state = getState();
-        const page = pageSelector(state);
-        if (page === 'detail') {
-          const item = currentItemSelector(state);
-          dispatch(announceLabel(`${item.title}, loaded`));
-        }
-      })
+      .then(items => dispatch(receiveCategoryItems(category.name, items)))
       .catch(() => dispatch(failCategoryItems(category.name)));
+  } else {
+    return Promise.resolve();
   }
 };
 

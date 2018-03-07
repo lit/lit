@@ -16,7 +16,6 @@ import thunk from '../node_modules/redux-thunk/es/index.js';
 import { lazyReducerEnhancer } from '../node_modules/pwa-helpers/lazy-reducer-enhancer.js';
 import app from './reducers/app.js';
 import categories from './reducers/categories.js';
-import location from './reducers/location.js';
 
 const compose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || origCompose;
 
@@ -27,6 +26,5 @@ export const store = createStore(
 
 store.addReducers({
   app,
-  categories,
-  location
+  categories
 });
