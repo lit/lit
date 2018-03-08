@@ -14,7 +14,7 @@
     "@polymer/iron-icon": "^3.0.0-pre.8",
     "@polymer/iron-iconset-svg": "^3.0.0-pre.8",
     "@polymer/iron-overlay-behavior": "^3.0.0-pre.8",
-    "@polymer/lit-element": "^0.1.0",
+    "@polymer/lit-element": "^0.2.2",
     "@polymer/paper-icon-button": "^3.0.0-pre.8",
     "@polymer/paper-spinner": "^3.0.0-pre.8",
     "@polymer/polymer": "^3.0.0-pre.8",
