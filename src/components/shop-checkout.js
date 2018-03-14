@@ -8,7 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { PageViewElement } from './page-view-element.js';
+import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCheckboxStyle } from'./shop-checkbox-style.js';
@@ -31,7 +32,7 @@ store.addReducers({
   checkout
 });
 
-class ShopCheckout extends connect(store)(LitElement) {
+class ShopCheckout extends connect(store)(PageViewElement) {
   render({ cart, response, state, total, waiting, hasBillingAddress }) {
     const cartList = cart ? Object.values(cart) : [];
 

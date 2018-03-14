@@ -8,7 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { PageViewElement } from './page-view-element.js';
+import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
 import { unsafeHTML } from '../../node_modules/lit-html/lib/unsafe-html.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
@@ -20,7 +21,7 @@ import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { currentCategorySelector, currentItemSelector } from '../reducers/categories.js';
 import { addToCart } from '../actions/cart.js';
 
-class ShopDetail extends connect(store)(LitElement) {
+class ShopDetail extends connect(store)(PageViewElement) {
   render({ failure, item }) {
     return html`
     <style>

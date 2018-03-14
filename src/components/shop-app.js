@@ -164,8 +164,12 @@ class ShopApp extends connect(store)(LitElement) {
         margin: 0 auto;
       }
 
-      main .hidden {
+      main > * {
         display: none;
+      }
+
+      main > [active] {
+        display: block;
       }
 
       footer {
@@ -256,17 +260,17 @@ class ShopApp extends connect(store)(LitElement) {
 
     <main>
       <!-- home view -->
-      <shop-home class$="${page !== 'home' ? 'hidden' : ''}"></shop-home>
+      <shop-home active?="${page === 'home'}"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list class$="${page !== 'list' ? 'hidden' : ''}"></shop-list>
+      <shop-list active?="${page === 'list'}"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail class$="${page !== 'detail' ? 'hidden' : ''}"></shop-detail>
+      <shop-detail active?="${page === 'detail'}"></shop-detail>
       <!-- cart view -->
-      <shop-cart class$="${page !== 'cart' ? 'hidden' : ''}"></shop-cart>
+      <shop-cart active?="${page === 'cart'}"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout class$="${page !== 'checkout' ? 'hidden' : ''}"></shop-checkout>
+      <shop-checkout active?="${page === 'checkout'}"></shop-checkout>
 
-      <shop-404-warning class$="${page !== '404' ? 'hidden' : ''}"></shop-404-warning>
+      <shop-404-warning active?="${page === '404'}"></shop-404-warning>
     </main>
 
     <footer>
