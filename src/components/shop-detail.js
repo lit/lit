@@ -187,8 +187,6 @@ class ShopDetail extends connect(store)(LitElement) {
 
   }
 
-  static get is() { return 'shop-detail'; }
-
   static get properties() { return {
 
     item: Object,
@@ -199,8 +197,7 @@ class ShopDetail extends connect(store)(LitElement) {
 
   }}
 
-  stateChanged() {
-    const state = store.getState();
+  stateChanged(state) {
     const category = currentCategorySelector(state);
     this.item = currentItemSelector(state) || {};
     this.failure = category && category.failure;
@@ -230,4 +227,4 @@ class ShopDetail extends connect(store)(LitElement) {
 
 }
 
-customElements.define(ShopDetail.is, ShopDetail);
+customElements.define('shop-detail', ShopDetail);

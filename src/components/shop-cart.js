@@ -20,6 +20,8 @@ import { totalSelector } from '../reducers/cart.js';
 
 class ShopCart extends connect(store)(LitElement) {
   render({ cart, total }) {
+    const cartList = cart ? Object.values(cart) : [];
+
     return html`
     <style>
       ${shopButtonStyle}
@@ -52,13 +54,13 @@ class ShopCart extends connect(store)(LitElement) {
 
     <div class="main-frame">
       <div class="subsection">
-        ${ cart.length > 0 ? html`
+        ${ cartList.length > 0 ? html`
             <header>
               <h1>Your Cart</h1>
-              <span>${`(${cart.length} item${cart.length > 1 ? 's' : ''})`}</span>
+              <span>${`(${cartList.length} item${cartList.length > 1 ? 's' : ''})`}</span>
             </header>
             <div class="list">
-              ${repeat(cart, entry => html`
+              ${repeat(cartList, entry => html`
                 <shop-cart-item entry="${entry}"></shop-cart-item>
               `)}
             </div>
@@ -74,22 +76,20 @@ class ShopCart extends connect(store)(LitElement) {
     </div>
     `;
   }
-  static get is() { return 'shop-cart'; }
 
   static get properties() { return {
 
     total: Number,
 
-    cart: Array
+    cart: Object
 
   }}
 
-  stateChanged() {
-    const state = store.getState();
-    this.cart = state.cart ? Object.values(state.cart): [];
+  stateChanged(state) {
+    this.cart = state.cart;
     this.total = totalSelector(state);
   }
 
 }
 
-customElements.define(ShopCart.is, ShopCart);
+customElements.define('shop-cart', ShopCart);

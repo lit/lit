@@ -30,8 +30,6 @@ class ShopTabsOverlay extends LitElement {
     </style>`;
   }
 
-  static get is() { return 'shop-tabs-overlay'; }
-
   static get properties() { return {
     /**
      * The element the overlay should cover.
@@ -181,4 +179,4 @@ class ShopTabsOverlay extends LitElement {
 
 }
 
-customElements.define(ShopTabsOverlay.is, ShopTabsOverlay);
+customElements.define('shop-tabs-overlay', ShopTabsOverlay);

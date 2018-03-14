@@ -44,7 +44,6 @@ class ShopTab extends LitElement {
       <slot></slot>
     </shop-ripple-container>`;
   }
-  static get is() { return 'shop-tab'; }
 }
 
-customElements.define(ShopTab.is, ShopTab);
+customElements.define('shop-tab', ShopTab);

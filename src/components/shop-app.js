@@ -42,6 +42,8 @@ class ShopApp extends connect(store)(LitElement) {
       })
     }
 
+    const categoriesList = Object.values(categories);
+
     return html`
     <style>
 
@@ -206,7 +208,7 @@ class ShopApp extends connect(store)(LitElement) {
 
     <shop-analytics key="UA-39334307-16"></shop-analytics>
 
-    <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+    <app-header role="navigation" id="header" effects="waterfall" condenses reveals>
       <app-toolbar>
         <div class="left-bar-item">
           <paper-icon-button class="menu-btn" icon="menu"
@@ -219,7 +221,7 @@ class ShopApp extends connect(store)(LitElement) {
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
         </div>
-        <div class="logo" main-title=""><a href="/" aria-label="SHOP Home">SHOP</a></div>
+        <div class="logo" main-title><a href="/" aria-label="SHOP Home">SHOP</a></div>
         <shop-cart-button></shop-cart-button>
       </app-toolbar>
 
@@ -227,8 +229,8 @@ class ShopApp extends connect(store)(LitElement) {
       ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && lazyResourcesLoaded ?
         html`
           <div id="tabContainer" sticky>
-            <shop-tabs selectedIndex="${categories.map(c => c.name).indexOf(categoryName)}">
-              ${repeat(categories, category => html`
+            <shop-tabs selectedIndex="${Object.keys(categories).indexOf(categoryName)}">
+              ${repeat(categoriesList, category => html`
                 <shop-tab name="${category.name}">
                   <a href="/list/${category.name}">${category.title}</a>
                 </shop-tab>
@@ -244,7 +246,7 @@ class ShopApp extends connect(store)(LitElement) {
       html`
         <app-drawer opened="${_drawerOpened}" tabindex="0" on-opened-changed="${e => this._drawerOpened = e.target.opened}">
           <nav class="drawer-list">
-            ${repeat(categories, category => html`
+            ${repeat(categoriesList, category => html`
               <a class$="${category.name === categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
             `)}
           </nav>
@@ -284,8 +286,6 @@ class ShopApp extends connect(store)(LitElement) {
     }
     `;
   }
-
-  static get is() { return 'shop-app'; }
 
   static get properties() { return {
     page: String,
@@ -339,8 +339,8 @@ class ShopApp extends connect(store)(LitElement) {
   stateChanged(state) {
     const category = currentCategorySelector(state);
     this.page = state.app.page;
-    this.categories = Object.values(state.categories);
-    this.categoryName = category ? category.name : null;
+    this.categories = state.categories;
+    this.categoryName = state.app.categoryName;
     this.meta = metaSelector(state);
     this.modalOpened = state.app.cartModalOpened;
     this.lazyResourcesLoaded = state.app.lazyResourcesLoaded;
@@ -357,4 +357,4 @@ class ShopApp extends connect(store)(LitElement) {
   }
 }
 
-customElements.define(ShopApp.is, ShopApp);
+customElements.define('shop-app', ShopApp);

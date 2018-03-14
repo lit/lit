@@ -179,7 +179,7 @@ class ShopCartItem extends LitElement {
         <div class="detail">
           <div class="quantity">
             <shop-select>
-              <label prefix="">Qty:</label>
+              <label prefix>Qty:</label>
               <select id="quantitySelect" aria-label="Change quantity" value="${entry.quantity}" on-change="${e => this._quantityChange(e)}">
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -209,8 +209,6 @@ class ShopCartItem extends LitElement {
     }
     `;
   }
-
-  static get is() { return 'shop-cart-item'; }
 
   static get properties() { return {
 
@@ -247,4 +245,4 @@ class ShopCartItem extends LitElement {
 
 }
 
-customElements.define(ShopCartItem.is, ShopCartItem);
+customElements.define('shop-cart-item', ShopCartItem);

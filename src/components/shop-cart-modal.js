@@ -110,8 +110,6 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
 `;
   }
 
-  static get is() { return 'shop-cart-modal'; }
-
   static get properties() { return {
     withBackdrop: {
       type: Boolean,
@@ -119,11 +117,8 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
     }
   }}
 
-  stateChanged() {
-    const state = store.getState();
-    this.setProperties({
-      opened: state.app.cartModalOpened
-    });
+  stateChanged(state) {
+    this.opened = state.app.cartModalOpened;
   }
 
   ready() {
@@ -181,4 +176,4 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
   notifyResize() {}
 }
 
-customElements.define(ShopCartModal.is, ShopCartModal);
+customElements.define('shop-cart-modal', ShopCartModal);

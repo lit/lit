@@ -33,6 +33,8 @@ store.addReducers({
 
 class ShopCheckout extends connect(store)(LitElement) {
   render({ cart, response, state, total, waiting, hasBillingAddress }) {
+    const cartList = cart ? Object.values(cart) : [];
+
     return html`
     <style>
       ${shopButtonStyle}
@@ -138,7 +140,7 @@ class ShopCheckout extends connect(store)(LitElement) {
       ${ state === 'init' ? html`
         <div state="init">
           <form id="checkoutForm">
-            ${ cart.length === 0 ? html`
+            ${ cartList.length === 0 ? html`
               <div class="subsection">
                 <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
               </div>` : html`
@@ -379,7 +381,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                     </shop-input>
                   </div>
                   <h2>Order Summary</h2>
-                  ${repeat(cart, entry => html`
+                  ${repeat(cartList, entry => html`
                     <div class="row order-summary-row">
                       <div class="flex">${entry.item.title}</div>
                       <div>$${(entry.quantity * entry.item.price).toFixed(2)}</div>
@@ -387,7 +389,7 @@ class ShopCheckout extends connect(store)(LitElement) {
                   `)}
                   <div class="row total-row">
                     <div class="flex">Total</div>
-                    <div>${total.toFixed(2)}</div>
+                    <div>$${total.toFixed(2)}</div>
                   </div>
                   <shop-button responsive id="submitBox">
                     <input type="button" on-click="${e => this._submit()}" value="Place Order">
@@ -420,7 +422,6 @@ class ShopCheckout extends connect(store)(LitElement) {
     <paper-spinner-lite active="${waiting}"></paper-spinner-lite>
     `;
   }
-  static get is() { return 'shop-checkout'; }
 
   static get properties() { return {
 
@@ -436,9 +437,9 @@ class ShopCheckout extends connect(store)(LitElement) {
     state: String,
 
     /**
-     * An array containing the items in the cart.
+     * The cart contents.
      */
-    cart: Array,
+    cart: Object,
 
     /**
      * The server's response.
@@ -462,9 +463,8 @@ class ShopCheckout extends connect(store)(LitElement) {
 
   }}
 
-  stateChanged() {
-    const state = store.getState();
-    this.cart = state.cart ? Object.values(state.cart) : [];
+  stateChanged(state) {
+    this.cart = state.cart;
     this.total = totalSelector(state);
     this.state = state.checkout.state;
   }
@@ -570,4 +570,4 @@ class ShopCheckout extends connect(store)(LitElement) {
 
 }
 
-customElements.define(ShopCheckout.is, ShopCheckout);
+customElements.define('shop-checkout', ShopCheckout);

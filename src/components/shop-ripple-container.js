@@ -16,7 +16,7 @@ const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<dom-module id="shop-ripple-container">
-  <template strip-whitespace="">
+  <template strip-whitespace>
     <style>
       :host {
         display: inline-block;
@@ -36,8 +36,6 @@ document.head.appendChild($_documentContainer);
 
 class ShopRippleContainer extends mixinBehaviors(
   [PaperRippleBehavior], Element) {
-
-  static get is() { return 'shop-ripple-container'; }
 
   constructor() {
     super();
@@ -75,4 +73,4 @@ class ShopRippleContainer extends mixinBehaviors(
 
 }
 
-customElements.define(ShopRippleContainer.is, ShopRippleContainer);
+customElements.define('shop-ripple-container', ShopRippleContainer);

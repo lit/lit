@@ -61,8 +61,6 @@ class ShopImage extends LitElement {
 `;
   }
 
-  static get is() { return 'shop-image'; }
-
   static get properties() { return {
 
     alt: String,
@@ -89,4 +87,4 @@ class ShopImage extends LitElement {
   }
 }
 
-customElements.define(ShopImage.is, ShopImage);
+customElements.define('shop-image', ShopImage);

@@ -35,8 +35,6 @@ class ShopTabs extends LitElement {
     </div>`;
   }
 
-  static get is() { return 'shop-tabs'; }
-
   static get properties() { return {
     /**
      * The index of the selected element.
@@ -45,4 +43,4 @@ class ShopTabs extends LitElement {
   }}
 }
 
-customElements.define(ShopTabs.is, ShopTabs);
+customElements.define('shop-tabs', ShopTabs);

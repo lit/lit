@@ -55,8 +55,6 @@ class ShopListItem extends LitElement {
 `;
   }
 
-  static get is() { return 'shop-list-item'; }
-
   static get properties() { return {
 
     item: Object
@@ -64,4 +62,4 @@ class ShopListItem extends LitElement {
   }}
 }
 
-customElements.define(ShopListItem.is, ShopListItem);
+customElements.define('shop-list-item', ShopListItem);

@@ -47,8 +47,6 @@ class Shop404Warning extends LitElement {
     </shop-button>
 `;
   }
-
-  static get is() { return 'shop-404-warning'; }
 }
 
-customElements.define(Shop404Warning.is, Shop404Warning);
+customElements.define('shop-404-warning', Shop404Warning);

@@ -55,16 +55,13 @@ class ShopCartButton extends connect(store)(LitElement) {
 `;
   }
 
-  static get is() { return 'shop-cart-button'; }
-
   static get properties() { return {
     numItems: Number
   }}
 
-  stateChanged() {
-    const state = store.getState();
+  stateChanged(state) {
     this.numItems = numItemsSelector(state);
   }
 }
 
-customElements.define(ShopCartButton.is, ShopCartButton);
+customElements.define('shop-cart-button', ShopCartButton);

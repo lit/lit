@@ -66,14 +66,11 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
 `;
   }
 
-  static get is() { return 'shop-network-warning'; }
-
   static get properties() { return {
     offline: Boolean
   }}
 
-  stateChanged() {
-    const state = store.getState();
+  stateChanged(state) {
     this.offline = state.app.offline;
   }
 
@@ -83,4 +80,4 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
   }
 }
 
-customElements.define(ShopNetworkWarning.is, ShopNetworkWarning);
+customElements.define('shop-network-warning', ShopNetworkWarning);

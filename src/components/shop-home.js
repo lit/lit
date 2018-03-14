@@ -95,7 +95,7 @@ class ShopHome extends connect(store)(LitElement) {
 
     </style>
 
-    ${repeat(categories, category => html`<div class="item">
+    ${repeat(Object.values(categories), category => html`<div class="item">
         <a class="image-link" href="/list/${category.name}">
           <shop-image src="${category.image}" alt="${category.title}" placeholder="${category.placeholder}"></shop-image>
         </a>
@@ -107,18 +107,15 @@ class ShopHome extends connect(store)(LitElement) {
 `;
   }
 
-  static get is() { return 'shop-home'; }
-
   static get properties() { return {
 
-    categories: Array
+    categories: Object
 
   }}
 
-  stateChanged() {
-    const state = store.getState();
-    this.categories = Object.values(state.categories);
+  stateChanged(state) {
+    this.categories = state.categories;
   }
 }
 
-customElements.define(ShopHome.is, ShopHome);
+customElements.define('shop-home', ShopHome);

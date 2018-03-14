@@ -56,8 +56,6 @@ class ShopSnackbar extends LitElement {
     <slot></slot>
 `;
   }
-
-  static get is() { return 'shop-snackbar'; }
 }
 
-customElements.define(ShopSnackbar.is, ShopSnackbar);
+customElements.define('shop-snackbar', ShopSnackbar);
