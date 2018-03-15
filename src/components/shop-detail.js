@@ -192,8 +192,6 @@ class ShopDetail extends connect(store)(PageViewElement) {
 
     item: Object,
 
-    visible: Boolean,
-
     failure: Boolean
 
   }}

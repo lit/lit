@@ -109,16 +109,6 @@ class ShopList extends connect(store)(PageViewElement) {
     this.failure = category && category.failure;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.isAttached = true;
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.isAttached = false;
-  }
-
   _getListItems(items) {
     // Return placeholder items when the items haven't loaded yet.
     return items ? Object.values(items) : [{},{},{},{},{},{},{},{},{},{}];

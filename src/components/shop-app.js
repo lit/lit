@@ -14,6 +14,7 @@ import '../../node_modules/@polymer/app-layout/app-header/app-header.js';
 import '../../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '../../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
 import { scroll } from '../../node_modules/@polymer/app-layout/helpers/helpers.js';
+import { setPassiveTouchGestures } from '../../node_modules/@polymer/polymer/lib/utils/settings.js';
 
 import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
 import { installRouter } from '../../node_modules/pwa-helpers/router.js';
@@ -37,7 +38,6 @@ class ShopApp extends connect(store)(LitElement) {
       updateMetadata({
         title: meta.title,
         description: meta.description || meta.title,
-        url: document.location.href,
         image: meta.image || this.baseURI + 'images/shop-icon-128.png'
       })
     }
@@ -327,6 +327,13 @@ class ShopApp extends connect(store)(LitElement) {
       const header = this.shadowRoot.querySelector('#header');
       header.resetLayout();
     }
+  }
+
+  constructor() {
+    super();
+    // To force all event listeners for gestures to be passive.
+    // See https://www.polymer-project.org/2.0/docs/devguide/gesture-events#use-passive-gesture-listeners
+    setPassiveTouchGestures(true);
   }
 
   ready() {
