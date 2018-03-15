@@ -332,7 +332,7 @@ class ShopApp extends connect(store)(LitElement) {
   ready() {
     super.ready();
 
-    installRouter(() => this._updateLocation());
+    installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
 
@@ -353,8 +353,8 @@ class ShopApp extends connect(store)(LitElement) {
     this.snackbarOpened = state.app.snackbarOpened;
   }
 
-  _updateLocation() {
-    store.dispatch(updateLocation(window.decodeURIComponent(window.location.pathname)));
+  _updateLocation(location) {
+    store.dispatch(updateLocation(location));
 
     // Close the drawer - in case the *route* change came from a link in the drawer.
     this._drawerOpened = false;

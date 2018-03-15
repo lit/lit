@@ -19,54 +19,71 @@ export const CLOSE_MODAL = 'CLOSE_MODAL';
 export const UPDATE_NETWORK_STATUS = 'UPDATE_NETWORK_STATUS';
 export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
 
-export const updateLocation = (path) => async (dispatch, getState) => {
+export const reloadCategory = () => async (dispatch, getState) => {
+  let state = getState();
+  const page = state.app.page;
+  if (['list', 'detail'].indexOf(page) === -1) {
+    return;
+  }
+
+  let category = currentCategorySelector(state);
+  if (category) {
+    await dispatch(fetchCategoryItemsIfNeeded(category));
+    state = getState();
+    category = currentCategorySelector(state);
+    switch (page) {
+      case 'list':
+        dispatch(announceLabel(`${category.title}, loaded`));
+        return;
+      case 'detail':
+        const item = currentItemSelector(state);
+        if (item) {
+          dispatch(announceLabel(`${item.title}, loaded`));
+          return;
+        }
+        break;
+    }
+  }
+
+  dispatch(announceLabel(`Page not found`));
+  dispatch({
+    type: UPDATE_LOCATION,
+    page: '404',
+  });
+};
+
+export const updateLocation = (location) => async (dispatch, getState) => {
+  const path = window.decodeURIComponent(location.pathname);
   const splitPath = (path || '').slice(1).split('/');
-  let page = '404';
+  let page = splitPath[0];
   let categoryName = null;
   let itemName = null;
   await dispatch(fetchCategoriesIfNeeded());
-  switch (splitPath[0]) {
+  switch (page) {
     case '':
       page = 'home';
       dispatch(announceLabel(`Home, loaded`));
       break;
     case 'cart':
-      page = 'cart';
       await import('../components/shop-cart.js');
       dispatch(announceLabel(`Cart, loaded`));
       break;
     case 'checkout':
-      page = 'checkout';
       await import('../components/shop-checkout.js');
       dispatch(announceLabel(`Checkout, loaded`));
       break;
-    default:
+    case 'list':
       categoryName = splitPath[1];
-      let category = getState().categories[categoryName];
-      if (category) {
-        await dispatch(fetchCategoryItemsIfNeeded(category));
-        category = getState().categories[categoryName];
-        switch (splitPath[0]) {
-          case 'list':
-            page = 'list';
-            await import('../components/shop-list.js');
-            dispatch(announceLabel(`${category.title}, loaded`));
-            break;
-          case 'detail':
-            itemName = splitPath[2];
-            const item = category.items[itemName];
-            if (item) {
-              page = 'detail';
-              await import('../components/shop-detail.js');
-              dispatch(announceLabel(`${item.title}, loaded`));
-            }
-            break;
-        }
-      }
-  }
-
-  if (page === '404') {
-    dispatch(announceLabel(`Page not found`));
+      await import('../components/shop-list.js');
+      break;
+    case 'detail':
+      categoryName = splitPath[1];
+      itemName = splitPath[2];
+      await import('../components/shop-detail.js');
+      break;
+    default:
+      page = '404';
+      dispatch(announceLabel(`Page not found`));
   }
 
   dispatch({
@@ -75,6 +92,8 @@ export const updateLocation = (path) => async (dispatch, getState) => {
     categoryName,
     itemName
   });
+
+  await dispatch(reloadCategory());
 
   const lazyLoadComplete = getState().app.lazyResourcesLoaded;
   // load lazy resources after render and set `lazyLoadComplete` when done.
@@ -121,6 +140,7 @@ export const closeModal = () => {
 let snackbarTimer = 0;
 
 export const updateNetworkStatus = (offline) => (dispatch, getState) => {
+  const prevOffline = getState().app.offline;
   dispatch({
     type: UPDATE_NETWORK_STATUS,
     offline
@@ -128,9 +148,7 @@ export const updateNetworkStatus = (offline) => (dispatch, getState) => {
   clearTimeout(snackbarTimer);
   snackbarTimer = setTimeout(() => dispatch({ type: CLOSE_SNACKBAR }), 3000);
 
-  // TODO: This is intended to automatically fetch when you come back online. Currently
-  // disabled because it is causing double requests on initial load of the list page.
-  // if (!offline) {
-  //   dispatch(fetchCategoryItems(currentCategorySelector(getState())));
-  // }
+  if (!offline && prevOffline) {
+    dispatch(reloadCategory());
+  }
 };
