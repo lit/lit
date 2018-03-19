@@ -46,6 +46,12 @@ render(helloTemplate('Kevin'), document.body);
 3. Standard JavaScript without required build steps, understandable by standards-compliant tools.
 4. Very small size.
 
+## Installation
+
+```bash
+$ npm install lit-html
+```
+
 ## How it Works
 
 `lit-html` utilizes some unique properties of HTML `<template>` elements and JavaScript template literals. So it's helpful to understand them first.
