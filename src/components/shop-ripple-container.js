@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { Element } from '../../node_modules/@polymer/polymer/polymer-element.js';
+import { PolymerElement } from '../../node_modules/@polymer/polymer/polymer-element.js';
 import { PaperRippleBehavior } from '../../node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js';
 import { addListener } from '../../node_modules/@polymer/polymer/lib/utils/gestures.js';
 import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
@@ -35,7 +35,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-ripple-container">
 document.head.appendChild($_documentContainer);
 
 class ShopRippleContainer extends mixinBehaviors(
-  [PaperRippleBehavior], Element) {
+  [PaperRippleBehavior], PolymerElement) {
 
   constructor() {
     super();
