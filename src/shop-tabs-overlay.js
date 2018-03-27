@@ -1,10 +1,10 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import { flush } from '../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
-import { microTask, timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import { flush } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = `<dom-module id="shop-tabs-overlay">
+$_documentContainer.innerHTML = html`<dom-module id="shop-tabs-overlay">
   <template strip-whitespace="">
     <style>
       :host {
@@ -25,7 +25,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-tabs-overlay">
 
 document.head.appendChild($_documentContainer);
 
-class ShopTabsOverlay extends Element {
+class ShopTabsOverlay extends PolymerElement {
 
   static get is() { return 'shop-tabs-overlay'; }
 

@@ -1,12 +1,12 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import { IronSelectableBehavior } from '../node_modules/@polymer/iron-selector/iron-selectable.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import { IronSelectableBehavior } from '@polymer/iron-selector/iron-selectable.js';
 import './shop-tabs-overlay.js';
-import { mixinBehaviors } from '../node_modules/@polymer/polymer/lib/legacy/class.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = `<dom-module id="shop-tabs">
+$_documentContainer.innerHTML = html`<dom-module id="shop-tabs">
   <template strip-whitespace="">
     <style>
       :host {
@@ -33,7 +33,7 @@ $_documentContainer.innerHTML = `<dom-module id="shop-tabs">
 document.head.appendChild($_documentContainer);
 
 class ShopTabs extends mixinBehaviors(
-  [IronSelectableBehavior], Element) {
+  [IronSelectableBehavior], PolymerElement) {
 
   static get is() { return 'shop-tabs'; }
 

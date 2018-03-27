@@ -1,5 +1,5 @@
-import '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/polymer/polymer-element.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

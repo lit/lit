@@ -1,11 +1,11 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shop-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
-class ShopCart extends Element {
+class ShopCart extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <style include="shop-common-styles shop-button shop-form-styles">
 
       .list {

@@ -1,12 +1,12 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import '../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
-import { IronOverlayBehaviorImpl } from '../node_modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import { IronOverlayBehaviorImpl } from '@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
 import './shop-button.js';
-import { mixinBehaviors } from '../node_modules/@polymer/polymer/lib/legacy/class.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
 class ShopCartModal extends mixinBehaviors(
-  [IronOverlayBehaviorImpl], Element) {
+  [IronOverlayBehaviorImpl], PolymerElement) {
   static get template() {
     return `
     <style include="shop-button">
