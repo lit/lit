@@ -9,19 +9,19 @@
  */
 
 import { PageViewElement } from './page-view-element.js';
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
+import { html } from '@polymer/lit-element';
+import { repeat } from 'lit-html/lib/repeat';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCheckboxStyle } from'./shop-checkbox-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
 import { shopInputStyle } from'./shop-input-style.js';
 import { shopSelectStyle } from './shop-select-style.js';
-import { Debouncer } from '../../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce';
+import { timeOut } from '@polymer/polymer/lib/utils/async';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
+import { connect } from 'pwa-helpers/connect-mixin';
 import { totalSelector } from '../reducers/cart.js';
 import { updateCheckoutState } from '../actions/checkout.js';
 import { clearCart } from '../actions/cart.js';

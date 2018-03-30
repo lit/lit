@@ -8,9 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import { flush } from '../../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
-import { microTask, timeOut } from '../../node_modules/@polymer/polymer/lib/utils/async.js';
+import { LitElement, html } from '@polymer/lit-element';
+import { flush } from '@polymer/polymer/lib/legacy/polymer.dom';
+import { microTask, timeOut } from '@polymer/polymer/lib/utils/async';
 
 class ShopTabsOverlay extends LitElement {
   render() {

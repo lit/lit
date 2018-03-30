@@ -8,10 +8,10 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { LitElement, html } from '@polymer/lit-element';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
+import { connect } from 'pwa-helpers/connect-mixin';
 import { numItemsSelector } from '../reducers/cart.js';
 
 class ShopCartButton extends connect(store)(LitElement) {

@@ -15,7 +15,7 @@ import {
   REMOVE_FROM_CART,
   CLEAR_CART
 } from '../actions/cart.js';
-import { createSelector } from '../../node_modules/reselect/es/index.js';
+import { createSelector } from 'reselect';
 
 const cart = (state = {}, action) => {
   switch (action.type) {

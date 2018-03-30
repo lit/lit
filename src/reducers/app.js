@@ -19,7 +19,7 @@ import {
 } from '../actions/app.js';
 import { ADD_TO_CART } from '../actions/cart.js';
 import { currentCategorySelector, currentItemSelector } from './categories.js';
-import { createSelector } from '../../node_modules/reselect/es/index.js';
+import { createSelector } from 'reselect';
 
 const app = (state = {}, action) => {
   switch (action.type) {

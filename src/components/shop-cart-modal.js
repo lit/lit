@@ -8,14 +8,14 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { PolymerElement } from '../../node_modules/@polymer/polymer/polymer-element.js';
-import '../../node_modules/@polymer/paper-icon-button/paper-icon-button.js';
-import { IronOverlayBehaviorImpl } from '../../node_modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
-import { mixinBehaviors } from '../../node_modules/@polymer/polymer/lib/legacy/class.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element';
+import '@polymer/paper-icon-button';
+import { IronOverlayBehaviorImpl } from '@polymer/iron-overlay-behavior';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import { shopButtonStyle } from './shop-button-style.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
+import { connect } from 'pwa-helpers/connect-mixin';
 import { closeModal } from '../actions/app.js';
 
 class ShopCartModal extends connect(store)(mixinBehaviors(

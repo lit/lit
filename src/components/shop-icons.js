@@ -8,8 +8,8 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import '../../node_modules/@polymer/iron-icon/iron-icon.js';
-import '../../node_modules/@polymer/iron-iconset-svg/iron-iconset-svg.js';
+import '@polymer/iron-icon';
+import '@polymer/iron-iconset-svg';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

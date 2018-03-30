@@ -8,19 +8,19 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
-import '../../node_modules/@polymer/app-layout/app-header/app-header.js';
-import '../../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
-import '../../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
-import { scroll } from '../../node_modules/@polymer/app-layout/helpers/helpers.js';
-import { setPassiveTouchGestures } from '../../node_modules/@polymer/polymer/lib/utils/settings.js';
+import { LitElement, html } from '@polymer/lit-element';
+import { repeat } from 'lit-html/lib/repeat';
+import '@polymer/app-layout/app-header/app-header';
+import '@polymer/app-layout/app-scroll-effects/effects/waterfall';
+import '@polymer/app-layout/app-toolbar/app-toolbar';
+import { scroll } from '@polymer/app-layout/helpers/helpers';
+import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings';
 
-import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
-import { installRouter } from '../../node_modules/pwa-helpers/router.js';
-import { updateMetadata } from '../../node_modules/pwa-helpers/metadata.js';
-import { installOfflineWatcher } from '../../node_modules/pwa-helpers/network.js';
-import { installMediaQueryWatcher } from '../../node_modules/pwa-helpers/media-query.js';
+import { connect } from 'pwa-helpers/connect-mixin';
+import { installRouter } from 'pwa-helpers/router';
+import { updateMetadata } from 'pwa-helpers/metadata';
+import { installOfflineWatcher } from 'pwa-helpers/network';
+import { installMediaQueryWatcher } from 'pwa-helpers/media-query';
 
 import { store } from '../store.js';
 import { currentCategorySelector } from '../reducers/categories.js';

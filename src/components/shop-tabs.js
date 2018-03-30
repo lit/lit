@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { LitElement, html } from '@polymer/lit-element';
 import './shop-tabs-overlay.js';
 
 class ShopTabs extends LitElement {

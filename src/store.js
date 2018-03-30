@@ -8,12 +8,14 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import createStore from '../node_modules/@0xcda7a/redux-es6/es/createStore.js';
-import applyMiddleware from '../node_modules/@0xcda7a/redux-es6/es/applyMiddleware.js';
-import origCompose from '../node_modules/@0xcda7a/redux-es6/es/compose.js';
-import combineReducers from '../node_modules/@0xcda7a/redux-es6/es/combineReducers.js';
-import thunk from '../node_modules/redux-thunk/es/index.js';
-import { lazyReducerEnhancer } from '../node_modules/pwa-helpers/lazy-reducer-enhancer.js';
+import {
+  createStore,
+  applyMiddleware,
+  compose as origCompose,
+  combineReducers
+} from 'redux';
+import thunk from 'redux-thunk';
+import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer';
 import app from './reducers/app.js';
 import categories from './reducers/categories.js';
 

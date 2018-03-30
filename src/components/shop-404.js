@@ -8,9 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { LitElement, html } from '@polymer/lit-element';
 import { shopButtonStyle } from './shop-button-style.js';
-import '../../node_modules/@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icon';
 import './shop-icons.js';
 
 class Shop404Warning extends LitElement {

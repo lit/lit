@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { LitElement } from '@polymer/lit-element';
 
 export class PageViewElement extends LitElement {
   // Only render this page if it's actually visible.

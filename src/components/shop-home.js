@@ -9,13 +9,13 @@
  */
 
 import { PageViewElement } from './page-view-element.js';
-import { html } from '../../node_modules/@polymer/lit-element/lit-element.js';
-import { repeat } from '../../node_modules/lit-html/lib/repeat.js';
+import { html } from '@polymer/lit-element';
+import { repeat } from 'lit-html/lib/repeat';
 import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
+import { connect } from 'pwa-helpers/connect-mixin';
 
 class ShopHome extends connect(store)(PageViewElement) {
   render({ categories }) {

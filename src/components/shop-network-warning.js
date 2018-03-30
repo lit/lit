@@ -8,13 +8,13 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '../../node_modules/@polymer/lit-element/lit-element.js';
+import { LitElement, html } from '@polymer/lit-element';
 import { shopButtonStyle } from './shop-button-style.js';
-import '../../node_modules/@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icon';
 import './shop-icons.js';
 
 import { store } from '../store.js';
-import { connect } from '../../node_modules/pwa-helpers/connect-mixin.js';
+import { connect } from 'pwa-helpers/connect-mixin';
 import { reloadCategory } from '../actions/app.js';
 
 class ShopNetworkWarning extends connect(store)(LitElement) {
