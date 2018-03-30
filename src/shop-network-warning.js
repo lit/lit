@@ -1,11 +1,11 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-icon/iron-icon.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/iron-icon/iron-icon.js';
 import './shop-button.js';
 import './shop-icons.js';
 
-class ShopNetworkWarning extends Element {
+class ShopNetworkWarning extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <style include="shop-button">
 
       :host {

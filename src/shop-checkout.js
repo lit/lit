@@ -1,18 +1,18 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-route/app-route.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/app-route/app-route.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 import './shop-input.js';
 import './shop-select.js';
 import './shop-checkbox.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
-class ShopCheckout extends Element {
+class ShopCheckout extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <style include="shop-common-styles shop-button shop-form-styles shop-input shop-select shop-checkbox">
 
       .main-frame {

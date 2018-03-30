@@ -1,6 +1,6 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 let categoryList = [
   {
     name: 'mens_outerwear',
@@ -28,7 +28,7 @@ let categoryList = [
   }
 ];
 
-class ShopCategoryData extends Element {
+class ShopCategoryData extends PolymerElement {
 
   static get is() { return 'shop-category-data'; }
 

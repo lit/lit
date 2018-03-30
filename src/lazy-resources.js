@@ -16,8 +16,8 @@ import "./shop-cart-modal.js";
 import "./shop-snackbar.js";
 import "./shop-tabs.js";
 import "./shop-tab.js";
-import "../node_modules/@polymer/paper-icon-button/paper-icon-button.js";
-import "../node_modules/@polymer/app-layout/app-drawer/app-drawer.js";
+import "@polymer/paper-icon-button/paper-icon-button.js";
+import "@polymer/app-layout/app-drawer/app-drawer.js";
 
 // shop-list
 // shop-detail
@@ -28,5 +28,5 @@ import "./shop-404-warning.js";
 import "./shop-cart-item.js";
 
 // shop-checkout
-import "../node_modules/@polymer/iron-form/iron-form.js";
-import "../node_modules/@polymer/paper-spinner/paper-spinner-lite.js";
+import "@polymer/iron-form/iron-form.js";
+import "@polymer/paper-spinner/paper-spinner-lite.js";

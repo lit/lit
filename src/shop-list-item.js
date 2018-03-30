@@ -1,9 +1,9 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
 
-class ShopListItem extends Element {
+class ShopListItem extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <style>
 
       :host {

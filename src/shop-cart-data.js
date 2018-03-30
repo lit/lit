@@ -1,9 +1,9 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-storage/app-localstorage/app-localstorage-document.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 
-class ShopCartData extends Element {
+class ShopCartData extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <app-localstorage-document key="shop-cart-data" data="{{cart}}"></app-localstorage-document>
 `;
   }

@@ -1,26 +1,26 @@
-import { Element } from '../node_modules/@polymer/polymer/polymer-element.js';
-import '../node_modules/@polymer/app-layout/app-header/app-header.js';
-import '../node_modules/@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
-import '../node_modules/@polymer/app-layout/app-toolbar/app-toolbar.js';
-import { scroll } from '../node_modules/@polymer/app-layout/helpers/helpers.js';
-import '../node_modules/@polymer/app-route/app-location.js';
-import '../node_modules/@polymer/app-route/app-route.js';
-import '../node_modules/@polymer/iron-flex-layout/iron-flex-layout.js';
-import '../node_modules/@polymer/iron-media-query/iron-media-query.js';
-import '../node_modules/@polymer/iron-pages/iron-pages.js';
-import '../node_modules/@polymer/iron-selector/iron-selector.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/app-layout/app-header/app-header.js';
+import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
+import '@polymer/app-layout/app-toolbar/app-toolbar.js';
+import { scroll } from '@polymer/app-layout/helpers/helpers.js';
+import '@polymer/app-route/app-location.js';
+import '@polymer/app-route/app-route.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/iron-media-query/iron-media-query.js';
+import '@polymer/iron-pages/iron-pages.js';
+import '@polymer/iron-selector/iron-selector.js';
 import './shop-category-data.js';
 import './shop-home.js';
-import { afterNextRender } from '../node_modules/@polymer/polymer/lib/utils/render-status.js';
-import { timeOut } from '../node_modules/@polymer/polymer/lib/utils/async.js';
-import { Debouncer } from '../node_modules/@polymer/polymer/lib/utils/debounce.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 
 // performance logging
 window.performance && performance.mark && performance.mark('shop-app - before register');
 
-class ShopApp extends Element {
+class ShopApp extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <style>
 
       :host {
