@@ -9,18 +9,18 @@
  */
 
 import { LitElement, html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat';
-import '@polymer/app-layout/app-header/app-header';
-import '@polymer/app-layout/app-scroll-effects/effects/waterfall';
-import '@polymer/app-layout/app-toolbar/app-toolbar';
-import { scroll } from '@polymer/app-layout/helpers/helpers';
-import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings';
+import { repeat } from 'lit-html/lib/repeat.js';
+import '@polymer/app-layout/app-header/app-header.js';
+import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
+import '@polymer/app-layout/app-toolbar/app-toolbar.js';
+import { scroll } from '@polymer/app-layout/helpers/helpers.js';
+import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 
-import { connect } from 'pwa-helpers/connect-mixin';
-import { installRouter } from 'pwa-helpers/router';
-import { updateMetadata } from 'pwa-helpers/metadata';
-import { installOfflineWatcher } from 'pwa-helpers/network';
-import { installMediaQueryWatcher } from 'pwa-helpers/media-query';
+import { connect } from 'pwa-helpers/connect-mixin.js';
+import { installRouter } from 'pwa-helpers/router.js';
+import { updateMetadata } from 'pwa-helpers/metadata.js';
+import { installOfflineWatcher } from 'pwa-helpers/network.js';
+import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
 
 import { store } from '../store.js';
 import { currentCategorySelector } from '../reducers/categories.js';

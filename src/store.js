@@ -15,7 +15,7 @@ import {
   combineReducers
 } from 'redux';
 import thunk from 'redux-thunk';
-import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer';
+import { lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 import app from './reducers/app.js';
 import categories from './reducers/categories.js';
 

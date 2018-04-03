@@ -17,7 +17,7 @@ import "./shop-snackbar.js";
 import "./shop-tabs.js";
 import "./shop-tab.js";
 import "@polymer/paper-icon-button";
-import "@polymer/app-layout/app-drawer/app-drawer";
+import "@polymer/app-layout/app-drawer/app-drawer.js";
 
 // shop-list
 // shop-detail
@@ -28,7 +28,7 @@ import "./shop-404.js";
 import "./shop-cart-item.js";
 
 // shop-checkout
-import "@polymer/paper-spinner/paper-spinner-lite";
+import "@polymer/paper-spinner/paper-spinner-lite.js";
 
 import { store } from '../store.js';
 import { installCart } from '../cart.js';

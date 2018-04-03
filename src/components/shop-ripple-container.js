@@ -8,10 +8,10 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { PolymerElement } from '@polymer/polymer/polymer-element';
-import { PaperRippleBehavior } from '@polymer/paper-behaviors/paper-ripple-behavior';
-import { addListener } from '@polymer/polymer/lib/utils/gestures';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { PaperRippleBehavior } from '@polymer/paper-behaviors/paper-ripple-behavior.js';
+import { addListener } from '@polymer/polymer/lib/utils/gestures.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 

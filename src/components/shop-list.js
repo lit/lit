@@ -10,13 +10,13 @@
 
 import { PageViewElement } from './page-view-element.js';
 import { html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat';
+import { repeat } from 'lit-html/lib/repeat.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import './shop-image.js';
 import './shop-list-item.js';
 
 import { store } from '../store.js';
-import { connect } from 'pwa-helpers/connect-mixin';
+import { connect } from 'pwa-helpers/connect-mixin.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(PageViewElement) {

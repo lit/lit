@@ -10,12 +10,12 @@
 
 import { PageViewElement } from './page-view-element.js';
 import { html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat';
+import { repeat } from 'lit-html/lib/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';
 
 import { store } from '../store.js';
-import { connect } from 'pwa-helpers/connect-mixin';
+import { connect } from 'pwa-helpers/connect-mixin.js';
 
 class ShopHome extends connect(store)(PageViewElement) {
   render({ categories }) {
