@@ -527,7 +527,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
         // ccExpMonth: form.elements.ccExpMonth.value,
         // ccExpYear: form.elements.ccExpYear.value,
         // ...
-        cart: this._cart.map(entry => {
+        cart: Object.values(this._cart).map(entry => {
           return {
             ...entry,
             item: entry.item.name

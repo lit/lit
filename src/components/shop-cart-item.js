@@ -145,9 +145,9 @@ class ShopCartItem extends LitElement {
         }
 
         .detail {
-          @apply --layout-vertical;
-          @apply --layout-start;
-          @apply --layout-self-start;
+          flex-direction: column;
+          align-items: flex-start;
+          align-self: flex-start;
           height: auto;
           margin-top: 0;
         }
@@ -217,18 +217,6 @@ class ShopCartItem extends LitElement {
   }}
 
   _quantityChange(e) {
-    // TODO: consider updating setCartItem/cartItemQuantityUpdated to do a11y announcer as well.
-    // cart = { '1': { category: 'mens_outerwear', itemId: 500, quantity: 3, size: 'M' }, ...}
-    // categories = { 'mens_outerwear' : { items : { 'green_jacket' : { name: 'green jacket' }}}}
-    //
-    // /detail/mens_outerwear/green_jacket
-    //
-    // store.dispatch(cartItemQuantityUpdated({
-    //   category,
-    //   itemId,
-    //   quantity,
-    //   size
-    // }));
     store.dispatch(editCart({
       item: this.entry.item,
       quantity: parseInt(e.target.value, 10),

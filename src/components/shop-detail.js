@@ -214,7 +214,7 @@ class ShopDetail extends connect(store)(PageViewElement) {
     const quantitySelect = this.shadowRoot.querySelector('#quantitySelect');
     const sizeSelect = this.shadowRoot.querySelector('#sizeSelect');
     store.dispatch(addToCart({
-      item: this.item,
+      item: this._item,
       quantity: parseInt(quantitySelect.value, 10),
       size: sizeSelect.value
     }));
