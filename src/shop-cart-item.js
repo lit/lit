@@ -4,13 +4,11 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import './shop-icons.js';
 import './shop-image.js';
 import './shop-select.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = html`<dom-module id="shop-cart-item">
+class ShopCartItem extends PolymerElement {
 
-  <template strip-whitespace="">
-
+  static get template() {
+    return html`
     <style include="shop-select">
 
       :host {
@@ -195,15 +193,8 @@ $_documentContainer.innerHTML = html`<dom-module id="shop-cart-item">
         <paper-icon-button class="delete-button" icon="close" aria-label\$="Delete item [[entry.item.title]]" on-click="_removeItem"></paper-icon-button>
       </div>
     </div>
-  </template>
-
-  
-
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopCartItem extends PolymerElement {
+    `;
+  }
 
   static get is() { return 'shop-cart-item'; }
 

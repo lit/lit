@@ -18,6 +18,7 @@
     "@polymer/iron-overlay-behavior": "^3.0.0-pre.12",
     "@polymer/iron-pages": "^3.0.0-pre.12",
     "@polymer/iron-selector": "^3.0.0-pre.12",
+    "@polymer/paper-behaviors": "^3.0.0-pre.12",
     "@polymer/paper-icon-button": "^3.0.0-pre.12",
     "@polymer/paper-spinner": "^3.0.0-pre.12"
   },
