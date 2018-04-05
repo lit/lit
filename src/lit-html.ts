@@ -318,7 +318,7 @@ export class Template {
           try {
             // Find the corresponding attribute
             attribute = attributes.getNamedItem(attributeNameInPart);
-          } catch(e) {
+          } catch (e) {
             // mimic namedNodeMap item when not supported
             attribute = {
               name: attributeNameInPart,
