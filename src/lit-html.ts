@@ -312,8 +312,20 @@ export class Template {
           // Find the attribute name
           const attributeNameInPart =
               lastAttributeNameRegex.exec(stringForPart)![1];
-          // Find the corresponding attribute
-          const attribute = attributes.getNamedItem(attributeNameInPart);
+
+          let attribute: { name: string, value: any };
+
+          try {
+            // Find the corresponding attribute
+            attribute = attributes.getNamedItem(attributeNameInPart);
+          } catch(e) {
+            // mimic namedNodeMap item when not supported
+            attribute = {
+              name: attributeNameInPart,
+              value: node.getAttribute(attributeNameInPart)
+            };
+          }
+
           const stringsForAttributeValue = attribute.value.split(markerRegex);
           this.parts.push(new TemplatePart(
               'attribute',
