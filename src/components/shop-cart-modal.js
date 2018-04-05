@@ -22,8 +22,8 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
   [IronOverlayBehaviorImpl], PolymerElement)) {
   static get template() {
     return `
+    ${shopButtonStyle.strings[0]}
     <style>
-      ${shopButtonStyle}
 
       :host {
         display: block;
@@ -107,7 +107,7 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
     </div>
 
     <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" on-click="close"></paper-icon-button>
-`;
+    `;
   }
 
   static get properties() { return {

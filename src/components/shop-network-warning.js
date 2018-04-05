@@ -18,10 +18,10 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { reloadCategory } from '../actions/app.js';
 
 class ShopNetworkWarning extends connect(store)(LitElement) {
-  render({ offline }) {
+  render({ _offline }) {
     return html`
+    ${shopButtonStyle}
     <style>
-      ${shopButtonStyle}
 
       :host {
         display: block;
@@ -52,7 +52,7 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
     </style>
 
     <div>
-      ${ offline ? html`
+      ${ _offline ? html`
         <iron-icon icon="perm-scan-wifi"></iron-icon>
         <h1>No internet connection</h1>
         <p>Check if your device is connected to a mobile network or WiFi.</p>
@@ -62,15 +62,15 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
     <shop-button>
       <button on-click="${() => this._tryReconnect()}">Try Again</button>
     </shop-button>
-`;
+    `;
   }
 
   static get properties() { return {
-    offline: Boolean
+    _offline: Boolean
   }}
 
   stateChanged(state) {
-    this.offline = state.app.offline;
+    this._offline = state.app.offline;
   }
 
   _tryReconnect() {

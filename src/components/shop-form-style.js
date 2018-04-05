@@ -8,24 +8,28 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-export const shopFormStyle = `
-:host {
-  display: block;
-}
+import { html } from '@polymer/lit-element';
 
-.main-frame {
-  margin: 0 auto;
-  padding: 0 24px 48px 24px;
-  max-width: 900px;
-  overflow: hidden;
-}
+export const shopFormStyle = html`
+<style>
+  :host {
+    display: block;
+  }
 
-.empty-cart {
-  text-align: center;
-  white-space: nowrap;
-  color: var(--app-secondary-color);
-}
+  .main-frame {
+    margin: 0 auto;
+    padding: 0 24px 48px 24px;
+    max-width: 900px;
+    overflow: hidden;
+  }
 
-h2 {
-  font-size: 13px;
-}`;
+  .empty-cart {
+    text-align: center;
+    white-space: nowrap;
+    color: var(--app-secondary-color);
+  }
+
+  h2 {
+    font-size: 13px;
+  }
+</style>`;

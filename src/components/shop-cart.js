@@ -20,14 +20,14 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
 
 class ShopCart extends connect(store)(PageViewElement) {
-  render({ cart, total }) {
-    const cartList = cart ? Object.values(cart) : [];
+  render({ _cart, _total }) {
+    const cartList = _cart ? Object.values(_cart) : [];
 
     return html`
+    ${shopButtonStyle}
+    ${shopCommonStyle}
+    ${shopFormStyle}
     <style>
-      ${shopButtonStyle}
-      ${shopCommonStyle}
-      ${shopFormStyle}
 
       .list {
         margin: 40px 0;
@@ -66,7 +66,7 @@ class ShopCart extends connect(store)(PageViewElement) {
               `)}
             </div>
             <div class="checkout-box">
-              Total: <span class="subtotal">$${total.toFixed(2)}</span>
+              Total: <span class="subtotal">$${_total.toFixed(2)}</span>
               <shop-button responsive>
                 <a href="/checkout">Checkout</a>
               </shop-button>
@@ -80,15 +80,15 @@ class ShopCart extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    total: Number,
+    _total: Number,
 
-    cart: Object
+    _cart: Object
 
   }}
 
   stateChanged(state) {
-    this.cart = state.cart;
-    this.total = totalSelector(state);
+    this._cart = state.cart;
+    this._total = totalSelector(state);
   }
 
 }

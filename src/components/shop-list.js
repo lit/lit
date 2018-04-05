@@ -20,11 +20,10 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(PageViewElement) {
-  render({ category, failure }) {
-    category = category || {};
+  render({ _category = {}, _failure }) {
     return html`
+    ${shopCommonStyle}
     <style>
-      ${shopCommonStyle}
 
       .hero-image {
         position: relative;
@@ -71,20 +70,20 @@ class ShopList extends connect(store)(PageViewElement) {
     </style>
 
     <shop-image
-        alt="${category.title}"
-        src="${category.image}"
-        placeholder="${category.placeholder}" class="hero-image"></shop-image>
+        alt="${_category.title}"
+        src="${_category.image}"
+        placeholder="${_category.placeholder}" class="hero-image"></shop-image>
 
     <header>
-      <h1>${category.title}</h1>
-      <span>${this._getPluralizedQuantity(category.items)}</span>
+      <h1>${_category.title}</h1>
+      <span>${this._getPluralizedQuantity(_category.items)}</span>
     </header>
 
-    ${ !failure ? html`
+    ${ !_failure ? html`
       <ul class="grid">
-        ${repeat(this._getListItems(category.items), item => html`
+        ${repeat(this._getListItems(_category.items), item => html`
           <li>
-            <a href="/detail/${category.name}/${item.name}"><shop-list-item item="${item}"></shop-list-item></a>
+            <a href="/detail/${_category.name}/${item.name}"><shop-list-item item="${item}"></shop-list-item></a>
           </li>
         `)}
       </ul>` : html`
@@ -97,16 +96,16 @@ class ShopList extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    category: Object,
+    _category: Object,
 
-    failure: Boolean
+    _failure: Boolean
 
   }}
 
   stateChanged(state) {
     const category = currentCategorySelector(state);
-    this.category = category;
-    this.failure = category && category.failure;
+    this._category = category;
+    this._failure = category && category.failure;
   }
 
   _getListItems(items) {

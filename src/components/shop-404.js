@@ -16,8 +16,8 @@ import './shop-icons.js';
 class Shop404Warning extends LitElement {
   render() {
     return html`
+    ${shopButtonStyle}
     <style>
-      ${shopButtonStyle}
 
       :host {
         display: block;
@@ -45,7 +45,7 @@ class Shop404Warning extends LitElement {
     <shop-button>
       <a href="/">Go to the home page</a>
     </shop-button>
-`;
+    `;
   }
 }
 

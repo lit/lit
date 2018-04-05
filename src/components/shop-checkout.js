@@ -33,17 +33,17 @@ store.addReducers({
 });
 
 class ShopCheckout extends connect(store)(PageViewElement) {
-  render({ cart, response, state, total, waiting, hasBillingAddress }) {
-    const cartList = cart ? Object.values(cart) : [];
+  render({ _cart, _response, _state, _total, _waiting, _hasBillingAddress }) {
+    const cartList = _cart ? Object.values(_cart) : [];
 
     return html`
+    ${shopButtonStyle}
+    ${shopCheckboxStyle}
+    ${shopCommonStyle}
+    ${shopFormStyle}
+    ${shopInputStyle}
+    ${shopSelectStyle}
     <style>
-      ${shopButtonStyle}
-      ${shopCheckboxStyle}
-      ${shopCommonStyle}
-      ${shopFormStyle}
-      ${shopInputStyle}
-      ${shopSelectStyle}
 
       .main-frame {
         transition: opacity 0.5s;
@@ -137,8 +137,8 @@ class ShopCheckout extends connect(store)(PageViewElement) {
 
     </style>
 
-    <div class$="${waiting ? 'main-frame waiting' : 'main-frame'}">
-      ${ state === 'init' ? html`
+    <div class$="${_waiting ? 'main-frame waiting' : 'main-frame'}">
+      ${ _state === 'init' ? html`
         <div state="init">
           <form id="checkoutForm">
             ${ cartList.length === 0 ? html`
@@ -235,16 +235,16 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                   <div class="billing-address-picker">
                     <shop-checkbox>
                       <input type="checkbox" id="setBilling" name="setBilling"
-                          checked="${hasBillingAddress}" on-change="${e => this.hasBillingAddress = e.target.checked}">
+                          checked="${_hasBillingAddress}" on-change="${e => this._hasBillingAddress = e.target.checked}">
                       <shop-md-decorator></shop-md-decorator aria-hidden="true">
                     </shop-checkbox>
                     <label for="setBilling">Use different billing address</label>
                   </div>
-                  ${hasBillingAddress ? html`
+                  ${_hasBillingAddress ? html`
                     <div class="row input-row">
                       <shop-input>
                         <input type="text" id="billAddress" name="billAddress" pattern=".{5,}"
-                            placeholder="Address" required="${hasBillingAddress}"
+                            placeholder="Address" required="${_hasBillingAddress}"
                             autocomplete="billing street-address"
                             aria-labelledby="billAddressLabel billAddressHeading">
                         <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
@@ -256,7 +256,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     <div class="row input-row">
                       <shop-input>
                         <input type="text" id="billCity" name="billCity" pattern=".{2,}"
-                            placeholder="City" required="${hasBillingAddress}"
+                            placeholder="City" required="${_hasBillingAddress}"
                             autocomplete="billing address-level2"
                             aria-labelledby="billCityLabel billAddressHeading">
                         <shop-md-decorator error-message="Invalid City" aria-hidden="true">
@@ -268,7 +268,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     <div class="row input-row">
                       <shop-input>
                         <input type="text" id="billState" name="billState" pattern=".{2,}"
-                            placeholder="State/Province" required="${hasBillingAddress}"
+                            placeholder="State/Province" required="${_hasBillingAddress}"
                             autocomplete="billing address-level1"
                             aria-labelledby="billStateLabel billAddressHeading">
                         <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
@@ -278,7 +278,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                       </shop-input>
                       <shop-input>
                         <input type="text" id="billZip" name="billZip" pattern=".{4,}"
-                            placeholder="Zip/Postal Code" required="${hasBillingAddress}"
+                            placeholder="Zip/Postal Code" required="${_hasBillingAddress}"
                             autocomplete="billing postal-code"
                             aria-labelledby="billZipLabel billAddressHeading">
                         <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
@@ -290,7 +290,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     <div class="column">
                       <label id="billCountryLabel" class="shop-select-label">Country</label>
                       <shop-select>
-                        <select id="billCountry" name="billCountry" required="${hasBillingAddress}"
+                        <select id="billCountry" name="billCountry" required="${_hasBillingAddress}"
                             autocomplete="billing country"
                             aria-labelledby="billCountryLabel billAddressHeading">
                           <option value="US" selected>United States</option>
@@ -390,7 +390,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                   `)}
                   <div class="row total-row">
                     <div class="flex">Total</div>
-                    <div>$${total.toFixed(2)}</div>
+                    <div>$${_total.toFixed(2)}</div>
                   </div>
                   <shop-button responsive id="submitBox">
                     <input type="button" on-click="${e => this._submit()}" value="Place Order">
@@ -399,11 +399,11 @@ class ShopCheckout extends connect(store)(PageViewElement) {
               </div>`
             }
           </form>
-        </div>` : state === 'success' ? html`
+        </div>` : _state === 'success' ? html`
         <!-- Success message UI -->
         <header state="success">
           <h1>Thank you</h1>
-          <p>${response.successMessage}</p>
+          <p>${_response.successMessage}</p>
           <shop-button responsive>
             <a href="/">Finish</a>
           </shop-button>
@@ -411,7 +411,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
         <!-- Error message UI -->
         <header state="error">
           <h1>We couldn't process your order</h1>
-          <p id="errorMessage">${response.errorMessage}</p>
+          <p id="errorMessage">${_response.errorMessage}</p>
           <shop-button responsive>
             <input type="button" on-click="${e => store.dispatch(updateCheckoutState('init'))}" value="Try Again">
           </shop-button>
@@ -420,7 +420,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
     </div>
 
     <!-- Show spinner when waiting for the server to repond -->
-    <paper-spinner-lite active="${waiting}"></paper-spinner-lite>
+    <paper-spinner-lite active="${_waiting}"></paper-spinner-lite>
     `;
   }
 
@@ -429,45 +429,40 @@ class ShopCheckout extends connect(store)(PageViewElement) {
     /**
      * The total price of the contents in the user's cart.
      */
-    total: Number,
+    _total: Number,
 
     /**
      * The state of the form. Valid values are:
      * `init`, `success` and `error`.
      */
-    state: String,
+    _state: String,
 
     /**
      * The cart contents.
      */
-    cart: Object,
+    _cart: Object,
 
     /**
      * The server's response.
      */
-    response: Object,
+    _response: Object,
 
     /**
      * If true, the user must enter a billing address.
      */
-    hasBillingAddress: Boolean,
-
-    /**
-     * If true, shop-checkout is currently visible on the screen.
-     */
-    visible: Boolean,
+    _hasBillingAddress: Boolean,
 
     /**
      * True when waiting for the server to repond.
      */
-    waiting: Boolean
+    _waiting: Boolean
 
   }}
 
   stateChanged(state) {
-    this.cart = state.cart;
-    this.total = totalSelector(state);
-    this.state = state.checkout.state;
+    this._cart = state.cart;
+    this._total = totalSelector(state);
+    this._state = state.checkout.state;
   }
 
   _submit() {
@@ -520,7 +515,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
    * the waiting state.
    */
   _sendRequest(form) {
-    this.waiting = true;
+    this._waiting = true;
 
     return fetch('/data/sample_success_response.json', {
       method: 'POST',
@@ -532,7 +527,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
         // ccExpMonth: form.elements.ccExpMonth.value,
         // ccExpYear: form.elements.ccExpYear.value,
         // ...
-        cart: this.cart.map(entry => {
+        cart: this._cart.map(entry => {
           return {
             ...entry,
             item: entry.item.name
@@ -550,8 +545,8 @@ class ShopCheckout extends connect(store)(PageViewElement) {
    * and transitioning to the success or error UI.
    */
   _didReceiveResponse(response) {
-    this.response = response;
-    this.waiting = false;
+    this._response = response;
+    this._waiting = false;
 
     if (response.success) {
       store.dispatch(updateCheckoutState('success'));
@@ -562,9 +557,9 @@ class ShopCheckout extends connect(store)(PageViewElement) {
   }
 
   _toggleBillingAddress(e) {
-    this.hasBillingAddress = e.target.checked;
+    this._hasBillingAddress = e.target.checked;
 
-    if (this.hasBillingAddress) {
+    if (this._hasBillingAddress) {
       this.$.billAddress.focus();
     }
   }

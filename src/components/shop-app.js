@@ -30,19 +30,19 @@ import { updateLocation, updateNetworkStatus } from '../actions/app.js';
 import './shop-home.js';
 
 class ShopApp extends connect(store)(LitElement) {
-  render({ categories, categoryName, lazyResourcesLoaded, modalOpened, offline, snackbarOpened, page, a11yLabel, meta, _drawerOpened, _smallScreen }) {
+  render({
+    _categories,
+    _categoryName,
+    _lazyResourcesLoaded,
+    _modalOpened,
+    _offline,
+    _snackbarOpened,
+    _page,
+    _a11yLabel,
+    _drawerOpened,
+    _smallScreen }) {
 
-    // TODO: Not very efficient right now as this will get called even if meta didn't change.
-    // We are working on coming up a better way to do this more efficiently.
-    if (meta) {
-      updateMetadata({
-        title: meta.title,
-        description: meta.description || meta.title,
-        image: meta.image || this.baseURI + 'images/shop-icon-128.png'
-      })
-    }
-
-    const categoriesList = Object.values(categories);
+    const categoriesList = Object.values(_categories);
 
     return html`
     <style>
@@ -218,10 +218,10 @@ class ShopApp extends connect(store)(LitElement) {
           <paper-icon-button class="menu-btn" icon="menu"
               on-click="${_ => this._drawerOpened = true}"
               aria-label="Categories"
-              hidden="${!_smallScreen || page === 'detail'}">
+              hidden="${!_smallScreen || _page === 'detail'}">
           </paper-icon-button>
-          <a class="back-btn" href="/list/${categoryName}" tabindex="-1"
-              hidden="${page !== 'detail'}">
+          <a class="back-btn" href="/list/${_categoryName}" tabindex="-1"
+              hidden="${_page !== 'detail'}">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
         </div>
@@ -230,10 +230,10 @@ class ShopApp extends connect(store)(LitElement) {
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      ${ ['home', 'list', 'detail'].indexOf(page) !== -1 && !_smallScreen && lazyResourcesLoaded ?
+      ${ ['home', 'list', 'detail'].indexOf(_page) !== -1 && !_smallScreen && _lazyResourcesLoaded ?
         html`
           <div id="tabContainer" sticky>
-            <shop-tabs selectedIndex="${Object.keys(categories).indexOf(categoryName)}">
+            <shop-tabs selectedIndex="${Object.keys(_categories).indexOf(_categoryName)}">
               ${repeat(categoriesList, category => html`
                 <shop-tab name="${category.name}">
                   <a href="/list/${category.name}">${category.title}</a>
@@ -246,12 +246,12 @@ class ShopApp extends connect(store)(LitElement) {
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    ${ _smallScreen && lazyResourcesLoaded ?
+    ${ _smallScreen && _lazyResourcesLoaded ?
       html`
         <app-drawer opened="${_drawerOpened}" tabindex="0" on-opened-changed="${e => this._drawerOpened = e.target.opened}">
           <nav class="drawer-list">
             ${repeat(categoriesList, category => html`
-              <a class$="${category.name === categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
+              <a class$="${category.name === _categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
             `)}
           </nav>
         </app-drawer>
@@ -260,17 +260,17 @@ class ShopApp extends connect(store)(LitElement) {
 
     <main>
       <!-- home view -->
-      <shop-home active?="${page === 'home'}"></shop-home>
+      <shop-home active?="${_page === 'home'}"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list active?="${page === 'list'}"></shop-list>
+      <shop-list active?="${_page === 'list'}"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail active?="${page === 'detail'}"></shop-detail>
+      <shop-detail active?="${_page === 'detail'}"></shop-detail>
       <!-- cart view -->
-      <shop-cart active?="${page === 'cart'}"></shop-cart>
+      <shop-cart active?="${_page === 'cart'}"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout active?="${page === 'checkout'}"></shop-checkout>
+      <shop-checkout active?="${_page === 'checkout'}"></shop-checkout>
 
-      <shop-404-warning active?="${page === '404'}"></shop-404-warning>
+      <shop-404-warning active?="${_page === '404'}"></shop-404-warning>
     </main>
 
     <footer>
@@ -279,12 +279,12 @@ class ShopApp extends connect(store)(LitElement) {
     </footer>
 
     <!-- a11y announcer -->
-    <div class="announcer" aria-live="assertive">${a11yLabel}</div>
+    <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
 
-    ${ modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
-    ${ lazyResourcesLoaded ? html`
-      <shop-snackbar class$="${snackbarOpened ? 'opened' : ''}">
-        ${offline ? 'You are offline' : 'You are online'}
+    ${ _modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
+    ${ _lazyResourcesLoaded ? html`
+      <shop-snackbar class$="${_snackbarOpened ? 'opened' : ''}">
+        ${_offline ? 'You are offline' : 'You are online'}
       </shop-snackbar>
       ` : null
     }
@@ -292,23 +292,23 @@ class ShopApp extends connect(store)(LitElement) {
   }
 
   static get properties() { return {
-    page: String,
+    _page: String,
 
-    offline: Boolean,
+    _offline: Boolean,
 
-    snackbarOpened: Boolean,
+    _snackbarOpened: Boolean,
 
-    meta: Object,
+    _meta: Object,
 
-    modalOpened: Object,
+    _modalOpened: Object,
 
-    categories: Object,
+    _categories: Object,
 
-    categoryName: String,
+    _categoryName: String,
 
-    a11yLabel: String,
+    _a11yLabel: String,
 
-    lazyResourcesLoaded: Boolean,
+    _lazyResourcesLoaded: Boolean,
 
     _drawerOpened: Boolean,
 
@@ -316,16 +316,26 @@ class ShopApp extends connect(store)(LitElement) {
   }}
 
   didRender(props, changed, oldProps) {
-    if ('page' in changed || 'categoryName' in changed) {
+    if ('_page' in changed || '_categoryName' in changed) {
       // TODO: For list view, scroll to the last saved position only if the category has not changed
       scroll({ top: 0, behavior: 'silent' });
     }
-    if ('page' in changed) {
+    if ('_page' in changed) {
       // TODO: Remove this when app-header updated to use ResizeObserver so we can avoid this bit.
       // The size of the header depends on the page (e.g. on some pages the tabs
       // do not appear), so reset the header's layout when switching pages.
       const header = this.shadowRoot.querySelector('#header');
       header.resetLayout();
+    }
+    if ('_meta' in changed) {
+      const meta = props._meta;
+      if (meta) {
+        updateMetadata({
+          title: meta.title,
+          description: meta.description || meta.title,
+          image: meta.image || this.baseURI + 'images/shop-icon-128.png'
+        });
+      }
     }
   }
 
@@ -349,15 +359,15 @@ class ShopApp extends connect(store)(LitElement) {
 
   stateChanged(state) {
     const category = currentCategorySelector(state);
-    this.page = state.app.page;
-    this.categories = state.categories;
-    this.categoryName = state.app.categoryName;
-    this.meta = metaSelector(state);
-    this.modalOpened = state.app.cartModalOpened;
-    this.lazyResourcesLoaded = state.app.lazyResourcesLoaded;
-    this.a11yLabel = state.app.announcerLabel;
-    this.offline = state.app.offline;
-    this.snackbarOpened = state.app.snackbarOpened;
+    this._page = state.app.page;
+    this._categories = state.categories;
+    this._categoryName = state.app.categoryName;
+    this._meta = metaSelector(state);
+    this._modalOpened = state.app.cartModalOpened;
+    this._lazyResourcesLoaded = state.app.lazyResourcesLoaded;
+    this._a11yLabel = state.app.announcerLabel;
+    this._offline = state.app.offline;
+    this._snackbarOpened = state.app.snackbarOpened;
   }
 
   _updateLocation(location) {
