@@ -1,11 +1,11 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import { flush } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = html`<dom-module id="shop-tabs-overlay">
-  <template strip-whitespace="">
+class ShopTabsOverlay extends PolymerElement {
+
+  static get template() {
+    return html`
     <style>
       :host {
         position: absolute;
@@ -19,13 +19,8 @@ $_documentContainer.innerHTML = html`<dom-module id="shop-tabs-overlay">
         transition-property: top, right, bottom, left, opacity;
       }
     </style>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopTabsOverlay extends PolymerElement {
+    `;
+  }
 
   static get is() { return 'shop-tabs-overlay'; }
 

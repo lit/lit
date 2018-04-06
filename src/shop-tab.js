@@ -1,11 +1,10 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import './shop-ripple-container.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = html`<dom-module id="shop-tab">
-  <template strip-whitespace="">
+class ShopTab extends PolymerElement {
+  static get template() {
+    return html`
     <style>
       [hidden] {
         display: none !important;
@@ -35,12 +34,8 @@ $_documentContainer.innerHTML = html`<dom-module id="shop-tab">
     <shop-ripple-container>
       <slot></slot>
     </shop-ripple-container>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-class ShopTab extends PolymerElement {
+    `;
+  }
   static get is() { return 'shop-tab'; }
 }
 

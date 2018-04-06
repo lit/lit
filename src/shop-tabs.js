@@ -3,11 +3,12 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import { IronSelectableBehavior } from '@polymer/iron-selector/iron-selectable.js';
 import './shop-tabs-overlay.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = html`<dom-module id="shop-tabs">
-  <template strip-whitespace="">
+class ShopTabs extends mixinBehaviors(
+  [IronSelectableBehavior], PolymerElement) {
+
+  static get template() {
+    return html`
     <style>
       :host {
         @apply --layout;
@@ -26,14 +27,8 @@ $_documentContainer.innerHTML = html`<dom-module id="shop-tabs">
       <shop-tabs-overlay id="overlay"></shop-tabs-overlay>
       <slot></slot>
     </div>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopTabs extends mixinBehaviors(
-  [IronSelectableBehavior], PolymerElement) {
+    `;
+  }
 
   static get is() { return 'shop-tabs'; }
 
