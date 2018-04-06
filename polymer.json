@@ -1,15 +1,7 @@
 {
   "entrypoint": "index.html",
   "shell": "src/shop-app.js",
-  "fragments": [
-    "src/shop-list.js",
-    "src/shop-detail.js",
-    "src/shop-cart.js",
-    "src/shop-checkout.js",
-    "src/lazy-resources.js"
-  ],
   "sources": [
-    "src/**/*",
     "data/**/*",
     "images/**/*"
   ],
