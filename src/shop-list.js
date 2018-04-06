@@ -9,7 +9,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
 
-class ShopList extends PolymerElement {
+export class ShopList extends PolymerElement {
   static get template() {
     return html`
     <style include="shop-common-styles">

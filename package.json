@@ -5,8 +5,16 @@
   "contributors": [
     "The Polymer Authors"
   ],
+  "scripts": {
+    "start": "prpl-server --root build/ --host 0.0.0.0 --https-redirect --bot-proxy https://render-tron.appspot.com/render",
+    "build": "polymer build",
+    "rename": "LC_ALL=C find build -type f -exec sed -i '' s/node_modules/node_assets/g {} + && mv build/es5-bundled/node_modules build/es5-bundled/node_assets && mv build/es6-bundled/node_modules build/es6-bundled/node_assets && mv build/esm-bundled/node_modules build/esm-bundled/node_assets",
+    "deploy": "gcloud app deploy --project polymer-shop --version 3-prpl-node-server --no-promote"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "dependencies": {
-    "@polymer/polymer": "^3.0.0-pre.12",
     "@polymer/app-layout": "^3.0.0-pre.12",
     "@polymer/app-route": "^3.0.0-pre.12",
     "@polymer/app-storage": "^3.0.0-pre.12",
@@ -20,7 +28,10 @@
     "@polymer/iron-selector": "^3.0.0-pre.12",
     "@polymer/paper-behaviors": "^3.0.0-pre.12",
     "@polymer/paper-icon-button": "^3.0.0-pre.12",
-    "@polymer/paper-spinner": "^3.0.0-pre.12"
+    "@polymer/paper-spinner": "^3.0.0-pre.12",
+    "@polymer/polymer": "^3.0.0-pre.12",
+    "polymer-cli": "^1.7.0-pre.4",
+    "prpl-server": "^1.0.0"
   },
   "devDependencies": {}
 }

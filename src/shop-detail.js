@@ -9,7 +9,7 @@ import './shop-select.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
-class ShopDetail extends PolymerElement {
+export class ShopDetail extends PolymerElement {
   static get template() {
     return html`
     <style include="shop-common-styles shop-button shop-select">
