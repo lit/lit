@@ -6,11 +6,11 @@
     "The Polymer Authors"
   ],
   "scripts": {
-    "start": "prpl-server --root build/ --host 0.0.0.0 --https-redirect --bot-proxy https://render-tron.appspot.com/render",
     "serve": "polymer serve",
     "build": "polymer build",
     "rename": "LC_ALL=C find build -type f -exec sed -i '' s/node_modules/node_assets/g {} + && mv build/es5-bundled/node_modules build/es5-bundled/node_assets && mv build/es6-bundled/node_modules build/es6-bundled/node_assets && mv build/esm-bundled/node_modules build/esm-bundled/node_assets",
-    "deploy": "gcloud app deploy --project polymer-shop --version 3-prpl-node-server --no-promote"
+    "deploy": "gcloud app deploy --project polymer-shop --version 3-prpl-server --no-promote",
+    "start": "prpl-server --root build/ --host 0.0.0.0 --https-redirect --bot-proxy https://render-tron.appspot.com/render"
   },
   "engines": {
     "node": ">=6.0.0"
