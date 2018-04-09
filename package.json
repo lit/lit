@@ -6,7 +6,8 @@
     "The Polymer Authors"
   ],
   "scripts": {
-    "start": "polyserve --npm --module-resolution=node",
+    "start": "polymer serve",
+    "build": "polymer build",
     "test": "mocha test/ --timeout=10000"
   },
   "dependencies": {
@@ -28,7 +29,7 @@
     "chai": "^4.1.2",
     "mocha": "^5.0.0",
     "pixelmatch": "^4.0.2",
-    "polyserve": "^0.26.0",
+    "polymer-cli": "^1.7.0-pre.4",
     "puppeteer": "^1.0.0"
   }
 }
