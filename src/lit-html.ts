@@ -365,7 +365,7 @@ export class Template {
         const previousSibling = node.previousSibling;
         if (previousSibling === null || previousSibling !== previousNode ||
             previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createTextNode(''), node);
+          parent.insertBefore(document.createTextNode(marker), node);
         } else {
           index--;
         }
@@ -375,7 +375,7 @@ export class Template {
         // We don't have to check if the next node is going to be removed,
         // because that node will induce a new marker if so.
         if (node.nextSibling === null) {
-          parent.insertBefore(document.createTextNode(''), node);
+          parent.insertBefore(document.createTextNode(marker), node);
         } else {
           index--;
         }
@@ -716,8 +716,29 @@ export class TemplateInstance {
     }
   }
 
-  _clone(): DocumentFragment {
+  _import(): DocumentFragment {
     const fragment = document.importNode(this.template.element.content, true);
+
+    // markers are added because ie11 can not support importing empty textNodes, this removes those markers
+    const walker = document.createTreeWalker(
+      fragment,
+      133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
+      NodeFilter.SHOW_TEXT */,
+      null as any,
+      false);
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+        node.textContent = node.textContent.replace(marker, '');
+      }
+    }
+
+    return fragment;
+  }
+
+  _clone(): DocumentFragment {
+    const fragment = this._import();
     const parts = this.template.parts;
 
     if (parts.length > 0) {
