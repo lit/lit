@@ -382,28 +382,22 @@ class ShopApp extends PolymerElement {
 
   _pageChanged(page, oldPage) {
     if (page != null) {
-      // home route is eagerly loaded
-      if (page == 'home') {
-        this._pageLoaded(Boolean(oldPage));
-      // other routes are lazy loaded
-      } else {
-        // When a load failed, it triggered a 404 which means we need to
-        // eagerly load the 404 page definition
-        let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-        switch (page) {
-          case 'list':
-            import('./shop-list.js').then(cb);
-            break;
-          case 'detail':
-            import('./shop-detail.js').then(cb);
-            break;
-          case 'cart':
-            import('./shop-cart.js').then(cb);
-            break;
-          case 'checkout':
-            import('./shop-checkout.js').then(cb);
-            break;
-        }
+      let cb = this._pageLoaded.bind(this, Boolean(oldPage));
+      switch (page) {
+        case 'list':
+          import('./shop-list.js').then(cb);
+          break;
+        case 'detail':
+          import('./shop-detail.js').then(cb);
+          break;
+        case 'cart':
+          import('./shop-cart.js').then(cb);
+          break;
+        case 'checkout':
+          import('./shop-checkout.js').then(cb);
+          break;
+        default:
+          this._pageLoaded(Boolean(oldPage));
       }
     }
   }

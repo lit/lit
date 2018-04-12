@@ -10,10 +10,10 @@
     "node_modules/@webcomponents/webcomponentsjs/**",
     "push-manifest.json"
   ],
+  "autoBasePath": true,
   "builds": [
     {
       "name": "esm-bundled",
-      "basePath": true,
       "browserCapabilities": [
         "es2015",
         "modules"
@@ -34,7 +34,6 @@
     },
     {
       "name": "es6-bundled",
-      "basePath": true,
       "browserCapabilities": [
         "es2015"
       ],
@@ -55,7 +54,6 @@
     },
     {
       "name": "es5-bundled",
-      "basePath": true,
       "js": {
         "minify": true,
         "compile": true,
