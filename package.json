@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "serve": "polymer serve",
-    "build:prpl-server": "polymer build && rm -rf server/build && mv build server/ && LC_ALL=C find server/build -type f -exec sed -i '' s/node_modules/node_assets/g {} + && mv server/build/es5-bundled/node_modules server/build/es5-bundled/node_assets && mv server/build/es6-bundled/node_modules server/build/es6-bundled/node_assets && mv server/build/esm-bundled/node_modules server/build/esm-bundled/node_assets",
+    "build:prpl-server": "polymer build && rm -rf server/build && mv build server/ && renamer --find node_modules --replace node_assets 'server/build/**' && replace node_modules node_assets server/build -r -s",
     "build:static": "polymer build --preset es6-bundled --js-transform-modules-to-amd",
     "build": "npm run build:prpl-server && npm run build:static",
     "deploy": "gcloud app deploy server/app.yaml --project polymer-shop --version 3-prpl-server --no-promote"
@@ -27,8 +27,11 @@
     "@polymer/paper-behaviors": "^3.0.0-pre.12",
     "@polymer/paper-icon-button": "^3.0.0-pre.12",
     "@polymer/paper-spinner": "^3.0.0-pre.12",
-    "@polymer/polymer": "^3.0.0-pre.12",
-    "polymer-cli": "^1.7.0-pre.10"
+    "@polymer/polymer": "^3.0.0-pre.12"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "polymer-cli": "^1.7.0-pre.10",
+    "renamer": "^0.6.1",
+    "replace": "^0.3.0"
+  }
 }
