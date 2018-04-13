@@ -542,7 +542,7 @@ export class ShopCheckout extends PolymerElement {
     let form = this.$.checkoutForm;
 
     this._setWaiting(false);
-    form.reset();
+    form.reset && form.reset();
 
     let nativeForm = form._form;
     if (!nativeForm) {
