@@ -6,11 +6,12 @@
     "The Polymer Authors"
   ],
   "scripts": {
-    "serve": "polymer serve",
+    "start": "polymer serve",
     "build:prpl-server": "polymer build && rm -rf server/build && mv build server/ && renamer --find node_modules --replace node_assets 'server/build/**' && replace node_modules node_assets server/build -r -s",
     "build:static": "polymer build --preset es6-bundled --js-transform-modules-to-amd",
     "build": "npm run build:prpl-server && npm run build:static",
-    "deploy": "gcloud app deploy server/app.yaml --project polymer-shop --version 3-prpl-server --no-promote"
+    "serve:prpl-server": "prpl-server --root server/build",
+    "serve:static": "polymer serve build/es6-bundled"
   },
   "dependencies": {
     "@polymer/app-layout": "^3.0.0-pre.12",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "polymer-cli": "^1.7.0-pre.10",
+    "prpl-server": "^1.0.0",
     "renamer": "^0.6.1",
     "replace": "^0.3.0"
   }
