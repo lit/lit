@@ -10,7 +10,6 @@
     "node_modules/@webcomponents/webcomponentsjs/**",
     "push-manifest.json"
   ],
-  "autoBasePath": true,
   "builds": [
     {
       "name": "esm-bundled",
@@ -27,9 +26,7 @@
       "html": {
         "minify": true
       },
-      "bundle": {
-        "inlineScripts": false
-      },
+      "bundle": true,
       "addServiceWorker": true
     },
     {
@@ -47,16 +44,14 @@
       "html": {
         "minify": true
       },
-      "bundle": {
-        "inlineScripts": false
-      },
+      "bundle": true,
       "addServiceWorker": true
     },
     {
       "name": "es5-bundled",
       "js": {
-        "minify": true,
         "compile": true,
+        "minify": false,
         "transformModulesToAmd": true
       },
       "css": {
@@ -65,9 +60,7 @@
       "html": {
         "minify": true
       },
-      "bundle": {
-        "inlineScripts": false
-      },
+      "bundle": true,
       "addServiceWorker": true
     }
   ],

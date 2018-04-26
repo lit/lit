@@ -3,7 +3,7 @@ import './shop-button.js';
 import './shop-common-styles.js';
 import './shop-form-styles.js';
 
-export class ShopCart extends PolymerElement {
+class ShopCart extends PolymerElement {
   static get template() {
     return html`
     <style include="shop-common-styles shop-button shop-form-styles">

@@ -1,6 +1,8 @@
 {
   "name": "@polymer/shop",
   "version": "3.0.0",
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/shop",
   "scripts": {
     "start": "prpl-server --root build/ --host 0.0.0.0 --https-redirect --bot-proxy https://render-tron.appspot.com/render"
   },
@@ -8,6 +10,6 @@
     "node": ">=6.0.0"
   },
   "dependencies": {
-    "prpl-server": "^1.0.0"
+    "prpl-server": "^1.1.0"
   }
 }
