@@ -1,9 +1,8 @@
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
+const $_documentContainer = document.createElement('template');
 
-$_documentContainer.innerHTML = `<iron-iconset-svg name="icons" size="24">
+$_documentContainer.innerHTML = `<iron-iconset-svg style="display:none" name="icons" size="24">
 <svg><defs>
 <g id="arrow-back"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></g>
 <g id="menu"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></g>
@@ -14,4 +13,4 @@ $_documentContainer.innerHTML = `<iron-iconset-svg name="icons" size="24">
 </defs></svg>
 </iron-iconset-svg>`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);

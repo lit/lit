@@ -1,7 +1,6 @@
 import '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
+const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<dom-module id="shop-common-styles">
   <template>
@@ -42,4 +41,4 @@ $_documentContainer.innerHTML = `<dom-module id="shop-common-styles">
   </template>
 </dom-module>`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);

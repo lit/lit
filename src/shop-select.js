@@ -1,6 +1,5 @@
 import '@polymer/polymer/polymer-element.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
+const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<dom-module id="shop-select">
   <template>
@@ -101,4 +100,4 @@ $_documentContainer.innerHTML = `<dom-module id="shop-select">
   </template>
 </dom-module>`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);

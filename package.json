@@ -31,7 +31,6 @@
     "@polymer/paper-icon-button": "^3.0.0-pre.12",
     "@polymer/paper-spinner": "^3.0.0-pre.12",
     "@polymer/polymer": "^3.0.0-pre.12",
-    "@webcomponents/shadycss": "^1.2.0-0",
     "@webcomponents/webcomponentsjs": "^2.0.0-0"
   },
   "devDependencies": {
