@@ -8,15 +8,16 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import { PaperRippleBehavior } from '@polymer/paper-behaviors/paper-ripple-behavior.js';
 import { addListener } from '@polymer/polymer/lib/utils/gestures.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
 
-$_documentContainer.innerHTML = `<dom-module id="shop-ripple-container">
-  <template strip-whitespace>
+class ShopRippleContainer extends mixinBehaviors(
+  [PaperRippleBehavior], PolymerElement) {
+
+  static get template() {
+    return html`
     <style>
       :host {
         display: inline-block;
@@ -28,14 +29,8 @@ $_documentContainer.innerHTML = `<dom-module id="shop-ripple-container">
       }
     </style>
     <slot></slot>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer);
-
-class ShopRippleContainer extends mixinBehaviors(
-  [PaperRippleBehavior], PolymerElement) {
+    `;
+  }
 
   constructor() {
     super();

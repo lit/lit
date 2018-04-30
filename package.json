@@ -5,9 +5,15 @@
   "contributors": [
     "The Polymer Authors"
   ],
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/shop",
   "scripts": {
     "start": "polymer serve",
-    "build": "polymer build",
+    "build": "npm run build:prpl-server && npm run build:static",
+    "build:prpl-server": "polymer build --auto-base-path && rm -rf server/build && mv build server/ && renamer --find node_modules --replace node_assets 'server/build/**' && replace node_modules node_assets server/build -r -s",
+    "build:static": "polymer build",
+    "serve:prpl-server": "prpl-server --root server/build",
+    "serve:static": "polymer serve --port 5000 build/es5-bundled",
     "test": "mocha test/ --timeout=10000"
   },
   "dependencies": {
@@ -15,10 +21,11 @@
     "@polymer/iron-icon": "^3.0.0-pre.12",
     "@polymer/iron-iconset-svg": "^3.0.0-pre.12",
     "@polymer/iron-overlay-behavior": "^3.0.0-pre.12",
-    "@polymer/lit-element": "^0.2.2",
+    "@polymer/lit-element": "^0.3.0",
     "@polymer/paper-icon-button": "^3.0.0-pre.12",
     "@polymer/paper-spinner": "^3.0.0-pre.12",
-    "@polymer/polymer": "^3.0.0-pre.12",
+    "@polymer/polymer": "3.0.0-pre.12",
+    "@webcomponents/webcomponentsjs": "^2.0.0-0",
     "lit-html": "^0.9.0",
     "pwa-helpers": "polymerlabs/pwa-helpers",
     "redux": "^3.7.2",
@@ -29,7 +36,10 @@
     "chai": "^4.1.2",
     "mocha": "^5.0.0",
     "pixelmatch": "^4.0.2",
-    "polymer-cli": "^1.7.0-pre.4",
-    "puppeteer": "^1.0.0"
+    "polymer-cli": "^1.7.0-pre.15",
+    "prpl-server": "^1.1.0",
+    "puppeteer": "^1.0.0",
+    "renamer": "^0.6.1",
+    "replace": "^0.3.0"
   }
 }
