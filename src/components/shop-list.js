@@ -110,7 +110,7 @@ class ShopList extends connect(store)(PageViewElement) {
 
   _getListItems(items) {
     // Return placeholder items when the items haven't loaded yet.
-    return items ? Object.values(items) : [{},{},{},{},{},{},{},{},{},{}];
+    return items ? Object.keys(items).map(key => items[key]) : [{},{},{},{},{},{},{},{},{},{}];
   }
 
   _getPluralizedQuantity(items) {

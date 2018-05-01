@@ -21,7 +21,7 @@ import { totalSelector } from '../reducers/cart.js';
 
 class ShopCart extends connect(store)(PageViewElement) {
   render({ _cart, _total }) {
-    const cartList = _cart ? Object.values(_cart) : [];
+    const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
 
     return html`
     ${shopButtonStyle}

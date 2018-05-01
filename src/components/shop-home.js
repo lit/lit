@@ -96,7 +96,9 @@ class ShopHome extends connect(store)(PageViewElement) {
 
     </style>
 
-    ${repeat(Object.values(_categories), category => html`<div class="item">
+    ${repeat(Object.keys(_categories), key => {
+      const category = _categories[key];
+      return html`<div class="item">
         <a class="image-link" href="/list/${category.name}">
           <shop-image src="${category.image}" alt="${category.title}" placeholder="${category.placeholder}"></shop-image>
         </a>
@@ -104,7 +106,8 @@ class ShopHome extends connect(store)(PageViewElement) {
         <shop-button>
           <a aria-label$="${category.title} Shop Now" href="/list/${category.name}">Shop Now</a>
         </shop-button>
-      </div>`)}
+      </div>`;
+    })}
 `;
   }
 

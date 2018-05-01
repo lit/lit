@@ -34,7 +34,7 @@ store.addReducers({
 
 class ShopCheckout extends connect(store)(PageViewElement) {
   render({ _cart, _response, _state, _total, _waiting, _hasBillingAddress }) {
-    const cartList = _cart ? Object.values(_cart) : [];
+    const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
 
     return html`
     ${shopButtonStyle}
@@ -527,7 +527,8 @@ class ShopCheckout extends connect(store)(PageViewElement) {
         // ccExpMonth: form.elements.ccExpMonth.value,
         // ccExpYear: form.elements.ccExpYear.value,
         // ...
-        cart: Object.values(this._cart).map(entry => {
+        cart: Object.keys(this._cart).map(key => {
+          const entry = this._cart[key];
           return {
             ...entry,
             item: entry.item.name

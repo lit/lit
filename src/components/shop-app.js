@@ -42,7 +42,7 @@ class ShopApp extends connect(store)(LitElement) {
     _drawerOpened,
     _smallScreen }) {
 
-    const categoriesList = Object.values(_categories);
+    const categoriesList = Object.keys(_categories).map(key => _categories[key]);
 
     return html`
     <style>

@@ -64,8 +64,8 @@ export const numItemsSelector = createSelector(
   cartSelector,
   cart => {
     if (cart) {
-      return Object.values(cart).reduce((total, entry) => {
-        return total + entry.quantity;
+      return Object.keys(cart).reduce((total, key) => {
+        return total + cart[key].quantity;
       }, 0);
     }
 
@@ -77,7 +77,8 @@ export const totalSelector = createSelector(
   cartSelector,
   cart => {
     if (cart) {
-      return Object.values(cart).reduce((total, entry) => {
+      return Object.keys(cart).reduce((total, key) => {
+        const entry = cart[key];
         return total + entry.quantity * entry.item.price;
       }, 0);
     }
