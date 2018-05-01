@@ -357,7 +357,7 @@ class ShopApp extends connect(store)(LitElement) {
     this.removeAttribute('unresolved');
   }
 
-  stateChanged(state) {
+  _stateChanged(state) {
     const category = currentCategorySelector(state);
     this._page = state.app.page;
     this._categories = state.categories;

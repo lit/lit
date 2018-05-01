@@ -69,7 +69,7 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
     _offline: Boolean
   }}
 
-  stateChanged(state) {
+  _stateChanged(state) {
     this._offline = state.app.offline;
   }
 

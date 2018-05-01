@@ -59,7 +59,7 @@ class ShopCartButton extends connect(store)(LitElement) {
     _numItems: Number
   }}
 
-  stateChanged(state) {
+  _stateChanged(state) {
     this._numItems = numItemsSelector(state);
   }
 }

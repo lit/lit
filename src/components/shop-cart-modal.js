@@ -122,7 +122,7 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
     }
   }}
 
-  stateChanged(state) {
+  _stateChanged(state) {
     this.opened = state.app.cartModalOpened;
   }
 

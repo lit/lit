@@ -102,7 +102,7 @@ class ShopList extends connect(store)(PageViewElement) {
 
   }}
 
-  stateChanged(state) {
+  _stateChanged(state) {
     const category = currentCategorySelector(state);
     this._category = category;
     this._failure = category && category.failure;

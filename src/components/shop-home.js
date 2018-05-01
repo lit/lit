@@ -117,7 +117,7 @@ class ShopHome extends connect(store)(PageViewElement) {
 
   }}
 
-  stateChanged(state) {
+  _stateChanged(state) {
     this._categories = state.categories;
   }
 }
