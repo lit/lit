@@ -66,5 +66,10 @@
     }
   ],
   "moduleResolution": "node",
-  "npm": true
+  "npm": true,
+  "lint": {
+    "rules": [
+      "polymer-3"
+    ]
+  }
 }
