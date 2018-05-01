@@ -8,21 +8,26 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import { IronOverlayBehaviorImpl } from '@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { shopButtonStyle } from './shop-button-style.js';
 
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 import { closeModal } from '../actions/app.js';
 
+// Convert Lit `TemplateResult` to `HTMLTemplateElement` so it can be interpolated
+// by Polymer's html template literal tag
+import { shopButtonStyle } from './shop-button-style.js';
+const shopButtonStyleTemplate = document.createElement('template');
+shopButtonStyleTemplate.innerHTML = shopButtonStyle.strings[0];
+
 class ShopCartModal extends connect(store)(mixinBehaviors(
   [IronOverlayBehaviorImpl], PolymerElement)) {
   static get template() {
-    return `
-    ${shopButtonStyle.strings[0]}
+    return html`
+    ${shopButtonStyleTemplate}
     <style>
 
       :host {
