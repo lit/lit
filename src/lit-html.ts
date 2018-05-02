@@ -744,17 +744,6 @@ export class TemplateInstance {
           walker.nextNode();
         }
         let node = walker.currentNode;
-        // Swap the comment placeholders for empty text nodes
-        // The nextSibling of the part placeholder is the part endNode
-        if (node.nextSibling !== null && node.nextSibling!.nodeType === 8) {
-          node.parentNode!.replaceChild(document.createTextNode(''), node.nextSibling!);
-        }
-        // The part placeholder is the part startNode
-        if (node.nodeType === 8) {
-          node = document.createTextNode('');
-          walker.currentNode.parentNode!.replaceChild(node, walker.currentNode);
-          walker.currentNode = node;
-        }
         this._parts.push(this._partCallback(this, part, node));
       }
     }
