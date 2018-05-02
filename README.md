@@ -1,73 +1,38 @@
+![built_with pwa–starter–kit_](https://img.shields.io/badge/built_with-pwa–starter–kit_-blue.svg)
+
 # SHOP
 
-### Setup
+This is a sample e-commerce Progressive web app.
 
-##### Prerequisites
+The app is built using [PWA Starter Kit](https://github.com/PolymerLabs/pwa-starter-kit). Using the starter-template as the starting point and the [wiki](https://github.com/PolymerLabs/pwa-starter-kit/wiki) for configuring and personalizing.
 
-Install [polymer-cli](https://github.com/Polymer/polymer-cli):
+![shop screenshot](https://user-images.githubusercontent.com/116360/39545341-c50a9184-4e05-11e8-88e0-0e1f3fa4834b.png)
 
-    npm install -g polymer-cli
+## Features/highlights
 
+- a sample e-commerce shopping site
+- pattern for a real-life shopping cart and store checkout flow
+- pattern for using custom announcers for accessibility
 
-##### Setup
-    # Using CLI
-    mkdir shop
-    cd shop
-    polymer init shop
+## Setup
+```bash
+$ git clone -b lit-element https://github.com/Polymer/shop.git
+$ cd shop
+$ npm i
+$ npm start
+```
 
-    # Or cloning direct from GitHub
-    git clone https://github.com/Polymer/shop.git
-    cd shop
-    bower install
+## Build
+```bash
+$ npm run build
+```
 
-### Start the development server
-
-    polymer serve
-
-### Run web-component-tester tests
-
-    polymer test
-
-### Build
-
-Build presets provide an easy way to define common build configurations in your `polymer.json` file. There are 3 build presets we put in `polymer.json` file in Shop:
-
-**es5-bundled**
-
-- js: {minify: true, compile: true}
-- css: {minify: true}
-- html: {minify: true}
-- bundle: true
-- addServiceWorker: true
-- addPushManifest: true
-- insertPrefetchLinks: true
-
-**es6-unbundled**
-
-- js: {minify: true, compile: false}
-- css: {minify: true}
-- html: {minify: true}
-- bundle: false
-- addServiceWorker: true
-- addPushManifest: true
-- insertPrefetchLinks: true
-
-**es6-bundled**
-
-- js: {minify: true, compile: false}
-- css: {minify: true}
-- html: {minify: true}
-- bundle: true
-- addServiceWorker: true
-- addPushManifest: true
-- insertPrefetchLinks: true
-
-Run the command to build the presets:
-
-    polymer build
-
-### Test the build
-
-Use `polymer serve` to serve a specific build preset of the app. For example:
-
-    polymer serve build/es5-bundled
+## Test the build
+To test prpl-server build:
+```bash
+$ npm run serve:prpl-server
+```
+To test static build:
+```bash
+$ npm run serve:static
+```
