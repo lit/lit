@@ -57,16 +57,17 @@ export const extendedPartCallback =
     (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
         Part => {
           if (templatePart.type === 'attribute') {
-            if (templatePart.rawName!.startsWith('on-')) {
+            if (templatePart.rawName!.substr(0, 3) == 'on-') {
               const eventName = templatePart.rawName!.slice(3);
               return new EventPart(instance, node as Element, eventName);
             }
-            if (templatePart.name!.endsWith('$')) {
+            const lastChar = templatePart.name!.substr(templatePart.name!.length-1);
+            if (lastChar == '$') {
               const name = templatePart.name!.slice(0, -1);
               return new AttributePart(
                   instance, node as Element, name, templatePart.strings!);
             }
-            if (templatePart.name!.endsWith('?')) {
+            if (lastChar == '?') {
               const name = templatePart.name!.slice(0, -1);
               return new BooleanAttributePart(
                   instance, node as Element, name, templatePart.strings!);
