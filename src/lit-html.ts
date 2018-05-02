@@ -340,7 +340,6 @@ export class Template {
         // Generate a new text node for each literal section
         // These nodes are also used as the markers for node parts
         for (let i = 0; i < lastIndex; i++) {
-          console.log(parent.nodeName);
           parent.insertBefore(
               (strings[i] === '')
                   ? document.createComment('')
