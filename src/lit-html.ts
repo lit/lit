@@ -743,8 +743,7 @@ export class TemplateInstance {
           index++;
           walker.nextNode();
         }
-        let node = walker.currentNode;
-        this._parts.push(this._partCallback(this, part, node));
+        this._parts.push(this._partCallback(this, part, walker.currentNode));
       }
     }
     return fragment;

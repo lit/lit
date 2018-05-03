@@ -54,7 +54,7 @@ suite('lit-extended', () => {
     });
 
     test('renders a boolean attribute as an empty string when truthy', () => {
-      let t = (value: any) => html`<div foo?="${value}"></div>`;
+      const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(true), container);
       assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
@@ -67,7 +67,7 @@ suite('lit-extended', () => {
     });
 
     test('removes a boolean attribute when falsey', () => {
-      let t = (value: any) => html`<div foo?="${value}"></div>`;
+      const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(false), container);
       assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
