@@ -18,6 +18,8 @@
 import {unsafeHTML} from '../../lib/unsafe-html.js';
 import {html, render} from '../../lit-html.js';
 
+import {stripExpressionDelimeters} from '../test-helpers.js';
+
 const assert = chai.assert;
 
 suite('unsafeHTML', () => {
@@ -28,7 +30,7 @@ suite('unsafeHTML', () => {
         html`<div>before${unsafeHTML('<span>inner</span>after</div>')}`,
         container);
     assert.equal(
-        container.innerHTML, '<div>before<span>inner</span>after</div>');
+        stripExpressionDelimeters(container.innerHTML), '<div>before<span>inner</span>after</div>');
   });
 
 });

@@ -18,6 +18,8 @@
 import {repeat} from '../../lib/repeat.js';
 import {html, render} from '../../lit-html.js';
 
+import {stripExpressionDelimeters} from '../test-helpers.js';
+
 const assert = chai.assert;
 
 suite('repeat', () => {
@@ -35,7 +37,7 @@ suite('repeat', () => {
           html`${repeat([1, 2, 3], (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(r, container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
@@ -47,13 +49,13 @@ suite('repeat', () => {
             <li>item: ${i}</li>`)}`;
 
       render(t([1, 2, 3]), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
 
       render(t([1, 2, 3]), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
@@ -65,7 +67,7 @@ suite('repeat', () => {
           html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
@@ -73,7 +75,7 @@ suite('repeat', () => {
 
       items = [3, 2, 1];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 3</li>
             <li>item: 2</li>
             <li>item: 1</li>`);
@@ -90,7 +92,7 @@ suite('repeat', () => {
 
       render(t([1, 2, 3, 4, 5]), container);
 
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>
@@ -99,7 +101,7 @@ suite('repeat', () => {
 
       render(t([1, 5, 3, 4, 2]), container);
 
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 5</li>
             <li>item: 3</li>
@@ -114,14 +116,14 @@ suite('repeat', () => {
 
       render(t([1, 2, 3]), container);
 
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
 
       render(t([3, 2, 1]), container);
 
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 3</li>
             <li>item: 2</li>
             <li>item: 1</li>`);
@@ -135,7 +137,7 @@ suite('repeat', () => {
             <li>item: ${i}</li>`)}`;
 
       render(t([666, 666]), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 666</li>`);
     });
 
@@ -145,7 +147,7 @@ suite('repeat', () => {
             <li>item: ${i}</li>`)}`;
 
       render(t([666, 777, 666]), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 777</li>
             <li>item: 666</li>`);
     });
@@ -158,7 +160,7 @@ suite('repeat', () => {
 
       render(t([666, 666]), container);
       assert.equal(updates, 2);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 2</li>`);
     });
 
@@ -171,7 +173,7 @@ suite('repeat', () => {
       render(t(), container);
       items = [0, 1, 2, 3];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 0</li>
             <li>item: 1</li>
             <li>item: 2</li>
@@ -187,7 +189,7 @@ suite('repeat', () => {
       render(t(), container);
       items = [1, 2, 3, 4];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>
@@ -203,7 +205,7 @@ suite('repeat', () => {
       render(t(), container);
       items = [];
       render(t(), container);
-      assert.equal(container.innerHTML, ``);
+      assert.equal(stripExpressionDelimeters(container.innerHTML), ``);
     });
 
     test('can remove the first item', () => {
@@ -217,7 +219,7 @@ suite('repeat', () => {
 
       items = [2, 3];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 2</li>
             <li>item: 3</li>`);
       const children2 = Array.from(container.querySelectorAll('li'));
@@ -236,7 +238,7 @@ suite('repeat', () => {
 
       items = [1, 2];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>`);
       const children2 = Array.from(container.querySelectorAll('li'));
@@ -255,7 +257,7 @@ suite('repeat', () => {
 
       items = [1, 3];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 3</li>`);
       const children2 = Array.from(container.querySelectorAll('li'));
@@ -271,7 +273,7 @@ suite('repeat', () => {
       const r = html`${repeat([1, 2, 3], (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(r, container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
@@ -282,14 +284,14 @@ suite('repeat', () => {
       const t = () => html`${repeat(items, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>`);
 
       items = [3, 2, 1];
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 3</li>
             <li>item: 2</li>
             <li>item: 1</li>`);
@@ -303,7 +305,7 @@ suite('repeat', () => {
 
       items = [];
       render(t(), container);
-      assert.equal(container.innerHTML, ``);
+      assert.equal(stripExpressionDelimeters(container.innerHTML), ``);
     });
 
     test('re-renders a list', () => {
@@ -313,7 +315,7 @@ suite('repeat', () => {
 
       render(t(), container);
       render(t(), container);
-      assert.equal(container.innerHTML, `
+      assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>
