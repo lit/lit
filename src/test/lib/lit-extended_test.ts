@@ -205,6 +205,36 @@ suite('lit-extended', () => {
       assert.equal(count2, 1);
     });
 
+    test('allows updating event listener without extra calls to remove/addEventListener', () => {
+      let listener: Function|null;
+      const t = () => html`<div on-click=${listener}></div>`;
+      render(t(), container);
+      const div = container.firstChild as HTMLElement;
+      let addCount = 0;
+      let removeCount = 0;
+      div.addEventListener = () => addCount++;
+      div.removeEventListener = () => removeCount++;
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 0);
+      listener = () => {};
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 0);
+      listener = null;
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 1);
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 2);
+      assert.equal(removeCount, 1);
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 2);
+      assert.equal(removeCount, 1);
+    });
+
     test('removes event listeners', () => {
       let target;
       let listener: any = (e: any) => target = e.target;
