@@ -18,13 +18,13 @@
  */
 export class Deferred<T> {
   readonly promise: Promise<T>;
-  readonly resolve: (value: T) => void;
-  readonly reject: (error: Error) => void;
+  resolve!: (value: T) => void;
+  reject!: (error: Error) => void;
 
   constructor() {
     this.promise = new Promise<T>((res, rej) => {
-      this.resolve! = res;
-      this.reject! = rej;
+      this.resolve = res;
+      this.reject = rej;
     });
   }
 }

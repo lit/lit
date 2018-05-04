@@ -313,7 +313,8 @@ export class Template {
           const attributeNameInPart =
               lastAttributeNameRegex.exec(stringForPart)![1];
           // Find the corresponding attribute
-          const attribute = attributes.getNamedItem(attributeNameInPart);
+          // TODO(justinfagnani): remove non-null assertion
+          const attribute = attributes.getNamedItem(attributeNameInPart)!;
           const stringsForAttributeValue = attribute.value.split(markerRegex);
           this.parts.push(new TemplatePart(
               'attribute',
