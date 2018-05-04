@@ -42,7 +42,7 @@
     "typescript": "^2.8.3",
     "uglify-es": "^3.3.5",
     "wct-browser-legacy": "0.0.1-pre.12",
-    "web-component-tester": "^6.4.3"
+    "web-component-tester": "^6.6.0-pre.5"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}
