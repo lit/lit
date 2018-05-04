@@ -35,6 +35,7 @@
         "es2015"
       ],
       "js": {
+        "compile": "es2015",
         "minify": true,
         "transformModulesToAmd": true
       },
@@ -50,7 +51,7 @@
     {
       "name": "es5-bundled",
       "js": {
-        "compile": true,
+        "compile": "es5",
         "minify": true,
         "transformModulesToAmd": true
       },
