@@ -489,6 +489,11 @@ suite('lit-html', () => {
           `);
       });
 
+      test('renders style textContent', () => {
+        render(html`<style>${'.test {}'}</style>`, container);
+        assert.equal(container.firstElementChild!.textContent, '.test {}');
+      });
+
       test('renders no comments inside textContent', () => {
         render(html`<style>${''}</style>`, container);
         assert.equal(container.firstElementChild!.textContent, '');
