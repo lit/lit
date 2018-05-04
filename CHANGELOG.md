@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [0.10.0] - 2018-05-03
+* Added IE11 support
+* Declarative events in lit-extended are more efficient when handlers change
+
 ## [0.9.0] - 2018-02-01
 
 * Refactored how template tags and `render()` are implemented so that all
