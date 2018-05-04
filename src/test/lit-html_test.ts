@@ -489,6 +489,11 @@ suite('lit-html', () => {
           `);
       });
 
+      test('renders no comments inside textContent', () => {
+        render(html`<style>${''}</style>`, container);
+        assert.equal(container.firstChild.innerHTML, '');
+      });
+
       test('renders a combination of stuff', () => {
         render(html`
             <div foo="${'bar'}">
