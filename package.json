@@ -39,9 +39,9 @@
     "mocha": "^3.5.3",
     "tslint": "^5.9.1",
     "typedoc": "^0.9.0",
-    "typescript": "^2.6.2",
+    "typescript": "^2.8.3",
     "uglify-es": "^3.3.5",
-    "wct-browser-legacy": "0.0.1-pre.11",
+    "wct-browser-legacy": "0.0.1-pre.12",
     "web-component-tester": "^6.4.3"
   },
   "typings": "lit-html.d.ts",
