@@ -13,7 +13,8 @@
     "build:prpl-server": "polymer build --auto-base-path && rm -rf server/build && mv build server/ && renamer --find node_modules --replace node_assets 'server/build/**' && replace node_modules node_assets server/build -r -s",
     "build:static": "polymer build",
     "serve:prpl-server": "prpl-server --root server/build",
-    "serve:static": "polymer serve --port 5000 build/es5-bundled"
+    "serve:static": "polymer serve --port 5000 build/es5-bundled",
+    "test": "rm -rf build/ && polymer lint && polymer test"
   },
   "dependencies": {
     "@polymer/app-layout": "^3.0.0-pre.15",
@@ -37,6 +38,7 @@
     "polymer-cli": "^1.7.0-pre.17",
     "prpl-server": "^1.1.0",
     "renamer": "^0.6.1",
-    "replace": "^0.3.0"
+    "replace": "^0.3.0",
+    "wct-browser-legacy": "^0.0.1-pre.12"
   }
 }
