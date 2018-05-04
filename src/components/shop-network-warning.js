@@ -18,7 +18,7 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { reloadCategory } from '../actions/app.js';
 
 class ShopNetworkWarning extends connect(store)(LitElement) {
-  render({ _offline }) {
+  _render({ _offline }) {
     return html`
     ${shopButtonStyle}
     <style>

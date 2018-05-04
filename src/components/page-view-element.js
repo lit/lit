@@ -12,7 +12,7 @@ import { LitElement } from '@polymer/lit-element';
 
 export class PageViewElement extends LitElement {
   // Only render this page if it's actually visible.
-  _shouldPropertiesChange(props, changedProps, old) {
+  _shouldRender(props, changedProps, old) {
     return props.active;
   }
 

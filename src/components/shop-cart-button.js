@@ -15,7 +15,7 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { numItemsSelector } from '../reducers/cart.js';
 
 class ShopCartButton extends connect(store)(LitElement) {
-  render({ _numItems }) {
+  _render({ _numItems }) {
     return html`
     <style>
 

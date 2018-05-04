@@ -33,7 +33,7 @@ store.addReducers({
 });
 
 class ShopCheckout extends connect(store)(PageViewElement) {
-  render({ _cart, _response, _state, _total, _waiting, _hasBillingAddress }) {
+  _render({ _cart, _response, _state, _total, _waiting, _hasBillingAddress }) {
     const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
 
     return html`

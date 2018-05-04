@@ -18,7 +18,7 @@ import { store } from '../store.js';
 import { editCart, removeFromCart } from '../actions/cart.js';
 
 class ShopCartItem extends LitElement {
-  render({ entry }) {
+  _render({ entry }) {
     return html`
     ${shopSelectStyle}
     <style>
@@ -34,12 +34,14 @@ class ShopCartItem extends LitElement {
         height: 72px;
       }
 
-      shop-select > select {
+      /* Add more specificity (.quantity) to workaround an issue in lit-element:
+         https://github.com/PolymerLabs/lit-element/issues/34 */
+      .quantity > shop-select > select {
         font-size: 16px;
         padding-left: 40px;
       }
 
-      shop-select > shop-md-decorator {
+      .quantity > shop-select > shop-md-decorator {
         font-size: 12px;
         border: none;
       }

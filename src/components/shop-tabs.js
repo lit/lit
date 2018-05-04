@@ -12,7 +12,7 @@ import { LitElement, html } from '@polymer/lit-element';
 import './shop-tabs-overlay.js';
 
 class ShopTabs extends LitElement {
-  render() {
+  _render() {
     return html`
     <style>
       :host {

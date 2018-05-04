@@ -22,7 +22,7 @@ import { currentCategorySelector, currentItemSelector } from '../reducers/catego
 import { addToCart } from '../actions/cart.js';
 
 class ShopDetail extends connect(store)(PageViewElement) {
-  render({ _failure, _item }) {
+  _render({ _failure, _item }) {
     return html`
     ${shopButtonStyle}
     ${shopCommonStyle}
@@ -97,7 +97,9 @@ class ShopDetail extends connect(store)(PageViewElement) {
         border-top: 1px solid #ccc;
       }
 
-      shop-select > select {
+      /* Add more specificity (.pickers) to workaround an issue in lit-element:
+         https://github.com/PolymerLabs/lit-element/issues/34 */
+      .pickers > shop-select > select {
         font-size: 16px;
         padding: 16px 24px 16px 70px;
       }

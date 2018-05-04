@@ -18,7 +18,7 @@ import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 
 class ShopHome extends connect(store)(PageViewElement) {
-  render({ _categories }) {
+  _render({ _categories }) {
     return html`
     ${shopButtonStyle}
     <style>

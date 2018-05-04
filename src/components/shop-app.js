@@ -30,7 +30,7 @@ import { updateLocation, updateNetworkStatus } from '../actions/app.js';
 import './shop-home.js';
 
 class ShopApp extends connect(store)(LitElement) {
-  render({
+  _render({
     _categories,
     _categoryName,
     _lazyResourcesLoaded,
@@ -315,7 +315,7 @@ class ShopApp extends connect(store)(LitElement) {
     _smallScreen: Boolean,
   }}
 
-  didRender(props, changed, oldProps) {
+  _didRender(props, changed, oldProps) {
     if ('_page' in changed || '_categoryName' in changed) {
       // TODO: For list view, scroll to the last saved position only if the category has not changed
       scroll({ top: 0, behavior: 'silent' });
@@ -346,9 +346,7 @@ class ShopApp extends connect(store)(LitElement) {
     setPassiveTouchGestures(true);
   }
 
-  ready() {
-    super.ready();
-
+  _firstRendered() {
     installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);

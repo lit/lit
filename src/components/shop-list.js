@@ -20,7 +20,7 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(PageViewElement) {
-  render({ _category = {}, _failure }) {
+  _render({ _category = {}, _failure }) {
     return html`
     ${shopCommonStyle}
     <style>

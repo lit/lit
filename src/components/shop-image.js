@@ -11,7 +11,7 @@
 import { LitElement, html } from '@polymer/lit-element';
 
 class ShopImage extends LitElement {
-  render({ alt, placeholder, src, _loaded }) {
+  _render({ alt, placeholder, src, _loaded }) {
     return html`
     <style>
 
