@@ -18,6 +18,8 @@
 export const templateCaches =
     new Map<string, Map<TemplateStringsArray, Template>>();
 
+const hasSymbol = typeof Symbol === 'function';
+
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
@@ -474,7 +476,7 @@ export class AttributePart implements MultiPart {
       text += strings[i];
       const v = getValue(this, values[startIndex + i]);
       if (v && v !== directiveValue &&
-          (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
+          (Array.isArray(v) || typeof v !== 'string' && hasSymbol && v[Symbol.iterator])) {
         for (const t of v) {
           // TODO: we need to recursively call getValue into iterables...
           text += t;
@@ -546,7 +548,7 @@ export class NodePart implements SinglePart {
       this._setText(value);
     } else if (value instanceof TemplateResult) {
       this._setTemplateResult(value);
-    } else if (Array.isArray(value) || value[Symbol.iterator]) {
+    } else if (Array.isArray(value) || hasSymbol && value[Symbol.iterator]) {
       this._setIterable(value);
     } else if (value instanceof Node) {
       this._setNode(value);

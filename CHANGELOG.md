@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 <!-- ## Unreleased -->
+* Check for the existence of Symbol before using it.
 
 ## [0.10.0] - 2018-05-03
 * Added IE11 support
