@@ -140,6 +140,11 @@ export function defaultTemplateFactory(result: TemplateResult) {
   return template;
 }
 
+export function renderToDom(container: Element|DocumentFragment, fragment: DocumentFragment) {
+  removeNodes(container, container.firstChild);
+  container.appendChild(fragment);
+}
+
 /**
  * Renders a template to a container.
  *
@@ -157,7 +162,9 @@ export function defaultTemplateFactory(result: TemplateResult) {
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    templateFactory: TemplateFactory = defaultTemplateFactory) {
+    templateFactory: TemplateFactory = defaultTemplateFactory,
+    renderDom: Function = renderToDom
+  ) {
   const template = templateFactory(result);
   let instance = (container as any).__templateInstance as any;
 
@@ -176,8 +183,7 @@ export function render(
   const fragment = instance._clone();
   instance.update(result.values);
 
-  removeNodes(container, container.firstChild);
-  container.appendChild(fragment);
+  renderDom(container, fragment);
 }
 
 /**
@@ -691,12 +697,13 @@ export const defaultPartCallback =
       throw new Error(`Unknown part type ${templatePart.type}`);
     };
 
+
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
  * with new values.
  */
 export class TemplateInstance {
-  _parts: Part[] = [];
+  _parts: Array<Part|undefined> = [];
   _partCallback: PartCallback;
   _getTemplate: TemplateFactory;
   template: Template;
@@ -712,7 +719,9 @@ export class TemplateInstance {
   update(values: any[]) {
     let valueIndex = 0;
     for (const part of this._parts) {
-      if (part.size === undefined) {
+      if (!part) {
+        valueIndex++;
+      } else if (part.size === undefined) {
         (part as SinglePart).setValue(values[valueIndex]);
         valueIndex++;
       } else {
@@ -740,11 +749,14 @@ export class TemplateInstance {
       let index = -1;
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
-        while (index < part.index) {
-          index++;
-          walker.nextNode();
+        const partActive = (part.index >= 0);
+        if (partActive) {
+          while (index < part.index) {
+            index++;
+            walker.nextNode();
+          }
         }
-        this._parts.push(this._partCallback(this, part, walker.currentNode));
+        this._parts.push(partActive ? this._partCallback(this, part, walker.currentNode) : undefined);
       }
     }
     return fragment;
