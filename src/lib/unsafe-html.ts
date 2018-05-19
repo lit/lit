@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, NodePart} from '../lit-html.js';
+import {directive, DirectiveFn, NodePart} from '../lit-html.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -21,8 +21,9 @@ import {directive, NodePart} from '../lit-html.js';
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeHTML = (value: any) => directive((part: NodePart) => {
-  const tmp = document.createElement('template');
-  tmp.innerHTML = value;
-  part.setValue(document.importNode(tmp.content, true));
-});
+export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
+    directive((part: NodePart): void => {
+      const tmp = document.createElement('template');
+      tmp.innerHTML = value;
+      part.setValue(document.importNode(tmp.content, true));
+    });
