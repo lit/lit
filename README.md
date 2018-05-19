@@ -11,6 +11,8 @@ HTML templates, via JavaScript template literals
 
 `lit-html` lets you write [HTML templates](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) with JavaScript [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), and efficiently render and _re-render_ those templates to DOM.
 
+Visit the [lit-html documentation](https://polymer.github.io/lit-html).
+
 ```javascript
 import {html, render} from 'lit-html';
 
@@ -323,9 +325,9 @@ Some examples of possible extensions:
 
 ## Status
 
-`lit-html` is very new, under initial development, and not production-ready.
+`lit-html` is still under development.
 
- * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 54 (behind a flag).
+ * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 60 and Edge.
  * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
  * It has not been benchmarked thoroughly yet.
