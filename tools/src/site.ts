@@ -77,7 +77,7 @@ async function generateDocs() {
     await fs.mkdirs(outDir);
     const body = marked(fileData.body);
     // const section = fileData.path.dir.split(path.sep)[0] || 'home';
-    const outContent = page(fileData.outPath, body, files);
+    const outContent = page(fileData.outPath, body, fileData.attributes, files);
     const outPath = path.join(docsOutDir, fileData.outPath);
     fs.writeFile(outPath, outContent);
   }
@@ -91,11 +91,12 @@ async function generateDocs() {
 /**
  * The main page template
  */
-const page = (pagePath: string, content: string, files: Map<string, FileData>) => html`
+const page = (pagePath: string, content: string, attributes: {[key: string]: string}, files: Map<string, FileData>) => html`
   <!doctype html>
 
   <html>
     <head>
+      <title>${attributes.title}</title>
       <link rel="stylesheet" href="/${root}/index.css">
       <link rel="stylesheet" href="/${root}/prism.css">
     </head>
@@ -133,7 +134,7 @@ type OutlineData = FileData|Outline;
  * The outline is a set of nested maps of filenames to file data.
  * The output is sorted with index first, then alpha-by-name
  */
-const getOutline = (pagePath: string, files: Map<string, FileData>) => {
+const getOutline = (_pagePath: string, files: Map<string, FileData>) => {
 
   const outline: Outline = new Map();
 
