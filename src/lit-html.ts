@@ -140,6 +140,10 @@ export function defaultTemplateFactory(result: TemplateResult) {
   return template;
 }
 
+type TemplateContainer = (Element|DocumentFragment)&{
+  __templateInstance?: TemplateInstance;
+};
+
 /**
  * Renders a template to a container.
  *
@@ -159,7 +163,7 @@ export function render(
     container: Element|DocumentFragment,
     templateFactory: TemplateFactory = defaultTemplateFactory) {
   const template = templateFactory(result);
-  let instance = (container as any).__templateInstance as any;
+  let instance = (container as TemplateContainer).__templateInstance;
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
@@ -171,7 +175,7 @@ export function render(
   // First render, create a new TemplateInstance and append it
   instance =
       new TemplateInstance(template, result.partCallback, templateFactory);
-  (container as any).__templateInstance = instance;
+  (container as TemplateContainer).__templateInstance = instance;
 
   const fragment = instance._clone();
   instance.update(result.values);
