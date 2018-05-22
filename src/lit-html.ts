@@ -144,6 +144,9 @@ export function renderToDom(container: Element|DocumentFragment, fragment: Docum
   removeNodes(container, container.firstChild);
   container.appendChild(fragment);
 }
+type TemplateContainer = (Element|DocumentFragment)&{
+  __templateInstance?: TemplateInstance;
+};
 
 /**
  * Renders a template to a container.
@@ -166,7 +169,7 @@ export function render(
     renderDom: Function = renderToDom
   ) {
   const template = templateFactory(result);
-  let instance = (container as any).__templateInstance as any;
+  let instance = (container as TemplateContainer).__templateInstance;
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
@@ -178,7 +181,7 @@ export function render(
   // First render, create a new TemplateInstance and append it
   instance =
       new TemplateInstance(template, result.partCallback, templateFactory);
-  (container as any).__templateInstance = instance;
+  (container as TemplateContainer).__templateInstance = instance;
 
   const fragment = instance._clone();
   instance.update(result.values);
@@ -420,13 +423,15 @@ export const getValue = (part: Part, value: any) => {
   return value === null ? undefined : value;
 };
 
-export type DirectiveFn<P extends Part = Part> = (part: P) => any;
+export interface DirectiveFn<P=Part> {
+  (part: P): void;
+  __litDirective?: true;
+}
 
-export const directive =
-    <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
-      (f as any).__litDirective = true;
-      return f;
-    };
+export const directive = <P=Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
+  f.__litDirective = true;
+  return f;
+};
 
 const isDirective = (o: any) =>
     typeof o === 'function' && o.__litDirective === true;
@@ -732,7 +737,10 @@ export class TemplateInstance {
   }
 
   _clone(): DocumentFragment {
-    const fragment = document.importNode(this.template.element.content, true);
+    // Clone the node, rather than importing it, to keep the fragment in the
+    // template's document. This leaves the fragment inert so custom elements
+    // won't upgrade until after the main document adopts the node.
+    const fragment = this.template.element.content.cloneNode(true) as DocumentFragment;
     const parts = this.template.parts;
 
     if (parts.length > 0) {

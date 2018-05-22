@@ -5,10 +5,13 @@
 HTML templates, via JavaScript template literals
 
 [![Build Status](https://travis-ci.org/Polymer/lit-html.svg?branch=master)](https://travis-ci.org/Polymer/lit-html)
+[![Published on npm](https://img.shields.io/npm/v/lit-html.svg)](https://www.npmjs.com/package/lit-html)
 
 ## Overview
 
 `lit-html` lets you write [HTML templates](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) with JavaScript [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), and efficiently render and _re-render_ those templates to DOM.
+
+Visit the [lit-html documentation](https://polymer.github.io/lit-html).
 
 ```javascript
 import {html, render} from 'lit-html';
@@ -124,13 +127,13 @@ const render = () => html`<div class="${blue}"></div>`;
 
 ### SVG Support
 
-To create partial SVG templates - template that will rendering inside and `<svg>` tag (in the SVG namespace), use the `svg` template tag instead of the `html` template tag:
+To create partial SVG templates (templates that will render inside an `<svg>` tag in the SVG namespace), use the `svg` template tag instead of the `html` template tag:
 
 ```javascript
 const grid = svg`
   <g>
-    ${[0, 10, 20].map((x) => svg`<line x1=${x} y1="0" x2=${x} y2="20"/>`)}
-    ${[0, 10, 20].map((y) => svg`<line x1="0" y1=${y} x2="0" y2=${y}/>`)}
+    ${[0, 10, 20].map((x) => svg`<line x1=${x} y1="0" x2=${x} y2="20" stroke="#000"/>`)}
+    ${[0, 10, 20].map((y) => svg`<line x1="0" y1=${y} x2="20" y2=${y} stroke="#000"/>`)}
   </g>
 `;
 ```
@@ -322,9 +325,9 @@ Some examples of possible extensions:
 
 ## Status
 
-`lit-html` is very new, under initial development, and not production-ready.
+`lit-html` is still under development.
 
- * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 54 (behind a flag).
+ * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 60 and Edge.
  * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
  * It has not been benchmarked thoroughly yet.
