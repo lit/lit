@@ -8,7 +8,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 class ShopCartModal extends mixinBehaviors(
   [IronOverlayBehaviorImpl], PolymerElement) {
   static get template() {
-    return `
+    return html`
     <style include="shop-button">
 
       :host {

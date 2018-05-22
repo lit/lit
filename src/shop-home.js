@@ -4,7 +4,7 @@ import './shop-image.js';
 
 class ShopHome extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <style include="shop-button">
 
       .image-link {
