@@ -59,9 +59,6 @@ function removeStylesFromLitTemplates(scopeName: string) {
   });
 }
 
-const needsShadyStyling = window.ShadyCSS && (!window.ShadyCSS.nativeShadow ||
-  window.ShadyCSS.ApplyShim);
-
 const shadyRenderSet = new Set<string>();
 
 function hostForNode(node: Node) {
@@ -73,7 +70,7 @@ export function render(
     container: Element|DocumentFragment,
     scopeName: string) {
   const host = hostForNode(container);
-  if (needsShadyStyling && host) {
+  if (host && typeof window.ShadyCSS === 'object') {
     const templateFactory = shadyTemplateFactory(scopeName);
     const renderer = (container: Element|DocumentFragment, fragment: DocumentFragment) => {
       if (!shadyRenderSet.has(scopeName)) {

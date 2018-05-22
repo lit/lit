@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Template, TemplatePart} from '../lit-html.js';
+import {Template} from '../lit-html.js';
 
 export function removeNodesFromTemplate(template: Template, nodes: Node[]) {
   const {element: {content}, parts} = template;

@@ -22,50 +22,115 @@ const assert = chai.assert;
 
 suite('shady-render', () => {
 
-  test('prepares templates with ShadyCSS', () => {
+  test('styles elements rendered into shadowRoots', () => {
     const container = document.createElement('div');
+    document.body.appendChild(container);
+    container.attachShadow({mode: 'open'});
     render(html`
       <style>
         div {
-          color: red;
+          border: 2px solid blue;
         }
       </style>
       <div>Testing...</div>
-    `, container, 'scope-1');
-
-    assert.equal(container.children.length, 1);
-    const div = container.firstElementChild!;
-    assert.equal(div.getAttribute('class'), `style-scope scope-1`);
-    const style = document.querySelector('style[scope="scope-1"]');
-    assert.isNotNull(style);
+    `, container.shadowRoot as DocumentFragment, 'scope-1');
+    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '2px');
+    document.body.removeChild(container);
   });
 
-  test('prepares nested templates with ShadyCSS', () => {
+  test('styles elements rendred into shadowRoots in nested templates', () => {
     const container = document.createElement('div');
+    document.body.appendChild(container);
+    container.attachShadow({mode: 'open'});
     render(html`
       <style>
         div {
-          color: red;
+          border: 4px solid orange;
         }
       </style>
       <div>Testing...</div>
       ${html`
         <style>
           span {
-            color: blue;
+            border: 5px solid tomato;
           }
         </style>
         <span>Testing...</span>
       `}
-    `, container, 'scope-2');
+    `, container.shadowRoot as DocumentFragment, 'scope-2');
+    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '4px');
+    const span = (container.shadowRoot  as DocumentFragment).querySelector('span');
+    assert.equal(getComputedStyle(span as HTMLElement).getPropertyValue('border-top-width').trim(), '5px');
+    document.body.removeChild(container);
+  });
 
-    assert.equal(container.children.length, 2);
-    const div = container.firstElementChild!;
-    assert.equal(div.getAttribute('class'), `style-scope scope-2`);
-    const span = div.nextElementSibling!;
-    assert.equal(span.getAttribute('class'), `style-scope scope-2`);
-    const styles = document.querySelectorAll('style[scope="scope-2"]');
-    assert.equal(styles.length, 2);
+  test('part values render into styles once per scope', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    container.attachShadow({mode: 'open'});
+    const renderTemplate = (border: string) => {
+      render(html`
+        <style>
+          div {
+            border: ${border};
+          }
+        </style>
+        <div>Testing...</div>
+      `, container.shadowRoot as DocumentFragment, 'scope-3');
+    }
+    renderTemplate('1px solid black');
+    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    renderTemplate('2px solid black');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    document.body.removeChild(container);
+  });
+
+  test('styles with css custom properties render', () => {
+    const container = document.createElement('scope-4');
+    document.body.appendChild(container);
+    container.attachShadow({mode: 'open'});
+    render(html`
+      <style>
+        :host {
+          --border: 2px solid orange;
+        }
+        div {
+          border: var(--border);
+        }
+      </style>
+      <div>Testing...</div>
+    `, container.shadowRoot as DocumentFragment, 'scope-4');
+    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '2px');
+    document.body.removeChild(container);
+  });
+
+  test('styles with css custom properties using @apply render', () => {
+    const container = document.createElement('scope-5');
+    document.body.appendChild(container);
+    container.attachShadow({mode: 'open'});
+    render(html`
+      <style>
+        :host {
+          --batch: {
+            border: 3px solid orange;
+            padding: 4px;
+          };
+        }
+        div {
+          @apply --batch;
+        }
+      </style>
+      <div>Testing...</div>
+    `, container.shadowRoot as DocumentFragment, 'scope-5');
+    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
+    const computedStyle = getComputedStyle(div as HTMLElement);
+    assert.equal(computedStyle.getPropertyValue('border-top-width').trim(), '3px');
+    assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
+    document.body.removeChild(container);
   });
 
 });
