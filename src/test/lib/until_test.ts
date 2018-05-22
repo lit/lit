@@ -19,7 +19,7 @@ import {until} from '../../lib/until.js';
 import {html, render} from '../../lit-html.js';
 import {Deferred} from './deferred.js';
 
-import {stripExpressionDelimeters} from '../test-helpers.js';
+import {stripLitComments} from '../test-helpers.js';
 
 const assert = chai.assert;
 
@@ -38,12 +38,12 @@ suite('until', () => {
         html
         `<div>${until(deferred.promise, html`<span>loading...</span>`)}</div>`,
         container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><span>loading...</span></div>');
+        assert.equal(stripLitComments(container), '<div><span>loading...</span></div>');
         deferred.resolve('foo');
         return deferred.promise
             .then(() => new Promise((r) => setTimeout(() => r())))
             .then(() => {
-              assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+              assert.equal(stripLitComments(container), '<div>foo</div>');
             });
   });
 
@@ -51,19 +51,19 @@ suite('until', () => {
     const t = (v: any) =>
         html`<div>${until(v, html`<span>loading...</span>`)}</div>`;
     render(t(deferred.promise), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><span>loading...</span></div>');
+    assert.equal(stripLitComments(container), '<div><span>loading...</span></div>');
 
     const deferred2 = new Deferred<string>();
     render(t(deferred2.promise), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><span>loading...</span></div>');
+    assert.equal(stripLitComments(container), '<div><span>loading...</span></div>');
 
     deferred2.resolve('bar');
     return deferred2.promise.then(() => {
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bar</div>');
+      assert.equal(stripLitComments(container), '<div>bar</div>');
 
       deferred.resolve('foo');
       return deferred.promise.then(() => {
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bar</div>');
+        assert.equal(stripLitComments(container), '<div>bar</div>');
       });
     });
   });

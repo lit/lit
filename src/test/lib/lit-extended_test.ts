@@ -18,7 +18,7 @@
 import {html, PropertyPart, render} from '../../lib/lit-extended.js';
 import {directive, html as htmlPlain} from '../../lit-html.js';
 
-import {stripExpressionDelimeters} from '../test-helpers.js';
+import {stripLitComments} from '../test-helpers.js';
 
 const assert = chai.assert;
 
@@ -40,46 +40,46 @@ suite('lit-extended', () => {
 
     test('renders to an attribute', () => {
       render(html`<div foo$="${'bar'}"></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+      assert.equal(stripLitComments(container), '<div foo="bar"></div>');
     });
 
     test('renders to an attribute without quotes', () => {
       render(html`<div foo$=${'bar'}></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+      assert.equal(stripLitComments(container), '<div foo="bar"></div>');
     });
 
     test('renders interpolation to an attribute', () => {
       render(html`<div foo$="1${'bar'}2${'baz'}3"></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="1bar2baz3"></div>');
+      assert.equal(stripLitComments(container), '<div foo="1bar2baz3"></div>');
     });
 
     test('renders a boolean attribute as an empty string when truthy', () => {
       const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(true), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+      assert.equal(stripLitComments(container), '<div foo=""></div>');
 
       render(t('a'), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+      assert.equal(stripLitComments(container), '<div foo=""></div>');
 
       render(t(1), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+      assert.equal(stripLitComments(container), '<div foo=""></div>');
     });
 
     test('removes a boolean attribute when falsey', () => {
       const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(false), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripLitComments(container), '<div></div>');
 
       render(t(0), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripLitComments(container), '<div></div>');
 
       render(t(null), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripLitComments(container), '<div></div>');
 
       render(t(undefined), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripLitComments(container), '<div></div>');
     });
 
     test('reuses an existing ExtendedTemplateInstance when available', () => {
@@ -257,7 +257,7 @@ suite('lit-extended', () => {
       });
 
       render(html`<div foo="${fooDirective}"></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripLitComments(container), '<div></div>');
       assert.equal((container.firstElementChild as any).foo, 1234);
     });
 

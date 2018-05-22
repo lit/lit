@@ -20,7 +20,7 @@ import {html, render} from '../../lit-html.js';
 
 import {TestAsyncIterable} from './test-async-iterable.js';
 
-import {stripExpressionDelimeters} from '../test-helpers.js';
+import {stripLitComments} from '../test-helpers.js';
 
 const assert = chai.assert;
 
@@ -41,59 +41,59 @@ suite('asyncReplace', () => {
 
   test('replaces content as the async iterable yields new values', async () => {
     render(html`<div>${asyncReplace(iterable)}</div>`, container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    assert.equal(stripLitComments(container), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(stripLitComments(container), '<div>foo</div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bar</div>');
+    assert.equal(stripLitComments(container), '<div>bar</div>');
   });
 
   test('clears the Part when a value is undefined', async () => {
     render(html`<div>${asyncReplace(iterable)}</div>`, container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    assert.equal(stripLitComments(container), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(stripLitComments(container), '<div>foo</div>');
 
     await iterable.push(undefined);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    assert.equal(stripLitComments(container), '<div></div>');
   });
 
   test('uses the mapper function', async () => {
     render(
         html`<div>${asyncReplace(iterable, (v, i) => html`${i}: ${v} `)}</div>`,
         container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    assert.equal(stripLitComments(container), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>0: foo </div>');
+    assert.equal(stripLitComments(container), '<div>0: foo </div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>1: bar </div>');
+    assert.equal(stripLitComments(container), '<div>1: bar </div>');
   });
 
   test('renders new iterable over a pending iterable', async () => {
     const t = (iterable: any) => html`<div>${asyncReplace(iterable)}</div>`;
     render(t(iterable), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    assert.equal(stripLitComments(container), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(stripLitComments(container), '<div>foo</div>');
 
     const iterable2 = new TestAsyncIterable<string>();
     render(t(iterable2), container);
 
     // The last value is preserved until we receive the first
     // value from the new iterable
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(stripLitComments(container), '<div>foo</div>');
 
     await iterable2.push('hello');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(stripLitComments(container), '<div>hello</div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(stripLitComments(container), '<div>hello</div>');
   });
 
   test('renders new value over a pending iterable', async () => {
@@ -101,16 +101,16 @@ suite('asyncReplace', () => {
     // This is a little bit of an odd usage of directives as values, but it
     // is possible, and we check here that asyncReplace plays nice in this case
     render(t(asyncReplace(iterable)), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    assert.equal(stripLitComments(container), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(stripLitComments(container), '<div>foo</div>');
 
     render(t('hello'), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(stripLitComments(container), '<div>hello</div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(stripLitComments(container), '<div>hello</div>');
   });
 
 });

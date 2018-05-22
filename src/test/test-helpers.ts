@@ -12,5 +12,24 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export const stripExpressionDelimeters = (html: string) =>
-    html.replace(/<!---->/g, '');
+export const stripExpressionDelimeters = (html: string) => html;
+    // html.replace(/^<!--lit-html\sindex="(\d+)"-->/g, '');
+
+export const stripLitComments = (element: Element) => {
+  const clone = element.cloneNode(true) as Element;
+  const walker = document.createTreeWalker(
+    clone,
+      NodeFilter.SHOW_COMMENT,
+      null as any,
+      false);
+  let nodesToRemove = [];
+  while (walker.nextNode()) {
+    if (walker.currentNode!.nodeValue!.includes('lit-html')) {
+      nodesToRemove.push(walker.currentNode);
+    }
+  }
+  for (const node of nodesToRemove) {
+    node.parentNode!.removeChild(node);
+  }
+  return clone.innerHTML;
+};

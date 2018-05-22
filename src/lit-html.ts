@@ -66,7 +66,7 @@ export class TemplateResult {
       // state.
       const closing = findTagClose(s);
       isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
-      html += isTextBinding ? nodeMarker : marker;
+      html += isTextBinding ? `<!--lit-html index=${i}--><!--/lit-html-->` : marker;
     }
     html += this.strings[l];
     return html;
@@ -184,19 +184,39 @@ export function render(
   container.appendChild(fragment);
 }
 
+const parseLitMarker = (text: string): [number, number|undefined]|undefined => {
+  const match = text.match(markerRegex);
+  if (match === null) {
+    return undefined;
+  }
+  const boundAttributes = match[2];
+  return [
+    parseInt(match[1]),
+    boundAttributes === undefined ? undefined : parseInt(match[2])
+  ];
+}
+
+const isLitMarker = (text: string) => text.startsWith('lit-html ');
+
+// const markerString = `lit-${String(Math.random()).slice(2)}`;
+
 /**
  * An expression marker with embedded unique key to avoid collision with
  * possible text in templates.
  */
-const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
+const marker = `{{lit-html}}`;
 
 /**
  * An expression marker used text-posisitions, not attribute positions,
  * in template.
  */
-const nodeMarker = `<!--${marker}-->`;
+// const nodeMarker = `<!--${marker}-->`;
 
-const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
+// const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
+const markerRegex = /^lit-html\sindex=(\d+)(?:\sboundAttributes=(\d+))?/;
+const textMarkerRegex = /<!--lit-html\sindex=(?:\d+)(?:\sboundAttributes=(?:\d+))?--><!--\/lit-html-->/;
+
+const attributeMarkerRegex = /(?:<!--lit-html\sindex=(?:\d+)(?:\sboundAttributes=(?:\d+))?--><!--\/lit-html-->)|{{lit-html}}/;
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
@@ -257,7 +277,7 @@ function findTagClose(str: string): number {
  */
 export class TemplatePart {
   constructor(
-      public type: string, public index: number, public name?: string,
+      public type: string, public partIndex: number, public name?: string,
       public rawName?: string, public strings?: string[]) {
   }
 }
@@ -275,128 +295,89 @@ export class Template {
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         content,
-        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-               NodeFilter.SHOW_TEXT */
-        ,
+        NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT,
         null as any,
         false);
-    let index = -1;
+    // let index = -1;
     let partIndex = 0;
-    const nodesToRemove: Node[] = [];
+    let lastMarker: Node|undefined = undefined;
+    // const nodesToRemove: Node[] = [];
 
     // The actual previous node, accounting for removals: if a node is removed
     // it will never be the previousNode.
-    let previousNode: Node|undefined;
+    // let previousNode: Node|undefined;
     // Used to set previousNode at the top of the loop.
-    let currentNode: Node|undefined;
+    // let currentNode: Node|undefined;
 
     while (walker.nextNode()) {
-      index++;
-      previousNode = currentNode;
-      const node = currentNode = walker.currentNode as Element;
+      const node = walker.currentNode;
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-        if (!node.hasAttributes()) {
+        if (!(node as Element).hasAttributes()) {
           continue;
         }
-        const attributes = node.attributes;
         // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
         // attributes are not guaranteed to be returned in document order. In
         // particular, Edge/IE can return them out of order, so we cannot assume
         // a correspondance between part index and attribute index.
-        let count = 0;
+        
+        // To associate attributes with parts with first build up a map of
+        // attribute name to attribute for bound attributes.
+        const attributes = (node as Element).attributes;
+        const boundAttributes = new Map();
         for (let i = 0; i < attributes.length; i++) {
-          if (attributes[i].value.indexOf(marker) >= 0) {
-            count++;
+          const attribute = attributes[i];
+          if (attribute.value.match(attributeMarkerRegex) !== null) {
+            boundAttributes.set(attribute.name, attribute);
           }
         }
-        while (count-- > 0) {
-          // Get the template literal section leading up to the first
-          // expression in this attribute attribute
+        // Then iterate through literal strings that precede the attribute
+        // bindings, extract the attribute name, then parse the expression
+        // marker from the associated attribute value.
+        const initialIndex = partIndex;
+        for (let i = 0; i < boundAttributes.size; i++) {
+          // Get the template literal string leading up to the first
+          // expression in this attribute
           const stringForPart = result.strings[partIndex];
-          // Find the attribute name
-          const attributeNameInPart =
-              lastAttributeNameRegex.exec(stringForPart)![1];
-          // Find the corresponding attribute
-          // TODO(justinfagnani): remove non-null assertion
-          const attribute = attributes.getNamedItem(attributeNameInPart)!;
-          const stringsForAttributeValue = attribute.value.split(markerRegex);
+          const match = lastAttributeNameRegex.exec(stringForPart);
+          if (match === null) {
+            throw Error(`attribute name not found in ${stringForPart} ${partIndex}`);
+          }
+          const attributeName = match[1];
+          const attribute = boundAttributes.get(attributeName.toLowerCase());
+          const stringsForAttributeValue = attribute.value.split(attributeMarkerRegex);
           this.parts.push(new TemplatePart(
               'attribute',
-              index,
+              partIndex,
               attribute.name,
-              attributeNameInPart,
+              attributeName,
               stringsForAttributeValue));
-          node.removeAttribute(attribute.name);
+          (node as Element).removeAttribute(attribute.name);
           partIndex += stringsForAttributeValue.length - 1;
+        }
+        if (boundAttributes.size > 0) {
+          lastMarker = document.createComment(`lit-html index=${initialIndex} boundAttributes=${boundAttributes.size}`);
+          (node as Element).insertBefore(lastMarker, node.firstChild);
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
         const nodeValue = node.nodeValue!;
-        if (nodeValue.indexOf(marker) < 0) {
+        if (nodeValue.match(textMarkerRegex) === null) {
           continue;
         }
 
         const parent = node.parentNode!;
-        const strings = nodeValue.split(markerRegex);
+        const strings = nodeValue.split(textMarkerRegex);
         const lastIndex = strings.length - 1;
 
-        // We have a part for each match found
-        partIndex += lastIndex;
-
         // Generate a new text node for each literal section
-        // These nodes are also used as the markers for node parts
         for (let i = 0; i < lastIndex; i++) {
-          parent.insertBefore(
-              (strings[i] === '')
-                  ? document.createComment('')
-                  : document.createTextNode(strings[i]),
-              node);
-          this.parts.push(new TemplatePart('node', index++));
+          parent.insertBefore(document.createTextNode(strings[i]), node);
+          parent.insertBefore(document.createComment(`lit-html index=${partIndex++}`), node);
+          this.parts.push(new TemplatePart('node', partIndex));
         }
-        parent.insertBefore(
-            strings[lastIndex] === '' ?
-                document.createComment('') :
-                document.createTextNode(strings[lastIndex]),
-            node);
-        nodesToRemove.push(node);
-      } else if (
-          node.nodeType === 8 /* Node.COMMENT_NODE */ &&
-          node.nodeValue === marker) {
-        const parent = node.parentNode!;
-        // Add a new marker node to be the startNode of the Part if any of the
-        // following are true:
-        //  * We don't have a previousSibling
-        //  * previousSibling is being removed (thus it's not the
-        //    `previousNode`)
-        //  * previousSibling is not a Text node
-        //
-        // TODO(justinfagnani): We should be able to use the previousNode here
-        // as the marker node and reduce the number of extra nodes we add to a
-        // template. See https://github.com/PolymerLabs/lit-html/issues/147
-        const previousSibling = node.previousSibling;
-        if (previousSibling === null || previousSibling !== previousNode ||
-            previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createComment(''), node);
-        } else {
-          index--;
-        }
-        this.parts.push(new TemplatePart('node', index++));
-        nodesToRemove.push(node);
-        // If we don't have a nextSibling add a marker node.
-        // We don't have to check if the next node is going to be removed,
-        // because that node will induce a new marker if so.
-        if (node.nextSibling === null) {
-          parent.insertBefore(document.createComment(''), node);
-        } else {
-          index--;
-        }
-        currentNode = previousNode;
-        partIndex++;
+        node.textContent = strings[lastIndex];
+      } else if (node !== lastMarker && node.nodeType === 8 && isLitMarker((node as Comment).data)) {
+        this.parts.push(new TemplatePart('node', partIndex++));
       }
-    }
-
-    // Remove text binding nodes after the walk to not disturb the TreeWalker
-    for (const n of nodesToRemove) {
-      n.parentNode!.removeChild(n);
     }
   }
 }
@@ -740,22 +721,26 @@ export class TemplateInstance {
       // null
       const walker = document.createTreeWalker(
           fragment,
-          133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-                 NodeFilter.SHOW_TEXT */
-          ,
+          NodeFilter.SHOW_COMMENT,
           null as any,
           false);
-
-      let index = -1;
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-        while (index < part.index) {
-          index++;
-          walker.nextNode();
+      while (walker.nextNode()) {
+        let node = walker.currentNode;
+        const result = parseLitMarker((node as Comment).data);
+        if (result) {
+          const [partIndex, boundAttributeCount] = result;
+          if (boundAttributeCount === undefined) {
+            this._parts.push(this._partCallback(this, parts[partIndex], node));
+          } else {
+            for (let i = partIndex; i < partIndex + boundAttributeCount; i++) {
+              this._parts.push(this._partCallback(this, parts[i], node.parentNode!));
+            }
+          }
         }
-        this._parts.push(this._partCallback(this, part, walker.currentNode));
-      }
+      }      
     }
+    const d = document.createElement('main');
+    d.appendChild(fragment.cloneNode(true));
     return fragment;
   }
 }
