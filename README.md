@@ -83,7 +83,7 @@ In the preceding example, `strings` would be `['My name is ', '.']`, and `values
 
 ### HTML `<template>` Elements
 
-A `<template>` element is an inert tree of DOM (script don't run, images don't load, custom elements aren't upgraded, etc) that can be efficiently cloned. It's usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, but by code at a later time, but it can also be created imperatively with `createElement` and `innerHTML`.
+A `<template>` element is an inert tree of DOM (scripts don't run, images don't load, custom elements aren't upgraded, etc) that can be efficiently cloned. It's usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, but by code at a later time. It can also be created imperatively with `createElement` and `innerHTML`.
 
 ### Template Creation
 
@@ -107,7 +107,7 @@ Rendering can be customized by providing alternate `render()` implementations wh
  * It only updates the dynamic parts of templates - static parts are untouched, not even walked for diffing, after the initial render.
  * It uses cloning for initial render.
 
-This should make the approach generally fast and small. Actual science and optimization and still TODOs at this time.
+This should make the approach generally fast and small. Actual science and optimization are still TODOs at this time.
 
 ## Features
 
