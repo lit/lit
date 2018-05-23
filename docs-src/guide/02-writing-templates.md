@@ -35,7 +35,7 @@ This kind of function can be called any time data changes, and is extremely chea
 
 When the result is rendered, lit only updates the expressions whose values have changed since the previous render.
 
-This leads to an easy to write and reason about model: always try to describe your UI as a simple function of the data it depends on, an avoid caching intermediate state, or doing manual DOM manipulation. lit-html will almost always be fast enough with the simplest description of your UI.
+This leads to an easy to write and reason about model: always try to describe your UI as a simple function of the data it depends on, and avoid caching intermediate state, or doing manual DOM manipulation. lit-html will almost always be fast enough with the simplest description of your UI.
 
 ## Template Structure
 
@@ -54,7 +54,7 @@ Follow these rules for well-formed templates:
 
 ## Binding Types
 
-Expressions can occur only in attribute value or text content positions, but in lit-extended a few different binding types use expressions in attribute value positions. Each binding types supports different types of values. In total, theses are the types of bindings:
+Expressions can occur only in attribute value or text content positions, but in lit-extended a few different binding types use expressions in attribute value positions. Each binding type supports different types of values. In total, these are the types of bindings:
 
  * Attribute bindings: All values are converted to strings
  * Property bindings: Any type of value
