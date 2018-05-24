@@ -72,7 +72,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     if ('serviceWorker' in window.navigator) {
       window.addEventListener('load', function() {
-        window.navigator.serviceWorker.register('service-worker.js');
+        window.navigator.serviceWorker.register('service-worker.js', {scope: '/'});
       });
     }
   </script>
