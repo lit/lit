@@ -14,8 +14,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>shop-home</title>
 
-  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../../../web-component-tester/browser.js"></script>
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
   <!-- Import the element to test -->
   <script type="module" src="../src/shop-home.js"></script>
@@ -29,34 +29,98 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
-  <script type="module">
-import '../src/shop-home.js';
-import { dom } from '../node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
-suite('shop-home tests', function() {
-  var home;
+  <script>
+    suite('shop-home tests', function() {
+      var home;
 
-  setup(function() {
-    home = fixture('basic');
-  });
+      var categories = [
+        {
+          name: 'mens_outerwear',
+          title: 'Men\'s Outerwear',
+          image: '../images/mens_outerwear.jpg',
+          placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXAABAQEAAAAAAAAAAAAAAAAAAAIEAQEAAAAAAAAAAAAAAAAAAAACEAAAAwYHAQAAAAAAAAAAAAAAERMBAhIyYhQhkaEDIwUVNREBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A3dkr5e8tfpwuneJITOzIcmQpit037Bw4mnCVNOpAAQv/2Q=='
+        },
+        {
+          name: 'ladies_outerwear',
+          title: 'Ladies Outerwear',
+          image: '../images/ladies_outerwear.jpg',
+          placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWQABAQAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAIDEAABAwMFAQAAAAAAAAAAAAARAAEygRIDIlITMwUVEQEBAAAAAAAAAAAAAAAAAAAAQf/aAAwDAQACEQMRAD8Avqn5meQ0kwk1UyclmLtNj7L4PQoioFf/2Q=='
+        },
+        {
+          name: 'mens_tshirts',
+          title: 'Men\'s T-Shirts',
+          image: '../images/mens_tshirts.jpg',
+          placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWwABAQEAAAAAAAAAAAAAAAAAAAMEAQEAAAAAAAAAAAAAAAAAAAAAEAABAwEJAAAAAAAAAAAAAAARAAESEyFhodEygjMUBREAAwAAAAAAAAAAAAAAAAAAAEFC/9oADAMBAAIRAxEAPwDb7kupZU1MTGnvOCgxpvzEXTyRElCmf//Z'
+        },
+        {
+          name: 'ladies_tshirts',
+          title: 'Ladies T-Shirts',
+          image: '../images/ladies_tshirts.jpg',
+          placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXwABAQEAAAAAAAAAAAAAAAAAAAMFAQEBAAAAAAAAAAAAAAAAAAABAhAAAQIDCQAAAAAAAAAAAAAAEQABITETYZECEjJCAzMVEQACAwAAAAAAAAAAAAAAAAAAATFBgf/aAAwDAQACEQMRAD8AzeADAZiFc5J7BC9Scek3VrtooilSNaf/2Q=='
+        }
+      ];
 
-  test('Item lengths should be equalled', function(done) {
-    // Test categories property
-    home.categories = [
-      {name: 'furniture', title: 'Furniture'},
-      {name: 'food', title: 'Food'},
-      {name: 'fashion', title: 'Fashion'}
-    ];
+      setup(function() {
+        home = fixture('basic');
+      });
 
-    // Data bindings will stamp out new DOM asynchronously
-    // so wait to check for updates
-    flush(function() {
-      var items = dom(home.root).querySelectorAll('.item');
-      assert.equal(home.categories.length, items.length);
-      done();
+      test('item lengths should be equal', function(done) {
+        // Set categories property
+        home.categories = categories;
+        // Data bindings will stamp out new DOM asynchronously
+        // so wait to check for updates
+        flush(function() {
+          var items = home.shadowRoot.querySelectorAll('.item');
+          assert.equal(home.categories.length, items.length);
+          done();
+        });
+      });
+
+      test('image should be set', function(done) {
+        // Set categories property
+        home.categories = categories;
+        // Data bindings will stamp out new DOM asynchronously
+        // so wait to check for updates
+        flush(function() {
+          var image = home.shadowRoot.querySelector('shop-image');
+          assert.equal(categories[0].image, image.src);
+          done();
+        });
+      });
+
+      test('title should render correctly', function(done) {
+        // Set categories property
+        home.categories = categories;
+        // Data bindings will stamp out new DOM asynchronously
+        // so wait to check for updates
+        flush(function() {
+          var title = home.shadowRoot.querySelector('h2');
+          assert.equal(categories[0].title, title.textContent);
+          done();
+        });
+      });
+
+      test('link should be set', function(done) {
+        // Set categories property
+        home.categories = categories;
+        // Data bindings will stamp out new DOM asynchronously
+        // so wait to check for updates
+        flush(function() {
+          var link = home.shadowRoot.querySelector('a');
+          assert.equal('/list/' + categories[0].name, link.getAttribute('href'));
+          done();
+        });
+      });
+
+      test('change-section event should fire', function() {
+        var listenerSpy = sinon.spy();
+        home.addEventListener('change-section', listenerSpy);
+        // Set visible attribute
+        home.setAttribute('visible', '');
+        assert.isTrue(listenerSpy.called, 'should fire after attribute "visible" is set');
+      });
     });
-  })
-});
-</script>
+  </script>
 
 </body>
 </html>
