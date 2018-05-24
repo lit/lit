@@ -37,6 +37,7 @@
     "mocha": "^5.0.0",
     "pixelmatch": "^4.0.2",
     "polymer-cli": "^1.7.0",
+    "polyserve": "^0.27.11",
     "prpl-server": "^1.1.0",
     "puppeteer": "^1.0.0",
     "renamer": "^0.6.1",
