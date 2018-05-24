@@ -104,7 +104,7 @@ export class SVGTemplateResult extends TemplateResult {
  * A function type that creates a Template from a TemplateResult.
  *
  * This is a hook into the template-creation process for rendering that
- * requires some modification of templates before their used, like ShadyCSS,
+ * requires some modification of templates before they're used, like ShadyCSS,
  * which must add classes to elements and remove styles.
  *
  * Templates should be cached as aggressively as possible, so that many
@@ -311,7 +311,7 @@ export class Template {
         }
         while (count-- > 0) {
           // Get the template literal section leading up to the first
-          // expression in this attribute attribute
+          // expression in this attribute
           const stringForPart = result.strings[partIndex];
           // Find the attribute name
           const attributeNameInPart =
