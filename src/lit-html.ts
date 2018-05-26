@@ -281,52 +281,52 @@ export class Template {
 
   constructor(result: TemplateResult, element: HTMLTemplateElement) {
     this.element = element;
-    const content = this.element.content;
-    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-    const walker = document.createTreeWalker(
-        content,
-        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-               NodeFilter.SHOW_TEXT */
-        ,
-        null as any,
-        false);
     let index = -1;
     let partIndex = 0;
     const nodesToRemove: Node[] = [];
 
-    // The actual previous node, accounting for removals: if a node is removed
-    // it will never be the previousNode.
-    let previousNode: Node|undefined;
-    // Used to set previousNode at the top of the loop.
-    let currentNode: Node|undefined;
 
-    while (walker.nextNode()) {
-      index++;
-      previousNode = currentNode;
-      const node = currentNode = walker.currentNode as Element;
-      if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-        if (!node.hasAttributes()) {
-          continue;
-        }
-        const attributes = node.attributes;
-        // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
-        // attributes are not guaranteed to be returned in document order. In
-        // particular, Edge/IE can return them out of order, so we cannot assume
-        // a correspondance between part index and attribute index.
-        let count = 0;
-        for (let i = 0; i < attributes.length; i++) {
-          if (attributes[i].value.indexOf(marker) >= 0) {
-            count++;
-          }
-        }
-        while (count-- > 0) {
-          // Get the template literal section leading up to the first
-          // expression in this attribute
-          const stringForPart = result.strings[partIndex];
-          // Find the attribute name
-          const attributeNameInPart =
-              lastAttributeNameRegex.exec(stringForPart)![1];
-              
+    const _prepareTemplate = (template: HTMLTemplateElement) => {
+      const content = template.content;
+      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+      const walker = document.createTreeWalker(
+        content,
+        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
+                NodeFilter.SHOW_TEXT */
+        ,
+        null as any,
+        false);
+      // The actual previous node, accounting for removals: if a node is removed
+      // it will never be the previousNode.
+      let previousNode: Node|undefined;
+      // Used to set previousNode at the top of the loop.
+      let currentNode: Node|undefined;
+
+      while (walker.nextNode()) {
+        index++;
+        previousNode = currentNode;
+        const node = currentNode = walker.currentNode as Element;
+        if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
+          if (node.hasAttributes()) {
+            const attributes = node.attributes;
+            // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
+            // attributes are not guaranteed to be returned in document order. In
+            // particular, Edge/IE can return them out of order, so we cannot assume
+            // a correspondance between part index and attribute index.
+            let count = 0;
+            for (let i = 0; i < attributes.length; i++) {
+              if (attributes[i].value.indexOf(marker) >= 0) {
+                count++;
+              }
+            }
+            while (count-- > 0) {
+              // Get the template literal section leading up to the first
+              // expression in this attribute
+              const stringForPart = result.strings[partIndex];
+              // Find the attribute name
+              const attributeNameInPart =
+                  lastAttributeNameRegex.exec(stringForPart)![1];
+
           // Find the corresponding attribute
           // If the attribute name contains special characters, lower-case it
           // so that on XML nodes with case-sensitive getAttribute() we can
@@ -347,73 +347,78 @@ export class Template {
               attributeNameInPart,
               stringsForAttributeValue));
           node.removeAttribute(attributeLookupName);
-          partIndex += stringsForAttributeValue.length - 1;
-        }
-      } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-        const nodeValue = node.nodeValue!;
-        if (nodeValue.indexOf(marker) < 0) {
-          continue;
-        }
+              partIndex += stringsForAttributeValue.length - 1;
+            }
+          }
+          if (node.tagName === 'TEMPLATE') {
+            _prepareTemplate(node as HTMLTemplateElement);
+          }
+        } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
+          const nodeValue = node.nodeValue!;
+          if (nodeValue.indexOf(marker) < 0) {
+            continue;
+          }
 
-        const parent = node.parentNode!;
-        const strings = nodeValue.split(markerRegex);
-        const lastIndex = strings.length - 1;
+          const parent = node.parentNode!;
+          const strings = nodeValue.split(markerRegex);
+          const lastIndex = strings.length - 1;
 
-        // We have a part for each match found
-        partIndex += lastIndex;
+          // We have a part for each match found
+          partIndex += lastIndex;
 
-        // Generate a new text node for each literal section
-        // These nodes are also used as the markers for node parts
-        for (let i = 0; i < lastIndex; i++) {
+          // Generate a new text node for each literal section
+          // These nodes are also used as the markers for node parts
+          for (let i = 0; i < lastIndex; i++) {
+            parent.insertBefore(
+                (strings[i] === '')
+                    ? document.createComment('')
+                    : document.createTextNode(strings[i]),
+                node);
+            this.parts.push(new TemplatePart('node', index++));
+          }
           parent.insertBefore(
-              (strings[i] === '')
-                  ? document.createComment('')
-                  : document.createTextNode(strings[i]),
+              strings[lastIndex] === '' ?
+                  document.createComment('') :
+                  document.createTextNode(strings[lastIndex]),
               node);
+          nodesToRemove.push(node);
+        } else if (
+            node.nodeType === 8 /* Node.COMMENT_NODE */ &&
+            node.nodeValue === marker) {
+          const parent = node.parentNode!;
+          // Add a new marker node to be the startNode of the Part if any of the
+          // following are true:
+          //  * We don't have a previousSibling
+          //  * previousSibling is being removed (thus it's not the
+          //    `previousNode`)
+          //  * previousSibling is not a Text node
+          //
+          // TODO(justinfagnani): We should be able to use the previousNode here
+          // as the marker node and reduce the number of extra nodes we add to a
+          // template. See https://github.com/PolymerLabs/lit-html/issues/147
+          const previousSibling = node.previousSibling;
+          if (previousSibling === null || previousSibling !== previousNode ||
+              previousSibling.nodeType !== Node.TEXT_NODE) {
+            parent.insertBefore(document.createComment(''), node);
+          } else {
+            index--;
+          }
           this.parts.push(new TemplatePart('node', index++));
+          nodesToRemove.push(node);
+          // If we don't have a nextSibling add a marker node.
+          // We don't have to check if the next node is going to be removed,
+          // because that node will induce a new marker if so.
+          if (node.nextSibling === null) {
+            parent.insertBefore(document.createComment(''), node);
+          } else {
+            index--;
+          }
+          currentNode = previousNode;
+          partIndex++;
         }
-        parent.insertBefore(
-            strings[lastIndex] === '' ?
-                document.createComment('') :
-                document.createTextNode(strings[lastIndex]),
-            node);
-        nodesToRemove.push(node);
-      } else if (
-          node.nodeType === 8 /* Node.COMMENT_NODE */ &&
-          node.nodeValue === marker) {
-        const parent = node.parentNode!;
-        // Add a new marker node to be the startNode of the Part if any of the
-        // following are true:
-        //  * We don't have a previousSibling
-        //  * previousSibling is being removed (thus it's not the
-        //    `previousNode`)
-        //  * previousSibling is not a Text node
-        //
-        // TODO(justinfagnani): We should be able to use the previousNode here
-        // as the marker node and reduce the number of extra nodes we add to a
-        // template. See https://github.com/PolymerLabs/lit-html/issues/147
-        const previousSibling = node.previousSibling;
-        if (previousSibling === null || previousSibling !== previousNode ||
-            previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createComment(''), node);
-        } else {
-          index--;
-        }
-        this.parts.push(new TemplatePart('node', index++));
-        nodesToRemove.push(node);
-        // If we don't have a nextSibling add a marker node.
-        // We don't have to check if the next node is going to be removed,
-        // because that node will induce a new marker if so.
-        if (node.nextSibling === null) {
-          parent.insertBefore(document.createComment(''), node);
-        } else {
-          index--;
-        }
-        currentNode = previousNode;
-        partIndex++;
       }
-    }
-
+    };
+    _prepareTemplate(element);
     // Remove text binding nodes after the walk to not disturb the TreeWalker
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);
@@ -767,32 +772,46 @@ export class TemplateInstance {
     // won't upgrade until after the main document adopts the node.
     const fragment = this.template.element.content.cloneNode(true) as DocumentFragment;
     const parts = this.template.parts;
+    let partIndex = 0;
+    let nodeIndex = 0;
 
-    if (parts.length > 0) {
+    const _prepareInstance = (fragment: DocumentFragment) => {
       // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
       // null
       const walker = document.createTreeWalker(
           fragment,
           133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-                 NodeFilter.SHOW_TEXT */
+                NodeFilter.SHOW_TEXT */
           ,
           null as any,
           false);
 
-      let index = -1;
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-        const partActive = isTemplatePartActive(part);
-        // An inactive part has no coresponding Template node.
-        if (partActive) {
-          while (index < part.index) {
-            index++;
-            walker.nextNode();
+      let node = walker.nextNode();
+      // Loop through all the nodes and parts of a template
+      while (partIndex < parts.length && node !== null) {
+        const part = parts[partIndex];
+        // Consecutive Parts may have the same node index, in the case of
+        // multiple bound attributes on an element. So each iteration we either
+        // increment the nodeIndex, if we aren't on a node with a part, or the
+        // partIndex if we are. By not incrementing the nodeIndex when we find a
+        // part, we allow for the next part to be associated with the current
+        // node if neccessasry.
+        if (!isTemplatePartActive(part)) {
+          this._parts.push(undefined);
+          partIndex++;
+        } else if (nodeIndex === part.index) {
+          this._parts.push(this._partCallback(this, part, node));
+          partIndex++;
+        } else {
+          nodeIndex++;
+          if (node.nodeName === 'TEMPLATE') {
+            _prepareInstance((node as HTMLTemplateElement).content);
           }
+          node = walker.nextNode();
         }
-        this._parts.push(partActive ? this._partCallback(this, part, walker.currentNode) : undefined);
       }
-    }
+    };
+    _prepareInstance(fragment);
     return fragment;
   }
 }
