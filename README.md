@@ -116,13 +116,13 @@ This should make the approach generally fast and small. Actual science and optim
 Anything coercible to strings are supported:
 
 ```javascript
-const render = () => html`foo is ${foo}`;
+const template = () => html`foo is ${foo}`;
 ```
 
 ### Attribute-value Expressions
 
 ```javascript
-const render = () => html`<div class="${blue}"></div>`;
+const template = () => html`<div class="${blue}"></div>`;
 ```
 
 ### SVG Support
@@ -149,15 +149,14 @@ _TODO: Add sanitization hooks to disallow inline event handlers, etc._
 Attribute parts store both the HTML-parsed name and the raw name pulled from the string literal. This allows extensions, such as those that might set properties on elements using attribute syntax, to get case-sensitive names.
 
 ```javascript
-const render = () => html`<div someProp="${blue}"></div>`;
-render().template.parts[0].rawName === 'someProp';
+const template = () => html`<div someProp="${blue}"></div>`;
 ```
 
 ### Arrays/Iterables
 
 ```javascript
 const items = [1, 2, 3];
-const render = () => html`items = ${items.map((i) => `item: ${i}`)}`;
+const template = () => html`items = ${items.map((i) => `item: ${i}`)}`;
 ```
 
 ```javascript
@@ -166,14 +165,14 @@ const items = {
   b: 23,
   c: 456,
 };
-const render = () => html`items = ${Object.entries(items)}`;
+const template = () => html`items = ${Object.entries(items)}`;
 ```
 
 ### Nested Templates
 
 ```javascript
 const header = html`<h1>${title}</h1>`;
-const render = () => html`
+const template = () => html`
   ${header}
   <p>And the body</p>
 `;
@@ -184,7 +183,7 @@ const render = () => html`
 Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won't update the template when it finally resolves.
 
 ```javascript
-const render = () => html`
+const template = () => html`
   The response is ${fetch('sample.txt').then((r) => r.text())}.
 `;
 ```
@@ -217,13 +216,13 @@ Now `safe()` can be used to wrap a function:
 
 ```javascript
 let data;
-const render = () => html`foo = ${safe(_=>data.foo)}`;
+const template = () => html`foo = ${safe(_=>data.foo)}`;
 ```
 
 This example increments a counter on every render:
 
 ```javascript
-const render = () => html`
+const template = () => html`
   <div>
     ${directive((part) => part.setValue((part.previousValue + 1) || 0))}
   </div>`;
@@ -238,7 +237,7 @@ A loop that supports efficient re-ordering by using item keys.
 Example:
 
 ```javascript
-const render = () => html`
+const template = () => html`
   <ul>
     ${repeat(items, (i) => i.id, (i, index) => html`
       <li>${index}: ${i.name}</li>`)}
@@ -253,7 +252,7 @@ Renders `defaultContent` until `promise` resolves, then it renders the resolved 
 Example:
 
 ```javascript
-const render = () => html`
+const template = () => html`
   <p>
     ${until(
         fetch('content.txt').then((r) => r.text()),
@@ -406,7 +405,7 @@ An if-directive that retains the `then` and `else` _instances_ for fast switchin
 Example:
 
 ```javascript
-const render = () => html`
+const template = () => html`
   ${when(state === 'loading',
     html`<div>Loading...</div>`,
     html`<p>${message}</p>`)}
@@ -422,7 +421,7 @@ Since all expressions in a template literal are evaluated when the literal is ev
 Example:
 
 ```javascript
-const render = () => html`
+const template = () => html`
   <div>Current User: ${guard(user, () => user.getProfile())}</div>
 `;
 ```
