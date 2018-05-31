@@ -67,7 +67,7 @@ render(sayHello('Everyone'), document.body);
   </div>
 </section>
 
-lit-html is not a framework, nor does it include a component model. If focuses on one thing and one thing only: efficiently creating and updating DOM. It can be used standalone for simple tasks, or combined with a framework or component model, like Web Components, for a full-featured UI development platform.
+lit-html is not a framework, nor does it include a component model. It focuses on one thing and one thing only: efficiently creating and updating DOM. It can be used standalone for simple tasks, or combined with a framework or component model, like Web Components, for a full-featured UI development platform.
 
 ## Announcement at Polymer Summit 2017
 
