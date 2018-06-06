@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {render as baseRender, Template, templateCaches, TemplateResult, renderToDom} from '../lit-html.js';
-import {removeNodesFromTemplate, insertNodeIntoTemplate} from './modify-template.js';
+import {removeNodes, Template, templateCaches, TemplateContainer, TemplateInstance, TemplateResult} from '../lit-html.js';
+
+import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 
 export {html, svg, TemplateResult} from '../lit-html.js';
 
@@ -21,7 +22,11 @@ declare global {
   interface Window {
     ShadyCSS: any;
   }
+  class ShadowRoot {}
 }
+
+const getTemplateKey = (type: string, scopeName: string) =>
+    `${type}--${scopeName}`;
 
 /**
  * Template factory which scopes template DOM using ShadyCSS.
@@ -29,31 +34,36 @@ declare global {
  */
 const shadyTemplateFactory = (scopeName: string) =>
     (result: TemplateResult) => {
-  const cacheKey = `${result.type}--${scopeName}`;
-  let templateCache = templateCaches.get(cacheKey);
-  if (templateCache === undefined) {
-    templateCache = new Map<TemplateStringsArray, Template>();
-    templateCaches.set(cacheKey, templateCache);
-  }
-  let template = templateCache.get(result.strings);
-  if (template === undefined) {
-    const element = result.getTemplateElement();
-    window.ShadyCSS.prepareTemplateDom(element, scopeName);
-    template = new Template(result, element);
-    templateCache.set(result.strings, template);
-  }
-  return template;
-};
+      const cacheKey = getTemplateKey(result.type, scopeName);
+      let templateCache = templateCaches.get(cacheKey);
+      if (templateCache === undefined) {
+        templateCache = new Map<TemplateStringsArray, Template>();
+        templateCaches.set(cacheKey, templateCache);
+      }
+      let template = templateCache.get(result.strings);
+      if (template === undefined) {
+        const element = result.getTemplateElement();
+        window.ShadyCSS.prepareTemplateDom(element, scopeName);
+        template = new Template(result, element);
+        templateCache.set(result.strings, template);
+      }
+      return template;
+    };
+
 
 const TEMPLATE_TYPES = ['html', 'svg'];
+
+/**
+ * Removes all style elements from Templates for hte given scopeName
+ */
 function removeStylesFromLitTemplates(scopeName: string) {
   TEMPLATE_TYPES.forEach((type) => {
-    const templates = templateCaches.get(`${type}--${scopeName}`);
+    const templates = templateCaches.get(getTemplateKey(type, scopeName));
     if (templates) {
       templates.forEach((template) => {
         const {element: {content}} = template;
         const styles = content.querySelectorAll('style');
-        removeNodesFromTemplate(template, Array.from(styles));
+        removeNodesFromTemplate(template, new Set(Array.from(styles)));
       });
     }
   });
@@ -61,18 +71,17 @@ function removeStylesFromLitTemplates(scopeName: string) {
 
 const shadyRenderSet = new Set<string>();
 
-function hostForNode(node: Node) {
-  return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && (node as ShadowRoot).host
-}
-
-export function render(
-    result: TemplateResult,
-    container: Element|DocumentFragment,
-    scopeName: string) {
-  const host = hostForNode(container);
-  if (host && typeof window.ShadyCSS === 'object') {
-    const templateFactory = shadyTemplateFactory(scopeName);
-    const renderer = (container: Element|DocumentFragment, fragment: DocumentFragment) => {
+/**
+ * For the given scope name, ensures that ShadyCSS style scoping is performed.
+ * This is done just once per scope name so the fragment and template cannot
+ * be modified.
+ * (1) extracts styles from the rendered fragment and hands them to ShadyCSS
+ * to be scoped and appended to the document
+ * (2) removes style elements from all lit-html Templates for this scope name.
+ */
+const ensureStylesScoped =
+    (fragment: DocumentFragment, template: Template, scopeName: string) => {
+      // only scope element template once per scope name
       if (!shadyRenderSet.has(scopeName)) {
         shadyRenderSet.add(scopeName);
         const styleTemplate = document.createElement('template');
@@ -89,17 +98,51 @@ export function render(
             // insert style into rendered fragment
             fragment.insertBefore(style, fragment.firstChild);
             // insert into lit-template (for subsequent renders)
-            const template = templateFactory(result);
-            insertNodeIntoTemplate(template, style.cloneNode(true),
+            insertNodeIntoTemplate(
+                template,
+                style.cloneNode(true),
                 template.element.content.firstChild);
           }
         }
       }
-      window.ShadyCSS.styleElement(host);
-      renderToDom(container, fragment);
     }
-    return baseRender(result, container, templateFactory, renderer);
-  } else {
-    return baseRender(result, container);
+
+// NOTE: We're copying code from lit-html's `render` method here.
+// We're doing this explicitly because the API for rendering templates is likely
+// to change in the near term.
+export function render(
+    result: TemplateResult,
+    container: Element|DocumentFragment,
+    scopeName: string) {
+  const templateFactory = shadyTemplateFactory(scopeName);
+  const template = templateFactory(result);
+  let instance = (container as TemplateContainer).__templateInstance;
+
+  // Repeat render, just call update()
+  if (instance !== undefined && instance.template === template &&
+      instance._partCallback === result.partCallback) {
+    instance.update(result.values);
+    return;
   }
+
+  // First render, create a new TemplateInstance and append it
+  instance =
+      new TemplateInstance(template, result.partCallback, templateFactory);
+  (container as TemplateContainer).__templateInstance = instance;
+
+  const fragment = instance._clone();
+  instance.update(result.values);
+
+  const host = container instanceof ShadowRoot ?
+      container.host :
+      undefined;
+
+  // if there's a shadow host, do ShadyCSS scoping...
+  if (host !== undefined && typeof window.ShadyCSS === 'object') {
+    ensureStylesScoped(fragment, template, scopeName);
+    window.ShadyCSS.styleElement(host);
+  }
+
+  removeNodes(container, container.firstChild);
+  container.appendChild(fragment);
 }

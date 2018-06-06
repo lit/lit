@@ -14,7 +14,12 @@
 
 import {Template} from '../lit-html.js';
 
-export function removeNodesFromTemplate(template: Template, nodes: Node[]) {
+/**
+ * Removes the list of nodes from a Template safely. In addition to removing
+ * nodes from the Template, the Template part indices are updated to match
+ * the mutated Template DOM.
+ */
+export function removeNodesFromTemplate(template: Template, nodesToRemove: Set<Node>) {
   const {element: {content}, parts} = template;
   const walker = document.createTreeWalker(
     content,
@@ -22,57 +27,61 @@ export function removeNodesFromTemplate(template: Template, nodes: Node[]) {
         NodeFilter.SHOW_TEXT,
     null as any,
     false);
-  let nodesIndex = 0;
-  let nodeToFind = nodes[nodesIndex];
   let partIndex = 0;
-  let part = parts[partIndex];
-  let partDelta = 0;
-  let disableUntil = 0;
-  const nodesToRemove: Node[] = [];
-  let index = -1;
+  let part = parts[0];
+  let nodeIndex = -1;
+  let removeCount = 0;
+  const nodesToRemoveInTemplate = [];
+  // TODO(sorvell): fix type
+  const removalStack: any[] = [];
   while (walker.nextNode()) {
-    index++;
+    nodeIndex++;
     const node = walker.currentNode as Element;
-    if (node === nodeToFind) {
-      nodeToFind = nodes[++nodesIndex];
-      const removeCount = node.childNodes.length + 1;
-      disableUntil = index + removeCount;
-      partDelta -= removeCount;
-      nodesToRemove.push(node);
+    // maybe pop the stack
+    if (walker.previousSibling === removalStack[removalStack.length - 1]) {
+      removalStack.pop();
     }
-    // adjust part indices or disable parts.
-    while (part && part.index === index) {
-      if (index < disableUntil) {
-        part.index = -1;
-      } else {
-        part.index += partDelta;
-      }
+    // track nodes we're removing
+    if (nodesToRemove.has(node)) {
+      removalStack.push(node);
+      nodesToRemoveInTemplate.push(node);
+    }
+    if (removalStack.length > 0) {
+      removeCount++;
+    }
+    while (part && part.index === nodeIndex) {
+      part.index = removalStack.length ? -1 : part.index - removeCount;
       part = parts[++partIndex];
     }
   }
-  nodesToRemove.forEach((n) => n.parentNode!.removeChild(n));
+  nodesToRemoveInTemplate.forEach((n) => n.parentNode!.removeChild(n));
 }
 
-export function insertNodeIntoTemplate(template: Template, node: Node, refNode: Node|null = null) {
+/**
+ * Inserts the given node into the Template, optionally before the given
+ * refNode. In addition to inserting the node into the Template, the Template
+ * part indices are updated to match the mutated Template DOM.
+ */
+export function insertNodeIntoTemplate(
+    template: Template, node: Node, refNode: Node|null = null) {
   const {element: {content}, parts} = template;
   const walker = document.createTreeWalker(
-    content,
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-        NodeFilter.SHOW_TEXT,
-    null as any,
-    false);
+      content,
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT,
+      null as any,
+      false);
   let partIndex = 0;
   let part = parts[partIndex];
   let partDelta = 0;
-  let index = -1;
+  let walkerIndex = -1;
   while (walker.nextNode()) {
-    index++;
+    walkerIndex++;
     const currentNode = walker.currentNode as Element;
     if (currentNode === refNode) {
       content.insertBefore(node, refNode);
       partDelta = 1 + node.childNodes.length;
     }
-    while (part && (part.index === index || part.index < 0)) {
+    while (part && (part.index === walkerIndex || part.index < 0)) {
       if (part.index >= 0) {
         part.index += partDelta;
       }

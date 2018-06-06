@@ -140,11 +140,7 @@ export function defaultTemplateFactory(result: TemplateResult) {
   return template;
 }
 
-export function renderToDom(container: Element|DocumentFragment, fragment: DocumentFragment) {
-  removeNodes(container, container.firstChild);
-  container.appendChild(fragment);
-}
-type TemplateContainer = (Element|DocumentFragment)&{
+export type TemplateContainer = (Element|DocumentFragment)&{
   __templateInstance?: TemplateInstance;
 };
 
@@ -165,8 +161,7 @@ type TemplateContainer = (Element|DocumentFragment)&{
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    templateFactory: TemplateFactory = defaultTemplateFactory,
-    renderDom: Function = renderToDom
+    templateFactory: TemplateFactory = defaultTemplateFactory
   ) {
   const template = templateFactory(result);
   let instance = (container as TemplateContainer).__templateInstance;
@@ -186,7 +181,8 @@ export function render(
   const fragment = instance._clone();
   instance.update(result.values);
 
-  renderDom(container, fragment);
+  removeNodes(container, container.firstChild);
+  container.appendChild(fragment);
 }
 
 /**
@@ -266,6 +262,8 @@ export class TemplatePart {
       public rawName?: string, public strings?: string[]) {
   }
 }
+
+const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
 /**
  * An updateable Template that tracks the location of dynamic parts.
@@ -757,7 +755,8 @@ export class TemplateInstance {
       let index = -1;
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
-        const partActive = (part.index >= 0);
+        const partActive = isTemplatePartActive(part);
+        // An inactive part has no coresponding Template node.
         if (partActive) {
           while (index < part.index) {
             index++;
