@@ -13,7 +13,6 @@
  */
 
 import {html, render} from '../../lib/shady-render.js';
-import {stripExpressionDelimeters} from '../test-helpers.js';
 
 
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
