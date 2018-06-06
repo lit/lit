@@ -21,6 +21,16 @@ NodeFilter.SHOW_TEXT;
  * Removes the list of nodes from a Template safely. In addition to removing
  * nodes from the Template, the Template part indices are updated to match
  * the mutated Template DOM.
+ *
+ * As the template is walked the removal state is tracked and
+ * part indices are adjusted as needed.
+ *
+ * div
+ *   div#1 (remove) <-- start removing (removing node is div#1)
+ *     div
+ *       div#2 (remove)  <-- continue removing (removing node is still div#1)
+ *         div
+ * div <-- stop removing since previous sibling is the removing node (div#1, removed 4 nodes)
  */
 export function removeNodesFromTemplate(template: Template, nodesToRemove: Set<Node>) {
   const {element: {content}, parts} = template;
@@ -54,7 +64,7 @@ export function removeNodesFromTemplate(template: Template, nodesToRemove: Set<N
     if (currentRemovingNode !== null) {
       removeCount++;
     }
-    while (part && part.index === nodeIndex) {
+    while (part !== undefined && part.index === nodeIndex) {
       // if part is in a removed node deactivate it by setting index to -1 or
       // adjust the index as needed.
       part.index = currentRemovingNode !== null ? -1 : part.index - removeCount;
@@ -87,9 +97,11 @@ export function insertNodeIntoTemplate(
   const {element: {content}, parts} = template;
   // if there's no refNode, then put node at end of template.
   // No part indices need to be shifted in this case.
-  if (!refNode) {
+  if (refNode === null || refNode === undefined) {
     content.appendChild(node);
     return;
+  } else if (!content.contains(refNode)) {
+    throw 'Reference node must be inside template.';
   }
   const walker = document.createTreeWalker(
       content,
@@ -97,7 +109,9 @@ export function insertNodeIntoTemplate(
       null as any,
       false);
   let partIndex = 0;
-  let part = parts[partIndex];
+  // only need to modify active parts.
+  let activeParts = parts.filter((part) => isTemplatePartActive(part));
+  let part = activeParts[partIndex];
   let insertCount = 0;
   let walkerIndex = -1;
   while (walker.nextNode()) {
@@ -107,13 +121,9 @@ export function insertNodeIntoTemplate(
       refNode.parentNode!.insertBefore(node, refNode);
       insertCount = countNodes(node);
     }
-    // for each part that's either an index match or inactive, adjust index.
-    while (part !== undefined &&
-      (!isTemplatePartActive(part) || part.index === walkerIndex)) {
-      if (part.index === walkerIndex) {
-        part.index += insertCount;
-      }
-      part = parts[++partIndex];
+    while (part !== undefined && part.index === walkerIndex) {
+      part.index += insertCount;
+      part = activeParts[++partIndex];
     }
   }
 }
