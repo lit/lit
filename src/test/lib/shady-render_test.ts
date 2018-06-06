@@ -13,6 +13,7 @@
  */
 
 import {html, render} from '../../lib/shady-render.js';
+import {stripExpressionDelimeters} from '../test-helpers.js';
 
 
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
@@ -84,6 +85,35 @@ suite('shady-render', () => {
     const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
     assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
     renderTemplate('2px solid black');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    document.body.removeChild(container);
+  });
+
+  test('parts around styles with parts render/update', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    container.attachShadow({mode: 'open'});
+    const renderTemplate = (border: string, a: string, b: string, c: string) => {
+      render(html`<div id="a">${a}</div>
+        <style>
+          div {
+            border: ${border};
+          }
+        </style><div id="b">${b}</div>
+        <div id="c">${c}</div>
+      `, container.shadowRoot as DocumentFragment, 'scope-3a');
+    }
+    renderTemplate('1px solid black', 'a', 'b', 'c');
+    const shadowRoot = container.shadowRoot as DocumentFragment;
+    assert.equal(shadowRoot.querySelector('#a')!.textContent, `a`);
+    assert.equal(shadowRoot.querySelector('#b')!.textContent, `b`);
+    assert.equal(shadowRoot.querySelector('#c')!.textContent, `c`);
+    const div = shadowRoot.querySelector('div');
+    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    renderTemplate('2px solid black', 'a1', 'b1', 'c1');
+    assert.equal(shadowRoot.querySelector('#a')!.textContent, `a1`);
+    assert.equal(shadowRoot.querySelector('#b')!.textContent, `b1`);
+    assert.equal(shadowRoot.querySelector('#c')!.textContent, `c1`);
     assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
     document.body.removeChild(container);
   });

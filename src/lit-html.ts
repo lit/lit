@@ -263,7 +263,7 @@ export class TemplatePart {
   }
 }
 
-const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
+export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
 /**
  * An updateable Template that tracks the location of dynamic parts.
