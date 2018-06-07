@@ -413,7 +413,7 @@ export const getValue = (part: Part, value: any) => {
   // so we convert it to undefined
   if (isDirective(value)) {
     value = value(part);
-    return directiveValue;
+    return noChange;
   }
   return value === null ? undefined : value;
 };
@@ -435,7 +435,7 @@ const isDirective = (o: any) =>
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
  */
-export const directiveValue = {};
+export const noChange = {};
 
 const isPrimitiveValue = (value: any) => value === null ||
     !(typeof value === 'object' || typeof value === 'function');
@@ -479,7 +479,7 @@ export class AttributePart implements MultiPart {
     for (let i = 0; i < l; i++) {
       text += strings[i];
       const v = getValue(this, values[startIndex + i]);
-      if (v && v !== directiveValue &&
+      if (v && v !== noChange &&
           (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
         for (const t of v) {
           // TODO: we need to recursively call getValue into iterables...
@@ -518,7 +518,7 @@ export class AttributePart implements MultiPart {
     } else {
       value = this._interpolate(values, startIndex);
     }
-    if (value !== directiveValue) {
+    if (value !== noChange) {
       this.element.setAttribute(this.name, value);
     }
     this._previousValues = values;
@@ -540,12 +540,7 @@ export class NodePart implements SinglePart {
 
   setValue(value: any): void {
     value = getValue(this, value);
-    if (value === '$NO_OP') {
-      // $NO_OP indicates already from the component that nothing was changed
-      // eg. if the application using lit-html already uses a caching layer
-      return
-    }
-    if (value === directiveValue) {
+    if (value === noChange) {
       return;
     }
     if (isPrimitiveValue(value)) {
