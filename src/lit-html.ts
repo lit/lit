@@ -104,7 +104,7 @@ export class SVGTemplateResult extends TemplateResult {
  * A function type that creates a Template from a TemplateResult.
  *
  * This is a hook into the template-creation process for rendering that
- * requires some modification of templates before their used, like ShadyCSS,
+ * requires some modification of templates before they're used, like ShadyCSS,
  * which must add classes to elements and remove styles.
  *
  * Templates should be cached as aggressively as possible, so that many
@@ -140,6 +140,10 @@ export function defaultTemplateFactory(result: TemplateResult) {
   return template;
 }
 
+type TemplateContainer = (Element|DocumentFragment)&{
+  __templateInstance?: TemplateInstance;
+};
+
 /**
  * Renders a template to a container.
  *
@@ -147,7 +151,7 @@ export function defaultTemplateFactory(result: TemplateResult) {
  * call `render` with the new result.
  *
  * @param result a TemplateResult created by evaluating a template tag like
- *     `html` or `svg.
+ *     `html` or `svg`.
  * @param container A DOM parent to render to. The entire contents are either
  *     replaced, or efficiently updated if the same result type was previous
  *     rendered there.
@@ -159,7 +163,7 @@ export function render(
     container: Element|DocumentFragment,
     templateFactory: TemplateFactory = defaultTemplateFactory) {
   const template = templateFactory(result);
-  let instance = (container as any).__templateInstance as any;
+  let instance = (container as TemplateContainer).__templateInstance;
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
@@ -171,7 +175,7 @@ export function render(
   // First render, create a new TemplateInstance and append it
   instance =
       new TemplateInstance(template, result.partCallback, templateFactory);
-  (container as any).__templateInstance = instance;
+  (container as TemplateContainer).__templateInstance = instance;
 
   const fragment = instance._clone();
   instance.update(result.values);
@@ -307,13 +311,14 @@ export class Template {
         }
         while (count-- > 0) {
           // Get the template literal section leading up to the first
-          // expression in this attribute attribute
+          // expression in this attribute
           const stringForPart = result.strings[partIndex];
           // Find the attribute name
           const attributeNameInPart =
               lastAttributeNameRegex.exec(stringForPart)![1];
           // Find the corresponding attribute
-          const attribute = attributes.getNamedItem(attributeNameInPart);
+          // TODO(justinfagnani): remove non-null assertion
+          const attribute = attributes.getNamedItem(attributeNameInPart)!;
           const stringsForAttributeValue = attribute.value.split(markerRegex);
           this.parts.push(new TemplatePart(
               'attribute',
@@ -337,17 +342,22 @@ export class Template {
         // We have a part for each match found
         partIndex += lastIndex;
 
-        // We keep this current node, but reset its content to the last
-        // literal part. We insert new literal nodes before this so that the
-        // tree walker keeps its position correctly.
-        node.textContent = strings[lastIndex];
-
         // Generate a new text node for each literal section
         // These nodes are also used as the markers for node parts
         for (let i = 0; i < lastIndex; i++) {
-          parent.insertBefore(document.createTextNode(strings[i]), node);
+          parent.insertBefore(
+              (strings[i] === '')
+                  ? document.createComment('')
+                  : document.createTextNode(strings[i]),
+              node);
           this.parts.push(new TemplatePart('node', index++));
         }
+        parent.insertBefore(
+            strings[lastIndex] === '' ?
+                document.createComment('') :
+                document.createTextNode(strings[lastIndex]),
+            node);
+        nodesToRemove.push(node);
       } else if (
           node.nodeType === 8 /* Node.COMMENT_NODE */ &&
           node.nodeValue === marker) {
@@ -365,7 +375,7 @@ export class Template {
         const previousSibling = node.previousSibling;
         if (previousSibling === null || previousSibling !== previousNode ||
             previousSibling.nodeType !== Node.TEXT_NODE) {
-          parent.insertBefore(document.createTextNode(''), node);
+          parent.insertBefore(document.createComment(''), node);
         } else {
           index--;
         }
@@ -375,7 +385,7 @@ export class Template {
         // We don't have to check if the next node is going to be removed,
         // because that node will induce a new marker if so.
         if (node.nextSibling === null) {
-          parent.insertBefore(document.createTextNode(''), node);
+          parent.insertBefore(document.createComment(''), node);
         } else {
           index--;
         }
@@ -408,13 +418,15 @@ export const getValue = (part: Part, value: any) => {
   return value === null ? undefined : value;
 };
 
-export type DirectiveFn<P extends Part = Part> = (part: P) => any;
+export interface DirectiveFn<P=Part> {
+  (part: P): void;
+  __litDirective?: true;
+}
 
-export const directive =
-    <P extends Part = Part, F = DirectiveFn<P>>(f: F): F => {
-      (f as any).__litDirective = true;
-      return f;
-    };
+export const directive = <P=Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
+  f.__litDirective = true;
+  return f;
+};
 
 const isDirective = (o: any) =>
     typeof o === 'function' && o.__litDirective === true;
@@ -722,7 +734,10 @@ export class TemplateInstance {
   }
 
   _clone(): DocumentFragment {
-    const fragment = document.importNode(this.template.element.content, true);
+    // Clone the node, rather than importing it, to keep the fragment in the
+    // template's document. This leaves the fragment inert so custom elements
+    // won't upgrade until after the main document adopts the node.
+    const fragment = this.template.element.content.cloneNode(true) as DocumentFragment;
     const parts = this.template.parts;
 
     if (parts.length > 0) {

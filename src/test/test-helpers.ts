@@ -12,18 +12,5 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart} from '../lit-html.js';
-
-/**
- * Renders the result as HTML, rather than text.
- *
- * Note, this is unsafe to use with any user-provided input that hasn't been
- * sanitized or escaped, as it may lead to cross-site-scripting
- * vulnerabilities.
- */
-export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
-    directive((part: NodePart): void => {
-      const tmp = document.createElement('template');
-      tmp.innerHTML = value;
-      part.setValue(document.importNode(tmp.content, true));
-    });
+export const stripExpressionDelimeters = (html: string) =>
+    html.replace(/<!---->/g, '');

@@ -18,6 +18,8 @@
 import {html, PropertyPart, render} from '../../lib/lit-extended.js';
 import {directive, html as htmlPlain} from '../../lit-html.js';
 
+import {stripExpressionDelimeters} from '../test-helpers.js';
+
 const assert = chai.assert;
 
 suite('lit-extended', () => {
@@ -38,46 +40,46 @@ suite('lit-extended', () => {
 
     test('renders to an attribute', () => {
       render(html`<div foo$="${'bar'}"></div>`, container);
-      assert.equal(container.innerHTML, '<div foo="bar"></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
     });
 
     test('renders to an attribute without quotes', () => {
       render(html`<div foo$=${'bar'}></div>`, container);
-      assert.equal(container.innerHTML, '<div foo="bar"></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
     });
 
     test('renders interpolation to an attribute', () => {
       render(html`<div foo$="1${'bar'}2${'baz'}3"></div>`, container);
-      assert.equal(container.innerHTML, '<div foo="1bar2baz3"></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="1bar2baz3"></div>');
     });
 
     test('renders a boolean attribute as an empty string when truthy', () => {
-      let t = (value: any) => html`<div foo?="${value}"></div>`;
+      const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(true), container);
-      assert.equal(container.innerHTML, '<div foo=""></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
 
       render(t('a'), container);
-      assert.equal(container.innerHTML, '<div foo=""></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
 
       render(t(1), container);
-      assert.equal(container.innerHTML, '<div foo=""></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
     });
 
     test('removes a boolean attribute when falsey', () => {
-      let t = (value: any) => html`<div foo?="${value}"></div>`;
+      const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(false), container);
-      assert.equal(container.innerHTML, '<div></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
       render(t(0), container);
-      assert.equal(container.innerHTML, '<div></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
       render(t(null), container);
-      assert.equal(container.innerHTML, '<div></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
       render(t(undefined), container);
-      assert.equal(container.innerHTML, '<div></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
     });
 
     test('reuses an existing ExtendedTemplateInstance when available', () => {
@@ -203,6 +205,36 @@ suite('lit-extended', () => {
       assert.equal(count2, 1);
     });
 
+    test('allows updating event listener without extra calls to remove/addEventListener', () => {
+      let listener: Function|null;
+      const t = () => html`<div on-click=${listener}></div>`;
+      render(t(), container);
+      const div = container.firstChild as HTMLElement;
+      let addCount = 0;
+      let removeCount = 0;
+      div.addEventListener = () => addCount++;
+      div.removeEventListener = () => removeCount++;
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 0);
+      listener = () => {};
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 0);
+      listener = null;
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 1);
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 2);
+      assert.equal(removeCount, 1);
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 2);
+      assert.equal(removeCount, 1);
+    });
+
     test('removes event listeners', () => {
       let target;
       let listener: any = (e: any) => target = e.target;
@@ -225,7 +257,7 @@ suite('lit-extended', () => {
       });
 
       render(html`<div foo="${fooDirective}"></div>`, container);
-      assert.equal(container.innerHTML, '<div></div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
       assert.equal((container.firstElementChild as any).foo, 1234);
     });
 

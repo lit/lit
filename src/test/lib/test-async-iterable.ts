@@ -29,7 +29,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
    */
   private _nextValue: Promise<T> =
       new Promise((resolve, _) => this._resolveNextValue = resolve);
-  private _resolveNextValue: (value: T) => void;
+  private _resolveNextValue!: (value: T) => void;
 
   async * [Symbol.asyncIterator]() {
     while (true) {

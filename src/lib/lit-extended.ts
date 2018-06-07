@@ -57,16 +57,17 @@ export const extendedPartCallback =
     (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
         Part => {
           if (templatePart.type === 'attribute') {
-            if (templatePart.rawName!.startsWith('on-')) {
+            if (templatePart.rawName!.substr(0, 3) === 'on-') {
               const eventName = templatePart.rawName!.slice(3);
               return new EventPart(instance, node as Element, eventName);
             }
-            if (templatePart.name!.endsWith('$')) {
+            const lastChar = templatePart.name!.substr(templatePart.name!.length - 1);
+            if (lastChar === '$') {
               const name = templatePart.name!.slice(0, -1);
               return new AttributePart(
                   instance, node as Element, name, templatePart.strings!);
             }
-            if (templatePart.name!.endsWith('?')) {
+            if (lastChar === '?') {
               const name = templatePart.name!.slice(0, -1);
               return new BooleanAttributePart(
                   instance, node as Element, name, templatePart.strings!);
@@ -144,17 +145,22 @@ export class EventPart implements Part {
 
   setValue(value: any): void {
     const listener = getValue(this, value);
-    const previous = this._listener;
-    if (listener === previous) {
+    if (listener === this._listener) {
       return;
     }
-
-    this._listener = listener;
-    if (previous != null) {
-      this.element.removeEventListener(this.eventName, previous);
+    if (listener == null) {
+      this.element.removeEventListener(this.eventName, this);
+    } else if (this._listener == null) {
+      this.element.addEventListener(this.eventName, this);
     }
-    if (listener != null) {
-      this.element.addEventListener(this.eventName, listener);
+    this._listener = listener;
+  }
+
+  handleEvent(event: Event) {
+    if (typeof this._listener === 'function') {
+      this._listener.call(this.element, event);
+    } else if (typeof this._listener.handleEvent === 'function') {
+      this._listener.handleEvent(event);
     }
   }
 }

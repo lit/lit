@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, NodePart} from '../lit-html.js';
+import {directive, DirectiveFn, NodePart} from '../lit-html.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new
@@ -32,7 +32,7 @@ import {directive, NodePart} from '../lit-html.js';
  *     value. Useful for generating templates for each item in the iterable.
  */
 export const asyncAppend = <T>(
-    value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) =>
+    value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any): DirectiveFn<NodePart> =>
     directive(async (part: NodePart) => {
       // If we've already set up this particular iterable, we don't need
       // to do anything.
@@ -47,7 +47,7 @@ export const asyncAppend = <T>(
       let i = 0;
 
       for await (let v of value) {
-        // When we get the first value, clear the part. This let's the previous
+        // When we get the first value, clear the part. This lets the previous
         // value display until we can replace it.
         if (i === 0) {
           part.clear();
