@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, directiveValue, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, noChange, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 export {render} from '../lit-html.js';
 
@@ -93,7 +93,7 @@ export class BooleanAttributePart extends AttributePart {
     const s = this.strings;
     if (s.length === 2 && s[0] === '' && s[1] === '') {
       const value = getValue(this, values[startIndex]);
-      if (value === directiveValue) {
+      if (value === noChange) {
         return;
       }
       if (value) {
@@ -123,7 +123,7 @@ export class PropertyPart extends AttributePart {
       // Interpolation, so interpolate
       value = this._interpolate(values, startIndex);
     }
-    if (value !== directiveValue) {
+    if (value !== noChange) {
       (this.element as any)[this.name] = value;
     }
 
