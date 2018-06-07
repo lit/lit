@@ -33,9 +33,9 @@ suite('shady-render', () => {
         }
       </style>
       <div>Testing...</div>
-    `, container.shadowRoot as DocumentFragment, 'scope-1');
-    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '2px');
+    `, container.shadowRoot!, 'scope-1');
+    const div = (container.shadowRoot!).querySelector('div');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '2px');
     document.body.removeChild(container);
   });
 
@@ -58,11 +58,11 @@ suite('shady-render', () => {
         </style>
         <span>Testing...</span>
       `}
-    `, container.shadowRoot as DocumentFragment, 'scope-2');
-    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '4px');
-    const span = (container.shadowRoot  as DocumentFragment).querySelector('span');
-    assert.equal(getComputedStyle(span as HTMLElement).getPropertyValue('border-top-width').trim(), '5px');
+    `, container.shadowRoot!, 'scope-2');
+    const div = (container.shadowRoot!).querySelector('div');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '4px');
+    const span = (container.shadowRoot!).querySelector('span');
+    assert.equal(getComputedStyle(span!).getPropertyValue('border-top-width').trim(), '5px');
     document.body.removeChild(container);
   });
 
@@ -81,10 +81,10 @@ suite('shady-render', () => {
       `, container.shadowRoot as DocumentFragment, 'scope-3');
     }
     renderTemplate('1px solid black');
-    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    const div = (container.shadowRoot!).querySelector('div');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '1px');
     renderTemplate('2px solid black');
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '1px');
     document.body.removeChild(container);
   });
 
@@ -100,20 +100,20 @@ suite('shady-render', () => {
           }
         </style><div id="b">${b}</div>
         <div id="c">${c}</div>
-      `, container.shadowRoot as DocumentFragment, 'scope-3a');
+      `, container.shadowRoot!, 'scope-3a');
     }
     renderTemplate('1px solid black', 'a', 'b', 'c');
-    const shadowRoot = container.shadowRoot as DocumentFragment;
+    const shadowRoot = container.shadowRoot!;
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b`);
     assert.equal(shadowRoot.querySelector('#c')!.textContent, `c`);
     const div = shadowRoot.querySelector('div');
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '1px');
     renderTemplate('2px solid black', 'a1', 'b1', 'c1');
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a1`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b1`);
     assert.equal(shadowRoot.querySelector('#c')!.textContent, `c1`);
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '1px');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '1px');
     document.body.removeChild(container);
   });
 
@@ -131,9 +131,9 @@ suite('shady-render', () => {
         }
       </style>
       <div>Testing...</div>
-    `, container.shadowRoot as DocumentFragment, 'scope-4');
-    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
-    assert.equal(getComputedStyle(div as HTMLElement).getPropertyValue('border-top-width').trim(), '2px');
+    `, container.shadowRoot!, 'scope-4');
+    const div = (container.shadowRoot!).querySelector('div');
+    assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '2px');
     document.body.removeChild(container);
   });
 
@@ -154,9 +154,9 @@ suite('shady-render', () => {
         }
       </style>
       <div>Testing...</div>
-    `, container.shadowRoot as DocumentFragment, 'scope-5');
-    const div = (container.shadowRoot  as DocumentFragment).querySelector('div');
-    const computedStyle = getComputedStyle(div as HTMLElement);
+    `, container.shadowRoot!, 'scope-5');
+    const div = (container.shadowRoot!).querySelector('div');
+    const computedStyle = getComputedStyle(div!);
     assert.equal(computedStyle.getPropertyValue('border-top-width').trim(), '3px');
     assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
     document.body.removeChild(container);

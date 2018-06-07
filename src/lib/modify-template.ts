@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Template, isTemplatePartActive} from '../lit-html.js';
+import {Template, isTemplatePartActive, TemplatePart} from '../lit-html.js';
 
 const walkerNodeFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
 NodeFilter.SHOW_TEXT;
@@ -48,24 +48,24 @@ export function removeNodesFromTemplate(template: Template, nodesToRemove: Set<N
   while (walker.nextNode()) {
     nodeIndex++;
     const node = walker.currentNode as Element;
-    // end removal if stepped past the removing node
+    // End removal if stepped past the removing node
     if (node.previousSibling === currentRemovingNode) {
       currentRemovingNode = null;
     }
-    // a node to remove was found in the template
+    // A node to remove was found in the template
     if (nodesToRemove.has(node)) {
       nodesToRemoveInTemplate.push(node);
-      // track node we're removing
+      // Track node we're removing
       if (currentRemovingNode === null) {
         currentRemovingNode = node;
       }
     }
-    // when removing, increment count by which to adjust subsequent part indices
+    // When removing, increment count by which to adjust subsequent part indices
     if (currentRemovingNode !== null) {
       removeCount++;
     }
     while (part !== undefined && part.index === nodeIndex) {
-      // if part is in a removed node deactivate it by setting index to -1 or
+      // If part is in a removed node deactivate it by setting index to -1 or
       // adjust the index as needed.
       part.index = currentRemovingNode !== null ? -1 : part.index - removeCount;
       part = parts[++partIndex];
@@ -87,6 +87,16 @@ const countNodes = (node: Node) => {
   return count;
 }
 
+const nextActiveIndexInTemplateParts = (parts: TemplatePart[], startIndex: number = -1) => {
+  for (let i = startIndex + 1; i < parts.length; i++) {
+    const part = parts[i];
+    if (isTemplatePartActive(part)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 /**
  * Inserts the given node into the Template, optionally before the given
  * refNode. In addition to inserting the node into the Template, the Template
@@ -95,7 +105,7 @@ const countNodes = (node: Node) => {
 export function insertNodeIntoTemplate(
     template: Template, node: Node, refNode: Node|null = null) {
   const {element: {content}, parts} = template;
-  // if there's no refNode, then put node at end of template.
+  // If there's no refNode, then put node at end of template.
   // No part indices need to be shifted in this case.
   if (refNode === null || refNode === undefined) {
     content.appendChild(node);
@@ -108,10 +118,7 @@ export function insertNodeIntoTemplate(
       walkerNodeFilter,
       null as any,
       false);
-  let partIndex = 0;
-  // only need to modify active parts.
-  let activeParts = parts.filter((part) => isTemplatePartActive(part));
-  let part = activeParts[partIndex];
+  let partIndex = nextActiveIndexInTemplateParts(parts);
   let insertCount = 0;
   let walkerIndex = -1;
   while (walker.nextNode()) {
@@ -121,9 +128,16 @@ export function insertNodeIntoTemplate(
       refNode.parentNode!.insertBefore(node, refNode);
       insertCount = countNodes(node);
     }
-    while (part !== undefined && part.index === walkerIndex) {
-      part.index += insertCount;
-      part = activeParts[++partIndex];
+    while (partIndex !== -1 && parts[partIndex].index === walkerIndex) {
+      // If we've inserted the node, simply adjust all subsequent parts
+      if (insertCount > 0) {
+        while (partIndex !== -1) {
+          parts[partIndex].index += insertCount;
+          partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
+        }
+        return;
+      }
+      partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
     }
   }
 }

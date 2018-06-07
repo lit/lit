@@ -25,7 +25,8 @@ declare global {
   class ShadowRoot {}
 }
 
-const getTemplateKey = (type: string, scopeName: string) =>
+// Get a key to lookup in `templateCaches`.
+const getTemplateCacheKey = (type: string, scopeName: string) =>
     `${type}--${scopeName}`;
 
 /**
@@ -34,7 +35,7 @@ const getTemplateKey = (type: string, scopeName: string) =>
  */
 const shadyTemplateFactory = (scopeName: string) =>
     (result: TemplateResult) => {
-      const cacheKey = getTemplateKey(result.type, scopeName);
+      const cacheKey = getTemplateCacheKey(result.type, scopeName);
       let templateCache = templateCaches.get(cacheKey);
       if (templateCache === undefined) {
         templateCache = new Map<TemplateStringsArray, Template>();
@@ -54,12 +55,12 @@ const shadyTemplateFactory = (scopeName: string) =>
 const TEMPLATE_TYPES = ['html', 'svg'];
 
 /**
- * Removes all style elements from Templates for hte given scopeName
+ * Removes all style elements from Templates for the given scopeName.
  */
 function removeStylesFromLitTemplates(scopeName: string) {
   TEMPLATE_TYPES.forEach((type) => {
-    const templates = templateCaches.get(getTemplateKey(type, scopeName));
-    if (templates) {
+    const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
+    if (templates !== undefined) {
       templates.forEach((template) => {
         const {element: {content}} = template;
         const styles = content.querySelectorAll('style');
@@ -78,6 +79,11 @@ const shadyRenderSet = new Set<string>();
  * (1) extracts styles from the rendered fragment and hands them to ShadyCSS
  * to be scoped and appended to the document
  * (2) removes style elements from all lit-html Templates for this scope name.
+ *
+ * Note, <style> elements can only be placed into templates for the
+ * initial rendering of the scope. If <style> elements are included in templates
+ * dynamically rendered to the scope (after the first scope render), they will
+ * not be scoped and the <style> will be left in the template and rendered output.
  */
 const ensureStylesScoped =
     (fragment: DocumentFragment, template: Template, scopeName: string) => {
@@ -89,15 +95,19 @@ const ensureStylesScoped =
           styleTemplate.content.appendChild(s);
         });
         window.ShadyCSS.prepareTemplateStyles(styleTemplate, scopeName);
-        // fix templates.
+        // Fix templates: note the expectation here is that the given `fragment`
+        // has been generated from the given `template` which contains
+        // the set of templates rendered into this scope.
+        // It is only from this set of initial templates from which styles
+        // will be scoped and removed.
         removeStylesFromLitTemplates(scopeName);
-        // ApplyShim case.
+        // ApplyShim case
         if (window.ShadyCSS.nativeShadow) {
           const style = styleTemplate.content.querySelector('style');
-          if (style) {
-            // insert style into rendered fragment
+          if (style !== null) {
+            // Insert style into rendered fragment
             fragment.insertBefore(style, fragment.firstChild);
-            // insert into lit-template (for subsequent renders)
+            // Insert into lit-template (for subsequent renders)
             insertNodeIntoTemplate(
                 template,
                 style.cloneNode(true),
@@ -137,7 +147,7 @@ export function render(
       container.host :
       undefined;
 
-  // if there's a shadow host, do ShadyCSS scoping...
+  // If there's a shadow host, do ShadyCSS scoping...
   if (host !== undefined && typeof window.ShadyCSS === 'object') {
     ensureStylesScoped(fragment, template, scopeName);
     window.ShadyCSS.styleElement(host);
