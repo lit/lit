@@ -12,21 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, directiveValue, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import { AttributePart, defaultPartCallback, noChange, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult } from '../lit-html.js';
 
-export {render} from '../lit-html.js';
+export { render } from '../lit-html.js';
 
 /**
  * Interprets a template literal as a lit-extended HTML template.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-    new TemplateResult(strings, values, 'html', extendedPartCallback);
+  new TemplateResult(strings, values, 'html', extendedPartCallback);
 
 /**
  * Interprets a template literal as a lit-extended SVG template.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-    new SVGTemplateResult(strings, values, 'svg', extendedPartCallback);
+  new SVGTemplateResult(strings, values, 'svg', extendedPartCallback);
 
 /**
  * A PartCallback which allows templates to set properties and declarative
@@ -54,32 +54,32 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  *
  */
 export const extendedPartCallback =
-    (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
-        Part => {
-          if (templatePart.type === 'attribute') {
-            if (templatePart.rawName!.substr(0, 3) === 'on-') {
-              const eventName = templatePart.rawName!.slice(3);
-              return new EventPart(instance, node as Element, eventName);
-            }
-            const lastChar = templatePart.name!.substr(templatePart.name!.length - 1);
-            if (lastChar === '$') {
-              const name = templatePart.name!.slice(0, -1);
-              return new AttributePart(
-                  instance, node as Element, name, templatePart.strings!);
-            }
-            if (lastChar === '?') {
-              const name = templatePart.name!.slice(0, -1);
-              return new BooleanAttributePart(
-                  instance, node as Element, name, templatePart.strings!);
-            }
-            return new PropertyPart(
-                instance,
-                node as Element,
-                templatePart.rawName!,
-                templatePart.strings!);
-          }
-          return defaultPartCallback(instance, templatePart, node);
-        };
+  (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
+    Part => {
+    if (templatePart.type === 'attribute') {
+      if (templatePart.rawName!.substr(0, 3) === 'on-') {
+        const eventName = templatePart.rawName!.slice(3);
+        return new EventPart(instance, node as Element, eventName);
+      }
+      const lastChar = templatePart.name!.substr(templatePart.name!.length - 1);
+      if (lastChar === '$') {
+        const name = templatePart.name!.slice(0, -1);
+        return new AttributePart(
+          instance, node as Element, name, templatePart.strings!);
+      }
+      if (lastChar === '?') {
+        const name = templatePart.name!.slice(0, -1);
+        return new BooleanAttributePart(
+          instance, node as Element, name, templatePart.strings!);
+      }
+      return new PropertyPart(
+        instance,
+        node as Element,
+        templatePart.rawName!,
+        templatePart.strings!);
+    }
+    return defaultPartCallback(instance, templatePart, node);
+  };
 
 /**
  * Implements a boolean attribute, roughly as defined in the HTML
@@ -93,7 +93,7 @@ export class BooleanAttributePart extends AttributePart {
     const s = this.strings;
     if (s.length === 2 && s[0] === '' && s[1] === '') {
       const value = getValue(this, values[startIndex]);
-      if (value === directiveValue) {
+      if (value === noChange) {
         return;
       }
       if (value) {
@@ -103,7 +103,7 @@ export class BooleanAttributePart extends AttributePart {
       }
     } else {
       throw new Error(
-          'boolean attributes can only contain a single expression');
+        'boolean attributes can only contain a single expression');
     }
   }
 }
@@ -123,7 +123,7 @@ export class PropertyPart extends AttributePart {
       // Interpolation, so interpolate
       value = this._interpolate(values, startIndex);
     }
-    if (value !== directiveValue) {
+    if (value !== noChange) {
       (this.element as any)[this.name] = value;
     }
 
@@ -160,7 +160,7 @@ export class EventPart implements Part {
     if (typeof this._listener === 'function') {
       this._listener.call(this.element, event);
     } else if (typeof this._listener.handleEvent === 'function') {
-      this._listener.handleEvent(event);
+      this._listener.handleEvent(event); 
     }
   }
 }
