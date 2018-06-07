@@ -160,7 +160,7 @@ export class EventPart implements Part {
     if (typeof this._listener === 'function') {
       this._listener.call(this.element, event);
     } else if (typeof this._listener.handleEvent === 'function') {
-      this._listener.handleEvent(event);
+      this._listener.handleEvent(event); 
     }
   }
 }
