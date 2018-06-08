@@ -437,6 +437,11 @@ const isDirective = (o: any) =>
  */
 export const noChange = {};
 
+/**
+ * @deprecated Use `noChange` instead.
+ */
+export { noChange as directiveValue };
+
 const isPrimitiveValue = (value: any) => value === null ||
     !(typeof value === 'object' || typeof value === 'function');
 
