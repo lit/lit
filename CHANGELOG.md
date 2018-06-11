@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+* Added `noChange` - Value in favour of `directiveValue` (deprecated). A `noChange` - Value signals that a value was handled by a directive and should not be written to the DOM
+
 ## [0.10.0] - 2018-05-03
 * Added IE11 support
 * Declarative events in lit-extended are more efficient when handlers change
