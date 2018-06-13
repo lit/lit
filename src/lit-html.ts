@@ -191,7 +191,7 @@ export function render(
 const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
 
 /**
- * An expression marker used text-posisitions, not attribute positions,
+ * An expression marker used text-positions, not attribute positions,
  * in template.
  */
 const nodeMarker = `<!--${marker}-->`;
