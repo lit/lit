@@ -140,7 +140,7 @@ export function defaultTemplateFactory(result: TemplateResult) {
   return template;
 }
 
-type TemplateContainer = (Element|DocumentFragment)&{
+export type TemplateContainer = (Element|DocumentFragment)&{
   __templateInstance?: TemplateInstance;
 };
 
@@ -161,7 +161,8 @@ type TemplateContainer = (Element|DocumentFragment)&{
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    templateFactory: TemplateFactory = defaultTemplateFactory) {
+    templateFactory: TemplateFactory = defaultTemplateFactory
+  ) {
   const template = templateFactory(result);
   let instance = (container as TemplateContainer).__templateInstance;
 
@@ -261,6 +262,8 @@ export class TemplatePart {
       public rawName?: string, public strings?: string[]) {
   }
 }
+
+export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
 /**
  * An updateable Template that tracks the location of dynamic parts.
@@ -702,12 +705,13 @@ export const defaultPartCallback =
       throw new Error(`Unknown part type ${templatePart.type}`);
     };
 
+
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
  * with new values.
  */
 export class TemplateInstance {
-  _parts: Part[] = [];
+  _parts: Array<Part|undefined> = [];
   _partCallback: PartCallback;
   _getTemplate: TemplateFactory;
   template: Template;
@@ -723,7 +727,9 @@ export class TemplateInstance {
   update(values: any[]) {
     let valueIndex = 0;
     for (const part of this._parts) {
-      if (part.size === undefined) {
+      if (!part) {
+        valueIndex++;
+      } else if (part.size === undefined) {
         (part as SinglePart).setValue(values[valueIndex]);
         valueIndex++;
       } else {
@@ -754,11 +760,15 @@ export class TemplateInstance {
       let index = -1;
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
-        while (index < part.index) {
-          index++;
-          walker.nextNode();
+        const partActive = isTemplatePartActive(part);
+        // An inactive part has no coresponding Template node.
+        if (partActive) {
+          while (index < part.index) {
+            index++;
+            walker.nextNode();
+          }
         }
-        this._parts.push(this._partCallback(this, part, walker.currentNode));
+        this._parts.push(partActive ? this._partCallback(this, part, walker.currentNode) : undefined);
       }
     }
     return fragment;
