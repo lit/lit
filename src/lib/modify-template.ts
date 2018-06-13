@@ -85,7 +85,7 @@ const countNodes = (node: Node) => {
     count++;
   }
   return count;
-}
+};
 
 const nextActiveIndexInTemplateParts = (parts: TemplatePart[], startIndex: number = -1) => {
   for (let i = startIndex + 1; i < parts.length; i++) {
@@ -95,7 +95,7 @@ const nextActiveIndexInTemplateParts = (parts: TemplatePart[], startIndex: numbe
     }
   }
   return -1;
-}
+};
 
 /**
  * Inserts the given node into the Template, optionally before the given
@@ -110,8 +110,6 @@ export function insertNodeIntoTemplate(
   if (refNode === null || refNode === undefined) {
     content.appendChild(node);
     return;
-  } else if (!content.contains(refNode)) {
-    throw 'Reference node must be inside template.';
   }
   const walker = document.createTreeWalker(
       content,
