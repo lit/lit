@@ -32,6 +32,7 @@
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.0",
     "@webcomponents/shadycss": "^1.2.1",
+    "@webcomponents/template": "^1.3.1",
     "@webcomponents/webcomponentsjs": "^2.0.2",
     "babel-polyfill": "^6.26.0",
     "chai": "^4.1.2",
