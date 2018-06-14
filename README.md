@@ -327,8 +327,8 @@ Some examples of possible extensions:
 
 `lit-html` is still under development.
 
- * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Safari 10.1, Chrome 61, and Firefox 60 and Edge.
- * It has a growing test suite, but it has only been run manually on Chrome Canary, Safari 10.1 and Firefox 54.
+ * It uses JavaScript modules, and there's no build set up yet, so out-of-the-box it only runs in Chrome 61, Edge 16, Firefox 60, and Safari 10.1.
+ * It has a growing test suite, but it has only been run manually on Chrome Canary, Firefox 54, and Safari 10.1.
  * Much more test coverage is needed for complex templates, especially template composition and Function and Iterable values.
  * It has not been benchmarked thoroughly yet.
  * The API may change.
