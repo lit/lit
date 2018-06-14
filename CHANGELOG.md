@@ -12,7 +12,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
-* Added `noChange` - Value in favour of `directiveValue` (deprecated). A `noChange` - Value signals that a value was handled by a directive and should not be written to the DOM
+## [0.10.1] - 2018-06-13
+
+* Added `noChange` - Value in favour of `directiveValue` (deprecated).
+  * A `noChange` - Value signals that a value was handled by a directive and should not be written to the DOM
+* Updated shady-render to render styles in order, work with `@apply`, and work in browers where CSS Custom Properties must be polyfilled, like IE 11.
+* Introduced API to modify template contents safely without breaking template parts
+  * `insertNodeIntoTemplate(template: Template, node: Node, refNode: Node|null)`
+  * `removeNodesFromTemplate(template: Template, nodesToRemove: Set<Node>)`
 
 ## [0.10.0] - 2018-05-03
 * Added IE11 support
@@ -22,7 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Refactored how template tags and `render()` are implemented so that all
   specialization of template syntax is done in tags, not `render()`, allowing
-  for the mixining of templates of different syntaxes, and for hooks in 
+  for the mixining of templates of different syntaxes, and for hooks in
   `render()` to change templates before they're initially processed.
 * Added ShadyCSS support in lib/shady-render.js. It's exported render function
   will pass templates to ShadyCSS's `prepareTemplate()` function to process style
