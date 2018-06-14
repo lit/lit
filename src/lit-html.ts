@@ -421,12 +421,12 @@ export const getValue = (part: Part, value: any) => {
   return value === null ? undefined : value;
 };
 
-export interface DirectiveFn<P=Part> {
+export interface DirectiveFn<P= Part> {
   (part: P): void;
   __litDirective?: true;
 }
 
-export const directive = <P=Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
+export const directive = <P= Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
   f.__litDirective = true;
   return f;
 };

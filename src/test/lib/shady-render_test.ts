@@ -79,7 +79,7 @@ suite('shady-render', () => {
         </style>
         <div>Testing...</div>
       `, container.shadowRoot as DocumentFragment, 'scope-3');
-    }
+    };
     renderTemplate('1px solid black');
     const div = (container.shadowRoot!).querySelector('div');
     assert.equal(getComputedStyle(div!).getPropertyValue('border-top-width').trim(), '1px');
@@ -101,7 +101,7 @@ suite('shady-render', () => {
         </style><div id="b">${b}</div>
         <div id="c">${c}</div>
       `, container.shadowRoot!, 'scope-3a');
-    }
+    };
     renderTemplate('1px solid black', 'a', 'b', 'c');
     const shadowRoot = container.shadowRoot!;
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a`);

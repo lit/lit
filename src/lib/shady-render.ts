@@ -115,7 +115,7 @@ const ensureStylesScoped =
           }
         }
       }
-    }
+    };
 
 // NOTE: We're copying code from lit-html's `render` method here.
 // We're doing this explicitly because the API for rendering templates is likely
