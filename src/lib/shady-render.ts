@@ -44,7 +44,9 @@ const shadyTemplateFactory = (scopeName: string) =>
       let template = templateCache.get(result.strings);
       if (template === undefined) {
         const element = result.getTemplateElement();
-        window.ShadyCSS.prepareTemplateDom(element, scopeName);
+        if (typeof window.ShadyCSS === 'object') {
+          window.ShadyCSS.prepareTemplateDom(element, scopeName);
+        }
         template = new Template(result, element);
         templateCache.set(result.strings, template);
       }
