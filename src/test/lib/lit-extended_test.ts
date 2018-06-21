@@ -53,6 +53,13 @@ suite('lit-extended', () => {
       assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="1bar2baz3"></div>');
     });
 
+    test('renders a case-sensitive attribute', () => {
+      const size = 100;
+      render(html`<svg viewBox$="0 0 ${size} ${size}"></svg>`, container);
+      assert.include(stripExpressionDelimeters(container.innerHTML), 'viewBox="0 0 100 100"');
+      assert.notInclude(stripExpressionDelimeters(container.innerHTML), 'viewBox$');
+    });
+
     test('renders a boolean attribute as an empty string when truthy', () => {
       const t = (value: any) => html`<div foo?="${value}"></div>`;
 

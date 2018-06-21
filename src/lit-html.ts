@@ -259,7 +259,14 @@ function findTagClose(str: string): number {
 export class TemplatePart {
   constructor(
       public type: string, public index: number, public name?: string,
-      public rawName?: string, public strings?: string[]) {
+      public strings?: string[]) {
+  }
+
+  /**
+   * @deprecated Use `name`, which is now also case-preserving.
+   */
+  get rawName(): string|undefined {
+    return this.name;
   }
 }
 
@@ -319,17 +326,27 @@ export class Template {
           // Find the attribute name
           const attributeNameInPart =
               lastAttributeNameRegex.exec(stringForPart)![1];
+              
           // Find the corresponding attribute
-          // TODO(justinfagnani): remove non-null assertion
-          const attribute = attributes.getNamedItem(attributeNameInPart)!;
-          const stringsForAttributeValue = attribute.value.split(markerRegex);
+          // If the attribute name contains special characters, lower-case it
+          // so that on XML nodes with case-sensitive getAttribute() we can
+          // still find the attribute, which will have been lower-cased by
+          // the parser.
+          //
+          // If the attribute name doesn't contain special character, it's
+          // important to _not_ lower-case it, in case the name is
+          // case-sensitive, like with XML attributes like "viewBox".
+          const attributeLookupName = /^[a-zA-Z-]*$/.test(attributeNameInPart) ?
+              attributeNameInPart :
+              attributeNameInPart.toLowerCase();
+          const attributeValue = node.getAttribute(attributeLookupName)!;
+          const stringsForAttributeValue = attributeValue.split(markerRegex);
           this.parts.push(new TemplatePart(
               'attribute',
               index,
-              attribute.name,
               attributeNameInPart,
               stringsForAttributeValue));
-          node.removeAttribute(attribute.name);
+          node.removeAttribute(attributeLookupName);
           partIndex += stringsForAttributeValue.length - 1;
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
