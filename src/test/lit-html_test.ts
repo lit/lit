@@ -100,18 +100,7 @@ suite('lit-html', () => {
       const parts = defaultTemplateFactory(result).parts;
       const names = parts.map((p: TemplatePart) => p.name);
       const rawNames = parts.map((p: TemplatePart) => p.rawName);
-      assert.deepEqual(names, [
-        'someprop',
-        'a-nother',
-        'multiparts',
-        '👍',
-        '(a)',
-        '[a]',
-        'a$',
-        undefined,
-        'athing'
-      ]);
-      assert.deepEqual(rawNames, [
+      const expectedAttributeNames = [
         'someProp',
         'a-nother',
         'multiParts',
@@ -121,7 +110,9 @@ suite('lit-html', () => {
         'a$',
         undefined,
         'aThing'
-      ]);
+      ];
+      assert.deepEqual(names, expectedAttributeNames);
+      assert.deepEqual(rawNames, expectedAttributeNames);
     });
 
     test('parses element-less text expression', () => {
@@ -327,6 +318,16 @@ suite('lit-html', () => {
       test('renders to an attribute', () => {
         render(html`<div foo="${'bar'}"></div>`, container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+      });
+
+      test('renders a case-sensitive attribute', () => {
+        const size = 100;
+        render(html`<svg viewBox="0 0 ${size} ${size}"></svg>`, container);
+        assert.include(stripExpressionDelimeters(container.innerHTML), 'viewBox="0 0 100 100"');
+
+        // Make sure non-alpha valid attribute name characters are handled
+        render(html`<svg view_Box="0 0 ${size} ${size}"></svg>`, container);
+        assert.include(stripExpressionDelimeters(container.innerHTML), 'view_Box="0 0 100 100"');
       });
 
       test(
