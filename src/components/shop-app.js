@@ -274,7 +274,7 @@ class ShopApp extends connect(store)(LitElement) {
     </main>
 
     <footer>
-      <a href="https://www.polymer-project.org/1.0/toolbox/">Made by Polymer</a>
+      <a href="https://www.polymer-project.org/3.0/toolbox/">Made by Polymer</a>
       <div class="demo-label">Demo Only</div>
     </footer>
 
