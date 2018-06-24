@@ -196,6 +196,11 @@ suite('lit-html', () => {
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
       });
 
+      test('renders undefined in attributes', () => {
+        render(html`<div attribute="it's ${undefined}"></div>`, container);
+        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div attribute="it\'s undefined"></div>');
+      });
+
       test('renders null', () => {
         render(html`<div>${null}</div>`, container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
