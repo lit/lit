@@ -18,7 +18,7 @@ One of the first choices to make is whether to choose core lit-html templates, o
 You import the lit-extended `html` tag from `lib/lit-extended.js`:
 
 ```js
-import {html} from `lit-html/lib/lit-extended.js';
+import {html} from 'lit-html/lib/lit-extended.js';
 ```
 
 Because of the usefulness of these additional features, lit-extended is recommended for most users.
