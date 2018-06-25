@@ -501,6 +501,11 @@ export class AttributePart implements MultiPart {
   }
 
   protected _equalToPreviousValues(values: any[], startIndex: number) {
+    if (this._previousValues.length === 0) {
+      // Always return false for the initial render, otherwise parts with an
+      // undefined value won't get rendered.
+      return false;
+    }
     for (let i = startIndex; i < startIndex + this.size; i++) {
       if (this._previousValues[i] !== values[i] ||
           !isPrimitiveValue(values[i])) {
