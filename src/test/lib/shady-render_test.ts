@@ -164,7 +164,7 @@ suite('shady-render', () => {
     window.console.warn = function() {
       warnCount++;
       warn.apply(window.console, arguments);
-    }
+    };
     const fn = window.ShadyCSS.prepareTemplateDom;
     window.ShadyCSS.prepareTemplateDom = undefined;
 
