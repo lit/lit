@@ -179,10 +179,11 @@ export function render(
   (container as TemplateContainer).__templateInstance = instance;
 
   const fragment = instance._clone();
-  instance.update(result.values);
 
   removeNodes(container, container.firstChild);
   container.appendChild(fragment);
+
+  instance.update(result.values);
 }
 
 /**
