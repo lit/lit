@@ -268,5 +268,71 @@ suite('lit-extended', () => {
       assert.equal((container.firstElementChild as any).foo, 1234);
     });
 
+    const suiteIfCustomElementsAreSupported = (window.customElements != null) ? suite : suite.skip;
+
+    suiteIfCustomElementsAreSupported('when rendering custom elements', () => {
+      suiteSetup(() => {
+        if (customElements.get('x-test-uses-property-setters') == null) {
+          class CustomElement extends HTMLElement {
+            public readonly calledSetter = false;
+            private _value?: string = undefined;
+
+            public get value(): string|undefined {
+              return this._value;
+            }
+
+            public set value(value: string|undefined) {
+              (this as {calledSetter: boolean}).calledSetter = true;
+              this._value = value;
+            }
+          }
+
+          customElements.define('x-test-uses-property-setters', CustomElement);
+        }
+      });
+
+      setup(() => {
+        // Container must be in the document for the custom element to upgrade
+        document.body.appendChild(container);
+      });
+
+      teardown(() => {
+        document.body.removeChild(container);
+      });
+
+      test('uses property setters for custom elements', () => {
+        render(html`
+          <x-test-uses-property-setters value=${'foo'}></x-test-uses-property-setters>
+        `, container);
+        const instance = container.firstElementChild as HTMLElement & {
+          value: string;
+          calledSetter: boolean;
+        };
+
+        assert.equal(instance.value, 'foo');
+        assert.isTrue(instance.calledSetter);
+      });
+
+      test('uses property setters in nested templates added after the initial render', () => {
+        const template = (content: any) => html`${content}`;
+
+        // Do an initial render
+        render(template('some content'), container);
+
+        // Now update the rendered template, render a nested template
+        const fragment = html`
+          <x-test-uses-property-setters value=${'foo'}></x-test-uses-property-setters>
+        `;
+        render(template(fragment), container);
+        const instance = container.firstElementChild as HTMLElement & {
+          value: string;
+          calledSetter: boolean;
+        };
+
+        assert.equal(instance.value, 'foo');
+        assert.isTrue(instance.calledSetter);
+      });
+    });
+
   });
 });

@@ -40,7 +40,7 @@ const verifyShadyCSSVersion = () => {
     return false;
   }
   return true;
-}
+};
 
 /**
  * Template factory which scopes template DOM using ShadyCSS.
