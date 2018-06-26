@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart} from '../lit-html.js';
+import {directive, DirectiveFn, NodePart, _isPrimitiveValue} from '../lit-html.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -23,7 +23,11 @@ import {directive, DirectiveFn, NodePart} from '../lit-html.js';
  */
 export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
     directive((part: NodePart): void => {
+      if (part._previousValue === value && _isPrimitiveValue(value)) {
+        return;
+      }
       const tmp = document.createElement('template');
       tmp.innerHTML = value;
       part.setValue(document.importNode(tmp.content, true));
+      part._previousValue = value;
     });
