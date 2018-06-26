@@ -268,5 +268,38 @@ suite('lit-extended', () => {
       assert.equal((container.firstElementChild as any).foo, 1234);
     });
 
+    const testIfCustomElementsAreSupported = (window.customElements != null) ? test : test.skip;
+
+    testIfCustomElementsAreSupported('uses property setters for custom elements', () => {
+      if (customElements.get('x-test-uses-property-setters') == null) {
+        class CustomElement extends HTMLElement {
+          public readonly calledSetter = false;
+          private _value?: string = undefined;
+
+          public get value(): string|undefined {
+            return this._value;
+          }
+
+          public set value(value: string|undefined) {
+            (this as {calledSetter: boolean}).calledSetter = true;
+            this._value = value;
+          }
+        }
+
+        customElements.define('x-test-uses-property-setters', CustomElement);
+      }
+
+      document.body.appendChild(container);
+      render(html`<x-test-uses-property-setters value=${'foo'}></x-test-uses-property-setters>`, container);
+      const instance = container.firstElementChild as HTMLElement & {
+        value: string;
+        calledSetter: boolean;
+      };
+      document.body.removeChild(container);
+
+      assert.equal(instance.value, 'foo');
+      assert.isTrue(instance.calledSetter);
+    });
+
   });
 });
