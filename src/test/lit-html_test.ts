@@ -679,6 +679,31 @@ suite('lit-html', () => {
         assert.strictEqual(text, text2);
       });
 
+      test('dirty checks node values', async () => {
+        const node = document.createElement('div');
+        const t = () => html`${node}`;
+
+        let mutationRecords: MutationRecord[] = [];
+        const mutationObserver = new MutationObserver((records) => {
+          mutationRecords = records;
+        });
+        mutationObserver.observe(container, {childList: true});
+
+        assert.equal(stripExpressionDelimeters(container.innerHTML), '');
+        render(t(), container);
+        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        // Wait a microtask for mutation callback to be called
+        await 0;
+        // One mutation for stamping the template, the other for adding the div
+        assert.equal(mutationRecords.length, 2);
+
+        mutationRecords = [];
+        render(t(), container);
+        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        await 0;
+        assert.equal(mutationRecords.length, 0);
+      });
+
       test('renders to and updates a container', () => {
         let foo = 'aaa';
 
