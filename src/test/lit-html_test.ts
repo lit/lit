@@ -495,6 +495,38 @@ suite('lit-html', () => {
           `);
       });
 
+      test('bindings work in <template>', () => {
+        const t = (a: string, b: string) => html`
+          <template>
+            <span>${a}</span>
+          </template>
+          <div>${b}</div>
+        `;
+        render(t('1', '2'), container);
+        assert.equal(stripExpressionDelimeters(container.innerHTML), `
+          <template>
+            <span>1</span>
+          </template>
+          <div>2</div>
+        `);
+      });
+
+      test('bindings work in <template> with attribute bindings', () => {
+        const t = (a: string, b: string, c: string) => html`
+          <template foo=${a}>
+            <span>${b}</span>
+          </template>
+          <div>${c}</div>
+        `;
+        render(t('1', '2', '3'), container);
+        assert.equal(stripExpressionDelimeters(container.innerHTML), `
+          <template foo="1">
+            <span>2</span>
+          </template>
+          <div>3</div>
+        `);
+      });
+
       test('renders no comments inside textContent', () => {
         render(html`<style>${''}</style>`, container);
         assert.equal(container.firstElementChild!.textContent, '');
