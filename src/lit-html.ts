@@ -468,7 +468,7 @@ export const noChange = {};
  */
 export { noChange as directiveValue };
 
-const isPrimitiveValue = (value: any) => value === null ||
+export const _isPrimitiveValue = (value: any) => value === null ||
     !(typeof value === 'object' || typeof value === 'function');
 
 export interface Part {
@@ -531,7 +531,7 @@ export class AttributePart implements MultiPart {
     }
     for (let i = startIndex; i < startIndex + this.size; i++) {
       if (this._previousValues[i] !== values[i] ||
-          !isPrimitiveValue(values[i])) {
+          !_isPrimitiveValue(values[i])) {
         return false;
       }
     }
@@ -579,7 +579,7 @@ export class NodePart implements SinglePart {
     if (value === noChange) {
       return;
     }
-    if (isPrimitiveValue(value)) {
+    if (_isPrimitiveValue(value)) {
       // Handle primitive values
       // If the value didn't change, do nothing
       if (value === this._previousValue) {
