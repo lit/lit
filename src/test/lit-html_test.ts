@@ -692,15 +692,16 @@ suite('lit-html', () => {
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         render(t(), container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+
         // Wait a microtask for mutation callback to be called
-        await 0;
+        await Promise.resolve();
         // One mutation for stamping the template, the other for adding the div
         assert.equal(mutationRecords.length, 2);
 
         mutationRecords = [];
         render(t(), container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
-        await 0;
+        await Promise.resolve();
         assert.equal(mutationRecords.length, 0);
       });
 
