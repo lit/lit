@@ -693,15 +693,15 @@ suite('lit-html', () => {
         render(t(), container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
-        // Wait a microtask for mutation callback to be called
-        await Promise.resolve();
+        // Wait for mutation callback to be called
+        await new Promise(setTimeout);
         // One mutation for stamping the template, the other for adding the div
         assert.equal(mutationRecords.length, 2);
 
         mutationRecords = [];
         render(t(), container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
-        await Promise.resolve();
+        await new Promise(setTimeout);
         assert.equal(mutationRecords.length, 0);
       });
 
