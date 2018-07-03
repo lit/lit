@@ -695,8 +695,13 @@ suite('lit-html', () => {
 
         // Wait for mutation callback to be called
         await new Promise(setTimeout);
-        // One mutation for stamping the template, the other for adding the div
-        assert.equal(mutationRecords.length, 2);
+
+        const elementNodes: Array<Node> = [];
+        for (const record of mutationRecords) {
+          elementNodes.push(...Array.from(record.addedNodes)
+              .filter((n) => n.nodeType === Node.ELEMENT_NODE));
+        }
+        assert.equal(elementNodes.length, 1);
 
         mutationRecords = [];
         render(t(), container);
