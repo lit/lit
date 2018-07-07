@@ -328,26 +328,26 @@ export class Template {
               const attributeNameInPart =
                   lastAttributeNameRegex.exec(stringForPart)![1];
 
-          // Find the corresponding attribute
-          // If the attribute name contains special characters, lower-case it
-          // so that on XML nodes with case-sensitive getAttribute() we can
-          // still find the attribute, which will have been lower-cased by
-          // the parser.
-          //
-          // If the attribute name doesn't contain special character, it's
-          // important to _not_ lower-case it, in case the name is
-          // case-sensitive, like with XML attributes like "viewBox".
-          const attributeLookupName = /^[a-zA-Z-]*$/.test(attributeNameInPart) ?
-              attributeNameInPart :
-              attributeNameInPart.toLowerCase();
-          const attributeValue = node.getAttribute(attributeLookupName)!;
-          const stringsForAttributeValue = attributeValue.split(markerRegex);
-          this.parts.push(new TemplatePart(
-              'attribute',
-              index,
-              attributeNameInPart,
-              stringsForAttributeValue));
-          node.removeAttribute(attributeLookupName);
+              // Find the corresponding attribute
+              // If the attribute name contains special characters, lower-case it
+              // so that on XML nodes with case-sensitive getAttribute() we can
+              // still find the attribute, which will have been lower-cased by
+              // the parser.
+              //
+              // If the attribute name doesn't contain special character, it's
+              // important to _not_ lower-case it, in case the name is
+              // case-sensitive, like with XML attributes like "viewBox".
+              const attributeLookupName = /^[a-zA-Z-]*$/.test(attributeNameInPart) ?
+                  attributeNameInPart :
+                  attributeNameInPart.toLowerCase();
+              const attributeValue = node.getAttribute(attributeLookupName)!;
+              const stringsForAttributeValue = attributeValue.split(markerRegex);
+              this.parts.push(new TemplatePart(
+                  'attribute',
+                  index,
+                  attributeNameInPart,
+                  stringsForAttributeValue));
+              node.removeAttribute(attributeLookupName);
               partIndex += stringsForAttributeValue.length - 1;
             }
           }
