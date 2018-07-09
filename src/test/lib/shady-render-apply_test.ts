@@ -21,7 +21,6 @@ import {html, render} from '../../lib/shady-render.js';
 const assert = chai.assert;
 
 suite('shady-render @apply', () => {
-
   test('styles with css custom properties using @apply render', function() {
     const container = document.createElement('scope-5');
     document.body.appendChild(container);
@@ -43,9 +42,9 @@ suite('shady-render @apply', () => {
     render(result, container.shadowRoot!, 'scope-5');
     const div = (container.shadowRoot!).querySelector('div');
     const computedStyle = getComputedStyle(div!);
-    assert.equal(computedStyle.getPropertyValue('border-top-width').trim(), '3px');
+    assert.equal(
+        computedStyle.getPropertyValue('border-top-width').trim(), '3px');
     assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
     document.body.removeChild(container);
   });
-
 });

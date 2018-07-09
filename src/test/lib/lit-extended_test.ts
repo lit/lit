@@ -24,7 +24,6 @@ const assert = chai.assert;
 
 suite('lit-extended', () => {
   suite('render', () => {
-
     let container: HTMLElement;
 
     setup(() => {
@@ -40,53 +39,69 @@ suite('lit-extended', () => {
 
     test('renders to an attribute', () => {
       render(html`<div foo$="${'bar'}"></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML),
+          '<div foo="bar"></div>');
     });
 
     test('renders to an attribute without quotes', () => {
       render(html`<div foo$=${'bar'}></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML),
+          '<div foo="bar"></div>');
     });
 
     test('renders interpolation to an attribute', () => {
       render(html`<div foo$="1${'bar'}2${'baz'}3"></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="1bar2baz3"></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML),
+          '<div foo="1bar2baz3"></div>');
     });
 
     test('renders a case-sensitive attribute', () => {
       const size = 100;
       render(html`<svg viewBox$="0 0 ${size} ${size}"></svg>`, container);
-      assert.include(stripExpressionDelimeters(container.innerHTML), 'viewBox="0 0 100 100"');
-      assert.notInclude(stripExpressionDelimeters(container.innerHTML), 'viewBox$');
+      assert.include(
+          stripExpressionDelimeters(container.innerHTML),
+          'viewBox="0 0 100 100"');
+      assert.notInclude(
+          stripExpressionDelimeters(container.innerHTML), 'viewBox$');
     });
 
     test('renders a boolean attribute as an empty string when truthy', () => {
       const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(true), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
 
       render(t('a'), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
 
       render(t(1), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
     });
 
     test('removes a boolean attribute when falsey', () => {
       const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(false), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
       render(t(0), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
       render(t(null), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
       render(t(undefined), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
     });
 
     test('reuses an existing ExtendedTemplateInstance when available', () => {
@@ -212,35 +227,37 @@ suite('lit-extended', () => {
       assert.equal(count2, 1);
     });
 
-    test('allows updating event listener without extra calls to remove/addEventListener', () => {
-      let listener: Function|null;
-      const t = () => html`<div on-click=${listener}></div>`;
-      render(t(), container);
-      const div = container.firstChild as HTMLElement;
-      let addCount = 0;
-      let removeCount = 0;
-      div.addEventListener = () => addCount++;
-      div.removeEventListener = () => removeCount++;
-      listener = () => {};
-      render(t(), container);
-      assert.equal(addCount, 1);
-      assert.equal(removeCount, 0);
-      listener = () => {};
-      assert.equal(addCount, 1);
-      assert.equal(removeCount, 0);
-      listener = null;
-      render(t(), container);
-      assert.equal(addCount, 1);
-      assert.equal(removeCount, 1);
-      listener = () => {};
-      render(t(), container);
-      assert.equal(addCount, 2);
-      assert.equal(removeCount, 1);
-      listener = () => {};
-      render(t(), container);
-      assert.equal(addCount, 2);
-      assert.equal(removeCount, 1);
-    });
+    test(
+        'allows updating event listener without extra calls to remove/addEventListener',
+        () => {
+          let listener: Function|null;
+          const t = () => html`<div on-click=${listener}></div>`;
+          render(t(), container);
+          const div = container.firstChild as HTMLElement;
+          let addCount = 0;
+          let removeCount = 0;
+          div.addEventListener = () => addCount++;
+          div.removeEventListener = () => removeCount++;
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 1);
+          assert.equal(removeCount, 0);
+          listener = () => {};
+          assert.equal(addCount, 1);
+          assert.equal(removeCount, 0);
+          listener = null;
+          render(t(), container);
+          assert.equal(addCount, 1);
+          assert.equal(removeCount, 1);
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 2);
+          assert.equal(removeCount, 1);
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 2);
+          assert.equal(removeCount, 1);
+        });
 
     test('removes event listeners', () => {
       let target;
@@ -264,11 +281,13 @@ suite('lit-extended', () => {
       });
 
       render(html`<div foo="${fooDirective}"></div>`, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
       assert.equal((container.firstElementChild as any).foo, 1234);
     });
 
-    const suiteIfCustomElementsAreSupported = (window.customElements != null) ? suite : suite.skip;
+    const suiteIfCustomElementsAreSupported =
+        (window.customElements != null) ? suite : suite.skip;
 
     suiteIfCustomElementsAreSupported('when rendering custom elements', () => {
       suiteSetup(() => {
@@ -301,9 +320,12 @@ suite('lit-extended', () => {
       });
 
       test('uses property setters for custom elements', () => {
-        render(html`
-          <x-test-uses-property-setters value=${'foo'}></x-test-uses-property-setters>
-        `, container);
+        render(
+            html`
+          <x-test-uses-property-setters value=${
+                'foo'}></x-test-uses-property-setters>
+        `,
+            container);
         const instance = container.firstElementChild as HTMLElement & {
           value: string;
           calledSetter: boolean;
@@ -313,26 +335,28 @@ suite('lit-extended', () => {
         assert.isTrue(instance.calledSetter);
       });
 
-      test('uses property setters in nested templates added after the initial render', () => {
-        const template = (content: any) => html`${content}`;
+      test(
+          'uses property setters in nested templates added after the initial render',
+          () => {
+            const template = (content: any) => html`${content}`;
 
-        // Do an initial render
-        render(template('some content'), container);
+            // Do an initial render
+            render(template('some content'), container);
 
-        // Now update the rendered template, render a nested template
-        const fragment = html`
-          <x-test-uses-property-setters value=${'foo'}></x-test-uses-property-setters>
+            // Now update the rendered template, render a nested template
+            const fragment = html`
+          <x-test-uses-property-setters value=${
+                                 'foo'}></x-test-uses-property-setters>
         `;
-        render(template(fragment), container);
-        const instance = container.firstElementChild as HTMLElement & {
-          value: string;
-          calledSetter: boolean;
-        };
+            render(template(fragment), container);
+            const instance = container.firstElementChild as HTMLElement & {
+              value: string;
+              calledSetter: boolean;
+            };
 
-        assert.equal(instance.value, 'foo');
-        assert.isTrue(instance.calledSetter);
-      });
+            assert.equal(instance.value, 'foo');
+            assert.isTrue(instance.calledSetter);
+          });
     });
-
   });
 });

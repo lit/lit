@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Template, isTemplatePartActive, TemplatePart} from '../lit-html.js';
+import {isTemplatePartActive, Template, TemplatePart} from '../lit-html.js';
 
-const walkerNodeFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-NodeFilter.SHOW_TEXT;
+const walkerNodeFilter =
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT;
 
 /**
  * Removes the list of nodes from a Template safely. In addition to removing
@@ -30,15 +30,14 @@ NodeFilter.SHOW_TEXT;
  *     div
  *       div#2 (remove)  <-- continue removing (removing node is still div#1)
  *         div
- * div <-- stop removing since previous sibling is the removing node (div#1, removed 4 nodes)
+ * div <-- stop removing since previous sibling is the removing node (div#1,
+ * removed 4 nodes)
  */
-export function removeNodesFromTemplate(template: Template, nodesToRemove: Set<Node>) {
+export function removeNodesFromTemplate(
+    template: Template, nodesToRemove: Set<Node>) {
   const {element: {content}, parts} = template;
-  const walker = document.createTreeWalker(
-    content,
-    walkerNodeFilter,
-    null as any,
-    false);
+  const walker =
+      document.createTreeWalker(content, walkerNodeFilter, null as any, false);
   let partIndex = 0;
   let part = parts[0];
   let nodeIndex = -1;
@@ -76,26 +75,24 @@ export function removeNodesFromTemplate(template: Template, nodesToRemove: Set<N
 
 const countNodes = (node: Node) => {
   let count = 1;
-  const walker = document.createTreeWalker(
-    node,
-    walkerNodeFilter,
-    null as any,
-    false);
+  const walker =
+      document.createTreeWalker(node, walkerNodeFilter, null as any, false);
   while (walker.nextNode()) {
     count++;
   }
   return count;
 };
 
-const nextActiveIndexInTemplateParts = (parts: TemplatePart[], startIndex: number = -1) => {
-  for (let i = startIndex + 1; i < parts.length; i++) {
-    const part = parts[i];
-    if (isTemplatePartActive(part)) {
-      return i;
-    }
-  }
-  return -1;
-};
+const nextActiveIndexInTemplateParts =
+    (parts: TemplatePart[], startIndex: number = -1) => {
+      for (let i = startIndex + 1; i < parts.length; i++) {
+        const part = parts[i];
+        if (isTemplatePartActive(part)) {
+          return i;
+        }
+      }
+      return -1;
+    };
 
 /**
  * Inserts the given node into the Template, optionally before the given
@@ -111,11 +108,8 @@ export function insertNodeIntoTemplate(
     content.appendChild(node);
     return;
   }
-  const walker = document.createTreeWalker(
-      content,
-      walkerNodeFilter,
-      null as any,
-      false);
+  const walker =
+      document.createTreeWalker(content, walkerNodeFilter, null as any, false);
   let partIndex = nextActiveIndexInTemplateParts(parts);
   let insertCount = 0;
   let walkerIndex = -1;

@@ -161,8 +161,7 @@ export type TemplateContainer = (Element|DocumentFragment)&{
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    templateFactory: TemplateFactory = defaultTemplateFactory
-  ) {
+    templateFactory: TemplateFactory = defaultTemplateFactory) {
   const template = templateFactory(result);
   let instance = (container as TemplateContainer).__templateInstance;
 
@@ -289,14 +288,15 @@ export class Template {
 
     const _prepareTemplate = (template: HTMLTemplateElement) => {
       const content = template.content;
-      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
+      // null
       const walker = document.createTreeWalker(
-        content,
-        133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-                NodeFilter.SHOW_TEXT */
-        ,
-        null as any,
-        false);
+          content,
+          133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
+                  NodeFilter.SHOW_TEXT */
+          ,
+          null as any,
+          false);
       // The actual previous node, accounting for removals: if a node is removed
       // it will never be the previousNode.
       let previousNode: Node|undefined;
@@ -310,10 +310,11 @@ export class Template {
         if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
           if (node.hasAttributes()) {
             const attributes = node.attributes;
-            // Per https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
-            // attributes are not guaranteed to be returned in document order. In
-            // particular, Edge/IE can return them out of order, so we cannot assume
-            // a correspondance between part index and attribute index.
+            // Per
+            // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
+            // attributes are not guaranteed to be returned in document order.
+            // In particular, Edge/IE can return them out of order, so we cannot
+            // assume a correspondance between part index and attribute index.
             let count = 0;
             for (let i = 0; i < attributes.length; i++) {
               if (attributes[i].value.indexOf(marker) >= 0) {
@@ -328,26 +329,28 @@ export class Template {
               const attributeNameInPart =
                   lastAttributeNameRegex.exec(stringForPart)![1];
 
-          // Find the corresponding attribute
-          // If the attribute name contains special characters, lower-case it
-          // so that on XML nodes with case-sensitive getAttribute() we can
-          // still find the attribute, which will have been lower-cased by
-          // the parser.
-          //
-          // If the attribute name doesn't contain special character, it's
-          // important to _not_ lower-case it, in case the name is
-          // case-sensitive, like with XML attributes like "viewBox".
-          const attributeLookupName = /^[a-zA-Z-]*$/.test(attributeNameInPart) ?
-              attributeNameInPart :
-              attributeNameInPart.toLowerCase();
-          const attributeValue = node.getAttribute(attributeLookupName)!;
-          const stringsForAttributeValue = attributeValue.split(markerRegex);
-          this.parts.push(new TemplatePart(
-              'attribute',
-              index,
-              attributeNameInPart,
-              stringsForAttributeValue));
-          node.removeAttribute(attributeLookupName);
+              // Find the corresponding attribute
+              // If the attribute name contains special characters, lower-case
+              // it so that on XML nodes with case-sensitive getAttribute() we
+              // can still find the attribute, which will have been lower-cased
+              // by the parser.
+              //
+              // If the attribute name doesn't contain special character, it's
+              // important to _not_ lower-case it, in case the name is
+              // case-sensitive, like with XML attributes like "viewBox".
+              const attributeLookupName =
+                  /^[a-zA-Z-]*$/.test(attributeNameInPart) ?
+                  attributeNameInPart :
+                  attributeNameInPart.toLowerCase();
+              const attributeValue = node.getAttribute(attributeLookupName)!;
+              const stringsForAttributeValue =
+                  attributeValue.split(markerRegex);
+              this.parts.push(new TemplatePart(
+                  'attribute',
+                  index,
+                  attributeNameInPart,
+                  stringsForAttributeValue));
+              node.removeAttribute(attributeLookupName);
               partIndex += stringsForAttributeValue.length - 1;
             }
           }
@@ -371,9 +374,8 @@ export class Template {
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
             parent.insertBefore(
-                (strings[i] === '')
-                    ? document.createComment('')
-                    : document.createTextNode(strings[i]),
+                (strings[i] === '') ? document.createComment('') :
+                                      document.createTextNode(strings[i]),
                 node);
             this.parts.push(new TemplatePart('node', index++));
           }
@@ -444,12 +446,12 @@ export const getValue = (part: Part, value: any) => {
   return value === null ? undefined : value;
 };
 
-export interface DirectiveFn<P= Part> {
+export interface DirectiveFn<P = Part> {
   (part: P): void;
   __litDirective?: true;
 }
 
-export const directive = <P= Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
+export const directive = <P = Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
   f.__litDirective = true;
   return f;
 };
@@ -466,7 +468,7 @@ export const noChange = {};
 /**
  * @deprecated Use `noChange` instead.
  */
-export { noChange as directiveValue };
+export {noChange as directiveValue};
 
 export const _isPrimitiveValue = (value: any) => value === null ||
     !(typeof value === 'object' || typeof value === 'function');
@@ -476,7 +478,9 @@ export interface Part {
   size?: number;
 }
 
-export interface SinglePart extends Part { setValue(value: any): void; }
+export interface SinglePart extends Part {
+  setValue(value: any): void;
+}
 
 export interface MultiPart extends Part {
   setValue(values: any[], startIndex: number): void;
@@ -771,7 +775,8 @@ export class TemplateInstance {
     // Clone the node, rather than importing it, to keep the fragment in the
     // template's document. This leaves the fragment inert so custom elements
     // won't upgrade until after the main document adopts the node.
-    const fragment = this.template.element.content.cloneNode(true) as DocumentFragment;
+    const fragment =
+        this.template.element.content.cloneNode(true) as DocumentFragment;
     const parts = this.template.parts;
     let partIndex = 0;
     let nodeIndex = 0;
@@ -825,9 +830,9 @@ export class TemplateInstance {
  */
 export const reparentNodes =
     (container: Node,
-     start: Node | null,
-     end: Node | null = null,
-     before: Node | null = null): void => {
+     start: Node|null,
+     end: Node|null = null,
+     before: Node|null = null): void => {
       let node = start;
       while (node !== end) {
         const n = node!.nextSibling;
@@ -841,7 +846,7 @@ export const reparentNodes =
  * (exclusive), from `container`.
  */
 export const removeNodes =
-    (container: Node, startNode: Node | null, endNode: Node | null = null):
+    (container: Node, startNode: Node|null, endNode: Node|null = null):
         void => {
           let node = startNode;
           while (node !== endNode) {

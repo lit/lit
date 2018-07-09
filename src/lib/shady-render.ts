@@ -34,7 +34,8 @@ const verifyShadyCSSVersion = () => {
     return false;
   }
   if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
-    console.warn(`Incompatible ShadyCSS version detected.` +
+    console.warn(
+        `Incompatible ShadyCSS version detected.` +
         `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
         `@webcomponents/shadycss@1.3.1.`);
     return false;
@@ -98,7 +99,8 @@ const shadyRenderSet = new Set<string>();
  * Note, <style> elements can only be placed into templates for the
  * initial rendering of the scope. If <style> elements are included in templates
  * dynamically rendered to the scope (after the first scope render), they will
- * not be scoped and the <style> will be left in the template and rendered output.
+ * not be scoped and the <style> will be left in the template and rendered
+ * output.
  */
 const ensureStylesScoped =
     (fragment: DocumentFragment, template: Template, scopeName: string) => {
@@ -158,9 +160,7 @@ export function render(
   const fragment = instance._clone();
   instance.update(result.values);
 
-  const host = container instanceof ShadowRoot ?
-      container.host :
-      undefined;
+  const host = container instanceof ShadowRoot ? container.host : undefined;
 
   // If there's a shadow host, do ShadyCSS scoping...
   if (host !== undefined && verifyShadyCSSVersion()) {

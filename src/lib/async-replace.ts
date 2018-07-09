@@ -33,8 +33,8 @@ import {directive, DirectiveFn, NodePart} from '../lit-html.js';
  *     value. Useful for generating templates for each item in the iterable.
  */
 export const asyncReplace =
-    <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any): DirectiveFn<NodePart> =>
-        directive(async (part: NodePart) => {
+    <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any):
+        DirectiveFn<NodePart> => directive(async (part: NodePart) => {
           // If we've already set up this particular iterable, we don't need
           // to do anything.
           if (value === part._previousValue) {

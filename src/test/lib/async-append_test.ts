@@ -17,10 +17,9 @@
 
 import {asyncAppend} from '../../lib/async-append.js';
 import {html, render} from '../../lit-html.js';
+import {stripExpressionDelimeters} from '../test-helpers.js';
 
 import {TestAsyncIterable} from './test-async-iterable.js';
-
-import {stripExpressionDelimeters} from '../test-helpers.js';
 
 const assert = chai.assert;
 
@@ -30,7 +29,6 @@ if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
 }
 
 suite('asyncAppend', () => {
-
   let container: HTMLDivElement;
   let iterable: TestAsyncIterable<string>;
 
@@ -44,10 +42,12 @@ suite('asyncAppend', () => {
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foobar</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foobar</div>');
   });
 
   test('appends nothing with a value is undefined', async () => {
@@ -55,10 +55,12 @@ suite('asyncAppend', () => {
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
     await iterable.push(undefined);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
   });
 
   test('uses a mapper function', async () => {
@@ -68,10 +70,13 @@ suite('asyncAppend', () => {
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>0: foo </div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>0: foo </div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>0: foo 1: bar </div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML),
+        '<div>0: foo 1: bar </div>');
   });
 
   test('renders new iterable over a pending iterable', async () => {
@@ -80,20 +85,24 @@ suite('asyncAppend', () => {
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
     const iterable2 = new TestAsyncIterable<string>();
     render(t(iterable2), container);
 
     // The last value is preserved until we receive the first
     // value from the new iterable
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
     await iterable2.push('hello');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
   });
 
   test('renders new value over a pending iterable', async () => {
@@ -104,13 +113,15 @@ suite('asyncAppend', () => {
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
     render(t('hello'), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
 
     await iterable.push('bar');
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>hello</div>');
   });
-
 });

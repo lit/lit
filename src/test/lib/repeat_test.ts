@@ -23,7 +23,6 @@ import {stripExpressionDelimeters} from '../test-helpers.js';
 const assert = chai.assert;
 
 suite('repeat', () => {
-
   let container: HTMLElement;
 
   setup(() => {
@@ -31,10 +30,8 @@ suite('repeat', () => {
   });
 
   suite('keyed', () => {
-
     test('renders a list', () => {
-      const r =
-          html`${repeat([1, 2, 3], (i) => i, (i: number) => html`
+      const r = html`${repeat([1, 2, 3], (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(r, container);
       assert.equal(stripExpressionDelimeters(container.innerHTML), `
@@ -63,8 +60,7 @@ suite('repeat', () => {
 
     test('shuffles are stable', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
       render(t(), container);
       assert.equal(stripExpressionDelimeters(container.innerHTML), `
@@ -154,8 +150,7 @@ suite('repeat', () => {
 
     test('can rerender repeated items', () => {
       let updates = 0;
-      const t = (items: number[]) =>
-          html`${repeat(items, (i) => i, () => html`
+      const t = (items: number[]) => html`${repeat(items, (i) => i, () => html`
             <li>item: ${++updates}</li>`)}`;
 
       render(t([666, 666]), container);
@@ -166,8 +161,7 @@ suite('repeat', () => {
 
     test('can insert an item at the beginning', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -182,8 +176,7 @@ suite('repeat', () => {
 
     test('can insert an item at the end', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -198,8 +191,7 @@ suite('repeat', () => {
 
     test('can replace with an empty list', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -210,8 +202,7 @@ suite('repeat', () => {
 
     test('can remove the first item', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -229,8 +220,7 @@ suite('repeat', () => {
 
     test('can remove the last item', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -248,8 +238,7 @@ suite('repeat', () => {
 
     test('can remove a middle item', () => {
       let items = [1, 2, 3];
-      const t = () =>
-          html`${repeat(items, (i) => i, (i: number) => html`
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;
 
       render(t(), container);
@@ -264,11 +253,9 @@ suite('repeat', () => {
       assert.strictEqual(children1[0], children2[0]);
       assert.strictEqual(children1[2], children2[1]);
     });
-
   });
 
   suite('un-keyed', () => {
-
     test('renders a list', () => {
       const r = html`${repeat([1, 2, 3], (i: number) => html`
             <li>item: ${i}</li>`)}`;

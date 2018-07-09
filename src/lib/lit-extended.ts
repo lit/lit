@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, noChange, getValue, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
 
 export {render} from '../lit-html.js';
 
@@ -61,7 +61,8 @@ export const extendedPartCallback =
               const eventName = templatePart.rawName!.slice(3);
               return new EventPart(instance, node as Element, eventName);
             }
-            const lastChar = templatePart.name!.substr(templatePart.name!.length - 1);
+            const lastChar =
+                templatePart.name!.substr(templatePart.name!.length - 1);
             if (lastChar === '$') {
               const name = templatePart.name!.slice(0, -1);
               return new AttributePart(
