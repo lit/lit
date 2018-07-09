@@ -22,9 +22,7 @@ import {stripExpressionDelimeters} from './test-helpers.js';
 const assert = chai.assert;
 
 suite('lit-html', () => {
-
   suite('html', () => {
-
     test('returns a TemplateResult', () => {
       assert.instanceOf(html``, TemplateResult);
     });
@@ -119,7 +117,8 @@ suite('lit-html', () => {
       const container = document.createElement('div');
       const result = html`<div>${1} ${2}</div>`;
       render(result, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>1 2</div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div>1 2</div>');
     });
 
     test('parses expressions for two child nodes of one element', () => {
@@ -133,7 +132,9 @@ suite('lit-html', () => {
       const container = document.createElement('div');
       const result = html`<div a="${1}" b="${2}"></div>`;
       render(result, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<div a="1" b="2"></div>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML),
+          '<div a="1" b="2"></div>');
     });
 
     test('updates when called multiple times with arrays', () => {
@@ -144,9 +145,12 @@ suite('lit-html', () => {
       };
       render(ul(['a', 'b', 'c']), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<ul><li>a</li><li>b</li><li>c</li></ul>');
+          stripExpressionDelimeters(container.innerHTML),
+          '<ul><li>a</li><li>b</li><li>c</li></ul>');
       render(ul(['x', 'y']), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '<ul><li>x</li><li>y</li></ul>');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML),
+          '<ul><li>x</li><li>y</li></ul>');
     });
 
     test('resists XSS attempt in node values', () => {
@@ -159,13 +163,10 @@ suite('lit-html', () => {
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
       assert(defaultTemplateFactory(result).element.innerHTML, '<div></div>');
     });
-
   });
 
   suite('TemplateResult', () => {
-
     suite('first render', () => {
-
       let container: HTMLElement;
 
       setup(() => {
@@ -174,27 +175,33 @@ suite('lit-html', () => {
 
       test('renders a string', () => {
         render(html`<div>${'foo'}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
       });
 
       test('renders a number', () => {
         render(html`<div>${123}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
       });
 
       test('renders undefined', () => {
         render(html`<div>${undefined}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
       });
 
       test('renders undefined in attributes', () => {
         render(html`<div attribute="it's ${undefined}"></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div attribute="it\'s undefined"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div attribute="it\'s undefined"></div>');
       });
 
       test('renders null', () => {
         render(html`<div>${null}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
       });
 
       test('does not call a function bound to text', () => {
@@ -206,23 +213,28 @@ suite('lit-html', () => {
 
       test('renders arrays', () => {
         render(html`<div>${[1, 2, 3]}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
       });
 
       test('renders nested templates', () => {
         const partial = html`<h1>${'foo'}</h1>`;
         render(html`${partial}${'bar'}`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>bar');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>bar');
       });
 
       test('renders parts with whitespace after them', () => {
         render(html`<div>${'foo'} </div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo </div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo </div>');
       });
 
       test('preserves whitespace between parts', () => {
         render(html`<div>${'foo'} ${'bar'}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo bar</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div>foo bar</div>');
       });
 
       const testSkipForTemplatePolyfill =
@@ -237,11 +249,14 @@ suite('lit-html', () => {
                 html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
             render(table, container);
             assert.equal(
-                stripExpressionDelimeters(container.innerHTML), '<table><tr><td></td></tr></table>');
+                stripExpressionDelimeters(container.innerHTML),
+                '<table><tr><td></td></tr></table>');
 
             table = html`<tbody>${html`<tr></tr>`}</tbody>`;
             render(table, container);
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<tbody><tr></tr></tbody>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                '<tbody><tr></tr></tbody>');
 
             table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
             render(table, container);
@@ -256,8 +271,7 @@ suite('lit-html', () => {
                 '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
 
             table = html`<table><tr><td></td>${html`<td></td>`}${
-                                                                 html`<td></td>`
-                                                               }</tr></table>`;
+                html`<td></td>`}</tr></table>`;
             render(table, container);
             assert.equal(
                 stripExpressionDelimeters(container.innerHTML),
@@ -277,7 +291,9 @@ suite('lit-html', () => {
           () => {
             const template = html`<div a="<table>${'foo'}"></div>`;
             render(template, container);
-            assert.equal(stripExpressionDelimeters(container.innerHTML), `<div a="<table>foo"></div>`);
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                `<div a="<table>foo"></div>`);
           });
 
       test('values contain interpolated values', () => {
@@ -295,13 +311,16 @@ suite('lit-html', () => {
 
       test('renders arrays of nested templates', () => {
         render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
       });
 
       test('renders an element', () => {
         const child = document.createElement('p');
         render(html`<div>${child}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><p></p></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><p></p></div>');
       });
 
       test('renders an array of elements', () => {
@@ -312,36 +331,47 @@ suite('lit-html', () => {
         ];
         render(html`<div>${children}</div>`, container);
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML), '<div><p></p><a></a><span></span></div>');
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><p></p><a></a><span></span></div>');
       });
 
       test('renders to an attribute', () => {
         render(html`<div foo="${'bar'}"></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="bar"></div>');
       });
 
       test('renders a case-sensitive attribute', () => {
         const size = 100;
         render(html`<svg viewBox="0 0 ${size} ${size}"></svg>`, container);
-        assert.include(stripExpressionDelimeters(container.innerHTML), 'viewBox="0 0 100 100"');
+        assert.include(
+            stripExpressionDelimeters(container.innerHTML),
+            'viewBox="0 0 100 100"');
 
         // Make sure non-alpha valid attribute name characters are handled
         render(html`<svg view_Box="0 0 ${size} ${size}"></svg>`, container);
-        assert.include(stripExpressionDelimeters(container.innerHTML), 'view_Box="0 0 100 100"');
+        assert.include(
+            stripExpressionDelimeters(container.innerHTML),
+            'view_Box="0 0 100 100"');
       });
 
       test(
           'renders to an attribute expression after an attribute literal',
           () => {
             render(html`<div a="b" foo="${'bar'}"></div>`, container);
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<div a="b" foo="bar"></div>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                '<div a="b" foo="bar"></div>');
           });
 
       test(
           'renders to an attribute expression before an attribute literal',
           () => {
             render(html`<div foo="${'bar'}" a="b"></div>`, container);
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<div a="b" foo="bar"></div>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                '<div a="b" foo="bar"></div>');
           });
 
       // Regression test for exception in template parsing caused by attributes
@@ -359,7 +389,9 @@ suite('lit-html', () => {
 
       test('renders to an attribute without quotes', () => {
         render(html`<div foo=${'bar'}></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="bar"></div>');
       });
 
       test('renders to multiple attribute expressions', () => {
@@ -373,10 +405,12 @@ suite('lit-html', () => {
       });
 
       test('renders attributes bindings after text bindings', () => {
-        render(html`
+        render(
+            html`
           <div>${''}</div>
           <div foo=${'bar'}></div>
-        `, container);
+        `,
+            container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), `
           <div></div>
           <div foo="bar"></div>
@@ -385,12 +419,16 @@ suite('lit-html', () => {
 
       test('renders to attributes with attribute-like values', () => {
         render(html`<div foo="bar=${'foo'}"></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar=foo"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="bar=foo"></div>');
       });
 
       test('renders interpolation to an attribute', () => {
         render(html`<div foo="1${'bar'}2${'baz'}3"></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="1bar2baz3"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="1bar2baz3"></div>');
       });
 
       test('does not call a function bound to an attribute', () => {
@@ -404,18 +442,23 @@ suite('lit-html', () => {
 
       test('renders an array to an attribute', () => {
         render(html`<div foo=${[1, 2, 3]}></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="123"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="123"></div>');
       });
 
       test('renders to an attribute before a node', () => {
         render(html`<div foo="${'bar'}">${'baz'}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="bar">baz</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="bar">baz</div>');
       });
 
       test('renders to an attribute after a node', () => {
         render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML), '<div>baz</div><div foo="bar"></div>');
+            stripExpressionDelimeters(container.innerHTML),
+            '<div>baz</div><div foo="bar"></div>');
       });
 
       test('renders a Promise', () => {
@@ -424,10 +467,12 @@ suite('lit-html', () => {
           resolve = res;
         });
         render(html`<div>${promise}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
         resolve!('foo');
         return promise.then(() => {
-          assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+          assert.equal(
+              stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
         });
       });
 
@@ -438,7 +483,8 @@ suite('lit-html', () => {
           }
         };
         render(html`<div>${promise}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
       });
 
       test('renders racing Promises correctly', () => {
@@ -457,34 +503,41 @@ suite('lit-html', () => {
 
         // First render, first Promise, no value
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
         promise = promise2;
         // Second render, second Promise, still no value
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
         // Resolve the first Promise, should not update the container
         resolve1!('foo');
         return promise1.then(() => {
-          assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+          assert.equal(
+              stripExpressionDelimeters(container.innerHTML), '<div></div>');
           // Resolve the second Promise, should update the container
           resolve2!('bar');
           return promise2.then(() => {
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bar</div>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                '<div>bar</div>');
           });
         });
       });
 
       test('renders an attribute after a style binding', () => {
-        render(html`
+        render(
+            html`
             <style>
               .foo {
                 background: ${'black'};
               }
             </style>
             <a href="/buy/${'foo'}"></a>
-          `, container);
+          `,
+            container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <style>
               .foo {
@@ -533,11 +586,13 @@ suite('lit-html', () => {
       });
 
       test('renders a combination of stuff', () => {
-        render(html`
+        render(
+            html`
             <div foo="${'bar'}">
               ${'baz'}
               <p>${'qux'}</p>
-            </div>`, container);
+            </div>`,
+            container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <div foo="bar">
               baz
@@ -591,11 +646,13 @@ suite('lit-html', () => {
         // This test is sensitive to the exact binding in the style tag.
         // Make sure the binding takes up the whole element with no text
         // on either side of it
-        render(html`
+        render(
+            html`
             <style>${'bar'}</style>
             <a href="/buy/${'foo'}"></a>
-          `, container);
-          assert.equal(stripExpressionDelimeters(container.innerHTML), `
+          `,
+            container);
+        assert.equal(stripExpressionDelimeters(container.innerHTML), `
             <style>bar</style>
             <a href="/buy/foo"></a>
           `);
@@ -603,12 +660,15 @@ suite('lit-html', () => {
 
       test('renders expressions with preceding elements', () => {
         render(html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<a>foo</a><h1>bar</h1>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<a>foo</a><h1>bar</h1>');
 
         // This is nearly the same test case as above, but was causing a
         // different stack trace
         render(html`<a>${'foo'}</a>${'bar'}`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<a>foo</a>bar');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<a>foo</a>bar');
       });
 
       test('renders directives on NodeParts', () => {
@@ -617,7 +677,8 @@ suite('lit-html', () => {
         });
 
         render(html`<div>${fooDirective}</div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
       });
 
       test('renders directives on AttributeParts', () => {
@@ -626,13 +687,13 @@ suite('lit-html', () => {
         });
 
         render(html`<div foo="${fooDirective}"></div>`, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div foo="foo"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="foo"></div>');
       });
-
     });
 
     suite('update', () => {
-
       let container: HTMLElement;
 
       setup(() => {
@@ -646,11 +707,13 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}</div>`;
 
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
         const text = container.firstChild!.childNodes[1] as Text;
         text.textContent = 'bbb';
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
       });
 
       test('dirty checks simple values', () => {
@@ -659,7 +722,8 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}</div>`;
 
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
         const text = container.firstChild!.childNodes[1] as Text;
         assert.equal(text.textContent, 'aaa');
 
@@ -668,11 +732,13 @@ suite('lit-html', () => {
         // persist through the next render with the same value.
         text.textContent = 'bbb';
         assert.equal(text.textContent, 'bbb');
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
 
         // Re-render with the same content, should be a no-op
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
         const text2 = container.firstChild!.childNodes[1] as Text;
 
         // The next node should be the same too
@@ -691,21 +757,24 @@ suite('lit-html', () => {
 
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
         // Wait for mutation callback to be called
         await new Promise(setTimeout);
 
         const elementNodes: Array<Node> = [];
         for (const record of mutationRecords) {
-          elementNodes.push(...Array.from(record.addedNodes)
-              .filter((n) => n.nodeType === Node.ELEMENT_NODE));
+          elementNodes.push(
+              ...Array.from(record.addedNodes)
+                  .filter((n) => n.nodeType === Node.ELEMENT_NODE));
         }
         assert.equal(elementNodes.length, 1);
 
         mutationRecords = [];
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
         await new Promise(setTimeout);
         assert.equal(mutationRecords.length, 0);
       });
@@ -716,13 +785,15 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}</div>`;
 
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
         const div = container.firstChild as HTMLDivElement;
         assert.equal(div.tagName, 'DIV');
 
         foo = 'bbb';
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
         const div2 = container.firstChild as HTMLDivElement;
         // check that only the part changed
         assert.equal(div, div2);
@@ -735,11 +806,15 @@ suite('lit-html', () => {
         const t = () => html`<div>${foo}${bar}</div>`;
 
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foobar</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div>foobar</div>');
 
         foo = 'bbb';
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbbbar</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div>bbbbar</div>');
       });
 
       test('renders and updates attributes', () => {
@@ -749,11 +824,15 @@ suite('lit-html', () => {
         const t = () => html`<div a="${foo}:${bar}"></div>`;
 
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div a="foo:bar"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div a="foo:bar"></div>');
 
         foo = 'bbb';
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div a="bbb:bar"></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div a="bbb:bar"></div>');
       });
 
       test('updates nested templates', () => {
@@ -773,25 +852,30 @@ suite('lit-html', () => {
         };
 
         render(t(true), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>baz');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>baz');
 
         foo = 'bbb';
         render(t(true), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<h1>bbb</h1>baz');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<h1>bbb</h1>baz');
 
         render(t(false), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<h2>bar</h2>baz');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<h2>bar</h2>baz');
       });
 
       test('updates arrays', () => {
         let items = [1, 2, 3];
         const t = () => html`<div>${items}</div>`;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
 
         items = [3, 2, 1];
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>321</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>321</div>');
       });
 
       test('updates arrays that shrink then grow', () => {
@@ -800,30 +884,39 @@ suite('lit-html', () => {
 
         items = [1, 2, 3];
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
 
         items = [4];
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>4</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>4</div>');
 
         items = [5, 6, 7];
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>567</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>567</div>');
       });
 
       test('updates an element', () => {
         let child: any = document.createElement('p');
         const t = () => html`<div>${child}<div></div></div>`;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><p></p><div></div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><p></p><div></div></div>');
 
         child = undefined;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><div></div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><div></div></div>');
 
         child = document.createTextNode('foo');
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo<div></div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div>foo<div></div></div>');
       });
 
       test('updates an array of elements', () => {
@@ -835,22 +928,24 @@ suite('lit-html', () => {
         const t = () => html`<div>${children}</div>`;
         render(t(), container);
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML), '<div><p></p><a></a><span></span></div>');
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><p></p><a></a><span></span></div>');
 
         children = null;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
         children = document.createTextNode('foo');
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
       });
 
       test(
           'overwrites an existing TemplateInstance if one exists and does ' +
               'not have a matching Template',
           () => {
-
             render(html`<div>foo</div>`, container);
 
             assert.equal(container.children.length, 1);
@@ -865,11 +960,9 @@ suite('lit-html', () => {
 
             assert.notEqual(fooDiv, barDiv);
           });
-
     });
 
     suite('extensibility', () => {
-
       // These tests demonstrate how a flavored layer on top of lit-html could
       // modify the parsed Template to implement different behavior, like
       // setting properties instead of attributes.
@@ -919,7 +1012,8 @@ suite('lit-html', () => {
         const container = document.createElement('div');
         const t = testHtml`<div someProp="${123}"></div>`;
         render(t, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
 
@@ -927,16 +1021,14 @@ suite('lit-html', () => {
         const container = document.createElement('div');
         const t = testHtml`${html`<div someProp="${123}"></div>`}`;
         render(t, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div></div>');
         assert.strictEqual((container.firstElementChild as any).someProp, 123);
       });
-
     });
-
   });
 
   suite('NodePart', () => {
-
     let container: HTMLElement;
     let startNode: Node;
     let endNode: Node;
@@ -956,7 +1048,6 @@ suite('lit-html', () => {
     });
 
     suite('setValue', () => {
-
       test('accepts a string', () => {
         part.setValue('foo');
         assert.equal(stripExpressionDelimeters(container.innerHTML), 'foo');
@@ -1015,7 +1106,8 @@ suite('lit-html', () => {
 
       test('accepts nested templates', () => {
         part.setValue(html`<h1>${'foo'}</h1>`);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>');
       });
 
       test('accepts arrays of nested templates', () => {
@@ -1030,29 +1122,37 @@ suite('lit-html', () => {
           document.createElement('span')
         ];
         part.setValue(children);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<p></p><a></a><span></span>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<p></p><a></a><span></span>');
       });
 
       test('updates a simple value to a complex one', () => {
         let value: string|TemplateResult = 'foo';
         const t = () => html`<div>${value}</div>`;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
         value = html`<span>bar</span>`;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><span>bar</span></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><span>bar</span></div>');
       });
 
       test('updates a complex value to a simple one', () => {
         let value: string|TemplateResult = html`<span>bar</span>`;
         const t = () => html`<div>${value}</div>`;
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div><span>bar</span></div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div><span>bar</span></div>');
 
         value = 'foo';
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
       });
 
       test('updates when called multiple times with simple values', () => {
@@ -1135,11 +1235,15 @@ suite('lit-html', () => {
         const t = () => html`<p></p>${items}<a></a>`;
 
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<p></p>123<a></a>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<p></p>123<a></a>');
 
         items = [1, 2, 3, 4];
         render(t(), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<p></p>1234<a></a>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<p></p>1234<a></a>');
       });
 
       test(
@@ -1148,12 +1252,14 @@ suite('lit-html', () => {
             let value = 'foo';
             const r = () => html`<h1>${value}</h1>`;
             part.setValue(r());
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>');
             const originalH1 = container.querySelector('h1');
 
             value = 'bar';
             part.setValue(r());
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<h1>bar</h1>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML), '<h1>bar</h1>');
             const newH1 = container.querySelector('h1');
             assert.strictEqual(newH1, originalH1);
           });
@@ -1164,20 +1270,22 @@ suite('lit-html', () => {
             let items = [1, 2, 3];
             const r = () => items.map((i) => html`<li>${i}</li>`);
             part.setValue(r());
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<li>1</li><li>2</li><li>3</li>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                '<li>1</li><li>2</li><li>3</li>');
             const originalLIs = Array.from(container.querySelectorAll('li'));
 
             items = [3, 2, 1];
             part.setValue(r());
-            assert.equal(stripExpressionDelimeters(container.innerHTML), '<li>3</li><li>2</li><li>1</li>');
+            assert.equal(
+                stripExpressionDelimeters(container.innerHTML),
+                '<li>3</li><li>2</li><li>1</li>');
             const newLIs = Array.from(container.querySelectorAll('li'));
             assert.deepEqual(newLIs, originalLIs);
           });
-
     });
 
     suite('clear', () => {
-
       test('is a no-op on an already empty range', () => {
         part.clear();
         assert.deepEqual(
@@ -1190,9 +1298,6 @@ suite('lit-html', () => {
         assert.deepEqual(
             Array.from(container.childNodes), [startNode, endNode]);
       });
-
     });
-
   });
-
 });

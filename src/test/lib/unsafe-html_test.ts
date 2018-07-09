@@ -23,7 +23,6 @@ import {stripExpressionDelimeters} from '../test-helpers.js';
 const assert = chai.assert;
 
 suite('unsafeHTML', () => {
-
   let container: HTMLElement;
 
   setup(() => {
@@ -35,7 +34,8 @@ suite('unsafeHTML', () => {
         html`<div>before${unsafeHTML('<span>inner</span>after</div>')}`,
         container);
     assert.equal(
-        stripExpressionDelimeters(container.innerHTML), '<div>before<span>inner</span>after</div>');
+        stripExpressionDelimeters(container.innerHTML),
+        '<div>before<span>inner</span>after</div>');
   });
 
   test('dirty checks primitive values', () => {
@@ -44,19 +44,22 @@ suite('unsafeHTML', () => {
 
     // Initial render
     render(t(), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
 
     // Modify instance directly. Since lit-html doesn't dirty check against
     // actual DOM, but again previous part values, this modification should
     // persist through the next render if dirty checking works.
     const text = container.firstChild!.childNodes[1] as Text;
     text.textContent = 'bbb';
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
 
     // Re-render with the same value
     render(t(), container);
 
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
     const text2 = container.firstChild!.childNodes[1] as Text;
     assert.strictEqual(text, text2);
   });
@@ -67,12 +70,13 @@ suite('unsafeHTML', () => {
 
     // Initial render
     render(t(), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
 
     // Re-render with the same value, but a different deep property
     value[0] = 'bbb';
     render(t(), container);
-    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+    assert.equal(
+        stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
   });
-
 });

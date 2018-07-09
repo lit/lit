@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart, _isPrimitiveValue} from '../lit-html.js';
+import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../lit-html.js';
 
 /**
  * Renders the result as HTML, rather than text.
