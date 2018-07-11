@@ -54,6 +54,8 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  *
  *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
+ * @deprecated Please use /lit-html.js instead. lit-extended will be removed in
+ *     a future version.
  */
 export const extendedPartCallback =
     (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
