@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {removeNodes, Template, templateCaches, TemplateContainer, TemplateInstance, TemplateResult} from '../lit-html.js';
+import {removeNodes, Template, templateCaches, TemplateContainer, TemplateInstance, TemplateResult} from '../core.js';
 
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 
-export {html, svg, TemplateResult} from '../lit-html.js';
+export {html, svg, TemplateResult} from '../core.js';
 
 declare global {
   interface Window {

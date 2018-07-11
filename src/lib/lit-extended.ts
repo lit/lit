@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
 
-export {render} from '../lit-html.js';
+export {render} from '../core.js';
 
 /**
  * Interprets a template literal as a lit-extended HTML template.

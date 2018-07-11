@@ -15,13 +15,13 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
 
 import {stripExpressionDelimeters} from './test-helpers.js';
 
 const assert = chai.assert;
 
-suite('lit-html', () => {
+suite('Core', () => {
   suite('html', () => {
     test('returns a TemplateResult', () => {
       assert.instanceOf(html``, TemplateResult);
