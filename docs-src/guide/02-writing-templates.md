@@ -60,7 +60,7 @@ There are a few types of bindings:
     ```
   * Boolean Attribute:
     ```js
-    html`<input type="checkbox" checked?=${checked}>`
+    html`<input type="checkbox" ?checked=${checked}>`
     ```
   * Property:
     ```js
@@ -68,7 +68,7 @@ There are a few types of bindings:
     ```
   * Event Handler:
     ```js
-    html`<button on-click=${(e) => console.log('clicked')}>Click Me</button>`
+    html`<button @click=${(e) => console.log('clicked')}>Click Me</button>`
     ```
 
 ## Supported Types

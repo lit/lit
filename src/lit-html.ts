@@ -33,7 +33,7 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  * event handlers, and boolean attributes.
  *
  * Properties are set by prefixing an attribute name with `.`.
- * 
+ *
  * Attribute names in lit-html templates preserve case, so properties are case
  * sensitive. If an
  * expression takes up an entire attribute value, then the property is set to
@@ -52,9 +52,9 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
  * Boolean attributes are set by appending `?` to an attribute name.
- * 
+ *
  * Example:
- * 
+ *
  *     html`<input type="checkbox" checked?=${value}>`
  */
 export const partCallback =
@@ -62,19 +62,20 @@ export const partCallback =
      templatePart: TemplatePart,
      node: Node): Part => {
       if (templatePart.type === 'attribute') {
-        const name = templatePart.name;
-        if (name!.substr(0, 3) === 'on-') {
-          return new EventPart(instance, node as Element, name!.slice(3));
-        }
-        if (name![0] === '.') {
+        const name = templatePart.name!;
+        const prefix = name[0];
+        if (prefix === '.') {
           return new PropertyPart(
-              instance, node as Element, name!.slice(1), templatePart.strings!);
+              instance, node as Element, name.slice(1), templatePart.strings!);
         }
-        if (name!.substr(name!.length - 1) === '?') {
+        if (prefix === '@') {
+          return new EventPart(instance, node as Element, name.slice(1));
+        }
+        if (prefix === '?') {
           return new BooleanAttributePart(
               instance,
               node as Element,
-              name!.slice(0, -1),
+              name.slice(1),
               templatePart.strings!);
         }
       }

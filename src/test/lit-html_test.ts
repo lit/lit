@@ -68,7 +68,7 @@ suite('lit-extended', () => {
     });
 
     test('renders a boolean attribute as an empty string when truthy', () => {
-      const t = (value: any) => html`<div foo?="${value}"></div>`;
+      const t = (value: any) => html`<div ?foo="${value}"></div>`;
 
       render(t(true), container);
       assert.equal(
@@ -84,7 +84,7 @@ suite('lit-extended', () => {
     });
 
     test('removes a boolean attribute when falsey', () => {
-      const t = (value: any) => html`<div foo?="${value}"></div>`;
+      const t = (value: any) => html`<div ?foo="${value}"></div>`;
 
       render(t(false), container);
       assert.equal(
@@ -168,7 +168,7 @@ suite('lit-extended', () => {
         event = e;
         thisValue = this;
       };
-      render(html`<div on-click=${listener}></div>`, container);
+      render(html`<div @click=${listener}></div>`, container);
       const div = container.firstChild as HTMLElement;
       div.click();
       assert.equal(thisValue, div);
@@ -189,7 +189,7 @@ suite('lit-extended', () => {
           thisValue = this;
         }
       };
-      render(html`<div on-click=${listener}></div>`, container);
+      render(html`<div @click=${listener}></div>`, container);
       const div = container.firstChild as HTMLElement;
       div.click();
       assert.equal(thisValue, listener);
@@ -200,8 +200,8 @@ suite('lit-extended', () => {
       const listener = () => {
         count++;
       };
-      render(html`<div on-click=${listener}></div>`, container);
-      render(html`<div on-click=${listener}></div>`, container);
+      render(html`<div @click=${listener}></div>`, container);
+      render(html`<div @click=${listener}></div>`, container);
 
       const div = container.firstChild as HTMLElement;
       div.click();
@@ -217,8 +217,8 @@ suite('lit-extended', () => {
       const listener2 = () => {
         count2++;
       };
-      render(html`<div on-click=${listener1}></div>`, container);
-      render(html`<div on-click=${listener2}></div>`, container);
+      render(html`<div @click=${listener1}></div>`, container);
+      render(html`<div @click=${listener2}></div>`, container);
 
       const div = container.firstChild as HTMLElement;
       div.click();
@@ -230,7 +230,7 @@ suite('lit-extended', () => {
         'allows updating event listener without extra calls to remove/addEventListener',
         () => {
           let listener: Function|null;
-          const t = () => html`<div on-click=${listener}></div>`;
+          const t = () => html`<div @click=${listener}></div>`;
           render(t(), container);
           const div = container.firstChild as HTMLElement;
           let addCount = 0;
@@ -261,7 +261,7 @@ suite('lit-extended', () => {
     test('removes event listeners', () => {
       let target;
       let listener: any = (e: any) => target = e.target;
-      const t = () => html`<div on-click=${listener}></div>`;
+      const t = () => html`<div @click=${listener}></div>`;
       render(t(), container);
       const div = container.firstChild as HTMLElement;
       div.click();
