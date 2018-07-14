@@ -59,20 +59,23 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
 export const partCallback =
     (instance: TemplateInstance,
      templatePart: TemplatePart,
-     node: Node): Part => {
+     node: Node): Part[] => {
       if (templatePart.type === 'attribute') {
         const name = templatePart.name!;
         const prefix = name[0];
         if (prefix === '.') {
-          return new PropertyPart(
-              instance, node as Element, name.slice(1), templatePart.strings!);
+          return [new PropertyPart(
+              instance, node as Element, name.slice(1), templatePart.strings!)];
         }
         if (prefix === '@') {
-          return new EventPart(instance, node as Element, name.slice(1));
+          return [new EventPart(instance, node as Element, name.slice(1))];
         }
         if (prefix === '?') {
-          return new BooleanAttributePart(
-              instance, node as Element, name.slice(1), templatePart.strings!);
+          return [new BooleanAttributePart(
+              instance,
+              node as Element,
+              name.slice(1),
+              templatePart.strings!)];
         }
       }
       return defaultPartCallback(instance, templatePart, node);
@@ -128,7 +131,7 @@ export class PropertyPart extends AttributePart {
   }
 }
 
-export class EventPart implements Part {
+export class EventPart extends Part {
   instance: TemplateInstance;
   element: Element;
   eventName: string;

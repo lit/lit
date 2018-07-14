@@ -23,11 +23,18 @@ import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../core.js';
  */
 export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
     directive((part: NodePart): void => {
-      if (part._previousValue === value && _isPrimitiveValue(value)) {
+
+      // Dirty check primitive values
+      if (part._value === value && _isPrimitiveValue(value)) {
         return;
       }
+
+      // Use a <template> to parse HTML into Nodes
       const tmp = document.createElement('template');
       tmp.innerHTML = value;
       part.setValue(document.importNode(tmp.content, true));
-      part._previousValue = value;
+
+      // Remember the actual value passed to unsafeHTML rather than the DOM
+      // Nodes we created
+      part._value = value;
     });

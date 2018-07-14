@@ -455,119 +455,111 @@ const isDirective = (o: any) =>
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
  */
-export const noChange = {};
+export const noChange = {'noChange': true};
 
 /**
  * @deprecated Use `noChange` instead.
  */
 export {noChange as directiveValue};
 
-export const _isPrimitiveValue = (value: any) => value === null ||
-    !(typeof value === 'object' || typeof value === 'function');
+export const _isPrimitiveValue = (value: any) => (value === null ||
+    !(typeof value === 'object' || typeof value === 'function'));
 
-export interface Part {
-  instance: TemplateInstance;
-  size?: number;
+/**
+ * The Part interface represents a dynamic part of a template instance rendered
+ * by lit-html.
+ */
+export abstract class Part {
+  _value: any = undefined;
+    
+  abstract setValue(value: any): void;
+
+  abstract commit(): void;
 }
 
-export interface SinglePart extends Part {
-  setValue(value: any): void;
-}
-
-export interface MultiPart extends Part {
-  setValue(values: any[], startIndex: number): void;
-}
-
-export class AttributePart implements MultiPart {
-  instance: TemplateInstance;
+export class AttributeCommitter {
   element: Element;
   name: string;
   strings: string[];
-  size: number;
-  _previousValues: any;
+  parts: AttributePart[];
 
-  constructor(
-      instance: TemplateInstance, element: Element, name: string,
-      strings: string[]) {
-    this.instance = instance;
+  constructor(element: Element, name: string, strings: string[]) {
     this.element = element;
     this.name = name;
     this.strings = strings;
-    this.size = strings.length - 1;
-
-    this._previousValues = [];
+    this.parts = [];
+    for (let i = 0; i < strings.length - 1; i++) {
+      this.parts[i] = new AttributePart(this);
+    }
   }
 
-  protected _interpolate(values: any[], startIndex: number) {
+  commit(): void {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
 
     for (let i = 0; i < l; i++) {
       text += strings[i];
-      const v = getValue(this, values[startIndex + i]);
-      if (v && v !== noChange &&
-          (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
-        for (const t of v) {
-          // TODO: we need to recursively call getValue into iterables...
-          text += t;
+      const part = this.parts[i];
+      if (part !== undefined) {
+        const v = part._value;
+        if (v != null && (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
+          for (const t of v) {
+            text += t;
+          }
+        } else {
+          text += v;
         }
-      } else {
-        text += v;
       }
     }
-    return text + strings[l];
-  }
 
-  protected _equalToPreviousValues(values: any[], startIndex: number) {
-    if (this._previousValues.length === 0) {
-      // Always return false for the initial render, otherwise parts with an
-      // undefined value won't get rendered.
-      return false;
-    }
-    for (let i = startIndex; i < startIndex + this.size; i++) {
-      if (this._previousValues[i] !== values[i] ||
-          !_isPrimitiveValue(values[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  setValue(values: any[], startIndex: number): void {
-    if (this._equalToPreviousValues(values, startIndex)) {
-      return;
-    }
-    const s = this.strings;
-    let value: any;
-    if (s.length === 2 && s[0] === '' && s[1] === '') {
-      // An expression that occupies the whole attribute value will leave
-      // leading and trailing empty strings.
-      value = getValue(this, values[startIndex]);
-      if (Array.isArray(value)) {
-        value = value.join('');
-      }
-    } else {
-      value = this._interpolate(values, startIndex);
-    }
-    if (value !== noChange) {
-      this.element.setAttribute(this.name, value);
-    }
-    this._previousValues = values;
+    text += strings[l];
+    this.element.setAttribute(this.name, text);
   }
 }
 
-export class NodePart implements SinglePart {
+export class AttributePart extends Part {
+  committer: AttributeCommitter;
+  private _dirty = true;
+
+  constructor(comitter: AttributeCommitter) {
+    super();
+    this.committer = comitter;
+  }
+
+  setValue(value: any): void {
+    value = getValue(this, value);
+    if (value === noChange) {
+      this._dirty = false;
+      return;
+    }
+    if (_isPrimitiveValue(value)) {
+      if (value === this._value) {
+        return;
+      }
+    }
+    this._value = value;
+    this._dirty = true;
+  }
+
+  commit() {
+    if (this._dirty) {
+      this._dirty = false;
+      this.committer.commit();
+    }
+  }
+}
+
+export class NodePart extends Part {
   instance: TemplateInstance;
   startNode: Node;
   endNode: Node;
-  _previousValue: any;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
+    super();
     this.instance = instance;
     this.startNode = startNode;
     this.endNode = endNode;
-    this._previousValue = undefined;
   }
 
   setValue(value: any): void {
@@ -577,8 +569,8 @@ export class NodePart implements SinglePart {
     }
     if (_isPrimitiveValue(value)) {
       // Handle primitive values
-      // If the value didn't change, do nothing
-      if (value === this._previousValue) {
+      if (value === this._value) {
+        // If the value didn't change, do nothing
         return;
       }
       this._setText(value);
@@ -601,12 +593,12 @@ export class NodePart implements SinglePart {
   }
 
   private _setNode(value: Node): void {
-    if (this._previousValue === value) {
+    if (this._value === value) {
       return;
     }
     this.clear();
     this._insert(value);
-    this._previousValue = value;
+    this._value = value;
   }
 
   private _setText(value: string): void {
@@ -622,19 +614,19 @@ export class NodePart implements SinglePart {
     } else {
       this._setNode(document.createTextNode(value));
     }
-    this._previousValue = value;
+    this._value = value;
   }
 
   private _setTemplateResult(value: TemplateResult): void {
     const template = this.instance._getTemplate(value);
     let instance: TemplateInstance;
-    if (this._previousValue && this._previousValue.template === template) {
-      instance = this._previousValue;
+    if (this._value && this._value.template === template) {
+      instance = this._value;
     } else {
       instance = new TemplateInstance(
           template, this.instance._partCallback, this.instance._getTemplate);
       this._setNode(instance._clone());
-      this._previousValue = instance;
+      this._value = instance;
     }
     instance.update(value.values);
   }
@@ -650,14 +642,14 @@ export class NodePart implements SinglePart {
     // iterable and _previousValue will contain the NodeParts from the previous
     // render. If _previousValue is not an array, clear this part and make a new
     // array for NodeParts.
-    if (!Array.isArray(this._previousValue)) {
+    if (!Array.isArray(this._value)) {
       this.clear();
-      this._previousValue = [];
+      this._value = [];
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._previousValue as any[];
+    const itemParts = this._value as any[];
     let partIndex = 0;
 
     for (const item of value) {
@@ -686,7 +678,7 @@ export class NodePart implements SinglePart {
 
     if (partIndex === 0) {
       this.clear();
-      this._previousValue = undefined;
+      this._value = undefined;
     } else if (partIndex < itemParts.length) {
       const lastPart = itemParts[partIndex - 1];
       // Truncate the parts array so _previousValue reflects the current state
@@ -697,9 +689,9 @@ export class NodePart implements SinglePart {
   }
 
   private _setPromise(value: Promise<any>): void {
-    this._previousValue = value;
+    this._value = value;
     value.then((v: any) => {
-      if (this._previousValue === value) {
+      if (this._value === value) {
         this.setValue(v);
       }
     });
@@ -709,24 +701,28 @@ export class NodePart implements SinglePart {
     removeNodes(
         this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
+
+  commit() {
+    // nothing for now...
+  }
+
 }
 
 export type PartCallback =
     (instance: TemplateInstance, templatePart: TemplatePart, node: Node) =>
-        Part;
+        Part[];
 
 export const defaultPartCallback =
     (instance: TemplateInstance,
      templatePart: TemplatePart,
-     node: Node): Part => {
+     node: Node): Part[] => {
       if (templatePart.type === 'attribute') {
-        return new AttributePart(
-            instance, node as Element, templatePart.name!, templatePart.strings!
-        );
+        const comitter = new AttributeCommitter(node as Element, templatePart.name!, templatePart.strings!);
+        return comitter.parts;
       } else if (templatePart.type === 'node') {
-        return new NodePart(instance, node, node.nextSibling!);
+        return [new NodePart(instance, node, node.nextSibling!)];
       }
-      throw new Error(`Unknown part type ${templatePart.type}`);
+      throw [new Error(`Unknown part type ${templatePart.type}`)];
     };
 
 
@@ -749,16 +745,16 @@ export class TemplateInstance {
   }
 
   update(values: any[]) {
-    let valueIndex = 0;
+    let i = 0;
     for (const part of this._parts) {
-      if (!part) {
-        valueIndex++;
-      } else if (part.size === undefined) {
-        (part as SinglePart).setValue(values[valueIndex]);
-        valueIndex++;
-      } else {
-        (part as MultiPart).setValue(values, valueIndex);
-        valueIndex += part.size;
+      if (part !== undefined) {
+        part.setValue(values[i]);
+      }
+      i++;
+    }
+    for (const part of this._parts) {
+      if (part !== undefined) {
+        part.commit();
       }
     }
   }
@@ -798,7 +794,7 @@ export class TemplateInstance {
           this._parts.push(undefined);
           partIndex++;
         } else if (nodeIndex === part.index) {
-          this._parts.push(this._partCallback(this, part, node));
+          this._parts.push(...this._partCallback(this, part, node));
           partIndex++;
         } else {
           nodeIndex++;

@@ -26,6 +26,7 @@
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
     "checksize": "uglifyjs core.js -mc --toplevel | gzip -9 | wc -c",
+    "min": "uglifyjs core.js -mc --toplevel",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
     "prepare": "npm run build"

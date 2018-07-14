@@ -36,10 +36,10 @@ export const asyncAppend = <T>(
     DirectiveFn<NodePart> => directive(async (part: NodePart) => {
       // If we've already set up this particular iterable, we don't need
       // to do anything.
-      if (value === part._previousValue) {
+      if (value === part._value) {
         return;
       }
-      part._previousValue = value;
+      part._value = value;
 
       // We keep track of item Parts across iterations, so that we can
       // share marker nodes between consecutive Parts.
@@ -55,7 +55,7 @@ export const asyncAppend = <T>(
 
         // Check to make sure that value is the still the current value of
         // the part, and if not bail because a new value owns this part
-        if (part._previousValue !== value) {
+        if (part._value !== value) {
           break;
         }
 
