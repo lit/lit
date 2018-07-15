@@ -79,8 +79,12 @@ function removeStylesFromLitTemplates(scopeName: string) {
     if (templates !== undefined) {
       templates.forEach((template) => {
         const {element: {content}} = template;
-        const styles = content.querySelectorAll('style');
-        removeNodesFromTemplate(template, new Set(Array.from(styles)));
+        // IE 11 doesn't support the iterable param Set constructor
+        const styles = new Set<Element>();
+        Array.from(content.querySelectorAll('style')).forEach((s: Element) => {
+          styles.add(s);
+        });
+        removeNodesFromTemplate(template, styles);
       });
     }
   });
