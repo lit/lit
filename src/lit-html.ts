@@ -178,11 +178,10 @@ export function render(
   (container as TemplateContainer).__templateInstance = instance;
 
   const fragment = instance._clone();
+  instance.update(result.values);
 
   removeNodes(container, container.firstChild);
   container.appendChild(fragment);
-
-  instance.update(result.values);
 }
 
 /**
@@ -329,28 +328,16 @@ export class Template {
               const attributeNameInPart =
                   lastAttributeNameRegex.exec(stringForPart)![1];
 
-              // Find the corresponding attribute
-              // If the attribute name contains special characters, lower-case
-              // it so that on XML nodes with case-sensitive getAttribute() we
-              // can still find the attribute, which will have been lower-cased
-              // by the parser.
-              //
-              // If the attribute name doesn't contain special character, it's
-              // important to _not_ lower-case it, in case the name is
-              // case-sensitive, like with XML attributes like "viewBox".
-              const attributeLookupName =
-                  /^[a-zA-Z-]*$/.test(attributeNameInPart) ?
-                  attributeNameInPart :
-                  attributeNameInPart.toLowerCase();
-              const attributeValue = node.getAttribute(attributeLookupName)!;
-              const stringsForAttributeValue =
-                  attributeValue.split(markerRegex);
+              const attr = getAttributeNode(node, attributeNameInPart);
+              const stringsForAttributeValue = attr.value.split(markerRegex);
               this.parts.push(new TemplatePart(
                   'attribute',
                   index,
                   attributeNameInPart,
                   stringsForAttributeValue));
-              node.removeAttribute(attributeLookupName);
+              // Don't remove the attribute, it's impossible to recreate
+              // attributes with invalid XML names.
+              attr.value = '';
               partIndex += stringsForAttributeValue.length - 1;
             }
           }
@@ -559,7 +546,8 @@ export class AttributePart implements MultiPart {
       value = this._interpolate(values, startIndex);
     }
     if (value !== noChange) {
-      this.element.setAttribute(this.name, value);
+      const attr = getAttributeNode(this.element, this.name);
+      attr.value = value;
     }
     this._previousValues = values;
   }
@@ -855,3 +843,36 @@ export const removeNodes =
             node = n;
           }
         };
+
+/**
+ * Finds the Attr node corresponding to name.
+ */
+export const getAttributeNode = (element: Element, name: string): Attr => {
+  // Find the corresponding attribute
+  // If the attribute name contains special characters, lower-case
+  // it so that on XML nodes with case-sensitive getAttribute() we
+  // can still find the attribute, which will have been lower-cased
+  // by the parser.
+  //
+  // If the attribute name doesn't contain special character, it's
+  // important to _not_ lower-case it, in case the name is
+  // case-sensitive, like with XML attributes like "viewBox".
+  name = /^[a-zA-Z-]*$/.test(name) ?  name : name.toLowerCase();
+  try {
+    const attr = element.getAttributeNode(name);
+    if (attr) {
+      return attr;
+    }
+  } catch (e) {
+    // Edge doesn't like attribute names that don't follow the XML spec
+    // https://www.w3.org/TR/xml/#NT-Name
+    const attributes = element.attributes;
+    for (let i = 0; i < attributes.length; i++) {
+      const attr = attributes[i];
+      if (attr.name === name) {
+        return attr;
+      }
+    }
+  }
+  throw new Error(`Unable to find attribute ${name}`);
+};

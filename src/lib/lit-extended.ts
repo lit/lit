@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../lit-html.js';
+import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult, getAttributeNode} from '../lit-html.js';
 
 export {render} from '../lit-html.js';
 
@@ -61,21 +61,24 @@ export const extendedPartCallback =
               const eventName = templatePart.rawName!.slice(3);
               return new EventPart(instance, node as Element, eventName);
             }
+            const element = node as Element;
             const lastChar =
                 templatePart.name!.substr(templatePart.name!.length - 1);
             if (lastChar === '$') {
               const name = templatePart.name!.slice(0, -1);
               return new AttributePart(
-                  instance, node as Element, name, templatePart.strings!);
+                  instance, element, name, templatePart.strings!);
             }
             if (lastChar === '?') {
               const name = templatePart.name!.slice(0, -1);
               return new BooleanAttributePart(
-                  instance, node as Element, name, templatePart.strings!);
+                  instance, element, name, templatePart.strings!);
             }
+            const attr = getAttributeNode(element, templatePart.rawName!);
+            element.removeAttributeNode(attr);
             return new PropertyPart(
                 instance,
-                node as Element,
+                element,
                 templatePart.rawName!,
                 templatePart.strings!);
           }
@@ -90,6 +93,14 @@ export const extendedPartCallback =
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart extends AttributePart {
+  private _attribute: Attr;
+
+  constructor(
+      instance: TemplateInstance, element: Element, name: string,
+      strings: string[]) {
+    super(instance, element, name, strings);
+    this._attribute = getAttributeNode(element, name);
+  }
   setValue(values: any[], startIndex: number): void {
     const s = this.strings;
     if (s.length === 2 && s[0] === '' && s[1] === '') {
@@ -98,9 +109,9 @@ export class BooleanAttributePart extends AttributePart {
         return;
       }
       if (value) {
-        this.element.setAttribute(this.name, '');
+        this.element.setAttributeNode(this._attribute);
       } else {
-        this.element.removeAttribute(this.name);
+        this.element.removeAttributeNode(this._attribute);
       }
     } else {
       throw new Error(
