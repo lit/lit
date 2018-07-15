@@ -64,18 +64,22 @@ export const extendedPartCallback =
             const element = node as Element;
             const lastChar =
                 templatePart.name!.substr(templatePart.name!.length - 1);
+            const attr = getAttributeNode(element, templatePart.rawName!);
+            element.removeAttributeNode(attr);
             if (lastChar === '$') {
               const name = templatePart.name!.slice(0, -1);
+              // Hope the name's valid XML now...
+              element.setAttribute(name, '');
               return new AttributePart(
                   instance, element, name, templatePart.strings!);
             }
             if (lastChar === '?') {
               const name = templatePart.name!.slice(0, -1);
+              // Hope the name's valid XML now...
+              element.setAttribute(name, '');
               return new BooleanAttributePart(
                   instance, element, name, templatePart.strings!);
             }
-            const attr = getAttributeNode(element, templatePart.rawName!);
-            element.removeAttributeNode(attr);
             return new PropertyPart(
                 instance,
                 element,
