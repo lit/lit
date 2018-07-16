@@ -237,6 +237,23 @@ suite('lit-html', () => {
             '<div>foo bar</div>');
       });
 
+      test('renders forms as elements', () => {
+        // forms are both Node and iterable
+
+        const form = document.createElement('form');
+        const inputOne = document.createElement('input');
+        inputOne.name = 'one';
+        const inputTwo = document.createElement('input');
+        inputTwo.name = 'two';
+
+        form.appendChild(inputOne);
+        form.appendChild(inputTwo);
+
+        render(html`${form}`, container);
+
+        assert.equal(stripExpressionDelimeters(container.innerHTML), '<form><input name="one"><input name="two"></form>');
+      });
+
       const testSkipForTemplatePolyfill =
           ((HTMLTemplateElement as any).decorate != null ||
            (window as any).ShadyDOM && (window as any).ShadyDOM.inUse) ?
