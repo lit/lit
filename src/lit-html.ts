@@ -592,10 +592,10 @@ export class NodePart implements SinglePart {
       this._setText(value);
     } else if (value instanceof TemplateResult) {
       this._setTemplateResult(value);
-    } else if (Array.isArray(value) || value[Symbol.iterator]) {
-      this._setIterable(value);
     } else if (value instanceof Node) {
       this._setNode(value);
+    } else if (Array.isArray(value) || value[Symbol.iterator]) {
+      this._setIterable(value);
     } else if (value.then !== undefined) {
       this._setPromise(value);
     } else {
