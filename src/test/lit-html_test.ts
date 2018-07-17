@@ -15,13 +15,13 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {directive, html as htmlPlain} from '../core.js';
-import {html, PropertyPart, render} from '../lit-html.js';
+import {directive, html as htmlPlain, AttributePart} from '../core.js';
+import {html, render} from '../lit-html.js';
 import {stripExpressionDelimeters} from './test-helpers.js';
 
 const assert = chai.assert;
 
-suite('lit-extended', () => {
+suite('lit-html', () => {
   suite('render', () => {
     let container: HTMLElement;
 
@@ -275,8 +275,8 @@ suite('lit-extended', () => {
     });
 
     test('renders directives on PropertyParts', () => {
-      const fooDirective = directive((part: PropertyPart) => {
-        (part.element as any)[part.name] = 1234;
+      const fooDirective = directive((part: AttributePart) => {
+        (part.committer.element as any)[part.committer.name] = 1234;
       });
 
       render(html`<div .foo="${fooDirective}"></div>`, container);

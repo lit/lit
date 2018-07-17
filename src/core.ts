@@ -455,7 +455,7 @@ const isDirective = (o: any) =>
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
  */
-export const noChange = {'noChange': true};
+export const noChange = {};
 
 /**
  * @deprecated Use `noChange` instead.
@@ -469,12 +469,12 @@ export const _isPrimitiveValue = (value: any) => (value === null ||
  * The Part interface represents a dynamic part of a template instance rendered
  * by lit-html.
  */
-export abstract class Part {
-  _value: any = undefined;
-    
-  abstract setValue(value: any): void;
+export interface Part {
+  _value: any;
+  
+  setValue(value: any): void;
 
-  abstract commit(): void;
+  commit(): void;
 }
 
 export class AttributeCommitter {
@@ -493,7 +493,7 @@ export class AttributeCommitter {
     }
   }
 
-  commit(): void {
+  protected _getValue(): any {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
@@ -514,16 +514,21 @@ export class AttributeCommitter {
     }
 
     text += strings[l];
-    this.element.setAttribute(this.name, text);
+    return text;
+  }
+
+  commit(): void {
+    // console.log('AttributeCommitter.commit');
+    this.element.setAttribute(this.name, this._getValue());
   }
 }
 
-export class AttributePart extends Part {
+export class AttributePart implements Part {
   committer: AttributeCommitter;
+  _value: any = undefined;
   private _dirty = true;
 
   constructor(comitter: AttributeCommitter) {
-    super();
     this.committer = comitter;
   }
 
@@ -550,13 +555,13 @@ export class AttributePart extends Part {
   }
 }
 
-export class NodePart extends Part {
+export class NodePart implements Part {
   instance: TemplateInstance;
   startNode: Node;
   endNode: Node;
+  _value: any = undefined;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
-    super();
     this.instance = instance;
     this.startNode = startNode;
     this.endNode = endNode;

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
+import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult, AttributeCommitter} from './core.js';
 
 export {render} from './core.js';
 
@@ -64,15 +64,14 @@ export const partCallback =
         const name = templatePart.name!;
         const prefix = name[0];
         if (prefix === '.') {
-          return [new PropertyPart(
-              instance, node as Element, name.slice(1), templatePart.strings!)];
+          const comitter = new PropertyCommitter(node as Element, templatePart.name!.slice(1), templatePart.strings!);
+          return comitter.parts;
         }
         if (prefix === '@') {
-          return [new EventPart(instance, node as Element, name.slice(1))];
+          return [new EventPart(node as Element, name.slice(1))];
         }
         if (prefix === '?') {
           return [new BooleanAttributePart(
-              instance,
               node as Element,
               name.slice(1),
               templatePart.strings!)];
@@ -88,79 +87,87 @@ export const partCallback =
  * If the value is truthy, then the attribute is present with a value of
  * ''. If the value is falsey, the attribute is removed.
  */
-export class BooleanAttributePart extends AttributePart {
-  setValue(values: any[], startIndex: number): void {
-    const s = this.strings;
-    if (s.length === 2 && s[0] === '' && s[1] === '') {
-      const value = getValue(this, values[startIndex]);
-      if (value === noChange) {
-        return;
-      }
-      if (value) {
+export class BooleanAttributePart implements Part {
+  element: Element;
+  name: string;
+  strings: string[];
+  _value: any = undefined;
+  private _dirty = true;
+
+  constructor(element: Element, name: string, strings: string[]) {
+    if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
+      throw new Error(
+          'boolean attributes can only contain a single expression');
+    }
+    this.element = element;
+    this.name = name;
+    this.strings = strings;
+  }
+
+  setValue(value: any): void {
+    value = getValue(this, value);
+    if (value === noChange) {
+      return;
+    }
+    this._value = !!value;
+    if (this._value !== !!value) {
+      this._dirty = true;
+    }
+  }
+
+  commit() {
+    if (this._dirty) {
+      this._dirty = false;
+      if (this._value) {
         this.element.setAttribute(this.name, '');
       } else {
         this.element.removeAttribute(this.name);
       }
-    } else {
-      throw new Error(
-          'boolean attributes can only contain a single expression');
     }
   }
 }
 
-export class PropertyPart extends AttributePart {
-  setValue(values: any[], startIndex: number): void {
-    const s = this.strings;
-    let value: any;
-    if (this._equalToPreviousValues(values, startIndex)) {
-      return;
-    }
-    if (s.length === 2 && s[0] === '' && s[1] === '') {
-      // An expression that occupies the whole attribute value will leave
-      // leading and trailing empty strings.
-      value = getValue(this, values[startIndex]);
-    } else {
-      // Interpolation, so interpolate
-      value = this._interpolate(values, startIndex);
-    }
-    if (value !== noChange) {
-      (this.element as any)[this.name] = value;
-    }
-
-    this._previousValues = values;
+export class PropertyCommitter extends AttributeCommitter {
+  commit(): void {
+    (this.element as any)[this.name] = this._getValue();
   }
 }
 
-export class EventPart extends Part {
-  instance: TemplateInstance;
+export class EventPart implements Part {
   element: Element;
   eventName: string;
-  private _listener: any;
+  _value: any = undefined;
+  private _dirty = true;
 
-  constructor(instance: TemplateInstance, element: Element, eventName: string) {
-    this.instance = instance;
+  constructor(element: Element, eventName: string) {
     this.element = element;
     this.eventName = eventName;
   }
 
   setValue(value: any): void {
-    const listener = getValue(this, value);
-    if (listener === this._listener) {
-      return;
+    value = getValue(this, value);
+    if (value !== noChange && (value == null) !== (this._value == null)) {
+      this._dirty = true;
+      this._value = value;
     }
-    if (listener == null) {
-      this.element.removeEventListener(this.eventName, this);
-    } else if (this._listener == null) {
-      this.element.addEventListener(this.eventName, this);
+  }
+
+  commit() {
+    if (this._dirty) {
+      this._dirty = false;
+      if (this._value == null) {
+        this.element.removeEventListener(this.eventName, this);
+      } else {
+        this.element.addEventListener(this.eventName, this);
+      }
     }
-    this._listener = listener;
   }
 
   handleEvent(event: Event) {
-    if (typeof this._listener === 'function') {
-      this._listener.call(this.element, event);
-    } else if (typeof this._listener.handleEvent === 'function') {
-      this._listener.handleEvent(event);
+    if (typeof this._value === 'function') {
+      this._value.call(this.element, event);
+    } else if (typeof this._value.handleEvent === 'function') {
+      this._value.handleEvent(event);
     }
   }
 }
