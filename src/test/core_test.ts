@@ -359,6 +359,24 @@ suite('Core', () => {
             '<div foo="bar"></div>');
       });
 
+      test('renders multiple bindings in an attribute', () => {
+
+        let mutationRecords: MutationRecord[] = [];
+        const mutationObserver = new MutationObserver((records) => {
+          mutationRecords = records;
+        });
+        mutationObserver.observe(container, {attributes: true, subtree: true});
+
+        render(html`<div foo="a${'b'}c${'d'}e"></div>`, container);
+
+        mutationRecords = mutationObserver.takeRecords();
+
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<div foo="abcde"></div>');
+        assert.equal(mutationRecords.length, 1);
+      });
+
       test('renders a case-sensitive attribute', () => {
         const size = 100;
         render(html`<svg viewBox="0 0 ${size} ${size}"></svg>`, container);
@@ -663,8 +681,11 @@ suite('Core', () => {
         // This test is sensitive to the exact binding in the style tag.
         // Make sure the binding takes up the whole element with no text
         // on either side of it
+
+        // Work around a false positive lit-html pluging lint error:
+        const h = html;
         render(
-            html`
+            h`
             <style>${'bar'}</style>
             <a href="/buy/${'foo'}"></a>
           `,
@@ -700,8 +721,7 @@ suite('Core', () => {
 
       test('renders directives on AttributeParts', () => {
         const fooDirective = directive((part: AttributePart) => {
-          console.log('fooDirective', part.committer.name);
-          part.committer.element.setAttribute(part.committer.name, 'foo');
+          part.setValue('foo');
         });
 
         render(html`<div foo="${fooDirective}"></div>`, container);

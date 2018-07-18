@@ -482,6 +482,7 @@ export class AttributeCommitter {
   name: string;
   strings: string[];
   parts: AttributePart[];
+  dirty = true;
 
   constructor(element: Element, name: string, strings: string[]) {
     this.element = element;
@@ -518,15 +519,16 @@ export class AttributeCommitter {
   }
 
   commit(): void {
-    // console.log('AttributeCommitter.commit');
-    this.element.setAttribute(this.name, this._getValue());
+    if (this.dirty) {
+      this.dirty = false;
+      this.element.setAttribute(this.name, this._getValue());
+    }
   }
 }
 
 export class AttributePart implements Part {
   committer: AttributeCommitter;
   _value: any = undefined;
-  private _dirty = true;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
@@ -535,7 +537,6 @@ export class AttributePart implements Part {
   setValue(value: any): void {
     value = getValue(this, value);
     if (value === noChange) {
-      this._dirty = false;
       return;
     }
     if (_isPrimitiveValue(value)) {
@@ -544,14 +545,11 @@ export class AttributePart implements Part {
       }
     }
     this._value = value;
-    this._dirty = true;
+    this.committer.dirty = true;
   }
 
   commit() {
-    if (this._dirty) {
-      this._dirty = false;
-      this.committer.commit();
-    }
+    this.committer.commit();
   }
 }
 

@@ -276,7 +276,7 @@ suite('lit-extended', () => {
 
     test('renders directives on PropertyParts', () => {
       const fooDirective = directive((part: AttributePart) => {
-        (part.committer.element as any)[part.committer.name] = 1234;
+        part.setValue(1234);
       });
 
       render(html`<div foo="${fooDirective}"></div>`, container);

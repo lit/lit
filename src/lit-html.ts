@@ -129,7 +129,10 @@ export class BooleanAttributePart implements Part {
 
 export class PropertyCommitter extends AttributeCommitter {
   commit(): void {
-    (this.element as any)[this.name] = this._getValue();
+    if (this.dirty) {
+      this.dirty = false;
+      (this.element as any)[this.name] = this._getValue();
+    }
   }
 }
 
