@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, Part, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
+import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
 
 import {stripExpressionDelimeters} from './test-helpers.js';
 
