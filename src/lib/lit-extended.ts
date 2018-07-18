@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
-import {BooleanAttributePart, EventPart, PropertyPart} from '../lit-html.js';
+import {defaultPartCallback, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult, AttributeCommitter} from '../core.js';
+import {BooleanAttributePart, EventPart, PropertyCommitter} from '../lit-html.js';
 
 export {render} from '../core.js';
-export {BooleanAttributePart, EventPart, PropertyPart} from '../lit-html.js';
+export {BooleanAttributePart, EventPart} from '../lit-html.js';
 
 /**
  * Interprets a template literal as a lit-extended HTML template.
@@ -59,29 +59,25 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  */
 export const extendedPartCallback =
     (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
-        Part => {
+        Part[] => {
           if (templatePart.type === 'attribute') {
             if (templatePart.rawName!.substr(0, 3) === 'on-') {
               const eventName = templatePart.rawName!.slice(3);
-              return new EventPart(instance, node as Element, eventName);
+              return [new EventPart(node as Element, eventName)];
             }
             const lastChar =
                 templatePart.name!.substr(templatePart.name!.length - 1);
             if (lastChar === '$') {
               const name = templatePart.name!.slice(0, -1);
-              return new AttributePart(
-                  instance, node as Element, name, templatePart.strings!);
+              const comitter = new AttributeCommitter(node as Element, name, templatePart.strings!);
+              return comitter.parts;
             }
             if (lastChar === '?') {
               const name = templatePart.name!.slice(0, -1);
-              return new BooleanAttributePart(
-                  instance, node as Element, name, templatePart.strings!);
+              return [new BooleanAttributePart(node as Element, name, templatePart.strings!)];
             }
-            return new PropertyPart(
-                instance,
-                node as Element,
-                templatePart.rawName!,
-                templatePart.strings!);
+            const comitter = new PropertyCommitter(node as Element, templatePart.name!, templatePart.strings!);
+            return comitter.parts;
           }
           return defaultPartCallback(instance, templatePart, node);
         };
