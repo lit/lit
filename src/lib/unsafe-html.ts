@@ -23,7 +23,6 @@ import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../core.js';
  */
 export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
     directive((part: NodePart): void => {
-
       // Dirty check primitive values
       if (part._value === value && _isPrimitiveValue(value)) {
         return;

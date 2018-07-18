@@ -15,8 +15,9 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {directive, html as htmlPlain, AttributePart} from '../core.js';
+import {AttributePart, directive, html as htmlPlain} from '../core.js';
 import {html, render} from '../lit-html.js';
+
 import {stripExpressionDelimeters} from './test-helpers.js';
 
 const assert = chai.assert;

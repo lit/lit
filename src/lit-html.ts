@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult, AttributeCommitter} from './core.js';
+import {AttributeCommitter, AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
 
 export {render} from './core.js';
 
@@ -57,28 +57,28 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  *     html`<input type="checkbox" ?checked=${value}>`
  */
 export const partCallback =
-    (instance: TemplateInstance,
-     templatePart: TemplatePart,
-     node: Node): Part[] => {
-      if (templatePart.type === 'attribute') {
-        const name = templatePart.name!;
-        const prefix = name[0];
-        if (prefix === '.') {
-          const comitter = new PropertyCommitter(node as Element, templatePart.name!.slice(1), templatePart.strings!);
-          return comitter.parts;
-        }
-        if (prefix === '@') {
-          return [new EventPart(node as Element, name.slice(1))];
-        }
-        if (prefix === '?') {
-          return [new BooleanAttributePart(
-              node as Element,
-              name.slice(1),
-              templatePart.strings!)];
-        }
-      }
-      return defaultPartCallback(instance, templatePart, node);
-    };
+    (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
+        Part[] => {
+          if (templatePart.type === 'attribute') {
+            const name = templatePart.name!;
+            const prefix = name[0];
+            if (prefix === '.') {
+              const comitter = new PropertyCommitter(
+                  node as Element,
+                  templatePart.name!.slice(1),
+                  templatePart.strings!);
+              return comitter.parts;
+            }
+            if (prefix === '@') {
+              return [new EventPart(node as Element, name.slice(1))];
+            }
+            if (prefix === '?') {
+              return [new BooleanAttributePart(
+                  node as Element, name.slice(1), templatePart.strings!)];
+            }
+          }
+          return defaultPartCallback(instance, templatePart, node);
+        };
 
 /**
  * Implements a boolean attribute, roughly as defined in the HTML
@@ -132,7 +132,8 @@ export class PropertyCommitter extends AttributeCommitter {
 
   constructor(element: Element, name: string, strings: string[]) {
     super(element, name, strings);
-    this.single = (strings.length === 2 && strings[0] === '' && strings[1] === '');
+    this.single =
+        (strings.length === 2 && strings[0] === '' && strings[1] === '');
   }
 
   _getValue() {

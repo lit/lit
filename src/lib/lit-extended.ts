@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {defaultPartCallback, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult, AttributeCommitter} from '../core.js';
+import {AttributeCommitter, defaultPartCallback, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
 import {BooleanAttributePart, EventPart, PropertyCommitter} from '../lit-html.js';
 
 export {render} from '../core.js';
@@ -69,14 +69,17 @@ export const extendedPartCallback =
                 templatePart.name!.substr(templatePart.name!.length - 1);
             if (lastChar === '$') {
               const name = templatePart.name!.slice(0, -1);
-              const comitter = new AttributeCommitter(node as Element, name, templatePart.strings!);
+              const comitter = new AttributeCommitter(
+                  node as Element, name, templatePart.strings!);
               return comitter.parts;
             }
             if (lastChar === '?') {
               const name = templatePart.name!.slice(0, -1);
-              return [new BooleanAttributePart(node as Element, name, templatePart.strings!)];
+              return [new BooleanAttributePart(
+                  node as Element, name, templatePart.strings!)];
             }
-            const comitter = new PropertyCommitter(node as Element, templatePart.name!, templatePart.strings!);
+            const comitter = new PropertyCommitter(
+                node as Element, templatePart.name!, templatePart.strings!);
             return comitter.parts;
           }
           return defaultPartCallback(instance, templatePart, node);
