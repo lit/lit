@@ -128,6 +128,20 @@ export class BooleanAttributePart implements Part {
 }
 
 export class PropertyCommitter extends AttributeCommitter {
+  single: boolean;
+
+  constructor(element: Element, name: string, strings: string[]) {
+    super(element, name, strings);
+    this.single = (strings.length === 2 && strings[0] === '' && strings[1] === '');
+  }
+
+  _getValue() {
+    if (this.single) {
+      return this.parts[0]._value;
+    }
+    return super._getValue();
+  }
+
   commit(): void {
     if (this.dirty) {
       this.dirty = false;

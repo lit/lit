@@ -32,8 +32,8 @@ suite('lit-html', () => {
     test('sets properties', () => {
       render(html`<div .foo=${123} .bar=${456}></div>`, container);
       const div = container.firstChild!;
-      assert.equal((div as any).foo, 123);
-      assert.equal((div as any).bar, 456);
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).bar, 456);
     });
 
     test('renders to an attribute', () => {
@@ -282,7 +282,7 @@ suite('lit-html', () => {
       render(html`<div .foo="${fooDirective}"></div>`, container);
       assert.equal(
           stripExpressionDelimeters(container.innerHTML), '<div></div>');
-      assert.equal((container.firstElementChild as any).foo, 1234);
+      assert.strictEqual((container.firstElementChild as any).foo, 1234);
     });
 
     const suiteIfCustomElementsAreSupported =

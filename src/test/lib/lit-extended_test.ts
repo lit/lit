@@ -32,8 +32,8 @@ suite('lit-extended', () => {
     test('sets properties', () => {
       render(html`<div foo=${123} bar=${456}></div>`, container);
       const div = container.firstChild!;
-      assert.equal((div as any).foo, 123);
-      assert.equal((div as any).bar, 456);
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).bar, 456);
     });
 
     test('renders to an attribute', () => {
