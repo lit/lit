@@ -68,6 +68,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </script>
 
   <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script>
+    // Subset of fetch polyfill for IE11 (supports GET requests for JSON only).
+    // Requires Promise to be defined.
+    window.fetch = window.fetch || function(url) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          resolve({
+            json: function() {
+              return new Promise(function(resolve, reject) {
+                try {
+                  resolve(JSON.parse(xhr.responseText));
+                } catch (e) {
+                  reject(e);
+                }
+              });
+            }
+          });
+        };
+        xhr.onerror = reject;
+        xhr.open('GET', url);
+        xhr.send();
+      });
+    };
+  </script>
   <script type="module" src="src/components/shop-app.js"></script>
 
   <script>
