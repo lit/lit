@@ -36,7 +36,7 @@ render(sayHello('Everyone'), document.body);
       lit-html is extremely fast. It uses fast platform features like HTML `<template>` elements with native cloning.
     </p>
     <p>
-      Unlike VDOM libraries, lit-html only every updates the parts of templates that actually change - it doesn't ever re-render the entire view.
+      Unlike VDOM libraries, lit-html only ever updates the parts of templates that actually change - it doesn't re-render the entire view.
     </p>
   </div>
 

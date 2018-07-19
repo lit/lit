@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isTemplatePartActive, Template, TemplatePart} from '../lit-html.js';
+import {isTemplatePartActive, Template, TemplatePart} from '../core.js';
 
 const walkerNodeFilter =
     NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT;

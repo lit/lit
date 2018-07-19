@@ -19,7 +19,7 @@ npm install lit-html
 lit-html is also loadable directly from the unpkg.com CDN:
 
 ```js
-import {html, render} from 'https://unpkg.com/lit-html/lib/lit-extended.js?module';
+import {html, render} from 'https://unpkg.com/lit-html?module';
 ```
 
 ## Importing
@@ -30,19 +30,19 @@ Modules are increasingly supported in JavaScript environments and are shipping i
 To use lit-html, import it via a path:
 
 ```js
-import {html, render} from './node_modules/lit-html/lib/lit-extended.js';
+import {html, render} from './node_modules/lit-html/lit-html.js';
 ```
 
 The path to use depends on where you've installed lit-html to. Browsers only support importing other modules by path, not by package name, so without other tools involved, you'll have to use paths.
 
-If you use some tool than can convert package names into paths, then you can import by path:
+If you use a tool that converts package names into paths, then you can import by path:
 
 ```js
-import {html, render} from 'lit-html/lib/lit-extended.js';
+import {html, render} from 'lit-html';
 ```
 
 
-### Why is lit-html distributed as JavaScript modules, not as XXX?
+### Why is lit-html distributed as JavaScript modules, not as UMD/CJS/AMD?
 
 Until modules arrived, browsers have not had a standard way to import code from code, and user-land module loaders or bundlers were required. Since there was no standard, competing formats multiplied. Often libraries will publish in a number of formats to support users of different tools, but this causes problems when a common library is depended on by many other intermediate libraries: If some of those intermediate libraries load format A, and others load format B, and yet others load format C, etc., then multiple copies are loaded cause bloat, performance slowdowns, and sometimes hard-to-find bugs.
 

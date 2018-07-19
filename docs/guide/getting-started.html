@@ -79,18 +79,18 @@ npm install lit-html
 </pre><h3 id="unpkg-com">unpkg.com</h3>
 <p>lit-html is also loadable directly from the unpkg.com CDN:</p>
 <pre class="code language-js" language="js">
-<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'https://unpkg.com/lit-html/lib/lit-extended.js?module'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'https://unpkg.com/lit-html?module'</span><span class="token punctuation">;</span>
 </pre><h2 id="importing">Importing</h2>
 <p>lit-html is written in and distributed as standard JavaScript modules.
 Modules are increasingly supported in JavaScript environments and are shipping in Chrome, Opera and Safari, and soon will be in Firefox and Edge.</p>
 <p>To use lit-html, import it via a path:</p>
 <pre class="code language-js" language="js">
-<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./node_modules/lit-html/lib/lit-extended.js'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./node_modules/lit-html/lit-html.js'</span><span class="token punctuation">;</span>
 </pre><p>The path to use depends on where you&#39;ve installed lit-html to. Browsers only support importing other modules by path, not by package name, so without other tools involved, you&#39;ll have to use paths.</p>
-<p>If you use some tool than can convert package names into paths, then you can import by path:</p>
+<p>If you use a tool that converts package names into paths, then you can import by path:</p>
 <pre class="code language-js" language="js">
-<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html/lib/lit-extended.js'</span><span class="token punctuation">;</span>
-</pre><h3 id="why-is-lit-html-distributed-as-javascript-modules-not-as-xxx-">Why is lit-html distributed as JavaScript modules, not as XXX?</h3>
+<span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span>
+</pre><h3 id="why-is-lit-html-distributed-as-javascript-modules-not-as-umd-cjs-amd-">Why is lit-html distributed as JavaScript modules, not as UMD/CJS/AMD?</h3>
 <p>Until modules arrived, browsers have not had a standard way to import code from code, and user-land module loaders or bundlers were required. Since there was no standard, competing formats multiplied. Often libraries will publish in a number of formats to support users of different tools, but this causes problems when a common library is depended on by many other intermediate libraries: If some of those intermediate libraries load format A, and others load format B, and yet others load format C, etc., then multiple copies are loaded cause bloat, performance slowdowns, and sometimes hard-to-find bugs.</p>
 <p>The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and moduels are very well supported by tools, it makes for that format to be modules.</p>
 

@@ -37,43 +37,4 @@ const result = myTemplate({title: 'Hello', body: 'lit-html is cool'});
 render(result, document.body);
 ```
 
-## Template Dialects: lit-html vs lit-extended
-
-lit-html allows extensive customization of template features and syntax through what are called "part callbacks". lit-html includes a core and very un-opinionated template dialect in the `lit-html.js` module which only supports the basic features of HTML: attributes and text content.
-
-```js
-import {html} from 'lit-html';
-
-let result = html`<p>This template only supports attributes and text</p>`;
-```
-
-lit-html also includes a module at `lib/lit-extended.js` which implements a more opinionated, feature-rich dialect called inspired by Polymer's template syntax. It sets properties instead of attributes by default and allows for declarative event handlers, attributes and boolean attributes.
-
-```js
-import {html} from 'lit-html/lib/lit-extended.js';
-
-let result = html`
-  <p>
-    This template sets properties by default, which is great for custom elements:
-
-      <my-element items=${[1, 2, 3]}></my-element>
-
-    Attributes can be set with a $ suffix on the attribute name:
-
-      <p class$="important">I have class</p>
-
-    Events can be added with on- prefixed attribute names:
-
-      <button on-click=${(e) => window.alert('clicked')}>Click Me</button>
-
-    Boolean attributes can be toggled by adding a ? suffix:
-
-      <span hidden?=${hide}>I'm not hidden</span>
-  </p>`;
-```
-
-In lit-html the type of template you write is determined by the `html` tag you use. If you import `html` from `lit-html.js`, you're using the basic core library. If you import `html` from `lib/lit-extended.js`, you're using lit-extended.
-
-You can mix and match templates using different dialects and they will behave as intended.
-
 [template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals

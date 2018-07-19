@@ -15,8 +15,8 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
+import {html, render} from '../../core.js';
 import {until} from '../../lib/until.js';
-import {html, render} from '../../lit-html.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
 
 import {Deferred} from './deferred.js';

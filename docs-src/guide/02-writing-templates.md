@@ -4,24 +4,17 @@ title: Writing Templates
 
 # Writing Templates
 
-This section covers writing lit-html templates
-
-## lit-html or lit-extended
-
-One of the first choices to make is whether to choose core lit-html templates, or lit-extended templates. lit-extended offers a few conveniences and is particularly useful for custom elements. It adds:
-
- * Declarative property setting, using attribute syntax
- * Opt-in attribute setting with the `name$=${}` syntax
- * Opt-in boolean attributes with the `name?=${}` syntax
- * Declarative event handler support with the `on-*=${}` syntax
-
-You import the lit-extended `html` tag from `lib/lit-extended.js`:
+lit-html templates are written using JavaScript template literals tagged with the `html` tag. The contents of the literal are mostly plain, declarative, HTML:
 
 ```js
-import {html} from 'lit-html/lib/lit-extended.js';
+html`<h1>Hello World</h1>`
 ```
 
-Because of the usefulness of these additional features, lit-extended is recommended for most users.
+**Bindings** or expressions are denoted with the standard JavaScript syntax for template literals:
+
+```js
+html`<h1>Hello ${name}</h1>`
+```
 
 ## Thinking Functionally
 
@@ -54,16 +47,41 @@ Follow these rules for well-formed templates:
 
 ## Binding Types
 
-Expressions can occur only in attribute value or text content positions, but in lit-extended a few different binding types use expressions in attribute value positions. Each binding types supports different types of values. In total, theses are the types of bindings:
+Expressions can occur in text content or in attribute value positions.
 
- * Attribute bindings: All values are converted to strings
- * Property bindings: Any type of value
- * Event handler bindings: Event handler functions only
- * Text content bindings: TemplateResults, Nodes. Other types converted to strings.
+There are a few types of bindings:
+  * Text:
+    ```js
+    html`<h1>Hello ${name}</h1>`
+    ```
+  * Attribute:
+    ```js
+    html`<div id=${id}></div`
+    ```
+  * Boolean Attribute:
+    ```js
+    html`<input type="checkbox" ?checked=${checked}>`
+    ```
+  * Property:
+    ```js
+    html`<input .value=${value}>`
+    ```
+  * Event Handler:
+    ```js
+    html`<button @click=${(e) => console.log('clicked')}>Click Me</button>`
+    ```
 
 ## Supported Types
 
-lit-html expressions accept a large range of value types.
+Each binding type supports different types of values:
+
+ * Text content bindings: Many supported types - see below.
+ * Attribute bindings: All values are converted to strings.
+ * Boolean attribute bindings: All values evaluated for truthiness.
+ * Property bindings: Any type of value.
+ * Event handler bindings: Event handler functions or objects only
+
+Text content bindings accept a large range of value types:
 
 ### Primitive Values: String, Number, Boolean, null, undefined
 
@@ -122,7 +140,7 @@ const render = () => html`
 `;
 ```
 
-## Conditionals: Ifs and Loops
+## Control Flow with JavaScript
 
 lit-html has no built-in control-flow constructs. Instead you use normal JavaScript expressions and statements:
 
