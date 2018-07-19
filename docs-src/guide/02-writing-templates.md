@@ -47,7 +47,7 @@ Follow these rules for well-formed templates:
 
 ## Binding Types
 
-Expressions can occur text content or in attribute value positions.
+Expressions can occur in text content or in attribute value positions.
 
 There are a few types of bindings:
   * Text:

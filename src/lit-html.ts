@@ -35,27 +35,26 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  * Properties are set by prefixing an attribute name with `.`.
  *
  * Attribute names in lit-html templates preserve case, so properties are case
- * sensitive. If an
- * expression takes up an entire attribute value, then the property is set to
- * that value. If an expression is interpolated with a string or other
- * expressions then the property is set to the string result of the
+ * sensitive. If an expression takes up an entire attribute value, then the
+ * property is set to that value. If an expression is interpolated with a string
+ * or other expressions then the property is set to the string result of the
  * interpolation.
  *
  * Example:
  *
  *     html`<input .value=${value}>`
  *
- * Event handlers are sset by prefixing an attribute name with `on-`.
+ * Event handlers are set by prefixing an attribute name with `@`.
  *
  * Example:
  *
- *     html`<button on-click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
+ *     html`<button @click=${(e)=> this.onClickHandler(e)}>Buy Now</button>`
  *
- * Boolean attributes are set by appending `?` to an attribute name.
+ * Boolean attributes are set by prepending `?` to an attribute name.
  *
  * Example:
  *
- *     html`<input type="checkbox" checked?=${value}>`
+ *     html`<input type="checkbox" ?checked=${value}>`
  */
 export const partCallback =
     (instance: TemplateInstance,
@@ -73,10 +72,7 @@ export const partCallback =
         }
         if (prefix === '?') {
           return new BooleanAttributePart(
-              instance,
-              node as Element,
-              name.slice(1),
-              templatePart.strings!);
+              instance, node as Element, name.slice(1), templatePart.strings!);
         }
       }
       return defaultPartCallback(instance, templatePart, node);

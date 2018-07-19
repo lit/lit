@@ -3,6 +3,7 @@
 
   <html>
     <head>
+      <title>Getting Started</title>
       <link rel="stylesheet" href="/lit-html/index.css">
       <link rel="stylesheet" href="/lit-html/prism.css">
     </head>
@@ -86,7 +87,7 @@ Modules are increasingly supported in JavaScript environments and are shipping i
 <pre class="code language-js" language="js">
 <span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./node_modules/lit-html/lit-html.js'</span><span class="token punctuation">;</span>
 </pre><p>The path to use depends on where you&#39;ve installed lit-html to. Browsers only support importing other modules by path, not by package name, so without other tools involved, you&#39;ll have to use paths.</p>
-<p>If you use a tool than converts package names into paths, then you can import by path:</p>
+<p>If you use a tool that converts package names into paths, then you can import by path:</p>
 <pre class="code language-js" language="js">
 <span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span>
 </pre><h3 id="why-is-lit-html-distributed-as-javascript-modules-not-as-umd-cjs-amd-">Why is lit-html distributed as JavaScript modules, not as UMD/CJS/AMD?</h3>

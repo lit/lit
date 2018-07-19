@@ -35,7 +35,7 @@ import {html, render} from './node_modules/lit-html/lit-html.js';
 
 The path to use depends on where you've installed lit-html to. Browsers only support importing other modules by path, not by package name, so without other tools involved, you'll have to use paths.
 
-If you use a tool than converts package names into paths, then you can import by path:
+If you use a tool that converts package names into paths, then you can import by path:
 
 ```js
 import {html, render} from 'lit-html';
