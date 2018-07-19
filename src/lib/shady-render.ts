@@ -151,14 +151,13 @@ export function render(
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
-      instance._partCallback === result.partCallback) {
+      instance.processor === result.processor) {
     instance.update(result.values);
     return;
   }
 
   // First render, create a new TemplateInstance and append it
-  instance =
-      new TemplateInstance(template, result.partCallback, templateFactory);
+  instance = new TemplateInstance(template, result.processor, templateFactory);
   (container as TemplateContainer).__templateInstance = instance;
 
   const fragment = instance._clone();

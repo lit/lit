@@ -44,7 +44,7 @@ export const asyncReplace =
           // We nest a new part to keep track of previous item values separately
           // of the iterable as a value itself.
           const itemPart =
-              new NodePart(part.instance, part.startNode, part.endNode);
+              new NodePart(part.startNode, part.endNode, part.templateFactory);
 
           part.value = itemPart;
 

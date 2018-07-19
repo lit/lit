@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, defaultPartCallback, defaultTemplateFactory, directive, html, NodePart, render, svg, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
+import {AttributePart, defaultTemplateFactory, directive, html, NodePart, render, svg, TemplateProcessor, TemplateResult} from '../core.js';
 
 import {stripExpressionDelimeters} from './test-helpers.js';
 
@@ -95,9 +95,9 @@ suite('Core', () => {
           <p>${9}</p>
           <div aThing="${10}"></div>
         </div>`;
-      const parts = defaultTemplateFactory(result).parts;
-      const names = parts.map((p: TemplatePart) => p.name);
-      const rawNames = parts.map((p: TemplatePart) => p.rawName);
+      const parts =
+          defaultTemplateFactory(result).parts as Array<{name: string}>;
+      const names = parts.map((p) => p.name);
       const expectedAttributeNames = [
         'someProp',
         'a-nother',
@@ -110,7 +110,6 @@ suite('Core', () => {
         'aThing'
       ];
       assert.deepEqual(names, expectedAttributeNames);
-      assert.deepEqual(rawNames, expectedAttributeNames);
     });
 
     test('parses element-less text expression', () => {
@@ -1014,11 +1013,7 @@ suite('Core', () => {
       endNode = document.createTextNode('');
       container.appendChild(startNode);
       container.appendChild(endNode);
-      const instance = new TemplateInstance(
-          defaultTemplateFactory(html``),
-          defaultPartCallback,
-          defaultTemplateFactory);
-      part = new NodePart(instance, startNode, endNode);
+      part = new NodePart(startNode, endNode, defaultTemplateFactory);
     });
 
     suite('setValue', () => {
@@ -1298,6 +1293,35 @@ suite('Core', () => {
         assert.deepEqual(
             Array.from(container.childNodes), [startNode, endNode]);
       });
+    });
+  });
+
+  suite('composition', () => {
+    let container: HTMLElement;
+
+    setup(() => {
+      container = document.createElement('div');
+    });
+
+    test('nested TemplateResults use their own processor', () => {
+      class TestTemplateProcessor extends TemplateProcessor {
+        handleAttributeExpressions(
+            element: Element, name: string, strings: string[]) {
+          if (name[0] === '&') {
+            return super.handleAttributeExpressions(
+                element, name.slice(1), strings);
+          }
+          return super.handleAttributeExpressions(element, name, strings);
+        }
+      }
+      const processor = new TestTemplateProcessor();
+      const testHtml = (strings: TemplateStringsArray, ...values: any[]) =>
+          new TemplateResult(strings, values, 'html', processor);
+
+      render(html`${testHtml`<div &foo="${'foo'}"></div>`}`, container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML),
+          '<div foo="foo"></div>');
     });
   });
 });

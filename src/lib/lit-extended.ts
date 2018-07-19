@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, defaultPartCallback, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from '../core.js';
+import {AttributeCommitter, Part, SVGTemplateResult, TemplateProcessor, TemplateResult} from '../core.js';
 import {BooleanAttributePart, EventPart, PropertyCommitter} from '../lit-html.js';
 
 export {render} from '../core.js';
@@ -22,13 +22,13 @@ export {BooleanAttributePart, EventPart} from '../lit-html.js';
  * Interprets a template literal as a lit-extended HTML template.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-    new TemplateResult(strings, values, 'html', extendedPartCallback);
+    new TemplateResult(strings, values, 'html', templateProcessor);
 
 /**
  * Interprets a template literal as a lit-extended SVG template.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-    new SVGTemplateResult(strings, values, 'svg', extendedPartCallback);
+    new SVGTemplateResult(strings, values, 'svg', templateProcessor);
 
 /**
  * A PartCallback which allows templates to set properties and declarative
@@ -57,30 +57,24 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  * @deprecated Please use /lit-html.js instead. lit-extended will be removed in
  *     a future version.
  */
-export const extendedPartCallback =
-    (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
-        Part[] => {
-          if (templatePart.type === 'attribute') {
-            if (templatePart.rawName!.substr(0, 3) === 'on-') {
-              const eventName = templatePart.rawName!.slice(3);
-              return [new EventPart(node as Element, eventName)];
-            }
-            const lastChar =
-                templatePart.name!.substr(templatePart.name!.length - 1);
-            if (lastChar === '$') {
-              const name = templatePart.name!.slice(0, -1);
-              const comitter = new AttributeCommitter(
-                  node as Element, name, templatePart.strings!);
-              return comitter.parts;
-            }
-            if (lastChar === '?') {
-              const name = templatePart.name!.slice(0, -1);
-              return [new BooleanAttributePart(
-                  node as Element, name, templatePart.strings!)];
-            }
-            const comitter = new PropertyCommitter(
-                node as Element, templatePart.name!, templatePart.strings!);
-            return comitter.parts;
-          }
-          return defaultPartCallback(instance, templatePart, node);
-        };
+export class LitExtendedTemplateProcessor extends TemplateProcessor {
+  handleAttributeExpressions(element: Element, name: string, strings: string[]):
+      Part[] {
+    if (name.substr(0, 3) === 'on-') {
+      const eventName = name.slice(3);
+      return [new EventPart(element, eventName)];
+    }
+    const lastChar = name.substr(name.length - 1);
+    if (lastChar === '$') {
+      const comitter =
+          new AttributeCommitter(element, name.slice(0, -1), strings);
+      return comitter.parts;
+    }
+    if (lastChar === '?') {
+      return [new BooleanAttributePart(element, name.slice(0, -1), strings)];
+    }
+    const comitter = new PropertyCommitter(element, name, strings);
+    return comitter.parts;
+  }
+}
+export const templateProcessor = new LitExtendedTemplateProcessor();
