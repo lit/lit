@@ -164,8 +164,10 @@ export class EventPart implements Part {
 
   setValue(value: any): void {
     value = getValue(this, value);
-    if (value !== noChange && (value == null) !== (this._value == null)) {
-      this._dirty = true;
+    if (value !== noChange) {
+      if ((value == null) !== (this._value == null)) {
+        this._dirty = true;
+      }
       this._value = value;
     }
   }

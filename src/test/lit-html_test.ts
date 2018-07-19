@@ -218,8 +218,11 @@ suite('lit-html', () => {
       const listener2 = () => {
         count2++;
       };
-      render(html`<div @click=${listener1}></div>`, container);
-      render(html`<div @click=${listener2}></div>`, container);
+      const t = (listener: () => void) => html`<div @click=${listener}></div>`;
+      render(t(listener1), container);
+      render(t(listener2), container);
+
+      console.log(container.innerHTML);
 
       const div = container.firstChild as HTMLElement;
       div.click();
