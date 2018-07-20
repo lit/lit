@@ -79,15 +79,15 @@ export const asyncAppend = <T>(
         // Check to see if we have a previous item and Part
         if (itemPart !== undefined) {
           // Create a new node to separate the previous and next Parts
-          itemStartNode = document.createTextNode('');
+          itemStartNode = document.createComment('');
           // itemPart is currently the Part for the previous item. Set
           // it's endNode to the node we'll use for the next Part's
           // startNode.
           itemPart.endNode = itemStartNode;
           part.endNode.parentNode!.insertBefore(itemStartNode, part.endNode);
         }
-        itemPart =
-            new NodePart(itemStartNode, part.endNode, part.templateFactory);
+        itemPart = new NodePart(part.templateFactory);
+        itemPart.insertAfterNode(itemStartNode);
         itemPart.setValue(v);
         itemPart.commit();
         i++;

@@ -1009,11 +1009,13 @@ suite('Core', () => {
 
     setup(() => {
       container = document.createElement('div');
-      startNode = document.createTextNode('');
-      endNode = document.createTextNode('');
+      startNode = document.createComment('');
+      endNode = document.createComment('');
       container.appendChild(startNode);
       container.appendChild(endNode);
-      part = new NodePart(startNode, endNode, defaultTemplateFactory);
+      part = new NodePart(defaultTemplateFactory);
+      part.startNode = startNode;
+      part.endNode = endNode;
     });
 
     suite('setValue', () => {
@@ -1076,8 +1078,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
-            ['', '1', '', '2', '', '3', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '1', '', '', '2', '', '', '3', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -1150,8 +1152,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
-            ['', '1', '', '2', '', '3', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '1', '', '2', '', '3', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
@@ -1159,7 +1161,7 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         assert.deepEqual(
-            ['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -1169,8 +1171,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
-            ['', '1', '', '2', '', '3', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '1', '', '2', '', '3', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
@@ -1178,8 +1180,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '45');
         assert.deepEqual(
-            ['', '4', '', '5', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '4', '', '5', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
@@ -1187,7 +1189,7 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         assert.deepEqual(
-            ['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
@@ -1195,8 +1197,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '45');
         assert.deepEqual(
-            ['', '4', '', '5', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '4', '', '5', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -1206,8 +1208,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
-            ['', '1', '', '2', '', '3', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '1', '', '', '2', '', '', '3', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
 
@@ -1215,8 +1217,8 @@ suite('Core', () => {
         part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
-            ['', '1', '', '2', '', '3', ''],
-            Array.from(container.childNodes).map((n) => n.nodeValue));
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['', '', '', '1', '', '', '2', '', '3', '', '']);
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
       });
@@ -1278,6 +1280,77 @@ suite('Core', () => {
             const newLIs = Array.from(container.querySelectorAll('li'));
             assert.deepEqual(newLIs, originalLIs);
           });
+    });
+
+    suite('insertAfterNode', () => {
+      test(
+          'inserts part and sets values between ref node and its next sibling',
+          () => {
+            const testEndNode = document.createComment('');
+            container.appendChild(testEndNode);
+            const testPart = new NodePart(defaultTemplateFactory);
+            testPart.insertAfterNode(endNode);
+            assert.equal(testPart.startNode, endNode);
+            assert.equal(testPart.endNode, testEndNode);
+            const text = document.createTextNode('');
+            testPart.setValue(text);
+            testPart.commit();
+            assert.deepEqual(
+                Array.from(container.childNodes),
+                [startNode, endNode, text, testEndNode]);
+          });
+    });
+
+    suite('appendIntoPart', () => {
+      test(
+          'inserts part and sets values between ref node and its next sibling',
+          () => {
+            const testPart = new NodePart(defaultTemplateFactory);
+            testPart.appendIntoPart(part);
+            assert.instanceOf(testPart.startNode, Comment);
+            assert.instanceOf(testPart.endNode, Comment);
+            const text = document.createTextNode('');
+            testPart.setValue(text);
+            testPart.commit();
+            assert.deepEqual(Array.from(container.childNodes), [
+              startNode,
+              testPart.startNode,
+              text,
+              testPart.endNode,
+              endNode,
+            ]);
+
+            const parentText = document.createTextNode('');
+            part.setValue(parentText);
+            part.commit();
+            assert.deepEqual(Array.from(container.childNodes), [
+              startNode,
+              parentText,
+              endNode,
+            ]);
+          });
+    });
+
+    suite('insertAfterPart', () => {
+      test('inserts part and sets values after another part', () => {
+        const testPart = new NodePart(defaultTemplateFactory);
+        testPart.insertAfterPart(part);
+        assert.instanceOf(testPart.startNode, Comment);
+        assert.equal(testPart.endNode, endNode);
+        const text = document.createTextNode('');
+        testPart.setValue(text);
+        testPart.commit();
+        assert.deepEqual(
+            Array.from(container.childNodes),
+            [startNode, testPart.startNode, text, endNode]);
+
+        const previousText = document.createTextNode('');
+        part.setValue(previousText);
+        part.commit();
+        assert.deepEqual(
+            Array.from(container.childNodes),
+            [startNode, previousText, testPart.startNode, text, endNode]);
+      });
     });
 
     suite('clear', () => {
