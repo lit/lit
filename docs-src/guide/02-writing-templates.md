@@ -49,7 +49,7 @@ Follow these rules for well-formed templates:
 
 Expressions can occur in text content or in attribute value positions.
 
-**Warning: this is the new syntax for the upcoming npm release of lit-html. This will *not* work with the currently published 0.10.2 version. Stay tuned, the updated version is coming soon!**
+**Warning: this is the new syntax for the upcoming 0.11.0 npm release of lit-html. This will *not* work with the currently published 0.10.2 version. Stay tuned, the updated version is coming soon!**
 
 There are a few types of bindings:
   * Text:
