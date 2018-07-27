@@ -61,11 +61,16 @@ export class TemplateResult {
     for (let i = 0; i < l; i++) {
       const s = this.strings[i];
       html += s;
-      // We're in a text position if the previous string closed its tags.
-      // If it doesn't have any tags, then we use the previous text position
-      // state.
-      const closing = findTagClose(s);
-      isTextBinding = closing > -1 ? closing < s.length : isTextBinding;
+      const close = s.lastIndexOf('>');
+      const open = s.indexOf('<', close + 1);
+      // We're in a text position if the previous string closed its last tag, an
+      // attribute position if the string opened an unclosed tag, and unchanged
+      // if the string had no brackets at all:
+      //
+      // "...>...": text position. open === -1, close > -1
+      // "...<...": attribute position. open > -1
+      // "...": no change. open === -1, close === -1
+      isTextBinding = open === -1 && (close > -1 || isTextBinding);
       html += isTextBinding ? nodeMarker : marker;
     }
     html += this.strings[l];
@@ -226,19 +231,6 @@ const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 const lastAttributeNameRegex =
     /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*)$/;
-
-/**
- * Finds the closing index of the last closed HTML tag.
- * This has 3 possible return values:
- *   - `-1`, meaning there is no tag in str.
- *   - `string.length`, meaning the last opened tag is unclosed.
- *   - Some positive number < str.length, meaning the index of the closing '>'.
- */
-function findTagClose(str: string): number {
-  const close = str.lastIndexOf('>');
-  const open = str.indexOf('<', close + 1);
-  return open > -1 ? str.length : close;
-}
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
