@@ -478,6 +478,10 @@ export interface Part {
   commit(): void;
 }
 
+/**
+ * Sets attribute values for AttributeParts, so that the value is only set once
+ * even if there are multiple parts for an attribute.
+ */
 export class AttributeCommitter {
   element: Element;
   name: string;
@@ -491,8 +495,15 @@ export class AttributeCommitter {
     this.strings = strings;
     this.parts = [];
     for (let i = 0; i < strings.length - 1; i++) {
-      this.parts[i] = new AttributePart(this);
+      this.parts[i] = this._createPart();
     }
+  }
+
+  /**
+   * Creates a single part. Override this to create a differnt type of part.
+   */
+  protected _createPart(): AttributePart {
+    return new AttributePart(this);
   }
 
   protected _getValue(): any {

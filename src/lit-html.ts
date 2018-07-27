@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
+import {AttributeCommitter, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult, AttributePart} from './core.js';
 
 export {render} from './core.js';
 
@@ -127,6 +127,15 @@ export class BooleanAttributePart implements Part {
   }
 }
 
+/**
+ * Sets attribute values for PropertyParts, so that the value is only set once
+ * even if there are multiple parts for a property.
+ * 
+ * If an expression controls the whole property value, then the value is simply
+ * assigned to the property under control. If there are string literals or
+ * multiple expressions, then the strings are expressions are interpolated into
+ * a string first.
+ */
 export class PropertyCommitter extends AttributeCommitter {
   single: boolean;
 
@@ -134,6 +143,10 @@ export class PropertyCommitter extends AttributeCommitter {
     super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
+  }
+
+  protected _createPart(): PropertyPart {
+    return new PropertyPart(this);
   }
 
   _getValue() {
@@ -150,6 +163,8 @@ export class PropertyCommitter extends AttributeCommitter {
     }
   }
 }
+
+export class PropertyPart extends AttributePart {}
 
 export class EventPart implements Part {
   element: Element;
