@@ -87,6 +87,7 @@ export function repeat<T>(
       }
 
       itemPart.setValue(result);
+      itemPart.commit();
     }
 
     // Cleanup

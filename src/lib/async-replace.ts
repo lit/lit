@@ -72,6 +72,7 @@ export const asyncReplace =
             }
 
             itemPart.setValue(v);
+            itemPart.commit();
             i++;
           }
         });

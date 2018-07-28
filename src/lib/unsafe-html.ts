@@ -32,6 +32,7 @@ export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
       const tmp = document.createElement('template');
       tmp.innerHTML = value;
       part.setValue(document.importNode(tmp.content, true));
+      part.commit();
 
       // Remember the actual value passed to unsafeHTML rather than the DOM
       // Nodes we created

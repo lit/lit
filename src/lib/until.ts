@@ -21,5 +21,7 @@ export const until =
     (promise: Promise<any>, defaultContent: any): DirectiveFn<NodePart> =>
         directive((part: NodePart): void => {
           part.setValue(defaultContent);
+          part.commit();
           part.setValue(promise);
+          part.commit();
         });

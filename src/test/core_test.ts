@@ -251,7 +251,9 @@ suite('Core', () => {
 
         render(html`${form}`, container);
 
-        assert.equal(stripExpressionDelimeters(container.innerHTML), '<form><input name="one"><input name="two"></form>');
+        assert.equal(
+            stripExpressionDelimeters(container.innerHTML),
+            '<form><input name="one"><input name="two"></form>');
       });
 
       const testSkipForTemplatePolyfill =
@@ -711,6 +713,7 @@ suite('Core', () => {
       test('renders directives on NodeParts', () => {
         const fooDirective = directive((part: NodePart) => {
           part.setValue('foo');
+          part.commit();
         });
 
         render(html`<div>${fooDirective}</div>`, container);
@@ -998,7 +1001,6 @@ suite('Core', () => {
             assert.notEqual(fooDiv, barDiv);
           });
     });
-
   });
 
   suite('NodePart', () => {
@@ -1023,21 +1025,25 @@ suite('Core', () => {
     suite('setValue', () => {
       test('accepts a string', () => {
         part.setValue('foo');
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), 'foo');
       });
 
       test('accepts a number', () => {
         part.setValue(123);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
       });
 
       test('accepts undefined', () => {
         part.setValue(undefined);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
       });
 
       test('accepts null', () => {
         part.setValue(null);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
       });
 
@@ -1046,15 +1052,18 @@ suite('Core', () => {
           throw new Error();
         };
         part.setValue(f);
+        part.commit();
       });
 
       test('accepts an element', () => {
         part.setValue(document.createElement('p'));
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '<p></p>');
       });
 
       test('accepts arrays', () => {
         part.setValue([1, 2, 3]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
@@ -1062,6 +1071,7 @@ suite('Core', () => {
 
       test('accepts an empty array', () => {
         part.setValue([]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         assert.strictEqual(container.firstChild, startNode);
         assert.strictEqual(container.lastChild, endNode);
@@ -1069,6 +1079,7 @@ suite('Core', () => {
 
       test('accepts nested arrays', () => {
         part.setValue([1, [2], 3]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
             ['', '1', '', '2', '', '3', ''],
@@ -1079,12 +1090,14 @@ suite('Core', () => {
 
       test('accepts nested templates', () => {
         part.setValue(html`<h1>${'foo'}</h1>`);
+        part.commit();
         assert.equal(
             stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>');
       });
 
       test('accepts arrays of nested templates', () => {
         part.setValue([1, 2, 3].map((i) => html`${i}`));
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
       });
 
@@ -1095,6 +1108,7 @@ suite('Core', () => {
           document.createElement('span')
         ];
         part.setValue(children);
+        part.commit();
         assert.equal(
             stripExpressionDelimeters(container.innerHTML),
             '<p></p><a></a><span></span>');
@@ -1130,13 +1144,16 @@ suite('Core', () => {
 
       test('updates when called multiple times with simple values', () => {
         part.setValue('abc');
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), 'abc');
         part.setValue('def');
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), 'def');
       });
 
       test('updates when called multiple times with arrays', () => {
         part.setValue([1, 2, 3]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
             ['', '1', '', '2', '', '3', ''],
@@ -1145,6 +1162,7 @@ suite('Core', () => {
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         assert.deepEqual(
             ['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
@@ -1154,6 +1172,7 @@ suite('Core', () => {
 
       test('updates when called multiple times with arrays 2', () => {
         part.setValue([1, 2, 3]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
             ['', '1', '', '2', '', '3', ''],
@@ -1162,6 +1181,7 @@ suite('Core', () => {
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([4, 5]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '45');
         assert.deepEqual(
             ['', '4', '', '5', ''],
@@ -1170,6 +1190,7 @@ suite('Core', () => {
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '');
         assert.deepEqual(
             ['', ''], Array.from(container.childNodes).map((n) => n.nodeValue));
@@ -1177,6 +1198,7 @@ suite('Core', () => {
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([4, 5]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '45');
         assert.deepEqual(
             ['', '4', '', '5', ''],
@@ -1187,6 +1209,7 @@ suite('Core', () => {
 
       test('updates nested arrays', () => {
         part.setValue([1, [2], 3]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
             ['', '1', '', '2', '', '3', ''],
@@ -1195,6 +1218,7 @@ suite('Core', () => {
         assert.strictEqual(container.lastChild, endNode);
 
         part.setValue([[1], 2, 3]);
+        part.commit();
         assert.equal(stripExpressionDelimeters(container.innerHTML), '123');
         assert.deepEqual(
             ['', '1', '', '2', '', '3', ''],
@@ -1225,12 +1249,14 @@ suite('Core', () => {
             let value = 'foo';
             const r = () => html`<h1>${value}</h1>`;
             part.setValue(r());
+            part.commit();
             assert.equal(
                 stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>');
             const originalH1 = container.querySelector('h1');
 
             value = 'bar';
             part.setValue(r());
+            part.commit();
             assert.equal(
                 stripExpressionDelimeters(container.innerHTML), '<h1>bar</h1>');
             const newH1 = container.querySelector('h1');
@@ -1243,6 +1269,7 @@ suite('Core', () => {
             let items = [1, 2, 3];
             const r = () => items.map((i) => html`<li>${i}</li>`);
             part.setValue(r());
+            part.commit();
             assert.equal(
                 stripExpressionDelimeters(container.innerHTML),
                 '<li>1</li><li>2</li><li>3</li>');
@@ -1250,6 +1277,7 @@ suite('Core', () => {
 
             items = [3, 2, 1];
             part.setValue(r());
+            part.commit();
             assert.equal(
                 stripExpressionDelimeters(container.innerHTML),
                 '<li>3</li><li>2</li><li>1</li>');

@@ -571,6 +571,7 @@ export class NodePart implements Part {
   startNode: Node;
   endNode: Node;
   _value: any = undefined;
+  _pendingValue: any = undefined;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
     this.instance = instance;
@@ -580,15 +581,19 @@ export class NodePart implements Part {
 
   setValue(value: any): void {
     value = getValue(this, value);
+    if (_isPrimitiveValue(value) && value === this._value) {
+      value = noChange;
+    }
+    this._pendingValue = value;
+  }
+
+  commit() {
+    const value = this._pendingValue;
+    this._pendingValue = noChange;
     if (value === noChange) {
       return;
     }
     if (_isPrimitiveValue(value)) {
-      // Handle primitive values
-      if (value === this._value) {
-        // If the value didn't change, do nothing
-        return;
-      }
       this._setText(value);
     } else if (value instanceof TemplateResult) {
       this._setTemplateResult(value);
@@ -689,6 +694,7 @@ export class NodePart implements Part {
         itemParts.push(itemPart);
       }
       itemPart.setValue(item);
+      itemPart.commit();
       partIndex++;
     }
 
@@ -709,6 +715,7 @@ export class NodePart implements Part {
     value.then((v: any) => {
       if (this._value === value) {
         this.setValue(v);
+        this.commit();
       }
     });
   }
@@ -716,10 +723,6 @@ export class NodePart implements Part {
   clear(startNode: Node = this.startNode) {
     removeNodes(
         this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
-  }
-
-  commit() {
-    // nothing for now...
   }
 }
 

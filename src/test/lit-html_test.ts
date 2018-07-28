@@ -222,8 +222,6 @@ suite('lit-html', () => {
       render(t(listener1), container);
       render(t(listener2), container);
 
-      console.log(container.innerHTML);
-
       const div = container.firstChild as HTMLElement;
       div.click();
       assert.equal(count1, 0);
@@ -276,6 +274,29 @@ suite('lit-html', () => {
       render(t(), container);
       div.click();
       assert.equal(target, undefined);
+    });
+
+    test('event listeners can see events fired by dynamic children', () => {
+      class FiresEvent extends HTMLElement {
+        connectedCallback() {
+          this.dispatchEvent(new CustomEvent('test-event', {
+            bubbles: true,
+          }));
+        }
+      }
+      customElements.define('x-fires-event', FiresEvent);
+      let event: Event|undefined = undefined;
+      document.body.appendChild(container);
+      render(
+          html`
+        <div @test-event=${(e: Event) => {
+            event = e;
+          }}>
+          ${html`<x-fires-event></x-fires-event>`}
+        </div>`,
+          container);
+      document.body.removeChild(container);
+      assert.isOk(event);
     });
 
     test('renders directives on PropertyParts', () => {

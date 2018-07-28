@@ -88,6 +88,7 @@ export const asyncAppend = <T>(
         }
         itemPart = new NodePart(part.instance, itemStartNode, part.endNode);
         itemPart.setValue(v);
+        itemPart.commit();
         i++;
       }
     });
