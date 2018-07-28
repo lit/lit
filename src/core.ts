@@ -62,7 +62,6 @@ export class TemplateResult {
       const s = this.strings[i];
       html += s;
       const close = s.lastIndexOf('>');
-      const open = s.indexOf('<', close + 1);
       // We're in a text position if the previous string closed its last tag, an
       // attribute position if the string opened an unclosed tag, and unchanged
       // if the string had no brackets at all:
@@ -70,7 +69,8 @@ export class TemplateResult {
       // "...>...": text position. open === -1, close > -1
       // "...<...": attribute position. open > -1
       // "...": no change. open === -1, close === -1
-      isTextBinding = open === -1 && (close > -1 || isTextBinding);
+      isTextBinding = (close > -1 || isTextBinding) &&
+          s.indexOf('<', close + 1) === -1;
       html += isTextBinding ? nodeMarker : marker;
     }
     html += this.strings[l];
