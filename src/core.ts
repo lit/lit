@@ -429,12 +429,12 @@ export class Template {
  * with certain DOM APIs, like textContent.
  */
 export const getValue = (part: Part, value: any) => {
-  // `null` as the value of a Text node will render the string 'null'
-  // so we convert it to undefined
   if (isDirective(value)) {
     value = value(part);
     return noChange;
   }
+  // `null` as the value of a Text node will render the string 'null'
+  // so we convert it to undefined
   return value === null ? undefined : value;
 };
 
@@ -580,7 +580,15 @@ export class NodePart implements Part {
   }
 
   setValue(value: any): void {
-    value = getValue(this, value);
+    if (isDirective(value)) {
+      this._pendingValue = noChange;
+      value(this);
+      return;
+    }
+    if (value === noChange) {
+      return;
+    }
+    value = value === null ? undefined : value;
     if (_isPrimitiveValue(value) && value === this._value) {
       value = noChange;
     }
