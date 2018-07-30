@@ -19,9 +19,8 @@ import {directive, DirectiveFn, NodePart} from '../core.js';
  */
 export const until =
     (promise: Promise<any>, defaultContent: any): DirectiveFn<NodePart> =>
-        directive((part: NodePart): void => {
+        directive((part: NodePart) => {
           part.setValue(defaultContent);
           part.commit();
           part.setValue(promise);
-          part.commit();
         });

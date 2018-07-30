@@ -572,6 +572,7 @@ export class NodePart implements Part {
   endNode: Node;
   _value: any = undefined;
   _pendingValue: any = undefined;
+  _pendingKeyValue: any = undefined;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
     this.instance = instance;
@@ -579,30 +580,25 @@ export class NodePart implements Part {
     this.endNode = endNode;
   }
 
-  setValue(value: any): void {
-    if (isDirective(value)) {
-      this._pendingValue = noChange;
-      value(this);
-      return;
-    }
-    if (value === noChange) {
-      return;
-    }
-    value = value === null ? undefined : value;
-    if (_isPrimitiveValue(value) && value === this._value) {
-      value = noChange;
-    }
+  setValue(value: any, keyValue: any = noChange): void {
     this._pendingValue = value;
+    this._pendingKeyValue = keyValue;
   }
 
   commit() {
-    const value = this._pendingValue;
-    this._pendingValue = noChange;
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
+      directive(this);
+    }
+    let value = this._pendingValue === null ? undefined : this._pendingValue;
     if (value === noChange) {
       return;
     }
     if (_isPrimitiveValue(value)) {
-      this._setText(value);
+      if (value !== this._value) {
+        this._setText(value);
+      }
     } else if (value instanceof TemplateResult) {
       this._setTemplateResult(value);
     } else if (value instanceof Node) {
@@ -614,6 +610,10 @@ export class NodePart implements Part {
     } else {
       // Fallback, will render the string representation
       this._setText(value);
+    }
+    if (this._pendingKeyValue !== noChange) {
+      this._value = this._pendingKeyValue;
+      this._pendingKeyValue = noChange;
     }
   }
 

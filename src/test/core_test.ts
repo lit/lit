@@ -713,7 +713,6 @@ suite('Core', () => {
       test('renders directives on NodeParts', () => {
         const fooDirective = directive((part: NodePart) => {
           part.setValue('foo');
-          part.commit();
         });
 
         render(html`<div>${fooDirective}</div>`, container);
