@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {AttributePart, directive, html as htmlPlain} from '../core.js';
+import {AttributePart, directive, html as htmlPlain, NodePart} from '../core.js';
 import {html, render} from '../lit-html.js';
 
 import {stripExpressionDelimeters} from './test-helpers.js';
@@ -277,14 +277,6 @@ suite('lit-html', () => {
     });
 
     test('event listeners can see events fired by dynamic children', () => {
-      class FiresEvent extends HTMLElement {
-        connectedCallback() {
-          this.dispatchEvent(new CustomEvent('test-event', {
-            bubbles: true,
-          }));
-        }
-      }
-      customElements.define('x-fires-event', FiresEvent);
       let event: Event|undefined = undefined;
       document.body.appendChild(container);
       render(
@@ -292,7 +284,13 @@ suite('lit-html', () => {
         <div @test-event=${(e: Event) => {
             event = e;
           }}>
-          ${html`<x-fires-event></x-fires-event>`}
+          ${directive((part: NodePart) => {
+            // This emulates a custom element that fires an event in its
+            // connectedCallback
+            part.startNode.dispatchEvent(new CustomEvent('test-event', {
+              bubbles: true,
+            }));
+          })}
         </div>`,
           container);
       document.body.removeChild(container);
