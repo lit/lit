@@ -277,13 +277,13 @@ suite('lit-html', () => {
     });
 
     test('event listeners can see events fired by dynamic children', () => {
+      // This tests that node directives are called in the commit phase, not
+      // the setValue phase
       let event: Event|undefined = undefined;
       document.body.appendChild(container);
       render(
           html`
-        <div @test-event=${(e: Event) => {
-            event = e;
-          }}>
+        <div @test-event=${(e: Event) => { event = e; }}>
           ${directive((part: NodePart) => {
             // This emulates a custom element that fires an event in its
             // connectedCallback
@@ -294,6 +294,20 @@ suite('lit-html', () => {
         </div>`,
           container);
       document.body.removeChild(container);
+      assert.isOk(event);
+    });
+
+    test('event listeners can see events fired directives in AttributeParts', () => {
+      // This tests that attribute directives are called in the commit phase, not
+      // the setValue phase
+      let event = undefined;
+      const fire = directive((part: AttributePart) => {
+        part.committer.element.dispatchEvent(new CustomEvent('test-event', {
+          bubbles: true,
+        }));
+      });
+
+      render(html`<div @test-event=${(e: Event) => { event = e; }} b=${fire}></div>`, container);
       assert.isOk(event);
     });
 

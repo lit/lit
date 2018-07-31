@@ -69,8 +69,8 @@ export class TemplateResult {
       // "...>...": text position. open === -1, close > -1
       // "...<...": attribute position. open > -1
       // "...": no change. open === -1, close === -1
-      isTextBinding = (close > -1 || isTextBinding) &&
-          s.indexOf('<', close + 1) === -1;
+      isTextBinding =
+          (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
       html += isTextBinding ? nodeMarker : marker;
     }
     html += this.strings[l];
@@ -542,26 +542,25 @@ export class AttributeCommitter {
 export class AttributePart implements Part {
   committer: AttributeCommitter;
   _value: any = undefined;
+  _pendingValue: any = undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
   }
 
   setValue(value: any): void {
-    value = getValue(this, value);
-    if (value === noChange) {
-      return;
-    }
-    if (_isPrimitiveValue(value)) {
-      if (value === this._value) {
-        return;
-      }
-    }
-    this._value = value;
-    this.committer.dirty = true;
+    this._pendingValue = value;
   }
 
   commit() {
+    let value = getValue(this, this._pendingValue);
+    if (value === noChange) {
+      return;
+    }
+    if (!_isPrimitiveValue(value) || value !== this._value) {
+      this._value = value;
+      this.committer.dirty = true;
+    }
     this.committer.commit();
   }
 }
