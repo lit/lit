@@ -19,10 +19,12 @@ export type ItemTemplate<T> = (item: T, index: number) => any;
 
 const keyMapCache = new WeakMap<NodePart, Map<any, NodePart>>();
 
-function cleanMap(part: NodePart, key: any, map: Map<any, NodePart>) {
-  if (!part.startNode.parentNode) {
-    map.delete(key);
-  }
+export function cleanMap(keyMap: Map<any, NodePart>) {
+  keyMap.forEach((part: NodePart, key: any, map: Map<any, NodePart>) => {
+    if (!part.startNode.parentNode) {
+      map.delete(key);
+    }
+  });
 }
 
 export function repeat<T>(
@@ -33,16 +35,18 @@ export function repeat<T>(
 export function repeat<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
-    template?: ItemTemplate<T>): DirectiveFn<NodePart> {
+    template?: ItemTemplate<T>,
+    customKeyMap?: Map<any, NodePart>
+  ): DirectiveFn<NodePart> {
   let keyFn: KeyFn<T>;
   if (arguments.length === 2) {
     template = keyFnOrTemplate;
-  } else if (arguments.length === 3) {
+  } else if (arguments.length >= 3) {
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
   return directive((part: NodePart): void => {
-    let keyMap = keyMapCache.get(part);
+    let keyMap = customKeyMap || keyMapCache.get(part);
     if (keyMap === undefined) {
       keyMap = new Map();
       keyMapCache.set(part, keyMap);
@@ -90,9 +94,9 @@ export function repeat<T>(
     }
 
     // Cleanup
-    if (currentMarker !== part.endNode) {
+    if (!customKeyMap && currentMarker !== part.endNode) {
       removeNodes(container, currentMarker, part.endNode);
-      keyMap.forEach(cleanMap);
+      cleanMap(keyMap);
     }
   });
 }
