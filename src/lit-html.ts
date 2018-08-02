@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
+import {isDirective, AttributeCommitter, AttributePart, defaultPartCallback, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
 
 export {render} from './core.js';
 
@@ -92,6 +92,7 @@ export class BooleanAttributePart implements Part {
   name: string;
   strings: string[];
   _value: any = undefined;
+  _keyValue: any = undefined;
   private _dirty = true;
 
   constructor(element: Element, name: string, strings: string[]) {
@@ -104,19 +105,24 @@ export class BooleanAttributePart implements Part {
     this.strings = strings;
   }
 
-  setValue(value: any): void {
-    value = getValue(this, value);
-    if (value === noChange) {
-      return;
-    }
-    this._value = !!value;
-    if (this._value !== !!value) {
-      this._dirty = true;
+  setValue(value: any, keyValue: any = noChange): void {
+    value = !!value;
+    if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || value !== this._value) {
+      this._value = value;
+      this._keyValue = keyValue;
+      if (!isDirective(value)) {
+        this._dirty = true;
+      }
     }
   }
 
   commit() {
-    if (this._dirty) {
+    while (isDirective(this._value)) {
+      const directive = this._value;
+      this._value = noChange;
+      directive(this);
+    }
+    if (this._value !== noChange && this._dirty) {
       this._dirty = false;
       if (this._value) {
         this.element.setAttribute(this.name, '');
@@ -125,6 +131,28 @@ export class BooleanAttributePart implements Part {
       }
     }
   }
+
+  // setValue(value: any, keyValue: any = noChange): void {
+  //   value = getValue(this, value);
+  //   if (value === noChange) {
+  //     return;
+  //   }
+  //   this._value = !!value;
+  //   if (this._value !== !!value) {
+  //     this._dirty = true;
+  //   }
+  // }
+
+  // commit() {
+  //   if (this._dirty) {
+  //     this._dirty = false;
+  //     if (this._value) {
+  //       this.element.setAttribute(this.name, '');
+  //     } else {
+  //       this.element.removeAttribute(this.name);
+  //     }
+  //   }
+  // }
 }
 
 /**
@@ -170,6 +198,7 @@ export class EventPart implements Part {
   element: Element;
   eventName: string;
   _value: any = undefined;
+  _keyValue: any = undefined;
   private _dirty = true;
 
   constructor(element: Element, eventName: string) {
@@ -177,18 +206,24 @@ export class EventPart implements Part {
     this.eventName = eventName;
   }
 
-  setValue(value: any): void {
-    value = getValue(this, value);
-    if (value !== noChange) {
-      if ((value == null) !== (this._value == null)) {
+  setValue(value: any, keyValue: any = noChange): void {
+    value = !!value;
+    if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || value !== this._value) {
+      this._value = value;
+      this._keyValue = keyValue;
+      if (!isDirective(value)) {
         this._dirty = true;
       }
-      this._value = value;
     }
   }
 
   commit() {
-    if (this._dirty) {
+    while (isDirective(this._value)) {
+      const directive = this._value;
+      this._value = noChange;
+      directive(this);
+    }
+    if (this._value !== noChange && this._dirty) {
       this._dirty = false;
       if (this._value == null) {
         this.element.removeEventListener(this.eventName, this);
@@ -197,6 +232,27 @@ export class EventPart implements Part {
       }
     }
   }
+
+  // setValue(value: any): void {
+  //   value = getValue(this, value);
+  //   if (value !== noChange) {
+  //     if ((value == null) !== (this._value == null)) {
+  //       this._dirty = true;
+  //     }
+  //     this._value = value;
+  //   }
+  // }
+
+  // commit() {
+  //   if (this._dirty) {
+  //     this._dirty = false;
+  //     if (this._value == null) {
+  //       this.element.removeEventListener(this.eventName, this);
+  //     } else {
+  //       this.element.addEventListener(this.eventName, this);
+  //     }
+  //   }
+  // }
 
   handleEvent(event: Event) {
     if (typeof this._value === 'function') {

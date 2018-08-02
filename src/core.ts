@@ -428,15 +428,15 @@ export class Template {
  * part. If the value is null, it's converted to undefined to work better
  * with certain DOM APIs, like textContent.
  */
-export const getValue = (part: Part, value: any) => {
-  if (isDirective(value)) {
-    value = value(part);
-    return noChange;
-  }
-  // `null` as the value of a Text node will render the string 'null'
-  // so we convert it to undefined
-  return value === null ? undefined : value;
-};
+// export const getValue = (part: Part, value: any) => {
+//   if (isDirective(value)) {
+//     value = value(part);
+//     return noChange;
+//   }
+//   // `null` as the value of a Text node will render the string 'null'
+//   // so we convert it to undefined
+//   return value === null ? undefined : value;
+// };
 
 export interface DirectiveFn<P = Part> {
   (part: P): void;
@@ -448,7 +448,7 @@ export const directive = <P = Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
   return f;
 };
 
-const isDirective = (o: any) =>
+export const isDirective = (o: any) =>
     typeof o === 'function' && o.__litDirective === true;
 
 /**
@@ -473,8 +473,17 @@ export const _isPrimitiveValue = (value: any) =>
 export interface Part {
   _value: any;
 
-  setValue(value: any): void;
+  /**
+   * Sets the current part value, but does not write it to the DOM.
+   * @param value The value that will be committed.
+   * @param keyValue A different value to use for comparing against previous
+   *     values to determine if a part has changed. Optional.
+   */
+  setValue(value: any, keyValue?: any): void;
 
+  /**
+   * Commits the current part value, cause it to actually be written to the DOM.
+   */
   commit(): void;
 }
 
@@ -542,24 +551,32 @@ export class AttributeCommitter {
 export class AttributePart implements Part {
   committer: AttributeCommitter;
   _value: any = undefined;
-  _pendingValue: any = undefined;
+  _keyValue: any = undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
   }
 
-  setValue(value: any): void {
-    this._pendingValue = value;
+  setValue(value: any, keyValue: any = noChange): void {
+    value = value === null ? undefined : value;
+    if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || !_isPrimitiveValue(value) || value !== this._value) {
+      this._value = value;
+      this._keyValue = keyValue;
+      if (!isDirective(value)) {
+        this.committer.dirty = true;
+      }
+    }
   }
 
   commit() {
-    let value = getValue(this, this._pendingValue);
-    if (value === noChange) {
-      return;
+    // console.log('commit', this._value);
+    while (isDirective(this._value)) {
+      const directive = this._value;
+      this._value = noChange;
+      directive(this);
     }
-    if (!_isPrimitiveValue(value) || value !== this._value) {
-      this._value = value;
-      this.committer.dirty = true;
+    if (this._value === noChange) {
+      return;
     }
     this.committer.commit();
   }
