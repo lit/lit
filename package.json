@@ -28,7 +28,7 @@
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "lit-html": "^0.10.0",
     "pwa-helpers": "^0.8.2",
-    "redux": "^3.7.2",
+    "redux": "^4.0.0",
     "redux-thunk": "^2.2.0",
     "reselect": "^3.0.1"
   },
