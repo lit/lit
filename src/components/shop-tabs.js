@@ -30,7 +30,7 @@ class ShopTabs extends LitElement {
       }
     </style>
     <div id="container">
-      <shop-tabs-overlay target="${this.children[this.selectedIndex]}"></shop-tabs-overlay>
+      <shop-tabs-overlay .target="${this.children[this.selectedIndex]}"></shop-tabs-overlay>
       <slot></slot>
     </div>`;
   }

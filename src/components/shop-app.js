@@ -233,7 +233,7 @@ class ShopApp extends connect(store)(LitElement) {
       ${ ['home', 'list', 'detail'].indexOf(_page) !== -1 && !_smallScreen && _lazyResourcesLoaded ?
         html`
           <div id="tabContainer" sticky>
-            <shop-tabs selectedIndex="${Object.keys(_categories).indexOf(_categoryName)}">
+            <shop-tabs .selectedIndex="${Object.keys(_categories).indexOf(_categoryName)}">
               ${repeat(categoriesList, category => html`
                 <shop-tab name="${category.name}">
                   <a href="/list/${category.name}">${category.title}</a>
@@ -344,9 +344,9 @@ class ShopApp extends connect(store)(LitElement) {
     // To force all event listeners for gestures to be passive.
     // See https://www.polymer-project.org/2.0/docs/devguide/gesture-events#use-passive-gesture-listeners
     setPassiveTouchGestures(true);
-  // }
+  }
 
-  // _firstRendered() {
+  firstUpdated() {
     installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);

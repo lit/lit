@@ -43,15 +43,15 @@ class ShopTabsOverlay extends LitElement {
     this._transitionsInFlight = [];
   }
 
-  _firstRendered() {
+  firstUpdated() {
     this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
   }
 
-  _propertiesChanged(props, changed, oldProps) {
-    if (changed && 'target' in changed) {
-      this._targetChanged(props.target, oldProps.target);
+  update(changedProps) {
+    if (changedProps && 'target' in changedProps) {
+      this._targetChanged(this.target, changedProps.target);
     }
-    super._propertiesChanged(props, changed, oldProps);
+    super.update(changedProps);
   }
 
   _targetChanged(newTarget, oldTarget) {
