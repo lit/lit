@@ -13,7 +13,7 @@ import { flush } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
 
 class ShopTabsOverlay extends LitElement {
-  _render() {
+  render() {
     return html`
     <style>
       :host {

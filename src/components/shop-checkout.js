@@ -33,7 +33,8 @@ store.addReducers({
 });
 
 class ShopCheckout extends connect(store)(PageViewElement) {
-  _render({ _cart, _response, _state, _total, _waiting, _hasBillingAddress }) {
+  render() {
+    const { _cart, _response, _state, _total, _waiting, _hasBillingAddress } = this;
     const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
 
     return html`
@@ -137,7 +138,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
 
     </style>
 
-    <div class$="${_waiting ? 'main-frame waiting' : 'main-frame'}">
+    <div class="${_waiting ? 'main-frame waiting' : 'main-frame'}">
       ${ _state === 'init' ? html`
         <div state="init">
           <form id="checkoutForm">
@@ -235,7 +236,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                   <div class="billing-address-picker">
                     <shop-checkbox>
                       <input type="checkbox" id="setBilling" name="setBilling"
-                          checked="${_hasBillingAddress}" on-change="${e => this._hasBillingAddress = e.target.checked}">
+                          checked="${_hasBillingAddress}" @change="${e => this._hasBillingAddress = e.target.checked}">
                       <shop-md-decorator></shop-md-decorator aria-hidden="true">
                     </shop-checkbox>
                     <label for="setBilling">Use different billing address</label>
@@ -393,7 +394,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     <div>$${_total.toFixed(2)}</div>
                   </div>
                   <shop-button responsive id="submitBox">
-                    <input type="button" on-click="${e => this._submit()}" value="Place Order">
+                    <input type="button" @click="${e => this._submit()}" value="Place Order">
                   </shop-button>
                 </section>
               </div>`
@@ -413,14 +414,14 @@ class ShopCheckout extends connect(store)(PageViewElement) {
           <h1>We couldn't process your order</h1>
           <p id="errorMessage">${_response.errorMessage}</p>
           <shop-button responsive>
-            <input type="button" on-click="${e => store.dispatch(updateCheckoutState('init'))}" value="Try Again">
+            <input type="button" @click="${e => store.dispatch(updateCheckoutState('init'))}" value="Try Again">
           </shop-button>
         </header>`
       }
     </div>
 
     <!-- Show spinner when waiting for the server to repond -->
-    <paper-spinner-lite active="${_waiting}"></paper-spinner-lite>
+    <paper-spinner-lite ?active="${_waiting}"></paper-spinner-lite>
     `;
   }
 

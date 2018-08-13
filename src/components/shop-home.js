@@ -18,7 +18,8 @@ import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
 
 class ShopHome extends connect(store)(PageViewElement) {
-  _render({ _categories }) {
+  render() {
+    const { _categories } = this;
     return html`
     ${shopButtonStyle}
     <style>
@@ -104,7 +105,7 @@ class ShopHome extends connect(store)(PageViewElement) {
         </a>
         <h2>${category.title}</h2>
         <shop-button>
-          <a aria-label$="${category.title} Shop Now" href="/list/${category.name}">Shop Now</a>
+          <a aria-label="${category.title} Shop Now" href="/list/${category.name}">Shop Now</a>
         </shop-button>
       </div>`;
     })}

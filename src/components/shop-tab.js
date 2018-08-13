@@ -12,7 +12,7 @@ import { LitElement, html } from '@polymer/lit-element';
 import './shop-ripple-container.js';
 
 class ShopTab extends LitElement {
-  _render() {
+  render() {
     return html`
     <style>
       [hidden] {

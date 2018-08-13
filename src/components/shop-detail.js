@@ -22,7 +22,8 @@ import { currentCategorySelector, currentItemSelector } from '../reducers/catego
 import { addToCart } from '../actions/cart.js';
 
 class ShopDetail extends connect(store)(PageViewElement) {
-  _render({ _failure, _item }) {
+  render() {
+    const { _failure, _item } = this;
     return html`
     ${shopButtonStyle}
     ${shopCommonStyle}
@@ -138,7 +139,7 @@ class ShopDetail extends connect(store)(PageViewElement) {
 
     </style>
 
-    <div id="content" hidden="${_failure || !_item}">
+    <div id="content" ?hidden="${_failure || !_item}">
       <shop-image alt="${_item.title}" src="${_item.largeImage}"></shop-image>
       <div class="detail" has-content>
         <h1>${_item.title}</h1>
@@ -176,7 +177,7 @@ class ShopDetail extends connect(store)(PageViewElement) {
           <p>${ _item ? unsafeHTML(this._unescapeText(_item.description)) : null }</p>
         </div>
         <shop-button responsive>
-          <button on-click="${() => this._addToCart()}" aria-label="Add this item to cart">Add to Cart</button>
+          <button @click="${() => this._addToCart()}" aria-label="Add this item to cart">Add to Cart</button>
         </shop-button>
       </div>
     </div>
@@ -185,7 +186,7 @@ class ShopDetail extends connect(store)(PageViewElement) {
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
-    <shop-network-warning hidden="${!_failure}"></shop-network-warning>
+    <shop-network-warning ?hidden="${!_failure}"></shop-network-warning>
     `;
 
   }

@@ -30,18 +30,18 @@ import { updateLocation, updateNetworkStatus } from '../actions/app.js';
 import './shop-home.js';
 
 class ShopApp extends connect(store)(LitElement) {
-  _render({
-    _categories,
-    _categoryName,
-    _lazyResourcesLoaded,
-    _modalOpened,
-    _offline,
-    _snackbarOpened,
-    _page,
-    _a11yLabel,
-    _drawerOpened,
-    _smallScreen }) {
-
+  render() {
+    const {
+      _categories,
+      _categoryName,
+      _lazyResourcesLoaded,
+      _modalOpened,
+      _offline,
+      _snackbarOpened,
+      _page,
+      _a11yLabel,
+      _drawerOpened,
+      _smallScreen } = this;
     const categoriesList = Object.keys(_categories).map(key => _categories[key]);
 
     return html`
@@ -216,12 +216,12 @@ class ShopApp extends connect(store)(LitElement) {
       <app-toolbar>
         <div class="left-bar-item">
           <paper-icon-button class="menu-btn" icon="menu"
-              on-click="${_ => this._drawerOpened = true}"
+              @click="${_ => this._drawerOpened = true}"
               aria-label="Categories"
-              hidden="${!_smallScreen || _page === 'detail'}">
+              ?hidden="${!_smallScreen || _page === 'detail'}">
           </paper-icon-button>
           <a class="back-btn" href="/list/${_categoryName}" tabindex="-1"
-              hidden="${_page !== 'detail'}">
+              ?hidden="${_page !== 'detail'}">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
         </div>
@@ -248,10 +248,10 @@ class ShopApp extends connect(store)(LitElement) {
     <!-- Lazy-create the drawer for small screen sizes. -->
     ${ _smallScreen && _lazyResourcesLoaded ?
       html`
-        <app-drawer opened="${_drawerOpened}" tabindex="0" on-opened-changed="${e => this._drawerOpened = e.target.opened}">
+        <app-drawer .opened="${_drawerOpened}" tabindex="0" @opened-changed="${e => this._drawerOpened = e.target.opened}">
           <nav class="drawer-list">
             ${repeat(categoriesList, category => html`
-              <a class$="${category.name === _categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
+              <a class="${category.name === _categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
             `)}
           </nav>
         </app-drawer>
@@ -260,17 +260,17 @@ class ShopApp extends connect(store)(LitElement) {
 
     <main>
       <!-- home view -->
-      <shop-home active?="${_page === 'home'}"></shop-home>
+      <shop-home ?active="${_page === 'home'}"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list active?="${_page === 'list'}"></shop-list>
+      <shop-list ?active="${_page === 'list'}"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail active?="${_page === 'detail'}"></shop-detail>
+      <shop-detail ?active="${_page === 'detail'}"></shop-detail>
       <!-- cart view -->
-      <shop-cart active?="${_page === 'cart'}"></shop-cart>
+      <shop-cart ?active="${_page === 'cart'}"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout active?="${_page === 'checkout'}"></shop-checkout>
+      <shop-checkout ?active="${_page === 'checkout'}"></shop-checkout>
 
-      <shop-404-warning active?="${_page === '404'}"></shop-404-warning>
+      <shop-404-warning ?active="${_page === '404'}"></shop-404-warning>
     </main>
 
     <footer>
@@ -283,7 +283,7 @@ class ShopApp extends connect(store)(LitElement) {
 
     ${ _modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
     ${ _lazyResourcesLoaded ? html`
-      <shop-snackbar class$="${_snackbarOpened ? 'opened' : ''}">
+      <shop-snackbar class="${_snackbarOpened ? 'opened' : ''}">
         ${_offline ? 'You are offline' : 'You are online'}
       </shop-snackbar>
       ` : null
@@ -344,9 +344,9 @@ class ShopApp extends connect(store)(LitElement) {
     // To force all event listeners for gestures to be passive.
     // See https://www.polymer-project.org/2.0/docs/devguide/gesture-events#use-passive-gesture-listeners
     setPassiveTouchGestures(true);
-  }
+  // }
 
-  _firstRendered() {
+  // _firstRendered() {
     installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);

@@ -14,7 +14,7 @@ import '@polymer/iron-icon';
 import './shop-icons.js';
 
 class Shop404Warning extends LitElement {
-  _render() {
+  render() {
     return html`
     ${shopButtonStyle}
     <style>
