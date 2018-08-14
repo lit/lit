@@ -21,15 +21,20 @@ import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../core.js';
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
+
+const previousValues = new WeakMap<NodePart, string>();
+
 export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
     directive((part: NodePart): void => {
       // Dirty check primitive values
-      if (part._value === value && _isPrimitiveValue(value)) {
+      const previousValue = previousValues.get(part);
+      if (previousValue === value && _isPrimitiveValue(value)) {
         return;
       }
 
       // Use a <template> to parse HTML into Nodes
       const tmp = document.createElement('template');
       tmp.innerHTML = value;
-      part.setValue(document.importNode(tmp.content, true), value);
+      part.setValue(document.importNode(tmp.content, true));
+      previousValues.set(part, value);
     });

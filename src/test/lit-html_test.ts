@@ -228,7 +228,7 @@ suite('lit-html', () => {
       assert.equal(count2, 1);
     });
 
-    test.only(
+    test(
         'allows updating event listener without extra calls to remove/addEventListener',
         () => {
           let listener: Function|null;
@@ -247,6 +247,7 @@ suite('lit-html', () => {
           assert.equal(removeCount, 0);
 
           listener = () => {};
+          render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 0);
 

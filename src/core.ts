@@ -476,10 +476,8 @@ export interface Part {
   /**
    * Sets the current part value, but does not write it to the DOM.
    * @param value The value that will be committed.
-   * @param keyValue A different value to use for comparing against previous
-   *     values to determine if a part has changed. Optional.
    */
-  setValue(value: any, keyValue?: any): void;
+  setValue(value: any): void;
 
   /**
    * Commits the current part value, cause it to actually be written to the DOM.
@@ -551,17 +549,15 @@ export class AttributeCommitter {
 export class AttributePart implements Part {
   committer: AttributeCommitter;
   _value: any = undefined;
-  _keyValue: any = undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
   }
 
-  setValue(value: any, keyValue: any = noChange): void {
+  setValue(value: any): void {
     value = value === null ? undefined : value;
-    if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || !_isPrimitiveValue(value) || value !== this._value) {
+    if (value !== noChange || !_isPrimitiveValue(value) || value !== this._value) {
       this._value = value;
-      this._keyValue = keyValue;
       if (!isDirective(value)) {
         this.committer.dirty = true;
       }
@@ -588,7 +584,6 @@ export class NodePart implements Part {
   endNode: Node;
   _value: any = undefined;
   _pendingValue: any = undefined;
-  _pendingKeyValue: any = undefined;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
     this.instance = instance;
@@ -596,9 +591,8 @@ export class NodePart implements Part {
     this.endNode = endNode;
   }
 
-  setValue(value: any, keyValue: any = noChange): void {
+  setValue(value: any): void {
     this._pendingValue = value;
-    this._pendingKeyValue = keyValue;
   }
 
   commit() {
@@ -607,7 +601,7 @@ export class NodePart implements Part {
       this._pendingValue = noChange;
       directive(this);
     }
-    let value = this._pendingValue === null ? undefined : this._pendingValue;
+    const value = this._pendingValue === null ? undefined : this._pendingValue;
     if (value === noChange) {
       return;
     }
@@ -626,10 +620,6 @@ export class NodePart implements Part {
     } else {
       // Fallback, will render the string representation
       this._setText(value);
-    }
-    if (this._pendingKeyValue !== noChange) {
-      this._value = this._pendingKeyValue;
-      this._pendingKeyValue = noChange;
     }
   }
 

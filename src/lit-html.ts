@@ -14,7 +14,7 @@
 
 import {isDirective, AttributeCommitter, AttributePart, defaultPartCallback, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
 
-export {render} from './core.js';
+export * from './core.js';
 
 /**
  * Interprets a template literal as a lit-html HTML template.
@@ -92,67 +92,49 @@ export class BooleanAttributePart implements Part {
   name: string;
   strings: string[];
   _value: any = undefined;
-  _keyValue: any = undefined;
-  private _dirty = true;
+  _pendingValue: any = undefined;
 
   constructor(element: Element, name: string, strings: string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
-          'boolean attributes can only contain a single expression');
+          'Boolean attributes can only contain a single expression');
     }
     this.element = element;
     this.name = name;
     this.strings = strings;
   }
 
-  setValue(value: any, keyValue: any = noChange): void {
-    value = !!value;
-    if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || value !== this._value) {
-      this._value = value;
-      this._keyValue = keyValue;
-      if (!isDirective(value)) {
-        this._dirty = true;
-      }
-    }
+  setValue(value: any): void {
+    this._pendingValue = value;
+    // value = !!value;
+    // if (value !== noChange || value !== this._value) {
+    //   this._value = value;
+    //   if (!isDirective(value)) {
+    //     this._dirty = true;
+    //   }
+    // }
   }
 
   commit() {
-    while (isDirective(this._value)) {
-      const directive = this._value;
-      this._value = noChange;
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
       directive(this);
     }
-    if (this._value !== noChange && this._dirty) {
-      this._dirty = false;
-      if (this._value) {
+    if (this._pendingValue === noChange) {
+      return;
+    }
+    const value = !!this._pendingValue;
+    if (this._value !== value) {
+      if (value) {
         this.element.setAttribute(this.name, '');
       } else {
         this.element.removeAttribute(this.name);
       }
     }
+    this._value = value;
+    this._pendingValue = noChange;
   }
-
-  // setValue(value: any, keyValue: any = noChange): void {
-  //   value = getValue(this, value);
-  //   if (value === noChange) {
-  //     return;
-  //   }
-  //   this._value = !!value;
-  //   if (this._value !== !!value) {
-  //     this._dirty = true;
-  //   }
-  // }
-
-  // commit() {
-  //   if (this._dirty) {
-  //     this._dirty = false;
-  //     if (this._value) {
-  //       this.element.setAttribute(this.name, '');
-  //     } else {
-  //       this.element.removeAttribute(this.name);
-  //     }
-  //   }
-  // }
 }
 
 /**
@@ -198,64 +180,38 @@ export class EventPart implements Part {
   element: Element;
   eventName: string;
   _value: any = undefined;
-  _keyValue: any = undefined;
-  private _dirty = true;
+  _pendingValue: any = undefined;
 
   constructor(element: Element, eventName: string) {
     this.element = element;
     this.eventName = eventName;
   }
 
-  setValue(value: any, keyValue: any = noChange): void {
-    console.log('setValue', {value, keyValue});
-    if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || value !== this._value) {
-      this._value = value;
-      this._keyValue = keyValue;
-      if (!isDirective(value)) {
-        this._dirty = true;
-      }
-    }
+  setValue(value: any): void {
+    this._pendingValue = value;
   }
 
   commit() {
-    while (isDirective(this._value)) {
-      const directive = this._value;
-      this._value = noChange;
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
       directive(this);
     }
-    if (this._value !== noChange && this._dirty) {
-      this._dirty = false;
-      if (this._value == null) {
+    if (this._pendingValue === noChange) {
+      return;
+    }
+    if ((this._pendingValue == null) !== (this._value == null)) {
+      if (this._pendingValue == null) {
         this.element.removeEventListener(this.eventName, this);
       } else {
         this.element.addEventListener(this.eventName, this);
       }
     }
+    this._value = this._pendingValue;
+    this._pendingValue = noChange;
   }
 
-  // setValue(value: any): void {
-  //   value = getValue(this, value);
-  //   if (value !== noChange) {
-  //     if ((value == null) !== (this._value == null)) {
-  //       this._dirty = true;
-  //     }
-  //     this._value = value;
-  //   }
-  // }
-
-  // commit() {
-  //   if (this._dirty) {
-  //     this._dirty = false;
-  //     if (this._value == null) {
-  //       this.element.removeEventListener(this.eventName, this);
-  //     } else {
-  //       this.element.addEventListener(this.eventName, this);
-  //     }
-  //   }
-  // }
-
   handleEvent(event: Event) {
-    console.log('A', this._value);
     if (typeof this._value === 'function') {
       this._value.call(this.element, event);
     } else if (typeof this._value.handleEvent === 'function') {
