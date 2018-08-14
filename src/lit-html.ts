@@ -207,7 +207,7 @@ export class EventPart implements Part {
   }
 
   setValue(value: any, keyValue: any = noChange): void {
-    value = !!value;
+    console.log('setValue', {value, keyValue});
     if (value !== noChange || (keyValue === noChange || keyValue !== this._keyValue) || value !== this._value) {
       this._value = value;
       this._keyValue = keyValue;
@@ -255,6 +255,7 @@ export class EventPart implements Part {
   // }
 
   handleEvent(event: Event) {
+    console.log('A', this._value);
     if (typeof this._value === 'function') {
       this._value.call(this.element, event);
     } else if (typeof this._value.handleEvent === 'function') {
