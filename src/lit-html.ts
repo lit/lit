@@ -106,13 +106,6 @@ export class BooleanAttributePart implements Part {
 
   setValue(value: any): void {
     this._pendingValue = value;
-    // value = !!value;
-    // if (value !== noChange || value !== this._value) {
-    //   this._value = value;
-    //   if (!isDirective(value)) {
-    //     this._dirty = true;
-    //   }
-    // }
   }
 
   commit() {
