@@ -77,8 +77,11 @@ suite('add/remove nodes from template', () => {
         </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
         const result = getResult('bar', 'baz', 'qux');
         const template = templateFactory(result);
-        const nodeSet = new Set(Array.from(
-            template.element.content.querySelectorAll('[name="remove"]')));
+        const nodeSet = new Set();
+        const nodesToRemove = template.element.content.querySelectorAll('[name="remove"]');
+        for (const node of Array.from(nodesToRemove)) {
+          nodeSet.add(node);
+        }
         removeNodesFromTemplate(template, nodeSet);
         render(result, container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), `
@@ -105,8 +108,11 @@ suite('add/remove nodes from template', () => {
         </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
-        const nodeSet = new Set(Array.from(
-            template.element.content.querySelectorAll('[name="remove"]')));
+        const nodeSet = new Set();
+        const nodesToRemove = template.element.content.querySelectorAll('[name="remove"]');
+        for (const node of Array.from(nodesToRemove)) {
+          nodeSet.add(node);
+        }
         removeNodesFromTemplate(template, nodeSet);
         render(result, container);
         assert.equal(stripExpressionDelimeters(container.innerHTML), `
