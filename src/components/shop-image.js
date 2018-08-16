@@ -54,7 +54,7 @@ class ShopImage extends LitElement {
 
     </style>
 
-    <div id="placeholder" style="${placeholder ? `background-image: url('${placeholder}')` : ''}">
+    <div id="placeholder" style="background-image: url('${placeholder || ''}')">
       <img src="${src}" alt="${alt}" class="${_loaded ? 'loaded' : ''}"
           @load="${() => this._loaded = true}"
           @error="${() => this._onImgError()}">
@@ -74,11 +74,11 @@ class ShopImage extends LitElement {
 
   }}
 
-  _propertiesChanged(props, changed, oldProps) {
-    if (changed && 'src' in changed) {
-      props._loaded = false;
+  update(changedProps) {
+    if (changedProps.has('src')) {
+      this._loaded = false;
     }
-    super._propertiesChanged(props, changed, oldProps);
+    super.update(changedProps);
   }
 
   _onImgError() {
