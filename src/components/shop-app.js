@@ -315,25 +315,24 @@ class ShopApp extends connect(store)(LitElement) {
     _smallScreen: Boolean,
   }}
 
-  _didRender(props, changed, oldProps) {
-    if ('_page' in changed || '_categoryName' in changed) {
+  finishUpdate(changedProps) {
+    if (changedProps.has('_page') || changedProps.has('_categoryName')) {
       // TODO: For list view, scroll to the last saved position only if the category has not changed
       scroll({ top: 0, behavior: 'silent' });
     }
-    if ('_page' in changed) {
+    if (changedProps.has('_page')) {
       // TODO: Remove this when app-header updated to use ResizeObserver so we can avoid this bit.
       // The size of the header depends on the page (e.g. on some pages the tabs
       // do not appear), so reset the header's layout when switching pages.
       const header = this.shadowRoot.querySelector('#header');
       header.resetLayout();
     }
-    if ('_meta' in changed) {
-      const meta = props._meta;
-      if (meta) {
+    if (changedProps.has('_meta')) {
+      if (this._meta) {
         updateMetadata({
-          title: meta.title,
-          description: meta.description || meta.title,
-          image: meta.image || this.baseURI + 'images/shop-icon-128.png'
+          title: this._meta.title,
+          description: this._meta.description || this._meta.title,
+          image: this._meta.image || this.baseURI + 'images/shop-icon-128.png'
         });
       }
     }
@@ -346,7 +345,7 @@ class ShopApp extends connect(store)(LitElement) {
     setPassiveTouchGestures(true);
   }
 
-  firstUpdated() {
+  finishFirstUpdate() {
     installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
