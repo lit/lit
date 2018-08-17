@@ -115,17 +115,17 @@ suite('Core', () => {
 
     test('parses element-less text expression', () => {
       const container = document.createElement('div');
-      const result = html`<div>${1} ${2}</div>`;
+      const result = html`test`;
       render(result, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>1 2</div>');
+      assert.equal(stripExpressionDelimeters(container.innerHTML), 'test');
     });
 
     test('parses expressions for two child nodes of one element', () => {
       const container = document.createElement('div');
-      const result = html`test`;
+      const result = html`<div>${1} ${2}</div>`;
       render(result, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), 'test');
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div>1 2</div>');
     });
 
     test('parses expressions for two attributes of one element', () => {
