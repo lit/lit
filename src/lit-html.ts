@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, defaultPartCallback, getValue, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
+import {AttributeCommitter, AttributePart, defaultPartCallback, isDirective, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
 
-export {render} from './core.js';
+export * from './core.js';
 
 /**
  * Interprets a template literal as a lit-html HTML template.
@@ -57,26 +57,28 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  *     html`<input type="checkbox" ?checked=${value}>`
  */
 export const partCallback =
-    (instance: TemplateInstance,
-     templatePart: TemplatePart,
-     node: Node): Part => {
-      if (templatePart.type === 'attribute') {
-        const name = templatePart.name!;
-        const prefix = name[0];
-        if (prefix === '.') {
-          return new PropertyPart(
-              instance, node as Element, name.slice(1), templatePart.strings!);
-        }
-        if (prefix === '@') {
-          return new EventPart(instance, node as Element, name.slice(1));
-        }
-        if (prefix === '?') {
-          return new BooleanAttributePart(
-              instance, node as Element, name.slice(1), templatePart.strings!);
-        }
-      }
-      return defaultPartCallback(instance, templatePart, node);
-    };
+    (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
+        Part[] => {
+          if (templatePart.type === 'attribute') {
+            const name = templatePart.name!;
+            const prefix = name[0];
+            if (prefix === '.') {
+              const comitter = new PropertyCommitter(
+                  node as Element,
+                  templatePart.name!.slice(1),
+                  templatePart.strings!);
+              return comitter.parts;
+            }
+            if (prefix === '@') {
+              return [new EventPart(node as Element, name.slice(1))];
+            }
+            if (prefix === '?') {
+              return [new BooleanAttributePart(
+                  node as Element, name.slice(1), templatePart.strings!)];
+            }
+          }
+          return defaultPartCallback(instance, templatePart, node);
+        };
 
 /**
  * Implements a boolean attribute, roughly as defined in the HTML
@@ -85,79 +87,128 @@ export const partCallback =
  * If the value is truthy, then the attribute is present with a value of
  * ''. If the value is falsey, the attribute is removed.
  */
-export class BooleanAttributePart extends AttributePart {
-  setValue(values: any[], startIndex: number): void {
-    const s = this.strings;
-    if (s.length === 2 && s[0] === '' && s[1] === '') {
-      const value = getValue(this, values[startIndex]);
-      if (value === noChange) {
-        return;
-      }
+export class BooleanAttributePart implements Part {
+  element: Element;
+  name: string;
+  strings: string[];
+  value: any = undefined;
+  _pendingValue: any = undefined;
+
+  constructor(element: Element, name: string, strings: string[]) {
+    if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
+      throw new Error(
+          'Boolean attributes can only contain a single expression');
+    }
+    this.element = element;
+    this.name = name;
+    this.strings = strings;
+  }
+
+  setValue(value: any): void {
+    this._pendingValue = value;
+  }
+
+  commit() {
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
+      directive(this);
+    }
+    if (this._pendingValue === noChange) {
+      return;
+    }
+    const value = !!this._pendingValue;
+    if (this.value !== value) {
       if (value) {
         this.element.setAttribute(this.name, '');
       } else {
         this.element.removeAttribute(this.name);
       }
-    } else {
-      throw new Error(
-          'boolean attributes can only contain a single expression');
+    }
+    this.value = value;
+    this._pendingValue = noChange;
+  }
+}
+
+/**
+ * Sets attribute values for PropertyParts, so that the value is only set once
+ * even if there are multiple parts for a property.
+ *
+ * If an expression controls the whole property value, then the value is simply
+ * assigned to the property under control. If there are string literals or
+ * multiple expressions, then the strings are expressions are interpolated into
+ * a string first.
+ */
+export class PropertyCommitter extends AttributeCommitter {
+  single: boolean;
+
+  constructor(element: Element, name: string, strings: string[]) {
+    super(element, name, strings);
+    this.single =
+        (strings.length === 2 && strings[0] === '' && strings[1] === '');
+  }
+
+  protected _createPart(): PropertyPart {
+    return new PropertyPart(this);
+  }
+
+  _getValue() {
+    if (this.single) {
+      return this.parts[0].value;
+    }
+    return super._getValue();
+  }
+
+  commit(): void {
+    if (this.dirty) {
+      this.dirty = false;
+      (this.element as any)[this.name] = this._getValue();
     }
   }
 }
 
-export class PropertyPart extends AttributePart {
-  setValue(values: any[], startIndex: number): void {
-    const s = this.strings;
-    let value: any;
-    if (this._equalToPreviousValues(values, startIndex)) {
-      return;
-    }
-    if (s.length === 2 && s[0] === '' && s[1] === '') {
-      // An expression that occupies the whole attribute value will leave
-      // leading and trailing empty strings.
-      value = getValue(this, values[startIndex]);
-    } else {
-      // Interpolation, so interpolate
-      value = this._interpolate(values, startIndex);
-    }
-    if (value !== noChange) {
-      (this.element as any)[this.name] = value;
-    }
-
-    this._previousValues = values;
-  }
-}
+export class PropertyPart extends AttributePart {}
 
 export class EventPart implements Part {
-  instance: TemplateInstance;
   element: Element;
   eventName: string;
-  private _listener: any;
+  value: any = undefined;
+  _pendingValue: any = undefined;
 
-  constructor(instance: TemplateInstance, element: Element, eventName: string) {
-    this.instance = instance;
+  constructor(element: Element, eventName: string) {
     this.element = element;
     this.eventName = eventName;
   }
 
   setValue(value: any): void {
-    const listener = getValue(this, value);
-    if (listener === this._listener) {
+    this._pendingValue = value;
+  }
+
+  commit() {
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
+      directive(this);
+    }
+    if (this._pendingValue === noChange) {
       return;
     }
-    if (listener == null) {
-      this.element.removeEventListener(this.eventName, this);
-    } else if (this._listener == null) {
-      this.element.addEventListener(this.eventName, this);
+    if ((this._pendingValue == null) !== (this.value == null)) {
+      if (this._pendingValue == null) {
+        this.element.removeEventListener(this.eventName, this);
+      } else {
+        this.element.addEventListener(this.eventName, this);
+      }
     }
-    this._listener = listener;
+    this.value = this._pendingValue;
+    this._pendingValue = noChange;
   }
 
   handleEvent(event: Event) {
-    if (typeof this._listener === 'function') {
-      this._listener.call(this.element, event);
-    } else if (typeof this._listener.handleEvent === 'function') {
-      this._listener.handleEvent(event);
+    if (typeof this.value === 'function') {
+      this.value.call(this.element, event);
+    } else if (typeof this.value.handleEvent === 'function') {
+      this.value.handleEvent(event);
     }
   }
 }

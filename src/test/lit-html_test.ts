@@ -15,13 +15,14 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {directive, html as htmlPlain} from '../core.js';
-import {html, PropertyPart, render} from '../lit-html.js';
+import {AttributePart, directive, html as htmlPlain, NodePart} from '../core.js';
+import {html, render} from '../lit-html.js';
+
 import {stripExpressionDelimeters} from './test-helpers.js';
 
 const assert = chai.assert;
 
-suite('lit-extended', () => {
+suite('lit-html', () => {
   suite('render', () => {
     let container: HTMLElement;
 
@@ -32,8 +33,8 @@ suite('lit-extended', () => {
     test('sets properties', () => {
       render(html`<div .foo=${123} .bar=${456}></div>`, container);
       const div = container.firstChild!;
-      assert.equal((div as any).foo, 123);
-      assert.equal((div as any).bar, 456);
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).bar, 456);
     });
 
     test('renders to an attribute', () => {
@@ -217,8 +218,9 @@ suite('lit-extended', () => {
       const listener2 = () => {
         count2++;
       };
-      render(html`<div @click=${listener1}></div>`, container);
-      render(html`<div @click=${listener2}></div>`, container);
+      const t = (listener: () => void) => html`<div @click=${listener}></div>`;
+      render(t(listener1), container);
+      render(t(listener2), container);
 
       const div = container.firstChild as HTMLElement;
       div.click();
@@ -233,25 +235,32 @@ suite('lit-extended', () => {
           const t = () => html`<div @click=${listener}></div>`;
           render(t(), container);
           const div = container.firstChild as HTMLElement;
+
           let addCount = 0;
           let removeCount = 0;
           div.addEventListener = () => addCount++;
           div.removeEventListener = () => removeCount++;
+
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 0);
+
           listener = () => {};
+          render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 0);
+
           listener = null;
           render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 1);
+
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
           assert.equal(removeCount, 1);
+
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
@@ -274,15 +283,58 @@ suite('lit-extended', () => {
       assert.equal(target, undefined);
     });
 
+    test('event listeners can see events fired by dynamic children', () => {
+      // This tests that node directives are called in the commit phase, not
+      // the setValue phase
+      let event: Event|undefined = undefined;
+      document.body.appendChild(container);
+      render(
+          html`
+        <div @test-event=${(e: Event) => {
+            event = e;
+          }}>
+          ${directive((part: NodePart) => {
+            // This emulates a custom element that fires an event in its
+            // connectedCallback
+            part.startNode.dispatchEvent(new CustomEvent('test-event', {
+              bubbles: true,
+            }));
+          })}
+        </div>`,
+          container);
+      document.body.removeChild(container);
+      assert.isOk(event);
+    });
+
+    test(
+        'event listeners can see events fired directives in AttributeParts',
+        () => {
+          // This tests that attribute directives are called in the commit
+          // phase, not the setValue phase
+          let event = undefined;
+          const fire = directive((part: AttributePart) => {
+            part.committer.element.dispatchEvent(new CustomEvent('test-event', {
+              bubbles: true,
+            }));
+          });
+
+          render(
+              html`<div @test-event=${(e: Event) => {
+                event = e;
+              }} b=${fire}></div>`,
+              container);
+          assert.isOk(event);
+        });
+
     test('renders directives on PropertyParts', () => {
-      const fooDirective = directive((part: PropertyPart) => {
-        (part.element as any)[part.name] = 1234;
+      const fooDirective = directive((part: AttributePart) => {
+        part.setValue(1234);
       });
 
       render(html`<div .foo="${fooDirective}"></div>`, container);
       assert.equal(
           stripExpressionDelimeters(container.innerHTML), '<div></div>');
-      assert.equal((container.firstElementChild as any).foo, 1234);
+      assert.strictEqual((container.firstElementChild as any).foo, 1234);
     });
 
     const suiteIfCustomElementsAreSupported =

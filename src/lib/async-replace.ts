@@ -37,7 +37,7 @@ export const asyncReplace =
         DirectiveFn<NodePart> => directive(async (part: NodePart) => {
           // If we've already set up this particular iterable, we don't need
           // to do anything.
-          if (value === part._previousValue) {
+          if (value === part.value) {
             return;
           }
 
@@ -46,7 +46,7 @@ export const asyncReplace =
           const itemPart =
               new NodePart(part.instance, part.startNode, part.endNode);
 
-          part._previousValue = itemPart;
+          part.value = itemPart;
 
           let i = 0;
 
@@ -59,7 +59,7 @@ export const asyncReplace =
 
             // Check to make sure that value is the still the current value of
             // the part, and if not bail because a new value owns this part
-            if (part._previousValue !== itemPart) {
+            if (part.value !== itemPart) {
               break;
             }
 
@@ -72,6 +72,7 @@ export const asyncReplace =
             }
 
             itemPart.setValue(v);
+            itemPart.commit();
             i++;
           }
         });

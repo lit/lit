@@ -15,8 +15,8 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {directive, html as htmlPlain} from '../../core.js';
-import {html, PropertyPart, render} from '../../lib/lit-extended.js';
+import {AttributePart, directive, html as htmlPlain} from '../../core.js';
+import {html, render} from '../../lib/lit-extended.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
 
 const assert = chai.assert;
@@ -32,8 +32,8 @@ suite('lit-extended', () => {
     test('sets properties', () => {
       render(html`<div foo=${123} bar=${456}></div>`, container);
       const div = container.firstChild!;
-      assert.equal((div as any).foo, 123);
-      assert.equal((div as any).bar, 456);
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).bar, 456);
     });
 
     test('renders to an attribute', () => {
@@ -275,8 +275,8 @@ suite('lit-extended', () => {
     });
 
     test('renders directives on PropertyParts', () => {
-      const fooDirective = directive((part: PropertyPart) => {
-        (part.element as any)[part.name] = 1234;
+      const fooDirective = directive((part: AttributePart) => {
+        part.setValue(1234);
       });
 
       render(html`<div foo="${fooDirective}"></div>`, container);

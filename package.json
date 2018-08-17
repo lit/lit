@@ -26,6 +26,7 @@
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
     "checksize": "uglifyjs core.js -mc --toplevel | gzip -9 | wc -c",
+    "min": "uglifyjs core.js -mc --toplevel",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
     "prepare": "npm run build"
@@ -34,10 +35,7 @@
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.0",
-    "@webcomponents/shadycss": "^1.2.1",
-    "@webcomponents/template": "^1.3.1",
-    "@webcomponents/webcomponentsjs": "^2.0.2",
-    "babel-polyfill": "^6.26.0",
+    "@webcomponents/webcomponentsjs": "^2.0.4",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "tslint": "^5.9.1",
@@ -45,7 +43,7 @@
     "typescript": "^2.8.3",
     "uglify-es": "^3.3.5",
     "wct-browser-legacy": "^1.0.1",
-    "web-component-tester": "^6.6.0"
+    "web-component-tester": "^6.8.0"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}

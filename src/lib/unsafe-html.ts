@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../core.js';
+import {directive, DirectiveFn, isPrimitive, NodePart} from '../core.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -21,13 +21,20 @@ import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../core.js';
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
+
+const previousValues = new WeakMap<NodePart, string>();
+
 export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
     directive((part: NodePart): void => {
-      if (part._previousValue === value && _isPrimitiveValue(value)) {
+      // Dirty check primitive values
+      const previousValue = previousValues.get(part);
+      if (previousValue === value && isPrimitive(value)) {
         return;
       }
+
+      // Use a <template> to parse HTML into Nodes
       const tmp = document.createElement('template');
       tmp.innerHTML = value;
       part.setValue(document.importNode(tmp.content, true));
-      part._previousValue = value;
+      previousValues.set(part, value);
     });
