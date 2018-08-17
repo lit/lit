@@ -43,7 +43,7 @@
     "typescript": "^2.8.3",
     "uglify-es": "^3.3.5",
     "wct-browser-legacy": "^1.0.1",
-    "web-component-tester": "^6.6.0"
+    "web-component-tester": "^6.8.0"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}
