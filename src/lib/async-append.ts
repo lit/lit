@@ -86,7 +86,8 @@ export const asyncAppend = <T>(
           itemPart.endNode = itemStartNode;
           part.endNode.parentNode!.insertBefore(itemStartNode, part.endNode);
         }
-        itemPart = new NodePart(part.instance, itemStartNode, part.endNode);
+        itemPart =
+            new NodePart(itemStartNode, part.endNode, part.templateFactory);
         itemPart.setValue(v);
         itemPart.commit();
         i++;

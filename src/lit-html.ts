@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, defaultPartCallback, isDirective, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
+import {AttributeCommitter, AttributePart, isDirective, noChange, Part, SVGTemplateResult, TemplateProcessor, TemplateResult} from './core.js';
 
 export * from './core.js';
 
@@ -20,13 +20,13 @@ export * from './core.js';
  * Interprets a template literal as a lit-html HTML template.
  */
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
-    new TemplateResult(strings, values, 'html', partCallback);
+    new TemplateResult(strings, values, 'html', templateProcessor);
 
 /**
  * Interprets a template literal as a lit-html SVG template.
  */
 export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
-    new SVGTemplateResult(strings, values, 'svg', partCallback);
+    new SVGTemplateResult(strings, values, 'svg', templateProcessor);
 
 /**
  * A PartCallback which allows templates to set properties, declarative
@@ -56,29 +56,25 @@ export const svg = (strings: TemplateStringsArray, ...values: any[]) =>
  *
  *     html`<input type="checkbox" ?checked=${value}>`
  */
-export const partCallback =
-    (instance: TemplateInstance, templatePart: TemplatePart, node: Node):
-        Part[] => {
-          if (templatePart.type === 'attribute') {
-            const name = templatePart.name!;
-            const prefix = name[0];
-            if (prefix === '.') {
-              const comitter = new PropertyCommitter(
-                  node as Element,
-                  templatePart.name!.slice(1),
-                  templatePart.strings!);
-              return comitter.parts;
-            }
-            if (prefix === '@') {
-              return [new EventPart(node as Element, name.slice(1))];
-            }
-            if (prefix === '?') {
-              return [new BooleanAttributePart(
-                  node as Element, name.slice(1), templatePart.strings!)];
-            }
-          }
-          return defaultPartCallback(instance, templatePart, node);
-        };
+
+export class LitTemplateProcessor extends TemplateProcessor {
+  handleAttributeExpressions(element: Element, name: string, strings: string[]):
+      Part[] {
+    const prefix = name[0];
+    if (prefix === '.') {
+      const comitter = new PropertyCommitter(element, name.slice(1), strings);
+      return comitter.parts;
+    }
+    if (prefix === '@') {
+      return [new EventPart(element, name.slice(1))];
+    }
+    if (prefix === '?') {
+      return [new BooleanAttributePart(element, name.slice(1), strings)];
+    }
+    return super.handleAttributeExpressions(element, name, strings);
+  }
+}
+export const templateProcessor = new LitTemplateProcessor();
 
 /**
  * Implements a boolean attribute, roughly as defined in the HTML

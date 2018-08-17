@@ -71,7 +71,7 @@ export function repeat<T>(
         const endNode = document.createTextNode('');
         container.insertBefore(marker, currentMarker);
         container.insertBefore(endNode, currentMarker);
-        itemPart = new NodePart(part.instance, marker, endNode);
+        itemPart = new NodePart(marker, endNode, part.templateFactory);
         if (key !== undefined) {
           keyMap.set(key, itemPart);
         }
