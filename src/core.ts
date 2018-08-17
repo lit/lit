@@ -421,23 +421,6 @@ export class Template {
   }
 }
 
-/**
- * Returns a value ready to be inserted into a Part from a user-provided value.
- *
- * If the user value is a directive, this invokes the directive with the given
- * part. If the value is null, it's converted to undefined to work better
- * with certain DOM APIs, like textContent.
- */
-// export const getValue = (part: Part, value: any) => {
-//   if (isDirective(value)) {
-//     value = value(part);
-//     return noChange;
-//   }
-//   // `null` as the value of a Text node will render the string 'null'
-//   // so we convert it to undefined
-//   return value === null ? undefined : value;
-// };
-
 export interface DirectiveFn<P = Part> {
   (part: P): void;
   __litDirective?: true;
@@ -457,12 +440,7 @@ export const isDirective = (o: any) =>
  */
 export const noChange = {};
 
-/**
- * @deprecated Use `noChange` instead.
- */
-export {noChange as directiveValue};
-
-export const _isPrimitiveValue = (value: any) =>
+export const isPrimitive = (value: any) =>
     (value === null ||
      !(typeof value === 'object' || typeof value === 'function'));
 
@@ -471,7 +449,7 @@ export const _isPrimitiveValue = (value: any) =>
  * by lit-html.
  */
 export interface Part {
-  _value: any;
+  value: any;
 
   /**
    * Sets the current part value, but does not write it to the DOM.
@@ -522,7 +500,7 @@ export class AttributeCommitter {
       text += strings[i];
       const part = this.parts[i];
       if (part !== undefined) {
-        const v = part._value;
+        const v = part.value;
         if (v != null &&
             (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
           for (const t of v) {
@@ -548,16 +526,18 @@ export class AttributeCommitter {
 
 export class AttributePart implements Part {
   committer: AttributeCommitter;
-  _value: any = undefined;
+  value: any = undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
   }
 
   setValue(value: any): void {
-    value = value === null ? undefined : value;
-    if (value !== noChange || !_isPrimitiveValue(value) || value !== this._value) {
-      this._value = value;
+    if (value !== noChange || !isPrimitive(value) || value !== this.value) {
+      this.value = value;
+      // If the value is a not a directive, dirty the committer so that it'll
+      // call setAttribute. If the value is a directive, it'll dirty the
+      // committer if it calls setValue().
       if (!isDirective(value)) {
         this.committer.dirty = true;
       }
@@ -565,13 +545,12 @@ export class AttributePart implements Part {
   }
 
   commit() {
-    // console.log('commit', this._value);
-    while (isDirective(this._value)) {
-      const directive = this._value;
-      this._value = noChange;
+    while (isDirective(this.value)) {
+      const directive = this.value;
+      this.value = noChange;
       directive(this);
     }
-    if (this._value === noChange) {
+    if (this.value === noChange) {
       return;
     }
     this.committer.commit();
@@ -582,7 +561,7 @@ export class NodePart implements Part {
   instance: TemplateInstance;
   startNode: Node;
   endNode: Node;
-  _value: any = undefined;
+  value: any = undefined;
   _pendingValue: any = undefined;
 
   constructor(instance: TemplateInstance, startNode: Node, endNode: Node) {
@@ -601,25 +580,25 @@ export class NodePart implements Part {
       this._pendingValue = noChange;
       directive(this);
     }
-    const value = this._pendingValue === null ? undefined : this._pendingValue;
+    const value = this._pendingValue;
     if (value === noChange) {
       return;
     }
-    if (_isPrimitiveValue(value)) {
-      if (value !== this._value) {
-        this._setText(value);
+    if (isPrimitive(value)) {
+      if (value !== this.value) {
+        this._commitText(value);
       }
     } else if (value instanceof TemplateResult) {
-      this._setTemplateResult(value);
+      this._commitTemplateResult(value);
     } else if (value instanceof Node) {
-      this._setNode(value);
+      this._commitNode(value);
     } else if (Array.isArray(value) || value[Symbol.iterator]) {
-      this._setIterable(value);
+      this._commitIterable(value);
     } else if (value.then !== undefined) {
-      this._setPromise(value);
+      this._commitPromise(value);
     } else {
       // Fallback, will render the string representation
-      this._setText(value);
+      this._commitText(value);
     }
   }
 
@@ -627,18 +606,18 @@ export class NodePart implements Part {
     this.endNode.parentNode!.insertBefore(node, this.endNode);
   }
 
-  private _setNode(value: Node): void {
-    if (this._value === value) {
+  private _commitNode(value: Node): void {
+    if (this.value === value) {
       return;
     }
     this.clear();
     this._insert(value);
-    this._value = value;
+    this.value = value;
   }
 
-  private _setText(value: string): void {
+  private _commitText(value: string): void {
     const node = this.startNode.nextSibling!;
-    value = value === undefined ? '' : value;
+    value = value == null ? '' : value;
     if (node === this.endNode.previousSibling &&
         node.nodeType === Node.TEXT_NODE) {
       // If we only have a single text node between the markers, we can just
@@ -647,26 +626,26 @@ export class NodePart implements Part {
       // primitive?
       node.textContent = value;
     } else {
-      this._setNode(document.createTextNode(value));
+      this._commitNode(document.createTextNode(value));
     }
-    this._value = value;
+    this.value = value;
   }
 
-  private _setTemplateResult(value: TemplateResult): void {
+  private _commitTemplateResult(value: TemplateResult): void {
     const template = this.instance._getTemplate(value);
     let instance: TemplateInstance;
-    if (this._value && this._value.template === template) {
-      instance = this._value;
+    if (this.value && this.value.template === template) {
+      instance = this.value;
     } else {
       instance = new TemplateInstance(
           template, this.instance._partCallback, this.instance._getTemplate);
-      this._setNode(instance._clone());
-      this._value = instance;
+      this._commitNode(instance._clone());
+      this.value = instance;
     }
     instance.update(value.values);
   }
 
-  private _setIterable(value: any): void {
+  private _commitIterable(value: any): void {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
@@ -677,14 +656,14 @@ export class NodePart implements Part {
     // iterable and _previousValue will contain the NodeParts from the previous
     // render. If _previousValue is not an array, clear this part and make a new
     // array for NodeParts.
-    if (!Array.isArray(this._value)) {
+    if (!Array.isArray(this.value)) {
       this.clear();
-      this._value = [];
+      this.value = [];
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._value as any[];
+    const itemParts = this.value as any[];
     let partIndex = 0;
 
     for (const item of value) {
@@ -714,7 +693,7 @@ export class NodePart implements Part {
 
     if (partIndex === 0) {
       this.clear();
-      this._value = undefined;
+      this.value = undefined;
     } else if (partIndex < itemParts.length) {
       const lastPart = itemParts[partIndex - 1];
       // Truncate the parts array so _previousValue reflects the current state
@@ -724,10 +703,10 @@ export class NodePart implements Part {
     }
   }
 
-  private _setPromise(value: Promise<any>): void {
-    this._value = value;
+  private _commitPromise(value: Promise<any>): void {
+    this.value = value;
     value.then((v: any) => {
-      if (this._value === value) {
+      if (this.value === value) {
         this.setValue(v);
         this.commit();
       }

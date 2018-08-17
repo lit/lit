@@ -91,7 +91,7 @@ export class BooleanAttributePart implements Part {
   element: Element;
   name: string;
   strings: string[];
-  _value: any = undefined;
+  value: any = undefined;
   _pendingValue: any = undefined;
 
   constructor(element: Element, name: string, strings: string[]) {
@@ -118,14 +118,14 @@ export class BooleanAttributePart implements Part {
       return;
     }
     const value = !!this._pendingValue;
-    if (this._value !== value) {
+    if (this.value !== value) {
       if (value) {
         this.element.setAttribute(this.name, '');
       } else {
         this.element.removeAttribute(this.name);
       }
     }
-    this._value = value;
+    this.value = value;
     this._pendingValue = noChange;
   }
 }
@@ -154,7 +154,7 @@ export class PropertyCommitter extends AttributeCommitter {
 
   _getValue() {
     if (this.single) {
-      return this.parts[0]._value;
+      return this.parts[0].value;
     }
     return super._getValue();
   }
@@ -172,7 +172,7 @@ export class PropertyPart extends AttributePart {}
 export class EventPart implements Part {
   element: Element;
   eventName: string;
-  _value: any = undefined;
+  value: any = undefined;
   _pendingValue: any = undefined;
 
   constructor(element: Element, eventName: string) {
@@ -193,22 +193,22 @@ export class EventPart implements Part {
     if (this._pendingValue === noChange) {
       return;
     }
-    if ((this._pendingValue == null) !== (this._value == null)) {
+    if ((this._pendingValue == null) !== (this.value == null)) {
       if (this._pendingValue == null) {
         this.element.removeEventListener(this.eventName, this);
       } else {
         this.element.addEventListener(this.eventName, this);
       }
     }
-    this._value = this._pendingValue;
+    this.value = this._pendingValue;
     this._pendingValue = noChange;
   }
 
   handleEvent(event: Event) {
-    if (typeof this._value === 'function') {
-      this._value.call(this.element, event);
-    } else if (typeof this._value.handleEvent === 'function') {
-      this._value.handleEvent(event);
+    if (typeof this.value === 'function') {
+      this.value.call(this.element, event);
+    } else if (typeof this.value.handleEvent === 'function') {
+      this.value.handleEvent(event);
     }
   }
 }

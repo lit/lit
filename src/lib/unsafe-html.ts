@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {_isPrimitiveValue, directive, DirectiveFn, NodePart} from '../core.js';
+import {isPrimitive, directive, DirectiveFn, NodePart} from '../core.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -28,7 +28,7 @@ export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
     directive((part: NodePart): void => {
       // Dirty check primitive values
       const previousValue = previousValues.get(part);
-      if (previousValue === value && _isPrimitiveValue(value)) {
+      if (previousValue === value && isPrimitive(value)) {
         return;
       }
 
