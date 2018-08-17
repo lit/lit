@@ -290,7 +290,9 @@ suite('lit-html', () => {
       document.body.appendChild(container);
       render(
           html`
-        <div @test-event=${(e: Event) => { event = e; }}>
+        <div @test-event=${(e: Event) => {
+            event = e;
+          }}>
           ${directive((part: NodePart) => {
             // This emulates a custom element that fires an event in its
             // connectedCallback
@@ -304,19 +306,25 @@ suite('lit-html', () => {
       assert.isOk(event);
     });
 
-    test('event listeners can see events fired directives in AttributeParts', () => {
-      // This tests that attribute directives are called in the commit phase, not
-      // the setValue phase
-      let event = undefined;
-      const fire = directive((part: AttributePart) => {
-        part.committer.element.dispatchEvent(new CustomEvent('test-event', {
-          bubbles: true,
-        }));
-      });
+    test(
+        'event listeners can see events fired directives in AttributeParts',
+        () => {
+          // This tests that attribute directives are called in the commit
+          // phase, not the setValue phase
+          let event = undefined;
+          const fire = directive((part: AttributePart) => {
+            part.committer.element.dispatchEvent(new CustomEvent('test-event', {
+              bubbles: true,
+            }));
+          });
 
-      render(html`<div @test-event=${(e: Event) => { event = e; }} b=${fire}></div>`, container);
-      assert.isOk(event);
-    });
+          render(
+              html`<div @test-event=${(e: Event) => {
+                event = e;
+              }} b=${fire}></div>`,
+              container);
+          assert.isOk(event);
+        });
 
     test('renders directives on PropertyParts', () => {
       const fooDirective = directive((part: AttributePart) => {

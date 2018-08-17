@@ -78,7 +78,8 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux');
         const template = templateFactory(result);
         const nodeSet = new Set();
-        const nodesToRemove = template.element.content.querySelectorAll('[name="remove"]');
+        const nodesToRemove =
+            template.element.content.querySelectorAll('[name="remove"]');
         for (const node of Array.from(nodesToRemove)) {
           nodeSet.add(node);
         }
@@ -109,7 +110,8 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
         const nodeSet = new Set();
-        const nodesToRemove = template.element.content.querySelectorAll('[name="remove"]');
+        const nodesToRemove =
+            template.element.content.querySelectorAll('[name="remove"]');
         for (const node of Array.from(nodesToRemove)) {
           nodeSet.add(node);
         }

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isDirective, AttributeCommitter, AttributePart, defaultPartCallback, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
+import {AttributeCommitter, AttributePart, defaultPartCallback, isDirective, noChange, Part, SVGTemplateResult, TemplateInstance, TemplatePart, TemplateResult} from './core.js';
 
 export * from './core.js';
 
