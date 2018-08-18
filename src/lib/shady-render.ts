@@ -12,11 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {removeNodes, Template, templateCaches, TemplateContainer, TemplateInstance, TemplateResult} from '../core.js';
-
+import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
+import {TemplateContainer} from './render.js';
+import {templateCaches} from './template-factory.js';
+import {TemplateInstance} from './template-instance.js';
+import {TemplateResult} from './template-result.js';
+import {Template} from './template.js';
 
-export {html, svg, TemplateResult} from '../core.js';
+export {html, svg, TemplateResult} from '../index.js';
 
 declare global {
   interface Window {

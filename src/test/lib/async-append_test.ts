@@ -15,8 +15,9 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {html, render} from '../../core.js';
+import {html} from '../../index.js';
 import {asyncAppend} from '../../lib/async-append.js';
+import {render} from '../../lib/render.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
 
 import {TestAsyncIterable} from './test-async-iterable.js';
