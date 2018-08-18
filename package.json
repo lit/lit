@@ -19,10 +19,10 @@
   ],
   "scripts": {
     "build": "tsc",
+    "checksize": "rollup -c ; rm index.bundled.js",
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api ./src",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
-    "checksize": "npm run bundle && uglifyjs index.bundled.js -mc --toplevel | gzip -9 | wc -c",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
     "prepare": "npm run build"
@@ -35,6 +35,8 @@
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rollup": "^0.64.1",
+    "rollup-plugin-filesize": "^4.0.1",
+    "rollup-plugin-terser": "^1.0.1",
     "tslint": "^5.9.1",
     "typedoc": "^0.11.1",
     "typescript": "^2.8.3",
