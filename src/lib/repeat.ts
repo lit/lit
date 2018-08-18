@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart, removeNodes, reparentNodes} from '../core.js';
+import {directive, DirectiveFn, NodePart, removeNodes, reparentNodes} from '../index.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;

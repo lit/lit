@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart} from '../core.js';
+import {directive, DirectiveFn, NodePart} from '../index.js';
 
 /**
  * A directive that renders the items of an async iterable[1], replacing

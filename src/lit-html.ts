@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, isDirective, noChange, Part, SVGTemplateResult, TemplateProcessor, TemplateResult} from './core.js';
+import {AttributeCommitter, AttributePart, isDirective, noChange, Part} from './index.js';
+import {TemplateProcessor} from './lib/template-processor.js';
+import {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 
-export * from './core.js';
+export * from './index.js';
 
 /**
  * Interprets a template literal as a lit-html HTML template.

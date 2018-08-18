@@ -12,11 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, Part, SVGTemplateResult, TemplateProcessor, TemplateResult} from '../core.js';
 import {BooleanAttributePart, EventPart, PropertyCommitter} from '../lit-html.js';
 
-export {render} from '../core.js';
+import {AttributeCommitter, Part} from './parts.js';
+import {TemplateProcessor} from './template-processor.js';
+import {SVGTemplateResult, TemplateResult} from './template-result.js';
+
 export {BooleanAttributePart, EventPart} from '../lit-html.js';
+export {render} from './render.js';
 
 /**
  * Interprets a template literal as a lit-extended HTML template.
