@@ -12,13 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {BooleanAttributePart, EventPart, PropertyCommitter} from '../lit-html.js';
-
-import {AttributeCommitter, Part} from './parts.js';
+import {AttributeCommitter, BooleanAttributePart, EventPart, Part, PropertyCommitter} from './parts.js';
 import {TemplateProcessor} from './template-processor.js';
 import {SVGTemplateResult, TemplateResult} from './template-result.js';
 
-export {BooleanAttributePart, EventPart} from '../lit-html.js';
+export {BooleanAttributePart, EventPart} from './parts.js';
 export {render} from './render.js';
 
 /**

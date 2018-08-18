@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, NodePart, Part} from './parts.js';
+import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, Part, PropertyCommitter} from './parts.js';
 import {TemplateFactory} from './template-factory.js';
 
 /**
@@ -30,6 +30,17 @@ export class TemplateProcessor {
    */
   handleAttributeExpressions(element: Element, name: string, strings: string[]):
       Part[] {
+    const prefix = name[0];
+    if (prefix === '.') {
+      const comitter = new PropertyCommitter(element, name.slice(1), strings);
+      return comitter.parts;
+    }
+    if (prefix === '@') {
+      return [new EventPart(element, name.slice(1))];
+    }
+    if (prefix === '?') {
+      return [new BooleanAttributePart(element, name.slice(1), strings)];
+    }
     const comitter = new AttributeCommitter(element, name, strings);
     return comitter.parts;
   }

@@ -4,18 +4,15 @@
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "main": "lit-html.js",
-  "module": "lit-html.js",
+  "main": "index.js",
+  "module": "index.js",
   "directories": {
     "test": "test"
   },
   "files": [
-    "/lit-html.js",
-    "/lit-html.js.map",
-    "/lit-html.d.ts",
-    "/core.js",
-    "/core.js.map",
-    "/core.d.ts",
+    "/index.js",
+    "/index.js.map",
+    "/index.d.ts",
     "/lib/",
     "/src/",
     "!/src/test/"
@@ -25,8 +22,7 @@
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api ./src",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
-    "checksize": "uglifyjs core.js -mc --toplevel | gzip -9 | wc -c",
-    "min": "uglifyjs core.js -mc --toplevel",
+    "checksize": "npm run bundle && uglifyjs index.bundled.js -mc --toplevel | gzip -9 | wc -c",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
     "prepare": "npm run build"
@@ -38,6 +34,7 @@
     "@webcomponents/webcomponentsjs": "^2.0.4",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
+    "rollup": "^0.64.1",
     "tslint": "^5.9.1",
     "typedoc": "^0.11.1",
     "typescript": "^2.8.3",
@@ -45,6 +42,6 @@
     "wct-browser-legacy": "^1.0.1",
     "web-component-tester": "^6.8.0"
   },
-  "typings": "lit-html.d.ts",
+  "typings": "index.d.ts",
   "dependencies": {}
 }
