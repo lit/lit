@@ -326,3 +326,136 @@ export class NodePart implements Part {
         this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
 }
+
+/**
+ * Implements a boolean attribute, roughly as defined in the HTML
+ * specification.
+ *
+ * If the value is truthy, then the attribute is present with a value of
+ * ''. If the value is falsey, the attribute is removed.
+ */
+export class BooleanAttributePart implements Part {
+  element: Element;
+  name: string;
+  strings: string[];
+  value: any = undefined;
+  _pendingValue: any = undefined;
+
+  constructor(element: Element, name: string, strings: string[]) {
+    if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
+      throw new Error(
+          'Boolean attributes can only contain a single expression');
+    }
+    this.element = element;
+    this.name = name;
+    this.strings = strings;
+  }
+
+  setValue(value: any): void {
+    this._pendingValue = value;
+  }
+
+  commit() {
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
+      directive(this);
+    }
+    if (this._pendingValue === noChange) {
+      return;
+    }
+    const value = !!this._pendingValue;
+    if (this.value !== value) {
+      if (value) {
+        this.element.setAttribute(this.name, '');
+      } else {
+        this.element.removeAttribute(this.name);
+      }
+    }
+    this.value = value;
+    this._pendingValue = noChange;
+  }
+}
+
+/**
+ * Sets attribute values for PropertyParts, so that the value is only set once
+ * even if there are multiple parts for a property.
+ *
+ * If an expression controls the whole property value, then the value is simply
+ * assigned to the property under control. If there are string literals or
+ * multiple expressions, then the strings are expressions are interpolated into
+ * a string first.
+ */
+export class PropertyCommitter extends AttributeCommitter {
+  single: boolean;
+
+  constructor(element: Element, name: string, strings: string[]) {
+    super(element, name, strings);
+    this.single =
+        (strings.length === 2 && strings[0] === '' && strings[1] === '');
+  }
+
+  protected _createPart(): PropertyPart {
+    return new PropertyPart(this);
+  }
+
+  _getValue() {
+    if (this.single) {
+      return this.parts[0].value;
+    }
+    return super._getValue();
+  }
+
+  commit(): void {
+    if (this.dirty) {
+      this.dirty = false;
+      (this.element as any)[this.name] = this._getValue();
+    }
+  }
+}
+
+export class PropertyPart extends AttributePart {}
+
+export class EventPart implements Part {
+  element: Element;
+  eventName: string;
+  value: any = undefined;
+  _pendingValue: any = undefined;
+
+  constructor(element: Element, eventName: string) {
+    this.element = element;
+    this.eventName = eventName;
+  }
+
+  setValue(value: any): void {
+    this._pendingValue = value;
+  }
+
+  commit() {
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
+      directive(this);
+    }
+    if (this._pendingValue === noChange) {
+      return;
+    }
+    if ((this._pendingValue == null) !== (this.value == null)) {
+      if (this._pendingValue == null) {
+        this.element.removeEventListener(this.eventName, this);
+      } else {
+        this.element.addEventListener(this.eventName, this);
+      }
+    }
+    this.value = this._pendingValue;
+    this._pendingValue = noChange;
+  }
+
+  handleEvent(event: Event) {
+    if (typeof this.value === 'function') {
+      this.value.call(this.element, event);
+    } else if (typeof this.value.handleEvent === 'function') {
+      this.value.handleEvent(event);
+    }
+  }
+}

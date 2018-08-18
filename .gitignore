@@ -5,12 +5,9 @@
 /tools/lib/
 
 # Compiler output
-/lit-html.d.ts
-/lit-html.js
-/lit-html.js.map
-/core.d.ts
-/core.js
-/core.js.map
+/index.d.ts
+/index.js
+/index.js.map
 /test/**/*.d.ts
 /test/**/*.js
 /test/**/*.js.map
@@ -32,6 +29,3 @@ pids
 
 # Optional npm cache directory
 .npm
-
-# bower_components for testing
-bower_components
