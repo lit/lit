@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {defaultTemplateFactory, html, NodePart} from '../index.js';
+import {defaultTemplateFactory, html} from '../index.js';
 import {render} from '../lib/render.js';
 import {TemplateProcessor} from '../lib/template-processor.js';
 import {TemplateResult} from '../lib/template-result.js';
@@ -40,7 +40,6 @@ suite('Core', () => {
       assert.strictEqual(
           defaultTemplateFactory(t()), defaultTemplateFactory(t()));
     });
-
 
     test('values contain interpolated values', () => {
       const foo = 'foo', bar = 1;
