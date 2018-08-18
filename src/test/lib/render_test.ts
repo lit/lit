@@ -114,6 +114,29 @@ suite('render()', () => {
           stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
     });
 
+    // TODO(justinfagnani): add this test back with a test TemplateProcessor and
+    // html tag.
+    test.skip(
+        'overwrites an existing (plain) TemplateInstance if one exists, ' +
+            'even if it has a matching Template',
+        () => {
+          const t = (tag: any) => tag`<div>foo</div>`;
+
+          render(t(html), container);
+
+          assert.equal(container.children.length, 1);
+          const firstDiv = container.children[0];
+          assert.equal(firstDiv.textContent, 'foo');
+
+          render(t(html), container);
+
+          assert.equal(container.children.length, 1);
+          const secondDiv = container.children[0];
+          assert.equal(secondDiv.textContent, 'foo');
+
+          assert.notEqual(firstDiv, secondDiv);
+        });
+
     test('renders an element', () => {
       const child = document.createElement('p');
       render(html`<div>${child}</div>`, container);
@@ -255,16 +278,6 @@ suite('render()', () => {
       assert.equal(
           stripExpressionDelimeters(container.innerHTML), '<a>foo</a>bar');
     });
-
-    test('renders directives on NodeParts', () => {
-      const fooDirective = directive((part: NodePart) => {
-        part.setValue('foo');
-      });
-
-      render(html`<div>${fooDirective}</div>`, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
-    });
   });
 
   suite('attributes', () => {
@@ -401,6 +414,188 @@ suite('render()', () => {
           stripExpressionDelimeters(container.innerHTML),
           '<div attribute="it\'s undefined"></div>');
     });
+  });
+
+  suite('properties', () => {
+    test('sets properties', () => {
+      render(html`<div .foo=${123} .bar=${456}></div>`, container);
+      const div = container.firstChild!;
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).bar, 456);
+    });
+  });
+
+  suite('boolean attributes', () => {
+    test('renders a boolean attribute as an empty string when truthy', () => {
+      const t = (value: any) => html`<div ?foo="${value}"></div>`;
+
+      render(t(true), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+
+      render(t('a'), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+
+      render(t(1), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+    });
+
+    test('removes a boolean attribute when falsey', () => {
+      const t = (value: any) => html`<div ?foo="${value}"></div>`;
+
+      render(t(false), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+
+      render(t(0), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+
+      render(t(null), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+
+      render(t(undefined), container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+    });
+  });
+
+  suite('events', () => {
+    test('adds event listener functions, calls with right this value', () => {
+      let thisValue;
+      let event: Event;
+      const listener = function(this: any, e: any) {
+        event = e;
+        thisValue = this;
+      };
+      render(html`<div @click=${listener}></div>`, container);
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(thisValue, div);
+
+      // MouseEvent is not a function in IE, so the event cannot be an instance
+      // of it
+      if (typeof MouseEvent === 'function') {
+        assert.instanceOf(event!, MouseEvent);
+      } else {
+        assert.isDefined((event! as MouseEvent).initMouseEvent);
+      }
+    });
+
+    test('adds event listener objects, calls with right this value', () => {
+      let thisValue;
+      const listener = {
+        handleEvent(_e: Event) {
+          thisValue = this;
+        }
+      };
+      render(html`<div @click=${listener}></div>`, container);
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(thisValue, listener);
+    });
+
+    test('only adds event listener once', () => {
+      let count = 0;
+      const listener = () => {
+        count++;
+      };
+      render(html`<div @click=${listener}></div>`, container);
+      render(html`<div @click=${listener}></div>`, container);
+
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(count, 1);
+    });
+
+    test('allows updating event listener', () => {
+      let count1 = 0;
+      const listener1 = () => {
+        count1++;
+      };
+      let count2 = 0;
+      const listener2 = () => {
+        count2++;
+      };
+      const t = (listener: () => void) => html`<div @click=${listener}></div>`;
+      render(t(listener1), container);
+      render(t(listener2), container);
+
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(count1, 0);
+      assert.equal(count2, 1);
+    });
+
+    test(
+        'allows updating event listener without extra calls to remove/addEventListener',
+        () => {
+          let listener: Function|null;
+          const t = () => html`<div @click=${listener}></div>`;
+          render(t(), container);
+          const div = container.firstChild as HTMLElement;
+
+          let addCount = 0;
+          let removeCount = 0;
+          div.addEventListener = () => addCount++;
+          div.removeEventListener = () => removeCount++;
+
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 1);
+          assert.equal(removeCount, 0);
+
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 1);
+          assert.equal(removeCount, 0);
+
+          listener = null;
+          render(t(), container);
+          assert.equal(addCount, 1);
+          assert.equal(removeCount, 1);
+
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 2);
+          assert.equal(removeCount, 1);
+
+          listener = () => {};
+          render(t(), container);
+          assert.equal(addCount, 2);
+          assert.equal(removeCount, 1);
+        });
+
+    test('removes event listeners', () => {
+      let target;
+      let listener: any = (e: any) => target = e.target;
+      const t = () => html`<div @click=${listener}></div>`;
+      render(t(), container);
+      const div = container.firstChild as HTMLElement;
+      div.click();
+      assert.equal(target, div);
+
+      listener = null;
+      target = undefined;
+      render(t(), container);
+      div.click();
+      assert.equal(target, undefined);
+    });
+  });
+
+  suite('directives', () => {
+    test('renders directives on NodeParts', () => {
+      const fooDirective = directive((part: NodePart) => {
+        part.setValue('foo');
+      });
+
+      render(html`<div>${fooDirective}</div>`, container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    });
 
     test('renders directives on AttributeParts', () => {
       const fooDirective = directive((part: AttributePart) => {
@@ -411,6 +606,60 @@ suite('render()', () => {
       assert.equal(
           stripExpressionDelimeters(container.innerHTML),
           '<div foo="foo"></div>');
+    });
+
+    test('event listeners can see events fired by dynamic children', () => {
+      // This tests that node directives are called in the commit phase, not
+      // the setValue phase
+      let event: Event|undefined = undefined;
+      document.body.appendChild(container);
+      render(
+          html`
+        <div @test-event=${(e: Event) => {
+            event = e;
+          }}>
+          ${directive((part: NodePart) => {
+            // This emulates a custom element that fires an event in its
+            // connectedCallback
+            part.startNode.dispatchEvent(new CustomEvent('test-event', {
+              bubbles: true,
+            }));
+          })}
+        </div>`,
+          container);
+      document.body.removeChild(container);
+      assert.isOk(event);
+    });
+
+    test(
+        'event listeners can see events fired directives in AttributeParts',
+        () => {
+          // This tests that attribute directives are called in the commit
+          // phase, not the setValue phase
+          let event = undefined;
+          const fire = directive((part: AttributePart) => {
+            part.committer.element.dispatchEvent(new CustomEvent('test-event', {
+              bubbles: true,
+            }));
+          });
+
+          render(
+              html`<div @test-event=${(e: Event) => {
+                event = e;
+              }} b=${fire}></div>`,
+              container);
+          assert.isOk(event);
+        });
+
+    test('renders directives on PropertyParts', () => {
+      const fooDirective = directive((part: AttributePart) => {
+        part.setValue(1234);
+      });
+
+      render(html`<div .foo="${fooDirective}"></div>`, container);
+      assert.equal(
+          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.strictEqual((container.firstElementChild as any).foo, 1234);
     });
   });
 
@@ -589,6 +838,78 @@ suite('render()', () => {
     });
   });
 
+  const suiteIfCustomElementsAreSupported =
+      (window.customElements != null) ? suite : suite.skip;
+
+  suiteIfCustomElementsAreSupported('custom elements', () => {
+    suiteSetup(() => {
+      if (customElements.get('x-test-uses-property-setters') == null) {
+        class CustomElement extends HTMLElement {
+          public readonly calledSetter = false;
+          private _value?: string = undefined;
+
+          public get value(): string|undefined {
+            return this._value;
+          }
+
+          public set value(value: string|undefined) {
+            (this as {calledSetter: boolean}).calledSetter = true;
+            this._value = value;
+          }
+        }
+
+        customElements.define('x-test-uses-property-setters', CustomElement);
+      }
+    });
+
+    setup(() => {
+      // Container must be in the document for the custom element to upgrade
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      document.body.removeChild(container);
+    });
+
+    test('uses property setters for custom elements', () => {
+      render(
+          html`
+    <x-test-uses-property-setters .value=${
+              'foo'}></x-test-uses-property-setters>
+  `,
+          container);
+      const instance = container.firstElementChild as HTMLElement & {
+        value: string;
+        calledSetter: boolean;
+      };
+
+      assert.equal(instance.value, 'foo');
+      assert.isTrue(instance.calledSetter);
+    });
+
+    test(
+        'uses property setters in nested templates added after the initial render',
+        () => {
+          const template = (content: any) => html`${content}`;
+
+          // Do an initial render
+          render(template('some content'), container);
+
+          // Now update the rendered template, render a nested template
+          const fragment = html`
+    <x-test-uses-property-setters .value=${
+                               'foo'}></x-test-uses-property-setters>
+  `;
+          render(template(fragment), container);
+          const instance = container.firstElementChild as HTMLElement & {
+            value: string;
+            calledSetter: boolean;
+          };
+
+          assert.equal(instance.value, 'foo');
+          assert.isTrue(instance.calledSetter);
+        });
+  });
   suite('updates', () => {
     let container: HTMLElement;
 
