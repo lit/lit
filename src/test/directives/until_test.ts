@@ -15,12 +15,11 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
+import {until} from '../../directives/until.js';
 import {html} from '../../index.js';
 import {render} from '../../lib/render.js';
-import {until} from '../../lib/until.js';
+import {Deferred} from '../lib/deferred.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
-
-import {Deferred} from './deferred.js';
 
 const assert = chai.assert;
 

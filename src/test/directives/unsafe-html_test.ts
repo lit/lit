@@ -15,9 +15,9 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
+import {unsafeHTML} from '../../directives/unsafe-html.js';
 import {html} from '../../index.js';
 import {render} from '../../lib/render.js';
-import {unsafeHTML} from '../../lib/unsafe-html.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
 
 const assert = chai.assert;
