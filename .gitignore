@@ -12,6 +12,8 @@
 /test/**/*.js
 /test/**/*.js.map
 
+/index.bundled.js
+
 yarn.lock
 
 # Logs
