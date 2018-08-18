@@ -67,11 +67,19 @@ export function repeat<T>(
       // Try to reuse a part
       let itemPart = keyMap.get(key);
       if (itemPart === undefined) {
-        const marker = document.createTextNode('');
-        const endNode = document.createTextNode('');
+        // TODO(justinfagnani): We really want to avoid manual marker creation
+        // here and instead use something like part.insertBeforePart(). This
+        // requires a little refactoring, like iterating through values and
+        // existing parts like NodePart#_setIterable does. We can also remove
+        // keyMapCache and use part._value instead.
+        // But... repeat() is badly in need of rewriting, so we'll do this for
+        // now and revisit soon.
+        const marker = document.createComment('');
+        const endNode = document.createComment('');
         container.insertBefore(marker, currentMarker);
         container.insertBefore(endNode, currentMarker);
-        itemPart = new NodePart(marker, endNode, part.templateFactory);
+        itemPart = new NodePart(part.templateFactory);
+        itemPart.insertAfterNode(marker);
         if (key !== undefined) {
           keyMap.set(key, itemPart);
         }
