@@ -15,12 +15,11 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
+import {asyncReplace} from '../../directives/async-replace.js';
 import {html} from '../../index.js';
-import {asyncAppend} from '../../lib/async-append.js';
 import {render} from '../../lib/render.js';
+import {TestAsyncIterable} from '../lib/test-async-iterable.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
-
-import {TestAsyncIterable} from './test-async-iterable.js';
 
 const assert = chai.assert;
 
@@ -29,7 +28,7 @@ if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
   Object.defineProperty(Symbol, 'Symbol.asyncIterator', {value: Symbol()});
 }
 
-suite('asyncAppend', () => {
+suite('asyncReplace', () => {
   let container: HTMLDivElement;
   let iterable: TestAsyncIterable<string>;
 
@@ -38,8 +37,8 @@ suite('asyncAppend', () => {
     iterable = new TestAsyncIterable<string>();
   });
 
-  test('appends content as the async iterable yields new values', async () => {
-    render(html`<div>${asyncAppend(iterable)}</div>`, container);
+  test('replaces content as the async iterable yields new values', async () => {
+    render(html`<div>${asyncReplace(iterable)}</div>`, container);
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
@@ -48,11 +47,11 @@ suite('asyncAppend', () => {
 
     await iterable.push('bar');
     assert.equal(
-        stripExpressionDelimeters(container.innerHTML), '<div>foobar</div>');
+        stripExpressionDelimeters(container.innerHTML), '<div>bar</div>');
   });
 
-  test('appends nothing with a value is undefined', async () => {
-    render(html`<div>${asyncAppend(iterable)}</div>`, container);
+  test('clears the Part when a value is undefined', async () => {
+    render(html`<div>${asyncReplace(iterable)}</div>`, container);
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
@@ -60,13 +59,12 @@ suite('asyncAppend', () => {
         stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
 
     await iterable.push(undefined);
-    assert.equal(
-        stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+    assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
   });
 
-  test('uses a mapper function', async () => {
+  test('uses the mapper function', async () => {
     render(
-        html`<div>${asyncAppend(iterable, (v, i) => html`${i}: ${v} `)}</div>`,
+        html`<div>${asyncReplace(iterable, (v, i) => html`${i}: ${v} `)}</div>`,
         container);
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
@@ -76,12 +74,11 @@ suite('asyncAppend', () => {
 
     await iterable.push('bar');
     assert.equal(
-        stripExpressionDelimeters(container.innerHTML),
-        '<div>0: foo 1: bar </div>');
+        stripExpressionDelimeters(container.innerHTML), '<div>1: bar </div>');
   });
 
   test('renders new iterable over a pending iterable', async () => {
-    const t = (iterable: any) => html`<div>${asyncAppend(iterable)}</div>`;
+    const t = (iterable: any) => html`<div>${asyncReplace(iterable)}</div>`;
     render(t(iterable), container);
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
@@ -109,8 +106,8 @@ suite('asyncAppend', () => {
   test('renders new value over a pending iterable', async () => {
     const t = (v: any) => html`<div>${v}</div>`;
     // This is a little bit of an odd usage of directives as values, but it
-    // is possible, and we check here that asyncAppend plays nice in this case
-    render(t(asyncAppend(iterable)), container);
+    // is possible, and we check here that asyncReplace plays nice in this case
+    render(t(asyncReplace(iterable)), container);
     assert.equal(stripExpressionDelimeters(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
