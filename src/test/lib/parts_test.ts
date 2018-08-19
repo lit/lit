@@ -13,6 +13,7 @@
  */
 
 import {html, NodePart, render, templateFactory, TemplateResult} from '../../index.js';
+import {TemplateProcessor} from '../../lib/template-processor.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -125,6 +126,29 @@ suite('Parts', () => {
         assert.equal(
             stripExpressionMarkers(container.innerHTML),
             '<p></p><a></a><span></span>');
+      });
+
+      test('nested TemplateResults use their own processor', () => {
+        // TODO (justinfagnani): rewrite to not use render(), but use NodePart
+        // directly like the other tests here
+        class TestTemplateProcessor extends TemplateProcessor {
+          handleAttributeExpressions(
+              element: Element, name: string, strings: string[]) {
+            if (name[0] === '&') {
+              return super.handleAttributeExpressions(
+                  element, name.slice(1), strings);
+            }
+            return super.handleAttributeExpressions(element, name, strings);
+          }
+        }
+        const processor = new TestTemplateProcessor();
+        const testHtml = (strings: TemplateStringsArray, ...values: any[]) =>
+            new TemplateResult(strings, values, 'html', processor);
+
+        render(html`${testHtml`<div &foo="${'foo'}"></div>`}`, container);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div foo="foo"></div>');
       });
 
       test('updates a simple value to a complex one', () => {
