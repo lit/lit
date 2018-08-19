@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart, removeNodes, reparentNodes} from '../index.js';
+import {directive, Directive, NodePart, removeNodes, reparentNodes} from '../index.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -27,13 +27,13 @@ function cleanMap(part: NodePart, key: any, map: Map<any, NodePart>) {
 
 export function repeat<T>(
     items: T[], keyFn: KeyFn<T>, template: ItemTemplate<T>):
-    DirectiveFn<NodePart>;
+    Directive<NodePart>;
 export function repeat<T>(
-    items: T[], template: ItemTemplate<T>): DirectiveFn<NodePart>;
+    items: T[], template: ItemTemplate<T>): Directive<NodePart>;
 export function repeat<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
-    template?: ItemTemplate<T>): DirectiveFn<NodePart> {
+    template?: ItemTemplate<T>): Directive<NodePart> {
   let keyFn: KeyFn<T>;
   if (arguments.length === 2) {
     template = keyFnOrTemplate;

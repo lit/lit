@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, isPrimitive, NodePart} from '../index.js';
+import {directive, Directive, isPrimitive, NodePart} from '../index.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -24,7 +24,7 @@ import {directive, DirectiveFn, isPrimitive, NodePart} from '../index.js';
 
 const previousValues = new WeakMap<NodePart, string>();
 
-export const unsafeHTML = (value: any): DirectiveFn<NodePart> =>
+export const unsafeHTML = (value: any): Directive<NodePart> =>
     directive((part: NodePart): void => {
       // Dirty check primitive values
       const previousValue = previousValues.get(part);

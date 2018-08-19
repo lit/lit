@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart} from '../index.js';
+import {directive, Directive, NodePart} from '../index.js';
 
 /**
  * A directive that renders the items of an async iterable[1], replacing
@@ -34,7 +34,7 @@ import {directive, DirectiveFn, NodePart} from '../index.js';
  */
 export const asyncReplace =
     <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any):
-        DirectiveFn<NodePart> => directive(async (part: NodePart) => {
+        Directive<NodePart> => directive(async (part: NodePart) => {
           // If we've already set up this particular iterable, we don't need
           // to do anything.
           if (value === part.value) {

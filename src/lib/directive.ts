@@ -14,12 +14,12 @@
 
 import {Part} from './parts.js';
 
-export interface DirectiveFn<P = Part> {
+export interface Directive<P = Part> {
   (part: P): void;
   __litDirective?: true;
 }
 
-export const directive = <P = Part>(f: DirectiveFn<P>): DirectiveFn<P> => {
+export const directive = <P = Part>(f: Directive<P>): Directive<P> => {
   f.__litDirective = true;
   return f;
 };
