@@ -21,7 +21,10 @@ suite('shady-render @apply', () => {
     const container = document.createElement('scope-5');
     document.body.appendChild(container);
     container.attachShadow({mode: 'open'});
-    const result = html`
+    // Rename the html tag so that CSS linting doesn't warn on the non-standard
+    // @apply syntax
+    const htmlWithApply = html;
+    const result = htmlWithApply`
       <style>
         :host {
           --batch: {
