@@ -41,7 +41,7 @@ export type TemplateFactory = (result: TemplateResult) => Template;
  * The default TemplateFactory which caches Templates keyed on
  * result.type and result.strings.
  */
-export function defaultTemplateFactory(result: TemplateResult) {
+export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
   if (templateCache === undefined) {
     templateCache = new Map<TemplateStringsArray, Template>();

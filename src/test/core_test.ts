@@ -15,7 +15,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 
-import {defaultTemplateFactory, html} from '../index.js';
+import {html, templateFactory} from '../index.js';
 import {render} from '../lib/render.js';
 import {TemplateProcessor} from '../lib/template-processor.js';
 import {TemplateResult} from '../lib/template-result.js';
@@ -37,8 +37,7 @@ suite('Core', () => {
 
     test('_getTemplate returns identical templates for multiple calls', () => {
       const t = () => html``;
-      assert.strictEqual(
-          defaultTemplateFactory(t()), defaultTemplateFactory(t()));
+      assert.strictEqual(templateFactory(t()), templateFactory(t()));
     });
 
     test('values contain interpolated values', () => {
@@ -50,7 +49,7 @@ suite('Core', () => {
       const countNodes =
           (result: TemplateResult,
            getNodes: (f: DocumentFragment) => NodeList) =>
-              getNodes(defaultTemplateFactory(result).element.content).length;
+              getNodes(templateFactory(result).element.content).length;
 
       assert.equal(
           countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes),
@@ -68,7 +67,7 @@ suite('Core', () => {
     test('escapes marker sequences in text nodes', () => {
       const container = document.createElement('div');
       const result = html`{{}}`;
-      assert.equal(defaultTemplateFactory(result).parts.length, 0);
+      assert.equal(templateFactory(result).parts.length, 0);
       render(result, container);
       assert.equal(stripExpressionDelimeters(container.innerHTML), '{{}}');
     });
@@ -80,7 +79,7 @@ suite('Core', () => {
           ${3}
           <span a="${4}">${5}</span>
         </div>`;
-      const parts = defaultTemplateFactory(result).parts;
+      const parts = templateFactory(result).parts;
       assert.equal(parts.length, 5);
     });
 
@@ -97,8 +96,7 @@ suite('Core', () => {
           <p>${9}</p>
           <div aThing="${10}"></div>
         </div>`;
-      const parts =
-          defaultTemplateFactory(result).parts as Array<{name: string}>;
+      const parts = templateFactory(result).parts as Array<{name: string}>;
       const names = parts.map((p) => p.name);
       const expectedAttributeNames = [
         'someProp',
@@ -156,13 +154,13 @@ suite('Core', () => {
 
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
-      assert(defaultTemplateFactory(result).element.innerHTML, '<div></div>');
+      assert(templateFactory(result).element.innerHTML, '<div></div>');
     });
 
     test('resists XSS attempt in attribute values', () => {
       const result = html
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
-      assert(defaultTemplateFactory(result).element.innerHTML, '<div></div>');
+      assert(templateFactory(result).element.innerHTML, '<div></div>');
     });
   });
 
