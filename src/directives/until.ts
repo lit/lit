@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, DirectiveFn, NodePart} from '../index.js';
+import {directive, Directive, NodePart} from '../index.js';
 
 /**
  * Display `defaultContent` until `promise` resolves.
  */
 export const until =
-    (promise: Promise<any>, defaultContent: any): DirectiveFn<NodePart> =>
+    (promise: Promise<any>, defaultContent: any): Directive<NodePart> =>
         directive((part: NodePart) => {
           part.setValue(defaultContent);
           part.commit();
