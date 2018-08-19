@@ -15,7 +15,7 @@
 import {html, templateFactory} from '../../index.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from '../../lib/modify-template.js';
 import {render} from '../../lib/render.js';
-import {stripExpressionDelimeters} from '../test-helpers.js';
+import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
@@ -49,7 +49,7 @@ suite('add/remove nodes from template', () => {
         insertNodeIntoTemplate(template, div3);
         render(result, container);
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML),
+            stripExpressionMarkers(container.innerHTML),
             `<div><span>1</span></div>
         <div foo="bar">
           baz
@@ -57,7 +57,7 @@ suite('add/remove nodes from template', () => {
         </div><div><span>3</span></div>`);
         render(getResult('a', 'b', 'c'), container);
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML),
+            stripExpressionMarkers(container.innerHTML),
             `<div><span>1</span></div>
         <div foo="a">
           b
@@ -83,13 +83,13 @@ suite('add/remove nodes from template', () => {
         }
         removeNodesFromTemplate(template, nodeSet);
         render(result, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), `
+        assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div foo="bar">
           baz
           <p>qux</p>
         </div>`);
         render(getResult('a', 'b', 'c'), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), `
+        assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div foo="a">
           b
           <p>c</p>
@@ -115,13 +115,13 @@ suite('add/remove nodes from template', () => {
         }
         removeNodesFromTemplate(template, nodeSet);
         render(result, container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), `
+        assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div foo="bar">
           baz
           <p>qux</p>
         </div>`);
         render(getResult('a', 'b', 'c', 'rr1', 'rr2', 'rr3'), container);
-        assert.equal(stripExpressionDelimeters(container.innerHTML), `
+        assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div foo="a">
           b
           <p>c</p>

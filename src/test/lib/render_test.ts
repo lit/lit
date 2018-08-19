@@ -13,7 +13,7 @@
  */
 
 import {AttributePart, directive, html, NodePart, render, svg} from '../../index.js';
-import {stripExpressionDelimeters} from '../test-helpers.js';
+import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
@@ -38,25 +38,23 @@ suite('render()', () => {
     test('renders a string', () => {
       render(html`<div>${'foo'}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
     });
 
     test('renders a number', () => {
       render(html`<div>${123}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>123</div>');
     });
 
     test('renders undefined', () => {
       render(html`<div>${undefined}</div>`, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
     test('renders null', () => {
       render(html`<div>${null}</div>`, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
     test('does not call a function bound to text', () => {
@@ -69,46 +67,46 @@ suite('render()', () => {
     test('renders arrays', () => {
       render(html`<div>${[1, 2, 3]}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>123</div>');
     });
 
     test('renders nested templates', () => {
       const partial = html`<h1>${'foo'}</h1>`;
       render(html`${partial}${'bar'}`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>bar');
+          stripExpressionMarkers(container.innerHTML), '<h1>foo</h1>bar');
     });
 
     test('renders parts with whitespace after them', () => {
       render(html`<div>${'foo'} </div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo </div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foo </div>');
     });
 
     test('preserves whitespace between parts', () => {
       render(html`<div>${'foo'} ${'bar'}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo bar</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foo bar</div>');
     });
 
     test('values contain interpolated values', () => {
       const t = html`${'a'},${'b'},${'c'}`;
       render(t, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), 'a,b,c');
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'a,b,c');
     });
 
     test('renders a template nested multiple times', () => {
       const partial = html`<h1>${'foo'}</h1>`;
       render(html`${partial}${'bar'}${partial}${'baz'}qux`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<h1>foo</h1>bar<h1>foo</h1>bazqux');
     });
 
     test('renders arrays of nested templates', () => {
       render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>123</div>');
     });
 
     // TODO(justinfagnani): add this test back with a test TemplateProcessor and
@@ -138,7 +136,7 @@ suite('render()', () => {
       const child = document.createElement('p');
       render(html`<div>${child}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div><p></p></div>');
+          stripExpressionMarkers(container.innerHTML), '<div><p></p></div>');
     });
 
     test('renders an array of elements', () => {
@@ -149,7 +147,7 @@ suite('render()', () => {
       ];
       render(html`<div>${children}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div><p></p><a></a><span></span></div>');
     });
 
@@ -168,7 +166,7 @@ suite('render()', () => {
       render(html`${form}`, container);
 
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<form><input name="one"><input name="two"></form>');
     });
 
@@ -179,12 +177,11 @@ suite('render()', () => {
         resolve = res;
       });
       render(html`<div>${promise}</div>`, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
       resolve!('foo');
       return promise.then(() => {
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+            stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
       });
     });
 
@@ -196,7 +193,7 @@ suite('render()', () => {
       };
       render(html`<div>${promise}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
     });
 
     test('renders racing Promises correctly', () => {
@@ -215,25 +212,23 @@ suite('render()', () => {
 
       // First render, first Promise, no value
       render(t(), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       promise = promise2;
       // Second render, second Promise, still no value
       render(t(), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       // Resolve the first Promise, should not update the container
       resolve1!('foo');
       return promise1.then(() => {
         assert.equal(
-            stripExpressionDelimeters(container.innerHTML), '<div></div>');
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
         // Resolve the second Promise, should update the container
         resolve2!('bar');
         return promise2.then(() => {
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML), '<div>bar</div>');
+              stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
         });
       });
     });
@@ -255,7 +250,7 @@ suite('render()', () => {
           <p>${'foo'}</p>
         </div>`;
       render(t, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div>
           <!-- this is a comment -->
           <h1 class="foo">title</h1>
@@ -266,14 +261,14 @@ suite('render()', () => {
     test('renders expressions with preceding elements', () => {
       render(html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<a>foo</a><h1>bar</h1>');
 
       // This is nearly the same test case as above, but was causing a
       // different stack trace
       render(html`<a>${'foo'}</a>${'bar'}`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<a>foo</a>bar');
+          stripExpressionMarkers(container.innerHTML), '<a>foo</a>bar');
     });
   });
 
@@ -281,8 +276,7 @@ suite('render()', () => {
     test('renders to an attribute', () => {
       render(html`<div foo="${'bar'}"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="bar"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
     test('renders multiple bindings in an attribute', () => {
@@ -297,7 +291,7 @@ suite('render()', () => {
       mutationRecords = mutationObserver.takeRecords();
 
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div foo="abcde"></div>');
       assert.equal(mutationRecords.length, 1);
     });
@@ -306,13 +300,12 @@ suite('render()', () => {
       const size = 100;
       render(html`<svg viewBox="0 0 ${size} ${size}"></svg>`, container);
       assert.include(
-          stripExpressionDelimeters(container.innerHTML),
-          'viewBox="0 0 100 100"');
+          stripExpressionMarkers(container.innerHTML), 'viewBox="0 0 100 100"');
 
       // Make sure non-alpha valid attribute name characters are handled
       render(html`<svg view_Box="0 0 ${size} ${size}"></svg>`, container);
       assert.include(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           'view_Box="0 0 100 100"');
     });
 
@@ -320,7 +313,7 @@ suite('render()', () => {
         'renders to an attribute expression after an attribute literal', () => {
           render(html`<div a="b" foo="${'bar'}"></div>`, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<div a="b" foo="bar"></div>');
         });
 
@@ -329,7 +322,7 @@ suite('render()', () => {
         () => {
           render(html`<div foo="${'bar'}" a="b"></div>`, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<div a="b" foo="bar"></div>');
         });
 
@@ -340,22 +333,21 @@ suite('render()', () => {
           html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
           container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           `<a class="bar" href="foo"><div id="a"></div></a>`);
     });
 
     test('renders to an attribute without quotes', () => {
       render(html`<div foo=${'bar'}></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="bar"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
     test('renders to multiple attribute expressions', () => {
       render(
           html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
           container);
-      assert.oneOf(stripExpressionDelimeters(container.innerHTML), [
+      assert.oneOf(stripExpressionMarkers(container.innerHTML), [
         '<div foo="Foo" bar="Bar" baz="Baz"></div>',
         '<div foo="Foo" baz="Baz" bar="Bar"></div>'
       ]);
@@ -364,14 +356,14 @@ suite('render()', () => {
     test('renders to attributes with attribute-like values', () => {
       render(html`<div foo="bar=${'foo'}"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div foo="bar=foo"></div>');
     });
 
     test('renders interpolation to an attribute', () => {
       render(html`<div foo="1${'bar'}2${'baz'}3"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div foo="1bar2baz3"></div>');
     });
 
@@ -387,28 +379,27 @@ suite('render()', () => {
     test('renders an array to an attribute', () => {
       render(html`<div foo=${[1, 2, 3]}></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="123"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="123"></div>');
     });
 
     test('renders to an attribute before a node', () => {
       render(html`<div foo="${'bar'}">${'baz'}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div foo="bar">baz</div>');
     });
 
     test('renders to an attribute after a node', () => {
       render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div>baz</div><div foo="bar"></div>');
     });
 
     test('renders undefined in attributes', () => {
       render(html`<div attribute="it's ${undefined}"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div attribute="it\'s undefined"></div>');
     });
   });
@@ -428,35 +419,31 @@ suite('render()', () => {
 
       render(t(true), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
 
       render(t('a'), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
 
       render(t(1), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
     });
 
     test('removes a boolean attribute when falsey', () => {
       const t = (value: any) => html`<div ?foo="${value}"></div>`;
 
       render(t(false), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       render(t(0), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       render(t(null), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       render(t(undefined), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
   });
 
@@ -591,7 +578,7 @@ suite('render()', () => {
 
       render(html`<div>${fooDirective}</div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
     });
 
     test('renders directives on AttributeParts', () => {
@@ -601,8 +588,7 @@ suite('render()', () => {
 
       render(html`<div foo="${fooDirective}"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="foo"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
     });
 
     test('event listeners can see events fired by dynamic children', () => {
@@ -654,8 +640,7 @@ suite('render()', () => {
       });
 
       render(html`<div .foo="${fooDirective}"></div>`, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
       assert.strictEqual((container.firstElementChild as any).foo, 1234);
     });
   });
@@ -666,32 +651,32 @@ suite('render()', () => {
           let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
           render(table, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<table><tr><td></td></tr></table>');
 
           table = html`<tbody>${html`<tr></tr>`}</tbody>`;
           render(table, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<tbody><tr></tr></tbody>');
 
           table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
           render(table, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<table><tbody><tr></tr><tr></tr></tbody></table>');
 
           table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
           render(table, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
 
           table = html`<table><tr><td></td>${html`<td></td>`}${
               html`<td></td>`}</tr></table>`;
           render(table, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
         });
 
@@ -703,7 +688,7 @@ suite('render()', () => {
           const template = html`<div a="<table>${'foo'}"></div>`;
           render(template, container);
           assert.equal(
-              stripExpressionDelimeters(container.innerHTML),
+              stripExpressionMarkers(container.innerHTML),
               `<div a="<table>foo"></div>`);
         });
   });
@@ -723,7 +708,7 @@ suite('render()', () => {
           }
         </style>`;
       render(t, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
         <style>
           h1 {
             color: red;
@@ -742,7 +727,7 @@ suite('render()', () => {
               <a href="/buy/${'foo'}"></a>
             `,
           container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
               <style>
                 .foo {
                   background: black;
@@ -765,7 +750,7 @@ suite('render()', () => {
           <a href="/buy/${'foo'}"></a>
         `,
           container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
           <style>bar</style>
           <a href="/buy/foo"></a>
         `);
@@ -781,7 +766,7 @@ suite('render()', () => {
         <div>${b}</div>
       `;
       render(t('1', '2'), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
         <template>
           <span>1</span>
         </template>
@@ -797,7 +782,7 @@ suite('render()', () => {
         <div>${c}</div>
       `;
       render(t('1', '2', '3'), container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
         <template foo="1">
           <span>2</span>
         </template>
@@ -814,7 +799,7 @@ suite('render()', () => {
         <div foo=${'bar'}></div>
       `,
           container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div></div>
         <div foo="bar"></div>
       `);
@@ -827,7 +812,7 @@ suite('render()', () => {
             <p>${'qux'}</p>
           </div>`,
           container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), `
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
           <div foo="bar">
             baz
             <p>qux</p>
@@ -922,12 +907,12 @@ suite('render()', () => {
 
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
       const text = container.firstChild!.childNodes[1] as Text;
       text.textContent = 'bbb';
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
     });
 
     test('dirty checks simple values', () => {
@@ -937,7 +922,7 @@ suite('render()', () => {
 
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
       const text = container.firstChild!.childNodes[1] as Text;
       assert.equal(text.textContent, 'aaa');
 
@@ -947,12 +932,12 @@ suite('render()', () => {
       text.textContent = 'bbb';
       assert.equal(text.textContent, 'bbb');
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
 
       // Re-render with the same content, should be a no-op
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
       const text2 = container.firstChild!.childNodes[1] as Text;
 
       // The next node should be the same too
@@ -969,10 +954,9 @@ suite('render()', () => {
       });
       mutationObserver.observe(container, {childList: true});
 
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
       render(t(), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       // Wait for mutation callback to be called
       await new Promise(setTimeout);
@@ -986,8 +970,7 @@ suite('render()', () => {
 
       mutationRecords = [];
       render(t(), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
       await new Promise(setTimeout);
       assert.equal(mutationRecords.length, 0);
     });
@@ -999,14 +982,14 @@ suite('render()', () => {
 
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>aaa</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
       const div = container.firstChild as HTMLDivElement;
       assert.equal(div.tagName, 'DIV');
 
       foo = 'bbb';
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>bbb</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
       const div2 = container.firstChild as HTMLDivElement;
       // check that only the part changed
       assert.equal(div, div2);
@@ -1020,12 +1003,12 @@ suite('render()', () => {
 
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foobar</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foobar</div>');
 
       foo = 'bbb';
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>bbbbar</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>bbbbar</div>');
     });
 
     test('renders and updates attributes', () => {
@@ -1036,13 +1019,13 @@ suite('render()', () => {
 
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div a="foo:bar"></div>');
 
       foo = 'bbb';
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div a="bbb:bar"></div>');
     });
 
@@ -1064,16 +1047,16 @@ suite('render()', () => {
 
       render(t(true), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<h1>foo</h1>baz');
+          stripExpressionMarkers(container.innerHTML), '<h1>foo</h1>baz');
 
       foo = 'bbb';
       render(t(true), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<h1>bbb</h1>baz');
+          stripExpressionMarkers(container.innerHTML), '<h1>bbb</h1>baz');
 
       render(t(false), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<h2>bar</h2>baz');
+          stripExpressionMarkers(container.innerHTML), '<h2>bar</h2>baz');
     });
 
     test('updates arrays', () => {
@@ -1081,12 +1064,12 @@ suite('render()', () => {
       const t = () => html`<div>${items}</div>`;
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>123</div>');
 
       items = [3, 2, 1];
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>321</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>321</div>');
     });
 
     test('updates arrays that shrink then grow', () => {
@@ -1096,17 +1079,16 @@ suite('render()', () => {
       items = [1, 2, 3];
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>123</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>123</div>');
 
       items = [4];
       render(t(), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>4</div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div>4</div>');
 
       items = [5, 6, 7];
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>567</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>567</div>');
     });
 
     test('updates an element', () => {
@@ -1114,19 +1096,19 @@ suite('render()', () => {
       const t = () => html`<div>${child}<div></div></div>`;
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div><p></p><div></div></div>');
 
       child = undefined;
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div><div></div></div>');
 
       child = document.createTextNode('foo');
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div>foo<div></div></div>');
     });
 
@@ -1139,18 +1121,17 @@ suite('render()', () => {
       const t = () => html`<div>${children}</div>`;
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div><p></p><a></a><span></span></div>');
 
       children = null;
       render(t(), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       children = document.createTextNode('foo');
       render(t(), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>foo</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
     });
 
     test(
