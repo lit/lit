@@ -12,9 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
-/// <reference path="../../../node_modules/@types/chai/index.d.ts" />
-
 import {AttributePart, directive, html, NodePart, render, svg} from '../../index.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
 

@@ -12,9 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
-/// <reference path="../../../node_modules/@types/chai/index.d.ts" />
-
 import {repeat} from '../../directives/repeat.js';
 import {html} from '../../index.js';
 import {render} from '../../lib/render.js';
