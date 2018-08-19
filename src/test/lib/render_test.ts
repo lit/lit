@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, render, svg} from '../../index.js';
+import {AttributePart, directive, html, NodePart, render, svg, templateFactory} from '../../index.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -35,6 +35,13 @@ suite('render()', () => {
   });
 
   suite('text', () => {
+    test('renders plain text expression', () => {
+      const container = document.createElement('div');
+      const result = html`test`;
+      render(result, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
+    });
+
     test('renders a string', () => {
       render(html`<div>${'foo'}</div>`, container);
       assert.equal(
@@ -83,7 +90,7 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML), '<div>foo </div>');
     });
 
-    test('preserves whitespace between parts', () => {
+    test('renders multiple parts per element, preserving whitespace', () => {
       render(html`<div>${'foo'} ${'bar'}</div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>foo bar</div>');
@@ -258,6 +265,16 @@ suite('render()', () => {
         </div>`);
     });
 
+    test('renders legacy marker sequences in text nodes', () => {
+      // {{}} used to be the marker text and it was important to test that
+      // markers in user-templates weren't interpreted as expressions
+      const container = document.createElement('div');
+      const result = html`{{}}`;
+      assert.equal(templateFactory(result).parts.length, 0);
+      render(result, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '{{}}');
+    });
+
     test('renders expressions with preceding elements', () => {
       render(html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`, container);
       assert.equal(
@@ -294,6 +311,15 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML),
           '<div foo="abcde"></div>');
       assert.equal(mutationRecords.length, 1);
+    });
+
+    test('renders two attributes on one element', () => {
+      const container = document.createElement('div');
+      const result = html`<div a="${1}" b="${2}"></div>`;
+      render(result, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div a="1" b="2"></div>');
     });
 
     test('renders a case-sensitive attribute', () => {
@@ -892,11 +918,28 @@ suite('render()', () => {
           assert.isTrue(instance.calledSetter);
         });
   });
+
   suite('updates', () => {
     let container: HTMLElement;
 
     setup(() => {
       container = document.createElement('div');
+    });
+
+    test('updates when called multiple times with arrays', () => {
+      const container = document.createElement('div');
+      const ul = (list: string[]) => {
+        const items = list.map((item) => html`<li>${item}</li>`);
+        return html`<ul>${items}</ul>`;
+      };
+      render(ul(['a', 'b', 'c']), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<ul><li>a</li><li>b</li><li>c</li></ul>');
+      render(ul(['x', 'y']), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<ul><li>x</li><li>y</li></ul>');
     });
 
     test('sanity check one', () => {
@@ -1152,5 +1195,18 @@ suite('render()', () => {
 
           assert.notEqual(fooDiv, barDiv);
         });
+  });
+
+  suite('security', () => {
+    test('resists XSS attempt in node values', () => {
+      const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
+      assert(templateFactory(result).element.innerHTML, '<div></div>');
+    });
+
+    test('resists XSS attempt in attribute values', () => {
+      const result = html
+      `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
+      assert(templateFactory(result).element.innerHTML, '<div></div>');
+    });
   });
 });
