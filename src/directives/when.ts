@@ -19,7 +19,8 @@ const partCaches = new WeakMap<NodePart, PartCache>();
 
 /**
  * Efficiently switches between two templates based on the given condition. The rendered
- * content is cached, and re-used when switching conditions.
+ * content is cached, and re-used when switching conditions. Templates are evaluated
+ * lazily, so the passed values must be functions.
  *
  * While this directive can render any regular part, it makes the most sense when used
  * with TemplateResulte since most other values are dirty checked already.
@@ -29,14 +30,14 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  * let checked = false;
  *
  * html`
- *   when(checked, html`Checkmark is checked`, html`Checkmark is not checked`);
+ *   when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not checked`);
  * `
  *
  * @param condition the condition to test against
  * @param ifValue the content to render if
  * @param elseValue
  */
-export const when = (condition: boolean, ifValue: any, elseValue: any): Directive<NodePart> =>
+export const when = (condition: boolean, ifValue: () => any, elseValue: () => any): DirectiveFn<NodePart> =>
     directive((part: NodePart) => {
       // Create cache if this was the first render
       if (!partCaches.has(part)) {
@@ -46,16 +47,16 @@ export const when = (condition: boolean, ifValue: any, elseValue: any): Directiv
       const partCache = partCaches.get(part)!;
       const cacheContainer = partCache[2];
       const parts = [partCache[0], partCache[1]];
-      // The value to set. defaults to the if value.
-      let value = ifValue;
+      let value;
 
-      // If condition is false, set the else value and reverse parts so that the correct part is made active
-      if (!condition) {
+      if (condition) {
+        value = ifValue();
+      } else {
         parts.reverse();
-        value = elseValue;
+        value = elseValue();
       }
 
-      const [newPart, oldPart] = parts;
+      const [newPart, prevPart] = parts;
 
       // If the new part was rendered, take it from the cache
       if (newPart.value) {
@@ -63,8 +64,8 @@ export const when = (condition: boolean, ifValue: any, elseValue: any): Directiv
       }
 
       // If the old part was rendered, move it to the cache
-      if (oldPart.value) {
-        reparentNodes(cacheContainer, oldPart.startNode, oldPart.endNode.nextSibling);
+      if (prevPart.value) {
+        reparentNodes(cacheContainer, prevPart.startNode, prevPart.endNode.nextSibling);
       }
 
       // Set the new part's value

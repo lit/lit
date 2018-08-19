@@ -32,7 +32,7 @@ suite('when', () => {
   suite('simple template', () => {
     function renderWhen(condition: boolean) {
       render(
-        html`${when(condition, html`<div></div>`, html`<span></span>`)}`,
+        html`${when(condition, () => html`<div></div>`, () => html`<span></span>`)}`,
         container
       );
     }
@@ -69,7 +69,7 @@ suite('when', () => {
   suite('nested attribute part', () => {
     function renderWhen(condition: boolean, value: string) {
       render(
-        html`${when(condition, html`<div foo="${value}"></div>`, html`<span foo="${value}"></span>`)}`,
+        html`${when(condition, () => html`<div foo="${value}"></div>`, () => html`<span foo="${value}"></span>`)}`,
         container
       );
     }
@@ -91,8 +91,8 @@ suite('when', () => {
 
   suite('nested template', () => {
     function renderWhen(condition: boolean, value: string) {
-      const ifTemplate = html`<div>${html`<span>${value}</span>`}</div>`;
-      const elseTemplate = html`<div>${html`<span>${value}</span>`}</div>`;
+      const ifTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
+      const elseTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
 
       render(
         html`${when(condition, ifTemplate, elseTemplate)}`,
