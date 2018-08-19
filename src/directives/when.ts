@@ -14,7 +14,7 @@
 
 import {directive, reparentNodes, Directive, NodePart} from '../lit-html.js';
 
-type PartCache = [NodePart, NodePart, Node];
+type PartCache = [NodePart, NodePart, DocumentFragment];
 const partCaches = new WeakMap<NodePart, PartCache>();
 
 /**
@@ -57,14 +57,14 @@ export const when = (condition: boolean, ifValue: any, elseValue: any): Directiv
 
       const [newPart, oldPart] = parts;
 
-      // If the old part was rendered, reparent it to a detached container cache
-      if (oldPart.value) {
-        reparentNodes(cacheContainer, oldPart.startNode, oldPart.endNode.nextSibling);
+      // If the new part was rendered, take it from the cache
+      if (newPart.value) {
+        part.startNode.parentNode!.appendChild(cacheContainer);
       }
 
-      // If the new part was rendered, reparent it inside the attached part
-      if (newPart.value) {
-        reparentNodes(part.startNode.parentNode!, newPart.startNode, newPart.endNode.nextSibling);
+      // If the old part was rendered, move it to the cache
+      if (oldPart.value) {
+        reparentNodes(cacheContainer, oldPart.startNode, oldPart.endNode.nextSibling);
       }
 
       // Set the new part's value
@@ -73,8 +73,8 @@ export const when = (condition: boolean, ifValue: any, elseValue: any): Directiv
     });
 
 /**
- * Creates cache consisting of a NodePart for each condition and a detached
- * container used for caching rendered nodes.
+ * Creates cache consisting of a NodePart for each condition and a
+ * document fragment for caching nodes.
  *
  * @param parentPart the parent part
  */
@@ -82,7 +82,7 @@ function createPartCache(parentPart: NodePart) {
   const parts: PartCache =  [
     new NodePart(parentPart.templateFactory),
     new NodePart(parentPart.templateFactory),
-    document.createElement('div'),
+    document.createDocumentFragment(),
   ];
   partCaches.set(parentPart, parts);
 
