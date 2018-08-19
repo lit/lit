@@ -17,7 +17,7 @@ import {render} from '../lib/render.js';
 import {TemplateProcessor} from '../lib/template-processor.js';
 import {TemplateResult} from '../lib/template-result.js';
 
-import {stripExpressionDelimeters} from './test-helpers.js';
+import {stripExpressionMarkers} from './test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
@@ -66,7 +66,7 @@ suite('Core', () => {
       const result = html`{{}}`;
       assert.equal(templateFactory(result).parts.length, 0);
       render(result, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), '{{}}');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '{{}}');
     });
 
     test('parses parts for multiple expressions', () => {
@@ -113,7 +113,7 @@ suite('Core', () => {
       const container = document.createElement('div');
       const result = html`test`;
       render(result, container);
-      assert.equal(stripExpressionDelimeters(container.innerHTML), 'test');
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
     });
 
     test('parses expressions for two child nodes of one element', () => {
@@ -121,7 +121,7 @@ suite('Core', () => {
       const result = html`<div>${1} ${2}</div>`;
       render(result, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div>1 2</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>1 2</div>');
     });
 
     test('parses expressions for two attributes of one element', () => {
@@ -129,7 +129,7 @@ suite('Core', () => {
       const result = html`<div a="${1}" b="${2}"></div>`;
       render(result, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div a="1" b="2"></div>');
     });
 
@@ -141,11 +141,11 @@ suite('Core', () => {
       };
       render(ul(['a', 'b', 'c']), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<ul><li>a</li><li>b</li><li>c</li></ul>');
       render(ul(['x', 'y']), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<ul><li>x</li><li>y</li></ul>');
     });
 
@@ -185,8 +185,7 @@ suite('Core', () => {
 
       render(html`${testHtml`<div &foo="${'foo'}"></div>`}`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="foo"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
     });
   });
 });

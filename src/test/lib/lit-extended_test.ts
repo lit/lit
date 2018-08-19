@@ -14,7 +14,7 @@
 
 import {AttributePart, directive, html as htmlPlain} from '../../index.js';
 import {html, render} from '../../lib/lit-extended.js';
-import {stripExpressionDelimeters} from '../test-helpers.js';
+import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
@@ -36,21 +36,19 @@ suite('lit-extended', () => {
     test('renders to an attribute', () => {
       render(html`<div foo$="${'bar'}"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="bar"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
     test('renders to an attribute without quotes', () => {
       render(html`<div foo$=${'bar'}></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
-          '<div foo="bar"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
     test('renders interpolation to an attribute', () => {
       render(html`<div foo$="1${'bar'}2${'baz'}3"></div>`, container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML),
+          stripExpressionMarkers(container.innerHTML),
           '<div foo="1bar2baz3"></div>');
     });
 
@@ -58,10 +56,9 @@ suite('lit-extended', () => {
       const size = 100;
       render(html`<svg viewBox$="0 0 ${size} ${size}"></svg>`, container);
       assert.include(
-          stripExpressionDelimeters(container.innerHTML),
-          'viewBox="0 0 100 100"');
+          stripExpressionMarkers(container.innerHTML), 'viewBox="0 0 100 100"');
       assert.notInclude(
-          stripExpressionDelimeters(container.innerHTML), 'viewBox$');
+          stripExpressionMarkers(container.innerHTML), 'viewBox$');
     });
 
     test('renders a boolean attribute as an empty string when truthy', () => {
@@ -69,35 +66,31 @@ suite('lit-extended', () => {
 
       render(t(true), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
 
       render(t('a'), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
 
       render(t(1), container);
       assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div foo=""></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
     });
 
     test('removes a boolean attribute when falsey', () => {
       const t = (value: any) => html`<div foo?="${value}"></div>`;
 
       render(t(false), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       render(t(0), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       render(t(null), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       render(t(undefined), container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
     test('reuses an existing ExtendedTemplateInstance when available', () => {
@@ -277,8 +270,7 @@ suite('lit-extended', () => {
       });
 
       render(html`<div foo="${fooDirective}"></div>`, container);
-      assert.equal(
-          stripExpressionDelimeters(container.innerHTML), '<div></div>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
       assert.equal((container.firstElementChild as any).foo, 1234);
     });
 
