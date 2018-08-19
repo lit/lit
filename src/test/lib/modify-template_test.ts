@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {defaultTemplateFactory as templateFactory, html} from '../../index.js';
+import {html, templateFactory} from '../../index.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from '../../lib/modify-template.js';
 import {render} from '../../lib/render.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';

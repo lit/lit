@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {defaultTemplateFactory, html, NodePart, render, TemplateResult} from '../../index.js';
+import {html, NodePart, render, templateFactory, TemplateResult} from '../../index.js';
 import {stripExpressionDelimeters} from '../test-helpers.js';
 
 const assert = chai.assert;
@@ -33,7 +33,7 @@ suite('Parts', () => {
       endNode = document.createComment('');
       container.appendChild(startNode);
       container.appendChild(endNode);
-      part = new NodePart(defaultTemplateFactory);
+      part = new NodePart(templateFactory);
       part.startNode = startNode;
       part.endNode = endNode;
     });
@@ -308,7 +308,7 @@ suite('Parts', () => {
           () => {
             const testEndNode = document.createComment('');
             container.appendChild(testEndNode);
-            const testPart = new NodePart(defaultTemplateFactory);
+            const testPart = new NodePart(templateFactory);
             testPart.insertAfterNode(endNode);
             assert.equal(testPart.startNode, endNode);
             assert.equal(testPart.endNode, testEndNode);
@@ -325,7 +325,7 @@ suite('Parts', () => {
       test(
           'inserts part and sets values between ref node and its next sibling',
           () => {
-            const testPart = new NodePart(defaultTemplateFactory);
+            const testPart = new NodePart(templateFactory);
             testPart.appendIntoPart(part);
             assert.instanceOf(testPart.startNode, Comment);
             assert.instanceOf(testPart.endNode, Comment);
@@ -353,7 +353,7 @@ suite('Parts', () => {
 
     suite('insertAfterPart', () => {
       test('inserts part and sets values after another part', () => {
-        const testPart = new NodePart(defaultTemplateFactory);
+        const testPart = new NodePart(templateFactory);
         testPart.insertAfterPart(part);
         assert.instanceOf(testPart.startNode, Comment);
         assert.equal(testPart.endNode, endNode);

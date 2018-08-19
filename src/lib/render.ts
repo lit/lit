@@ -13,7 +13,7 @@
  */
 
 import {removeNodes} from './dom.js';
-import {defaultTemplateFactory, TemplateFactory} from './template-factory.js';
+import {templateFactory as defaultTemplateFactory, TemplateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 
