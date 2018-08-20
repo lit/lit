@@ -6,14 +6,14 @@
 /tools/lib/
 
 # Compiler output
-/index.d.ts
-/index.js
-/index.js.map
+/lit-html.d.ts
+/lit-html.js
+/lit-html.js.map
 /test/**/*.d.ts
 /test/**/*.js
 /test/**/*.js.map
 
-/index.bundled.js
+/lit-html.bundled.js
 
 yarn.lock
 

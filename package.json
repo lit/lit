@@ -4,15 +4,15 @@
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "main": "index.js",
-  "module": "index.js",
+  "main": "lit-html.js",
+  "module": "lit-html.js",
   "directories": {
     "test": "test"
   },
   "files": [
-    "/index.js",
-    "/index.js.map",
-    "/index.d.ts",
+    "/lit-html.js",
+    "/lit-html.js.map",
+    "/lit-html.d.ts",
     "/lib/",
     "/directives/",
     "/src/",
@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "checksize": "rollup -c ; rm index.bundled.js",
+    "checksize": "rollup -c ; rm lit-html.bundled.js",
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api ./src",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
@@ -45,6 +45,6 @@
     "wct-browser-legacy": "^1.0.1",
     "web-component-tester": "^6.8.0"
   },
-  "typings": "index.d.ts",
+  "typings": "lit-html.d.ts",
   "dependencies": {}
 }

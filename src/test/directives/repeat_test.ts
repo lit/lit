@@ -13,8 +13,8 @@
  */
 
 import {repeat} from '../../directives/repeat.js';
-import {html} from '../../index.js';
 import {render} from '../../lib/render.js';
+import {html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
