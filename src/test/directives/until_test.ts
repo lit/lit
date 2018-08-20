@@ -13,8 +13,8 @@
  */
 
 import {until} from '../../directives/until.js';
-import {html} from '../../index.js';
 import {render} from '../../lib/render.js';
+import {html} from '../../lit-html.js';
 import {Deferred} from '../test-utils/deferred.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 

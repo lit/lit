@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html} from '../../index.js';
+import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
 

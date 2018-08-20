@@ -13,8 +13,8 @@
  */
 
 import {asyncAppend} from '../../directives/async-append.js';
-import {html} from '../../index.js';
 import {render} from '../../lib/render.js';
+import {html} from '../../lit-html.js';
 import {TestAsyncIterable} from '../lib/test-async-iterable.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 

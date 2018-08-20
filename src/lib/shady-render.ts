@@ -20,7 +20,7 @@ import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {Template} from './template.js';
 
-export {html, svg, TemplateResult} from '../index.js';
+export {html, svg, TemplateResult} from '../lit-html.js';
 
 declare global {
   interface Window {

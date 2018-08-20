@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart} from '../index.js';
+import {directive, Directive, NodePart} from '../lit-html.js';
 
 /**
  * Display `defaultContent` until `promise` resolves.
