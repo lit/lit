@@ -46,17 +46,17 @@ suite('when', () => {
 
       renderWhen(true);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      renderWhen(true);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
     test('caches if/then templates', () => {
-      let ifEl;
-      let elseEl;
-
       renderWhen(true);
-      ifEl = container.firstElementChild;
+      const ifEl = container.firstElementChild;
 
       renderWhen(false);
-      elseEl = container.firstElementChild;
+      const elseEl = container.firstElementChild;
 
       renderWhen(true);
       assert.equal(ifEl, container.firstElementChild);
@@ -101,20 +101,21 @@ suite('when', () => {
     }
 
     test('updates template parts when switching conditions', () => {
-      let ifParent: Element;
-      let elseParent: Element;
-
       renderWhen(true, 'foo');
-      ifParent = container.firstElementChild!;
+      const ifParent = container.firstElementChild!;
       assert.equal(ifParent.firstElementChild!.textContent, 'foo');
 
       renderWhen(false, 'foo');
-      elseParent = container.firstElementChild!;
+      const elseParent = container.firstElementChild!;
       assert.equal(elseParent.firstElementChild!.textContent, 'foo');
 
       renderWhen(true, 'bar');
       assert.equal(ifParent.firstElementChild!.textContent, 'bar');
       assert.equal(ifParent.firstElementChild, container.firstElementChild!.firstElementChild);
+
+      renderWhen(false, 'bar');
+      assert.equal(elseParent.firstElementChild!.textContent, 'bar');
+      assert.equal(elseParent.firstElementChild, container.firstElementChild!.firstElementChild);
 
       renderWhen(false, 'bar');
       assert.equal(elseParent.firstElementChild!.textContent, 'bar');

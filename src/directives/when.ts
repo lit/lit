@@ -14,7 +14,13 @@
 
 import {directive, reparentNodes, Directive, NodePart} from '../lit-html.js';
 
-type PartCache = [NodePart, NodePart, DocumentFragment];
+interface PartCache {
+  truePart: NodePart;
+  falsePart: NodePart;
+  prevCondition?: boolean;
+  cacheContainer: DocumentFragment;
+}
+
 const partCaches = new WeakMap<NodePart, PartCache>();
 
 /**
@@ -34,59 +40,57 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  * `
  *
  * @param condition the condition to test against
- * @param ifValue the content to render if
- * @param elseValue
+ * @param trueValue the value to render given a true condition
+ * @param falseValue the value to render given a false condition
  */
-export const when = (condition: boolean, ifValue: () => any, elseValue: () => any): DirectiveFn<NodePart> =>
+export const when = (condition: boolean, trueValue: () => any, falseValue: () => any): Directive<NodePart> =>
     directive((part: NodePart) => {
-      // Create cache if this was the first render
-      if (!partCaches.has(part)) {
-        createPartCache(part);
+      const partCache = getPartCache(part);
+      const { truePart, falsePart, cacheContainer, prevCondition } = partCache;
+
+      const nextPart = condition ? truePart : falsePart;
+      const nextValue = condition ? trueValue() : falseValue();
+
+      // Swap nodes if condition changed from previous
+      if (condition !== prevCondition) {
+        const prevPart = condition ? falsePart : truePart;
+        // If the next part was rendered, take it from the cache
+        if (nextPart.value) {
+          part.startNode.parentNode!.appendChild(cacheContainer);
+        }
+
+        // If the prev part was rendered, move it to the cache
+        if (prevPart.value) {
+          reparentNodes(cacheContainer, prevPart.startNode, prevPart.endNode.nextSibling);
+        }
       }
 
-      const partCache = partCaches.get(part)!;
-      const cacheContainer = partCache[2];
-      const parts = [partCache[0], partCache[1]];
-      let value;
+      // Set the next part's value
+      nextPart.setValue(nextValue);
+      nextPart.commit();
 
-      if (condition) {
-        value = ifValue();
-      } else {
-        parts.reverse();
-        value = elseValue();
-      }
-
-      const [newPart, prevPart] = parts;
-
-      // If the new part was rendered, take it from the cache
-      if (newPart.value) {
-        part.startNode.parentNode!.appendChild(cacheContainer);
-      }
-
-      // If the old part was rendered, move it to the cache
-      if (prevPart.value) {
-        reparentNodes(cacheContainer, prevPart.startNode, prevPart.endNode.nextSibling);
-      }
-
-      // Set the new part's value
-      newPart.setValue(value);
-      newPart.commit();
+      partCache.prevCondition = condition;
     });
 
 /**
- * Creates cache consisting of a NodePart for each condition and a
- * document fragment for caching nodes.
- *
  * @param parentPart the parent part
+ * @returns the cache for the given parent. creates a new cache if none exists
  */
-function createPartCache(parentPart: NodePart) {
-  const parts: PartCache =  [
-    new NodePart(parentPart.templateFactory),
-    new NodePart(parentPart.templateFactory),
-    document.createDocumentFragment(),
-  ];
-  partCaches.set(parentPart, parts);
+function getPartCache(parentPart: NodePart) {
+  let cache = partCaches.get(parentPart);
 
-  parts[0].appendIntoPart(parentPart);
-  parts[1].appendIntoPart(parentPart);
+  // Create a new cache if this is the first render
+  if (!cache) {
+    cache = {
+      truePart: new NodePart(parentPart.templateFactory),
+      falsePart: new NodePart(parentPart.templateFactory),
+      cacheContainer: document.createDocumentFragment(),
+    };
+    partCaches.set(parentPart, cache);
+
+    cache.truePart.appendIntoPart(parentPart);
+    cache.falsePart.appendIntoPart(parentPart);
+  }
+
+  return cache;
 }
