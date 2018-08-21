@@ -39,18 +39,18 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  *   when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not checked`);
  * `
  *
- * @param condition the condition to test against
+ * @param condition the condition to test truthiness against
  * @param trueValue the value to render given a true condition
  * @param falseValue the value to render given a false condition
  */
-export const when = (condition: boolean, trueValue: () => any, falseValue: () => any): Directive<NodePart> =>
+export const when = (condition: any, trueValue: () => any, falseValue: () => any): Directive<NodePart> =>
     directive((parentPart: NodePart) => {
       let cache = partCaches.get(parentPart);
 
       // Create a new cache if this is the first render
       if (cache === undefined) {
         // Cache consists of two parts, one for each condition, and a docment fragment which
-        // we cache the nodes of condition that's not currently rendered.
+        // we cache the nodes of the condition that's not currently rendered.
         cache = {
           truePart: new NodePart(parentPart.templateFactory),
           falsePart: new NodePart(parentPart.templateFactory),
@@ -67,7 +67,7 @@ export const when = (condition: boolean, trueValue: () => any, falseValue: () =>
       const nextValue = condition ? trueValue() : falseValue();
 
       // If we switched condition, swap nodes to/from the cache.
-      if (condition !== cache.prevCondition) {
+      if (!!condition !== cache.prevCondition) {
         // Get the part which was rendered for the opposite condition. This should be added to the cache.
         const prevPart = condition ? cache.falsePart : cache.truePart;
 
@@ -86,5 +86,5 @@ export const when = (condition: boolean, trueValue: () => any, falseValue: () =>
       nextPart.setValue(nextValue);
       nextPart.commit();
 
-      cache.prevCondition = condition;
+      cache.prevCondition = !!condition;
     });

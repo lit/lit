@@ -30,44 +30,69 @@ suite('when', () => {
   });
 
   suite('simple template', () => {
-    function renderWhen(condition: boolean) {
+    function renderWhen(condition: any) {
       render(
         html`${when(condition, () => html`<div></div>`, () => html`<span></span>`)}`,
         container
       );
     }
 
-    test('renders if/then template based on condition', () => {
-      renderWhen(true);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    suite('renders if/then template based on condition', () => {
+      test('initially true', () => {
+        renderWhen(true);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
-      renderWhen(false);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+        renderWhen(false);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
 
-      renderWhen(true);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+        renderWhen(true);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      });
 
-      renderWhen(true);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      test('initial false', () => {
+        renderWhen(false);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+
+        renderWhen(true);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+        renderWhen(false);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+      });
     });
 
-    test('caches if/then templates', () => {
+    test('caches templates', () => {
       renderWhen(true);
-      const ifEl = container.firstElementChild;
+      const trueEl = container.firstElementChild;
 
       renderWhen(false);
-      const elseEl = container.firstElementChild;
+      const falseEl = container.firstElementChild;
 
       renderWhen(true);
-      assert.equal(ifEl, container.firstElementChild);
+      assert.equal(trueEl, container.firstElementChild);
 
       renderWhen(false);
-      assert.equal(elseEl, container.firstElementChild);
+      assert.equal(falseEl, container.firstElementChild);
+    });
+
+    test('handles truthy and falsy values', () => {
+      renderWhen(false);
+      const falseEl = container.firstElementChild;
+      renderWhen(true);
+      const trueEl = container.firstElementChild;
+
+      renderWhen('');
+      assert.equal(falseEl, container.firstElementChild);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+
+      renderWhen('foo');
+      assert.equal(trueEl, container.firstElementChild);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
   });
 
   suite('nested attribute part', () => {
-    function renderWhen(condition: boolean, value: string) {
+    function renderWhen(condition: any, value: string) {
       render(
         html`${when(condition, () => html`<div foo="${value}"></div>`, () => html`<span foo="${value}"></span>`)}`,
         container
@@ -90,7 +115,7 @@ suite('when', () => {
   });
 
   suite('nested template', () => {
-    function renderWhen(condition: boolean, value: string) {
+    function renderWhen(condition: any, value: string) {
       const ifTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
       const elseTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
 
