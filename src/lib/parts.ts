@@ -118,7 +118,7 @@ export class AttributePart implements Part {
   }
 
   setValue(value: any): void {
-    if (value !== noChange || !isPrimitive(value) || value !== this.value) {
+    if (value !== noChange && (!isPrimitive(value) || value !== this.value)) {
       this.value = value;
       // If the value is a not a directive, dirty the committer so that it'll
       // call setAttribute. If the value is a directive, it'll dirty the
