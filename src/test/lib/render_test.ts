@@ -265,6 +265,16 @@ suite('render()', () => {
         </div>`);
     });
 
+    test.only('renders comments with bindings', () => {
+      const t = html`
+        <!-- <div class="${'foo'}"></div> -->
+        <p>${'bar'}</p>`;
+      render(t, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+          <!-- <div class="foo"></div> -->
+          <p>bar</p>`);
+    });
+
     test('renders legacy marker sequences in text nodes', () => {
       // {{}} used to be the marker text and it was important to test that
       // markers in user-templates weren't interpreted as expressions
