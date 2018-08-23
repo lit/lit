@@ -27,6 +27,8 @@ const testSkipSafari10_0 =
     (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1) ? test :
                                                                      test.skip;
 
+const testIfHasSymbol = (window as any).Symbol === undefined ? test.skip : test;
+
 suite('render()', () => {
   let container: HTMLElement;
 
@@ -64,7 +66,7 @@ suite('render()', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
-    test('renders a Symbol', () => {
+    testIfHasSymbol('renders a Symbol', () => {
       render(html`<div>${Symbol('A')}</div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>Symbol(A)</div>');
@@ -302,14 +304,14 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
-    test('renders a Symbol to an attribute', () => {
+    testIfHasSymbol('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML),
           '<div foo="Symbol(A)"></div>');
     });
 
-    test('renders a Symbol in an array to an attribute', () => {
+    testIfHasSymbol('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')]}></div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML),
