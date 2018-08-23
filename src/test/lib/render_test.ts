@@ -850,47 +850,44 @@ suite('render()', () => {
       (window.customElements != null) ? suite : suite.skip;
 
   suiteIfCustomElementsAreSupported('custom elements', () => {
-    suiteSetup(() => {
-      if (customElements.get('x-test-uses-property-setters') == null) {
-        class CustomElement extends HTMLElement {
-          public readonly calledSetter = false;
-          private _value?: string = undefined;
+    class PropertySetterElement extends HTMLElement {
+      public readonly calledSetter = false;
+      private _value?: string = undefined;
 
-          public get value(): string|undefined {
-            return this._value;
-          }
+      public get value(): string|undefined {
+        return this._value;
+      }
 
-          public set value(value: string|undefined) {
-            (this as {calledSetter: boolean}).calledSetter = true;
-            this._value = value;
-          }
-        }
+      public set value(value: string|undefined) {
+        (this as {calledSetter: boolean}).calledSetter = true;
+        this._value = value;
+      }
+    }
+    customElements.define('property-tester', PropertySetterElement);
 
-        customElements.define('x-test-uses-property-setters', CustomElement);
+    teardown(() => {
+      if (container.parentElement === document.body) {
+        document.body.removeChild(container);
       }
     });
 
-    setup(() => {
+    test('uses property setters for custom elements', () => {
       // Container must be in the document for the custom element to upgrade
       document.body.appendChild(container);
-    });
-
-    teardown(() => {
-      document.body.removeChild(container);
-    });
-
-    test('uses property setters for custom elements', () => {
       render(
-          html`
-    <x-test-uses-property-setters .value=${
-              'foo'}></x-test-uses-property-setters>
-  `,
-          container);
-      const instance = container.firstElementChild as HTMLElement & {
-        value: string;
-        calledSetter: boolean;
-      };
+          html`<property-tester .value=${'foo'}></property-tester>`, container);
+      const instance = container.firstElementChild as PropertySetterElement;
+      assert.equal(instance.value, 'foo');
+      assert.isTrue(instance.calledSetter);
+    });
 
+    test('uses property setters for disconnected custom elements', () => {
+      // Here we _don't_ connect the container to the document, to highlight
+      // that we aren't creating upgraded custom elements in this case when we
+      // ideally should be.
+      render(
+          html`<property-tester .value=${'foo'}></property-tester>`, container);
+      const instance = container.firstElementChild as PropertySetterElement;
       assert.equal(instance.value, 'foo');
       assert.isTrue(instance.calledSetter);
     });
@@ -898,22 +895,40 @@ suite('render()', () => {
     test(
         'uses property setters in nested templates added after the initial render',
         () => {
+          // Container must be in the document for the custom element to upgrade
+          document.body.appendChild(container);
           const template = (content: any) => html`${content}`;
 
           // Do an initial render
           render(template('some content'), container);
 
           // Now update the rendered template, render a nested template
-          const fragment = html`
-    <x-test-uses-property-setters .value=${
-                               'foo'}></x-test-uses-property-setters>
-  `;
+          const fragment =
+              html`<property-tester .value=${'foo'}></property-tester>`;
           render(template(fragment), container);
-          const instance = container.firstElementChild as HTMLElement & {
-            value: string;
-            calledSetter: boolean;
-          };
 
+          const instance = container.firstElementChild as PropertySetterElement;
+          assert.equal(instance.value, 'foo');
+          assert.isTrue(instance.calledSetter);
+        });
+
+    test(
+        'uses property setters in disconnected nested templates added after the initial render',
+        () => {
+          // Here we _don't_ connect the container to the document, to highlight
+          // that we aren't creating upgraded custom elements in this case when
+          // we ideally should be.
+          const template = (content: any) => html`${content}`;
+
+          // Do an initial render
+          render(template('some content'), container);
+
+          // Now update the rendered template, render a nested template
+          const fragment =
+              html`<property-tester .value=${'foo'}></property-tester>`;
+          render(template(fragment), container);
+
+          const instance = container.firstElementChild as PropertySetterElement;
           assert.equal(instance.value, 'foo');
           assert.isTrue(instance.calledSetter);
         });

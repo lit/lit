@@ -13,6 +13,7 @@
  */
 
 
+import {isCEPolyfill} from './dom.js';
 import {Part} from './parts.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateProcessor} from './template-processor.js';
@@ -52,11 +53,15 @@ export class TemplateInstance {
   }
 
   _clone(): DocumentFragment {
-    // Clone the node, rather than importing it, to keep the fragment in the
-    // template's document. This leaves the fragment inert so custom elements
-    // won't upgrade until after the main document adopts the node.
-    const fragment =
-        this.template.element.content.cloneNode(true) as DocumentFragment;
+    // When using the Custom Elements polyfill, clone the node, rather than
+    // importing it, to keep the fragment in the template's document. This
+    // leaves the fragment inert so custom elements won't upgrade and
+    // potentially modify their contents by creating a polyfilled ShadowRoot
+    // while we traverse the tree.
+    const fragment = isCEPolyfill ?
+        this.template.element.content.cloneNode(true) as DocumentFragment :
+        document.importNode(this.template.element.content, true);
+
     const parts = this.template.parts;
     let partIndex = 0;
     let nodeIndex = 0;
@@ -65,9 +70,7 @@ export class TemplateInstance {
       // null
       const walker = document.createTreeWalker(
           fragment,
-          133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-NodeFilter.SHOW_TEXT */
-          ,
+          133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
           null as any,
           false);
       let node = walker.nextNode();
@@ -104,5 +107,11 @@ NodeFilter.SHOW_TEXT */
     };
     _prepareInstance(fragment);
     return fragment;
+  }
+}
+
+declare global {
+  class CustomElementRegistry {
+    upgrade(node: Node): void;
   }
 }

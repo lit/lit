@@ -13,7 +13,7 @@
  */
 
 import {isDirective} from './directive.js';
-import {removeNodes} from './dom.js';
+import {isCEPolyfill, removeNodes} from './dom.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -257,7 +257,13 @@ export class NodePart implements Part {
       // from the render function so that it can control caching.
       instance =
           new TemplateInstance(template, value.processor, this.templateFactory);
-      this._commitNode(instance._clone());
+      const fragment = instance._clone();
+      // Since we cloned in the polyfill case, now force an upgrade
+      if (isCEPolyfill && !this.endNode.isConnected) {
+        document.adoptNode(fragment);
+        customElements.upgrade(fragment);
+      }
+      this._commitNode(fragment);
       this.value = instance;
     }
     instance.update(value.values);
