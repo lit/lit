@@ -14,7 +14,7 @@
 
 import {reparentNodes} from './dom.js';
 import {defaultTemplateProcessor, TemplateProcessor} from './template-processor.js';
-import {marker, nodeMarker} from './template.js';
+import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
 
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -55,6 +55,12 @@ export class TemplateResult {
       // "...": no change. open === -1, close === -1
       isTextBinding =
           (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
+
+      if (!isTextBinding && rewritesStyleAttribute) {
+        html = html.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
+          return (p2 === 'style') ? `${p1}style$${p3}` : match;
+        });
+      }
       html += isTextBinding ? nodeMarker : marker;
     }
     html += this.strings[l];

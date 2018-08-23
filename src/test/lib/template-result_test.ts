@@ -12,9 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html} from '../../lit-html.js';
+import {html, marker} from '../../lit-html.js';
 
 const assert = chai.assert;
+
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const testOnIE = isIe ? test : test.skip;
 
 suite('TemplateResult', () => {
   test('strings are identical for multiple calls', () => {
@@ -25,5 +29,10 @@ suite('TemplateResult', () => {
   test('values contain interpolated values', () => {
     const foo = 'foo', bar = 1;
     assert.deepEqual(html`${foo}${bar}`.values, [foo, bar]);
+  });
+
+  testOnIE('style attributes are renamed on IE', () => {
+    const templateHTML = html`<div style="color: ${'red'}"></div>`.getHTML();
+    assert.equal(templateHTML, `<div style$="color: ${marker}"></div>`);
   });
 });
