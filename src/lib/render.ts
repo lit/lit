@@ -12,14 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isCEPolyfill, removeNodes} from './dom.js';
+import {removeNodes} from './dom.js';
+import {NodePart} from './parts.js';
 import {templateFactory as defaultTemplateFactory, TemplateFactory} from './template-factory.js';
-import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
+import {createMarker} from './template.js';
 
-export type TemplateContainer = (Element|DocumentFragment)&{
-  __templateInstance?: TemplateInstance;
-};
+const parts = new WeakMap<Node, NodePart>();
 
 /**
  * Renders a template to a container.
@@ -39,24 +38,17 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     templateFactory: TemplateFactory = defaultTemplateFactory) {
-  const template = templateFactory(result);
-  let instance = (container as TemplateContainer).__templateInstance;
-  // Repeat render, just call update()
-  if (instance !== undefined && instance.template === template &&
-      instance.processor === result.processor) {
-    instance.update(result.values);
-    return;
+  let part = parts.get(container);
+  if (part === undefined) {
+    removeNodes(container, container.firstChild);
+    part = new NodePart(templateFactory);
+    const startNode = createMarker();
+    const endNode = createMarker();
+    container.appendChild(startNode);
+    container.appendChild(endNode);
+    part.insertAfterNode(startNode);
+    parts.set(container, part);
   }
-  // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(template, result.processor, templateFactory);
-  (container as TemplateContainer).__templateInstance = instance;
-  const fragment = instance._clone();
-  removeNodes(container, container.firstChild);
-  // Since we cloned in the polyfill case, now force an upgrade
-  if (isCEPolyfill && !container.isConnected) {
-    document.adoptNode(fragment);
-    customElements.upgrade(fragment);
-  }
-  container.appendChild(fragment);
-  instance.update(result.values);
+  part.setValue(result);
+  part.commit();
 }
