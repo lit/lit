@@ -433,7 +433,7 @@ suite('render()', () => {
   suite('properties', () => {
     test('sets properties', () => {
       render(html`<div .foo=${123} .bar=${456}></div>`, container);
-      const div = container.firstChild!;
+      const div = container.querySelector('div')!;
       assert.strictEqual((div as any).foo, 123);
       assert.strictEqual((div as any).bar, 456);
     });
@@ -482,7 +482,7 @@ suite('render()', () => {
         thisValue = this;
       };
       render(html`<div @click=${listener}></div>`, container);
-      const div = container.firstChild as HTMLElement;
+      const div = container.querySelector('div')!;
       div.click();
       assert.equal(thisValue, div);
 
@@ -503,7 +503,7 @@ suite('render()', () => {
         }
       };
       render(html`<div @click=${listener}></div>`, container);
-      const div = container.firstChild as HTMLElement;
+      const div = container.querySelector('div')!;
       div.click();
       assert.equal(thisValue, listener);
     });
@@ -516,7 +516,7 @@ suite('render()', () => {
       render(html`<div @click=${listener}></div>`, container);
       render(html`<div @click=${listener}></div>`, container);
 
-      const div = container.firstChild as HTMLElement;
+      const div = container.querySelector('div')!;
       div.click();
       assert.equal(count, 1);
     });
@@ -534,7 +534,7 @@ suite('render()', () => {
       render(t(listener1), container);
       render(t(listener2), container);
 
-      const div = container.firstChild as HTMLElement;
+      const div = container.querySelector('div')!;
       div.click();
       assert.equal(count1, 0);
       assert.equal(count2, 1);
@@ -546,7 +546,7 @@ suite('render()', () => {
           let listener: Function|null;
           const t = () => html`<div @click=${listener}></div>`;
           render(t(), container);
-          const div = container.firstChild as HTMLElement;
+          const div = container.querySelector('div')!;
 
           let addCount = 0;
           let removeCount = 0;
@@ -584,7 +584,7 @@ suite('render()', () => {
       let listener: any = (e: any) => target = e.target;
       const t = () => html`<div @click=${listener}></div>`;
       render(t(), container);
-      const div = container.firstChild as HTMLElement;
+      const div = container.querySelector('div')!;
       div.click();
       assert.equal(target, div);
 
@@ -957,22 +957,6 @@ suite('render()', () => {
           '<ul><li>x</li><li>y</li></ul>');
     });
 
-    test('sanity check one', () => {
-      // bump line numbers
-      const foo = 'aaa';
-
-      const t = () => html`<div>${foo}</div>`;
-
-      render(t(), container);
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
-      const text = container.firstChild!.childNodes[1] as Text;
-      text.textContent = 'bbb';
-      render(t(), container);
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-    });
-
     test('dirty checks simple values', () => {
       const foo = 'aaa';
 
@@ -981,7 +965,7 @@ suite('render()', () => {
       render(t(), container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
-      const text = container.firstChild!.childNodes[1] as Text;
+      const text = container.querySelector('div')!;
       assert.equal(text.textContent, 'aaa');
 
       // Set textContent manually. Since lit-html doesn't dirty check against
@@ -996,7 +980,7 @@ suite('render()', () => {
       render(t(), container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-      const text2 = container.firstChild!.childNodes[1] as Text;
+      const text2 = container.querySelector('div')!;
 
       // The next node should be the same too
       assert.strictEqual(text, text2);
@@ -1041,14 +1025,14 @@ suite('render()', () => {
       render(t(), container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
-      const div = container.firstChild as HTMLDivElement;
+      const div = container.querySelector('div')!;
       assert.equal(div.tagName, 'DIV');
 
       foo = 'bbb';
       render(t(), container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-      const div2 = container.firstChild as HTMLDivElement;
+      const div2 = container.querySelector('div')!;
       // check that only the part changed
       assert.equal(div, div2);
     });
