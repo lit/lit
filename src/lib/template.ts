@@ -160,12 +160,15 @@ export class Template {
             }
             currentNode = previousNode;
             partIndex++;
-          } else if (node.nodeValue!.indexOf(marker) >= 0) {
-            // Comment node has a binding marker inside, make an inactive part
-            // The binding won't work, but subsequent bindings will
-            // TODO (justinfagnani): consider whether it's even worth it to
-            // make bindings in comments work
-            this.parts.push({type: 'node', index: -1});
+          } else {
+            let i = -1;
+            while ((i = node.nodeValue!.indexOf(marker, i + 1)) !== -1) {
+              // Comment node has a binding marker inside, make an inactive part
+              // The binding won't work, but subsequent bindings will
+              // TODO (justinfagnani): consider whether it's even worth it to
+              // make bindings in comments work
+              this.parts.push({type: 'node', index: -1});
+            }
           }
         }
       }
