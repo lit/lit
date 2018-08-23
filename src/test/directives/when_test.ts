@@ -15,9 +15,9 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
+import {when} from '../../directives/when.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
-import {when} from '../../directives/when.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -32,32 +32,41 @@ suite('when', () => {
   suite('simple template', () => {
     function renderWhen(condition: any) {
       render(
-        html`${when(condition, () => html`<div></div>`, () => html`<span></span>`)}`,
-        container
-      );
+          html`${
+              when(
+                  condition,
+                  () => html`<div></div>`,
+                  () => html`<span></span>`)}`,
+          container);
     }
 
     suite('renders if/then template based on condition', () => {
       test('initially true', () => {
         renderWhen(true);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
 
         renderWhen(false);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<span></span>');
 
         renderWhen(true);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
       });
 
       test('initial false', () => {
         renderWhen(false);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<span></span>');
 
         renderWhen(true);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
 
         renderWhen(false);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<span></span>');
       });
     });
 
@@ -83,7 +92,8 @@ suite('when', () => {
 
       renderWhen('');
       assert.equal(falseEl, container.firstElementChild);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<span></span>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<span></span>');
 
       renderWhen('foo');
       assert.equal(trueEl, container.firstElementChild);
@@ -94,35 +104,42 @@ suite('when', () => {
   suite('nested attribute part', () => {
     function renderWhen(condition: any, value: string) {
       render(
-        html`${when(condition, () => html`<div foo="${value}"></div>`, () => html`<span foo="${value}"></span>`)}`,
-        container
-      );
+          html`${
+              when(
+                  condition,
+                  () => html`<div foo="${value}"></div>`,
+                  () => html`<span foo="${value}"></span>`)}`,
+          container);
     }
 
     test('updates attribute parts when switching conditions', () => {
       renderWhen(true, 'foo');
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
 
       renderWhen(false, 'foo');
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<span foo="foo"></span>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<span foo="foo"></span>');
 
       renderWhen(true, 'bar');
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
 
       renderWhen(false, 'bar');
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<span foo="bar"></span>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<span foo="bar"></span>');
     });
   });
 
   suite('nested template', () => {
     function renderWhen(condition: any, value: string) {
       const ifTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
-      const elseTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
+      const elseTemplate = () =>
+          html`<div>${html`<span>${value}</span>`}</div>`;
 
-      render(
-        html`${when(condition, ifTemplate, elseTemplate)}`,
-        container
-      );
+      render(html`${when(condition, ifTemplate, elseTemplate)}`, container);
     }
 
     test('updates template parts when switching conditions', () => {
@@ -136,15 +153,21 @@ suite('when', () => {
 
       renderWhen(true, 'bar');
       assert.equal(ifParent.firstElementChild!.textContent, 'bar');
-      assert.equal(ifParent.firstElementChild, container.firstElementChild!.firstElementChild);
+      assert.equal(
+          ifParent.firstElementChild,
+          container.firstElementChild!.firstElementChild);
 
       renderWhen(false, 'bar');
       assert.equal(elseParent.firstElementChild!.textContent, 'bar');
-      assert.equal(elseParent.firstElementChild, container.firstElementChild!.firstElementChild);
+      assert.equal(
+          elseParent.firstElementChild,
+          container.firstElementChild!.firstElementChild);
 
       renderWhen(false, 'bar');
       assert.equal(elseParent.firstElementChild!.textContent, 'bar');
-      assert.equal(elseParent.firstElementChild, container.firstElementChild!.firstElementChild);
+      assert.equal(
+          elseParent.firstElementChild,
+          container.firstElementChild!.firstElementChild);
     });
   });
 });

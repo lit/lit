@@ -242,7 +242,21 @@ const render = () => html`
   </div>`;
 ```
 
-lit-html includes a few directives:
+lit-html includes a few built-in directives:
+
+### `when(condition, trueTemplate, falseTemplate)`
+
+Efficiently switches between two templates based on the given condition. The rendered content is cached, and re-used when switching conditions. Templates are evaluated lazily, so the passed values must be functions.
+
+Example:
+
+```js
+let checked = false;
+
+html`
+  when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
+checked`);
+```
 
 ### `repeat(items, keyfn, template)`
 
@@ -261,8 +275,7 @@ const render = () => html`
 
 ### `ifDefined(value)`
 
-For AttributeParts, sets the attribute if the value is defined and removes
-the attribute if the value is undefined.
+For AttributeParts, sets the attribute if the value is defined and removes the attribute if the value is undefined.
 
 For other part types, this directive is a no-op.
 
@@ -273,6 +286,22 @@ const render = () => html`
   <div class=${ifDefined(className)}></div>
 `;
 ```
+
+### `guard(expression, valueFn)`
+
+Prevents any re-render until the identity of the expression changes, for example when a primitive changes value or when an object reference changes.
+
+Example:
+
+```js
+html`
+  <div>
+    ${guard(items, () => items.map(item => html`${item}`))}
+  </div>
+`
+```
+
+In this case, items are mapped over only when the array reference changes.
 
 ### `until(promise, defaultContent)`
 

@@ -15,9 +15,9 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
+import {guard} from '../../directives/guard.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
-import {guard} from '../../directives/guard.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -45,20 +45,17 @@ suite('guard', () => {
     renderCount += 1;
     renderGuarded('foo', guardedTemplate);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-      '<div>Template 1</div>');
+        stripExpressionMarkers(container.innerHTML), '<div>Template 1</div>');
 
     renderCount += 1;
     renderGuarded('foo', guardedTemplate);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-       '<div>Template 1</div>');
+        stripExpressionMarkers(container.innerHTML), '<div>Template 1</div>');
 
     renderCount += 1;
     renderGuarded('bar', guardedTemplate);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-      '<div>Template 3</div>' );
+        stripExpressionMarkers(container.innerHTML), '<div>Template 3</div>');
 
     assert.equal(callCount, 2);
   });
@@ -74,20 +71,20 @@ suite('guard', () => {
 
     renderGuarded(items, guardedTemplate);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-      '<div><ul><li>foo</li><li>bar</li></ul></div>');
+        stripExpressionMarkers(container.innerHTML),
+        '<div><ul><li>foo</li><li>bar</li></ul></div>');
     items.push('baz');
 
     renderGuarded(items, guardedTemplate);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-      '<div><ul><li>foo</li><li>bar</li></ul></div>');
+        stripExpressionMarkers(container.innerHTML),
+        '<div><ul><li>foo</li><li>bar</li></ul></div>');
 
     items = [...items];
     renderGuarded(items, guardedTemplate);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-      '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>');
+        stripExpressionMarkers(container.innerHTML),
+        '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>');
 
     assert.equal(callCount, 2);
   });
