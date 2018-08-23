@@ -265,6 +265,22 @@ suite('render()', () => {
         </div>`);
     });
 
+    test('renders comments with bindings', () => {
+      const t = html`
+        <!-- <div class="${'foo'}"></div> -->
+        <p>${'bar'}</p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.textContent, 'bar');
+    });
+
+    test('renders comments with multiple bindings', () => {
+      const t = html`
+        <!-- <div class="${'foo'}">${'bar'}</div> -->
+        <p>${'baz'}</p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.textContent, 'baz');
+    });
+
     test('renders legacy marker sequences in text nodes', () => {
       // {{}} used to be the marker text and it was important to test that
       // markers in user-templates weren't interpreted as expressions
