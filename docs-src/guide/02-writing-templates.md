@@ -244,7 +244,7 @@ const render = () => html`
 
 lit-html includes a few directives:
 
-#### `repeat(items, keyfn, template)`
+### `repeat(items, keyfn, template)`
 
 A loop that supports efficient re-ordering by using item keys.
 
@@ -259,7 +259,22 @@ const render = () => html`
 `;
 ```
 
-#### `until(promise, defaultContent)`
+### `ifDefined(value)`
+
+For AttributeParts, sets the attribute if the value is defined and removes
+the attribute if the value is undefined.
+
+For other part types, this directive is a no-op.
+
+Example:
+
+```javascript
+const render = () => html`
+  <div class=${ifDefined(className)}></div>
+`;
+```
+
+### `until(promise, defaultContent)`
 
 Renders `defaultContent` until `promise` resolves, then it renders the resolved value of `promise`.
 
@@ -275,7 +290,7 @@ const render = () => html`
 `;
 ```
 
-#### `asyncAppend(asyncIterable)` and `asyncReplace(asyncIterable)`
+### `asyncAppend(asyncIterable)` and `asyncReplace(asyncIterable)`
 
 JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
 
