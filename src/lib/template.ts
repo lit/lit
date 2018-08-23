@@ -127,39 +127,46 @@ export class Template {
                   document.createTextNode(strings[lastIndex]),
               node);
           nodesToRemove.push(node);
-        } else if (
-            node.nodeType === 8 /* Node.COMMENT_NODE */ &&
-            node.nodeValue === marker) {
-          const parent = node.parentNode!;
-          // Add a new marker node to be the startNode of the Part if any of the
-          // following are true:
-          //  * We don't have a previousSibling
-          //  * previousSibling is being removed (thus it's not the
-          //    `previousNode`)
-          //  * previousSibling is not a Text node
-          //
-          // TODO(justinfagnani): We should be able to use the previousNode here
-          // as the marker node and reduce the number of extra nodes we add to a
-          // template. See https://github.com/PolymerLabs/lit-html/issues/147
-          const previousSibling = node.previousSibling;
-          if (previousSibling === null || previousSibling !== previousNode ||
-              previousSibling.nodeType !== Node.TEXT_NODE) {
-            parent.insertBefore(createMarker(), node);
-          } else {
-            index--;
+        } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
+          if (node.nodeValue === marker) {
+            const parent = node.parentNode!;
+            // Add a new marker node to be the startNode of the Part if any of
+            // the following are true:
+            //  * We don't have a previousSibling
+            //  * previousSibling is being removed (thus it's not the
+            //    `previousNode`)
+            //  * previousSibling is not a Text node
+            //
+            // TODO(justinfagnani): We should be able to use the previousNode
+            // here as the marker node and reduce the number of extra nodes we
+            // add to a template. See
+            // https://github.com/PolymerLabs/lit-html/issues/147
+            const previousSibling = node.previousSibling;
+            if (previousSibling === null || previousSibling !== previousNode ||
+                previousSibling.nodeType !== Node.TEXT_NODE) {
+              parent.insertBefore(createMarker(), node);
+            } else {
+              index--;
+            }
+            this.parts.push({type: 'node', index: index++});
+            nodesToRemove.push(node);
+            // If we don't have a nextSibling add a marker node.
+            // We don't have to check if the next node is going to be removed,
+            // because that node will induce a new marker if so.
+            if (node.nextSibling === null) {
+              parent.insertBefore(createMarker(), node);
+            } else {
+              index--;
+            }
+            currentNode = previousNode;
+            partIndex++;
+          } else if (node.nodeValue!.indexOf(marker) >= 0) {
+            // Comment node has a binding marker inside, make an inactive part
+            // The binding won't work, but subsequent bindings will
+            // TODO (justinfagnani): consider whether it's even worth it to
+            // make bindings in comments work
+            this.parts.push({type: 'node', index: -1});
           }
-          this.parts.push({type: 'node', index: index++});
-          nodesToRemove.push(node);
-          // If we don't have a nextSibling add a marker node.
-          // We don't have to check if the next node is going to be removed,
-          // because that node will induce a new marker if so.
-          if (node.nextSibling === null) {
-            parent.insertBefore(createMarker(), node);
-          } else {
-            index--;
-          }
-          currentNode = previousNode;
-          partIndex++;
         }
       }
     };

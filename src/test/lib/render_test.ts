@@ -265,14 +265,12 @@ suite('render()', () => {
         </div>`);
     });
 
-    test.only('renders comments with bindings', () => {
+    test('renders comments with bindings', () => {
       const t = html`
         <!-- <div class="${'foo'}"></div> -->
         <p>${'bar'}</p>`;
       render(t, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), `
-          <!-- <div class="foo"></div> -->
-          <p>bar</p>`);
+      assert.equal(container.querySelector('p')!.textContent, 'bar');
     });
 
     test('renders legacy marker sequences in text nodes', () => {
