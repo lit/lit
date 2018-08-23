@@ -12,6 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+export const isCEPolyfill = window.customElements !== undefined &&
+    (window.customElements as any).polyfillWrapFlushCallback !== undefined;
+
 /**
  * Reparents nodes, starting from `startNode` (inclusive) to `endNode`
  * (exclusive), into another container (could be the same container), before

@@ -13,13 +13,11 @@
  */
 
 
+import {isCEPolyfill} from './dom.js';
 import {Part} from './parts.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateProcessor} from './template-processor.js';
 import {isTemplatePartActive, Template} from './template.js';
-
-const isCEPolyfill = window.customElements !== undefined &&
-    (window.customElements as any).polyfillWrapFlushCallback !== undefined;
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
@@ -108,12 +106,6 @@ export class TemplateInstance {
       }
     };
     _prepareInstance(fragment);
-
-    // Since we cloned in the polyfill case, now force an upgrade
-    if (isCEPolyfill) {
-      document.adoptNode(fragment);
-      customElements.upgrade(fragment);
-    }
     return fragment;
   }
 }
