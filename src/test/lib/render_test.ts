@@ -64,6 +64,12 @@ suite('render()', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
+    test('renders a Symbol', () => {
+      render(html`<div>${Symbol('A')}</div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>Symbol(A)</div>');
+    });
+
     test('does not call a function bound to text', () => {
       const f = () => {
         throw new Error();
@@ -294,6 +300,20 @@ suite('render()', () => {
       render(html`<div foo="${'bar'}"></div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+    });
+
+    test('renders a Symbol to an attribute', () => {
+      render(html`<div foo=${Symbol('A')}></div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div foo="Symbol(A)"></div>');
+    });
+
+    test('renders a Symbol in an array to an attribute', () => {
+      render(html`<div foo=${[Symbol('A')]}></div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div foo="Symbol(A)"></div>');
     });
 
     test('renders multiple bindings in an attribute', () => {
