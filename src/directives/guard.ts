@@ -17,11 +17,12 @@ import {directive, Directive, NodePart} from '../lit-html.js';
 const previousExpressions = new WeakMap<NodePart, any>();
 
 /**
- * Creates a guard directive. Prevents any re-render until the identity of the expression
- * changes, for example when a primitive changes value or when an object reference changes.
+ * Creates a guard directive. Prevents any re-render until the identity of the
+ * expression changes, for example when a primitive changes value or when an
+ * object reference changes.
  *
- * This useful with immutable data patterns, by preventing expensive work until data updates.
- * Example:
+ * This useful with immutable data patterns, by preventing expensive work until
+ * data updates. Example:
  *
  * html`
  *   <div>
@@ -34,13 +35,14 @@ const previousExpressions = new WeakMap<NodePart, any>();
  * @param expression the expression to check before re-rendering
  * @param valueFn function which returns the render value
  */
-export const guard = (expression: any, valueFn: () => any): Directive<NodePart> =>
-    directive((part: NodePart): void => {
-      // Dirty check previous expression
-      if (previousExpressions.get(part) === expression) {
-        return;
-      }
+export const guard =
+    (expression: any, valueFn: () => any): Directive<NodePart> =>
+        directive((part: NodePart): void => {
+          // Dirty check previous expression
+          if (previousExpressions.get(part) === expression) {
+            return;
+          }
 
-      part.setValue(valueFn());
-      previousExpressions.set(part, expression);
-    });
+          part.setValue(valueFn());
+          previousExpressions.set(part, expression);
+        });
