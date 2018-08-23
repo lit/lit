@@ -12,13 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
-import {TemplateContainer} from './render.js';
+import {NodePart} from './parts.js';
 import {templateCaches} from './template-factory.js';
-import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
-import {Template} from './template.js';
+import {createMarker, Template} from './template.js';
 
 export {html, svg, TemplateResult} from '../lit-html.js';
 
@@ -142,39 +140,37 @@ const ensureStylesScoped =
       }
     };
 
+
 // NOTE: We're copying code from lit-html's `render` method here.
 // We're doing this explicitly because the API for rendering templates is likely
 // to change in the near term.
+const parts = new WeakMap<Node, NodePart>();
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     scopeName: string) {
   const templateFactory = shadyTemplateFactory(scopeName);
   const template = templateFactory(result);
-  let instance = (container as TemplateContainer).__templateInstance;
 
-  // Repeat render, just call update()
-  if (instance !== undefined && instance.template === template &&
-      instance.processor === result.processor) {
-    instance.update(result.values);
-    return;
+  let part = parts.get(container);
+  if (part === undefined) {
+    part = new NodePart(templateFactory);
+    (part as any)._insert = function _insert(node: Node) {
+      // If there's a shadow host, do ShadyCSS scoping...
+      const host = container instanceof ShadowRoot ? container.host : undefined;
+      if (host !== undefined && verifyShadyCSSVersion()) {
+        ensureStylesScoped(node as DocumentFragment, template, scopeName);
+        window.ShadyCSS.styleElement(host);
+      }
+      this.endNode.parentNode!.insertBefore(node, this.endNode);
+    };
+    const startNode = createMarker();
+    const endNode = createMarker();
+    container.appendChild(startNode);
+    container.appendChild(endNode);
+    part.insertAfterNode(startNode);
+    parts.set(container, part);
   }
-
-  // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(template, result.processor, templateFactory);
-  (container as TemplateContainer).__templateInstance = instance;
-
-  const fragment = instance._clone();
-  instance.update(result.values);
-
-  const host = container instanceof ShadowRoot ? container.host : undefined;
-
-  // If there's a shadow host, do ShadyCSS scoping...
-  if (host !== undefined && verifyShadyCSSVersion()) {
-    ensureStylesScoped(fragment, template, scopeName);
-    window.ShadyCSS.styleElement(host);
-  }
-
-  removeNodes(container, container.firstChild);
-  container.appendChild(fragment);
+  part.setValue(result);
+  part.commit();
 }
