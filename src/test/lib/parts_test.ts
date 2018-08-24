@@ -13,12 +13,34 @@
  */
 
 import {TemplateProcessor} from '../../lib/template-processor.js';
-import {html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
 suite('Parts', () => {
+  suite('AttributePart', () => {
+    let element: HTMLElement;
+    let committer: AttributeCommitter;
+    let part: AttributePart;
+
+    setup(() => {
+      element = document.createElement('div');
+      committer = new AttributeCommitter(element, 'foo', ['', '']);
+      part = committer.parts[0];
+    });
+
+    suite('setValue', () => {
+      test('does not dirty the committer when setting the same value twice', () => {
+        part.setValue('bar');
+        part.commit();
+        assert.equal(element.getAttribute('foo'), 'bar');
+        part.setValue('bar');
+        assert.equal(committer.dirty, false)
+      });
+    });
+  });
+
   suite('NodePart', () => {
     let container: HTMLElement;
     let startNode: Node;
