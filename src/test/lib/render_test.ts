@@ -29,6 +29,9 @@ const testSkipSafari10_0 =
 
 const testIfHasSymbol = (window as any).Symbol === undefined ? test.skip : test;
 
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+
 suite('render()', () => {
   let container: HTMLElement;
 
@@ -38,7 +41,6 @@ suite('render()', () => {
 
   suite('text', () => {
     test('renders plain text expression', () => {
-      const container = document.createElement('div');
       const result = html`test`;
       render(result, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
@@ -291,7 +293,6 @@ suite('render()', () => {
     test('renders legacy marker sequences in text nodes', () => {
       // {{}} used to be the marker text and it was important to test that
       // markers in user-templates weren't interpreted as expressions
-      const container = document.createElement('div');
       const result = html`{{}}`;
       assert.equal(templateFactory(result).parts.length, 0);
       render(result, container);
@@ -321,12 +322,14 @@ suite('render()', () => {
 
     testIfHasSymbol('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
-      assert.include(container.querySelector('div')!.getAttribute('foo')!, 'Symbol');
+      assert.include(
+          container.querySelector('div')!.getAttribute('foo')!, 'Symbol');
     });
 
     testIfHasSymbol('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')]}></div>`, container);
-      assert.include(container.querySelector('div')!.getAttribute('foo')!, 'Symbol');
+      assert.include(
+          container.querySelector('div')!.getAttribute('foo')!, 'Symbol');
     });
 
     test('renders multiple bindings in an attribute', () => {
@@ -347,12 +350,40 @@ suite('render()', () => {
     });
 
     test('renders two attributes on one element', () => {
-      const container = document.createElement('div');
       const result = html`<div a="${1}" b="${2}"></div>`;
       render(result, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML),
           '<div a="1" b="2"></div>');
+    });
+
+    test('renders a binding in a style attribute', () => {
+      const t = html`<div style="color: ${'red'}"></div>`;
+      render(t, container);
+      if (isIe) {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div style="color: red;"></div>');
+      } else {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div style="color: red"></div>');
+      }
+    });
+
+    test('renders a binding in a class attribute', () => {
+      render(html`<div class="${'red'}"></div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div class="red"></div>');
+    });
+
+    test('renders a binding in an input value attribute', () => {
+      render(html`<input value="${'the-value'}">`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<input value="the-value">');
+      assert.equal(container.querySelector('input')!.value, 'the-value');
     });
 
     test('renders a case-sensitive attribute', () => {
@@ -975,7 +1006,6 @@ suite('render()', () => {
     });
 
     test('updates when called multiple times with arrays', () => {
-      const container = document.createElement('div');
       const ul = (list: string[]) => {
         const items = list.map((item) => html`<li>${item}</li>`);
         return html`<ul>${items}</ul>`;

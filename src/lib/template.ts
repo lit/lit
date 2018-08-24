@@ -28,6 +28,11 @@ export const nodeMarker = `<!--${marker}-->`;
 
 export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 
+export const rewritesStyleAttribute = (() => {
+  const el = document.createElement('div');
+  el.setAttribute('style', '{{bad value}}');
+  return el.getAttribute('style') !== '{{bad value}}';
+})();
 
 /**
  * An updateable Template that tracks the location of dynamic parts.
@@ -80,7 +85,7 @@ export class Template {
               // expression in this attribute
               const stringForPart = result.strings[partIndex];
               // Find the attribute name
-              const name = lastAttributeNameRegex.exec(stringForPart)![1];
+              const name = lastAttributeNameRegex.exec(stringForPart)![2];
               // Find the corresponding attribute
               // If the attribute name contains special characters, lower-case
               // it so that on XML nodes with case-sensitive getAttribute() we
@@ -91,6 +96,8 @@ export class Template {
               // important to _not_ lower-case it, in case the name is
               // case-sensitive, like with XML attributes like "viewBox".
               const attributeLookupName =
+                  (rewritesStyleAttribute && name === 'style') ?
+                  'style$' :
                   /^[a-zA-Z-]*$/.test(name) ? name : name.toLowerCase();
               const attributeValue = node.getAttribute(attributeLookupName)!;
               const strings = attributeValue.split(markerRegex);
@@ -233,5 +240,5 @@ export const createMarker = () => document.createComment('');
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
-const lastAttributeNameRegex =
-    /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*)$/;
+export const lastAttributeNameRegex =
+    /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
