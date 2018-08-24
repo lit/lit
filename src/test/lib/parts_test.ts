@@ -31,13 +31,15 @@ suite('Parts', () => {
     });
 
     suite('setValue', () => {
-      test('does not dirty the committer when setting the same value twice', () => {
-        part.setValue('bar');
-        part.commit();
-        assert.equal(element.getAttribute('foo'), 'bar');
-        part.setValue('bar');
-        assert.equal(committer.dirty, false)
-      });
+      test(
+          'does not dirty the committer when setting the same value twice',
+          () => {
+            part.setValue('bar');
+            part.commit();
+            assert.equal(element.getAttribute('foo'), 'bar');
+            part.setValue('bar');
+            assert.equal(committer.dirty, false);
+          });
     });
   });
 
