@@ -27,6 +27,8 @@ const testSkipSafari10_0 =
     (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1) ? test :
                                                                      test.skip;
 
+const testIfHasSymbol = (window as any).Symbol === undefined ? test.skip : test;
+
 suite('render()', () => {
   let container: HTMLElement;
 
@@ -62,6 +64,11 @@ suite('render()', () => {
     test('renders null', () => {
       render(html`<div>${null}</div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    });
+
+    testIfHasSymbol('renders a Symbol', () => {
+      render(html`<div>${Symbol('A')}</div>`, container);
+      assert.include(container.querySelector('div')!.textContent!, 'Symbol');
     });
 
     test('does not call a function bound to text', () => {
@@ -310,6 +317,16 @@ suite('render()', () => {
       render(html`<div foo="${'bar'}"></div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+    });
+
+    testIfHasSymbol('renders a Symbol to an attribute', () => {
+      render(html`<div foo=${Symbol('A')}></div>`, container);
+      assert.include(container.querySelector('div')!.getAttribute('foo')!, 'Symbol');
+    });
+
+    testIfHasSymbol('renders a Symbol in an array to an attribute', () => {
+      render(html`<div foo=${[Symbol('A')]}></div>`, container);
+      assert.include(container.querySelector('div')!.getAttribute('foo')!, 'Symbol');
     });
 
     test('renders multiple bindings in an attribute', () => {
