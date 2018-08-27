@@ -14,15 +14,15 @@
 
 import {Part} from './parts.js';
 
+const directives = new WeakMap<any, Boolean>();
+
 export interface Directive<P = Part> {
   (part: P): void;
-  __litDirective?: true;
 }
 
 export const directive = <P = Part>(f: Directive<P>): Directive<P> => {
-  f.__litDirective = true;
+  directives.set(f, true);
   return f;
 };
 
-export const isDirective = (o: any) =>
-    typeof o === 'function' && o.__litDirective === true;
+export const isDirective = (o: any) => directives.has(o);
