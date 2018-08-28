@@ -46,6 +46,6 @@ import {html, render} from 'lit-html';
 
 Until modules arrived, browsers have not had a standard way to import code from code, and user-land module loaders or bundlers were required. Since there was no standard, competing formats multiplied. Often libraries will publish in a number of formats to support users of different tools, but this causes problems when a common library is depended on by many other intermediate libraries: If some of those intermediate libraries load format A, and others load format B, and yet others load format C, etc., then multiple copies are loaded cause bloat, performance slowdowns, and sometimes hard-to-find bugs.
 
-The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and moduels are very well supported by tools, it makes for that format to be modules.
+The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and modules are very well supported by tools, it makes sense for that format to be modules.
 
 [lit-html package]: https://www.npmjs.com/package/lit-html
