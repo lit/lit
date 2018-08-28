@@ -249,14 +249,13 @@ export class NodePart implements Part {
 
   private _commitTemplateResult(value: TemplateResult): void {
     const template = this.templateFactory(value);
-    let instance: TemplateInstance;
     if (this.value && this.value.template === template) {
-      instance = this.value;
+      this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
       // so that we use it's syntax extension, etc. The template factory comes
       // from the render function so that it can control caching.
-      instance =
+      const instance =
           new TemplateInstance(template, value.processor, this.templateFactory);
       const fragment = instance._clone();
       // Since we cloned in the polyfill case, now force an upgrade
@@ -264,10 +263,10 @@ export class NodePart implements Part {
         document.adoptNode(fragment);
         customElements.upgrade(fragment);
       }
+      instance.update(value.values);
       this._commitNode(fragment);
       this.value = instance;
     }
-    instance.update(value.values);
   }
 
   private _commitIterable(value: any): void {
