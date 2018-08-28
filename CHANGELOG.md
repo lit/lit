@@ -12,6 +12,39 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [0.11.0] - 2018-08-28
+
+### Added
+* Added support for property, event, and boolean bindings to default syntax (#398)
+* Added guard directive (#438)
+* Added when directive (#439)
+
+### Changed
+* Split implementation into multiple small modules and merged lit-html.js and core.js (#436)
+* Moved directives into top-level `directives/` directory (#436)
+* Replaced `PartCallback` with `TemplateProcessor` (#405)
+* Unified `NodePart` and `AttributePart` interfaces (#400)
+  * AttributePart#setValue() takes a single value
+  * `Part` has separate `setValue()` and `commit()` phases
+  * Added `AttributeCommitter` to commit attribute values once for multiple `AttributeParts`
+
+### Removed
+* Removed lit-extended.js (#436)
+
+### Fixed
+* Render initial undefined values in attributes (#377)
+* Handle case-sensitive attributes like `viewBox` correctly (#376)
+* Support bindings in `<template>` elements (#343)
+* Don’t break templates when HTML comments have bindings in them (#446)
+* IE: Don't use Set() constructor arguments (#401)
+* Handle forms as Node instead of iterable (#404)
+* Update values after upgrading custom elements (#385)
+* Dirty check primitive values passed to unsafeHTML() (#384)
+* Handle forms as Node instead of iterable (#404)
+* Upgrade disconnected custom elements before setting properties on them. (#442)
+* Fix style attribute bindings in IE (#448)
+
+
 ## [0.10.1] - 2018-06-13
 
 * Added `noChange` - Value in favour of `directiveValue` (deprecated).
