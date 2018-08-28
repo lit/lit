@@ -100,7 +100,7 @@ html<span class="token template-string"><span class="token string">`&lt;h1>Hello
 <li>Templates should not contain unclosed elements - they will be closed by the HTML parser</li>
 </ul>
 <h2 id="binding-types">Binding Types</h2>
-<p>Expressions can occur text content or in attribute value positions.</p>
+<p>Expressions can occur in text content or in attribute value positions.</p>
 <p>There are a few types of bindings:</p>
 <ul>
 <li>Text:<pre class="code language-js" language="js">
@@ -236,8 +236,17 @@ html<span class="token template-string"><span class="token string">`&lt;div></sp
   &lt;div>
     </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">directive</span><span class="token punctuation">(</span><span class="token punctuation">(</span>part<span class="token punctuation">)</span> <span class="token operator">=></span> part<span class="token punctuation">.</span><span class="token function">setValue</span><span class="token punctuation">(</span><span class="token punctuation">(</span>part<span class="token punctuation">.</span>previousValue <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">
   &lt;/div>`</span></span><span class="token punctuation">;</span>
-</pre><p>lit-html includes a few directives:</p>
-<h4 id="-repeat-items-keyfn-template-"><code>repeat(items, keyfn, template)</code></h4>
+</pre><p>lit-html includes a few built-in directives:</p>
+<h3 id="-when-condition-truetemplate-falsetemplate-"><code>when(condition, trueTemplate, falseTemplate)</code></h3>
+<p>Efficiently switches between two templates based on the given condition. The rendered content is cached, and re-used when switching conditions. Templates are evaluated lazily, so the passed values must be functions.</p>
+<p>Example:</p>
+<pre class="code language-js" language="js">
+<span class="token keyword">let</span> checked <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+html<span class="token template-string"><span class="token string">`
+  when(checked, () => html`</span></span>Checkmark is checked<span class="token template-string"><span class="token string">`, () => html`</span></span>Checkmark is not
+checked`<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><h3 id="-repeat-items-keyfn-template-"><code>repeat(items, keyfn, template)</code></h3>
 <p>A loop that supports efficient re-ordering by using item keys.</p>
 <p>Example:</p>
 <pre class="code language-javascript" language="javascript">
@@ -247,7 +256,25 @@ html<span class="token template-string"><span class="token string">`&lt;div></sp
       <span class="token operator">&lt;</span>li<span class="token operator">></span>$<span class="token punctuation">{</span>index<span class="token punctuation">}</span><span class="token punctuation">:</span> $<span class="token punctuation">{</span>i<span class="token punctuation">.</span>name<span class="token punctuation">}</span><span class="token operator">&lt;</span><span class="token operator">/</span>li<span class="token operator">></span><span class="token template-string"><span class="token string">`)}
   &lt;/ul>
 `</span></span><span class="token punctuation">;</span>
-</pre><h4 id="-until-promise-defaultcontent-"><code>until(promise, defaultContent)</code></h4>
+</pre><h3 id="-ifdefined-value-"><code>ifDefined(value)</code></h3>
+<p>For AttributeParts, sets the attribute if the value is defined and removes the attribute if the value is undefined.</p>
+<p>For other part types, this directive is a no-op.</p>
+<p>Example:</p>
+<pre class="code language-javascript" language="javascript">
+<span class="token keyword">const</span> <span class="token function-variable function">render</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=></span> html<span class="token template-string"><span class="token string">`
+  &lt;div class=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token function">ifDefined</span><span class="token punctuation">(</span>className<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>&lt;/div>
+`</span></span><span class="token punctuation">;</span>
+</pre><h3 id="-guard-expression-valuefn-"><code>guard(expression, valueFn)</code></h3>
+<p>Prevents any re-render until the identity of the expression changes, for example when a primitive changes value or when an object reference changes.</p>
+<p>Example:</p>
+<pre class="code language-js" language="js">
+html<span class="token template-string"><span class="token string">`
+  &lt;div>
+    ${guard(items, () => items.map(item => html`</span></span>$<span class="token punctuation">{</span>item<span class="token punctuation">}</span><span class="token template-string"><span class="token string">`))}
+  &lt;/div>
+`</span></span>
+</pre><p>In this case, items are mapped over only when the array reference changes.</p>
+<h3 id="-until-promise-defaultcontent-"><code>until(promise, defaultContent)</code></h3>
 <p>Renders <code>defaultContent</code> until <code>promise</code> resolves, then it renders the resolved value of <code>promise</code>.</p>
 <p>Example:</p>
 <pre class="code language-javascript" language="javascript">
@@ -258,7 +285,7 @@ html<span class="token template-string"><span class="token string">`&lt;div></sp
         html`</span></span><span class="token operator">&lt;</span>span<span class="token operator">></span>Loading<span class="token operator">...</span><span class="token operator">&lt;</span><span class="token operator">/</span>span<span class="token operator">></span><span class="token template-string"><span class="token string">`)}
   &lt;/p>
 `</span></span><span class="token punctuation">;</span>
-</pre><h4 id="-asyncappend-asynciterable-and-asyncreplace-asynciterable-"><code>asyncAppend(asyncIterable)</code> and <code>asyncReplace(asyncIterable)</code></h4>
+</pre><h3 id="-asyncappend-asynciterable-and-asyncreplace-asynciterable-"><code>asyncAppend(asyncIterable)</code> and <code>asyncReplace(asyncIterable)</code></h3>
 <p>JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to <code>next()</code>, but with asynchronous iterators <code>next()</code> returns a <code>Promise</code>, allowing the iterator to provide the item when it&#39;s ready.</p>
 <p>lit-html offers two directives to consume asynchronous iterators:</p>
 <ul>

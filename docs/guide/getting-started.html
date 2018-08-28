@@ -92,7 +92,7 @@ Modules are increasingly supported in JavaScript environments and are shipping i
 <span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span>
 </pre><h3 id="why-is-lit-html-distributed-as-javascript-modules-not-as-umd-cjs-amd-">Why is lit-html distributed as JavaScript modules, not as UMD/CJS/AMD?</h3>
 <p>Until modules arrived, browsers have not had a standard way to import code from code, and user-land module loaders or bundlers were required. Since there was no standard, competing formats multiplied. Often libraries will publish in a number of formats to support users of different tools, but this causes problems when a common library is depended on by many other intermediate libraries: If some of those intermediate libraries load format A, and others load format B, and yet others load format C, etc., then multiple copies are loaded cause bloat, performance slowdowns, and sometimes hard-to-find bugs.</p>
-<p>The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and moduels are very well supported by tools, it makes for that format to be modules.</p>
+<p>The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and modules are very well supported by tools, it makes sense for that format to be modules.</p>
 
       <main>
       <footer>
