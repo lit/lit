@@ -147,6 +147,7 @@ export class NodePart implements Part {
   startNode!: Node;
   endNode!: Node;
   value: any = undefined;
+  _promise: Promise<any> | undefined = undefined;
   _pendingValue: any = undefined;
 
   constructor(templateFactory: TemplateFactory) {
@@ -212,10 +213,13 @@ export class NodePart implements Part {
       this._commitIterable(value);
     } else if (value.then !== undefined) {
       this._commitPromise(value);
+      // Return so we do not clear this._promise
+      return;
     } else {
       // Fallback, will render the string representation
       this._commitText(value);
     }
+    this._promise = undefined;
   }
 
   private _insert(node: Node) {
@@ -319,9 +323,12 @@ export class NodePart implements Part {
   }
 
   private _commitPromise(value: Promise<any>): void {
-    this.value = value;
+    this._promise = value;
     value.then((v: any) => {
-      if (this.value === value) {
+      if (this._promise === value) {
+         // This is not strictly necessary, but avoids additional commits
+         // if the value is `noChange`.
+        this._promise = undefined;
         this.setValue(v);
         this.commit();
       }
