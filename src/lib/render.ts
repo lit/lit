@@ -17,9 +17,7 @@ import {templateFactory as defaultTemplateFactory, TemplateFactory} from './temp
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 
-export type TemplateContainer = (Element|DocumentFragment)&{
-  __templateInstance?: TemplateInstance;
-};
+export const templateInstances = new WeakMap<Node, TemplateInstance>();
 
 /**
  * Renders a template to a container.
@@ -40,7 +38,7 @@ export function render(
     container: Element|DocumentFragment,
     templateFactory: TemplateFactory = defaultTemplateFactory) {
   const template = templateFactory(result);
-  let instance = (container as TemplateContainer).__templateInstance;
+  let instance = templateInstances.get(container);
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
       instance.processor === result.processor) {
@@ -49,7 +47,7 @@ export function render(
   }
   // First render, create a new TemplateInstance and append it
   instance = new TemplateInstance(template, result.processor, templateFactory);
-  (container as TemplateContainer).__templateInstance = instance;
+  templateInstances.set(container, instance);
   const fragment = instance._clone();
   removeNodes(container, container.firstChild);
   // Since we cloned in the polyfill case, now force an upgrade
