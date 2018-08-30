@@ -14,7 +14,7 @@
 
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
-import {TemplateContainer} from './render.js';
+import {templateInstances} from './render.js';
 import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -151,7 +151,8 @@ export function render(
     scopeName: string) {
   const templateFactory = shadyTemplateFactory(scopeName);
   const template = templateFactory(result);
-  let instance = (container as TemplateContainer).__templateInstance;
+
+  let instance = templateInstances.get(container);
 
   // Repeat render, just call update()
   if (instance !== undefined && instance.template === template &&
@@ -162,7 +163,7 @@ export function render(
 
   // First render, create a new TemplateInstance and append it
   instance = new TemplateInstance(template, result.processor, templateFactory);
-  (container as TemplateContainer).__templateInstance = instance;
+  templateInstances.set(container, instance);
 
   const fragment = instance._clone();
   instance.update(result.values);
