@@ -26,7 +26,7 @@
     "@polymer/paper-spinner": "^3.0.0-pre.19",
     "@polymer/polymer": "3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "lit-html": "dev",
+    "lit-html": "^0.11.0",
     "pwa-helpers": "^0.8.2",
     "redux": "^4.0.0",
     "redux-thunk": "^2.2.0",

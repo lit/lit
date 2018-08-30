@@ -315,8 +315,7 @@ class ShopApp extends connect(store)(LitElement) {
     _smallScreen: { type: Boolean },
   }}
 
-  update(changedProps) {
-    super.update(changedProps);
+  updated(changedProps) {
     if (changedProps.has('_page') || changedProps.has('_categoryName')) {
       // TODO: For list view, scroll to the last saved position only if the category has not changed
       scroll({ top: 0, behavior: 'silent' });
@@ -346,7 +345,7 @@ class ShopApp extends connect(store)(LitElement) {
     setPassiveTouchGestures(true);
   }
 
-  firstRendered() {
+  firstUpdated() {
     installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
