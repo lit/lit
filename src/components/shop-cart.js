@@ -81,9 +81,9 @@ class ShopCart extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    _total: Number,
+    _total: { type: Number },
 
-    _cart: Object
+    _cart: { type: Object }
 
   }}
 

@@ -100,9 +100,9 @@ class ShopList extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    _category: Object,
+    _category: { type: Object },
 
-    _failure: Boolean
+    _failure: { type: Boolean }
 
   }}
 

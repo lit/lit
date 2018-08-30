@@ -114,7 +114,7 @@ class ShopHome extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    _categories: Object
+    _categories: { type: Object }
 
   }}
 

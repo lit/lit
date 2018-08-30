@@ -57,7 +57,7 @@ class ShopCartButton extends connect(store)(LitElement) {
   }
 
   static get properties() { return {
-    _numItems: Number
+    _numItems: { type: Number }
   }}
 
   _stateChanged(state) {

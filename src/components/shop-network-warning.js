@@ -67,7 +67,7 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
   }
 
   static get properties() { return {
-    _offline: Boolean
+    _offline: { type: Boolean }
   }}
 
   _stateChanged(state) {

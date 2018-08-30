@@ -104,14 +104,14 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
     </div>
     <div class="layout-horizontal">
       <shop-button class="modal-button">
-        <a href="/cart" @click="close" id="viewCartAnchor">View Cart</a>
+        <a href="/cart" on-click="close" id="viewCartAnchor">View Cart</a>
       </shop-button>
       <shop-button class="modal-button">
-        <a href="/checkout" @click="close">Checkout</a>
+        <a href="/checkout" on-click="close">Checkout</a>
       </shop-button>
     </div>
 
-    <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" @click="close"></paper-icon-button>
+    <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" on-click="close"></paper-icon-button>
     `;
   }
 

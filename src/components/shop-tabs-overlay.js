@@ -34,7 +34,7 @@ class ShopTabsOverlay extends LitElement {
     /**
      * The element the overlay should cover.
      */
-    target: Object
+    target: { type: Object }
   }}
 
   constructor() {
@@ -43,11 +43,12 @@ class ShopTabsOverlay extends LitElement {
     this._transitionsInFlight = [];
   }
 
-  finishFirstUpdate() {
+  firstRendered() {
     this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
   }
 
-  finishUpdate(changedProps) {
+  update(changedProps) {
+    super.update(changedProps)
     if (changedProps.has('target')) {
       this._targetChanged(this.target, changedProps.get('target'));
     }

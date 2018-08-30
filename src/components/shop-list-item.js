@@ -58,7 +58,7 @@ class ShopListItem extends LitElement {
 
   static get properties() { return {
 
-    item: Object
+    item: { type: Object }
 
   }}
 }

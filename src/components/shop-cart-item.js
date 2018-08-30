@@ -215,7 +215,7 @@ class ShopCartItem extends LitElement {
 
   static get properties() { return {
 
-    entry: Object
+    entry: { type: Object }
 
   }}
 

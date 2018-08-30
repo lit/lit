@@ -236,7 +236,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                   <div class="billing-address-picker">
                     <shop-checkbox>
                       <input type="checkbox" id="setBilling" name="setBilling"
-                          checked="${_hasBillingAddress}" @change="${e => this._hasBillingAddress = e.target.checked}">
+                          .checked="${_hasBillingAddress}" @change="${e => this._hasBillingAddress = e.target.checked}">
                       <shop-md-decorator></shop-md-decorator aria-hidden="true">
                     </shop-checkbox>
                     <label for="setBilling">Use different billing address</label>
@@ -430,33 +430,33 @@ class ShopCheckout extends connect(store)(PageViewElement) {
     /**
      * The total price of the contents in the user's cart.
      */
-    _total: Number,
+    _total: { type: Number },
 
     /**
      * The state of the form. Valid values are:
      * `init`, `success` and `error`.
      */
-    _state: String,
+    _state: { type: String },
 
     /**
      * The cart contents.
      */
-    _cart: Object,
+    _cart: { type: Object },
 
     /**
      * The server's response.
      */
-    _response: Object,
+    _response: { type: Object },
 
     /**
      * If true, the user must enter a billing address.
      */
-    _hasBillingAddress: Boolean,
+    _hasBillingAddress: { type: Boolean },
 
     /**
      * True when waiting for the server to repond.
      */
-    _waiting: Boolean
+    _waiting: { type: Boolean }
 
   }}
 

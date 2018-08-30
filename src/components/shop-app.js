@@ -292,30 +292,31 @@ class ShopApp extends connect(store)(LitElement) {
   }
 
   static get properties() { return {
-    _page: String,
+    _page: { type: String },
 
-    _offline: Boolean,
+    _offline: { type: Boolean },
 
-    _snackbarOpened: Boolean,
+    _snackbarOpened: { type: Boolean },
 
-    _meta: Object,
+    _meta: { type: Object },
 
-    _modalOpened: Object,
+    _modalOpened: { type: Object },
 
-    _categories: Object,
+    _categories: { type: Object },
 
-    _categoryName: String,
+    _categoryName: { type: String },
 
-    _a11yLabel: String,
+    _a11yLabel: { type: String },
 
-    _lazyResourcesLoaded: Boolean,
+    _lazyResourcesLoaded: { type: Boolean },
 
-    _drawerOpened: Boolean,
+    _drawerOpened: { type: Boolean },
 
-    _smallScreen: Boolean,
+    _smallScreen: { type: Boolean },
   }}
 
-  finishUpdate(changedProps) {
+  update(changedProps) {
+    super.update(changedProps);
     if (changedProps.has('_page') || changedProps.has('_categoryName')) {
       // TODO: For list view, scroll to the last saved position only if the category has not changed
       scroll({ top: 0, behavior: 'silent' });
@@ -345,7 +346,7 @@ class ShopApp extends connect(store)(LitElement) {
     setPassiveTouchGestures(true);
   }
 
-  finishFirstUpdate() {
+  firstRendered() {
     installRouter((location) => this._updateLocation(location));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);

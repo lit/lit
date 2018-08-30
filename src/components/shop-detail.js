@@ -193,9 +193,9 @@ class ShopDetail extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    _item: Object,
+    _item: { type: Object },
 
-    _failure: Boolean
+    _failure: { type: Boolean }
 
   }}
 

@@ -39,7 +39,7 @@ class ShopTabs extends LitElement {
     /**
      * The index of the selected element.
      */
-    selectedIndex: Number
+    selectedIndex: { type: Number }
   }}
 }
 

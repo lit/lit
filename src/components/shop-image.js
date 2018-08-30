@@ -38,7 +38,7 @@ class ShopImage extends LitElement {
         margin: 0 auto;
         opacity: 0;
         transition: none;
-        
+
         position: absolute;
         top: 0;
         bottom: 0;
@@ -64,13 +64,13 @@ class ShopImage extends LitElement {
 
   static get properties() { return {
 
-    alt: String,
+    alt: { type: String },
 
-    src: String,
+    src: { type: String },
 
-    placeholder: String,
+    placeholder: { type: String },
 
-    _loaded: Boolean
+    _loaded: { type: Boolean }
 
   }}
 
