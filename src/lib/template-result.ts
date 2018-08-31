@@ -16,6 +16,12 @@ import {reparentNodes} from './dom.js';
 import {defaultTemplateProcessor, TemplateProcessor} from './template-processor.js';
 import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
 
+const needTemplate = typeof HTMLTemplateElement === 'undefined';
+const contentDoc = document.implementation.createDocument(
+    'http://www.w3.org/1999/xhtml', 'html', null);
+const body = document.createElementNS('http://www.w3.org/1999/xhtml', 'body');
+contentDoc.documentElement.appendChild(body);
+
 /**
  * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
@@ -68,8 +74,19 @@ export class TemplateResult {
   }
 
   getTemplateElement(): HTMLTemplateElement {
-    const template = document.createElement('template');
-    template.innerHTML = this.getHTML();
+    let template;
+    if (needTemplate) {
+      template = contentDoc.createElement('div') as any;
+      template.content = contentDoc.createDocumentFragment();
+      const body = contentDoc.body;
+      body.innerHTML = this.getHTML();
+      while (body.firstChild) {
+        template.content.appendChild(body.firstChild);
+      }
+    } else {
+      template = document.createElement('template');
+      template.innerHTML = this.getHTML();
+    }
     return template;
   }
 }
