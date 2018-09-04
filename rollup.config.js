@@ -21,11 +21,6 @@ export default {
     file: 'lit-html.bundled.js',
     format: 'esm',
   },
-  onwarn(warning) {
-    if (warning.code !== 'CIRCULAR_DEPENDENCY') {
-      console.error(`(!) ${warning.message}`);
-    }
-  },
   plugins: [
     terser({
       warnings: true,

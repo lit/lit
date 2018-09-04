@@ -13,7 +13,7 @@
  */
 
 import {reparentNodes} from './dom.js';
-import {defaultTemplateProcessor, TemplateProcessor} from './template-processor.js';
+import {TemplateProcessor} from './template-processor.js';
 import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
 
 /**
@@ -28,7 +28,7 @@ export class TemplateResult {
 
   constructor(
       strings: TemplateStringsArray, values: any[], type: string,
-      processor: TemplateProcessor = defaultTemplateProcessor) {
+      processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;
     this.type = type;
