@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+### Changed
+* Eliminated a cycle in the module import graph (#472)
+* Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required paremeter (#472)
+
 ## [0.11.0] - 2018-08-28
 
 ### Added
