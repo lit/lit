@@ -259,7 +259,7 @@ export class NodePart implements Part {
           new TemplateInstance(template, value.processor, this.templateFactory);
       const fragment = instance._clone();
       // Since we cloned in the polyfill case, now force an upgrade
-      if (isCEPolyfill && !this.endNode.isConnected) {
+      if (isCEPolyfill) {
         document.adoptNode(fragment);
         customElements.upgrade(fragment);
       }
