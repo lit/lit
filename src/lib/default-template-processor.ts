@@ -12,11 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Part} from './part.js';
-import {NodePart} from './parts.js';
-import {TemplateFactory} from './template-factory.js';
+import {TemplateFactory} from '../lit-html.js';
 
-export interface TemplateProcessor {
+import {Part} from './part.js';
+import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
+
+/**
+ * Creates Parts when a template is instantiated.
+ */
+export class DefaultTemplateProcessor {
   /**
    * Create parts for an attribute-position binding, given the event, attribute
    * name, and string literals.
@@ -27,11 +31,28 @@ export interface TemplateProcessor {
    *   event for fully-controlled bindings with a single expression.
    */
   handleAttributeExpressions(element: Element, name: string, strings: string[]):
-      Part[];
-
+      Part[] {
+    const prefix = name[0];
+    if (prefix === '.') {
+      const comitter = new PropertyCommitter(element, name.slice(1), strings);
+      return comitter.parts;
+    }
+    if (prefix === '@') {
+      return [new EventPart(element, name.slice(1))];
+    }
+    if (prefix === '?') {
+      return [new BooleanAttributePart(element, name.slice(1), strings)];
+    }
+    const comitter = new AttributeCommitter(element, name, strings);
+    return comitter.parts;
+  }
   /**
    * Create parts for a text-position binding.
    * @param templateFactory
    */
-  handleTextExpression(templateFactory: TemplateFactory): NodePart;
+  handleTextExpression(templateFactory: TemplateFactory) {
+    return new NodePart(templateFactory);
+  }
 }
+
+export const defaultTemplateProcessor = new DefaultTemplateProcessor();

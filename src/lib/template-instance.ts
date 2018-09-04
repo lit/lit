@@ -14,7 +14,7 @@
 
 
 import {isCEPolyfill} from './dom.js';
-import {Part} from './parts.js';
+import {Part} from './part.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateProcessor} from './template-processor.js';
 import {isTemplatePartActive, Template} from './template.js';
