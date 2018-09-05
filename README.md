@@ -48,4 +48,4 @@ internal API may still change somewhat. The `html` and `render` API is stable.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md]().
+Please see [CONTRIBUTING.md](https://github.com/Polymer/lit-html/blob/master/CONTRIBUTING.md).
