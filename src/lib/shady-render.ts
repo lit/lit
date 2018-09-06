@@ -33,8 +33,9 @@ declare global {
 const getTemplateCacheKey = (type: string, scopeName: string) =>
     `${type}--${scopeName}`;
 
-const verifyShadyCSSVersion = () => {
+let verifyShadyCSSVersion = () => {
   if (typeof window.ShadyCSS === 'undefined') {
+    verifyShadyCSSVersion = () => false;
     return false;
   }
   if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
@@ -42,8 +43,10 @@ const verifyShadyCSSVersion = () => {
         `Incompatible ShadyCSS version detected.` +
         `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
         `@webcomponents/shadycss@1.3.1.`);
+    verifyShadyCSSVersion = () => false;
     return false;
   }
+  verifyShadyCSSVersion = () => true;
   return true;
 };
 
