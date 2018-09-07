@@ -166,12 +166,10 @@ export function render(
   const fragment = instance._clone();
   instance.update(result.values);
 
-  const host = container instanceof ShadowRoot ? container.host : undefined;
-
   // If there's a shadow host, do ShadyCSS scoping...
-  if (host !== undefined && compatibleShadyCSSVersion) {
+  if (container instanceof ShadowRoot && compatibleShadyCSSVersion) {
     ensureStylesScoped(fragment, template, scopeName);
-    window.ShadyCSS.styleElement(host);
+    window.ShadyCSS.styleElement(container.host);
   }
 
   removeNodes(container, container.firstChild);
