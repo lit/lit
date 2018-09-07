@@ -33,22 +33,18 @@ declare global {
 const getTemplateCacheKey = (type: string, scopeName: string) =>
     `${type}--${scopeName}`;
 
-let verifyShadyCSSVersion = () => {
-  if (typeof window.ShadyCSS === 'undefined') {
-    verifyShadyCSSVersion = () => false;
-    return false;
-  }
-  if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
-    console.warn(
-        `Incompatible ShadyCSS version detected.` +
-        `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
-        `@webcomponents/shadycss@1.3.1.`);
-    verifyShadyCSSVersion = () => false;
-    return false;
-  }
-  verifyShadyCSSVersion = () => true;
-  return true;
-};
+let compatibleShadyCSSVersion = true;
+
+if (typeof window.ShadyCSS === 'undefined') {
+  compatibleShadyCSSVersion = false;
+}
+if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
+  console.warn(
+    `Incompatible ShadyCSS version detected.` +
+    `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
+    `@webcomponents/shadycss@1.3.1.`);
+  compatibleShadyCSSVersion = false;
+}
 
 /**
  * Template factory which scopes template DOM using ShadyCSS.
@@ -65,7 +61,7 @@ const shadyTemplateFactory = (scopeName: string) =>
       let template = templateCache.get(result.strings);
       if (template === undefined) {
         const element = result.getTemplateElement();
-        if (verifyShadyCSSVersion()) {
+        if (compatibleShadyCSSVersion) {
           window.ShadyCSS.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
@@ -174,7 +170,7 @@ export function render(
   const host = container instanceof ShadowRoot ? container.host : undefined;
 
   // If there's a shadow host, do ShadyCSS scoping...
-  if (host !== undefined && verifyShadyCSSVersion()) {
+  if (host !== undefined && compatibleShadyCSSVersion) {
     ensureStylesScoped(fragment, template, scopeName);
     window.ShadyCSS.styleElement(host);
   }
