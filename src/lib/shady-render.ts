@@ -37,8 +37,7 @@ let compatibleShadyCSSVersion = true;
 
 if (typeof window.ShadyCSS === 'undefined') {
   compatibleShadyCSSVersion = false;
-}
-if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
+} else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
   console.warn(
     `Incompatible ShadyCSS version detected.` +
     `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
