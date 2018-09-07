@@ -29,7 +29,7 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  * are evaluated lazily, so the passed values must be functions.
  *
  * While this directive can render any regular part, it makes the most sense
- * when used with TemplateResulte since most other values are dirty checked
+ * when used with TemplateResult since most other values are dirty checked
  * already.
  *
  * Example:
