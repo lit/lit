@@ -168,35 +168,4 @@ suite('shady-render', () => {
         '1px');
     document.body.removeChild(container);
   });
-
-  test('warns if ShadyCSS version incorrect', function() {
-    if (typeof window.ShadyCSS === 'undefined') {
-      this.skip();
-    }
-    let warnCount = 0;
-    const warn = window.console.warn;
-    window.console.warn = function() {
-      warnCount++;
-      warn.apply(window.console, arguments);
-    };
-    const fn = window.ShadyCSS.prepareTemplateDom;
-    window.ShadyCSS.prepareTemplateDom = undefined;
-
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
-    const result = html`
-      <style>
-        div {
-          border: 1px solid red;
-        }
-      </style>
-      <div>Testing...</div>
-    `;
-    render(result, container.shadowRoot as DocumentFragment, 'scope-4');
-    assert.isAbove(warnCount, 0);
-    window.ShadyCSS.prepareTemplateDom = fn;
-    window.console.warn = warn;
-    document.body.removeChild(container);
-  });
 });
