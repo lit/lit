@@ -18,7 +18,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 const assert = chai.assert;
 
 const testSkipForTemplatePolyfill =
-    ((HTMLTemplateElement as any).decorate != null ||
+    (typeof HTMLTemplateElement === 'undefined' ||
+     (HTMLTemplateElement as any).decorate != null ||
      (window as any).ShadyDOM && (window as any).ShadyDOM.inUse) ?
     test.skip :
     test;
