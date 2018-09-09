@@ -87,10 +87,10 @@ export class TemplateResult {
   getTemplateElement(): HTMLTemplateElement {
     let template;
     if (needTemplate) {
-      template = contentDoc.createElement('div') as any;
-      template.content = contentDoc.createDocumentFragment();
-      contentDocBody.innerHTML = this.getHTML();
-      reparentNodes(template.content, contentDocBody.firstChild);
+      template = contentDoc!.createElement('div') as any;
+      template.content = contentDoc!.createDocumentFragment();
+      contentDocBody!.innerHTML = this.getHTML();
+      reparentNodes(template.content, contentDocBody!.firstChild);
     } else {
       template = document.createElement('template');
       template.innerHTML = this.getHTML();
