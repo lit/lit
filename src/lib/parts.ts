@@ -14,35 +14,11 @@
 
 import {isDirective} from './directive.js';
 import {isCEPolyfill, removeNodes} from './dom.js';
+import {noChange, Part} from './part.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
-
-/**
- * The Part interface represents a dynamic part of a template instance rendered
- * by lit-html.
- */
-export interface Part {
-  value: any;
-
-  /**
-   * Sets the current part value, but does not write it to the DOM.
-   * @param value The value that will be committed.
-   */
-  setValue(value: any): void;
-
-  /**
-   * Commits the current part value, cause it to actually be written to the DOM.
-   */
-  commit(): void;
-}
-
-/**
- * A sentinel value that signals that a value was handled by a directive and
- * should not be written to the DOM.
- */
-export const noChange = {};
 
 export const isPrimitive = (value: any) =>
     (value === null ||
@@ -249,25 +225,24 @@ export class NodePart implements Part {
 
   private _commitTemplateResult(value: TemplateResult): void {
     const template = this.templateFactory(value);
-    let instance: TemplateInstance;
     if (this.value && this.value.template === template) {
-      instance = this.value;
+      this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
       // so that we use it's syntax extension, etc. The template factory comes
       // from the render function so that it can control caching.
-      instance =
+      const instance =
           new TemplateInstance(template, value.processor, this.templateFactory);
       const fragment = instance._clone();
       // Since we cloned in the polyfill case, now force an upgrade
-      if (isCEPolyfill && !this.endNode.isConnected) {
+      if (isCEPolyfill) {
         document.adoptNode(fragment);
         customElements.upgrade(fragment);
       }
+      instance.update(value.values);
       this._commitNode(fragment);
       this.value = instance;
     }
-    instance.update(value.values);
   }
 
   private _commitIterable(value: any): void {

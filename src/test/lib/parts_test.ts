@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateProcessor} from '../../lib/template-processor.js';
-import {AttributeCommitter, AttributePart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -155,7 +154,7 @@ suite('Parts', () => {
       test('nested TemplateResults use their own processor', () => {
         // TODO (justinfagnani): rewrite to not use render(), but use NodePart
         // directly like the other tests here
-        class TestTemplateProcessor extends TemplateProcessor {
+        class TestTemplateProcessor extends DefaultTemplateProcessor {
           handleAttributeExpressions(
               element: Element, name: string, strings: string[]) {
             if (name[0] === '&') {

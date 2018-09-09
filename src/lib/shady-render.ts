@@ -33,19 +33,17 @@ declare global {
 const getTemplateCacheKey = (type: string, scopeName: string) =>
     `${type}--${scopeName}`;
 
-const verifyShadyCSSVersion = () => {
-  if (typeof window.ShadyCSS === 'undefined') {
-    return false;
-  }
-  if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
-    console.warn(
-        `Incompatible ShadyCSS version detected.` +
-        `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
-        `@webcomponents/shadycss@1.3.1.`);
-    return false;
-  }
-  return true;
-};
+let compatibleShadyCSSVersion = true;
+
+if (typeof window.ShadyCSS === 'undefined') {
+  compatibleShadyCSSVersion = false;
+} else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
+  console.warn(
+    `Incompatible ShadyCSS version detected.` +
+    `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
+    `@webcomponents/shadycss@1.3.1.`);
+  compatibleShadyCSSVersion = false;
+}
 
 /**
  * Template factory which scopes template DOM using ShadyCSS.
@@ -62,7 +60,7 @@ const shadyTemplateFactory = (scopeName: string) =>
       let template = templateCache.get(result.strings);
       if (template === undefined) {
         const element = result.getTemplateElement();
-        if (verifyShadyCSSVersion()) {
+        if (compatibleShadyCSSVersion) {
           window.ShadyCSS.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
@@ -168,12 +166,10 @@ export function render(
   const fragment = instance._clone();
   instance.update(result.values);
 
-  const host = container instanceof ShadowRoot ? container.host : undefined;
-
   // If there's a shadow host, do ShadyCSS scoping...
-  if (host !== undefined && verifyShadyCSSVersion()) {
+  if (container instanceof ShadowRoot && compatibleShadyCSSVersion) {
     ensureStylesScoped(fragment, template, scopeName);
-    window.ShadyCSS.styleElement(host);
+    window.ShadyCSS.styleElement(container.host);
   }
 
   removeNodes(container, container.firstChild);

@@ -21,7 +21,7 @@ Occasionally we'll close issues if they appear stale or are too vague - please d
 Pull requests are greatly appreciated! To ensure a smooth review process, please follow these steps:
 
  1. Make sure there's an open issue that the PR addresses. Add "Fixes #(issue number)" to the PR description.
- 2. Please discuss the general shape of the change ahead of time. This can save much time for reviewers and submitters alike. Many ties there may be ideas on how to handle an issue that are not fully written out, and asking about it will bring out more details.
+ 2. Please discuss the general shape of the change ahead of time. This can save much time for reviewers and submitters alike. Many times there may be existing ideas on how to handle an issue that are not fully written out, and asking about it will bring out more details.
  3. All PRs that change behavior or fix bugs should have new or updated tests.
  4. Try to create a set of descriptive commits that each do one focused change. Avoid commits like "oops", and prefer commits like "Added method foo to Bar".
  5. When addressing review comments, try to add new commits, rather than modifying previous commits. This makes it easier for reviewers to see what changed since the last review. `git commit --fixup {SHA}` is really useful for this. Obviously, requests like "Please rebase onto master" require changing commits.

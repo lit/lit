@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      if (location.search.match('shadydom')) {
+        window.ShadyDOM = {force: true};
+      }
+      if (location.search.match('shimcssproperties')) {
+        window.ShadyCSS = {shimcssproperties: true};
+      }
+    </script>
+    <script src="../node_modules/wct-browser-legacy/browser.js"></script>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script>
+      if (window.ShadyCSS) {
+        window.ShadyCSS.prepareTemplateDom = undefined;
+      }
+      window.WarnCount = 0;
+      const warn = console.warn;
+      console.warn = function() {
+        window.WarnCount++;
+        warn.apply(window.console, arguments);
+      };
+    </script>
+  </head>
+  <body>
+    <script type="module" src="./lib/incompatible-shady-render_test.js"></script>
+  </body>
+</html>

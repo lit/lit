@@ -13,10 +13,7 @@
  */
 
 import { reparentNodes } from './dom.js';
-import {
-  defaultTemplateProcessor,
-  TemplateProcessor
-} from './template-processor.js';
+import { TemplateProcessor } from './template-processor.js';
 import {
   lastAttributeNameRegex,
   marker,
@@ -55,7 +52,7 @@ export class TemplateResult {
     strings: TemplateStringsArray,
     values: any[],
     type: string,
-    processor: TemplateProcessor = defaultTemplateProcessor
+    processor: TemplateProcessor
   ) {
     this.strings = strings;
     this.values = values;
