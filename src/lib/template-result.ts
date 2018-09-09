@@ -45,8 +45,7 @@ export class TemplateResult {
 
   constructor(
       strings: TemplateStringsArray, values: any[], type: string,
-      processor: TemplateProcessor
-  ) {
+      processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;
     this.type = type;
