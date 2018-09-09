@@ -12,15 +12,34 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {reparentNodes} from './dom.js';
-import {defaultTemplateProcessor, TemplateProcessor} from './template-processor.js';
-import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
+import { reparentNodes } from './dom.js';
+import {
+  defaultTemplateProcessor,
+  TemplateProcessor
+} from './template-processor.js';
+import {
+  lastAttributeNameRegex,
+  marker,
+  nodeMarker,
+  rewritesStyleAttribute
+} from './template.js';
 
 const needTemplate = typeof HTMLTemplateElement === 'undefined';
-const contentDoc = document.implementation.createDocument(
-    'http://www.w3.org/1999/xhtml', 'html', null);
-const body = document.createElementNS('http://www.w3.org/1999/xhtml', 'body');
-contentDoc.documentElement.appendChild(body);
+let contentDoc;
+let contentDocBody;
+if (needTemplate) {
+  // Set up another document to hold template polyfill content.
+  contentDoc = document.implementation.createDocument(
+    'http://www.w3.org/1999/xhtml',
+    'html',
+    null
+  );
+  contentDocBody = document.createElementNS(
+    'http://www.w3.org/1999/xhtml',
+    'body'
+  );
+  contentDoc.documentElement.appendChild(contentDocBody);
+}
 
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -33,8 +52,11 @@ export class TemplateResult {
   processor: TemplateProcessor;
 
   constructor(
-      strings: TemplateStringsArray, values: any[], type: string,
-      processor: TemplateProcessor = defaultTemplateProcessor) {
+    strings: TemplateStringsArray,
+    values: any[],
+    type: string,
+    processor: TemplateProcessor = defaultTemplateProcessor
+  ) {
     this.strings = strings;
     this.values = values;
     this.type = type;
@@ -60,11 +82,11 @@ export class TemplateResult {
       // "...<...": attribute position. open > -1
       // "...": no change. open === -1, close === -1
       isTextBinding =
-          (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
+        (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
 
       if (!isTextBinding && rewritesStyleAttribute) {
         html = html.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
-          return (p2 === 'style') ? `${p1}style$${p3}` : match;
+          return p2 === 'style' ? `${p1}style$${p3}` : match;
         });
       }
       html += isTextBinding ? nodeMarker : marker;
@@ -78,11 +100,8 @@ export class TemplateResult {
     if (needTemplate) {
       template = contentDoc.createElement('div') as any;
       template.content = contentDoc.createDocumentFragment();
-      const body = contentDoc.body;
-      body.innerHTML = this.getHTML();
-      while (body.firstChild) {
-        template.content.appendChild(body.firstChild);
-      }
+      contentDocBody.innerHTML = this.getHTML();
+      reparentNodes(template.content, contentDocBody.firstChild);
     } else {
       template = document.createElement('template');
       template.innerHTML = this.getHTML();
