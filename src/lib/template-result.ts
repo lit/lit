@@ -14,12 +14,7 @@
 
 import { reparentNodes } from './dom.js';
 import { TemplateProcessor } from './template-processor.js';
-import {
-  lastAttributeNameRegex,
-  marker,
-  nodeMarker,
-  rewritesStyleAttribute
-} from './template.js';
+import { lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute } from './template.js';
 
 const needTemplate = typeof HTMLTemplateElement === 'undefined';
 let contentDoc;
@@ -49,9 +44,7 @@ export class TemplateResult {
   processor: TemplateProcessor;
 
   constructor(
-    strings: TemplateStringsArray,
-    values: any[],
-    type: string,
+    strings: TemplateStringsArray, values: any[], type: string,
     processor: TemplateProcessor
   ) {
     this.strings = strings;
@@ -79,11 +72,11 @@ export class TemplateResult {
       // "...<...": attribute position. open > -1
       // "...": no change. open === -1, close === -1
       isTextBinding =
-        (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
+          (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
 
       if (!isTextBinding && rewritesStyleAttribute) {
         html = html.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
-          return p2 === 'style' ? `${p1}style$${p3}` : match;
+          return (p2 === 'style') ? `${p1}style$${p3}` : match;
         });
       }
       html += isTextBinding ? nodeMarker : marker;
