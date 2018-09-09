@@ -1,6 +1,9 @@
 <!doctype html>
 <html>
   <head>
+    <script>
+      delete window.HTMLTemplateElement;
+    </script>
     <script src="../node_modules/wct-browser-legacy/browser.js"></script>
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
   </head>
@@ -20,16 +23,5 @@
     <script type="module" src="./directives/until_test.js"></script>
     <script type="module" src="./directives/unsafe-html_test.js"></script>
     <script type="module" src="./directives/when_test.js"></script>
-    <script type="module">
-      WCT.loadSuites([
-        'shady.html',
-        'shady.html?shadydom=true',
-        'shady.html?shadydom=true&shimscssproperties=true',
-        'shady-apply.html',
-        'shady-apply.html?shadydom=true',
-        'shady-apply.html?shadydom=true&shimscssproperties=true',
-        'no-template.html',
-      ]);
-    </script>
   </body>
 </html>

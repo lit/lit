@@ -17,8 +17,8 @@ import {TemplateProcessor} from './template-processor.js';
 import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
 
 const needTemplate = typeof HTMLTemplateElement === 'undefined';
-let contentDoc;
-let contentDocBody;
+let contentDoc: Document | undefined;
+let contentDocBody: HTMLElement | undefined;
 if (needTemplate) {
   // Set up another document to hold template polyfill content.
   contentDoc = document.implementation.createDocument(
