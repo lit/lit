@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { reparentNodes } from './dom.js';
-import { TemplateProcessor } from './template-processor.js';
-import { lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute } from './template.js';
+import {reparentNodes} from './dom.js';
+import {TemplateProcessor} from './template-processor.js';
+import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
 
 const needTemplate = typeof HTMLTemplateElement === 'undefined';
 let contentDoc;
@@ -44,8 +44,8 @@ export class TemplateResult {
   processor: TemplateProcessor;
 
   constructor(
-    strings: TemplateStringsArray, values: any[], type: string,
-    processor: TemplateProcessor
+      strings: TemplateStringsArray, values: any[], type: string,
+      processor: TemplateProcessor
   ) {
     this.strings = strings;
     this.values = values;
