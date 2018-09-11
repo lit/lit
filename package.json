@@ -10,7 +10,7 @@
   "scripts": {
     "start": "polymer serve",
     "build": "npm run build:prpl-server && npm run build:static",
-    "build:prpl-server": "polymer build --auto-base-path && rm -rf server/build && mv build server/ && renamer --find node_modules --replace node_assets 'server/build/**' && replace node_modules node_assets server/build -r -s",
+    "build:prpl-server": "polymer build --auto-base-path && gulp prpl-server",
     "build:static": "polymer build",
     "serve:prpl-server": "prpl-server --root server/build",
     "serve:static": "polymer serve --port 5000 build/es5-bundled",
@@ -35,10 +35,12 @@
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
   "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
+    "gulp-rename": "^1.3.0",
+    "gulp-replace": "^1.0.0",
     "polymer-cli": "^1.7.0",
     "prpl-server": "^1.1.0",
-    "renamer": "^0.6.1",
-    "replace": "^0.3.0",
     "wct-browser-legacy": "^1.0.0"
   }
 }
