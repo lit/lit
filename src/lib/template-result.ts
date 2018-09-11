@@ -16,23 +16,6 @@ import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
 
-const needTemplate = typeof HTMLTemplateElement === 'undefined';
-let contentDoc: Document | undefined;
-let contentDocBody: HTMLElement | undefined;
-if (needTemplate) {
-  // Set up another document to hold template polyfill content.
-  contentDoc = document.implementation.createDocument(
-    'http://www.w3.org/1999/xhtml',
-    'html',
-    null
-  );
-  contentDocBody = document.createElementNS(
-    'http://www.w3.org/1999/xhtml',
-    'body'
-  );
-  contentDoc.documentElement.appendChild(contentDocBody);
-}
-
 /**
  * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
@@ -85,16 +68,8 @@ export class TemplateResult {
   }
 
   getTemplateElement(): HTMLTemplateElement {
-    let template;
-    if (needTemplate) {
-      template = contentDoc!.createElement('div') as any;
-      template.content = contentDoc!.createDocumentFragment();
-      contentDocBody!.innerHTML = this.getHTML();
-      reparentNodes(template.content, contentDocBody!.firstChild);
-    } else {
-      template = document.createElement('template');
-      template.innerHTML = this.getHTML();
-    }
+    const template = document.createElement('template');
+    template.innerHTML = this.getHTML();
     return template;
   }
 }
