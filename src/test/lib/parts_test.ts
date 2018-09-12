@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, html, NodePart, render, templateFactory, TemplateResult, createMarker} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -50,8 +50,8 @@ suite('Parts', () => {
 
     setup(() => {
       container = document.createElement('div');
-      startNode = document.createComment('');
-      endNode = document.createComment('');
+      startNode = createMarker();
+      endNode = createMarker();
       container.appendChild(startNode);
       container.appendChild(endNode);
       part = new NodePart(templateFactory);
@@ -348,7 +348,7 @@ suite('Parts', () => {
       test(
           'inserts part and sets values between ref node and its next sibling',
           () => {
-            const testEndNode = document.createComment('');
+            const testEndNode = createMarker();
             container.appendChild(testEndNode);
             const testPart = new NodePart(templateFactory);
             testPart.insertAfterNode(endNode);
