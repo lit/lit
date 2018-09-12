@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {classMap, ClassInfo} from '../../directives/classMap.js';
+import {ClassInfo, classMap} from '../../directives/classMap.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
@@ -37,7 +37,7 @@ suite('classMap', () => {
   });
 
   test('adds classes', () => {
-    renderClassMap({ foo: 0, bar: true, zonk: true });
+    renderClassMap({foo: 0, bar: true, zonk: true});
     const el = container.firstElementChild!;
     assert.isFalse(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
@@ -45,24 +45,24 @@ suite('classMap', () => {
   });
 
   test('removes classes', () => {
-    renderClassMap({ foo: true, bar: true, baz: true });
+    renderClassMap({foo: true, bar: true, baz: true});
     const el = container.firstElementChild!;
     assert.isTrue(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
     assert.isTrue(el.classList.contains('baz'));
-    renderClassMap({ foo: false, bar: true, baz: false });
+    renderClassMap({foo: false, bar: true, baz: false});
     assert.isFalse(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
     assert.isFalse(el.classList.contains('baz'));
   });
 
   test('removes omitted classes', () => {
-    renderClassMap({ foo: true, bar: true, baz: true });
+    renderClassMap({foo: true, bar: true, baz: true});
     const el = container.firstElementChild!;
     assert.isTrue(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
     assert.isTrue(el.classList.contains('baz'));
-    renderClassMap({ });
+    renderClassMap({});
     assert.isFalse(el.classList.contains('foo'));
     assert.isFalse(el.classList.contains('bar'));
     assert.isFalse(el.classList.contains('baz'));
@@ -70,7 +70,7 @@ suite('classMap', () => {
   });
 
   test('works with static classes', () => {
-    renderClassMapStatic({ foo: true});
+    renderClassMapStatic({foo: true});
     const el = container.firstElementChild!;
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
@@ -98,5 +98,4 @@ suite('classMap', () => {
       render(html`<div>${classMap({})}</div>`, container);
     });
   });
-
 });
