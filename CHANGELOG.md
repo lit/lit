@@ -12,11 +12,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [0.11.2] - 2018-09-12
+
+### Added
+* Added `classMap` and `styleMap` directives ([#486](https://github.com/Polymer/lit-html/pull/486))
+
+<!-- ### Changed -->
+<!-- ### Removed -->
+### Fixed
+
+* Fixed bug in asyncReplace when rerendering the same iterable ([#485](https://github.com/Polymer/lit-html/pull/485))
+* Update properties before upgrading custom elements ([#455](https://github.com/Polymer/lit-html/pull/455))
+* Cache the ShadyCSS version lookup ([#477](https://github.com/Polymer/lit-html/pull/477))
+
 ## [0.11.1] - 2018-09-02
 
 ### Changed
-* Eliminated a cycle in the module import graph (#472)
-* Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required paremeter (#472)
+* Eliminated a cycle in the module import graph ([#472](https://github.com/Polymer/lit-html/pull/472))
+* Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required paremeter ([#472](https://github.com/Polymer/lit-html/pull/472))
 
 ## [0.11.0] - 2018-08-28
 
