@@ -17,15 +17,17 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-const testSkipForTemplatePolyfill =
+const isTemplatePolyfilled =
     ((HTMLTemplateElement as any).decorate != null ||
-     (window as any).ShadyDOM && (window as any).ShadyDOM.inUse) ?
-    test.skip :
-    test;
+     (window as any).ShadyDOM && (window as any).ShadyDOM.inUse);
+const testSkipForTemplatePolyfill = isTemplatePolyfilled ? test.skip : test;
 
-const testSkipSafari10_0 =
-    (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1) ? test :
-                                                                     test.skip;
+const isSafari10_0 =
+    (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1);
+const testSkipSafari10_0 = isSafari10_0 ? test : test.skip;
+
+const isChrome41 = (window.navigator.userAgent.indexOf('Chrome/41') === -1);
+const testSkipChrome41 = isChrome41 ? test : test.skip;
 
 const testIfHasSymbol = (window as any).Symbol === undefined ? test.skip : test;
 
@@ -671,28 +673,29 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
     });
 
-    test('event listeners can see events fired by dynamic children', () => {
-      // This tests that node directives are called in the commit phase, not
-      // the setValue phase
-      let event: Event|undefined = undefined;
-      document.body.appendChild(container);
-      render(
-          html`
+    testSkipChrome41(
+        'event listeners can see events fired by dynamic children', () => {
+          // This tests that node directives are called in the commit phase, not
+          // the setValue phase
+          let event: Event|undefined = undefined;
+          document.body.appendChild(container);
+          render(
+              html`
         <div @test-event=${(e: Event) => {
-            event = e;
-          }}>
+                event = e;
+              }}>
           ${directive((part: NodePart) => {
-            // This emulates a custom element that fires an event in its
-            // connectedCallback
-            part.startNode.dispatchEvent(new CustomEvent('test-event', {
-              bubbles: true,
-            }));
-          })}
+                // This emulates a custom element that fires an event in its
+                // connectedCallback
+                part.startNode.dispatchEvent(new CustomEvent('test-event', {
+                  bubbles: true,
+                }));
+              })}
         </div>`,
-          container);
-      document.body.removeChild(container);
-      assert.isOk(event);
-    });
+              container);
+          document.body.removeChild(container);
+          assert.isOk(event);
+        });
 
     test(
         'event listeners can see events fired directives in AttributeParts',
