@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isCEPolyfill, removeNodes} from './dom.js';
+import {removeNodes} from './dom.js';
 import {templateFactory as defaultTemplateFactory, TemplateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -50,11 +50,6 @@ export function render(
   templateInstances.set(container, instance);
   const fragment = instance._clone();
   removeNodes(container, container.firstChild);
-  // Since we cloned in the polyfill case, now force an upgrade
-  if (isCEPolyfill && !container.isConnected) {
-    document.adoptNode(fragment);
-    customElements.upgrade(fragment);
-  }
   container.appendChild(fragment);
   instance.update(result.values);
 }
