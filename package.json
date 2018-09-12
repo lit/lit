@@ -39,7 +39,7 @@
     "rollup-plugin-filesize": "^4.0.1",
     "rollup-plugin-terser": "^1.0.1",
     "tslint": "^5.9.1",
-    "typedoc": "^0.11.1",
+    "typedoc": "^0.12.0",
     "typescript": "^2.8.3",
     "uglify-es": "^3.3.5",
     "wct-browser-legacy": "^1.0.1",
