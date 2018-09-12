@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
-## [0.11.2] - 2018-09-11
+## [0.11.2] - 2018-09-12
 
 ### Added
 * Added `classMap` and `styleMap` directives ([#486](https://github.com/Polymer/lit-html/pull/486))
