@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>SinglePart | lit-html</title>
+	<title>PropertyPart | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,13 +54,13 @@
 					<a href="../index.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_lit_html_.html">&quot;lit-html&quot;</a>
+					<a href="../modules/_lib_parts_.html">&quot;lib/parts&quot;</a>
 				</li>
 				<li>
-					<a href="_lit_html_.singlepart.html">SinglePart</a>
+					<a href="_lib_parts_.propertypart.html">PropertyPart</a>
 				</li>
 			</ul>
-			<h1>Interface SinglePart</h1>
+			<h1>Class PropertyPart</h1>
 		</div>
 	</div>
 </header>
@@ -71,19 +71,19 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="_lit_html_.part.html" class="tsd-signature-type">Part</a>
+						<a href="_lib_parts_.attributepart.html" class="tsd-signature-type">AttributePart</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">SinglePart</span>
+								<span class="target">PropertyPart</span>
 							</li>
 						</ul>
 					</li>
 				</ul>
 			</section>
 			<section class="tsd-panel">
-				<h3>Implemented by</h3>
+				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../classes/_lit_html_.nodepart.html" class="tsd-signature-type">NodePart</a></li>
+					<li><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -91,59 +91,115 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section tsd-is-inherited">
-							<h3>Properties</h3>
+							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_lit_html_.singlepart.html#instance" class="tsd-kind-icon">instance</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="_lit_html_.singlepart.html#size" class="tsd-kind-icon">size</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><a href="_lib_parts_.propertypart.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
-						<section class="tsd-index-section ">
+						<section class="tsd-index-section tsd-is-inherited">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="_lib_parts_.propertypart.html#committer" class="tsd-kind-icon">committer</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="_lib_parts_.propertypart.html#value" class="tsd-kind-icon">value</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="_lit_html_.singlepart.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_lib_parts_.propertypart.html#commit" class="tsd-kind-icon">commit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="_lib_parts_.propertypart.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Property<wbr>Part<span class="tsd-signature-symbol">(</span>comitter<span class="tsd-signature-symbol">: </span><a href="_lib_parts_.attributecommitter.html" class="tsd-signature-type">AttributeCommitter</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_parts_.propertypart.html" class="tsd-signature-type">PropertyPart</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="_lib_parts_.attributepart.html">AttributePart</a>.<a href="_lib_parts_.attributepart.html#constructor">constructor</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L90">lib/parts.ts:90</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>comitter: <a href="_lib_parts_.attributecommitter.html" class="tsd-signature-type">AttributeCommitter</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_lib_parts_.propertypart.html" class="tsd-signature-type">PropertyPart</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="instance" class="tsd-anchor"></a>
-					<h3>instance</h3>
-					<div class="tsd-signature tsd-kind-icon">instance<span class="tsd-signature-symbol">:</span> <a href="../classes/_lit_html_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="committer" class="tsd-anchor"></a>
+					<h3>committer</h3>
+					<div class="tsd-signature tsd-kind-icon">committer<span class="tsd-signature-symbol">:</span> <a href="_lib_parts_.attributecommitter.html" class="tsd-signature-type">AttributeCommitter</a></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="_lit_html_.part.html">Part</a>.<a href="_lit_html_.part.html#instance">instance</a></p>
+						<p>Inherited from <a href="_lib_parts_.attributepart.html">AttributePart</a>.<a href="_lib_parts_.attributepart.html#committer">committer</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/20d2f57/src/lit-html.ts#L438">lit-html.ts:438</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L89">lib/parts.ts:89</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="size" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> size</h3>
-					<div class="tsd-signature tsd-kind-icon">size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="value" class="tsd-anchor"></a>
+					<h3>value</h3>
+					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;undefined</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="_lit_html_.part.html">Part</a>.<a href="_lit_html_.part.html#size">size</a></p>
+						<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#value">value</a></p>
+						<p>Inherited from <a href="_lib_parts_.attributepart.html">AttributePart</a>.<a href="_lib_parts_.attributepart.html#value">value</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/20d2f57/src/lit-html.ts#L439">lit-html.ts:439</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L90">lib/parts.ts:90</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group ">
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="commit" class="tsd-anchor"></a>
+					<h3>commit</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">commit<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#commit">commit</a></p>
+								<p>Inherited from <a href="_lib_parts_.attributepart.html">AttributePart</a>.<a href="_lib_parts_.attributepart.html#commit">commit</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L108">lib/parts.ts:108</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a name="setvalue" class="tsd-anchor"></a>
 					<h3>set<wbr>Value</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon">set<wbr>Value<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#setvalue">setValue</a></p>
+								<p>Inherited from <a href="_lib_parts_.attributepart.html">AttributePart</a>.<a href="_lib_parts_.attributepart.html#setvalue">setValue</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/20d2f57/src/lit-html.ts#L442">lit-html.ts:442</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L96">lib/parts.ts:96</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -164,129 +220,57 @@
 					<li class="globals  ">
 						<a href="../index.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_async_append_.html">"lib/async-<wbr>append"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_async_replace_.html">"lib/async-<wbr>replace"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_lit_extended_.html">"lib/lit-<wbr>extended"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_repeat_.html">"lib/repeat"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_shady_render_.html">"lib/shady-<wbr>render"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_unsafe_html_.html">"lib/unsafe-<wbr>html"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_lib_until_.html">"lib/until"</a>
-					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="../modules/_lit_html_.html">"lit-<wbr>html"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_test_lib_deferred_.html">"test/lib/deferred"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_test_lib_test_async_iterable_.html">"test/lib/test-<wbr>async-<wbr>iterable"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="../modules/_test_test_helpers_.html">"test/test-<wbr>helpers"</a>
+						<a href="../modules/_lib_parts_.html">"lib/parts"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.attributepart.html" class="tsd-kind-icon">Attribute<wbr>Part</a>
+						<a href="_lib_parts_.attributecommitter.html" class="tsd-kind-icon">Attribute<wbr>Committer</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a>
+						<a href="_lib_parts_.attributepart.html" class="tsd-kind-icon">Attribute<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.svgtemplateresult.html" class="tsd-kind-icon">SVGTemplate<wbr>Result</a>
+						<a href="_lib_parts_.booleanattributepart.html" class="tsd-kind-icon">Boolean<wbr>Attribute<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.template.html" class="tsd-kind-icon">Template</a>
+						<a href="_lib_parts_.eventpart.html" class="tsd-kind-icon">Event<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.templateinstance.html" class="tsd-kind-icon">Template<wbr>Instance</a>
+						<a href="_lib_parts_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.templatepart.html" class="tsd-kind-icon">Template<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lit_html_.templateresult.html" class="tsd-kind-icon">Template<wbr>Result</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_lit_html_.multipart.html" class="tsd-kind-icon">Multi<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_lit_html_.part.html" class="tsd-kind-icon">Part</a>
+						<a href="_lib_parts_.propertycommitter.html" class="tsd-kind-icon">Property<wbr>Committer</a>
 					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-external-module">
-						<a href="_lit_html_.singlepart.html" class="tsd-kind-icon">Single<wbr>Part</a>
+					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+						<a href="_lib_parts_.propertypart.html" class="tsd-kind-icon">Property<wbr>Part</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="_lit_html_.singlepart.html#instance" class="tsd-kind-icon">instance</a>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
+								<a href="_lib_parts_.propertypart.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="_lit_html_.singlepart.html#size" class="tsd-kind-icon">size</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="_lib_parts_.propertypart.html#committer" class="tsd-kind-icon">committer</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="_lit_html_.singlepart.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="_lib_parts_.propertypart.html#value" class="tsd-kind-icon">value</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="_lib_parts_.propertypart.html#commit" class="tsd-kind-icon">commit</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="_lib_parts_.propertypart.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module tsd-has-type-parameter">
-						<a href="../modules/_lit_html_.html#directivefn" class="tsd-kind-icon">Directive<wbr>Fn</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#partcallback" class="tsd-kind-icon">Part<wbr>Callback</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#templatefactory" class="tsd-kind-icon">Template<wbr>Factory</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#directivevalue" class="tsd-kind-icon">directive<wbr>Value</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#templatecaches" class="tsd-kind-icon">template<wbr>Caches</a>
-					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#defaultpartcallback" class="tsd-kind-icon">default<wbr>Part<wbr>Callback</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#defaulttemplatefactory" class="tsd-kind-icon">default<wbr>Template<wbr>Factory</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
-						<a href="../modules/_lit_html_.html#directive" class="tsd-kind-icon">directive</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#getvalue" class="tsd-kind-icon">get<wbr>Value</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#html" class="tsd-kind-icon">html</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#removenodes" class="tsd-kind-icon">remove<wbr>Nodes</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#render" class="tsd-kind-icon">render</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#reparentnodes" class="tsd-kind-icon">reparent<wbr>Nodes</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lit_html_.html#svg" class="tsd-kind-icon">svg</a>
+						<a href="../modules/_lib_parts_.html#isprimitive" class="tsd-kind-icon">is<wbr>Primitive</a>
 					</li>
 				</ul>
 			</nav>
