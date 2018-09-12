@@ -42,7 +42,6 @@ if (typeof HTMLTemplateElement === 'undefined') {
 
   PolyfilledHTMLTemplateElement.decorate = function(template: any) {
     // if the template is decorated or not in HTML namespace, return fast.
-    //delete template.content;
     if (
       template.content ||
       template.namespaceURI !== document.documentElement.namespaceURI
@@ -57,57 +56,10 @@ if (typeof HTMLTemplateElement === 'undefined') {
     template.__proto__ = PolyfilledHTMLTemplateElement.prototype;
   };
 
-  //PolyfilledHTMLTemplateElement._cloneNode = function(
-  //template: any,
-  //deep: boolean
-  //) {
-  //const clone = capturedCloneNode.call(template, false);
-  //this.decorate(clone);
-  //if (deep) {
-  //clone.content.appendChild(capturedCloneNode.call(template.content, true));
-  //fixClonedDom(clone.content, template.content);
-  //}
-  //return clone;
-  //};
-
-  //const fixClonedDom = function(clone: any, source: any) {
-  //// do nothing if cloned node is not an element
-  //if (!source.querySelectorAll) return;
-  //// these two lists should be coincident
-  //const s$ = source.querySelectorAll('template');
-  //if (s$.length === 0) {
-  //return;
-  //}
-  //const t$ = clone.querySelectorAll('template');
-  //for (let i = 0, l = t$.length, t, s; i < l; i++) {
-  //s = s$[i];
-  //t = t$[i];
-  //PolyfilledHTMLTemplateElement.decorate(s);
-  //t.parentNode.replaceChild(cloneNode.call(s, true), t);
-  //}
-  //};
-
-  //const cloneNode = (Node.prototype.cloneNode = function(deep: boolean) {
-  //let dom;
-  //if (
-  //this.nodeType === Node.ELEMENT_NODE &&
-  //this.localName === 'template' &&
-  //this.namespaceURI === document.documentElement.namespaceURI
-  //) {
-  //dom = PolyfilledHTMLTemplateElement._cloneNode(this, deep);
-  //} else {
-  //dom = capturedCloneNode.call(this, deep);
-  //}
-  //if (deep) {
-  //fixClonedDom(dom, this);
-  //}
-  //return dom;
-  //});
-
   Document.prototype.createElement = function createElement() {
     let el = capturedCreateElement.apply(this, arguments);
     if (el.localName === 'template') {
-      el = capturedCreateElement.call(this, 'div');
+      el = capturedCreateElement.call(this, 'template');
       PolyfilledHTMLTemplateElement.decorate(el);
     }
     return el;
