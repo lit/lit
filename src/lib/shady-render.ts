@@ -12,9 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
-import {templateInstances} from './render.js';
+import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -39,9 +38,9 @@ if (typeof window.ShadyCSS === 'undefined') {
   compatibleShadyCSSVersion = false;
 } else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
   console.warn(
-    `Incompatible ShadyCSS version detected.` +
-    `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
-    `@webcomponents/shadycss@1.3.1.`);
+      `Incompatible ShadyCSS version detected.` +
+      `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
+      `@webcomponents/shadycss@1.3.1.`);
   compatibleShadyCSSVersion = false;
 }
 
@@ -147,31 +146,14 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     scopeName: string) {
-  const templateFactory = shadyTemplateFactory(scopeName);
-  const template = templateFactory(result);
-
-  let instance = templateInstances.get(container);
-
-  // Repeat render, just call update()
-  if (instance !== undefined && instance.template === template &&
-      instance.processor === result.processor) {
-    instance.update(result.values);
-    return;
-  }
-
-  // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(template, result.processor, templateFactory);
-  templateInstances.set(container, instance);
-
-  const fragment = instance._clone();
-  instance.update(result.values);
+  litRender(result, container, shadyTemplateFactory(scopeName));
 
   // If there's a shadow host, do ShadyCSS scoping...
-  if (container instanceof ShadowRoot && compatibleShadyCSSVersion) {
-    ensureStylesScoped(fragment, template, scopeName);
+  if (container instanceof ShadowRoot && result instanceof TemplateResult &&
+      compatibleShadyCSSVersion) {
+    const part = parts.get(container)!;
+    const instance = part.value as TemplateInstance;
+    ensureStylesScoped(container, instance.template, scopeName);
     window.ShadyCSS.styleElement(container.host);
   }
-
-  removeNodes(container, container.firstChild);
-  container.appendChild(fragment);
 }

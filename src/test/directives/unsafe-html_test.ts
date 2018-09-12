@@ -46,7 +46,7 @@ suite('unsafeHTML', () => {
     // Modify instance directly. Since lit-html doesn't dirty check against
     // actual DOM, but again previous part values, this modification should
     // persist through the next render if dirty checking works.
-    const text = container.firstChild!.childNodes[1] as Text;
+    const text = container.querySelector('div')!.childNodes[1] as Text;
     text.textContent = 'bbb';
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
 
@@ -54,7 +54,7 @@ suite('unsafeHTML', () => {
     render(t(), container);
 
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-    const text2 = container.firstChild!.childNodes[1] as Text;
+    const text2 = container.querySelector('div')!.childNodes[1] as Text;
     assert.strictEqual(text, text2);
   });
 

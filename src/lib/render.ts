@@ -13,11 +13,11 @@
  */
 
 import {removeNodes} from './dom.js';
+import {NodePart} from './parts.js';
 import {templateFactory as defaultTemplateFactory, TemplateFactory} from './template-factory.js';
-import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 
-export const templateInstances = new WeakMap<Node, TemplateInstance>();
+export const parts = new WeakMap<Node, NodePart>();
 
 /**
  * Renders a template to a container.
@@ -37,19 +37,12 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     templateFactory: TemplateFactory = defaultTemplateFactory) {
-  const template = templateFactory(result);
-  let instance = templateInstances.get(container);
-  // Repeat render, just call update()
-  if (instance !== undefined && instance.template === template &&
-      instance.processor === result.processor) {
-    instance.update(result.values);
-    return;
+  let part = parts.get(container);
+  if (part === undefined) {
+    removeNodes(container, container.firstChild);
+    parts.set(container, part = new NodePart(templateFactory));
+    part.appendInto(container);
   }
-  // First render, create a new TemplateInstance and append it
-  instance = new TemplateInstance(template, result.processor, templateFactory);
-  templateInstances.set(container, instance);
-  const fragment = instance._clone();
-  removeNodes(container, container.firstChild);
-  container.appendChild(fragment);
-  instance.update(result.values);
+  part.setValue(result);
+  part.commit();
 }
