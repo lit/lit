@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {styleMap, StyleInfo} from '../../directives/styleMap.js';
+import {StyleInfo, styleMap} from '../../directives/styleMap.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
@@ -29,7 +29,9 @@ suite('styleMap', () => {
   }
 
   function renderStyleMapStatic(cssInfo: StyleInfo) {
-    render(html`<div style="height: 1px; ${styleMap(cssInfo)} color: red"></div>`, container);
+    render(
+        html`<div style="height: 1px; ${styleMap(cssInfo)} color: red"></div>`,
+        container);
   }
 
   setup(() => {
@@ -37,19 +39,19 @@ suite('styleMap', () => {
   });
 
   test('adds and updates styles', () => {
-    renderStyleMap({ marginTop: '2px', paddingBottom: '4px', opacity: '0.5' });
+    renderStyleMap({marginTop: '2px', paddingBottom: '4px', opacity: '0.5'});
     const el = container.firstElementChild! as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     assert.equal(el.style.opacity, '0.5');
-    renderStyleMap({ marginTop: '4px', paddingBottom: '8px', opacity: '0.55' });
+    renderStyleMap({marginTop: '4px', paddingBottom: '8px', opacity: '0.55'});
     assert.equal(el.style.marginTop, '4px');
     assert.equal(el.style.paddingBottom, '8px');
     assert.equal(el.style.opacity, '0.55');
   });
 
   test('removes styles', () => {
-    renderStyleMap({ marginTop: '2px', paddingBottom: '4px' });
+    renderStyleMap({marginTop: '2px', paddingBottom: '4px'});
     const el = container.firstElementChild! as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
@@ -59,7 +61,7 @@ suite('styleMap', () => {
   });
 
   test('works with static styles', () => {
-    renderStyleMapStatic({ marginTop: '2px', paddingBottom: '4px' });
+    renderStyleMapStatic({marginTop: '2px', paddingBottom: '4px'});
     const el = container.firstElementChild! as HTMLElement;
     assert.equal(el.style.height, '1px');
     assert.equal(el.style.color, 'red');
@@ -80,7 +82,9 @@ suite('styleMap', () => {
 
   test('throws when used in attribute with more than 1 part', () => {
     assert.throws(() => {
-      render(html`<div style="${'height: 2px;'} ${styleMap({})}"></div>`, container);
+      render(
+          html`<div style="${'height: 2px;'} ${styleMap({})}"></div>`,
+          container);
     });
   });
 
@@ -89,5 +93,4 @@ suite('styleMap', () => {
       render(html`<div>${styleMap({})}</div>`, container);
     });
   });
-
 });
