@@ -19,7 +19,7 @@
     "!/src/test/"
   ],
   "scripts": {
-    "build": "tsc --watch",
+    "build": "tsc",
     "checksize": "rollup -c ; rm lit-html.bundled.js",
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api ./src",
     "test": "npm run build && npm run lint && wct --npm",
