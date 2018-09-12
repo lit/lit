@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;lit-html&quot; | lit-html</title>
+	<title>&quot;directives/when&quot; | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../index.html">Globals</a>
 				</li>
 				<li>
-					<a href="_lit_html_.html">&quot;lit-html&quot;</a>
+					<a href="_directives_when_.html">&quot;directives/when&quot;</a>
 				</li>
 			</ul>
-			<h1>External module &quot;lit-html&quot;</h1>
+			<h1>External module &quot;directives/when&quot;</h1>
 		</div>
 	</div>
 </header>
@@ -71,8 +71,7 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#html" class="tsd-kind-icon">html</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_directives_when_.html#when" class="tsd-kind-icon">when</a></li>
 							</ul>
 						</section>
 					</div>
@@ -81,66 +80,84 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="html" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> html</h3>
+					<a name="when" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> when</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">html<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></li>
+						<li class="tsd-signature tsd-kind-icon">when<span class="tsd-signature-symbol">(</span>condition<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, trueValue<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, falseValue<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lit-html.ts#L34">lit-html.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/directives/when.ts#L48">directives/when.ts:48</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Interprets a template literal as an HTML template that can efficiently
-									render to and update a container.</p>
+									<p>Efficiently switches between two templates based on the given condition. The
+										rendered content is cached, and re-used when switching conditions. Templates
+									are evaluated lazily, so the passed values must be functions.</p>
 								</div>
+								<p>While this directive can render any regular part, it makes the most sense
+									when used with TemplateResult since most other values are dirty checked
+								already.</p>
+								<p>Example:</p>
+								<p>let checked = false;</p>
+								<p>html<code>when(checked, () =&gt; html</code>Checkmark is checked<code>, () =&gt; html</code>Checkmark is not
+								checked<code>);</code></p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
+									<h5>condition: <span class="tsd-signature-type">any</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>the condition to test truthiness against</p>
+										</div>
+									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>trueValue: <span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>the value to render given a true condition</p>
+										</div>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+								<li>
+									<h5>falseValue: <span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>the value to render given a false condition</p>
+										</div>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="svg" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> svg</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">svg<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lit-html.ts#L41">lit-html.ts:41</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Interprets a template literal as an SVG template that can efficiently
-									render to and update a container.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -153,17 +170,14 @@
 						<a href="../index.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="_lit_html_.html">"lit-<wbr>html"</a>
+						<a href="_directives_when_.html">"directives/when"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lit_html_.html#html" class="tsd-kind-icon">html</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a>
+						<a href="_directives_when_.html#when" class="tsd-kind-icon">when</a>
 					</li>
 				</ul>
 			</nav>

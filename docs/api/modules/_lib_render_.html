@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;lit-html&quot; | lit-html</title>
+	<title>&quot;lib/render&quot; | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../index.html">Globals</a>
 				</li>
 				<li>
-					<a href="_lit_html_.html">&quot;lit-html&quot;</a>
+					<a href="_lib_render_.html">&quot;lib/render&quot;</a>
 				</li>
 			</ul>
-			<h1>External module &quot;lit-html&quot;</h1>
+			<h1>External module &quot;lib/render&quot;</h1>
 		</div>
 	</div>
 </header>
@@ -69,78 +69,81 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Variables</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_lib_render_.html#parts" class="tsd-kind-icon">parts</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#html" class="tsd-kind-icon">html</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_render_.html#render" class="tsd-kind-icon">render</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
+					<a name="parts" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> parts</h3>
+					<div class="tsd-signature tsd-kind-icon">parts<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">WeakMap</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">, </span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;new WeakMap&lt;Node, NodePart&gt;()</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/render.ts#L20">lib/render.ts:20</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="html" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> html</h3>
+					<a name="render" class="tsd-anchor"></a>
+					<h3>render</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">html<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></li>
+						<li class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a>, container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span>, templateFactory<span class="tsd-signature-symbol">?: </span><a href="_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lit-html.ts#L34">lit-html.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/render.ts#L36">lib/render.ts:36</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Interprets a template literal as an HTML template that can efficiently
-									render to and update a container.</p>
+									<p>Renders a template to a container.</p>
 								</div>
+								<p>To update a container with new values, reevaluate the template literal and
+								call <code>render</code> with the new result.</p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
+									<h5>result: <a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>a TemplateResult created by evaluating a template tag like
+										<code>html</code> or <code>svg</code>.</p>
+									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>container: <span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>A DOM parent to render to. The entire contents are either
+											replaced, or efficiently updated if the same result type was previous
+										rendered there.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> templateFactory: <a href="_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a><span class="tsd-signature-symbol"> =&nbsp;defaultTemplateFactory</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>a function to create a Template or retreive one from
+										cache.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="svg" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> svg</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">svg<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lit-html.ts#L41">lit-html.ts:41</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Interprets a template literal as an SVG template that can efficiently
-									render to and update a container.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -153,17 +156,17 @@
 						<a href="../index.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="_lit_html_.html">"lit-<wbr>html"</a>
+						<a href="_lib_render_.html">"lib/render"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lit_html_.html#html" class="tsd-kind-icon">html</a>
+					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
+						<a href="_lib_render_.html#parts" class="tsd-kind-icon">parts</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a>
+						<a href="_lib_render_.html#render" class="tsd-kind-icon">render</a>
 					</li>
 				</ul>
 			</nav>

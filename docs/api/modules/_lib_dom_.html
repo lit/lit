@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;lit-html&quot; | lit-html</title>
+	<title>&quot;lib/dom&quot; | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../index.html">Globals</a>
 				</li>
 				<li>
-					<a href="_lit_html_.html">&quot;lit-html&quot;</a>
+					<a href="_lib_dom_.html">&quot;lib/dom&quot;</a>
 				</li>
 			</ul>
-			<h1>External module &quot;lit-html&quot;</h1>
+			<h1>External module &quot;lib/dom&quot;</h1>
 		</div>
 	</div>
 </header>
@@ -69,78 +69,124 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Variables</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_lib_dom_.html#iscepolyfill" class="tsd-kind-icon">isCEPolyfill</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#html" class="tsd-kind-icon">html</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_dom_.html#removenodes" class="tsd-kind-icon">remove<wbr>Nodes</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_dom_.html#reparentnodes" class="tsd-kind-icon">reparent<wbr>Nodes</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
+					<a name="iscepolyfill" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> isCEPolyfill</h3>
+					<div class="tsd-signature tsd-kind-icon">isCEPolyfill<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;window.customElements !&#x3D;&#x3D; undefined &amp;&amp;(window.customElements as any).polyfillWrapFlushCallback !&#x3D;&#x3D; undefined</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/dom.ts#L15">lib/dom.ts:15</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<dl class="tsd-comment-tags">
+							<dt>license</dt>
+							<dd><p>Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+									This code may only be used under the BSD style license found at
+									<a href="http://polymer.github.io/LICENSE.txt">http://polymer.github.io/LICENSE.txt</a>
+									The complete set of authors may be found at
+									<a href="http://polymer.github.io/AUTHORS.txt">http://polymer.github.io/AUTHORS.txt</a>
+									The complete set of contributors may be found at
+									<a href="http://polymer.github.io/CONTRIBUTORS.txt">http://polymer.github.io/CONTRIBUTORS.txt</a>
+									Code distributed by Google as part of the polymer project is also
+									subject to an additional IP rights grant found at
+								<a href="http://polymer.github.io/PATENTS.txt">http://polymer.github.io/PATENTS.txt</a></p>
+							</dd>
+						</dl>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="html" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> html</h3>
+					<a name="removenodes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> remove<wbr>Nodes</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">html<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></li>
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Nodes<span class="tsd-signature-symbol">(</span>container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span>, startNode<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span>, endNode<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lit-html.ts#L34">lit-html.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/dom.ts#L41">lib/dom.ts:41</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Interprets a template literal as an HTML template that can efficiently
-									render to and update a container.</p>
+									<p>Removes nodes, starting from <code>startNode</code> (inclusive) to <code>endNode</code>
+									(exclusive), from <code>container</code>.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
+									<h5>container: <span class="tsd-signature-type">Node</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>startNode: <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> endNode: <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> =&nbsp;null</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="svg" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> svg</h3>
+					<a name="reparentnodes" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> reparent<wbr>Nodes</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">svg<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, <span class="tsd-signature-symbol">...</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></li>
+						<li class="tsd-signature tsd-kind-icon">reparent<wbr>Nodes<span class="tsd-signature-symbol">(</span>container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span>, start<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span>, end<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span>, before<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lit-html.ts#L41">lit-html.ts:41</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/dom.ts#L24">lib/dom.ts:24</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Interprets a template literal as an SVG template that can efficiently
-									render to and update a container.</p>
+									<p>Reparents nodes, starting from <code>startNode</code> (inclusive) to <code>endNode</code>
+										(exclusive), into another container (could be the same container), before
+										<code>beforeNode</code>. If <code>beforeNode</code> is null, it appends the nodes to the
+									container.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
+									<h5>container: <span class="tsd-signature-type">Node</span></h5>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>start: <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> end: <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> =&nbsp;null</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> before: <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> =&nbsp;null</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -153,17 +199,20 @@
 						<a href="../index.html"><em>Globals</em></a>
 					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="_lit_html_.html">"lit-<wbr>html"</a>
+						<a href="_lib_dom_.html">"lib/dom"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lit_html_.html#html" class="tsd-kind-icon">html</a>
+					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
+						<a href="_lib_dom_.html#iscepolyfill" class="tsd-kind-icon">isCEPolyfill</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lit_html_.html#svg" class="tsd-kind-icon">svg</a>
+						<a href="_lib_dom_.html#removenodes" class="tsd-kind-icon">remove<wbr>Nodes</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+						<a href="_lib_dom_.html#reparentnodes" class="tsd-kind-icon">reparent<wbr>Nodes</a>
 					</li>
 				</ul>
 			</nav>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;lib/until&quot; | lit-html</title>
+	<title>&quot;directives/guard&quot; | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../index.html">Globals</a>
 				</li>
 				<li>
-					<a href="_lib_until_.html">&quot;lib/until&quot;</a>
+					<a href="_directives_guard_.html">&quot;directives/guard&quot;</a>
 				</li>
 			</ul>
-			<h1>External module &quot;lib/until&quot;</h1>
+			<h1>External module &quot;directives/guard&quot;</h1>
 		</div>
 	</div>
 </header>
@@ -71,7 +71,7 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_until_.html#until" class="tsd-kind-icon">until</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_directives_guard_.html#guard" class="tsd-kind-icon">guard</a></li>
 							</ul>
 						</section>
 					</div>
@@ -80,33 +80,63 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="until" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> until</h3>
+					<a name="guard" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> guard</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">until<span class="tsd-signature-symbol">(</span>promise<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, defaultContent<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">(Anonymous function)</span></li>
+						<li class="tsd-signature tsd-kind-icon">guard<span class="tsd-signature-symbol">(</span>expression<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, valueFn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/20d2f57/src/lib/until.ts#L20">lib/until.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/directives/guard.ts#L38">directives/guard.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Display <code>defaultContent</code> until <code>promise</code> resolves.</p>
+									<p>Creates a guard directive. Prevents any re-render until the identity of the
+										expression changes, for example when a primitive changes value or when an
+									object reference changes.</p>
 								</div>
+								<p>This useful with immutable data patterns, by preventing expensive work until
+								data updates. Example:</p>
+								<p>html<code>&lt;div&gt;
+    ${guard(items, () =&gt; items.map(item =&gt; html</code>${item}<code>))}
+  &lt;/div&gt;</code></p>
+								<p>In this case, items are mapped over only when the array reference changes.</p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>promise: <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>expression: <span class="tsd-signature-type">any</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>the expression to check before re-rendering</p>
+										</div>
+									</div>
 								</li>
 								<li>
-									<h5>defaultContent: <span class="tsd-signature-type">any</span></h5>
+									<h5>valueFn: <span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>function which returns the render value</p>
+										</div>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">(Anonymous function)</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -118,45 +148,15 @@
 					<li class="globals  ">
 						<a href="../index.html"><em>Globals</em></a>
 					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lib_async_append_.html">"lib/async-<wbr>append"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lib_async_replace_.html">"lib/async-<wbr>replace"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lib_lit_extended_.html">"lib/lit-<wbr>extended"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lib_repeat_.html">"lib/repeat"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lib_shady_render_.html">"lib/shady-<wbr>render"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lib_unsafe_html_.html">"lib/unsafe-<wbr>html"</a>
-					</li>
 					<li class="current tsd-kind-external-module">
-						<a href="_lib_until_.html">"lib/until"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_lit_html_.html">"lit-<wbr>html"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_test_lib_deferred_.html">"test/lib/deferred"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_test_lib_test_async_iterable_.html">"test/lib/test-<wbr>async-<wbr>iterable"</a>
-					</li>
-					<li class=" tsd-kind-external-module">
-						<a href="_test_test_helpers_.html">"test/test-<wbr>helpers"</a>
+						<a href="_directives_guard_.html">"directives/guard"</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lib_until_.html#until" class="tsd-kind-icon">until</a>
+						<a href="_directives_guard_.html#guard" class="tsd-kind-icon">guard</a>
 					</li>
 				</ul>
 			</nav>
