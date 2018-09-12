@@ -9,10 +9,10 @@ cache:
   directories:
   - node_modules
 before_script:
-- npm run build
 - >-
   npm run format && git diff --exit-code || (echo -e '\n\033[31mERROR:\033[0m
   Project is not formatted. Please run "npm run format".' && false)
+- npm run build
 script:
 - xvfb-run wct --npm
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'windows 10/microsoftedge@17' -s 'windows 10/microsoftedge@15' -s 'macos 10.13/safari@11' -s 'macos 10.12/safari@10' -s 'windows 8.1/internet explorer@11' -s 'Linux/chrome@41' --npm; fi
