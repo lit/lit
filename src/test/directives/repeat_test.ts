@@ -19,8 +19,11 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-function assertItemIdentity(oldChildren:HTMLElement[], newChildren:HTMLElement[], newOrder:number[]) {
-  newOrder.forEach((o,n) => {
+function assertItemIdentity(
+    oldChildren: HTMLElement[],
+    newChildren: HTMLElement[],
+    newOrder: number[]) {
+  newOrder.forEach((o, n) => {
     if (o >= 0 && o < oldChildren.length) {
       assert.strictEqual(oldChildren[o], newChildren[n]);
     }
@@ -213,7 +216,7 @@ suite('repeat', () => {
             <li>item: 1</li>
             <li>item: 2</li>`);
       const children2 = Array.from(container.querySelectorAll('li'));
-      
+
       assertItemIdentity(children1, children2, items);
     });
 
@@ -322,10 +325,11 @@ suite('repeat', () => {
       // TODO(kschaaf): Pull in sinon just for this?
       const origWarn = console.warn;
       let warnArgs: any[] = [];
-      console.warn = (...args:any[]) => {
-        warnArgs = args;
-        origWarn.apply(console, args);
-      }
+      console.warn =
+          (...args: any[]) => {
+            warnArgs = args;
+            origWarn.apply(console, args);
+          }
 
       const t = (items: number[]) =>
           html`${repeat(items, (i) => i, (i: number) => html`
@@ -346,10 +350,11 @@ suite('repeat', () => {
       // TODO(kschaaf): Pull in sinon just for this?
       const origWarn = console.warn;
       let warnArgs: any[] = [];
-      console.warn = (...args:any[]) => {
-        warnArgs = args;
-        origWarn.apply(console, args);
-      }
+      console.warn =
+          (...args: any[]) => {
+            warnArgs = args;
+            origWarn.apply(console, args);
+          }
 
       const t = (items: number[]) =>
           html`${repeat(items, (i) => i, (i: number) => html`
@@ -365,7 +370,6 @@ suite('repeat', () => {
       // Restore console.warn
       console.warn = origWarn;
     });
-
   });
 
   suite('un-keyed', () => {

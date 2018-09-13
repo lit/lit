@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { createMarker, directive, Directive, NodePart, removeNodes, reparentNodes, TemplateFactory } from '../lit-html.js';
-import { TemplateResult } from '../lib/template-result.js';
+import {TemplateResult} from '../lib/template-result.js';
+import {createMarker, directive, Directive, NodePart, removeNodes, reparentNodes, TemplateFactory} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -22,7 +22,7 @@ export type ItemTemplate<T> = (item: T, index: number) => any;
 // TODO(kschaaf): Should keying be part of part API?
 class KeyedNodePart extends NodePart {
   key: any;
-  constructor(templateFactory: TemplateFactory, key: any ) {
+  constructor(templateFactory: TemplateFactory, key: any) {
     super(templateFactory);
     this.key = key;
   }
@@ -38,8 +38,10 @@ interface KeyedTemplateResult extends TemplateResult {
 
 // Helper functions for manipulating parts
 // TODO(kschaaf): Refactor into Part API?
-function createPart(parentPart: NodePart, result: KeyedTemplateResult,
-  beforePart?: NodePart | null): KeyedNodePart {
+function createPart(
+    parentPart: NodePart,
+    result: KeyedTemplateResult,
+    beforePart?: NodePart|null): KeyedNodePart {
   const container = parentPart.startNode.parentNode as Node;
   const beforeNode = beforePart ? beforePart.startNode : parentPart.endNode;
   const startNode = createMarker();
@@ -56,7 +58,10 @@ function updatePart(part: KeyedNodePart, result: TemplateResult) {
   part.commit();
   return part;
 }
-function movePart(parentPart: NodePart, partToMove: NodePart, beforePart: NodePart | null | undefined) {
+function movePart(
+    parentPart: NodePart,
+    partToMove: NodePart,
+    beforePart: NodePart|null|undefined) {
   const container = parentPart.startNode.parentNode as Node;
   const beforeNode = beforePart ? beforePart.startNode : parentPart.endNode;
   const endNode = partToMove.endNode.nextSibling;
@@ -65,7 +70,10 @@ function movePart(parentPart: NodePart, partToMove: NodePart, beforePart: NodePa
   }
 }
 function removePart(part: NodePart) {
-  removeNodes(part.startNode.parentNode as Node, part.startNode, part.endNode.nextSibling);
+  removeNodes(
+      part.startNode.parentNode as Node,
+      part.startNode,
+      part.endNode.nextSibling);
 }
 
 // Stores previous ordered list of keyed parts and map of key to index
@@ -89,7 +97,6 @@ export function repeat<T>(
   }
 
   return directive((directivePart: NodePart): void => {
-
     // Old part list & map is retrieved from the last render (associated with
     // the part created for this instance of the directive)
     let oldParts = partListCache.get(directivePart) || [];
@@ -108,7 +115,8 @@ export function repeat<T>(
     for (let item of items) {
       const key = keyFn ? keyFn(item) : index;
       if (newKeyToIndexMap.has(key)) {
-        console.warn(`Duplicate key '${key}' detected in repeat; behavior is undefined.`);
+        console.warn(`Duplicate key '${
+            key}' detected in repeat; behavior is undefined.`);
       } else {
         const result = newResults[index] = template !(item, index);
         newKeyToIndexMap.set(key, index);
@@ -119,17 +127,18 @@ export function repeat<T>(
 
     // Head and tail pointers to old parts and new results
     let oldStartIndex = 0;
-    let oldStartPart = oldParts[0];    
-    let oldEndIndex = oldParts.length-1;
+    let oldStartPart = oldParts[0];
+    let oldEndIndex = oldParts.length - 1;
     let oldEndPart = oldParts[oldEndIndex];
     let newStartIndex = 0;
     let newStartResult = newResults[0];
-    let newEndIndex = newResults.length-1;
+    let newEndIndex = newResults.length - 1;
     let newEndResult = newResults[newEndIndex];
 
     // Overview of O(n) reconciliation algorithm (general approach based on
-    // ideas found in ivi, vue, snabdom, etc.): 
-    // * Iterate old & new lists from both sides, updating, swapping, or removing
+    // ideas found in ivi, vue, snabdom, etc.):
+    // * Iterate old & new lists from both sides, updating, swapping, or
+    // removing
     //   items at the head/tail locations until neither head nor tail can move
     // * Once head and tail cannot move, any mismatches are due to either new or
     //   moved items; create and insert new items, or else move old part to new
@@ -156,7 +165,7 @@ export function repeat<T>(
         oldEndPart = oldParts[--oldEndIndex];
       } else if (oldStartPart.key == newStartResult.key) {
         // Old head matches new head; update in place
-        newParts[newStartIndex] = updatePart(oldStartPart, newStartResult);  
+        newParts[newStartIndex] = updatePart(oldStartPart, newStartResult);
         oldStartPart = oldParts[++oldStartIndex];
         newStartResult = newResults[++newStartIndex];
       } else if (oldEndPart.key == newEndResult.key) {
@@ -175,7 +184,7 @@ export function repeat<T>(
       } else if (oldStartPart.key == newEndResult.key) {
         // Old head matches new tail; update and move to new tail
         newParts[newEndIndex] = updatePart(oldStartPart, newEndResult);
-        movePart(directivePart, oldStartPart, newParts[newEndIndex+1]);
+        movePart(directivePart, oldStartPart, newParts[newEndIndex + 1]);
         oldStartPart = oldParts[++oldStartIndex];
         newEndResult = newResults[--newEndIndex];
       } else if (oldEndPart.key == newStartResult.key) {
@@ -191,13 +200,14 @@ export function repeat<T>(
         const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
         if (oldPart == null) {
           // No old part for this result; create a new one and insert it
-          let newPart = createPart(directivePart, newEndResult, newParts[newEndIndex+1]);
+          let newPart = createPart(
+              directivePart, newEndResult, newParts[newEndIndex + 1]);
           newParts[newEndIndex] = newPart;
         } else {
           // Reuse old part
           newParts[newEndIndex] = updatePart(oldPart, newEndResult);
-          movePart(directivePart, oldPart, newParts[newEndIndex+1]);
-          // This marks the old part as having been used, so that it will be 
+          movePart(directivePart, oldPart, newParts[newEndIndex + 1]);
+          // This marks the old part as having been used, so that it will be
           // skipped in the first two checks above
           oldParts[oldIndex as number] = null;
         }
@@ -220,6 +230,5 @@ export function repeat<T>(
     // Save order of new parts for next round
     partListCache.set(directivePart, newParts);
     partMapCache.set(directivePart, newKeyToIndexMap);
-
   });
 }
