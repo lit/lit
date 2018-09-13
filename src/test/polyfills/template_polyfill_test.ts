@@ -20,14 +20,11 @@ suite('Template', function() {
     assert.equal(template.childNodes.length, 0, 'template children evacipated');
     assert.isDefined(template.content, 'template content exists');
     assert.equal(
-      template.content.childNodes.length,
-      1,
-      'template content has expected number of nodes'
-    );
+        template.content.childNodes.length,
+        1,
+        'template content has expected number of nodes');
     assert.isNull(
-      document.querySelector('#content'),
-      'template content not in document'
-    );
+        document.querySelector('#content'), 'template content not in document');
   });
 
   test('stamping', function() {

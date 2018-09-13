@@ -1262,14 +1262,16 @@ suite('render()', () => {
 
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
-      const container = importToContainer(templateFactory(result).element.content);
+      const container =
+          importToContainer(templateFactory(result).element.content);
       assert(container.innerHTML, '<div></div>');
     });
 
     test('resists XSS attempt in attribute values', () => {
       const result = html
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
-      const container = importToContainer(templateFactory(result).element.content);
+      const container =
+          importToContainer(templateFactory(result).element.content);
       assert(container.innerHTML, '<div></div>');
     });
   });

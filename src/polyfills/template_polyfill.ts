@@ -26,14 +26,9 @@ if (typeof HTMLTemplateElement === 'undefined') {
   } else {
     // Cobalt does not implement createHTMLDocument.
     contentDoc = document.implementation.createDocument(
-      'http://www.w3.org/1999/xhtml',
-      'html',
-      null
-    );
-    const contentDocBody = document.createElementNS(
-      'http://www.w3.org/1999/xhtml',
-      'body'
-    );
+        'http://www.w3.org/1999/xhtml', 'html', null);
+    const contentDocBody =
+        document.createElementNS('http://www.w3.org/1999/xhtml', 'body');
     contentDoc.documentElement.appendChild(contentDocBody);
   }
 
