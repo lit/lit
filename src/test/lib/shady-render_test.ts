@@ -99,12 +99,14 @@ suite('shady-render', () => {
     document.body.removeChild(container);
   });
 
-  test('styles with css custom properties flow to nested shadowRoots', async () => {
-    // promise for sub element
-    const elementPromise = Promise.resolve().then(() => {
-      const container = document.createElement('scope-4a-sub');
-      container.attachShadow({mode: 'open'});
-      const result = html`
+  test(
+      'styles with css custom properties flow to nested shadowRoots',
+      async () => {
+        // promise for sub element
+        const elementPromise = Promise.resolve().then(() => {
+          const container = document.createElement('scope-4a-sub');
+          container.attachShadow({mode: 'open'});
+          const result = html`
         <style>
           :host {
             display: block;
@@ -113,14 +115,14 @@ suite('shady-render', () => {
         </style>
         <div>Testing...</div>
       `;
-      render(result, container.shadowRoot!, 'scope-4a-sub');
-      return container;
-    });
+          render(result, container.shadowRoot!, 'scope-4a-sub');
+          return container;
+        });
 
-    const container = document.createElement('scope-4a');
-    document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
-    const result = html`
+        const container = document.createElement('scope-4a');
+        document.body.appendChild(container);
+        container.attachShadow({mode: 'open'});
+        const result = html`
       <style>
         :host {
           --border: 2px solid orange;
@@ -131,14 +133,14 @@ suite('shady-render', () => {
       </style>
       ${until(elementPromise, '')}
     `;
-    render(result, container.shadowRoot!, 'scope-4a');
-    await elementPromise;
-    const e = (container.shadowRoot!).querySelector('scope-4a-sub');
-    assert.equal(
-        getComputedStyle(e!).getPropertyValue('border-top-width').trim(),
-        '2px');
-    document.body.removeChild(container);
-  });
+        render(result, container.shadowRoot!, 'scope-4a');
+        await elementPromise;
+        const e = (container.shadowRoot!).querySelector('scope-4a-sub');
+        assert.equal(
+            getComputedStyle(e!).getPropertyValue('border-top-width').trim(),
+            '2px');
+        document.body.removeChild(container);
+      });
 
   test('parts around styles with parts render/update', () => {
     const container = document.createElement('div');
