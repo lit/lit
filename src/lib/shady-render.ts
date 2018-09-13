@@ -107,53 +107,54 @@ const shadyRenderSet = new Set<string>();
  * not be scoped and the <style> will be left in the template and rendered
  * output.
  */
-const ensureStylesScoped =
+const styleTemplatesForScope =
     (fragment: DocumentFragment, template: Template, scopeName: string) => {
-      // only scope element template once per scope name
-      if (!shadyRenderSet.has(scopeName)) {
-        shadyRenderSet.add(scopeName);
-        const styleTemplate = document.createElement('template');
-        Array.from(fragment.querySelectorAll('style')).forEach((s: Element) => {
-          styleTemplate.content.appendChild(s);
-        });
-        window.ShadyCSS.prepareTemplateStyles(styleTemplate, scopeName);
-        // Fix templates: note the expectation here is that the given `fragment`
-        // has been generated from the given `template` which contains
-        // the set of templates rendered into this scope.
-        // It is only from this set of initial templates from which styles
-        // will be scoped and removed.
-        removeStylesFromLitTemplates(scopeName);
-        // ApplyShim case
-        if (window.ShadyCSS.nativeShadow) {
-          const style = styleTemplate.content.querySelector('style');
-          if (style !== null) {
-            // Insert style into rendered fragment
-            fragment.insertBefore(style, fragment.firstChild);
-            // Insert into lit-template (for subsequent renders)
-            insertNodeIntoTemplate(
-                template,
-                style.cloneNode(true),
-                template.element.content.firstChild);
-          }
+      shadyRenderSet.add(scopeName);
+      // Move styles out of rendered DOM and store.
+      const styles = fragment.querySelectorAll('style');
+      const styleFragment = document.createDocumentFragment();
+      for (let i = 0; i < styles.length; i++) {
+        styleFragment.appendChild(styles[i]);
+      }
+      // Remove styles from nested templates in this scope.
+      removeStylesFromLitTemplates(scopeName);
+      // And then put them into the "root" template passed in as `template`.
+      insertNodeIntoTemplate(
+          template, styleFragment, template.element.content.firstChild);
+      // Note, it's important that ShadyCSS gets the template that `lit-html`
+      // will actually render so that it can update the style inside when
+      // needed.
+      window.ShadyCSS.prepareTemplateStyles(template.element, scopeName);
+      // When using native Shadow DOM, replace the style in the rendered
+      // fragment.
+      if (window.ShadyCSS.nativeShadow) {
+        const style = template.element.content.querySelector('style');
+        if (style !== null) {
+          fragment.insertBefore(style.cloneNode(true), fragment.firstChild);
         }
       }
     };
 
-// NOTE: We're copying code from lit-html's `render` method here.
-// We're doing this explicitly because the API for rendering templates is likely
-// to change in the near term.
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     scopeName: string) {
+  const shouldScope =
+      container instanceof ShadowRoot && compatibleShadyCSSVersion;
+  const hasScoped = shadyRenderSet.has(scopeName);
+  // Call `styleElement` to update element if it's already been processed.
+  // This ensures the template is up to date before stamping the template
+  // into the shadowRoot *or* updates the shadowRoot if we've already stamped
+  // and are just updating the template.
+  if (shouldScope && hasScoped) {
+    window.ShadyCSS.styleElement((container as ShadowRoot).host);
+  }
   litRender(result, container, shadyTemplateFactory(scopeName));
-
-  // If there's a shadow host, do ShadyCSS scoping...
-  if (container instanceof ShadowRoot && result instanceof TemplateResult &&
-      compatibleShadyCSSVersion) {
+  // When rendering a TemplateResult, scope the template with ShadyCSS
+  if (shouldScope && !hasScoped && result instanceof TemplateResult) {
     const part = parts.get(container)!;
     const instance = part.value as TemplateInstance;
-    ensureStylesScoped(container, instance.template, scopeName);
-    window.ShadyCSS.styleElement(container.host);
+    styleTemplatesForScope(
+        (container as ShadowRoot), instance.template, scopeName);
   }
 }

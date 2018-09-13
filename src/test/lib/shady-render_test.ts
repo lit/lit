@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {until} from '../../directives/until.js';
 import {html, render} from '../../lib/shady-render.js';
 
 const assert = chai.assert;
@@ -97,6 +98,46 @@ suite('shady-render', () => {
         '2px');
     document.body.removeChild(container);
   });
+
+  test(
+      'styles with css custom properties flow to nested shadowRoots',
+      async () => {
+        // promise for sub element
+        const elementPromise = Promise.resolve().then(() => {
+          const container = document.createElement('scope-4a-sub');
+          container.attachShadow({mode: 'open'});
+          const result = html`
+        <style>
+          :host {
+            display: block;
+            border: var(--border);
+          }
+        </style>
+        <div>Testing...</div>
+      `;
+          render(result, container.shadowRoot!, 'scope-4a-sub');
+          return container;
+        });
+
+        const container = document.createElement('scope-4a');
+        document.body.appendChild(container);
+        container.attachShadow({mode: 'open'});
+        const result = html`
+      <style>
+        :host {
+          --border: 2px solid orange;
+        }
+      </style>
+      ${until(elementPromise, '')}
+    `;
+        render(result, container.shadowRoot!, 'scope-4a');
+        await elementPromise;
+        const e = (container.shadowRoot!).querySelector('scope-4a-sub');
+        assert.equal(
+            getComputedStyle(e!).getPropertyValue('border-top-width').trim(),
+            '2px');
+        document.body.removeChild(container);
+      });
 
   test('parts around styles with parts render/update', () => {
     const container = document.createElement('div');
