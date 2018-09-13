@@ -1,6 +1,5 @@
 {
   "name": "@polymer/shop",
-  "flat": true,
   "version": "3.0.0",
   "contributors": [
     "The Polymer Authors"
@@ -17,20 +16,20 @@
     "test": "rm -rf build/ && polymer lint && polymer test"
   },
   "dependencies": {
-    "@polymer/app-layout": "^3.0.0-pre.19",
-    "@polymer/app-route": "^3.0.0-pre.19",
-    "@polymer/app-storage": "^3.0.0-pre.19",
-    "@polymer/iron-flex-layout": "^3.0.0-pre.19",
-    "@polymer/iron-form": "^3.0.0-pre.19",
-    "@polymer/iron-icon": "^3.0.0-pre.19",
-    "@polymer/iron-iconset-svg": "^3.0.0-pre.19",
-    "@polymer/iron-media-query": "^3.0.0-pre.19",
-    "@polymer/iron-overlay-behavior": "^3.0.0-pre.19",
-    "@polymer/iron-pages": "^3.0.0-pre.19",
-    "@polymer/iron-selector": "^3.0.0-pre.19",
-    "@polymer/paper-behaviors": "^3.0.0-pre.19",
-    "@polymer/paper-icon-button": "^3.0.0-pre.19",
-    "@polymer/paper-spinner": "^3.0.0-pre.19",
+    "@polymer/app-layout": "^3.0.0",
+    "@polymer/app-route": "^3.0.0",
+    "@polymer/app-storage": "^3.0.0",
+    "@polymer/iron-flex-layout": "^3.0.0",
+    "@polymer/iron-form": "^3.0.0",
+    "@polymer/iron-icon": "^3.0.0",
+    "@polymer/iron-iconset-svg": "^3.0.0",
+    "@polymer/iron-media-query": "^3.0.0",
+    "@polymer/iron-overlay-behavior": "^3.0.0",
+    "@polymer/iron-pages": "^3.0.0",
+    "@polymer/iron-selector": "^3.0.0",
+    "@polymer/paper-behaviors": "^3.0.0",
+    "@polymer/paper-icon-button": "^3.0.0",
+    "@polymer/paper-spinner": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
