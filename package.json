@@ -1,0 +1,45 @@
+{
+  "name": "@polymer/shop",
+  "version": "3.0.0",
+  "contributors": [
+    "The Polymer Authors"
+  ],
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/shop",
+  "scripts": {
+    "start": "polymer serve",
+    "build": "npm run build:prpl-server && npm run build:static",
+    "build:prpl-server": "polymer build --auto-base-path && gulp prpl-server",
+    "build:static": "polymer build",
+    "serve:prpl-server": "prpl-server --root server/build",
+    "serve:static": "polymer serve --port 5000 build/es5-bundled",
+    "test": "rm -rf build/ && polymer lint && polymer test"
+  },
+  "dependencies": {
+    "@polymer/app-layout": "^3.0.0",
+    "@polymer/app-route": "^3.0.0",
+    "@polymer/app-storage": "^3.0.0",
+    "@polymer/iron-flex-layout": "^3.0.0",
+    "@polymer/iron-form": "^3.0.0",
+    "@polymer/iron-icon": "^3.0.0",
+    "@polymer/iron-iconset-svg": "^3.0.0",
+    "@polymer/iron-media-query": "^3.0.0",
+    "@polymer/iron-overlay-behavior": "^3.0.0",
+    "@polymer/iron-pages": "^3.0.0",
+    "@polymer/iron-selector": "^3.0.0",
+    "@polymer/paper-behaviors": "^3.0.0",
+    "@polymer/paper-icon-button": "^3.0.0",
+    "@polymer/paper-spinner": "^3.0.0",
+    "@polymer/polymer": "^3.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0"
+  },
+  "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
+    "gulp-rename": "^1.3.0",
+    "gulp-replace": "^1.0.0",
+    "polymer-cli": "^1.7.0",
+    "prpl-server": "^1.1.0",
+    "wct-browser-legacy": "^1.0.0"
+  }
+}

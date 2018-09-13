@@ -1,0 +1,68 @@
+{
+  "/": {
+    "src/shop-app.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/list/.*": {
+    "src/shop-app.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "src/shop-list.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/detail/.*": {
+    "src/shop-app.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "src/shop-detail.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/cart": {
+    "src/shop-app.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "src/shop-cart.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/checkout": {
+    "src/shop-app.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "src/shop-checkout.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  }
+}
