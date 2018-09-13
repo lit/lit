@@ -13,7 +13,7 @@
  */
 
 import {isDirective} from './directive.js';
-import {isCEPolyfill, removeNodes} from './dom.js';
+import {removeNodes} from './dom.js';
 import {noChange, Part} from './part.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
@@ -130,6 +130,16 @@ export class NodePart implements Part {
   }
 
   /**
+   * Inserts this part into a container.
+   *
+   * This part must be empty, as its contents are not automatically moved.
+   */
+  appendInto(container: Node) {
+    this.startNode = container.appendChild(createMarker());
+    this.endNode = container.appendChild(createMarker());
+  }
+
+  /**
    * Inserts this part between `ref` and `ref`'s next sibling. Both `ref` and
    * its next sibling must be static, unchanging nodes such as those that appear
    * in a literal section of a template.
@@ -234,11 +244,6 @@ export class NodePart implements Part {
       const instance =
           new TemplateInstance(template, value.processor, this.templateFactory);
       const fragment = instance._clone();
-      // Since we cloned in the polyfill case, now force an upgrade
-      if (isCEPolyfill) {
-        document.adoptNode(fragment);
-        customElements.upgrade(fragment);
-      }
       instance.update(value.values);
       this._commitNode(fragment);
       this.value = instance;

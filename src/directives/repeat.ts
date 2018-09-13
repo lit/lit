@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart, removeNodes, reparentNodes, TemplateFactory} from '../lit-html.js';
+import { createMarker, directive, Directive, NodePart, removeNodes, reparentNodes, TemplateFactory } from '../lit-html.js';
 import { TemplateResult } from '../lib/template-result.js';
 
 export type KeyFn<T> = (item: T) => any;
@@ -42,8 +42,8 @@ function createPart(parentPart: NodePart, result: KeyedTemplateResult,
   beforePart?: NodePart | null): KeyedNodePart {
   const container = parentPart.startNode.parentNode as Node;
   const beforeNode = beforePart ? beforePart.startNode : parentPart.endNode;
-  const startNode = document.createComment('');
-  const endNode = document.createComment('');
+  const startNode = createMarker();
+  const endNode = createMarker();
   container.insertBefore(startNode, beforeNode);
   container.insertBefore(endNode, beforeNode);
   const newPart = new KeyedNodePart(parentPart.templateFactory, result.key);
@@ -95,6 +95,7 @@ export function repeat<T>(
     let oldParts = partListCache.get(directivePart) || [];
     let oldKeyToIndexMap = partMapCache.get(directivePart) || new Map();
 
+<<<<<<< HEAD
     // New part list will be built up as we go (either reused from old parts or
     // created for new keys in this update). This is saved in partListCache
     // at the end of the update.
@@ -109,6 +110,33 @@ export function repeat<T>(
       const key = keyFn ? keyFn(item) : index;
       if (newKeyToIndexMap.has(key)) {
         console.warn(`Duplicate key '${key}' detected in repeat; behavior is undefined.`);
+=======
+      // Try to reuse a part
+      let itemPart = keyMap.get(key);
+      if (itemPart === undefined) {
+        // TODO(justinfagnani): We really want to avoid manual marker creation
+        // here and instead use something like part.insertBeforePart(). This
+        // requires a little refactoring, like iterating through values and
+        // existing parts like NodePart#_setIterable does. We can also remove
+        // keyMapCache and use part._value instead.
+        // But... repeat() is badly in need of rewriting, so we'll do this for
+        // now and revisit soon.
+        const marker = createMarker();
+        const endNode = createMarker();
+        container.insertBefore(marker, currentMarker);
+        container.insertBefore(endNode, currentMarker);
+        itemPart = new NodePart(part.templateFactory);
+        itemPart.insertAfterNode(marker);
+        if (key !== undefined) {
+          keyMap.set(key, itemPart);
+        }
+      } else if (currentMarker !== itemPart.startNode) {
+        // Existing part in the wrong position
+        const end = itemPart.endNode.nextSibling!;
+        if (currentMarker !== end) {
+          reparentNodes(container, itemPart.startNode, end, currentMarker);
+        }
+>>>>>>> master
       } else {
         const result = newResults[index] = template !(item, index);
         newKeyToIndexMap.set(key, index);

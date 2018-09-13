@@ -106,6 +106,10 @@ export class TemplateInstance {
       }
     };
     _prepareInstance(fragment);
+    if (isCEPolyfill) {
+      document.adoptNode(fragment);
+      customElements.upgrade(fragment);
+    }
     return fragment;
   }
 }
