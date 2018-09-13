@@ -18,7 +18,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 const assert = chai.assert;
 
 const isTemplatePolyfilled =
-    ((HTMLTemplateElement as any).decorate != null ||
+    (typeof HTMLTemplateElement === 'undefined' ||
+     (HTMLTemplateElement as any).decorate != null ||
      (window as any).ShadyDOM && (window as any).ShadyDOM.inUse);
 const testSkipForTemplatePolyfill = isTemplatePolyfilled ? test.skip : test;
 
@@ -1253,15 +1254,23 @@ suite('render()', () => {
   });
 
   suite('security', () => {
+    function importToContainer(content) {
+      const container = document.createElement('div');
+      container.appendChild(document.importNode(content, true));
+      return container;
+    }
+
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
-      assert(templateFactory(result).element.innerHTML, '<div></div>');
+      const container = importToContainer(templateFactory(result).element.content);
+      assert(container.innerHTML, '<div></div>');
     });
 
     test('resists XSS attempt in attribute values', () => {
       const result = html
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
-      assert(templateFactory(result).element.innerHTML, '<div></div>');
+      const container = importToContainer(templateFactory(result).element.content);
+      assert(container.innerHTML, '<div></div>');
     });
   });
 });
