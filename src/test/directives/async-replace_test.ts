@@ -95,6 +95,28 @@ suite('asyncReplace', () => {
         stripExpressionMarkers(container.innerHTML), '<div>hello</div>');
   });
 
+  test(
+      'renders the same iterable even when the iterable new value is emitted at the same time as a re-render',
+      async () => {
+        const t = (iterable: any) => html`<div>${asyncReplace(iterable)}</div>`;
+        let wait: Promise<void>;
+        render(t(iterable), container);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+        wait = iterable.push('hello');
+        render(t(iterable), container);
+        await wait;
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>hello</div>');
+
+        wait = iterable.push('bar');
+        render(t(iterable), container);
+        await wait;
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
+      });
+
   test('renders new value over a pending iterable', async () => {
     const t = (v: any) => html`<div>${v}</div>`;
     // This is a little bit of an odd usage of directives as values, but it
