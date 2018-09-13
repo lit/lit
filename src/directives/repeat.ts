@@ -82,9 +82,9 @@ export function repeat<T>(
     keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
     template?: ItemTemplate<T>): Directive<NodePart> {
   let keyFn: KeyFn<T>;
-  if (arguments.length < 3) {
+  if (arguments.length === 2) {
     template = keyFnOrTemplate;
-  } else {
+  } else if (arguments.length === 3) {
     keyFn = keyFnOrTemplate as KeyFn<T>;
   }
 
