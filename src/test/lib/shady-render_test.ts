@@ -127,9 +127,6 @@ suite('shady-render', () => {
         :host {
           --border: 2px solid orange;
         }
-        div {
-          border: var(--border);
-        }
       </style>
       ${until(elementPromise, '')}
     `;

@@ -111,15 +111,19 @@ const styleTemplatesForScope =
     (fragment: DocumentFragment, template: Template, scopeName: string) => {
       shadyRenderSet.add(scopeName);
       // Move styles out of rendered DOM and store.
+      const styles = fragment.querySelectorAll('style');
       const styleFragment = document.createDocumentFragment();
-      Array.from(fragment.querySelectorAll('style')).forEach((s: Element) => {
-        styleFragment.appendChild(s);
-      });
-      // Remove styles from nested templates in this scope and put them
-      // into the "root" template passed in as `template`.
+      for (let i = 0; i < styles.length; i++) {
+        styleFragment.appendChild(styles[i]);
+      }
+      // Remove styles from nested templates in this scope.
       removeStylesFromLitTemplates(scopeName);
+      // And then put them into the "root" template passed in as `template`.
       insertNodeIntoTemplate(
           template, styleFragment, template.element.content.firstChild);
+      // Note, it's important that ShadyCSS gets the template that `lit-html`
+      // will actually render so that it can update the style inside when
+      // needed.
       window.ShadyCSS.prepareTemplateStyles(template.element, scopeName);
       // When using native Shadow DOM, replace the style in the rendered
       // fragment.
@@ -139,7 +143,9 @@ export function render(
       container instanceof ShadowRoot && compatibleShadyCSSVersion;
   const hasScoped = shadyRenderSet.has(scopeName);
   // Call `styleElement` to update element if it's already been processed.
-  // This ensures the template is up to date before stamping.
+  // This ensures the template is up to date before stamping the template
+  // into the shadowRoot *or* updates the shadowRoot if we've already stamped
+  // and are just updating the template.
   if (shouldScope && hasScoped) {
     window.ShadyCSS.styleElement((container as ShadowRoot).host);
   }
