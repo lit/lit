@@ -11,14 +11,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 <!-- ## Unreleased -->
+<!-- ### Added -->
+<!-- ### Changed -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
+## [0.11.3] - 2018-09-13
+### Changed
+* Moved upgrading of custom elements in template fragments to a common location in TemplateInstance ([#489](https://github.com/Polymer/lit-html/pull/489))
+* Rewrite render() to reuse the logic in NodePart. render() now supports all the data types that NodeParts do. ([#491](https://github.com/Polymer/lit-html/pull/491))
+
+### Fixed
+* Fixed bug when using the ShadyCSS @apply` shim. ([#502](https://github.com/Polymer/lit-html/pull/502))
 
 ## [0.11.2] - 2018-09-12
 
 ### Added
 * Added `classMap` and `styleMap` directives ([#486](https://github.com/Polymer/lit-html/pull/486))
 
-<!-- ### Changed -->
-<!-- ### Removed -->
 ### Fixed
 
 * Fixed bug in asyncReplace when rerendering the same iterable ([#485](https://github.com/Polymer/lit-html/pull/485))
