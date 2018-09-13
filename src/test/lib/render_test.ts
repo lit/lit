@@ -1254,7 +1254,7 @@ suite('render()', () => {
   });
 
   suite('security', () => {
-    function importToContainer(content) {
+    function importToContainer(content: DocumentFragment) {
       const container = document.createElement('div');
       container.appendChild(document.importNode(content, true));
       return container;
