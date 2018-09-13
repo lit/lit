@@ -24,7 +24,7 @@
     "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api ./src",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
     "prepare": "npm run build"
   },
@@ -34,6 +34,7 @@
     "@types/mocha": "^5.2.0",
     "@webcomponents/webcomponentsjs": "^2.0.4",
     "chai": "^4.1.2",
+    "clang-format": "^1.2.4",
     "mocha": "^5.2.0",
     "rollup": "^0.64.1",
     "rollup-plugin-filesize": "^4.0.1",
