@@ -32,6 +32,7 @@ if (typeof HTMLTemplateElement === 'undefined') {
         contentDoc.documentElement.appendChild(contentDocBody);
     }
     const upgrade = function (template) {
+        debugger;
         template.content = contentDoc.createDocumentFragment();
         defineInnerHTML(template);
     };
@@ -54,7 +55,7 @@ if (typeof HTMLTemplateElement === 'undefined') {
     Document.prototype.createElement = function createElement() {
         let el = capturedCreateElement.apply(this, arguments);
         if (el.localName === 'template') {
-            el = capturedCreateElement.call(this, 'template');
+            el = capturedCreateElement.call(this, 'div');
             upgrade(el);
         }
         return el;

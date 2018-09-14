@@ -26,13 +26,19 @@ if (typeof HTMLTemplateElement === 'undefined') {
   } else {
     // Cobalt does not implement createHTMLDocument.
     contentDoc = document.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml', 'html', null);
-    const contentDocBody =
-        document.createElementNS('http://www.w3.org/1999/xhtml', 'body');
+      'http://www.w3.org/1999/xhtml',
+      'html',
+      null
+    );
+    const contentDocBody = document.createElementNS(
+      'http://www.w3.org/1999/xhtml',
+      'body'
+    );
     contentDoc.documentElement.appendChild(contentDocBody);
   }
 
   const upgrade = function(template: any) {
+    debugger;
     template.content = contentDoc.createDocumentFragment();
     defineInnerHTML(template);
   };
@@ -57,7 +63,7 @@ if (typeof HTMLTemplateElement === 'undefined') {
   Document.prototype.createElement = function createElement() {
     let el = capturedCreateElement.apply(this, arguments);
     if (el.localName === 'template') {
-      el = capturedCreateElement.call(this, 'template');
+      el = capturedCreateElement.call(this, 'div');
       upgrade(el);
     }
     return el;
