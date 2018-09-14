@@ -66,11 +66,8 @@ suite('add/remove nodes from template', () => {
       });
 
   test('inserting documentFragment into template', () => {
-    const getResult = (a: any, b: any, c: any) => html`
-        <div foo="${a}">
-          ${b}
-          <p>${c}</p>
-        </div>`;
+    const getResult = (a: any, b: any, c: any) =>
+        html`<div foo="${a}">${b}<p>${c}</p></div>`;
     const result = getResult('bar', 'baz', 'qux');
     const template = templateFactory(result);
     const fragment1 = document.createDocumentFragment();
@@ -83,18 +80,12 @@ suite('add/remove nodes from template', () => {
         template, fragment2, template.element.content.querySelector('p'));
     render(result, container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), `<div><span>1</span></div>
-        <div foo="bar">
-          baz
-          <p>qux</p>
-        </div>`);
+        stripExpressionMarkers(container.innerHTML),
+        `<div><span>1</span></div><div foo="bar">baz<p>qux</p></div>`);
     render(getResult('a', 'b', 'c'), container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), `<div><span>1</span></div>
-        <div foo="a">
-          b
-          <p>c</p>
-        </div>`);
+        stripExpressionMarkers(container.innerHTML),
+        `<div><span>1</span></div><div foo="a">b<p>c</p></div>`);
   });
 
   test(
