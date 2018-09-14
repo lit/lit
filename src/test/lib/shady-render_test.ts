@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {until} from '../../directives/until.js';
-import {html, render} from '../../lib/shady-render.js';
+import {html} from '../../lit-html.js';
+import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
@@ -25,7 +25,7 @@ declare global {
 
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {
-    const container = document.createElement('div');
+    const container = document.createElement('scope-1');
     document.body.appendChild(container);
     container.attachShadow({mode: 'open'});
     const result = html`
@@ -36,7 +36,7 @@ suite('shady-render', () => {
       </style>
       <div>Testing...</div>
     `;
-    render(result, container.shadowRoot!, 'scope-1');
+    renderShadowRoot(result, container);
     const div = (container.shadowRoot!).querySelector('div');
     assert.equal(
         getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
@@ -45,9 +45,8 @@ suite('shady-render', () => {
   });
 
   test('style elements apply in shadowRoots in nested templates', () => {
-    const container = document.createElement('div');
+    const container = document.createElement('scope-2');
     document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
     const result = html`
       <style>
         div {
@@ -64,7 +63,7 @@ suite('shady-render', () => {
         <span>Testing...</span>
       `}
     `;
-    render(result, container.shadowRoot!, 'scope-2');
+    renderShadowRoot(result, container);
     const div = (container.shadowRoot!).querySelector('div');
     assert.equal(
         getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
@@ -78,19 +77,16 @@ suite('shady-render', () => {
 
   test('results render to multiple containers', () => {
     const container1 = document.createElement('div');
-    container1.attachShadow({mode: 'open'});
     const container2 = document.createElement('div');
-    container2.attachShadow({mode: 'open'});
     document.body.appendChild(container1);
     document.body.appendChild(container2);
-    const renderTo = (data: any, container: Element) =>
-        render(html`${data.a}-${data.b}-${data.c}`, container.shadowRoot!, 'a');
-    renderTo({a: 1, b: 2, c: 3}, container1);
-    renderTo({a: 4, b: 5, c: 6}, container2);
+    const getResult = (data: any) => html`${data.a}-${data.b}-${data.c}`;
+    renderShadowRoot(getResult({a: 1, b: 2, c: 3}), container1);
+    renderShadowRoot(getResult({a: 4, b: 5, c: 6}), container2);
     assert.equal(container1.shadowRoot!.textContent, '1-2-3');
     assert.equal(container2.shadowRoot!.textContent, '4-5-6');
-    renderTo({a: 11, b: 22, c: 33}, container1);
-    renderTo({a: 44, b: 55, c: 66}, container2);
+    renderShadowRoot(getResult({a: 11, b: 22, c: 33}), container1);
+    renderShadowRoot(getResult({a: 44, b: 55, c: 66}), container2);
     assert.equal(container1.shadowRoot!.textContent, '11-22-33');
     assert.equal(container2.shadowRoot!.textContent, '44-55-66');
     document.body.removeChild(container1);
@@ -100,7 +96,6 @@ suite('shady-render', () => {
   test('styles with css custom properties render', () => {
     const container = document.createElement('scope-4');
     document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
     const result = html`
       <style>
         :host {
@@ -112,7 +107,7 @@ suite('shady-render', () => {
       </style>
       <div>Testing...</div>
     `;
-    render(result, container.shadowRoot!, 'scope-4');
+    renderShadowRoot(result, container);
     const div = (container.shadowRoot!).querySelector('div');
     assert.equal(
         getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
@@ -123,47 +118,81 @@ suite('shady-render', () => {
   test(
       'styles with css custom properties flow to nested shadowRoots',
       async () => {
-        // promise for sub element
-        const elementPromise = Promise.resolve().then(() => {
-          const container = document.createElement('scope-4a-sub');
-          container.attachShadow({mode: 'open'});
-          const result = html`
-        <style>
-          :host {
-            display: block;
-            border: var(--border);
-          }
-        </style>
-        <div>Testing...</div>
-      `;
-          render(result, container.shadowRoot!, 'scope-4a-sub');
-          return container;
-        });
+        const shadowContent = html`
+          <style>
+            :host {
+              display: block;
+              border: var(--border);
+            }
+          </style>
+          <div>Testing...</div>
+        `;
 
         const container = document.createElement('scope-4a');
         document.body.appendChild(container);
-        container.attachShadow({mode: 'open'});
         const result = html`
       <style>
         :host {
           --border: 2px solid orange;
         }
       </style>
-      ${until(elementPromise, '')}
+      <scope-4a-sub></scope-4a-sub>
     `;
-        render(result, container.shadowRoot!, 'scope-4a');
-        await elementPromise;
-        const e = (container.shadowRoot!).querySelector('scope-4a-sub');
+        renderShadowRoot(result, container);
+        const e = (container.shadowRoot!).querySelector('scope-4a-sub')!;
+        renderShadowRoot(shadowContent, e);
         assert.equal(
             getComputedStyle(e!).getPropertyValue('border-top-width').trim(),
             '2px');
         document.body.removeChild(container);
       });
 
+  test(
+      'styles with css custom properties flow to multiple instances of nested shadowRoots',
+      async () => {
+        const nestedContent = html`
+            <style>
+              :host {
+                display: block;
+                border: var(--border);
+              }
+            </style>
+            <div>Testing...</div>
+          `;
+
+        const container = document.createElement('scope-4b');
+        document.body.appendChild(container);
+        renderShadowRoot(
+            html`
+          <style>
+            :host {
+              --border: 2px solid orange;
+            }
+          </style>
+          <scope-4b-sub></scope-4b-sub>
+          <scope-4b-sub></scope-4b-sub>
+        `,
+            container);
+        const elements =
+            (container.shadowRoot!).querySelectorAll('scope-4b-sub');
+        renderShadowRoot(nestedContent, elements[0]!);
+        renderShadowRoot(nestedContent, elements[1]!);
+        assert.equal(
+            getComputedStyle(elements[0]!)
+                .getPropertyValue('border-top-width')
+                .trim(),
+            '2px');
+        assert.equal(
+            getComputedStyle(elements[1]!)
+                .getPropertyValue('border-top-width')
+                .trim(),
+            '2px');
+        document.body.removeChild(container);
+      });
+
   test('parts around styles with parts render/update', () => {
-    const container = document.createElement('div');
+    const container = document.createElement('scope-3a');
     document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
     const renderTemplate =
         (border: string, a: string, b: string, c: string) => {
           const result = html`<div id="a">${a}</div>
@@ -174,7 +203,7 @@ suite('shady-render', () => {
         </style><div id="b">${b}</div>
         <div id="c">${c}</div>
       `;
-          render(result, container.shadowRoot!, 'scope-3a');
+          renderShadowRoot(result, container);
         };
     renderTemplate('1px solid black', 'a', 'b', 'c');
     const shadowRoot = container.shadowRoot!;
@@ -205,9 +234,8 @@ suite('shady-render', () => {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
       this.skip();
     }
-    const container = document.createElement('div');
+    const container = document.createElement('scope-3');
     document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
     const renderTemplate = (border: string) => {
       const result = html`
         <style>
@@ -217,7 +245,7 @@ suite('shady-render', () => {
         </style>
         <div>Testing...</div>
       `;
-      render(result, container.shadowRoot as DocumentFragment, 'scope-3');
+      renderShadowRoot(result, container);
     };
     renderTemplate('1px solid black');
     const div = (container.shadowRoot!).querySelector('div');
