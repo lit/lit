@@ -74,7 +74,7 @@ export function removeNodesFromTemplate(
 }
 
 const countNodes = (node: Node) => {
-  let count = 1;
+  let count = (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ? 0 : 1;
   const walker =
       document.createTreeWalker(node, walkerNodeFilter, null as any, false);
   while (walker.nextNode()) {
@@ -117,8 +117,8 @@ export function insertNodeIntoTemplate(
     walkerIndex++;
     const walkerNode = walker.currentNode as Element;
     if (walkerNode === refNode) {
-      refNode.parentNode!.insertBefore(node, refNode);
       insertCount = countNodes(node);
+      refNode.parentNode!.insertBefore(node, refNode);
     }
     while (partIndex !== -1 && parts[partIndex].index === walkerIndex) {
       // If we've inserted the node, simply adjust all subsequent parts

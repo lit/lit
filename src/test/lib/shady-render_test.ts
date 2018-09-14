@@ -44,7 +44,7 @@ suite('shady-render', () => {
     document.body.removeChild(container);
   });
 
-  test('style elements apply in  shadowRoots in nested templates', () => {
+  test('style elements apply in shadowRoots in nested templates', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     container.attachShadow({mode: 'open'});
@@ -74,6 +74,27 @@ suite('shady-render', () => {
         getComputedStyle(span!).getPropertyValue('border-top-width').trim(),
         '5px');
     document.body.removeChild(container);
+  });
+
+  test('results render to multiple containers', () => {
+    const container1 = document.createElement('div');
+    container1.attachShadow({mode: 'open'});
+    const container2 = document.createElement('div');
+    container2.attachShadow({mode: 'open'});
+    document.body.appendChild(container1);
+    document.body.appendChild(container2);
+    const renderTo = (data: any, container: Element) => render(
+      html`${data.a}-${data.b}-${data.c}`, container.shadowRoot!, 'a');
+    renderTo({a: 1, b: 2, c: 3}, container1);
+    renderTo({a: 4, b: 5, c: 6}, container2);
+    assert.equal(container1.shadowRoot!.textContent, '1-2-3');
+    assert.equal(container2.shadowRoot!.textContent, '4-5-6');
+    renderTo({a: 11, b: 22, c: 33}, container1);
+    renderTo({a: 44, b: 55, c: 66}, container2);
+    assert.equal(container1.shadowRoot!.textContent, '11-22-33');
+    assert.equal(container2.shadowRoot!.textContent, '44-55-66');
+    document.body.removeChild(container1);
+    document.body.removeChild(container2);
   });
 
   test('styles with css custom properties render', () => {
