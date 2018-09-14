@@ -65,41 +65,37 @@ suite('add/remove nodes from template', () => {
         </div><div><span>3</span></div>`);
       });
 
-  test(
-      'inserting documentFragment into template',
-      () => {
-        const getResult = (a: any, b: any, c: any) => html`
+  test('inserting documentFragment into template', () => {
+    const getResult = (a: any, b: any, c: any) => html`
         <div foo="${a}">
           ${b}
           <p>${c}</p>
         </div>`;
-        const result = getResult('bar', 'baz', 'qux');
-        const template = templateFactory(result);
-        const fragment1 = document.createDocumentFragment();
-        fragment1.appendChild(document.createElement('div'));
-        fragment1.firstElementChild!.innerHTML = '<span>1</span>';
-        insertNodeIntoTemplate(
-            template, fragment1, template.element.content.firstChild);
-        const fragment2 = document.createDocumentFragment();
-        insertNodeIntoTemplate(
-            template, fragment2, template.element.content.querySelector('p'));
-        render(result, container);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<div><span>1</span></div>
+    const result = getResult('bar', 'baz', 'qux');
+    const template = templateFactory(result);
+    const fragment1 = document.createDocumentFragment();
+    fragment1.appendChild(document.createElement('div'));
+    fragment1.firstElementChild!.innerHTML = '<span>1</span>';
+    insertNodeIntoTemplate(
+        template, fragment1, template.element.content.firstChild);
+    const fragment2 = document.createDocumentFragment();
+    insertNodeIntoTemplate(
+        template, fragment2, template.element.content.querySelector('p'));
+    render(result, container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), `<div><span>1</span></div>
         <div foo="bar">
           baz
           <p>qux</p>
         </div>`);
-        render(getResult('a', 'b', 'c'), container);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<div><span>1</span></div>
+    render(getResult('a', 'b', 'c'), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), `<div><span>1</span></div>
         <div foo="a">
           b
           <p>c</p>
         </div>`);
-      });
+  });
 
   test(
       'removing nodes in template between parts renders/updates result', () => {

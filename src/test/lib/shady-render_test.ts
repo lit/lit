@@ -83,8 +83,8 @@ suite('shady-render', () => {
     container2.attachShadow({mode: 'open'});
     document.body.appendChild(container1);
     document.body.appendChild(container2);
-    const renderTo = (data: any, container: Element) => render(
-      html`${data.a}-${data.b}-${data.c}`, container.shadowRoot!, 'a');
+    const renderTo = (data: any, container: Element) =>
+        render(html`${data.a}-${data.b}-${data.c}`, container.shadowRoot!, 'a');
     renderTo({a: 1, b: 2, c: 3}, container1);
     renderTo({a: 4, b: 5, c: 6}, container2);
     assert.equal(container1.shadowRoot!.textContent, '1-2-3');
