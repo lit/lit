@@ -38,8 +38,8 @@ export function removeNodesFromTemplate(
   const {element: {content}, parts} = template;
   const walker =
       document.createTreeWalker(content, walkerNodeFilter, null as any, false);
-  let partIndex = 0;
-  let part = parts[0];
+  let partIndex = nextActiveIndexInTemplateParts(parts);
+  let part = parts[partIndex];
   let nodeIndex = -1;
   let removeCount = 0;
   const nodesToRemoveInTemplate = [];
@@ -67,7 +67,9 @@ export function removeNodesFromTemplate(
       // If part is in a removed node deactivate it by setting index to -1 or
       // adjust the index as needed.
       part.index = currentRemovingNode !== null ? -1 : part.index - removeCount;
-      part = parts[++partIndex];
+      // go to the next active part.
+      partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
+      part = parts[partIndex];
     }
   }
   nodesToRemoveInTemplate.forEach((n) => n.parentNode!.removeChild(n));
