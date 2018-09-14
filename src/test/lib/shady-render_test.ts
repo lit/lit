@@ -195,13 +195,15 @@ suite('shady-render', () => {
     document.body.appendChild(container);
     const renderTemplate =
         (border: string, a: string, b: string, c: string) => {
-          const result = html`<div id="a">${a}</div>
+          const result = html`<style></style><div id="a">${a}</div>
         <style>
           div {
             border: ${border};
           }
         </style><div id="b">${b}</div>
+        <style></style>
         <div id="c">${c}</div>
+        <style></style>
       `;
           renderShadowRoot(result, container);
         };
@@ -218,17 +220,59 @@ suite('shady-render', () => {
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a1`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b1`);
     assert.equal(shadowRoot.querySelector('#c')!.textContent, `c1`);
-    // Note: Under Shady DOM, we do not expect this style part to update,
-    // but under native Shadow DOM, we do.
-    const stylePartValue =
-        (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) ?
-        '2px' :
-        '1px';
+    // Style parts do not update.
     assert.equal(
         getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-        stylePartValue);
+        '1px');
     document.body.removeChild(container);
   });
+
+  test(
+      'parts around styles with parts render/update when stamped into muliple containers',
+      () => {
+        const container = document.createElement('scope-3b');
+        document.body.appendChild(container);
+        const renderTemplate =
+            (border: string,
+             a: string,
+             b: string,
+             c: string,
+             host = container) => {
+              const result = html`<style></style><div id="a">${a}</div>
+        <style>
+          div {
+            border: ${border};
+          }
+        </style><div id="b">${b}</div>
+        <style></style>
+        <div id="c">${c}</div>
+        <style></style>
+      `;
+              renderShadowRoot(result, host);
+            };
+        // create a dummy element first
+        renderTemplate(
+            '1px solid black', '', '', '', document.createElement('scope-3b'));
+        // then test the 2nd element made for this scope
+        renderTemplate('1px solid black', 'a', 'b', 'c');
+        const shadowRoot = container.shadowRoot!;
+        assert.equal(shadowRoot.querySelector('#a')!.textContent, `a`);
+        assert.equal(shadowRoot.querySelector('#b')!.textContent, `b`);
+        assert.equal(shadowRoot.querySelector('#c')!.textContent, `c`);
+        const div = shadowRoot.querySelector('div');
+        assert.equal(
+            getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
+            '1px');
+        renderTemplate('2px solid black', 'a1', 'b1', 'c1');
+        assert.equal(shadowRoot.querySelector('#a')!.textContent, `a1`);
+        assert.equal(shadowRoot.querySelector('#b')!.textContent, `b1`);
+        assert.equal(shadowRoot.querySelector('#c')!.textContent, `c1`);
+        // Style parts do not update.
+        assert.equal(
+            getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
+            '1px');
+        document.body.removeChild(container);
+      });
 
   test('part values render into styles once per scope', function() {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {

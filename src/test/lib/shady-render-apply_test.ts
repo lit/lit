@@ -59,18 +59,29 @@ suite('shady-render @apply', () => {
         </style>
         <div>Testing...</div>
       `;
-        const applyUser = document.createElement('apply-user');
-        document.body.appendChild(applyUser);
-        renderShadowRoot(applyUserContent, applyUser);
-        const applyUserDiv = (applyUser.shadowRoot!).querySelector('div');
-        const applyUserStyle = getComputedStyle(applyUserDiv!);
-        assert.equal(
-            applyUserStyle.getPropertyValue('border-top-width').trim(), '2px');
-        assert.equal(
-            applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
-        // Render sub-element with a promise to ensure it's rendered after the
-        // containing scope.
-        const producerContent = htmlWithApply`
+
+        // Test an apply user and multiple times to see that multiple stampings
+        // work.
+        const testApplyUser = () => {
+          const applyUser = document.createElement('apply-user');
+          document.body.appendChild(applyUser);
+          renderShadowRoot(applyUserContent, applyUser);
+          const applyUserDiv = (applyUser.shadowRoot!).querySelector('div');
+          const applyUserStyle = getComputedStyle(applyUserDiv!);
+          assert.equal(
+              applyUserStyle.getPropertyValue('border-top-width').trim(),
+              '2px');
+          assert.equal(
+              applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
+          document.body.removeChild(applyUser);
+        };
+        testApplyUser();
+        testApplyUser();
+
+        // Test an apply user inside a producer and do it multiple times to see
+        // that multiple stampings work.
+        const testApplyProducer = () => {
+          const producerContent = htmlWithApply`
       <style>
         :host {
           --stuff: {
@@ -80,24 +91,37 @@ suite('shady-render @apply', () => {
         }
       </style>
       <apply-user></apply-user>
+      <apply-user></apply-user>
     `;
-        const applyProducer = document.createElement('apply-producer');
-        document.body.appendChild(applyProducer);
-        renderShadowRoot(producerContent, applyProducer);
-        const userInProducer =
-            applyProducer.shadowRoot!.querySelector('apply-user')!;
-        renderShadowRoot(applyUserContent, userInProducer);
-        const applyProducerDiv =
-            userInProducer!.shadowRoot!.querySelector('div')!;
-        const applyProducerStyle = getComputedStyle(applyProducerDiv!);
-        assert.equal(
-            applyProducerStyle.getPropertyValue('border-top-width').trim(),
-            '10px');
-        assert.equal(
-            applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
-        assert.equal(
-            applyProducerStyle.getPropertyValue('padding-top').trim(), '20px');
-        document.body.removeChild(applyUser);
-        document.body.removeChild(applyProducer);
+          const applyProducer = document.createElement('apply-producer');
+          document.body.appendChild(applyProducer);
+          renderShadowRoot(producerContent, applyProducer);
+          const usersInProducer =
+              applyProducer.shadowRoot!.querySelectorAll('apply-user')!;
+          renderShadowRoot(applyUserContent, usersInProducer[0]);
+          renderShadowRoot(applyUserContent, usersInProducer[1]);
+          const userInProducerStyle1 = getComputedStyle(
+              usersInProducer[0]!.shadowRoot!.querySelector('div')!);
+          const userInProducerStyle2 = getComputedStyle(
+              usersInProducer[1]!.shadowRoot!.querySelector('div')!);
+          assert.equal(
+              userInProducerStyle1.getPropertyValue('border-top-width').trim(),
+              '10px');
+          assert.equal(
+              userInProducerStyle1.getPropertyValue('padding-top').trim(),
+              '20px');
+          assert.equal(
+              userInProducerStyle2.getPropertyValue('border-top-width').trim(),
+              '10px');
+          assert.equal(
+              userInProducerStyle2.getPropertyValue('padding-top').trim(),
+              '20px');
+          document.body.removeChild(applyProducer);
+        };
+
+        // test multiple times to make sure theren's no bad interaction
+        testApplyProducer();
+        testApplyUser();
+        testApplyProducer();
       });
 });

@@ -163,7 +163,8 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
         let node;
-        while (node = template.element.content.querySelector('[name="remove"]')) {
+        while (node =
+                   template.element.content.querySelector('[name="remove"]')) {
           const nodeSet = new Set();
           nodeSet.add(node);
           removeNodesFromTemplate(template, nodeSet);
