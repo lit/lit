@@ -139,22 +139,21 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     scopeName: string) {
-  const shouldScope =
-      container instanceof ShadowRoot && compatibleShadyCSSVersion;
-  const hasScoped = shadyRenderSet.has(scopeName);
-  // Call `styleElement` to update element if it's already been processed.
-  // This ensures the template is up to date before stamping the template
-  // into the shadowRoot *or* updates the shadowRoot if we've already stamped
-  // and are just updating the template.
-  if (shouldScope && hasScoped) {
-    window.ShadyCSS.styleElement((container as ShadowRoot).host);
-  }
+  const hasRendered = parts.has(container);
   litRender(result, container, shadyTemplateFactory(scopeName));
   // When rendering a TemplateResult, scope the template with ShadyCSS
-  if (shouldScope && !hasScoped && result instanceof TemplateResult) {
-    const part = parts.get(container)!;
-    const instance = part.value as TemplateInstance;
-    styleTemplatesForScope(
-        (container as ShadowRoot), instance.template, scopeName);
+  if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
+      result instanceof TemplateResult) {
+    // Scope the element template one time only for this scope.
+    if (!shadyRenderSet.has(scopeName)) {
+      const part = parts.get(container)!;
+      const instance = part.value as TemplateInstance;
+      styleTemplatesForScope(
+          (container as ShadowRoot), instance.template, scopeName);
+    }
+    // Update styling if this is the initial render to this container.
+    if (!hasRendered) {
+      window.ShadyCSS.styleElement((container as ShadowRoot).host);
+    }
   }
 }
