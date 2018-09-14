@@ -14,7 +14,7 @@
 
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
-import {html as htmlWithApply, render} from '../../lib/shady-render.js';
+import {html as htmlWithApply} from '../../lib/shady-render.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
