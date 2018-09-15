@@ -32,7 +32,6 @@ if (typeof HTMLTemplateElement === 'undefined') {
         contentDoc.documentElement.appendChild(contentDocBody);
     }
     const upgrade = function (template) {
-        debugger;
         template.content = contentDoc.createDocumentFragment();
         defineInnerHTML(template);
     };
