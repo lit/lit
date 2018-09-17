@@ -137,18 +137,18 @@ const prepareTemplateStyles =
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
       window.ShadyCSS.prepareTemplateStyles(template.element, scopeName);
-      // When in native Shadow DOM, re-add styling to rendered content using the
-      // style ShadyCSS produced.
       if (window.ShadyCSS.nativeShadow) {
+        // When in native Shadow DOM, re-add styling to rendered content using
+        // the style ShadyCSS produced.
         const style = template.element.content.querySelector('style')!;
         renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
+      } else {
         // When not in native Shadow DOM, at this point ShadyCSS will have
         // removed the style from the lit template and parts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
         // and then tell lit to remove that node from the template.
         // NOTE, ShadyCSS creates its own style so we can safely add/remove
         // `condensedStyle` here.
-      } else {
         template.element.content.insertBefore(
             condensedStyle, template.element.content.firstChild);
         const removes = new Set();

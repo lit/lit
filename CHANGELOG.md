@@ -17,9 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 
 ## Unreleased
-* Fixed issues with `shady-render` introduced in 0.11.3 ([#504](https://github.com/Polymer/lit-html/issues/504) and [#505](https://github.com/Polymer/lit-html/issues/505).
 
 ### Fixed
+* Fixed issues with `shady-render` introduced in 0.11.3 ([#504](https://github.com/Polymer/lit-html/issues/504) and [#505](https://github.com/Polymer/lit-html/issues/505).
 
 ## [0.11.3] - 2018-09-13
 ### Changed
