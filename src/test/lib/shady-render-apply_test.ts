@@ -14,8 +14,8 @@
 
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
-import {until} from '../../directives/until.js';
-import {html as htmlWithApply, render} from '../../lib/shady-render.js';
+import {html as htmlWithApply} from '../../lib/shady-render.js';
+import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
@@ -23,7 +23,6 @@ suite('shady-render @apply', () => {
   test('styles with css custom properties using @apply render', function() {
     const container = document.createElement('scope-5');
     document.body.appendChild(container);
-    container.attachShadow({mode: 'open'});
     const result = htmlWithApply`
       <style>
         :host {
@@ -38,7 +37,7 @@ suite('shady-render @apply', () => {
       </style>
       <div>Testing...</div>
     `;
-    render(result, container.shadowRoot!, 'scope-5');
+    renderShadowRoot(result, container);
     const div = (container.shadowRoot!).querySelector('div');
     const computedStyle = getComputedStyle(div!);
     assert.equal(
@@ -50,10 +49,7 @@ suite('shady-render @apply', () => {
   test(
       'styles with css custom properties using @apply render in different contexts',
       async () => {
-        const createApplyUser = () => {
-          const container = document.createElement('apply-user');
-          container.attachShadow({mode: 'open'});
-          const result = htmlWithApply`
+        const applyUserContent = htmlWithApply`
         <style>
           div {
             border-top: 2px solid black;
@@ -63,21 +59,29 @@ suite('shady-render @apply', () => {
         </style>
         <div>Testing...</div>
       `;
-          render(result, container.shadowRoot!, 'apply-user');
-          return container;
+
+        // Test an apply user and multiple times to see that multiple stampings
+        // work.
+        const testApplyUser = () => {
+          const applyUser = document.createElement('apply-user');
+          document.body.appendChild(applyUser);
+          renderShadowRoot(applyUserContent, applyUser);
+          const applyUserDiv = (applyUser.shadowRoot!).querySelector('div');
+          const applyUserStyle = getComputedStyle(applyUserDiv!);
+          assert.equal(
+              applyUserStyle.getPropertyValue('border-top-width').trim(),
+              '2px');
+          assert.equal(
+              applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
+          document.body.removeChild(applyUser);
         };
-        const applyUser = createApplyUser();
-        document.body.appendChild(applyUser);
-        const applyUserDiv = (applyUser.shadowRoot!).querySelector('div');
-        const applyUserStyle = getComputedStyle(applyUserDiv!);
-        assert.equal(
-            applyUserStyle.getPropertyValue('border-top-width').trim(), '2px');
-        assert.equal(
-            applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
-        // Render sub-element with a promise to ensure it's rendered after the
-        // containing scope.
-        const applyUserPromise = Promise.resolve().then(createApplyUser);
-        const producerResult = htmlWithApply`
+        testApplyUser();
+        testApplyUser();
+
+        // Test an apply user inside a producer and do it multiple times to see
+        // that multiple stampings work.
+        const testApplyProducer = () => {
+          const producerContent = htmlWithApply`
       <style>
         :host {
           --stuff: {
@@ -86,25 +90,38 @@ suite('shady-render @apply', () => {
           };
         }
       </style>
-      ${until(applyUserPromise, 'loading')}
+      <apply-user></apply-user>
+      <apply-user></apply-user>
     `;
-        const applyProducer = document.createElement('apply-producer');
-        applyProducer.attachShadow({mode: 'open'});
-        document.body.appendChild(applyProducer);
-        render(producerResult, applyProducer.shadowRoot!, 'apply-producer');
-        await applyUserPromise;
-        const applyProducerDiv =
-            applyProducer.shadowRoot!.querySelector('apply-user')!.shadowRoot!
-                .querySelector('div')!;
-        const applyProducerStyle = getComputedStyle(applyProducerDiv!);
-        assert.equal(
-            applyProducerStyle.getPropertyValue('border-top-width').trim(),
-            '10px');
-        assert.equal(
-            applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
-        assert.equal(
-            applyProducerStyle.getPropertyValue('padding-top').trim(), '20px');
-        document.body.removeChild(applyUser);
-        document.body.removeChild(applyProducer);
+          const applyProducer = document.createElement('apply-producer');
+          document.body.appendChild(applyProducer);
+          renderShadowRoot(producerContent, applyProducer);
+          const usersInProducer =
+              applyProducer.shadowRoot!.querySelectorAll('apply-user')!;
+          renderShadowRoot(applyUserContent, usersInProducer[0]);
+          renderShadowRoot(applyUserContent, usersInProducer[1]);
+          const userInProducerStyle1 = getComputedStyle(
+              usersInProducer[0]!.shadowRoot!.querySelector('div')!);
+          const userInProducerStyle2 = getComputedStyle(
+              usersInProducer[1]!.shadowRoot!.querySelector('div')!);
+          assert.equal(
+              userInProducerStyle1.getPropertyValue('border-top-width').trim(),
+              '10px');
+          assert.equal(
+              userInProducerStyle1.getPropertyValue('padding-top').trim(),
+              '20px');
+          assert.equal(
+              userInProducerStyle2.getPropertyValue('border-top-width').trim(),
+              '10px');
+          assert.equal(
+              userInProducerStyle2.getPropertyValue('padding-top').trim(),
+              '20px');
+          document.body.removeChild(applyProducer);
+        };
+
+        // test multiple times to make sure theren's no bad interaction
+        testApplyProducer();
+        testApplyUser();
+        testApplyProducer();
       });
 });

@@ -107,31 +107,53 @@ const shadyRenderSet = new Set<string>();
  * not be scoped and the <style> will be left in the template and rendered
  * output.
  */
-const styleTemplatesForScope =
-    (fragment: DocumentFragment, template: Template, scopeName: string) => {
+const prepareTemplateStyles =
+    (renderedDOM: DocumentFragment, template: Template, scopeName: string) => {
       shadyRenderSet.add(scopeName);
       // Move styles out of rendered DOM and store.
-      const styles = fragment.querySelectorAll('style');
-      const styleFragment = document.createDocumentFragment();
+      const styles = renderedDOM.querySelectorAll('style');
+      // If there are no styles, there's no work to do.
+      if (styles.length === 0) {
+        return;
+      }
+      const condensedStyle = document.createElement('style');
+      // Collect styles into a single style. This helps us make sure ShadyCSS
+      // manipulations will not prevent us from being able to fix up template
+      // part indices.
+      // NOTE: collecting styles is inefficient for browsers but ShadyCSS
+      // currently does this anyway. When it does not, this should be changed.
       for (let i = 0; i < styles.length; i++) {
-        styleFragment.appendChild(styles[i]);
+        const style = styles[i];
+        style.parentNode!.removeChild(style);
+        condensedStyle.textContent! += style.textContent;
       }
       // Remove styles from nested templates in this scope.
       removeStylesFromLitTemplates(scopeName);
-      // And then put them into the "root" template passed in as `template`.
+      // And then put the condensed style into the "root" template passed in as
+      // `template`.
       insertNodeIntoTemplate(
-          template, styleFragment, template.element.content.firstChild);
+          template, condensedStyle, template.element.content.firstChild);
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
-      // needed.
+      // needed (e.g. @apply native Shadow DOM case).
       window.ShadyCSS.prepareTemplateStyles(template.element, scopeName);
-      // When using native Shadow DOM, replace the style in the rendered
-      // fragment.
       if (window.ShadyCSS.nativeShadow) {
-        const style = template.element.content.querySelector('style');
-        if (style !== null) {
-          fragment.insertBefore(style.cloneNode(true), fragment.firstChild);
-        }
+        // When in native Shadow DOM, re-add styling to rendered content using
+        // the style ShadyCSS produced.
+        const style = template.element.content.querySelector('style')!;
+        renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
+      } else {
+        // When not in native Shadow DOM, at this point ShadyCSS will have
+        // removed the style from the lit template and parts will be broken as a
+        // result. To fix this, we put back the style node ShadyCSS removed
+        // and then tell lit to remove that node from the template.
+        // NOTE, ShadyCSS creates its own style so we can safely add/remove
+        // `condensedStyle` here.
+        template.element.content.insertBefore(
+            condensedStyle, template.element.content.firstChild);
+        const removes = new Set();
+        removes.add(condensedStyle);
+        removeNodesFromTemplate(template, removes);
       }
     };
 
@@ -139,22 +161,21 @@ export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
     scopeName: string) {
-  const shouldScope =
-      container instanceof ShadowRoot && compatibleShadyCSSVersion;
-  const hasScoped = shadyRenderSet.has(scopeName);
-  // Call `styleElement` to update element if it's already been processed.
-  // This ensures the template is up to date before stamping the template
-  // into the shadowRoot *or* updates the shadowRoot if we've already stamped
-  // and are just updating the template.
-  if (shouldScope && hasScoped) {
-    window.ShadyCSS.styleElement((container as ShadowRoot).host);
-  }
+  const hasRendered = parts.has(container);
   litRender(result, container, shadyTemplateFactory(scopeName));
   // When rendering a TemplateResult, scope the template with ShadyCSS
-  if (shouldScope && !hasScoped && result instanceof TemplateResult) {
-    const part = parts.get(container)!;
-    const instance = part.value as TemplateInstance;
-    styleTemplatesForScope(
-        (container as ShadowRoot), instance.template, scopeName);
+  if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
+      result instanceof TemplateResult) {
+    // Scope the element template one time only for this scope.
+    if (!shadyRenderSet.has(scopeName)) {
+      const part = parts.get(container)!;
+      const instance = part.value as TemplateInstance;
+      prepareTemplateStyles(
+          (container as ShadowRoot), instance.template, scopeName);
+    }
+    // Update styling if this is the initial render to this container.
+    if (!hasRendered) {
+      window.ShadyCSS.styleElement((container as ShadowRoot).host);
+    }
   }
 }
