@@ -10,7 +10,7 @@
 
 import { PageViewElement } from './page-view-element.js';
 import { html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat.js';
+import { repeat } from 'lit-html/directives/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCheckboxStyle } from'./shop-checkbox-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
