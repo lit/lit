@@ -198,7 +198,7 @@ export function repeat<T>(
     //
     // * Example below: the head pointers once again match, so simply update
     //   part 1 and record it in the `newParts` array.  Last, advance both head
-    //   pointers. 
+    //   pointers.
     //
     //           oldHead v        v oldTail
     //   oldParts:   [0, 1, -, 3, 4, 5, 6]
@@ -225,7 +225,7 @@ export function repeat<T>(
     //   pointer range and never visited again.
     //
     // * Example below: Here the old tail key matches the new head key, so
-    //   the part at the `oldTail` position and move its dom to the new 
+    //   the part at the `oldTail` position and move its dom to the new
     //   head position (before `oldParts[oldHead]`). Last, advance `oldTail`
     //   and `newHead` pointers.
     //
