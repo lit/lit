@@ -249,7 +249,7 @@ export function repeat<T>(
     //   exhausted). Those are handled in the final while loops at the end.
     //
     // * Example below: `oldHead` exceeded `oldTail`, so we're done with the
-    //   main loop.  Creat the remaining part and insert it at the new head
+    //   main loop.  Create the remaining part and insert it at the new head
     //   position, and the update is complete.
     //
     //                   (oldHead > oldTail)
