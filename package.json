@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
