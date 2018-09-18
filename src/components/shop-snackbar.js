@@ -11,7 +11,7 @@
 import { LitElement, html } from '@polymer/lit-element';
 
 class ShopSnackbar extends LitElement {
-  _render() {
+  render() {
     return html`
     <style>
       :host {

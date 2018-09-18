@@ -12,7 +12,7 @@ import { LitElement, html } from '@polymer/lit-element';
 import './shop-tabs-overlay.js';
 
 class ShopTabs extends LitElement {
-  _render() {
+  render() {
     return html`
     <style>
       :host {
@@ -30,7 +30,7 @@ class ShopTabs extends LitElement {
       }
     </style>
     <div id="container">
-      <shop-tabs-overlay target="${this.children[this.selectedIndex]}"></shop-tabs-overlay>
+      <shop-tabs-overlay .target="${this.children[this.selectedIndex]}"></shop-tabs-overlay>
       <slot></slot>
     </div>`;
   }
@@ -39,7 +39,7 @@ class ShopTabs extends LitElement {
     /**
      * The index of the selected element.
      */
-    selectedIndex: Number
+    selectedIndex: { type: Number }
   }}
 }
 

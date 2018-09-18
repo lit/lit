@@ -18,7 +18,8 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { reloadCategory } from '../actions/app.js';
 
 class ShopNetworkWarning extends connect(store)(LitElement) {
-  _render({ _offline }) {
+  render() {
+    const _offline = this._offline;
     return html`
     ${shopButtonStyle}
     <style>
@@ -60,13 +61,13 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
       }
     </div>
     <shop-button>
-      <button on-click="${() => this._tryReconnect()}">Try Again</button>
+      <button @click="${() => this._tryReconnect()}">Try Again</button>
     </shop-button>
     `;
   }
 
   static get properties() { return {
-    _offline: Boolean
+    _offline: { type: Boolean }
   }}
 
   _stateChanged(state) {

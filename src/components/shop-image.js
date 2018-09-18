@@ -11,7 +11,8 @@
 import { LitElement, html } from '@polymer/lit-element';
 
 class ShopImage extends LitElement {
-  _render({ alt, placeholder, src, _loaded }) {
+  render() {
+    const { alt, placeholder, src, _loaded } = this;
     return html`
     <style>
 
@@ -37,7 +38,7 @@ class ShopImage extends LitElement {
         margin: 0 auto;
         opacity: 0;
         transition: none;
-        
+
         position: absolute;
         top: 0;
         bottom: 0;
@@ -53,31 +54,31 @@ class ShopImage extends LitElement {
 
     </style>
 
-    <div id="placeholder" style$="${placeholder ? `background-image: url('${placeholder}')` : ''}">
-      <img src="${src}" alt="${alt}" class$="${_loaded ? 'loaded' : ''}"
-          on-load="${() => this._loaded = true}"
-          on-error="${() => this._onImgError()}">
+    <div id="placeholder" style="background-image: url('${placeholder || ''}')">
+      <img src="${src}" alt="${alt}" class="${_loaded ? 'loaded' : ''}"
+          @load="${() => this._loaded = true}"
+          @error="${() => this._onImgError()}">
     </div>
 `;
   }
 
   static get properties() { return {
 
-    alt: String,
+    alt: { type: String },
 
-    src: String,
+    src: { type: String },
 
-    placeholder: String,
+    placeholder: { type: String },
 
-    _loaded: Boolean
+    _loaded: { type: Boolean }
 
   }}
 
-  _propertiesChanged(props, changed, oldProps) {
-    if (changed && 'src' in changed) {
-      props._loaded = false;
+  update(changedProps) {
+    if (changedProps.has('src')) {
+      this._loaded = false;
     }
-    super._propertiesChanged(props, changed, oldProps);
+    super.update(changedProps);
   }
 
   _onImgError() {

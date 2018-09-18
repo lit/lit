@@ -11,7 +11,8 @@
 import { LitElement, html } from '@polymer/lit-element';
 
 class ShopListItem extends LitElement {
-  _render({ item = {} }) {
+  render() {
+    const item = this.item || {};
     return html`
     <style>
 
@@ -57,7 +58,7 @@ class ShopListItem extends LitElement {
 
   static get properties() { return {
 
-    item: Object
+    item: { type: Object }
 
   }}
 }

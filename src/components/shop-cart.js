@@ -10,7 +10,7 @@
 
 import { PageViewElement } from './page-view-element.js';
 import { html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat.js';
+import { repeat } from 'lit-html/directives/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
@@ -20,7 +20,8 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { totalSelector } from '../reducers/cart.js';
 
 class ShopCart extends connect(store)(PageViewElement) {
-  _render({ _cart, _total }) {
+  render() {
+    const { _cart, _total } = this;
     const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
 
     return html`
@@ -62,7 +63,7 @@ class ShopCart extends connect(store)(PageViewElement) {
             </header>
             <div class="list">
               ${repeat(cartList, entry => html`
-                <shop-cart-item entry="${entry}"></shop-cart-item>
+                <shop-cart-item .entry="${entry}"></shop-cart-item>
               `)}
             </div>
             <div class="checkout-box">
@@ -80,9 +81,9 @@ class ShopCart extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    _total: Number,
+    _total: { type: Number },
 
-    _cart: Object
+    _cart: { type: Object }
 
   }}
 

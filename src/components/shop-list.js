@@ -10,7 +10,7 @@
 
 import { PageViewElement } from './page-view-element.js';
 import { html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat.js';
+import { repeat } from 'lit-html/directives/repeat.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import './shop-image.js';
 import './shop-list-item.js';
@@ -20,7 +20,9 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(PageViewElement) {
-  _render({ _category = {}, _failure }) {
+  render() {
+    const _category = this._category || {};
+    const _failure = this._failure;
     return html`
     ${shopCommonStyle}
     <style>
@@ -83,7 +85,9 @@ class ShopList extends connect(store)(PageViewElement) {
       <ul class="grid">
         ${repeat(this._getListItems(_category.items), item => html`
           <li>
-            <a href="/detail/${_category.name}/${item.name}"><shop-list-item item="${item}"></shop-list-item></a>
+            <a href="/detail/${_category.name}/${item.name}">
+              <shop-list-item .item="${item}"></shop-list-item>
+            </a>
           </li>
         `)}
       </ul>` : html`
@@ -96,9 +100,9 @@ class ShopList extends connect(store)(PageViewElement) {
 
   static get properties() { return {
 
-    _category: Object,
+    _category: { type: Object },
 
-    _failure: Boolean
+    _failure: { type: Boolean }
 
   }}
 

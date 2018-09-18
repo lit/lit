@@ -13,7 +13,7 @@ import { flush } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
 
 class ShopTabsOverlay extends LitElement {
-  _render() {
+  render() {
     return html`
     <style>
       :host {
@@ -34,7 +34,7 @@ class ShopTabsOverlay extends LitElement {
     /**
      * The element the overlay should cover.
      */
-    target: Object
+    target: { type: Object }
   }}
 
   constructor() {
@@ -43,15 +43,14 @@ class ShopTabsOverlay extends LitElement {
     this._transitionsInFlight = [];
   }
 
-  _firstRendered() {
+  firstUpdated() {
     this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
   }
 
-  _propertiesChanged(props, changed, oldProps) {
-    if (changed && 'target' in changed) {
-      this._targetChanged(props.target, oldProps.target);
+  updated(changedProps) {
+    if (changedProps.has('target')) {
+      this._targetChanged(this.target, changedProps.get('target'));
     }
-    super._propertiesChanged(props, changed, oldProps);
   }
 
   _targetChanged(newTarget, oldTarget) {

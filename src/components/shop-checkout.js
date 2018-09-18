@@ -10,15 +10,13 @@
 
 import { PageViewElement } from './page-view-element.js';
 import { html } from '@polymer/lit-element';
-import { repeat } from 'lit-html/lib/repeat.js';
+import { repeat } from 'lit-html/directives/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import { shopCheckboxStyle } from'./shop-checkbox-style.js';
 import { shopCommonStyle } from './shop-common-style.js';
 import { shopFormStyle } from './shop-form-style.js';
 import { shopInputStyle } from'./shop-input-style.js';
 import { shopSelectStyle } from './shop-select-style.js';
-import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
 import { store } from '../store.js';
 import { connect } from 'pwa-helpers/connect-mixin.js';
@@ -33,7 +31,8 @@ store.addReducers({
 });
 
 class ShopCheckout extends connect(store)(PageViewElement) {
-  _render({ _cart, _response, _state, _total, _waiting, _hasBillingAddress }) {
+  render() {
+    const { _cart, _response, _state, _total, _waiting, _hasBillingAddress } = this;
     const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
 
     return html`
@@ -137,7 +136,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
 
     </style>
 
-    <div class$="${_waiting ? 'main-frame waiting' : 'main-frame'}">
+    <div class="${_waiting ? 'main-frame waiting' : 'main-frame'}">
       ${ _state === 'init' ? html`
         <div state="init">
           <form id="checkoutForm">
@@ -235,7 +234,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                   <div class="billing-address-picker">
                     <shop-checkbox>
                       <input type="checkbox" id="setBilling" name="setBilling"
-                          checked="${_hasBillingAddress}" on-change="${e => this._hasBillingAddress = e.target.checked}">
+                          .checked="${_hasBillingAddress}" @change="${e => this._hasBillingAddress = e.target.checked}">
                       <shop-md-decorator></shop-md-decorator aria-hidden="true">
                     </shop-checkbox>
                     <label for="setBilling">Use different billing address</label>
@@ -393,7 +392,7 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     <div>$${_total.toFixed(2)}</div>
                   </div>
                   <shop-button responsive id="submitBox">
-                    <input type="button" on-click="${e => this._submit()}" value="Place Order">
+                    <input type="button" @click="${e => this._submit()}" value="Place Order">
                   </shop-button>
                 </section>
               </div>`
@@ -413,14 +412,14 @@ class ShopCheckout extends connect(store)(PageViewElement) {
           <h1>We couldn't process your order</h1>
           <p id="errorMessage">${_response.errorMessage}</p>
           <shop-button responsive>
-            <input type="button" on-click="${e => store.dispatch(updateCheckoutState('init'))}" value="Try Again">
+            <input type="button" @click="${e => store.dispatch(updateCheckoutState('init'))}" value="Try Again">
           </shop-button>
         </header>`
       }
     </div>
 
     <!-- Show spinner when waiting for the server to repond -->
-    <paper-spinner-lite active="${_waiting}"></paper-spinner-lite>
+    <paper-spinner-lite ?active="${_waiting}"></paper-spinner-lite>
     `;
   }
 
@@ -429,33 +428,33 @@ class ShopCheckout extends connect(store)(PageViewElement) {
     /**
      * The total price of the contents in the user's cart.
      */
-    _total: Number,
+    _total: { type: Number },
 
     /**
      * The state of the form. Valid values are:
      * `init`, `success` and `error`.
      */
-    _state: String,
+    _state: { type: String },
 
     /**
      * The cart contents.
      */
-    _cart: Object,
+    _cart: { type: Object },
 
     /**
      * The server's response.
      */
-    _response: Object,
+    _response: { type: Object },
 
     /**
      * If true, the user must enter a billing address.
      */
-    _hasBillingAddress: Boolean,
+    _hasBillingAddress: { type: Boolean },
 
     /**
      * True when waiting for the server to repond.
      */
-    _waiting: Boolean
+    _waiting: { type: Boolean }
 
   }}
 

@@ -18,7 +18,8 @@ import { store } from '../store.js';
 import { editCart, removeFromCart } from '../actions/cart.js';
 
 class ShopCartItem extends LitElement {
-  _render({ entry }) {
+  render() {
+    const entry = this.entry;
     return html`
     ${shopSelectStyle}
     <style>
@@ -182,7 +183,7 @@ class ShopCartItem extends LitElement {
           <div class="quantity">
             <shop-select>
               <label prefix>Qty:</label>
-              <select id="quantitySelect" aria-label="Change quantity" value="${entry.quantity}" on-change="${e => this._quantityChange(e)}">
+              <select id="quantitySelect" aria-label="Change quantity" .value="${entry.quantity}" @change="${e => this._quantityChange(e)}">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -203,9 +204,9 @@ class ShopCartItem extends LitElement {
           <div class="price">$${entry.item.price.toFixed(2)}</div>
 
           <!--
-            Use on-click instead of on-tap to prevent the next cart item to be focused
+            Use @click instead of @tap to prevent the next cart item to be focused
           -->
-          <paper-icon-button class="delete-button" icon="close" aria-label$="Delete item ${entry.item.title}" on-click="${() => this._removeItem()}"></paper-icon-button>
+          <paper-icon-button class="delete-button" icon="close" aria-label="Delete item ${entry.item.title}" @click="${() => this._removeItem()}"></paper-icon-button>
         </div>
       </div>` : null
     }
@@ -214,7 +215,7 @@ class ShopCartItem extends LitElement {
 
   static get properties() { return {
 
-    entry: Object
+    entry: { type: Object }
 
   }}
 
