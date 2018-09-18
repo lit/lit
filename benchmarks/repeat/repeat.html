@@ -1,0 +1,254 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <script src="../perf-lib/perf.js"></script>
+</head>
+
+<body>
+
+  <div id="container"></div>
+
+  <script type="module">
+  import {repeat} from '../../directives/repeat.js';
+  import {repeat as repeatBaseline} from '../../directives/repeat-baseline.js';
+  import {repeat as repeatFancy} from '../../directives/repeat-fancy.js';
+  import {repeat as repeatOrig} from '../../directives/repeat-orig.js';
+  import {render} from '../../lib/render.js';
+  import {html} from '../../lit-html.js';
+  {
+
+    customElements.define('x-item', class extends HTMLElement {
+      static get observedAttributes() { return ['delay']; }
+      constructor() {
+        super();
+        this.textNode = document.createTextNode('');
+        this.connectedCount = 0;
+        this.attachShadow({mode: 'open'})
+          .appendChild(document.createElement('li'))
+          .appendChild(this.textNode);
+        this.shadowRoot.firstChild.appendChild(document.createElement('slot'));
+      }
+      set delay(val) {
+        const end = performance.now() + (val || 0);
+        while (performance.now() < end);
+      }
+      attributeChangedCallback(name, old, value) {
+        if (name == 'delay') {
+          this._delay = parseInt(value)/10;
+          // this.delay = this._delay;
+        }
+      }
+      connectedCallback() {
+        this.textNode.textContent = `c(${++this.connectedCount}) - `;
+        this.delay = this._delay;
+      }
+      disconnectedCallback() {
+        this.textNode.textContent = `d(${this.connectedCount}) - `;
+      }
+    });
+
+    let params = {
+      // method: 'repeatLis',
+      // count: 10,
+      // update(items) {
+      //   return [1,2,0,3,4,5,6,9,8,7].map(i => items[i]);
+      // }
+    };
+    location.search.slice(location.search.indexOf('?') + 1).split('&')
+      .forEach(kv => params[kv.split('=')[0]] = decodeURIComponent(kv.split('=')[1]));
+
+    const method = params.method || 'repeat';
+    const itemType = params.item || 'ce';
+    const initialCount = parseInt(params.count || 2000);
+    const removeCount = parseInt(params.remove);
+    const moveCount = parseInt(params.move);
+    const addCount = parseInt(params.add);
+    const swapCount = parseInt(params.swap);
+    const delay = parseInt(params.delay || 1);
+    const from = parseInt(params.from != undefined ? params.from : 2);
+    const to = parseInt(params.to != undefined ? params.to : 8);
+    const update = params.update && (typeof params.update == 'function' ?
+      params.update : new Function('items', `return (${params.update});`));
+    const replace = Boolean('replace' in params);
+    const reverse = Boolean('reverse' in params);
+    const shuffle = Boolean('shuffle' in params);
+    const mirror = Boolean('mirror' in params);
+    const reuse = Boolean('reuse' in params);
+    const pool = Boolean('pool' in params);
+    const lis = Boolean('lis' in params);
+    const noRemoveFirst = Boolean('noRemoveFirst' in params);
+    const loopCount = parseInt(params.loop) || 1;
+    const measureCreate = params.measure == 'create';
+
+    let gid = 0;
+    const container = document.getElementById('container');
+    const createItem = () => ({id: gid, text: `item ${gid++}`});
+    const createItems = count => new Array(count).fill(null).map(createItem);
+
+    const itemTemplates = {
+      ce: item => html`<x-item>${item.text}</x-item>`,
+      ceDelay: item => html`<x-item delay=${delay}>${item.text}</x-item>`,
+      li: item => html`<li>${item.text}</li>`,
+      input: item => html`<div>${item.text}: <input value="${item.text}"></div>`
+    }
+
+    const fancyOptions = { reuse, pool, lis, noRemoveFirst }
+    
+    const renderItem = itemTemplates[itemType];
+
+    const methods = {
+      repeat(items) {
+        return html`<ul>${repeat(items, item => item.id, renderItem)}</ul>`;
+      },
+      repeatUnkeyed(items) {
+        return html`<ul>${repeat(items, renderItem)}</ul>`;
+      },
+      repeatBaseline(items) {
+        return html`<ul>${repeatBaseline(items, item => item.id, renderItem)}</ul>`;
+      },
+      repeatFancy(items) {
+        return html`<ul>${repeatFancy(items, item => item.id, renderItem, fancyOptions)}</ul>`;
+      },
+      repeatOrig(items) {
+        return html`<ul>${repeatOrig(items, item => item.id, renderItem)}</ul>`;
+      },
+      map(items) {
+        return html`<ul>${items.map(renderItem)}</ul>`;
+      }
+    };
+
+    const renderTemplate = methods[method];
+
+    let items = createItems(initialCount);
+
+    measureCreate && console.perf();
+
+    render(renderTemplate(items), container);
+
+    for (let i=0; i<loopCount; i++) {
+
+      if (replace) {
+        items = createItems(items.length);
+      }
+
+      if (removeCount) {
+        items = items.filter((e,i) => i < from || i >= from + removeCount);
+        if (mirror) {
+          items = items.filter((e,i) => i < items.length - from-removeCount || i >= items.length - from);
+        }
+      }
+
+      if (addCount) {
+        items = [...items.slice(0, to), ...createItems(addCount), ...items.slice(to)];
+        if (mirror) {
+          items = [...items.slice(0, -to), ...createItems(addCount), ...items.slice(-to)];
+        }
+      }
+
+      if (swapCount) {
+        items = [
+          ...items.slice(0, from),
+          ...items.slice(to, to+swapCount),
+          ...items.slice(from+swapCount, to),
+          ...items.slice(from, from+swapCount),
+          ...items.slice(to+swapCount)
+        ];
+      }
+
+      if (moveCount) {
+        if (from < to) {
+          items = [
+            ...items.slice(0, from),
+            ...items.slice(from + moveCount, to),
+            ...items.slice(from, from + moveCount),
+            ...items.slice(to)
+          ];
+        } else {
+          items = [
+            ...items.slice(0, to),
+            ...items.slice(from, from + moveCount),
+            ...items.slice(to, from),
+            ...items.slice(from + moveCount)
+          ];
+        }
+        if (mirror) {
+          let mfrom = items.length - from - moveCount;
+          let mto = items.length - to;
+          if (mfrom < mto) {
+            items = [
+              ...items.slice(0, mfrom),
+              ...items.slice(mfrom + moveCount, mto),
+              ...items.slice(mfrom, mfrom + moveCount),
+              ...items.slice(mto)
+            ];
+          } else {
+            items = [
+              ...items.slice(0, mto),
+              ...items.slice(mfrom, mfrom + moveCount),
+              ...items.slice(mto, mfrom),
+              ...items.slice(mfrom + moveCount)
+            ];
+          }
+        }
+      }
+
+      if (reverse) {
+        items = items.reverse();
+      }
+
+      if (shuffle) {
+        items = items.slice();
+        for (let i = items.length-1; i>0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+      }
+
+      if (update) {
+        items = update(items);
+      }
+
+      console.perf();
+      render(renderTemplate(items), container);
+
+    }
+
+    console.perfEnd();
+
+    window.items = items;
+    window.render = () => {
+      render(renderTemplate(items), container);
+    }
+
+    function error(msg) {
+      console.log(items.map(i=>i.id));
+      console.error(msg);
+      const div = document.createElement('div');
+      div.innerHTML = `<span style="color:red;font-size:2em;">${msg}</span>`;
+      document.body.appendChild(div);
+    }
+
+    if (container.firstElementChild.children.length !== items.length) {
+      error(`Length mismatch!`);
+    } else {
+      for (let e=container.firstElementChild.firstElementChild, i=0; e; e=e.nextElementSibling, i++) {
+        if (!items[i] || !e.textContent.includes(items[i].text)) {
+          error(`Mismatch at ${i}`);
+          break;
+        }
+      }
+    }
+  }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <!-- <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script> -->
+  <script type="module" src="../perf-lib/frame-tester.js"></script>
+	<style>
+    summary {
+      font-family: sans-serif;
+      font-size: 1.5em;
+    }
+  </style>
+
+</head>
+<body>
+
+  <summary>Element Tester</summary>
+
+  <frame-tester runs="25" chartmin="50" chartmax="100"></frame-tester>
+
+  <script>
+
+  customElements.whenDefined('frame-tester').then(function() {
+    document.querySelector('frame-tester').tests = [
+      // 'repeat.html?method=map&measure=create',
+      // 'repeat.html?method=repeatOrig&measure=create',
+      // 'repeat.html?method=repeat&measure=create',
+      // 'repeat.html?method=repeatFancy&lis&measure=create',
+
+      // 'repeat.html?method=map&remove=1&from=10&loop=980',
+      // 'repeat.html?method=repeatOrig&remove=1&from=10&loop=980',
+      // 'repeat.html?method=repeat&remove=1&from=10&loop=980',
+      // 'repeat.html?method=repeatFancy&lis&remove=1&from=10&loop=980',
+
+      // 'repeat.html?method=map&reverse',
+      // 'repeat.html?method=repeatOrig&reverse',
+      // 'repeat.html?method=repeat&reverse',
+      // 'repeat.html?method=repeatFancy&lis&reverse',
+
+      // 'repeat.html?method=map&shuffle',
+      // 'repeat.html?method=repeatOrig&shuffle',
+      // 'repeat.html?method=repeat&shuffle',
+      // 'repeat.html?method=repeatFancy&lis&shuffle',
+
+      // 'repeat.html?method=repeatFancy&remove=1&from=0&mirror&item=ceDelay&delay=1',
+      // 'repeat.html?method=repeatFancy&remove=1&from=0&mirror&item=ceDelay&delay=1&noRemoveFirst',
+
+      'repeat.html?method=repeatOrig&count=500&loop=500&remove=1&from=0',
+      'repeat.html?method=repeat&count=500&loop=500&remove=1&from=0',
+      'repeat.html?method=repeatUnkeyed&count=500&loop=500&remove=1&from=0',
+      'repeat.html?method=map&count=500&loop=500&remove=1&from=0',
+
+      // 'repeat.html?method=repeat&item=ceDelay&delay=3&replace',
+      // 'repeat.html?method=repeatFancy&item=ceDelay&delay=3&replace&reuse&pool',
+
+      // 'repeat.html?method=repeatBaseline&count=1000&loop=10',
+      // 'repeat.html?method=repeat&count=1000&loop=10',
+
+    ];
+  });
+  </script>
+
+</body>
+</html>
