@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {guard} from '../../directives/guard.js';
 import {repeat} from '../../directives/repeat.js';
+import {until} from '../../directives/until.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
@@ -425,6 +427,85 @@ suite('repeat', () => {
             <li>item: 2</li>
             <li>item: 3</li>
             <li>item: 4</li>`);
+    });
+
+    test('render objects as items with mutable update', () => {
+      let items = [{text: '0'}, {text: '1'}, {text: '2'}];
+      const t = () => html`${repeat(items, i => html`
+            <li>item: ${i.text}</li>`)}`;
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 2</li>`);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items[1].text += '*';
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1*</li>
+            <li>item: 2</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+      assertItemIdentity(children1, children2, [0, 1, 2]);
+    });
+
+    test('render objects as items with immutable update', () => {
+      let items = [{text: '0'}, {text: '1'}, {text: '2'}];
+      const t = () => html`${repeat(items, i => html`
+            <li>item: ${i.text}</li>`)}`;
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 2</li>`);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [items[0], {text: items[1].text + '*'}, items[2]];
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1*</li>
+            <li>item: 2</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+      assertItemIdentity(children1, children2, [0, 1, 2]);
+    });
+  });
+
+  suite('rendering other values', () => {
+    test('render promises as values', async () => {
+      const items = [0, 1, 2];
+      const t = () => html`${repeat(items, (i: number) => Promise.resolve(html`
+            <li>promised: ${i}</li>`))}`;
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
+      await Promise.resolve();
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>promised: 0</li>
+            <li>promised: 1</li>
+            <li>promised: 2</li>`);
+    });
+
+    test('render nested directives as values', async () => {
+      const items = [0, 1, 2];
+      const t = () => html`${
+          repeat(
+              items,
+              (i: number) => until(
+                  Promise.resolve(guard(items, () => html`
+            <li>guarded: ${i}</li>`)),
+                  html`
+            <li>wait: ${i}</li>`))}`;
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>wait: 0</li>
+            <li>wait: 1</li>
+            <li>wait: 2</li>`);
+      await Promise.resolve();
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>guarded: 0</li>
+            <li>guarded: 1</li>
+            <li>guarded: 2</li>`);
     });
   });
 });
