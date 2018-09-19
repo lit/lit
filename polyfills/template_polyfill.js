@@ -44,7 +44,7 @@ if (typeof HTMLTemplateElement === 'undefined') {
                 }
                 const body = contentDoc.body;
                 while (body.firstChild) {
-                    this.content.append(body.firstChild);
+                  this.content.appendChild(body.firstChild);
                 }
             },
             configurable: true
