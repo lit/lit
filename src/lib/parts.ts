@@ -13,12 +13,18 @@
  */
 
 import {isDirective} from './directive.js';
-import {removeNodes} from './dom.js';
+import {removeNodes, reparentNodes} from './dom.js';
 import {noChange, Part} from './part.js';
+import {Template} from './template.js';
 import {TemplateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
+
+interface FragmentAndInstance {
+  fragment: DocumentFragment;
+  instance: TemplateInstance;
+}
 
 export const isPrimitive = (value: any) =>
     (value === null ||
@@ -119,6 +125,7 @@ export class AttributePart implements Part {
 }
 
 export class NodePart implements Part {
+  templateCache!: WeakMap<Template, FragmentAndInstance>;
   templateFactory: TemplateFactory;
   startNode!: Node;
   endNode!: Node;
@@ -234,16 +241,24 @@ export class NodePart implements Part {
   }
 
   private _commitTemplateResult(value: TemplateResult): void {
+    if (this.templateCache === undefined) {
+      this.templateCache = new WeakMap<Template, FragmentAndInstance>();
+    }
     const template = this.templateFactory(value);
     if (this.value && this.value.template === template) {
       this.value.update(value.values);
     } else {
-      // Make sure we propagate the template processor from the TemplateResult
-      // so that we use it's syntax extension, etc. The template factory comes
-      // from the render function so that it can control caching.
-      const instance =
+      let { instance, fragment } = this.templateCache.get(template) || { instance: undefined, fragment: undefined };
+      if (fragment === undefined || instance === undefined) {
+        // Make sure we propagate the template processor from the TemplateResult
+        // so that we use it's syntax extension, etc. The template factory comes
+        // from the render function so that it can control caching.
+        instance =
           new TemplateInstance(template, value.processor, this.templateFactory);
-      const fragment = instance._clone();
+        fragment = instance._clone();
+        this.templateCache.set(template, {instance, fragment});
+      }
+
       instance.update(value.values);
       this._commitNode(fragment);
       this.value = instance;
@@ -309,8 +324,13 @@ export class NodePart implements Part {
   }
 
   clear(startNode: Node = this.startNode) {
-    removeNodes(
+    if (this.value instanceof TemplateInstance) {
+      reparentNodes(
+        startNode, this.endNode, this.templateCache.get(this.value.template)!.fragment);
+    } else {
+      removeNodes(
         this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
+    }
   }
 }
 
