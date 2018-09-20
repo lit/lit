@@ -1,12 +1,12 @@
 <!doctype html>
 <html>
   <head>
+    <script src="../node_modules/wct-browser-legacy/browser.js"></script>
     <script type="module">
       import {initTemplatePolyfill} from '../polyfills/template_polyfill.js';
       delete window.HTMLTemplateElement;
       initTemplatePolyfill();
     </script>
-    <script src="../node_modules/wct-browser-legacy/browser.js"></script>
   </head>
   <body>
     <script type="module" src="./lit-html_test.js"></script>
