@@ -30,7 +30,7 @@ export const parts = new WeakMap<Node, NodePart>();
  * @param container A DOM parent to render to. The entire contents are either
  *     replaced, or efficiently updated if the same result type was previous
  *     rendered there.
- * @param templateFactory a function to create a Template or retreive one from
+ * @param templateFactory a function to create a Template or retrieve one from
  *     cache.
  */
 export function render(
