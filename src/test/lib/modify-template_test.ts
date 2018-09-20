@@ -65,6 +65,29 @@ suite('add/remove nodes from template', () => {
         </div><div><span>3</span></div>`);
       });
 
+  test('inserting documentFragment into template', () => {
+    const getResult = (a: any, b: any, c: any) =>
+        html`<div foo="${a}">${b}<p>${c}</p></div>`;
+    const result = getResult('bar', 'baz', 'qux');
+    const template = templateFactory(result);
+    const fragment1 = document.createDocumentFragment();
+    fragment1.appendChild(document.createElement('div'));
+    (fragment1.firstChild as HTMLElement)!.innerHTML = '<span>1</span>';
+    insertNodeIntoTemplate(
+        template, fragment1, template.element.content.firstChild);
+    const fragment2 = document.createDocumentFragment();
+    insertNodeIntoTemplate(
+        template, fragment2, template.element.content.querySelector('p'));
+    render(result, container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        `<div><span>1</span></div><div foo="bar">baz<p>qux</p></div>`);
+    render(getResult('a', 'b', 'c'), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        `<div><span>1</span></div><div foo="a">b<p>c</p></div>`);
+  });
+
   test(
       'removing nodes in template between parts renders/updates result', () => {
         const getResult = (a: any, b: any, c: any) =>
@@ -114,6 +137,38 @@ suite('add/remove nodes from template', () => {
           nodeSet.add(node);
         }
         removeNodesFromTemplate(template, nodeSet);
+        render(result, container);
+        assert.equal(stripExpressionMarkers(container.innerHTML), `
+        <div foo="bar">
+          baz
+          <p>qux</p>
+        </div>`);
+        render(getResult('a', 'b', 'c', 'rr1', 'rr2', 'rr3'), container);
+        assert.equal(stripExpressionMarkers(container.innerHTML), `
+        <div foo="a">
+          b
+          <p>c</p>
+        </div>`);
+      });
+
+  test(
+      'removing nodes in template containing parts with in-active parts renders/updates result',
+      () => {
+        const getResult = (a: any, b: any, c: any, r1: any, r2: any, r3: any) =>
+            html`<div name="remove"><span>${r1}</span></div>
+        <div foo="${a}"><div name="remove"><span>${r2}</span></div>
+          ${b}
+          <div name="remove"><span name="remove">${r3}</span></div><p>${c}</p>
+        </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
+        const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
+        const template = templateFactory(result);
+        let node;
+        while (node =
+                   template.element.content.querySelector('[name="remove"]')) {
+          const nodeSet = new Set();
+          nodeSet.add(node);
+          removeNodesFromTemplate(template, nodeSet);
+        }
         render(result, container);
         assert.equal(stripExpressionMarkers(container.innerHTML), `
         <div foo="bar">
