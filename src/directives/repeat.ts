@@ -215,7 +215,7 @@ export function repeat<T>(
     // * Note that for moves/insertions like the one above, a part inserted at
     //   the head pointer is inserted before the current `oldParts[oldHead]`,
     //   and a part inserted at the tail pointer is inserted before
-    //   `newParts[newHead+1]`. The seeming asymmetry lies in the fact that new
+    //   `newParts[newTail+1]`. The seeming asymmetry lies in the fact that new
     //   parts are moved into place outside in, so to the right of the head
     //   pointer are old parts, and to the right of the tail pointer are new
     //   parts.
@@ -233,7 +233,7 @@ export function repeat<T>(
     //   newKeys:  [0, 2, 1, 4, 3, 7, 6]    advance both oldHead & newHead
     //            newHead ^        ^ newTail
     //
-    // * As mentioned above, items that were moved as a value of being stuck
+    // * As mentioned above, items that were moved as a result of being stuck
     //   (the final else clause in the code below) are marked with null, so we
     //   always advance old pointers over these so we're comparing the next
     //   actual old value on either end.
@@ -352,7 +352,7 @@ export function repeat<T>(
           // we have an old part we can reuse and move into place
           const oldIndex = oldKeyToIndexMap!.get(newKeys[newHead]);
           const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
-          if (oldPart == null) {
+          if (oldPart === null) {
             // No old part for this value; create a new one and insert it
             let newPart =
                 createAndInsertPart(containerPart, oldParts[oldHead]!);
