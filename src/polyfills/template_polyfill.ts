@@ -19,8 +19,8 @@
  * If it can not fullfill your requirement, please consider using the full
  * polyfill: https://github.com/webcomponents/template
  */
-export const initTemplatePolyfill = () => {
-  if (typeof HTMLTemplateElement !== 'undefined') {
+export const initTemplatePolyfill = (forced = false) => {
+  if (typeof HTMLTemplateElement !== 'undefined' && !forced) {
     return;
   }
   const contentDoc = document.implementation.createHTMLDocument('template');

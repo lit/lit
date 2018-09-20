@@ -19,4 +19,4 @@
  * If it can not fullfill your requirement, please consider using the full
  * polyfill: https://github.com/webcomponents/template
  */
-export declare const initTemplatePolyfill: () => void;
+export declare const initTemplatePolyfill: (forced?: boolean) => void;

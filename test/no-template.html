@@ -5,8 +5,9 @@
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
     <script type="module">
       import {initTemplatePolyfill} from '../polyfills/template_polyfill.js';
-      delete window.HTMLTemplateElement;
-      initTemplatePolyfill();
+      initTemplatePolyfill(true);
+      // Force to skip tests that do not work for template polyfill.
+      HTMLTemplateElement.decorate = {};
     </script>
   </head>
   <body>
