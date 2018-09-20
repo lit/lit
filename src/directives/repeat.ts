@@ -75,6 +75,9 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
  * meaning previous DOM for a given key is moved into the new position if
  * needed, and DOM will never be reused with values for different keys (new
  * DOM will always be created for new keys).
+ * 
+ * IMPORTANT: if providing a `keyFn`, keys *must* be unique for all items
+ * in a given call to `repeat`.  Behavior with duplicate keys is undefined.
  *
  * If no `keyFn` is provided, this directive will perform similar to mapping
  * items to values, and DOM will be reused against potentially different items.
