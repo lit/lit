@@ -321,57 +321,6 @@ suite('repeat', () => {
       const children2 = Array.from(container.querySelectorAll('li'));
       assertItemIdentity(children1, children2, items);
     });
-
-    test('duplicate keys warns', () => {
-      // Trap console.warn
-      // TODO(kschaaf): Pull in sinon just for this?
-      const origWarn = console.warn;
-      let warnArgs: any[] = [];
-      console.warn =
-          (...args: any[]) => {
-            warnArgs = args;
-            origWarn.apply(console, args);
-          }
-
-      const t = (items: number[]) =>
-          html`${repeat(items, (i) => i, (i: number) => html`
-            <li>item: ${i}</li>`)}`;
-
-      render(t([42, 42]), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), `
-            <li>item: 42</li>`);
-
-      assert.match(warnArgs[0] || '', /duplicate key/i);
-
-      // Restore console.warn
-      console.warn = origWarn;
-    });
-
-    test('duplicate keys with skip warns', () => {
-      // Trap console.warn
-      // TODO(kschaaf): Pull in sinon just for this?
-      const origWarn = console.warn;
-      let warnArgs: any[] = [];
-      console.warn =
-          (...args: any[]) => {
-            warnArgs = args;
-            origWarn.apply(console, args);
-          }
-
-      const t = (items: number[]) =>
-          html`${repeat(items, (i) => i, (i: number) => html`
-            <li>item: ${i}</li>`)}`;
-
-      render(t([42, 0, 42]), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), `
-            <li>item: 42</li>
-            <li>item: 0</li>`);
-
-      assert.match(warnArgs[0] || '', /duplicate key/i);
-
-      // Restore console.warn
-      console.warn = origWarn;
-    });
   });
 
   suite('un-keyed', () => {
