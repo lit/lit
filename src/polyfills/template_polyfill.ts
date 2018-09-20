@@ -19,34 +19,28 @@
  * If it can not fullfill your requirement, please consider using the full
  * polyfill: https://github.com/webcomponents/template
  */
-if (typeof HTMLTemplateElement === 'undefined') {
-  let contentDoc: Document;
-  if (typeof document.implementation.createHTMLDocument === 'function') {
-    contentDoc = document.implementation.createHTMLDocument('template');
-  } else {
-    // Cobalt does not implement createHTMLDocument.
-    contentDoc = document.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml', 'html', null);
-    const contentDocBody =
-        document.createElementNS('http://www.w3.org/1999/xhtml', 'body');
-    contentDoc.documentElement.appendChild(contentDocBody);
+export const initTemplatePolyfill = () => {
+  if (typeof HTMLTemplateElement !== 'undefined') {
+    return;
   }
+  const contentDoc = document.implementation.createHTMLDocument('template');
 
-  const upgrade = function(template: any) {
+  const upgrade = (template: any) => {
     template.content = contentDoc.createDocumentFragment();
     defineInnerHTML(template);
   };
 
-  const defineInnerHTML = function(obj: any) {
+  const defineInnerHTML = (obj: any) => {
     Object.defineProperty(obj, 'innerHTML', {
       set: function(text) {
         contentDoc.body.innerHTML = text;
-        while (this.content.firstChild) {
-          this.content.removeChild(this.content.firstChild);
+        const template = this as HTMLTemplateElement;
+        while (template.content.firstChild) {
+          template.content.removeChild(template.content.firstChild);
         }
         const body = contentDoc.body;
         while (body.firstChild) {
-          this.content.append(body.firstChild);
+          template.content.appendChild(body.firstChild);
         }
       },
       configurable: true
@@ -62,4 +56,4 @@ if (typeof HTMLTemplateElement === 'undefined') {
     }
     return el;
   };
-}
+};
