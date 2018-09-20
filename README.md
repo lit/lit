@@ -2,7 +2,7 @@
 
 # SHOP
 
-This is a sample e-commerce Progressive web app.
+Shop is a sample e-commerce [Progressive Web App](https://developers.google.com/web/progressive-web-apps/).
 
 The app is built using [PWA Starter Kit](https://github.com/PolymerLabs/pwa-starter-kit). Using the starter-template as the starting point and the [wiki](https://github.com/PolymerLabs/pwa-starter-kit/wiki) for configuring and personalizing.
 
