@@ -94,6 +94,33 @@ suite('repeat', () => {
       assertItemIdentity(children1, children2, items);
     });
 
+    test('shuffles a list with additions', () => {
+      let items = [0, 1, 2, 3, 4];
+      const t = () => html`${repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 3</li>
+            <li>item: 4</li>`);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [2,0,3,5,1,4];
+      render(t(), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 2</li>
+            <li>item: 0</li>
+            <li>item: 3</li>
+            <li>item: 5</li>
+            <li>item: 1</li>
+            <li>item: 4</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+
+      assertItemIdentity(children1, children2, items);
+    });
+
     test('swaps are stable', () => {
       const t = (items: number[]) =>
           html`${repeat(items, (i) => i, (i: number) => html`
