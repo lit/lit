@@ -20,38 +20,38 @@
  * polyfill: https://github.com/webcomponents/template
  */
 export const initTemplatePolyfill = () => {
-  if (typeof HTMLTemplateElement !== 'undefined') {
-    return;
-  }
-  const contentDoc = document.implementation.createHTMLDocument('template');
-  const upgrade = template => {
-    template.content = contentDoc.createDocumentFragment();
-    defineInnerHTML(template);
-  };
-  const defineInnerHTML = obj => {
-    Object.defineProperty(obj, 'innerHTML', {
-      set: function(text) {
-        contentDoc.body.innerHTML = text;
-        const template = this;
-        while (template.content.firstChild) {
-          template.content.removeChild(template.content.firstChild);
-        }
-        const body = contentDoc.body;
-        while (body.firstChild) {
-          template.content.appendChild(body.firstChild);
-        }
-      },
-      configurable: true
-    });
-  };
-  const capturedCreateElement = Document.prototype.createElement;
-  Document.prototype.createElement = function createElement() {
-    let el = capturedCreateElement.apply(this, arguments);
-    if (el.localName === 'template') {
-      el = capturedCreateElement.call(this, 'div');
-      upgrade(el);
+    if (typeof HTMLTemplateElement !== 'undefined') {
+        return;
     }
-    return el;
-  };
+    const contentDoc = document.implementation.createHTMLDocument('template');
+    const upgrade = (template) => {
+        template.content = contentDoc.createDocumentFragment();
+        defineInnerHTML(template);
+    };
+    const defineInnerHTML = (obj) => {
+        Object.defineProperty(obj, 'innerHTML', {
+            set: function (text) {
+                contentDoc.body.innerHTML = text;
+                const template = this;
+                while (template.content.firstChild) {
+                    template.content.removeChild(template.content.firstChild);
+                }
+                const body = contentDoc.body;
+                while (body.firstChild) {
+                    template.content.appendChild(body.firstChild);
+                }
+            },
+            configurable: true
+        });
+    };
+    const capturedCreateElement = Document.prototype.createElement;
+    Document.prototype.createElement = function createElement() {
+        let el = capturedCreateElement.apply(this, arguments);
+        if (el.localName === 'template') {
+            el = capturedCreateElement.call(this, 'div');
+            upgrade(el);
+        }
+        return el;
+    };
 };
 //# sourceMappingURL=template_polyfill.js.map
