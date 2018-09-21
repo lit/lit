@@ -107,7 +107,7 @@ suite('repeat', () => {
             <li>item: 4</li>`);
       const children1 = Array.from(container.querySelectorAll('li'));
 
-      items = [2,0,3,5,1,4];
+      items = [2, 0, 3, 5, 1, 4];
       render(t(), container);
       assert.equal(stripExpressionMarkers(container.innerHTML), `
             <li>item: 2</li>
@@ -482,6 +482,94 @@ suite('repeat', () => {
             <li>guarded: 0</li>
             <li>guarded: 1</li>
             <li>guarded: 2</li>`);
+    });
+  });
+
+  suite('undefined behavior', () => {
+    // Note these tests are only meant to capture the current implementation's
+    // behavior, not to serve as a guarantee for repeat's behavior.
+    // Providing duplicate keys is officially not supported.  If these tests
+    // break due to implementation changes, feel free to update the expected
+    // results.
+
+    test('initial render of contiguous duplicate keys', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
+
+      render(t([0, 1, 2, 2, 3, 4]), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 2</li>
+            <li>item: 3</li>
+            <li>item: 4</li>`);
+    });
+
+    test('update contiguous duplicate keys (no order change)', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
+
+      let items = [0, 1, 2, 2, 3, 4];
+      render(t(items), container);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [0, 1, 2, 2, 3, 4];
+      render(t(items), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 2</li>
+            <li>item: 3</li>
+            <li>item: 4</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+
+      //   Parts for these dup'ed keys are maintained v  v
+      assertItemIdentity(children1, children2, [0, 1, 2, 3, 4, 5]);
+    });
+
+    test('initial render of duplicate keys with skip', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
+
+      render(t([0, 1, 42, 2, 42, 3, 4]), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 0</li>
+            <li>item: 1</li>
+            <li>item: 42</li>
+            <li>item: 2</li>
+            <li>item: 42</li>
+            <li>item: 3</li>
+            <li>item: 4</li>`);
+    });
+
+    test('update duplicate keys with skip', () => {
+      const t = (items: number[]) =>
+          html`${repeat(items, (i) => i, (i: number) => html`
+            <li>item: ${i}</li>`)}`;
+
+      let items = [0, 1, 2, 3, 2, 4, 5];
+      render(t(items), container);
+      const children1 = Array.from(container.querySelectorAll('li'));
+
+      items = [1, 2, 0, 5, 2, 4, 3];
+      render(t(items), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <li>item: 1</li>
+            <li>item: 2</li>
+            <li>item: 0</li>
+            <li>item: 5</li>
+            <li>item: 2</li>
+            <li>item: 4</li>
+            <li>item: 3</li>`);
+      const children2 = Array.from(container.querySelectorAll('li'));
+
+      // Part for this duplicate key was re-created v
+      assertItemIdentity(children1, children2, [1, -1, 0, 6, 2, 5, 3]);
     });
   });
 });

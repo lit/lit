@@ -14,8 +14,8 @@
 
 import {createMarker, directive, Directive, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
 
-export type KeyFn<T> = (item: T) => any;
-export type ItemTemplate<T> = (item: T, index: number) => any;
+export type KeyFn<T> = (item: T, index?: number) => any;
+export type ItemTemplate<T> = (item: T, index?: number) => any;
 
 // Helper functions for manipulating parts
 // TODO(kschaaf): Refactor into Part API?
@@ -30,11 +30,13 @@ const createAndInsertPart =
       newPart.insertAfterNode(startNode);
       return newPart;
     };
+
 const updatePart = (part: NodePart, value: unknown) => {
   part.setValue(value);
   part.commit();
   return part;
 };
+
 const insertPartBefore =
     (containerPart: NodePart, part: NodePart, ref?: NodePart) => {
       const container = containerPart.startNode.parentNode as Node;
@@ -44,25 +46,24 @@ const insertPartBefore =
         reparentNodes(container, part.startNode, endNode, beforeNode);
       }
     };
-const removePart =
-    (part: NodePart) => {
-      removeNodes(
-          part.startNode.parentNode!, part.startNode, part.endNode.nextSibling);
-    }
+
+const removePart = (part: NodePart) => {
+  removeNodes(
+      part.startNode.parentNode!, part.startNode, part.endNode.nextSibling);
+};
 
 // Helper for generating a map of array item to its index over a subset
 // of an array (used to lazily generate `newKeyToIndexMap` and
 // `oldKeyToIndexMap`)
-const generateMap =
-    (list: unknown[], start: number, end: number) => {
-      const map = new Map();
-      for (let i = start; i <= end; i++) {
-        map.set(list[i], i);
-      }
-      return map;
-    }
+const generateMap = (list: unknown[], start: number, end: number) => {
+  const map = new Map();
+  for (let i = start; i <= end; i++) {
+    map.set(list[i], i);
+  }
+  return map;
+};
 
-// Stores previous ordered list of  parts and map of key to index
+// Stores previous ordered list of parts and map of key to index
 const partListCache = new WeakMap<NodePart, (NodePart | null)[]>();
 const keyListCache = new WeakMap<NodePart, unknown[]>();
 
@@ -73,11 +74,14 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
  *
  * Note that if a `keyFn` is provided, strict key-to-DOM mapping is maintained,
  * meaning previous DOM for a given key is moved into the new position if
- * needed, and DOM will never be reused with values for different keys (new
- * DOM will always be created for new keys).
+ * needed, and DOM will never be reused with values for different keys (new DOM
+ * will always be created for new keys). This is generally the most efficient
+ * way to use `repeat` since it performs minimum unnecessary work for insertions
+ * amd removals.
  *
- * IMPORTANT: if providing a `keyFn`, keys *must* be unique for all items
- * in a given call to `repeat`.  Behavior with duplicate keys is undefined.
+ * IMPORTANT: if providing a `keyFn`, keys *must* be unique for all items in a
+ * given call to `repeat`. The behavior when providing duplicate keys is
+ * undefined.
  *
  * If no `keyFn` is provided, this directive will perform similar to mapping
  * items to values, and DOM will be reused against potentially different items.
@@ -115,7 +119,7 @@ export function repeat<T>(
     const newKeys: unknown[] = [];
     let index = 0;
     for (const item of items) {
-      newKeys[index] = keyFn ? keyFn(item) : index;
+      newKeys[index] = keyFn ? keyFn(item, index) : index;
       newValues[index] = template !(item, index);
       index++;
     }
@@ -124,8 +128,8 @@ export function repeat<T>(
     // generated lazily only when needed as a performance optimization, since
     // they are only required for multiple non-contiguous changes in the list,
     // which are less common.
-    let newKeyToIndexMap: Map<unknown, number>;
-    let oldKeyToIndexMap: Map<unknown, number>;
+    let newKeyToIndexMap!: Map<unknown, number>;
+    let oldKeyToIndexMap!: Map<unknown, number>;
 
     // Head and tail pointers to old parts and new values
     let oldHead = 0;
@@ -255,7 +259,7 @@ export function repeat<T>(
     //   pointer range and never visited again.
     //
     // * Example below: Here the old tail key matches the new head key, so
-    //   the part at the `oldTail` position and move its dom to the new
+    //   the part at the `oldTail` position and move its DOM to the new
     //   head position (before `oldParts[oldHead]`). Last, advance `oldTail`
     //   and `newHead` pointers.
     //
@@ -337,23 +341,23 @@ export function repeat<T>(
         oldTail--;
         newHead++;
       } else {
-        if (newKeyToIndexMap! === undefined) {
+        if (newKeyToIndexMap === undefined) {
           // Lazily generate key-to-index maps, used for removals & moves below
           newKeyToIndexMap = generateMap(newKeys, newHead, newTail);
           oldKeyToIndexMap = generateMap(oldKeys, oldHead, oldTail);
         }
-        if (!newKeyToIndexMap!.has(oldKeys[oldHead])) {
+        if (!newKeyToIndexMap.has(oldKeys[oldHead])) {
           // Old head is no longer in new list; remove
           removePart(oldParts[oldHead]!);
           oldHead++;
-        } else if (!newKeyToIndexMap!.has(oldKeys[oldTail])) {
+        } else if (!newKeyToIndexMap.has(oldKeys[oldTail])) {
           // Old tail is no longer in new list; remove
           removePart(oldParts[oldTail]!);
           oldTail--;
         } else {
           // Any mismatches at this point are due to additions or moves; see if
           // we have an old part we can reuse and move into place
-          const oldIndex = oldKeyToIndexMap!.get(newKeys[newHead]);
+          const oldIndex = oldKeyToIndexMap.get(newKeys[newHead]);
           const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
           if (oldPart === null) {
             // No old part for this value; create a new one and insert it
@@ -377,7 +381,8 @@ export function repeat<T>(
     while (newHead <= newTail) {
       // For all remaining additions, we insert before last new tail,
       // since old pointers are no longer valid
-      const newPart = createAndInsertPart(containerPart, newParts[newTail+1]!);
+      const newPart =
+          createAndInsertPart(containerPart, newParts[newTail + 1]!);
       updatePart(newPart, newValues[newHead]);
       newParts[newHead++] = newPart;
     }
