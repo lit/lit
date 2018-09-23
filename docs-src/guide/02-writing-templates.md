@@ -56,7 +56,7 @@ There are a few types of bindings:
     ```
   * Attribute:
     ```js
-    html`<div id=${id}></div`
+    html`<div id=${id}></div>`
     ```
   * Boolean Attribute:
     ```js
