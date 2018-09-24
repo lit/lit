@@ -10,7 +10,9 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
- *
+ */
+
+/**
  * A lightweight <template> polyfill that supports minimum features to cover
  * lit-html use cases. It provides an alternate route in case <template> is not
  * natively supported.
@@ -27,20 +29,16 @@ export const initTemplatePolyfill = (forced = false) => {
 
   const upgrade = (template: any) => {
     template.content = contentDoc.createDocumentFragment();
-    defineInnerHTML(template);
-  };
-
-  const defineInnerHTML = (obj: any) => {
-    Object.defineProperty(obj, 'innerHTML', {
+    Object.defineProperty(template, 'innerHTML', {
       set: function(text) {
         contentDoc.body.innerHTML = text;
-        const template = this as HTMLTemplateElement;
-        while (template.content.firstChild) {
-          template.content.removeChild(template.content.firstChild);
+        const content = (this as HTMLTemplateElement).content;
+        while (content.firstChild) {
+          content.removeChild(content.firstChild);
         }
         const body = contentDoc.body;
         while (body.firstChild) {
-          template.content.appendChild(body.firstChild);
+          content.appendChild(body.firstChild);
         }
       },
       configurable: true
