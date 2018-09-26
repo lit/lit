@@ -30,7 +30,7 @@ lit-html is _lazily_ rendered. Calling this function will evaluate the template 
 
 ## Rendering
 
-To render a `TempalteResult`, call the `render()` function with a result and DOM container to render to:
+To render a `TemplateResult`, call the `render()` function with a result and DOM container to render to:
 
 ```js
 const result = myTemplate({title: 'Hello', body: 'lit-html is cool'});

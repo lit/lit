@@ -38,8 +38,8 @@ export function removeNodesFromTemplate(
   const {element: {content}, parts} = template;
   const walker =
       document.createTreeWalker(content, walkerNodeFilter, null as any, false);
-  let partIndex = 0;
-  let part = parts[0];
+  let partIndex = nextActiveIndexInTemplateParts(parts);
+  let part = parts[partIndex];
   let nodeIndex = -1;
   let removeCount = 0;
   const nodesToRemoveInTemplate = [];
@@ -67,14 +67,16 @@ export function removeNodesFromTemplate(
       // If part is in a removed node deactivate it by setting index to -1 or
       // adjust the index as needed.
       part.index = currentRemovingNode !== null ? -1 : part.index - removeCount;
-      part = parts[++partIndex];
+      // go to the next active part.
+      partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
+      part = parts[partIndex];
     }
   }
   nodesToRemoveInTemplate.forEach((n) => n.parentNode!.removeChild(n));
 }
 
 const countNodes = (node: Node) => {
-  let count = 1;
+  let count = (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ? 0 : 1;
   const walker =
       document.createTreeWalker(node, walkerNodeFilter, null as any, false);
   while (walker.nextNode()) {
@@ -117,8 +119,8 @@ export function insertNodeIntoTemplate(
     walkerIndex++;
     const walkerNode = walker.currentNode as Element;
     if (walkerNode === refNode) {
-      refNode.parentNode!.insertBefore(node, refNode);
       insertCount = countNodes(node);
+      refNode.parentNode!.insertBefore(node, refNode);
     }
     while (partIndex !== -1 && parts[partIndex].index === walkerIndex) {
       // If we've inserted the node, simply adjust all subsequent parts
