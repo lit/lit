@@ -175,7 +175,7 @@ export function render(
     }
     // Update styling if this is the initial render to this container.
     if (!hasRendered) {
-      window.ShadyCSS.styleElement((container as ShadowRoot).host);
+      window.ShadyCSS.styleSubtree((container as ShadowRoot).host);
     }
   }
 }
