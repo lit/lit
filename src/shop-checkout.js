@@ -139,7 +139,7 @@ class ShopCheckout extends PolymerElement {
                   </div>
                   <div class="row input-row">
                     <shop-input>
-                      <input type="tel" id="accountPhone" name="accountPhone" pattern="\d{10,}"
+                      <input type="tel" id="accountPhone" name="accountPhone" pattern="\\d{10,}"
                           placeholder="Phone Number" required
                           aria-labelledby="accountPhoneLabel accountInfoHeading">
                       <shop-md-decorator error-message="Invalid Phone Number" aria-hidden="true">
@@ -292,7 +292,7 @@ class ShopCheckout extends PolymerElement {
                   </div>
                   <div class="row input-row">
                     <shop-input>
-                      <input type="tel" id="ccNumber" name="ccNumber" pattern="[\d\s]{15,}"
+                      <input type="tel" id="ccNumber" name="ccNumber" pattern="[\\d\\s]{15,}"
                           placeholder="Card Number" required
                           autocomplete="cc-number">
                       <shop-md-decorator error-message="Invalid Card Number" aria-hidden="true">
@@ -345,7 +345,7 @@ class ShopCheckout extends PolymerElement {
                       </shop-md-decorator>
                     </shop-select>
                     <shop-input>
-                      <input type="tel" id="ccCVV" name="ccCVV" pattern="\d{3,4}"
+                      <input type="tel" id="ccCVV" name="ccCVV" pattern="\\d{3,4}"
                           placeholder="CVV" required
                           autocomplete="cc-csc">
                       <shop-md-decorator error-message="Invalid CVV" aria-hidden="true">
