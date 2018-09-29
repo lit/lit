@@ -12,15 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateFactory} from '../lit-html.js';
-
 import {Part} from './part.js';
 import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
+import {RenderOptions} from './render-options.js';
+import {TemplateProcessor} from './template-processor.js';
 
 /**
  * Creates Parts when a template is instantiated.
  */
-export class DefaultTemplateProcessor {
+export class DefaultTemplateProcessor implements TemplateProcessor {
   /**
    * Create parts for an attribute-position binding, given the event, attribute
    * name, and string literals.
@@ -30,15 +30,16 @@ export class DefaultTemplateProcessor {
    * @param strings The string literals. There are always at least two strings,
    *   event for fully-controlled bindings with a single expression.
    */
-  handleAttributeExpressions(element: Element, name: string, strings: string[]):
-      Part[] {
+  handleAttributeExpressions(
+      element: Element, name: string, strings: string[],
+      options: RenderOptions): Part[] {
     const prefix = name[0];
     if (prefix === '.') {
       const comitter = new PropertyCommitter(element, name.slice(1), strings);
       return comitter.parts;
     }
     if (prefix === '@') {
-      return [new EventPart(element, name.slice(1))];
+      return [new EventPart(element, name.slice(1), options.eventContext)];
     }
     if (prefix === '?') {
       return [new BooleanAttributePart(element, name.slice(1), strings)];
@@ -50,8 +51,8 @@ export class DefaultTemplateProcessor {
    * Create parts for a text-position binding.
    * @param templateFactory
    */
-  handleTextExpression(templateFactory: TemplateFactory) {
-    return new NodePart(templateFactory);
+  handleTextExpression(options: RenderOptions) {
+    return new NodePart(options);
   }
 }
 

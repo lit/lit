@@ -41,6 +41,25 @@ If you use a tool that converts package names into paths, then you can import by
 import {html, render} from 'lit-html';
 ```
 
+## Rendering a Template
+
+lit-html has two main APIs:
+
+* The `html` template tag used to write templates
+* The `render()` function used to render a template to a DOM container.
+
+```ts
+// Import lit-html
+import {html, render} from 'lit-html';
+
+// Define a template
+const myTemplate = (name) => html`<p>Hello ${name}</p>`;
+
+// Render the template to the document
+render(myTemplate('World'), document.body);
+```
+
+To learn more about templates, see [Writing Templates](./writing-templates.html).
 
 ### Why is lit-html distributed as JavaScript modules, not as UMD/CJS/AMD?
 

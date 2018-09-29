@@ -14,7 +14,8 @@
 
 import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
-import {templateFactory as defaultTemplateFactory, TemplateFactory} from './template-factory.js';
+import {RenderOptions} from './render-options.js';
+import {templateFactory as defaultTemplateFactory} from './template-factory.js';
 import {TemplateResult} from './template-result.js';
 
 export const parts = new WeakMap<Node, NodePart>();
@@ -36,11 +37,16 @@ export const parts = new WeakMap<Node, NodePart>();
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    templateFactory: TemplateFactory = defaultTemplateFactory) {
+    options?: Partial<RenderOptions>) {
   let part = parts.get(container);
   if (part === undefined) {
     removeNodes(container, container.firstChild);
-    parts.set(container, part = new NodePart(templateFactory));
+    parts.set(
+        container, part = new NodePart({
+                     eventContext: options && options.eventContext,
+                     templateFactory: options && options.templateFactory ||
+                         defaultTemplateFactory,
+                   }));
     part.appendInto(container);
   }
   part.setValue(result);

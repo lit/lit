@@ -13,6 +13,7 @@
  */
 
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
+import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
@@ -157,12 +158,20 @@ const prepareTemplateStyles =
       }
     };
 
+export interface ShadyRenderOptions extends Partial<RenderOptions> {
+  scopeName: string;
+}
+
 export function render(
     result: TemplateResult,
     container: Element|DocumentFragment,
-    scopeName: string) {
+    options: ShadyRenderOptions) {
+  const scopeName = options.scopeName;
   const hasRendered = parts.has(container);
-  litRender(result, container, shadyTemplateFactory(scopeName));
+  litRender(result, container, {
+    eventContext: options.eventContext,
+    templateFactory: shadyTemplateFactory(scopeName),
+  });
   // When rendering a TemplateResult, scope the template with ShadyCSS
   if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
       result instanceof TemplateResult) {

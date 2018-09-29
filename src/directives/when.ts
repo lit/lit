@@ -56,8 +56,8 @@ export const when =
             // docment fragment which we cache the nodes of the condition that's
             // not currently rendered.
             cache = {
-              truePart: new NodePart(parentPart.templateFactory),
-              falsePart: new NodePart(parentPart.templateFactory),
+              truePart: new NodePart(parentPart.options),
+              falsePart: new NodePart(parentPart.options),
               cacheContainer: document.createDocumentFragment(),
             };
             partCaches.set(parentPart, cache);
