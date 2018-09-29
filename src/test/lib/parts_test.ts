@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -429,6 +429,126 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes), [startNode, endNode]);
       });
+    });
+  });
+
+  suite('EventPart', () => {
+    let part: EventPart;
+    let element: HTMLElement;
+
+    // Detect event options support
+    let eventOptionsSupported = false;
+    let captureSupported = false;
+    let passiveSupported = false;
+    let onceSupported = false;
+
+    try {
+      const options = {
+        get capture() {
+          eventOptionsSupported = true;
+          captureSupported = true;
+          return false;
+        },
+        get passive() {
+          eventOptionsSupported = true;
+          passiveSupported = true;
+          return false;
+        },
+        get once() {
+          eventOptionsSupported = true;
+          onceSupported = true;
+          return false;
+        },
+      };
+      window.addEventListener('test', options as any, options);
+      window.removeEventListener('test', options as any, options);
+    } catch (_e) {
+    }
+
+    setup(() => {
+      element = document.createElement('div');
+      document.body.appendChild(element);
+    });
+
+    test('supports event listener options on functions', () => {
+      console.log('eventOptionsSupported', eventOptionsSupported);
+      console.log('captureSupported', captureSupported);
+      console.log('passiveSupported', passiveSupported);
+      console.log('onceSupported', onceSupported);
+      part = new EventPart(element, 'click');
+      let listenerCalled = false;
+      let captureCalled = false;
+      let passiveCalled = false;
+      let onceCalled = false;
+
+      const listener = (_e: Event) => {
+        listenerCalled = true;
+      };
+      Object.defineProperties(listener, {
+        capture: {
+          get() {
+            captureCalled = true;
+          }
+        },
+        passive: {
+          get() {
+            passiveCalled = true;
+          }
+        },
+        once: {
+          get() {
+            onceCalled = true;
+          }
+        }
+      });
+
+      part.setValue(listener);
+      part.commit();
+      element.click();
+      assert.isTrue(listenerCalled, 'listenerCalled');
+      assert.isTrue(captureCalled, 'captureCalled');
+      if (passiveSupported) {
+        assert.isTrue(passiveCalled, 'passiveCalled');
+      }
+      if (onceSupported) {
+        assert.isTrue(onceCalled, 'onceCalled');
+      }
+    });
+
+    test('supports event listener options on objects', () => {
+      part = new EventPart(element, 'click');
+      let listenerCalled = false;
+      let captureCalled = false;
+      let passiveCalled = false;
+      let onceCalled = false;
+
+      const listener = {
+        handleEvent(_e: Event) {
+          listenerCalled = true;
+        },
+        get capture() {
+          captureCalled = true;
+          return undefined;
+        },
+        get passive() {
+          passiveCalled = true;
+          return undefined;
+        },
+        get once() {
+          onceCalled = true;
+          return undefined;
+        }
+      };
+
+      part.setValue(listener);
+      part.commit();
+      element.click();
+      assert.isTrue(listenerCalled, 'listenerCalled');
+      assert.isTrue(captureCalled, 'captureCalled');
+      if (eventOptionsSupported) {
+        assert.isTrue(passiveCalled, 'passiveCalled');
+        assert.isTrue(onceCalled, 'onceCalled');
+      }
     });
   });
 });
