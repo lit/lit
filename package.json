@@ -39,7 +39,7 @@
     "rollup": "^0.64.1",
     "rollup-plugin-filesize": "^4.0.1",
     "rollup-plugin-terser": "^1.0.1",
-    "tslint": "^5.9.1",
+    "tslint": "^5.11.0",
     "typedoc": "^0.12.0",
     "typescript": "^3.1.1",
     "uglify-es": "^3.3.5",
