@@ -251,6 +251,8 @@ Efficiently switches between two templates based on the given condition. The ren
 Example:
 
 ```js
+import { when } from 'lit-html/directives/when';
+
 let checked = false;
 
 html`
@@ -271,6 +273,8 @@ items to values, and DOM will be reused against potentially different items.
 Example:
 
 ```javascript
+import { repeat } from 'lit-html/directives/repeat';
+
 const render = () => html`
   <ul>
     ${repeat(items, (i) => i.id, (i, index) => html`
@@ -288,6 +292,8 @@ For other part types, this directive is a no-op.
 Example:
 
 ```javascript
+import { ifDefined } from 'lit-html/directives/if-defined';
+
 const render = () => html`
   <div class=${ifDefined(className)}></div>
 `;
@@ -300,6 +306,8 @@ Prevents any re-render until the identity of the expression changes, for example
 Example:
 
 ```js
+import { guard } from 'lit-html/directives/guard';
+
 html`
   <div>
     ${guard(items, () => items.map(item => html`${item}`))}
@@ -316,6 +324,8 @@ Renders `defaultContent` until `promise` resolves, then it renders the resolved 
 Example:
 
 ```javascript
+import { until } from 'lit-html/directives/until';
+
 const render = () => html`
   <p>
     ${until(
