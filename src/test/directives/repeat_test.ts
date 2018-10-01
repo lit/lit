@@ -406,8 +406,8 @@ suite('repeat', () => {
     });
 
     test('render objects as items with mutable update', () => {
-      let items = [{text: '0'}, {text: '1'}, {text: '2'}];
-      const t = () => html`${repeat(items, i => html`
+      const items = [{text: '0'}, {text: '1'}, {text: '2'}];
+      const t = () => html`${repeat(items, (i) => html`
             <li>item: ${i.text}</li>`)}`;
       render(t(), container);
       assert.equal(stripExpressionMarkers(container.innerHTML), `
@@ -428,7 +428,7 @@ suite('repeat', () => {
 
     test('render objects as items with immutable update', () => {
       let items = [{text: '0'}, {text: '1'}, {text: '2'}];
-      const t = () => html`${repeat(items, i => html`
+      const t = () => html`${repeat(items, (i) => html`
             <li>item: ${i.text}</li>`)}`;
       render(t(), container);
       assert.equal(stripExpressionMarkers(container.innerHTML), `

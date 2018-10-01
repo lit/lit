@@ -361,7 +361,7 @@ export function repeat<T>(
           const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
           if (oldPart === null) {
             // No old part for this value; create a new one and insert it
-            let newPart =
+            const newPart =
                 createAndInsertPart(containerPart, oldParts[oldHead]!);
             updatePart(newPart, newValues[newHead]);
             newParts[newHead] = newPart;
