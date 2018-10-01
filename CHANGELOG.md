@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- ### Added -->
-<!-- ### Changed -->
+### Changed
+* Re-implemented repeat directive for better performance ([#501](https://github.com/Polymer/lit-html/pull/501))
 <!-- ### Removed -->
 <!-- ### Fixed -->
 

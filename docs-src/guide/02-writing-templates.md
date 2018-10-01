@@ -260,7 +260,13 @@ checked`);
 
 ### `repeat(items, keyfn, template)`
 
-A loop that supports efficient re-ordering by using item keys.
+Repeats a series of values (usually `TemplateResults`) generated from an
+iterable, and updates those items efficiently when the iterable changes. When
+the `keyFn` is provided, key-to-DOM association is maintained between updates by
+moving DOM when required, and is generally the most efficient way to use
+`repeat` since it performs minimum unnecessary work for insertions amd removals.
+If no `keyFn` is provided, `repeat` will perform similar to a simple map of
+items to values, and DOM will be reused against potentially different items.
 
 Example:
 
