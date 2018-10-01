@@ -1057,7 +1057,7 @@ suite('render()', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
       // Wait for mutation callback to be called
-      await new Promise(setTimeout);
+      await new Promise((resolve) => setTimeout(resolve));
 
       const elementNodes: Array<Node> = [];
       for (const record of mutationRecords) {
@@ -1069,7 +1069,7 @@ suite('render()', () => {
       mutationRecords = [];
       render(t(), container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-      await new Promise(setTimeout);
+      await new Promise((resolve) => setTimeout(resolve));
       assert.equal(mutationRecords.length, 0);
     });
 
