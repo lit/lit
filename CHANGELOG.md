@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Added -->
 ### Changed
 * Re-implemented repeat directive for better performance ([#501](https://github.com/Polymer/lit-html/pull/501))
+* Updated TypeScript dependency to 3.1
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
