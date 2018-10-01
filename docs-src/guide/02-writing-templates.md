@@ -40,10 +40,10 @@ The HTML parser in browsers never throws exceptions for malformed HTML. Instead,
 Follow these rules for well-formed templates:
 
  * Templates must be well-formed when all expressions are replaced by empty values.
- * Expressions can only occur in attribute-value and text-content positions
- * Expressions cannot appear where tag or attribute names would appear
- * Templates can have multiple top-level elements and text
- * Templates should not contain unclosed elements - they will be closed by the HTML parser
+ * Expressions can only occur in attribute-value and text-content positions.
+ * Expressions cannot appear where tag or attribute names would appear.
+ * Templates can have multiple top-level elements and text.
+ * Templates should not contain unclosed elements - they will be closed by the HTML parser.
 
 ## Binding Types
 
@@ -79,7 +79,7 @@ Each binding type supports different types of values:
  * Attribute bindings: All values are converted to strings.
  * Boolean attribute bindings: All values evaluated for truthiness.
  * Property bindings: Any type of value.
- * Event handler bindings: Event handler functions or objects only
+ * Event handler bindings: Event handler functions or objects only.
 
 Text content bindings accept a large range of value types:
 
