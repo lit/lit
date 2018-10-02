@@ -75,7 +75,7 @@ const TEMPLATE_TYPES = ['html', 'svg'];
 /**
  * Removes all style elements from Templates for the given scopeName.
  */
-function removeStylesFromLitTemplates(scopeName: string) {
+const removeStylesFromLitTemplates = (scopeName: string) => {
   TEMPLATE_TYPES.forEach((type) => {
     const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
     if (templates !== undefined) {
@@ -90,7 +90,7 @@ function removeStylesFromLitTemplates(scopeName: string) {
       });
     }
   });
-}
+};
 
 const shadyRenderSet = new Set<string>();
 
@@ -162,29 +162,29 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
   scopeName: string;
 }
 
-export function render(
-    result: TemplateResult,
-    container: Element|DocumentFragment,
-    options: ShadyRenderOptions) {
-  const scopeName = options.scopeName;
-  const hasRendered = parts.has(container);
-  litRender(result, container, {
-    templateFactory: shadyTemplateFactory(scopeName),
-    ...options,
-  } as RenderOptions);
-  // When rendering a TemplateResult, scope the template with ShadyCSS
-  if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
-      result instanceof TemplateResult) {
-    // Scope the element template one time only for this scope.
-    if (!shadyRenderSet.has(scopeName)) {
-      const part = parts.get(container)!;
-      const instance = part.value as TemplateInstance;
-      prepareTemplateStyles(
-          (container as ShadowRoot), instance.template, scopeName);
-    }
-    // Update styling if this is the initial render to this container.
-    if (!hasRendered) {
-      window.ShadyCSS.styleElement((container as ShadowRoot).host);
-    }
-  }
-}
+export const render =
+    (result: TemplateResult,
+     container: Element|DocumentFragment,
+     options: ShadyRenderOptions) => {
+      const scopeName = options.scopeName;
+      const hasRendered = parts.has(container);
+      litRender(result, container, {
+        templateFactory: shadyTemplateFactory(scopeName),
+        ...options,
+      } as RenderOptions);
+      // When rendering a TemplateResult, scope the template with ShadyCSS
+      if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
+          result instanceof TemplateResult) {
+        // Scope the element template one time only for this scope.
+        if (!shadyRenderSet.has(scopeName)) {
+          const part = parts.get(container)!;
+          const instance = part.value as TemplateInstance;
+          prepareTemplateStyles(
+              (container as ShadowRoot), instance.template, scopeName);
+        }
+        // Update styling if this is the initial render to this container.
+        if (!hasRendered) {
+          window.ShadyCSS.styleElement((container as ShadowRoot).host);
+        }
+      }
+    };

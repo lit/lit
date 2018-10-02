@@ -34,19 +34,19 @@ export const parts = new WeakMap<Node, NodePart>();
  * @param templateFactory a function to create a Template or retrieve one from
  *     cache.
  */
-export const render = (
-    result: TemplateResult,
-    container: Element|DocumentFragment,
-    options?: Partial<RenderOptions>) => {
-  let part = parts.get(container);
-  if (part === undefined) {
-    removeNodes(container, container.firstChild);
-    parts.set(container, part = new NodePart({
-      templateFactory,
-      ...options,
-    }));
-    part.appendInto(container);
-  }
-  part.setValue(result);
-  part.commit();
-};
+export const render =
+    (result: TemplateResult,
+     container: Element|DocumentFragment,
+     options?: Partial<RenderOptions>) => {
+      let part = parts.get(container);
+      if (part === undefined) {
+        removeNodes(container, container.firstChild);
+        parts.set(container, part = new NodePart({
+                               templateFactory,
+                               ...options,
+                             }));
+        part.appendInto(container);
+      }
+      part.setValue(result);
+      part.commit();
+    };
