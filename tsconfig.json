@@ -4,6 +4,7 @@
     "module": "es2015",
     "lib": ["es2017", "esnext.asynciterable", "dom"],
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
     "outDir": "./",

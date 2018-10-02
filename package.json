@@ -13,6 +13,7 @@
     "/lit-html.js",
     "/lit-html.js.map",
     "/lit-html.d.ts",
+    "/lit-html.d.ts.map",
     "/lib/",
     "/directives/",
     "/src/",
