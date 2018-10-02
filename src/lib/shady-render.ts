@@ -169,9 +169,9 @@ export function render(
   const scopeName = options.scopeName;
   const hasRendered = parts.has(container);
   litRender(result, container, {
-    eventContext: options.eventContext,
     templateFactory: shadyTemplateFactory(scopeName),
-  });
+    ...options,
+  } as RenderOptions);
   // When rendering a TemplateResult, scope the template with ShadyCSS
   if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
       result instanceof TemplateResult) {

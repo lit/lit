@@ -242,8 +242,9 @@ export class NodePart implements Part {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
-      // so that we use it's syntax extension, etc. The template factory comes
-      // from the render function options so that it can control caching.
+      // so that we use its syntax extension, etc. The template factory comes
+      // from the render function options so that it can control template
+      // caching and preprocessing.
       const instance =
           new TemplateInstance(template, value.processor, this.options);
       const fragment = instance._clone();

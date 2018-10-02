@@ -15,7 +15,7 @@
 import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
-import {templateFactory as defaultTemplateFactory} from './template-factory.js';
+import {templateFactory} from './template-factory.js';
 import {TemplateResult} from './template-result.js';
 
 export const parts = new WeakMap<Node, NodePart>();
@@ -34,21 +34,19 @@ export const parts = new WeakMap<Node, NodePart>();
  * @param templateFactory a function to create a Template or retrieve one from
  *     cache.
  */
-export function render(
+export const render = (
     result: TemplateResult,
     container: Element|DocumentFragment,
-    options?: Partial<RenderOptions>) {
+    options?: Partial<RenderOptions>) => {
   let part = parts.get(container);
   if (part === undefined) {
     removeNodes(container, container.firstChild);
-    parts.set(
-        container, part = new NodePart({
-                     eventContext: options && options.eventContext,
-                     templateFactory: options && options.templateFactory ||
-                         defaultTemplateFactory,
-                   }));
+    parts.set(container, part = new NodePart({
+      templateFactory,
+      ...options,
+    }));
     part.appendInto(container);
   }
   part.setValue(result);
   part.commit();
-}
+};
