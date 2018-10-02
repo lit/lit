@@ -15,7 +15,7 @@
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
 import {noChange, Part} from './part.js';
-import {TemplateFactory} from './template-factory.js';
+import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
@@ -119,14 +119,14 @@ export class AttributePart implements Part {
 }
 
 export class NodePart implements Part {
-  templateFactory: TemplateFactory;
+  options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
 
-  constructor(templateFactory: TemplateFactory) {
-    this.templateFactory = templateFactory;
+  constructor(options: RenderOptions) {
+    this.options = options;
   }
 
   /**
@@ -234,15 +234,16 @@ export class NodePart implements Part {
   }
 
   private _commitTemplateResult(value: TemplateResult): void {
-    const template = this.templateFactory(value);
+    const template = this.options.templateFactory(value);
     if (this.value && this.value.template === template) {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
-      // so that we use it's syntax extension, etc. The template factory comes
-      // from the render function so that it can control caching.
+      // so that we use its syntax extension, etc. The template factory comes
+      // from the render function options so that it can control template
+      // caching and preprocessing.
       const instance =
-          new TemplateInstance(template, value.processor, this.templateFactory);
+          new TemplateInstance(template, value.processor, this.options);
       const fragment = instance._clone();
       instance.update(value.values);
       this._commitNode(fragment);
@@ -278,7 +279,7 @@ export class NodePart implements Part {
 
       // If no existing part, create a new one
       if (itemPart === undefined) {
-        itemPart = new NodePart(this.templateFactory);
+        itemPart = new NodePart(this.options);
         itemParts.push(itemPart);
         if (partIndex === 0) {
           itemPart.appendIntoPart(this);
@@ -406,12 +407,14 @@ export class PropertyPart extends AttributePart {}
 export class EventPart implements Part {
   element: Element;
   eventName: string;
+  eventContext?: EventTarget;
   value: any = undefined;
   _pendingValue: any = undefined;
 
-  constructor(element: Element, eventName: string) {
+  constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
+    this.eventContext = eventContext;
   }
 
   setValue(value: any): void {
@@ -439,10 +442,11 @@ export class EventPart implements Part {
   }
 
   handleEvent(event: Event) {
-    if (typeof this.value === 'function') {
-      this.value.call(this.element, event);
-    } else if (typeof this.value.handleEvent === 'function') {
-      this.value.handleEvent(event);
-    }
+    const listener = (typeof this.value === 'function') ?
+        this.value :
+        (typeof this.value.handleEvent === 'function') ?
+        this.value.handleEvent :
+        () => null;
+    listener.call(this.eventContext || this.element, event);
   }
 }

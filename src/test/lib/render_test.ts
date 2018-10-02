@@ -537,10 +537,11 @@ suite('render()', () => {
         event = e;
         thisValue = this;
       };
-      render(html`<div @click=${listener}></div>`, container);
+      const eventContext = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
-      assert.equal(thisValue, div);
+      assert.equal(thisValue, eventContext);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
@@ -558,10 +559,11 @@ suite('render()', () => {
           thisValue = this;
         }
       };
-      render(html`<div @click=${listener}></div>`, container);
+      const eventContext = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
-      assert.equal(thisValue, listener);
+      assert.equal(thisValue, eventContext);
     });
 
     test('only adds event listener once', () => {

@@ -54,7 +54,7 @@ suite('Parts', () => {
       endNode = createMarker();
       container.appendChild(startNode);
       container.appendChild(endNode);
-      part = new NodePart(templateFactory);
+      part = new NodePart({templateFactory});
       part.startNode = startNode;
       part.endNode = endNode;
     });
@@ -159,9 +159,10 @@ suite('Parts', () => {
               element: Element, name: string, strings: string[]) {
             if (name[0] === '&') {
               return super.handleAttributeExpressions(
-                  element, name.slice(1), strings);
+                  element, name.slice(1), strings, {templateFactory});
             }
-            return super.handleAttributeExpressions(element, name, strings);
+            return super.handleAttributeExpressions(
+                element, name, strings, {templateFactory});
           }
         }
         const processor = new TestTemplateProcessor();
@@ -350,7 +351,7 @@ suite('Parts', () => {
           () => {
             const testEndNode = createMarker();
             container.appendChild(testEndNode);
-            const testPart = new NodePart(templateFactory);
+            const testPart = new NodePart({templateFactory});
             testPart.insertAfterNode(endNode);
             assert.equal(testPart.startNode, endNode);
             assert.equal(testPart.endNode, testEndNode);
@@ -367,7 +368,7 @@ suite('Parts', () => {
       test(
           'inserts part and sets values between ref node and its next sibling',
           () => {
-            const testPart = new NodePart(templateFactory);
+            const testPart = new NodePart({templateFactory});
             testPart.appendIntoPart(part);
             assert.instanceOf(testPart.startNode, Comment);
             assert.instanceOf(testPart.endNode, Comment);
@@ -395,7 +396,7 @@ suite('Parts', () => {
 
     suite('insertAfterPart', () => {
       test('inserts part and sets values after another part', () => {
-        const testPart = new NodePart(templateFactory);
+        const testPart = new NodePart({templateFactory});
         testPart.insertAfterPart(part);
         assert.instanceOf(testPart.startNode, Comment);
         assert.equal(testPart.endNode, endNode);
