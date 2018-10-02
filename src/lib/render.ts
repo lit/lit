@@ -31,8 +31,9 @@ export const parts = new WeakMap<Node, NodePart>();
  * @param container A DOM parent to render to. The entire contents are either
  *     replaced, or efficiently updated if the same result type was previous
  *     rendered there.
- * @param templateFactory a function to create a Template or retrieve one from
- *     cache.
+ * @param options RenderOptions for the entire render tree rendered to this
+ *     container. Render options must *not* change between renders to the same
+ *     container, as those changes will not effect previously rendered DOM.
  */
 export const render =
     (result: TemplateResult,
