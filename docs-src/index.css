@@ -23,6 +23,7 @@ body {
 
 main {
   grid-area: content;
+  padding-right: 20px;
 }
 
 #top-nav {
