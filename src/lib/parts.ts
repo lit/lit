@@ -119,7 +119,6 @@ export class AttributePart implements Part {
 }
 
 export class NodePart implements Part {
-  // templateFactory: TemplateFactory;
   options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
@@ -128,8 +127,6 @@ export class NodePart implements Part {
 
   constructor(options: RenderOptions) {
     this.options = options;
-    // this.templateFactory = options && options.templateFactory ||
-    // defaultTemplateFactory;
   }
 
   /**
