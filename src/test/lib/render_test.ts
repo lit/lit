@@ -652,6 +652,29 @@ suite('render()', () => {
       div.click();
       assert.equal(target, undefined);
     });
+
+
+    test('allows capturing events', () => {
+      let event!: Event;
+      let eventPhase!: number;
+      const listener = {
+        handleEvent(e: Event) {
+          event = e;
+          // read here because it changes
+          eventPhase = event.eventPhase;
+        },
+        capture: true,
+      };
+      render(html`
+        <div id="outer" @test=${listener}>
+          <div id="inner"><div>
+        </div>
+      `, container);
+      const inner = container.querySelector('#inner')!;
+      inner.dispatchEvent(new CustomEvent('test'));
+      assert.isOk(event);
+      assert.equal(eventPhase, Event.CAPTURING_PHASE);
+    });
   });
 
   suite('directives', () => {

@@ -435,6 +435,7 @@ export class EventPart implements Part {
   eventName: string;
   eventContext?: EventTarget;
   value: any = undefined;
+  _options?: {capture?: boolean, passive?: boolean, once?: boolean};
   _pendingValue: any = undefined;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
@@ -468,18 +469,11 @@ export class EventPart implements Part {
         newListener != null && (oldListener == null || shouldRemoveListener);
 
     if (shouldRemoveListener) {
-      try {
-        // This can throw if the options don't match the options that the
-        // listener was added with. This should never happen.
-        this.element.removeEventListener(
-            this.eventName, this, getOptions(oldListener));
-      } catch (e) {
-        console.error('Failed to remove listener');
-      }
+      this.element.removeEventListener(this.eventName, this, this._options);
     }
+    this._options = getOptions(newListener);
     if (shouldAddListener) {
-      this.element.addEventListener(
-          this.eventName, this, getOptions(newListener));
+      this.element.addEventListener(this.eventName, this, this._options);
     }
     this.value = newListener;
     this._pendingValue = noChange;
