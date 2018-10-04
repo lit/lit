@@ -545,8 +545,10 @@ suite('Parts', () => {
       element.click();
       assert.isTrue(listenerCalled, 'listenerCalled');
       assert.isTrue(captureCalled, 'captureCalled');
-      if (eventOptionsSupported) {
+      if (passiveSupported) {
         assert.isTrue(passiveCalled, 'passiveCalled');
+      }
+      if (onceSupported) {
         assert.isTrue(onceCalled, 'onceCalled');
       }
     });

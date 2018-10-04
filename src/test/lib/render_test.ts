@@ -673,7 +673,7 @@ suite('render()', () => {
       `,
           container);
       const inner = container.querySelector('#inner')!;
-      inner.dispatchEvent(new CustomEvent('test'));
+      inner.dispatchEvent(new Event('test'));
       assert.isOk(event);
       assert.equal(eventPhase, Event.CAPTURING_PHASE);
     });
