@@ -36,7 +36,7 @@ export class TemplateResult {
   }
 
   /**
-   * Returns a string of HTML used to create a <template> element.
+   * Returns a string of HTML used to create a `<template>` element.
    */
   getHTML(): string {
     const l = this.strings.length - 1;
@@ -77,8 +77,8 @@ export class TemplateResult {
 /**
  * A TemplateResult for SVG fragments.
  *
- * This class wraps HTMl in an <svg> tag in order to parse its contents in the
- * SVG namespace, then modifies the template to remove the <svg> tag so that
+ * This class wraps HTMl in an `<svg>` tag in order to parse its contents in the
+ * SVG namespace, then modifies the template to remove the `<svg>` tag so that
  * clones only container the original fragment.
  */
 export class SVGTemplateResult extends TemplateResult {
