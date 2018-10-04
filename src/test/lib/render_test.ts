@@ -530,6 +530,15 @@ suite('render()', () => {
   });
 
   suite('events', () => {
+
+    setup(() => {
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      document.body.removeChild(container);
+    });
+
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
       let event: Event;
