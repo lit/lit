@@ -665,11 +665,13 @@ suite('render()', () => {
         },
         capture: true,
       };
-      render(html`
+      render(
+          html`
         <div id="outer" @test=${listener}>
           <div id="inner"><div>
         </div>
-      `, container);
+      `,
+          container);
       const inner = container.querySelector('#inner')!;
       inner.dispatchEvent(new CustomEvent('test'));
       assert.isOk(event);
