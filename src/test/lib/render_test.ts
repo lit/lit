@@ -530,7 +530,6 @@ suite('render()', () => {
   });
 
   suite('events', () => {
-
     setup(() => {
       document.body.appendChild(container);
     });
