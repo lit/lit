@@ -1,8 +1,12 @@
 ---
+layout: post
 title: How it Works
+slug: how-it-works
 ---
 
-# How it Works
+{::options toc_levels="1..2" /}
+* ToC
+{:toc}
 
 `lit-html` utilizes some unique properties of JavaScript template literals and HTML `<template>` elements to function and achieve fast performance. So it's helpful to understand them first.
 

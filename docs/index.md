@@ -1,15 +1,16 @@
 ---
+layout: post
 title: lit-html
 ---
 
-# Next-generation HTML Templates in JavaScript
+## Next-generation HTML Templates in JavaScript
 
 lit-html: An efficient, expressive, extensible HTML templating library for JavaScript.
 
-<section class="feature">
-  <a class="cta" href="/lit-html/guide">Get Started</a>
-  <a class="cta" href="https://github.com/Polymer/lit-html">GitHub</a>
-</section>
+<div class="hero-buttons">
+  <a class="pretty-button" href="/lit-html/guide">Get Started</a>
+  <a class="pretty-button" href="https://github.com/Polymer/lit-html">GitHub</a>
+</div>
 
 lit-html lets you write HTML templates in JavaScript, then efficiently render and _re-render_ those templates together with data to create and update DOM:
 
@@ -29,18 +30,18 @@ render(sayHello('Everyone'), document.body);
 
 ## Why use lit-html?
 
-<section class="cards">
-  <div class="card">
+<section class="features">
+  <div class="feature">
     <h3>Efficient</h3>
     <p>
-      lit-html is extremely fast. It uses fast platform features like HTML `<template>` elements with native cloning.
+      lit-html is extremely fast. It uses fast platform features like HTML <code>&lt;template></code> elements with native cloning.
     </p>
     <p>
       Unlike VDOM libraries, lit-html only ever updates the parts of templates that actually change - it doesn't re-render the entire view.
     </p>
   </div>
 
-  <div class="card">
+  <div class="feature">
     <h3>Expressive</h3>
     <p>
       lit-html gives you the full power of JavaScript and functional programming patterns. 
@@ -50,10 +51,10 @@ render(sayHello('Everyone'), document.body);
     </p>
     <p>
       lit-html support many kind of values natively: strings, DOM nodes, heterogeneous lists, Promises, nested templates and more.
-    <p>
+    </p>
   </div>
 
-  <div class="card">
+  <div class="feature">
     <h3>Extensible</h3>
     <p>
       lit-html is extremely customizable and extensible.
@@ -71,6 +72,6 @@ lit-html is not a framework, nor does it include a component model. It focuses o
 
 ## Announcement at Polymer Summit 2017
 
-<section class="feature">
+<div class="row">
   <iframe width="560" height="315" src="https://www.youtube.com/embed/ruql541T7gc" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-</section>
+</div>

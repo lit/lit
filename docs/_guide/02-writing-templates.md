@@ -1,8 +1,12 @@
 ---
+layout: post
 title: Writing Templates
+slug: writing-templates
 ---
 
-# Writing Templates
+{::options toc_levels="1..2" /}
+* ToC
+{:toc}
 
 lit-html templates are written using JavaScript template literals tagged with the `html` tag. The contents of the literal are mostly plain, declarative, HTML:
 
