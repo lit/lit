@@ -404,11 +404,38 @@ export class PropertyCommitter extends AttributeCommitter {
 
 export class PropertyPart extends AttributePart {}
 
+declare global {
+  interface EventListenerOptions {
+    capture?: boolean;
+    once?: boolean;
+    passive?: boolean;
+  }
+}
+
+// Detect event listener options support. If the `capture` property is read
+// from the options object, then options are supported. If not, then the thrid
+// argument to add/removeEventListener is interpreted as the boolean capture
+// value so we should only pass the `capture` property.
+let eventOptionsSupported = false;
+
+try {
+  const options = {
+    get capture() {
+      eventOptionsSupported = true;
+      return false;
+    }
+  };
+  window.addEventListener('test', options as any, options);
+  window.removeEventListener('test', options as any, options);
+} catch (_e) {
+}
+
 export class EventPart implements Part {
   element: Element;
   eventName: string;
   eventContext?: EventTarget;
   value: any = undefined;
+  _options?: {capture?: boolean, passive?: boolean, once?: boolean};
   _pendingValue: any = undefined;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
@@ -430,14 +457,25 @@ export class EventPart implements Part {
     if (this._pendingValue === noChange) {
       return;
     }
-    if ((this._pendingValue == null) !== (this.value == null)) {
-      if (this._pendingValue == null) {
-        this.element.removeEventListener(this.eventName, this);
-      } else {
-        this.element.addEventListener(this.eventName, this);
-      }
+
+    const newListener = this._pendingValue;
+    const oldListener = this.value;
+    const shouldRemoveListener = newListener == null ||
+        oldListener != null &&
+            (newListener.capture !== oldListener.capture ||
+             newListener.once !== oldListener.once ||
+             newListener.passive !== oldListener.passive);
+    const shouldAddListener =
+        newListener != null && (oldListener == null || shouldRemoveListener);
+
+    if (shouldRemoveListener) {
+      this.element.removeEventListener(this.eventName, this, this._options);
     }
-    this.value = this._pendingValue;
+    this._options = getOptions(newListener);
+    if (shouldAddListener) {
+      this.element.addEventListener(this.eventName, this, this._options);
+    }
+    this.value = newListener;
     this._pendingValue = noChange;
   }
 
@@ -450,3 +488,11 @@ export class EventPart implements Part {
     listener.call(this.eventContext || this.element, event);
   }
 }
+
+// We copy options because of the inconsistent behavior of browsers when reading
+// the third argument of add/removeEventListener. IE11 doesn't support options
+// at all. Chrome 41 only reads `capture` if the argument is an object.
+const getOptions = (o: any) => o &&
+    (eventOptionsSupported ?
+         {capture: o.capture, passive: o.passive, once: o.once} :
+         o.capture);

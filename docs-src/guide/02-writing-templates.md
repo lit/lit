@@ -86,10 +86,24 @@ There are a few types of bindings:
     ```js
     html`<input .value=${value}>`
     ```
-  * Event Handler:
+  * Event Listener:
     ```js
     html`<button @click=${(e) => console.log('clicked')}>Click Me</button>`
     ```
+
+### Event Listeners
+
+Event listeners can be functions or objects with a `handleEvent` method. Listeners are passed as both the listener and options arguments to `addEventListener`/`removeEventListener`, so that the listener can carry event listener options like `capture`, `passive`, and `once`.
+
+```js
+const listener = {
+  handleEvent(e) {
+    console.log('clicked');
+  }
+  capture: true;
+}
+html`<button @click=${listener}>Click Me</button>`
+```
 
 ## Supported Data Types
 

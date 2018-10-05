@@ -530,6 +530,14 @@ suite('render()', () => {
   });
 
   suite('events', () => {
+    setup(() => {
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      document.body.removeChild(container);
+    });
+
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
       let event: Event;
@@ -651,6 +659,31 @@ suite('render()', () => {
       render(t(), container);
       div.click();
       assert.equal(target, undefined);
+    });
+
+
+    test('allows capturing events', () => {
+      let event!: Event;
+      let eventPhase!: number;
+      const listener = {
+        handleEvent(e: Event) {
+          event = e;
+          // read here because it changes
+          eventPhase = event.eventPhase;
+        },
+        capture: true,
+      };
+      render(
+          html`
+        <div id="outer" @test=${listener}>
+          <div id="inner"><div>
+        </div>
+      `,
+          container);
+      const inner = container.querySelector('#inner')!;
+      inner.dispatchEvent(new Event('test'));
+      assert.isOk(event);
+      assert.equal(eventPhase, Event.CAPTURING_PHASE);
     });
   });
 
