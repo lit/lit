@@ -114,9 +114,3 @@ export class TemplateInstance {
     return fragment;
   }
 }
-
-declare global {
-  class CustomElementRegistry {
-    upgrade(node: Node): void;
-  }
-}

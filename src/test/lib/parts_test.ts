@@ -102,16 +102,16 @@ suite('Parts', () => {
         part.setValue([1, 2, 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('accepts an empty array', () => {
         part.setValue([]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('accepts nested arrays', () => {
@@ -121,8 +121,8 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '1', '', '', '2', '', '', '3', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('accepts nested templates', () => {
@@ -219,16 +219,16 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '1', '', '2', '', '3', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('updates when called multiple times with arrays 2', () => {
@@ -238,8 +238,8 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '1', '', '2', '', '3', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([4, 5]);
         part.commit();
@@ -247,16 +247,16 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '4', '', '5', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([4, 5]);
         part.commit();
@@ -264,8 +264,8 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '4', '', '5', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('updates nested arrays', () => {
@@ -275,8 +275,8 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '1', '', '', '2', '', '', '3', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([[1], 2, 3]);
         part.commit();
@@ -284,8 +284,8 @@ suite('Parts', () => {
         assert.deepEqual(
             Array.from(container.childNodes).map((n) => n.nodeValue),
             ['', '', '', '1', '', '', '2', '', '3', '', '']);
-        assert.strictEqual(container.firstChild, startNode);
-        assert.strictEqual(container.lastChild, endNode);
+        assert.strictEqual<Node>(container.firstChild!, startNode);
+        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('updates arrays with siblings', () => {
