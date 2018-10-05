@@ -7,9 +7,11 @@
 
 # Compiler output
 /lit-html.d.ts
+/lit-html.d.ts.map
 /lit-html.js
 /lit-html.js.map
 /test/**/*.d.ts
+/test/**/*.d.ts.map
 /test/**/*.js
 /test/**/*.js.map
 
