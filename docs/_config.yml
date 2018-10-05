@@ -1,0 +1,10 @@
+name: lit-html
+description: Next-generation HTML Templates in JavaScript
+google_analytics: UA-39334307-23
+collections:
+  guide:
+    output: true
+    permalink: /:collection/:title
+include:
+  - "_*_.html"
+  - "_*_.*.html"

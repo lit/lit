@@ -1,8 +1,12 @@
 ---
+layout: post
 title: Getting Started
+slug: getting-started
 ---
 
-# Getting Started
+{::options toc_levels="1..2" /}
+* ToC
+{:toc}
 
 ## Installation
 

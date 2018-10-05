@@ -1,8 +1,12 @@
 ---
+layout: post
 title: Introduction
+url: /guide/
 ---
 
-# Introduction
+{::options toc_levels="1..2" /}
+* ToC
+{:toc}
 
 ## What is lit-html?
 
