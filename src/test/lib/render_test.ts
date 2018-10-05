@@ -530,6 +530,14 @@ suite('render()', () => {
   });
 
   suite('events', () => {
+    setup(() => {
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      document.body.removeChild(container);
+    });
+
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
       let event: Event;
@@ -537,10 +545,11 @@ suite('render()', () => {
         event = e;
         thisValue = this;
       };
-      render(html`<div @click=${listener}></div>`, container);
+      const eventContext = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
-      assert.equal(thisValue, div);
+      assert.equal(thisValue, eventContext);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
@@ -558,10 +567,11 @@ suite('render()', () => {
           thisValue = this;
         }
       };
-      render(html`<div @click=${listener}></div>`, container);
+      const eventContext = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
-      assert.equal(thisValue, listener);
+      assert.equal(thisValue, eventContext);
     });
 
     test('only adds event listener once', () => {
@@ -649,6 +659,31 @@ suite('render()', () => {
       render(t(), container);
       div.click();
       assert.equal(target, undefined);
+    });
+
+
+    test('allows capturing events', () => {
+      let event!: Event;
+      let eventPhase!: number;
+      const listener = {
+        handleEvent(e: Event) {
+          event = e;
+          // read here because it changes
+          eventPhase = event.eventPhase;
+        },
+        capture: true,
+      };
+      render(
+          html`
+        <div id="outer" @test=${listener}>
+          <div id="inner"><div>
+        </div>
+      `,
+          container);
+      const inner = container.querySelector('#inner')!;
+      inner.dispatchEvent(new Event('test'));
+      assert.isOk(event);
+      assert.equal(eventPhase, Event.CAPTURING_PHASE);
     });
   });
 

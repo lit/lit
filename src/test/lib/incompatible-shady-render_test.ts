@@ -40,7 +40,9 @@ suite('shady-render', () => {
       </style>
       <div>Testing...</div>
     `;
-    render(result, container.shadowRoot as DocumentFragment, 'scope-4');
+    render(result, container.shadowRoot as DocumentFragment, {
+      scopeName: 'scope-4'
+    });
     assert.isAbove(window.WarnCount, 0);
     document.body.removeChild(container);
   });

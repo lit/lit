@@ -15,7 +15,7 @@
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
 import {noChange, Part} from './part.js';
-import {TemplateFactory} from './template-factory.js';
+import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
@@ -119,14 +119,14 @@ export class AttributePart implements Part {
 }
 
 export class NodePart implements Part {
-  templateFactory: TemplateFactory;
+  options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
 
-  constructor(templateFactory: TemplateFactory) {
-    this.templateFactory = templateFactory;
+  constructor(options: RenderOptions) {
+    this.options = options;
   }
 
   /**
@@ -234,15 +234,16 @@ export class NodePart implements Part {
   }
 
   private _commitTemplateResult(value: TemplateResult): void {
-    const template = this.templateFactory(value);
+    const template = this.options.templateFactory(value);
     if (this.value && this.value.template === template) {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
-      // so that we use it's syntax extension, etc. The template factory comes
-      // from the render function so that it can control caching.
+      // so that we use its syntax extension, etc. The template factory comes
+      // from the render function options so that it can control template
+      // caching and preprocessing.
       const instance =
-          new TemplateInstance(template, value.processor, this.templateFactory);
+          new TemplateInstance(template, value.processor, this.options);
       const fragment = instance._clone();
       instance.update(value.values);
       this._commitNode(fragment);
@@ -278,7 +279,7 @@ export class NodePart implements Part {
 
       // If no existing part, create a new one
       if (itemPart === undefined) {
-        itemPart = new NodePart(this.templateFactory);
+        itemPart = new NodePart(this.options);
         itemParts.push(itemPart);
         if (partIndex === 0) {
           itemPart.appendIntoPart(this);
@@ -403,15 +404,44 @@ export class PropertyCommitter extends AttributeCommitter {
 
 export class PropertyPart extends AttributePart {}
 
+declare global {
+  interface EventListenerOptions {
+    capture?: boolean;
+    once?: boolean;
+    passive?: boolean;
+  }
+}
+
+// Detect event listener options support. If the `capture` property is read
+// from the options object, then options are supported. If not, then the thrid
+// argument to add/removeEventListener is interpreted as the boolean capture
+// value so we should only pass the `capture` property.
+let eventOptionsSupported = false;
+
+try {
+  const options = {
+    get capture() {
+      eventOptionsSupported = true;
+      return false;
+    }
+  };
+  window.addEventListener('test', options as any, options);
+  window.removeEventListener('test', options as any, options);
+} catch (_e) {
+}
+
 export class EventPart implements Part {
   element: Element;
   eventName: string;
+  eventContext?: EventTarget;
   value: any = undefined;
+  _options?: {capture?: boolean, passive?: boolean, once?: boolean};
   _pendingValue: any = undefined;
 
-  constructor(element: Element, eventName: string) {
+  constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
+    this.eventContext = eventContext;
   }
 
   setValue(value: any): void {
@@ -427,22 +457,42 @@ export class EventPart implements Part {
     if (this._pendingValue === noChange) {
       return;
     }
-    if ((this._pendingValue == null) !== (this.value == null)) {
-      if (this._pendingValue == null) {
-        this.element.removeEventListener(this.eventName, this);
-      } else {
-        this.element.addEventListener(this.eventName, this);
-      }
+
+    const newListener = this._pendingValue;
+    const oldListener = this.value;
+    const shouldRemoveListener = newListener == null ||
+        oldListener != null &&
+            (newListener.capture !== oldListener.capture ||
+             newListener.once !== oldListener.once ||
+             newListener.passive !== oldListener.passive);
+    const shouldAddListener =
+        newListener != null && (oldListener == null || shouldRemoveListener);
+
+    if (shouldRemoveListener) {
+      this.element.removeEventListener(this.eventName, this, this._options);
     }
-    this.value = this._pendingValue;
+    this._options = getOptions(newListener);
+    if (shouldAddListener) {
+      this.element.addEventListener(this.eventName, this, this._options);
+    }
+    this.value = newListener;
     this._pendingValue = noChange;
   }
 
   handleEvent(event: Event) {
-    if (typeof this.value === 'function') {
-      this.value.call(this.element, event);
-    } else if (typeof this.value.handleEvent === 'function') {
-      this.value.handleEvent(event);
-    }
+    const listener = (typeof this.value === 'function') ?
+        this.value :
+        (typeof this.value.handleEvent === 'function') ?
+        this.value.handleEvent :
+        () => null;
+    listener.call(this.eventContext || this.element, event);
   }
 }
+
+// We copy options because of the inconsistent behavior of browsers when reading
+// the third argument of add/removeEventListener. IE11 doesn't support options
+// at all. Chrome 41 only reads `capture` if the argument is an object.
+const getOptions = (o: any) => o &&
+    (eventOptionsSupported ?
+         {capture: o.capture, passive: o.passive, once: o.once} :
+         o.capture);

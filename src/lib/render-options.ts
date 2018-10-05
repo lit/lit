@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -11,15 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {render} from '../../lib/shady-render.js';
-import {TemplateResult} from '../../lit-html.js';
 
-/**
- * A helper for creating a shadowRoot on an element.
- */
-export const renderShadowRoot = (result: TemplateResult, element: Element) => {
-  if (!element.shadowRoot) {
-    element.attachShadow({mode: 'open'});
-  }
-  render(result, element.shadowRoot!, {scopeName: element.localName!});
-};
+import {TemplateFactory} from './template-factory.js';
+
+export interface RenderOptions {
+  templateFactory: TemplateFactory;
+  eventContext?: EventTarget;
+}

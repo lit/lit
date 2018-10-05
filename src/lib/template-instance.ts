@@ -15,7 +15,8 @@
 
 import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
-import {TemplateFactory} from './template-factory.js';
+import {RenderOptions} from './render-options.js';
+// import {TemplateFactory} from './template-factory.js';
 import {TemplateProcessor} from './template-processor.js';
 import {isTemplatePartActive, Template} from './template.js';
 
@@ -26,15 +27,15 @@ import {isTemplatePartActive, Template} from './template.js';
 export class TemplateInstance {
   _parts: Array<Part|undefined> = [];
   processor: TemplateProcessor;
-  _getTemplate: TemplateFactory;
+  options: RenderOptions;
   template: Template;
 
   constructor(
       template: Template, processor: TemplateProcessor,
-      getTemplate: TemplateFactory) {
+      options: RenderOptions) {
     this.template = template;
     this.processor = processor;
-    this._getTemplate = getTemplate;
+    this.options = options;
   }
 
   update(values: any[]) {
@@ -88,12 +89,12 @@ export class TemplateInstance {
           partIndex++;
         } else if (nodeIndex === part.index) {
           if (part.type === 'node') {
-            const part = this.processor.handleTextExpression(this._getTemplate);
+            const part = this.processor.handleTextExpression(this.options);
             part.insertAfterNode(node);
             this._parts.push(part);
           } else {
             this._parts.push(...this.processor.handleAttributeExpressions(
-                node as Element, part.name, part.strings));
+                node as Element, part.name, part.strings, this.options));
           }
           partIndex++;
         } else {

@@ -16,6 +16,26 @@ html`<h1>Hello World</h1>`
 html`<h1>Hello ${name}</h1>`
 ```
 
+## Rendering Templates
+
+A lit-html template expresion does not cause any DOM to be created or updated. It's only a description of DOM, called a TemplateResult. To actually create or update DOM, you need to pass the TemplateResult to the `render()` function, along with a container to render to:
+
+```ts
+import {html, render} from 'lit-html';
+
+const sayHi = (name) => html`<h1>Hello ${name}</h1>`;
+render(sayHi('Amy'), document.body);
+
+// subsequent renders wiill update the DOM
+render(sayHi('Zoe'), document.body);
+```
+
+### Render Options
+
+`render()` also takes an options argument that allows you to specify:
+* `eventContext`: The `this` value to use when invoking event listeners registered with the `@eventName` syntax.
+* `templateFactory`: The TemplateFactory to use. A TemplateFactory creates a Template from a TemplateResult, typically caching Templates based on their static content. Users won't usually supply their own TemplateFactory, but possible use ShadyCSS-integrated when using `/lib/shady-render.js`.
+
 ## Thinking Functionally
 
 lit-html is ideal for use in a functional approach to describing UIs. If you think of UI as a function of data, commonly expressed as `UI = f(data)`, you can write lit-html templates that mirror this exactly:
@@ -66,12 +86,26 @@ There are a few types of bindings:
     ```js
     html`<input .value=${value}>`
     ```
-  * Event Handler:
+  * Event Listener:
     ```js
     html`<button @click=${(e) => console.log('clicked')}>Click Me</button>`
     ```
 
-## Supported Types
+### Event Listeners
+
+Event listeners can be functions or objects with a `handleEvent` method. Listeners are passed as both the listener and options arguments to `addEventListener`/`removeEventListener`, so that the listener can carry event listener options like `capture`, `passive`, and `once`.
+
+```js
+const listener = {
+  handleEvent(e) {
+    console.log('clicked');
+  }
+  capture: true;
+}
+html`<button @click=${listener}>Click Me</button>`
+```
+
+## Supported Data Types
 
 Each binding type supports different types of values:
 

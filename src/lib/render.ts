@@ -14,7 +14,8 @@
 
 import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
-import {templateFactory as defaultTemplateFactory, TemplateFactory} from './template-factory.js';
+import {RenderOptions} from './render-options.js';
+import {templateFactory} from './template-factory.js';
 import {TemplateResult} from './template-result.js';
 
 export const parts = new WeakMap<Node, NodePart>();
@@ -30,19 +31,23 @@ export const parts = new WeakMap<Node, NodePart>();
  * @param container A DOM parent to render to. The entire contents are either
  *     replaced, or efficiently updated if the same result type was previous
  *     rendered there.
- * @param templateFactory a function to create a Template or retrieve one from
- *     cache.
+ * @param options RenderOptions for the entire render tree rendered to this
+ *     container. Render options must *not* change between renders to the same
+ *     container, as those changes will not effect previously rendered DOM.
  */
-export function render(
-    result: TemplateResult,
-    container: Element|DocumentFragment,
-    templateFactory: TemplateFactory = defaultTemplateFactory) {
-  let part = parts.get(container);
-  if (part === undefined) {
-    removeNodes(container, container.firstChild);
-    parts.set(container, part = new NodePart(templateFactory));
-    part.appendInto(container);
-  }
-  part.setValue(result);
-  part.commit();
-}
+export const render =
+    (result: TemplateResult,
+     container: Element|DocumentFragment,
+     options?: Partial<RenderOptions>) => {
+      let part = parts.get(container);
+      if (part === undefined) {
+        removeNodes(container, container.firstChild);
+        parts.set(container, part = new NodePart({
+                               templateFactory,
+                               ...options,
+                             }));
+        part.appendInto(container);
+      }
+      part.setValue(result);
+      part.commit();
+    };
