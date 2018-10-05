@@ -34,12 +34,14 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  *
  * Example:
  *
+ * ```
  * let checked = false;
  *
  * html`
  *   when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
  * checked`);
  * `
+ * ```
  *
  * @param condition the condition to test truthiness against
  * @param trueValue the value to render given a true condition
