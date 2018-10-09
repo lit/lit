@@ -124,4 +124,116 @@ suite('shady-render @apply', () => {
         testApplyUser();
         testApplyProducer();
       });
+
+  test('styles polymer-like elements with css custom properties using @apply render', function () {
+    const container = document.createElement('scope-6');
+    document.body.appendChild(container);
+
+    const polymerLikeElementTagName = 'polymer-like-element';
+
+    const polymerLikeElementTemplate = document.createElement('template');
+    polymerLikeElementTemplate.innerHTML = `
+      <style>
+        :host {
+          @apply --polymer-like;
+        }
+      </style>
+      <div>Testing...</div>
+    `;
+    window.ShadyCSS.prepareTemplate(polymerLikeElementTemplate, polymerLikeElementTagName);
+
+    class PolymerLikeElement extends HTMLElement {
+      connectedCallback() {
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot!.appendChild(document.importNode(polymerLikeElementTemplate.content, true));
+      }
+    }
+    window.customElements.define(polymerLikeElementTagName, PolymerLikeElement);
+
+    const result = htmlWithApply `
+      <style>
+        :host {
+          --polymer-like: {
+            border: 3px solid orange;
+            padding: 4px;
+          };
+        }
+      </style>
+      <polymer-like-element></polymer-like-element>
+    `;
+
+    renderShadowRoot(result, container);
+    const pEl = (container.shadowRoot!).querySelector(polymerLikeElementTagName);
+    const computedStyle = getComputedStyle(pEl!);
+    assert.equal(computedStyle.getPropertyValue('border-top-width').trim(), '3px');
+    assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
+    document.body.removeChild(container);
+  });
+
+  test('styles polymer-like elements in slots with css custom properties using @apply render', function () {
+    const container = document.createElement('scope-7');
+    document.body.appendChild(container);
+
+    const polymerLikeElementTagName = 'polymer-like-element-slotted';
+    const slotElementTagName = 'slot-element';
+
+    const slotElementTemplate = document.createElement('template');
+    slotElementTemplate.innerHTML = `
+      <style>
+        :host {
+          display: block;
+        }
+      </style>
+      <slot></slot>
+    `;
+    window.ShadyCSS.prepareTemplate(slotElementTemplate, slotElementTagName);
+
+    class SlotElement extends HTMLElement {
+      connectedCallback() {
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot!.appendChild(document.importNode(slotElementTemplate.content, true));
+      }
+    }
+    window.customElements.define(slotElementTagName, SlotElement);
+
+    const polymerLikeElementTemplate = document.createElement('template');
+    polymerLikeElementTemplate.innerHTML = `
+          <style>
+            :host {
+              @apply --polymer-like-slot;
+            }
+          </style>
+          <div>Testing...</div>
+        `;
+    window.ShadyCSS.prepareTemplate(polymerLikeElementTemplate, polymerLikeElementTagName);
+
+    class PolymerLikeElement extends HTMLElement {
+      connectedCallback() {
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot!.appendChild(document.importNode(polymerLikeElementTemplate.content, true));
+      }
+    }
+    window.customElements.define(polymerLikeElementTagName, PolymerLikeElement);
+
+    const result = htmlWithApply `
+      <style>
+        :host {
+          --polymer-like-slot: {
+            border: 3px solid orange;
+            padding: 4px;
+          };
+        }
+      </style>
+      <slot-element>
+        <polymer-like-element-slotted></polymer-like-element-slotted>
+      </slot-element>
+    `;
+
+    renderShadowRoot(result, container);
+    const pEl = (container.shadowRoot!).querySelector(polymerLikeElementTagName);
+    const computedStyle = getComputedStyle(pEl!);
+    assert.equal(computedStyle.getPropertyValue('border-top-width').trim(), '3px');
+    assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
+    document.body.removeChild(container);
+  });
 });
