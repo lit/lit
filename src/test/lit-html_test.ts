@@ -14,14 +14,12 @@
 
 import * as LibDefaultTemplateProcessor from '../lib/default-template-processor.js';
 import * as LibDirective from '../lib/directive.js';
-import * as LibDom from '../lib/dom.js';
 import * as LibPart from '../lib/part.js';
 import * as LibParts from '../lib/parts.js';
 import * as LibRender from '../lib/render.js';
 import * as LibTemplateFactory from '../lib/template-factory.js';
 import * as LibTemplateInstance from '../lib/template-instance.js';
 import * as LibTemplateResult from '../lib/template-result.js';
-import * as LibTemplate from '../lib/template.js';
 import * as LitHtml from '../lit-html.js';
 
 const assert = chai.assert;
@@ -37,12 +35,6 @@ suite('index.js', () => {
 
   test('exports everything from lib/template-result.js', () => {
     Object.keys(LibTemplateResult).forEach((key) => {
-      assert.property(LitHtml, key);
-    });
-  });
-
-  test('exports everything from lib/template.js', () => {
-    Object.keys(LibTemplate).forEach((key) => {
       assert.property(LitHtml, key);
     });
   });
@@ -67,12 +59,6 @@ suite('index.js', () => {
 
   test('exports everything from lib/parts.js', () => {
     Object.keys(LibParts).forEach((key) => {
-      assert.property(LitHtml, key);
-    });
-  });
-
-  test('exports everything from lib/dom.js', () => {
-    Object.keys(LibDom).forEach((key) => {
       assert.property(LitHtml, key);
     });
   });

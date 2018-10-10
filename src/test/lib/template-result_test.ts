@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, marker} from '../../lit-html.js';
+import {marker} from '../../lib/template.js';
+import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
 
