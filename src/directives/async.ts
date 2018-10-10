@@ -34,7 +34,7 @@ export const async = directive((promise: Promise<any>, defaultContent: any = noC
         // Set the default content if the Promise hasn't resolved *even if
         // we're getting the same Promise* because the default content
         // could have changed.
-        if (promisedValue.resolved && defaultContent !== noChange) {
+        if (!promisedValue.resolved && defaultContent !== noChange) {
           part.setValue(defaultContent);
         }
         return;
@@ -49,11 +49,10 @@ export const async = directive((promise: Promise<any>, defaultContent: any = noC
 
       Promise.resolve(promise).then((value: any) => {
         const currentPromisedValue = promises.get(part);
-        if (currentPromisedValue === undefined ||
-            currentPromisedValue !== promisedValue) {
+        if (currentPromisedValue !== promisedValue) {
           return;
         }
-        promisedValue.value = value;
+        promisedValue!.value = value;
         part.setValue(value);
         part.commit();
       });
