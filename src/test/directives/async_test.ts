@@ -188,4 +188,32 @@ suite('async', () => {
     await promise2;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
+
+  // This test is aspirational
+  test.skip('renders racing primary and defaultContent Promises', async () => {
+    let resolve1: (v: any) => void;
+    const promise1 = new Promise((res, _) => {
+      resolve1 = res;
+    });
+    let resolve2: (v: any) => void;
+    const promise2 = new Promise((res, _) => {
+      resolve2 = res;
+    });
+
+    const t = () => html`<div>${async(promise1, async(promise2))}</div>`;
+
+    // First render with neither Promise resolved
+    render(t(), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    // Resolve the primary Promise, updates the DOM
+    resolve1!('foo');
+    await promise1;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
+    // Resolve the defaultContent Promise, should not update the container
+    resolve2!('bar');
+    await promise2;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+  });
 });
