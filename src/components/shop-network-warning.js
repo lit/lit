@@ -19,7 +19,6 @@ import { reloadCategory } from '../actions/app.js';
 
 class ShopNetworkWarning extends connect(store)(LitElement) {
   render() {
-    const _offline = this._offline;
     return html`
     ${shopButtonStyle}
     <style>
@@ -53,24 +52,24 @@ class ShopNetworkWarning extends connect(store)(LitElement) {
     </style>
 
     <div>
-      ${ _offline ? html`
+      ${this._offline ? html`
         <iron-icon icon="perm-scan-wifi"></iron-icon>
         <h1>No internet connection</h1>
         <p>Check if your device is connected to a mobile network or WiFi.</p>
-        ` : html`<h1>Couldn't reach the server</h1>`
-      }
+      ` : html`
+        <h1>Couldn't reach the server</h1>
+      `}
     </div>
     <shop-button>
-      <button @click="${() => this._tryReconnect()}">Try Again</button>
-    </shop-button>
-    `;
+      <button @click="${this._tryReconnect}">Try Again</button>
+    </shop-button>`;
   }
 
   static get properties() { return {
     _offline: { type: Boolean }
   }}
 
-  _stateChanged(state) {
+  stateChanged(state) {
     this._offline = state.app.offline;
   }
 

@@ -111,8 +111,8 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
       </shop-button>
     </div>
 
-    <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" on-click="close"></paper-icon-button>
-    `;
+    <paper-icon-button icon="close" id="closeBtn" aria-label="Close dialog" on-click="close">
+    </paper-icon-button>`;
   }
 
   static get properties() { return {
@@ -122,7 +122,7 @@ class ShopCartModal extends connect(store)(mixinBehaviors(
     }
   }}
 
-  _stateChanged(state) {
+  stateChanged(state) {
     this.opened = state.app.cartModalOpened;
   }
 

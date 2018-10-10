@@ -23,26 +23,16 @@ import { installOfflineWatcher } from 'pwa-helpers/network.js';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
 
 import { store } from '../store.js';
-import { currentCategorySelector } from '../reducers/categories.js';
 import { metaSelector } from '../reducers/app.js';
-import { updateLocation, updateNetworkStatus } from '../actions/app.js';
+import { updateLocation, updateNetworkStatus, updateDrawerState } from '../actions/app.js';
 
 import './shop-home.js';
 
 class ShopApp extends connect(store)(LitElement) {
   render() {
-    const {
-      _categories,
-      _categoryName,
-      _lazyResourcesLoaded,
-      _modalOpened,
-      _offline,
-      _snackbarOpened,
-      _page,
-      _a11yLabel,
-      _drawerOpened,
-      _smallScreen } = this;
-    const categoriesList = Object.keys(_categories).map(key => _categories[key]);
+    const categoryNames = Object.keys(this._categories);
+    const categoriesList = categoryNames.map(key => this._categories[key]);
+    const selectedTabIndex = categoryNames.indexOf(this._categoryName);
 
     return html`
     <style>
@@ -216,12 +206,12 @@ class ShopApp extends connect(store)(LitElement) {
       <app-toolbar>
         <div class="left-bar-item">
           <paper-icon-button class="menu-btn" icon="menu"
-              @click="${_ => this._drawerOpened = true}"
+              @click="${this._menuButtonClicked}"
               aria-label="Categories"
-              ?hidden="${!_smallScreen || _page === 'detail'}">
+              ?hidden="${!this._smallScreen || this._page === 'detail'}">
           </paper-icon-button>
-          <a class="back-btn" href="/list/${_categoryName}" tabindex="-1"
-              ?hidden="${_page !== 'detail'}">
+          <a class="back-btn" href="/list/${this._categoryName}" tabindex="-1"
+              ?hidden="${this._page !== 'detail'}">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
         </div>
@@ -230,47 +220,50 @@ class ShopApp extends connect(store)(LitElement) {
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      ${ ['home', 'list', 'detail'].indexOf(_page) !== -1 && !_smallScreen && _lazyResourcesLoaded ?
-        html`
-          <div id="tabContainer" sticky>
-            <shop-tabs .selectedIndex="${Object.keys(_categories).indexOf(_categoryName)}">
-              ${repeat(categoriesList, category => html`
-                <shop-tab name="${category.name}">
-                  <a href="/list/${category.name}">${category.title}</a>
-                </shop-tab>
-              `)}
-            </shop-tabs>
-          </div>
-        ` : null
-      }
+      ${['home', 'list', 'detail'].indexOf(this._page) !== -1 &&
+          !this._smallScreen && this._lazyResourcesLoaded ? html`
+        <div id="tabContainer" sticky>
+          <shop-tabs .selectedIndex="${selectedTabIndex}">
+            ${repeat(categoriesList, category => html`
+              <shop-tab name="${category.name}">
+                <a href="/list/${category.name}">${category.title}</a>
+              </shop-tab>
+            `)}
+          </shop-tabs>
+        </div>
+      ` : null}
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
-    ${ _smallScreen && _lazyResourcesLoaded ?
-      html`
-        <app-drawer .opened="${_drawerOpened}" tabindex="0" @opened-changed="${e => this._drawerOpened = e.target.opened}">
-          <nav class="drawer-list">
-            ${repeat(categoriesList, category => html`
-              <a class="${category.name === _categoryName ? 'active' : ''}" href="/list/${category.name}">${category.title}</a>
-            `)}
-          </nav>
-        </app-drawer>
-      ` : null
-    }
+    ${this._smallScreen && this._lazyResourcesLoaded ? html`
+      <app-drawer .opened="${this._drawerOpened}" tabindex="0"
+          @opened-changed="${this._drawerOpenedChanged}">
+        <nav class="drawer-list">
+          ${repeat(categoriesList, category => {
+            const cssClass = category.name === this._categoryName ? 'active' : '';
+            return html`
+              <a class="${cssClass}" href="/list/${category.name}">
+                ${category.title}
+              </a>
+            `;
+          })}
+        </nav>
+      </app-drawer>
+    ` : null}
 
     <main>
       <!-- home view -->
-      <shop-home ?active="${_page === 'home'}"></shop-home>
+      <shop-home ?active="${this._page === 'home'}"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list ?active="${_page === 'list'}"></shop-list>
+      <shop-list ?active="${this._page === 'list'}"></shop-list>
       <!-- detail view of one item -->
-      <shop-detail ?active="${_page === 'detail'}"></shop-detail>
+      <shop-detail ?active="${this._page === 'detail'}"></shop-detail>
       <!-- cart view -->
-      <shop-cart ?active="${_page === 'cart'}"></shop-cart>
+      <shop-cart ?active="${this._page === 'cart'}"></shop-cart>
       <!-- checkout view -->
-      <shop-checkout ?active="${_page === 'checkout'}"></shop-checkout>
+      <shop-checkout ?active="${this._page === 'checkout'}"></shop-checkout>
 
-      <shop-404-warning ?active="${_page === '404'}"></shop-404-warning>
+      <shop-404-warning ?active="${this._page === '404'}"></shop-404-warning>
     </main>
 
     <footer>
@@ -279,16 +272,14 @@ class ShopApp extends connect(store)(LitElement) {
     </footer>
 
     <!-- a11y announcer -->
-    <div class="announcer" aria-live="assertive">${_a11yLabel}</div>
+    <div class="announcer" aria-live="assertive">${this._a11yLabel}</div>
 
-    ${ _modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null }
-    ${ _lazyResourcesLoaded ? html`
-      <shop-snackbar class="${_snackbarOpened ? 'opened' : ''}">
-        ${_offline ? 'You are offline' : 'You are online'}
+    ${this._modalOpened ? html`<shop-cart-modal></shop-cart-modal>` : null}
+    ${this._lazyResourcesLoaded ? html`
+      <shop-snackbar class="${this._snackbarOpened ? 'opened' : ''}">
+        ${this._offline ? 'You are offline' : 'You are online'}
       </shop-snackbar>
-      ` : null
-    }
-    `;
+    ` : null}`;
   }
 
   static get properties() { return {
@@ -346,7 +337,7 @@ class ShopApp extends connect(store)(LitElement) {
   }
 
   firstUpdated() {
-    installRouter((location) => this._updateLocation(location));
+    installRouter((location) => store.dispatch(updateLocation(location)));
     installOfflineWatcher((offline) => store.dispatch(updateNetworkStatus(offline)));
     installMediaQueryWatcher('(max-width: 767px)', (matches) => this._smallScreen = matches);
 
@@ -354,8 +345,7 @@ class ShopApp extends connect(store)(LitElement) {
     this.removeAttribute('unresolved');
   }
 
-  _stateChanged(state) {
-    const category = currentCategorySelector(state);
+  stateChanged(state) {
     this._page = state.app.page;
     this._categories = state.categories;
     this._categoryName = state.app.categoryName;
@@ -365,13 +355,15 @@ class ShopApp extends connect(store)(LitElement) {
     this._a11yLabel = state.app.announcerLabel;
     this._offline = state.app.offline;
     this._snackbarOpened = state.app.snackbarOpened;
+    this._drawerOpened = state.app.drawerOpened;
   }
 
-  _updateLocation(location) {
-    store.dispatch(updateLocation(location));
+  _menuButtonClicked() {
+    store.dispatch(updateDrawerState(true));
+  }
 
-    // Close the drawer - in case the *route* change came from a link in the drawer.
-    this._drawerOpened = false;
+  _drawerOpenedChanged(e) {
+    store.dispatch(updateDrawerState(e.target.opened));
   }
 }
 

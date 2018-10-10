@@ -19,7 +19,6 @@ import { connect } from 'pwa-helpers/connect-mixin.js';
 
 class ShopHome extends connect(store)(PageViewElement) {
   render() {
-    const { _categories } = this;
     return html`
     ${shopButtonStyle}
     <style>
@@ -97,8 +96,8 @@ class ShopHome extends connect(store)(PageViewElement) {
 
     </style>
 
-    ${repeat(Object.keys(_categories), key => {
-      const category = _categories[key];
+    ${repeat(Object.keys(this._categories), key => {
+      const category = this._categories[key];
       return html`<div class="item">
         <a class="image-link" href="/list/${category.name}">
           <shop-image src="${category.image}" alt="${category.title}" placeholder="${category.placeholder}"></shop-image>
@@ -108,8 +107,7 @@ class ShopHome extends connect(store)(PageViewElement) {
           <a aria-label="${category.title} Shop Now" href="/list/${category.name}">Shop Now</a>
         </shop-button>
       </div>`;
-    })}
-`;
+    })}`;
   }
 
   static get properties() { return {
@@ -118,7 +116,7 @@ class ShopHome extends connect(store)(PageViewElement) {
 
   }}
 
-  _stateChanged(state) {
+  stateChanged(state) {
     this._categories = state.categories;
   }
 }

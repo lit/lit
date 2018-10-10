@@ -18,6 +18,7 @@ export const CLEAR_ANNOUNCER_LABEL = 'CLEAR_ANNOUNCER_LABEL';
 export const CLOSE_MODAL = 'CLOSE_MODAL';
 export const UPDATE_NETWORK_STATUS = 'UPDATE_NETWORK_STATUS';
 export const CLOSE_SNACKBAR = 'CLOSE_SNACKBAR';
+export const UPDATE_DRAWER_STATE = 'UPDATE_DRAWER_STATE';
 
 export const reloadCategory = () => async (dispatch, getState) => {
   let state = getState();
@@ -151,4 +152,11 @@ export const updateNetworkStatus = (offline) => (dispatch, getState) => {
   if (!offline && prevOffline) {
     dispatch(reloadCategory());
   }
+};
+
+export const updateDrawerState = (opened) => {
+  return {
+    type: UPDATE_DRAWER_STATE,
+    opened
+  };
 };

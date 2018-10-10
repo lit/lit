@@ -12,7 +12,6 @@ import { LitElement, html } from '@polymer/lit-element';
 
 class ShopImage extends LitElement {
   render() {
-    const { alt, placeholder, src, _loaded } = this;
     return html`
     <style>
 
@@ -54,12 +53,11 @@ class ShopImage extends LitElement {
 
     </style>
 
-    <div id="placeholder" style="background-image: url('${placeholder || ''}')">
-      <img src="${src}" alt="${alt}" class="${_loaded ? 'loaded' : ''}"
-          @load="${() => this._loaded = true}"
-          @error="${() => this._onImgError()}">
-    </div>
-`;
+    <div id="placeholder" style="background-image: url('${this.placeholder || ''}')">
+      <img src="${this.src}" alt="${this.alt}" class="${this._loaded ? 'loaded' : ''}"
+          @load="${this._onImgLoad}"
+          @error="${this._onImgError}">
+    </div>`;
   }
 
   static get properties() { return {
@@ -79,6 +77,10 @@ class ShopImage extends LitElement {
       this._loaded = false;
     }
     super.update(changedProps);
+  }
+
+  _onImgLoad() {
+    this._loaded = true;
   }
 
   _onImgError() {

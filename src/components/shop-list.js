@@ -21,7 +21,6 @@ import { currentCategorySelector } from '../reducers/categories.js';
 
 class ShopList extends connect(store)(PageViewElement) {
   render() {
-    const _category = this._category || {};
     const _failure = this._failure;
     return html`
     ${shopCommonStyle}
@@ -72,31 +71,29 @@ class ShopList extends connect(store)(PageViewElement) {
     </style>
 
     <shop-image
-        alt="${_category.title}"
-        src="${_category.image}"
-        placeholder="${_category.placeholder}" class="hero-image"></shop-image>
+        alt="${this._category.title}"
+        src="${this._category.image}"
+        placeholder="${this._category.placeholder}" class="hero-image"></shop-image>
 
     <header>
-      <h1>${_category.title}</h1>
-      <span>${this._getPluralizedQuantity(_category.items)}</span>
+      <h1>${this._category.title}</h1>
+      <span>${this._getPluralizedQuantity(this._category.items)}</span>
     </header>
 
-    ${ !_failure ? html`
+    ${!this._failure ? html`
       <ul class="grid">
-        ${repeat(this._getListItems(_category.items), item => html`
+        ${repeat(this._getListItems(this._category.items), item => html`
           <li>
-            <a href="/detail/${_category.name}/${item.name}">
+            <a href="/detail/${this._category.name}/${item.name}">
               <shop-list-item .item="${item}"></shop-list-item>
             </a>
           </li>
         `)}
-      </ul>` : html`
-      <shop-network-warning></shop-network-warning>`
-    }
-
-  </template>
-  `;
-}
+      </ul>
+    ` : html`
+      <shop-network-warning></shop-network-warning>
+    `}`;
+  }
 
   static get properties() { return {
 
@@ -106,7 +103,7 @@ class ShopList extends connect(store)(PageViewElement) {
 
   }}
 
-  _stateChanged(state) {
+  stateChanged(state) {
     const category = currentCategorySelector(state);
     this._category = category;
     this._failure = category && category.failure;

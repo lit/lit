@@ -52,8 +52,7 @@ class ShopListItem extends LitElement {
 
     <shop-image src="${item.image}" alt="${item.title}"></shop-image>
     <div class="title">${item.title}</div>
-    <span class="price">${item.price ? `$${item.price.toFixed(2)}` : null}</span>
-`;
+    <span class="price">${item.price ? `$${item.price.toFixed(2)}` : null}</span>`;
   }
 
   static get properties() { return {

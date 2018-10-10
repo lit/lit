@@ -21,8 +21,8 @@ import { totalSelector } from '../reducers/cart.js';
 
 class ShopCart extends connect(store)(PageViewElement) {
   render() {
-    const { _cart, _total } = this;
-    const cartList = _cart ? Object.keys(_cart).map(key => _cart[key]) : [];
+    const cart = this._cart;
+    const cartList = cart ? Object.keys(cart).map(key => cart[key]) : [];
 
     return html`
     ${shopButtonStyle}
@@ -56,27 +56,29 @@ class ShopCart extends connect(store)(PageViewElement) {
 
     <div class="main-frame">
       <div class="subsection">
-        ${ cartList.length > 0 ? html`
-            <header>
-              <h1>Your Cart</h1>
-              <span>${`(${cartList.length} item${cartList.length > 1 ? 's' : ''})`}</span>
-            </header>
-            <div class="list">
-              ${repeat(cartList, entry => html`
-                <shop-cart-item .entry="${entry}"></shop-cart-item>
-              `)}
-            </div>
-            <div class="checkout-box">
-              Total: <span class="subtotal">$${_total.toFixed(2)}</span>
-              <shop-button responsive>
-                <a href="/checkout">Checkout</a>
-              </shop-button>
-            </div>` : html`
-            <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>`
-        }
+        ${cartList.length > 0 ? html`
+          <header>
+            <h1>Your Cart</h1>
+            <span>${`(${cartList.length} item${cartList.length > 1 ? 's' : ''})`}</span>
+          </header>
+          <div class="list">
+            ${repeat(cartList, entry => html`
+              <shop-cart-item .entry="${entry}"></shop-cart-item>
+            `)}
+          </div>
+          <div class="checkout-box">
+            Total: <span class="subtotal">$${this._total.toFixed(2)}</span>
+            <shop-button responsive>
+              <a href="/checkout">Checkout</a>
+            </shop-button>
+          </div>
+        ` : html`
+          <p class="empty-cart">
+            Your <iron-icon icon="shopping-cart"></iron-icon> is empty.
+          </p>
+        `}
       </div>
-    </div>
-    `;
+    </div>`;
   }
 
   static get properties() { return {
@@ -87,7 +89,7 @@ class ShopCart extends connect(store)(PageViewElement) {
 
   }}
 
-  _stateChanged(state) {
+  stateChanged(state) {
     this._cart = state.cart;
     this._total = totalSelector(state);
   }

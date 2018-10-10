@@ -16,7 +16,9 @@ import { numItemsSelector } from '../reducers/cart.js';
 
 class ShopCartButton extends connect(store)(LitElement) {
   render() {
-    const { _numItems } = this;
+    const numItems = this._numItems;
+    const ariaLabel = `Shopping cart: ${numItems} item${numItems > 1 ? 's' : ''}`;
+
     return html`
     <style>
 
@@ -50,17 +52,19 @@ class ShopCartButton extends connect(store)(LitElement) {
     </style>
 
     <a href="/cart" tabindex="-1">
-      <paper-icon-button icon="shopping-cart" aria-label="${`Shopping cart: ${_numItems} item${_numItems > 1 ? 's' : ''}`}"></paper-icon-button>
+      <paper-icon-button icon="shopping-cart" aria-label="${ariaLabel}">
+      </paper-icon-button>
     </a>
-    ${ _numItems ? html`<div class="cart-badge" aria-hidden="true">${_numItems}</div>`: null }
-`;
+    ${numItems ? html`
+      <div class="cart-badge" aria-hidden="true">${numItems}</div>
+    `: null}`;
   }
 
   static get properties() { return {
     _numItems: { type: Number }
   }}
 
-  _stateChanged(state) {
+  stateChanged(state) {
     this._numItems = numItemsSelector(state);
   }
 }

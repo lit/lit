@@ -15,7 +15,8 @@ import {
   SET_ANNOUNCER_LABEL,
   CLOSE_MODAL,
   UPDATE_NETWORK_STATUS,
-  CLOSE_SNACKBAR
+  CLOSE_SNACKBAR,
+  UPDATE_DRAWER_STATE
 } from '../actions/app.js';
 import { ADD_TO_CART } from '../actions/cart.js';
 import { currentCategorySelector, currentItemSelector } from './categories.js';
@@ -28,7 +29,8 @@ const app = (state = {}, action) => {
         ...state,
         page: action.page,
         categoryName: action.categoryName,
-        itemName: action.itemName
+        itemName: action.itemName,
+        drawerOpened: false
       };
     case RECEIVE_LAZY_RESOURCES:
       return {
@@ -66,6 +68,11 @@ const app = (state = {}, action) => {
       return {
         ...state,
         snackbarOpened: false
+      };
+    case UPDATE_DRAWER_STATE:
+      return {
+        ...state,
+        drawerOpened: action.opened
       };
     default:
       return state;

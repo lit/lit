@@ -53,8 +53,7 @@ class ShopSnackbar extends LitElement {
       }
     </style>
 
-    <slot></slot>
-`;
+    <slot></slot>`;
   }
 }
 

@@ -28,8 +28,7 @@ class ShopRippleContainer extends mixinBehaviors(
         color: var(--app-accent-color);
       }
     </style>
-    <slot></slot>
-    `;
+    <slot></slot>`;
   }
 
   constructor() {

@@ -171,7 +171,7 @@ class ShopCartItem extends LitElement {
 
     </style>
 
-    ${ entry && entry.item ? html`
+    ${entry && entry.item ? html`
       <a href="/detail/${entry.item.category}/${entry.item.name}" title="${entry.item.title}">
         <shop-image src="${entry.item.image}" alt="${entry.item.title}"></shop-image>
       </a>
@@ -183,7 +183,7 @@ class ShopCartItem extends LitElement {
           <div class="quantity">
             <shop-select>
               <label prefix>Qty:</label>
-              <select id="quantitySelect" aria-label="Change quantity" .value="${entry.quantity}" @change="${e => this._quantityChange(e)}">
+              <select id="quantitySelect" aria-label="Change quantity" .value="${entry.quantity}" @change="${this._quantityChange}">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -206,11 +206,10 @@ class ShopCartItem extends LitElement {
           <!--
             Use @click instead of @tap to prevent the next cart item to be focused
           -->
-          <paper-icon-button class="delete-button" icon="close" aria-label="Delete item ${entry.item.title}" @click="${() => this._removeItem()}"></paper-icon-button>
+          <paper-icon-button class="delete-button" icon="close" aria-label="Delete item ${entry.item.title}" @click="${this._removeItem}"></paper-icon-button>
         </div>
-      </div>` : null
-    }
-    `;
+      </div>
+    ` : null}`;
   }
 
   static get properties() { return {

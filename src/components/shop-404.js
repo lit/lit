@@ -44,8 +44,7 @@ class Shop404Warning extends LitElement {
     </div>
     <shop-button>
       <a href="/">Go to the home page</a>
-    </shop-button>
-    `;
+    </shop-button>`;
   }
 }
 
