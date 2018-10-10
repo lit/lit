@@ -189,69 +189,6 @@ suite('render()', () => {
           '<form><input name="one"><input name="two"></form>');
     });
 
-
-    test('renders a Promise', () => {
-      let resolve: (v: any) => void;
-      const promise = new Promise((res, _) => {
-        resolve = res;
-      });
-      render(html`<div>${promise}</div>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-      resolve!('foo');
-      return promise.then(() => {
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
-      });
-    });
-
-    test('renders a sync thenable', () => {
-      const promise = {
-        then(cb: (foo: string) => void) {
-          cb('foo');
-        }
-      };
-      render(html`<div>${promise}</div>`, container);
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
-    });
-
-    test('renders racing Promises correctly', () => {
-      let resolve1: (v: any) => void;
-      const promise1 = new Promise((res, _) => {
-        resolve1 = res;
-      });
-      let resolve2: (v: any) => void;
-      const promise2 = new Promise((res, _) => {
-        resolve2 = res;
-      });
-
-      let promise = promise1;
-
-      const t = () => html`<div>${promise}</div>`;
-
-      // First render, first Promise, no value
-      render(t(), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-
-      promise = promise2;
-      // Second render, second Promise, still no value
-      render(t(), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-
-      // Resolve the first Promise, should not update the container
-      resolve1!('foo');
-      return promise1.then(() => {
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div></div>');
-        // Resolve the second Promise, should update the container
-        resolve2!('bar');
-        return promise2.then(() => {
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
-        });
-      });
-    });
-
     test('renders SVG', () => {
       const container = document.createElement('svg');
       const t = svg`<line y1="1" y2="1"/>`;

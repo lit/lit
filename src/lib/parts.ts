@@ -196,8 +196,6 @@ export class NodePart implements Part {
       this._commitNode(value);
     } else if (Array.isArray(value) || value[Symbol.iterator]) {
       this._commitIterable(value);
-    } else if (value.then !== undefined) {
-      this._commitPromise(value);
     } else {
       // Fallback, will render the string representation
       this._commitText(value);
@@ -297,16 +295,6 @@ export class NodePart implements Part {
       itemParts.length = partIndex;
       this.clear(itemPart && itemPart!.endNode);
     }
-  }
-
-  private _commitPromise(value: Promise<any>): void {
-    this.value = value;
-    value.then((v: any) => {
-      if (this.value === value) {
-        this.setValue(v);
-        this.commit();
-      }
-    });
   }
 
   clear(startNode: Node = this.startNode) {

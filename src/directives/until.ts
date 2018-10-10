@@ -12,14 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Part} from '../lit-html.js';
-
 /**
- * Display `defaultContent` until `promise` resolves.
+ * @deprecated Use `async` from async.js instead
  */
+import {noChange} from '../lit-html.js';
+
+import {async} from './async.js';
+
 export const until =
-    directive((promise: Promise<any>, defaultContent: any) => (part: Part) => {
-      part.setValue(defaultContent);
-      part.commit();
-      part.setValue(promise);
-    });
+    (promise: Promise<any>, defaultContent: any = noChange) => {
+      console.warn(
+          'until() is deprecated, please use async() from directives/async.js');
+      return async(promise, defaultContent);
+    };

@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {async} from '../../directives/async.js';
 import {guard} from '../../directives/guard.js';
 import {repeat} from '../../directives/repeat.js';
-import {until} from '../../directives/until.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
@@ -451,8 +451,9 @@ suite('repeat', () => {
   suite('rendering other values', () => {
     test('render promises as values', async () => {
       const items = [0, 1, 2];
-      const t = () => html`${repeat(items, (i: number) => Promise.resolve(html`
-            <li>promised: ${i}</li>`))}`;
+      const t = () =>
+          html`${repeat(items, (i: number) => async(Promise.resolve(html`
+            <li>promised: ${i}</li>`)))}`;
       render(t(), container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '');
       await Promise.resolve();
@@ -467,7 +468,7 @@ suite('repeat', () => {
       const t = () => html`${
           repeat(
               items,
-              (i: number) => until(
+              (i: number) => async(
                   Promise.resolve(guard(items, () => html`
             <li>guarded: ${i}</li>`)),
                   html`
