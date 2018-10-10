@@ -294,8 +294,8 @@ import { when } from 'lit-html/directives/when';
 let checked = false;
 
 html`
-  when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
-checked`);
+  ${when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
+checked`});
 ```
 
 ### `repeat(items, keyfn, template)`
