@@ -12,91 +12,52 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart, reparentNodes} from '../lit-html.js';
+import { directive, Directive, NodePart } from '../lit-html.js';
 
-interface PartCache {
-  truePart: NodePart;
-  falsePart: NodePart;
-  prevCondition?: boolean;
-  cacheContainer: DocumentFragment;
-}
-
-const partCaches = new WeakMap<NodePart, PartCache>();
+export type WhenValue = () => any;
+export type CaseMap = { [key: string]: WhenValue };
 
 /**
- * Efficiently switches between two templates based on the given condition. The
- * rendered content is cached, and re-used when switching conditions. Templates
- * are evaluated lazily, so the passed values must be functions.
+ * Directive for handling conditional logic inside templates. One or
+ * two function parameters are treated as if or if/else statements. The
+ * first parameter is checked against truthiness and the associated value
+ * is rendered.
  *
- * While this directive can render any regular part, it makes the most sense
- * when used with TemplateResult since most other values are dirty checked
- * already.
+ * An object is treated as a case switch, where the condition is used as
+ * key to render the value of the matched case on the object. If no condition
+ * matches the default case is rendered if present. Keys can be strings and symbols.
  *
- * Example:
+ * Templates are re-instantiated each re-render. For caching nodes between renders,
+ * see the cachingWhen directive.
  *
- * ```
- * let checked = false;
- *
- * html`
- *   when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
- * checked`);
- * `
- * ```
- *
- * @param condition the condition to test truthiness against
- * @param trueValue the value to render given a true condition
- * @param falseValue the value to render given a false condition
+ * @param condition the condition to check for truthiness
+ * @param caseMap object where keys are cases and values are functions which return the value to render
+ * @param trueValue function that returns the value to render in case of truthiness
+ * @param falseValue function that returns the value to render in case of falsiness
  */
-export const when =
-    (condition: any, trueValue: () => any, falseValue: () => any):
-        Directive<NodePart> => directive((parentPart: NodePart) => {
-          let cache = partCaches.get(parentPart);
+export function when(condition: any, trueValue: WhenValue, falseValue?: WhenValue): Directive<NodePart>;
+export function when(condition: any, caseMap: CaseMap): Directive<NodePart>;
+export function when(condition: any, trueValueOrCaseMap: WhenValue | CaseMap, falseValue?: WhenValue): Directive<NodePart> {
+  let caseMap: CaseMap;
+  let trueValue: WhenValue;
 
-          // Create a new cache if this is the first render
-          if (cache === undefined) {
-            // Cache consists of two parts, one for each condition, and a
-            // docment fragment which we cache the nodes of the condition that's
-            // not currently rendered.
-            cache = {
-              truePart: new NodePart(parentPart.options),
-              falsePart: new NodePart(parentPart.options),
-              cacheContainer: document.createDocumentFragment(),
-            };
-            partCaches.set(parentPart, cache);
+  // test whether we are in case or in if/else mode
+  if (typeof trueValueOrCaseMap === 'object') {
+    caseMap = trueValueOrCaseMap;
+  } else {
+    trueValue = trueValueOrCaseMap;
+  }
 
-            cache.truePart.appendIntoPart(parentPart);
-            cache.falsePart.appendIntoPart(parentPart);
-          }
+  return directive((part: NodePart) => {
+    let nextValue: WhenValue | undefined;
 
-          // Based on the condition, select which part to render and which value
-          // to set on that part.
-          const nextPart = condition ? cache.truePart : cache.falsePart;
-          const nextValue = condition ? trueValue() : falseValue();
+    if (caseMap) {
+      nextValue = caseMap[condition] || caseMap.default;
+    } else {
+      nextValue = condition ? trueValue : falseValue;
+    }
 
-          // If we switched condition, swap nodes to/from the cache.
-          if (!!condition !== cache.prevCondition) {
-            // Get the part which was rendered for the opposite condition. This
-            // should be added to the cache.
-            const prevPart = condition ? cache.falsePart : cache.truePart;
-
-            // If the next part was rendered, take it from the cache
-            if (nextPart.value) {
-              parentPart.startNode.parentNode!.appendChild(
-                  cache.cacheContainer);
-            }
-
-            // If the prev part was rendered, move it to the cache
-            if (prevPart.value) {
-              reparentNodes(
-                  cache.cacheContainer,
-                  prevPart.startNode,
-                  prevPart.endNode.nextSibling);
-            }
-          }
-
-          // Set the next part's value
-          nextPart.setValue(nextValue);
-          nextPart.commit();
-
-          cache.prevCondition = !!condition;
-        });
+    part.setValue(nextValue ? nextValue() : undefined);
+    part.commit();
+  });
+}

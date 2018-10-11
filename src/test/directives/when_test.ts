@@ -29,145 +29,101 @@ suite('when', () => {
     container = document.createElement('div');
   });
 
-  suite('simple template', () => {
+  suite('if mode', () => {
     function renderWhen(condition: any) {
-      render(
-          html`${
-              when(
-                  condition,
-                  () => html`<div></div>`,
-                  () => html`<span></span>`)}`,
-          container);
+      const template = html`${when(condition, () => html`<div>Condition is true</div>`)}`;
+      render(template, container);
     }
 
-    suite('renders if/then template based on condition', () => {
-      test('initially true', () => {
-        renderWhen(true);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div></div>');
-
-        renderWhen(false);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<span></span>');
-
-        renderWhen(true);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div></div>');
-      });
-
-      test('initial false', () => {
-        renderWhen(false);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<span></span>');
-
-        renderWhen(true);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div></div>');
-
-        renderWhen(false);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<span></span>');
-      });
-    });
-
-    test('caches templates', () => {
+    test('renders the value if condition is true', () => {
       renderWhen(true);
-      const trueEl = container.firstElementChild;
-
-      renderWhen(false);
-      const falseEl = container.firstElementChild;
-
-      renderWhen(true);
-      assert.equal(trueEl, container.firstElementChild);
-
-      renderWhen(false);
-      assert.equal(falseEl, container.firstElementChild);
-    });
-
-    test('handles truthy and falsy values', () => {
-      renderWhen(false);
-      const falseEl = container.firstElementChild;
-      renderWhen(true);
-      const trueEl = container.firstElementChild;
-
-      renderWhen('');
-      assert.equal(falseEl, container.firstElementChild);
       assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<span></span>');
+        stripExpressionMarkers(container.innerHTML), '<div>Condition is true</div>');
+    });
 
-      renderWhen('foo');
-      assert.equal(trueEl, container.firstElementChild);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    test('does not render anything when condition is false', () => {
+      renderWhen(false);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '');
+    });
+
+    test('clears container when switching from true to false', () => {
+      renderWhen(true);
+      renderWhen(false);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '');
     });
   });
 
-  suite('nested attribute part', () => {
-    function renderWhen(condition: any, value: string) {
-      render(
-          html`${
-              when(
-                  condition,
-                  () => html`<div foo="${value}"></div>`,
-                  () => html`<span foo="${value}"></span>`)}`,
-          container);
+  suite('if/else mode', () => {
+    function renderWhen(condition: any) {
+      const template = html`${when(condition,
+          () => html`<div>Condition is true</div>`,
+          () => html`<div>Condition is false</div>`)}`;
+      render(template, container);
     }
 
-    test('updates attribute parts when switching conditions', () => {
-      renderWhen(true, 'foo');
+    test('renders the value if condition is true', () => {
+      renderWhen(true);
       assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
+        stripExpressionMarkers(container.innerHTML), '<div>Condition is true</div>');
+    });
 
-      renderWhen(false, 'foo');
+    test('renders the value if condition is false', () => {
+      renderWhen(false);
       assert.equal(
-          stripExpressionMarkers(container.innerHTML),
-          '<span foo="foo"></span>');
+        stripExpressionMarkers(container.innerHTML), '<div>Condition is false</div>');
+    });
 
-      renderWhen(true, 'bar');
+    test('renders one condition at a time when switching conditions', () => {
+      renderWhen(true);
+      renderWhen(false);
       assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
-
-      renderWhen(false, 'bar');
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML),
-          '<span foo="bar"></span>');
+        stripExpressionMarkers(container.innerHTML), '<div>Condition is false</div>');
     });
   });
 
-  suite('nested template', () => {
-    function renderWhen(condition: any, value: string) {
-      const ifTemplate = () => html`<div>${html`<span>${value}</span>`}</div>`;
-      const elseTemplate = () =>
-          html`<div>${html`<span>${value}</span>`}</div>`;
+  suite('switch mode mode', () => {
+    suite('with default', () => {
+      function renderWhen(condition: any) {
+        const template = html`${when(condition, {
+            a: () => html`<div>Condition is a</div>`,
+            b: () => html`<div>Condition is b</div>`,
+            c: () => html`<div>Condition is c</div>`,
+            default: () => html`<div>Condition is default</div>`}
+          )}`;
+        render(template, container);
+      }
 
-      render(html`${when(condition, ifTemplate, elseTemplate)}`, container);
-    }
+      test('renders the matched case', () => {
+        renderWhen('a');
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>Condition is a</div>');
+      });
 
-    test('updates template parts when switching conditions', () => {
-      renderWhen(true, 'foo');
-      const ifParent = container.firstElementChild!;
-      assert.equal(ifParent.firstElementChild!.textContent, 'foo');
+      test('renders the default case if no match', () => {
+        renderWhen('foo');
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>Condition is default</div>');
+      });
 
-      renderWhen(false, 'foo');
-      const elseParent = container.firstElementChild!;
-      assert.equal(elseParent.firstElementChild!.textContent, 'foo');
+      test('renders one condition at a time when switching conditions', () => {
+        renderWhen('a');
+        renderWhen('b');
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>Condition is b</div>');
+      });
+    });
 
-      renderWhen(true, 'bar');
-      assert.equal(ifParent.firstElementChild!.textContent, 'bar');
+    test('renders nothing if no match and no default condition', () => {
+      const template = html`${when('foo', {
+          a: () => html`<div>Condition is a</div>`,
+          b: () => html`<div>Condition is b</div>`}
+        )}`;
+
+      render(template, container);
       assert.equal(
-          ifParent.firstElementChild,
-          container.firstElementChild!.firstElementChild);
-
-      renderWhen(false, 'bar');
-      assert.equal(elseParent.firstElementChild!.textContent, 'bar');
-      assert.equal(
-          elseParent.firstElementChild,
-          container.firstElementChild!.firstElementChild);
-
-      renderWhen(false, 'bar');
-      assert.equal(elseParent.firstElementChild!.textContent, 'bar');
-      assert.equal(
-          elseParent.firstElementChild,
-          container.firstElementChild!.firstElementChild);
+        stripExpressionMarkers(container.innerHTML), '');
     });
   });
 });
