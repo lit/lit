@@ -184,7 +184,16 @@ export const render =
         }
         // Update styling if this is the initial render to this container.
         if (!hasRendered) {
-          window.ShadyCSS.styleElement((container as ShadowRoot).host);
+          window.ShadyCSS.styleSubtree((container as ShadowRoot).host);
+
+          Array.from(container.querySelectorAll('*')).forEach((childElement) => {
+            if (!childElement.shadowRoot) {
+              return;
+            }
+            Array.from(childElement.children).forEach((slottedElement) => {
+              window.ShadyCSS.styleSubtree(slottedElement);
+            });
+          });
         }
       }
     };
