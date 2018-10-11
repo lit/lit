@@ -186,14 +186,15 @@ export const render =
         if (!hasRendered) {
           window.ShadyCSS.styleSubtree((container as ShadowRoot).host);
 
-          Array.from(container.querySelectorAll('*'))
-              .forEach((childElement) => {
+          Array.prototype.forEach.call(
+              container.querySelectorAll('*'), (childElement: HTMLElement) => {
                 if (!childElement.shadowRoot) {
                   return;
                 }
-                Array.from(childElement.children).forEach((slottedElement) => {
-                  window.ShadyCSS.styleSubtree(slottedElement);
-                });
+                Array.prototype.forEach.call(
+                    childElement.children, (slottedElement: HTMLElement) => {
+                      window.ShadyCSS.styleSubtree(slottedElement);
+                    });
               });
         }
       }
