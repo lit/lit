@@ -57,7 +57,6 @@ const category = (state = {}, action) => {
         }
       };
     case FAIL_CATEGORY_ITEMS:
-      const categoryId = action.categoryId;
       return {
         ...state,
         failure: true,
