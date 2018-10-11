@@ -31,27 +31,27 @@ suite('when', () => {
 
   suite('if mode', () => {
     function renderWhen(condition: any) {
-      const template = html`${cachingWhen(condition, () => html`<div>Condition is true</div>`)}`;
+      const template = html
+      `${cachingWhen(condition, () => html`<div>Condition is true</div>`)}`;
       render(template, container);
     }
 
     test('renders the value if condition is true', () => {
       renderWhen(true);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Condition is true</div>');
+          stripExpressionMarkers(container.innerHTML),
+          '<div>Condition is true</div>');
     });
 
     test('does not render anything when condition is false', () => {
       renderWhen(false);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML), '');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
     });
 
     test('clears container when switching from true to false', () => {
       renderWhen(true);
       renderWhen(false);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML), '');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
     });
 
     test('caches templates between renders', () => {
@@ -67,29 +67,34 @@ suite('when', () => {
 
   suite('if/else mode', () => {
     function renderWhen(condition: any) {
-      const template = html`${cachingWhen(condition,
-          () => html`<div>Condition is true</div>`,
-          () => html`<div>Condition is false</div>`)}`;
+      const template = html`${
+          cachingWhen(
+              condition,
+              () => html`<div>Condition is true</div>`,
+              () => html`<div>Condition is false</div>`)}`;
       render(template, container);
     }
 
     test('renders the value if condition is true', () => {
       renderWhen(true);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Condition is true</div>');
+          stripExpressionMarkers(container.innerHTML),
+          '<div>Condition is true</div>');
     });
 
     test('renders the value if condition is false', () => {
       renderWhen(false);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Condition is false</div>');
+          stripExpressionMarkers(container.innerHTML),
+          '<div>Condition is false</div>');
     });
 
     test('renders one condition at a time when switching conditions', () => {
       renderWhen(true);
       renderWhen(false);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Condition is false</div>');
+          stripExpressionMarkers(container.innerHTML),
+          '<div>Condition is false</div>');
     });
 
     test('caches templates between renders', () => {
@@ -111,31 +116,34 @@ suite('when', () => {
     suite('with default', () => {
       function renderWhen(condition: any) {
         const template = html`${cachingWhen(condition, {
-            a: () => html`<div>Condition is a</div>`,
-            b: () => html`<div>Condition is b</div>`,
-            c: () => html`<div>Condition is c</div>`,
-            default: () => html`<div>Condition is default</div>`}
-          )}`;
+          a: () => html`<div>Condition is a</div>`,
+          b: () => html`<div>Condition is b</div>`,
+          c: () => html`<div>Condition is c</div>`,
+          default: () => html`<div>Condition is default</div>`
+        })}`;
         render(template, container);
       }
 
       test('renders the matched case', () => {
         renderWhen('a');
         assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>Condition is a</div>');
+            stripExpressionMarkers(container.innerHTML),
+            '<div>Condition is a</div>');
       });
 
       test('renders the default case if no match', () => {
         renderWhen('foo');
         assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>Condition is default</div>');
+            stripExpressionMarkers(container.innerHTML),
+            '<div>Condition is default</div>');
       });
 
       test('renders one condition at a time when switching conditions', () => {
         renderWhen('a');
         renderWhen('b');
         assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>Condition is b</div>');
+            stripExpressionMarkers(container.innerHTML),
+            '<div>Condition is b</div>');
       });
 
       test('caches templates between renders', () => {
@@ -161,14 +169,12 @@ suite('when', () => {
 
     test('renders nothing if no match and no default condition', () => {
       const template = html`${cachingWhen('foo', {
-          a: () => html`<div>Condition is a</div>`,
-          b: () => html`<div>Condition is b</div>`}
-        )}`;
+        a: () => html`<div>Condition is a</div>`,
+        b: () => html`<div>Condition is b</div>`
+      })}`;
 
       render(template, container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML), '');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
     });
   });
-
 });

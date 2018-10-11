@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { directive, Directive, NodePart, reparentNodes } from '../lit-html.js';
-import { WhenValue, CaseMap } from './when';
+import {directive, Directive, NodePart, reparentNodes} from '../lit-html.js';
+
+import {CaseMap, WhenValue} from './when';
 
 interface ConditionCache {
   part: NodePart;
@@ -33,18 +34,27 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  * nodes are cached between switching conditions. This prevents re-creating
  * the nodes of a template each switch, and can help improve render performance.
  *
- * Use this directive only when you need the caching, for example when frequently
- * switching cases or when switching between large dom trees. In other cases use
- * the regular when directive.
+ * Use this directive only when you need the caching, for example when
+ * frequently switching cases or when switching between large dom trees. In
+ * other cases use the regular when directive.
  *
  * @param condition the condition to check for truthiness
- * @param caseMap object where keys are cases and values are functions which return the value to render
- * @param trueValue function that returns the value to render in case of truthiness
- * @param falseValue function that returns the value to render in case of falsiness
+ * @param caseMap object where keys are cases and values are functions which
+ *     return the value to render
+ * @param trueValue function that returns the value to render in case of
+ *     truthiness
+ * @param falseValue function that returns the value to render in case of
+ *     falsiness
  */
-export function cachingWhen(condition: any, trueValue: WhenValue, falseValue?: WhenValue): Directive<NodePart>;
-export function cachingWhen(condition: any, caseMap: CaseMap): Directive<NodePart>;
-export function cachingWhen(condition: any, trueValueOrCaseMap: WhenValue | CaseMap, falseValue?: WhenValue): Directive<NodePart> {
+export function cachingWhen(
+    condition: any, trueValue: WhenValue, falseValue?: WhenValue):
+    Directive<NodePart>;
+export function cachingWhen(
+    condition: any, caseMap: CaseMap): Directive<NodePart>;
+export function cachingWhen(
+    condition: any,
+    trueValueOrCaseMap: WhenValue|CaseMap,
+    falseValue?: WhenValue): Directive<NodePart> {
   let caseMap: CaseMap;
   let trueValue: WhenValue;
   let nextCondition: any;
@@ -65,11 +75,11 @@ export function cachingWhen(condition: any, trueValueOrCaseMap: WhenValue | Case
 
     // create a new PartCache if this is the first render
     if (cache === undefined) {
-      cache = { conditions: new Map() };
+      cache = {conditions: new Map()};
       partCaches.set(parentPart, cache);
     }
 
-    const { prevCondition } = cache;
+    const {prevCondition} = cache;
     const prevCache = cache.conditions.get(prevCondition);
     let nextCache = cache.conditions.get(nextCondition);
 
@@ -79,13 +89,13 @@ export function cachingWhen(condition: any, trueValueOrCaseMap: WhenValue | Case
       nextCache = {
         part: new NodePart(parentPart.options),
         cacheContainer: document.createDocumentFragment(),
-      }
+      };
       cache.conditions.set(nextCondition, nextCache);
       nextCache.part.appendIntoPart(parentPart);
     }
 
     // determine what the next render value is, based on case or if/else mode
-    let nextValue: WhenValue | undefined;
+    let nextValue: WhenValue|undefined;
     if (caseMap) {
       nextValue = caseMap[nextCondition] || caseMap.default;
     } else {
@@ -96,8 +106,7 @@ export function cachingWhen(condition: any, trueValueOrCaseMap: WhenValue | Case
     if (nextCondition !== prevCondition) {
       // take next part from the cache, if it was rendered before
       if (nextCache.part.value) {
-        parentPart.startNode.parentNode!.appendChild(
-          nextCache.cacheContainer);
+        parentPart.startNode.parentNode!.appendChild(nextCache.cacheContainer);
       }
 
       // move the prev part from the cache, if it was rendered before
@@ -114,5 +123,4 @@ export function cachingWhen(condition: any, trueValueOrCaseMap: WhenValue | Case
 
     cache.prevCondition = nextCondition;
   });
-
 }

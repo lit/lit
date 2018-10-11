@@ -282,9 +282,24 @@ const render = () => html`
 
 lit-html includes a few built-in directives:
 
-### `when(condition, trueTemplate, falseTemplate)`
+### `when(condition, trueValue)` ###
+Directive for handling if-statements in your template.
 
-Efficiently switches between two templates based on the given condition. The rendered content is cached, and re-used when switching conditions. Templates are evaluated lazily, so the passed values must be functions.
+Example:
+
+```js
+import { when } from 'lit-html/directives/when';
+
+let renderMessage = false;
+html`
+  ${when(renderMessage, () => html`<span>My message</span>`)}
+`
+```
+
+When `renderMessage` is true, the message is rendered. Otherwise, nothing is rendered.
+
+### `when(condition, trueValue, falseValue)` ###
+Directive for handling if/else-statements in your template.
 
 Example:
 
@@ -292,11 +307,56 @@ Example:
 import { when } from 'lit-html/directives/when';
 
 let checked = false;
-
 html`
-  when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
-checked`);
+  ${when(checked,
+    () => html`<span>Checkmark is checked</span>`,
+    () => html`<span>Checkmark is not checked</span>`
+  )}
+`
 ```
+
+The `when` directive will switch between the two templates based on the condition passed in the first parameter. Dom nodes are recreated when switching conditions, for caching see `cachingWhen`.
+
+### `when(condition, caseMap)` ###
+Directive for handling condition switching in your template.
+
+Example:
+
+```js
+import { when } from 'lit-html/directives/when';
+
+let fruit = 'apples';
+html`
+  ${when(fruit, {
+    bananas: () => html`<div>Bananas are nice</div>`,
+    apples: () => html`<div>Apples are great</div>`,
+    lemons: () => html`<div>Lemons are sour</div>`,
+    default: () => html`<span>Unknown fruit</span>`
+  })}
+`
+```
+
+When given an object, the `when` directive will look up and render the case matching the condition passed in the first parameter. If no case matches, the default case is rendered. A default case is optional. If there is no default, nothing is rendered. Dom nodes are recreated when switching cases, for caching see `cachingWhen`.
+
+### `cachingWhen(condition, trueTemplate, falseTemplate)`
+
+`cachingWhen` is an extension of `when` which caches dom nodes when switching conditions or cases. This can be useful when frequently switching between conditions or when switching between large DOM trees. In general the regular `when` directive is sufficient, `cachingWhen` should only be used when you need the caching.
+
+Example:
+
+```js
+import { cachingWhen } from 'lit-html/directives/caching-when';
+
+let checked = false;
+html`
+  ${cachingWhen(checked,
+    () => html`<span>Checkmark is checked</span>`,
+    () => html`<span>Checkmark is not checked</span>`
+  )}
+`
+```
+
+The interface of `cachingWhen` is identical to `when`, see `when` for more examples.
 
 ### `repeat(items, keyfn, template)`
 

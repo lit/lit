@@ -12,10 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { directive, Directive, NodePart } from '../lit-html.js';
+import {directive, Directive, NodePart} from '../lit-html.js';
 
 export type WhenValue = () => any;
-export type CaseMap = { [key: string]: WhenValue };
+export type CaseMap = {
+  [key: string]: WhenValue
+};
 
 /**
  * Directive for handling conditional logic inside templates. One or
@@ -25,19 +27,28 @@ export type CaseMap = { [key: string]: WhenValue };
  *
  * An object is treated as a case switch, where the condition is used as
  * key to render the value of the matched case on the object. If no condition
- * matches the default case is rendered if present. Keys can be strings and symbols.
+ * matches the default case is rendered if present. Keys can be strings and
+ * symbols.
  *
- * Templates are re-instantiated each re-render. For caching nodes between renders,
- * see the cachingWhen directive.
+ * Templates are re-instantiated each re-render. For caching nodes between
+ * renders, see the cachingWhen directive.
  *
  * @param condition the condition to check for truthiness
- * @param caseMap object where keys are cases and values are functions which return the value to render
- * @param trueValue function that returns the value to render in case of truthiness
- * @param falseValue function that returns the value to render in case of falsiness
+ * @param caseMap object where keys are cases and values are functions which
+ *     return the value to render
+ * @param trueValue function that returns the value to render in case of
+ *     truthiness
+ * @param falseValue function that returns the value to render in case of
+ *     falsiness
  */
-export function when(condition: any, trueValue: WhenValue, falseValue?: WhenValue): Directive<NodePart>;
+export function when(
+    condition: any, trueValue: WhenValue, falseValue?: WhenValue):
+    Directive<NodePart>;
 export function when(condition: any, caseMap: CaseMap): Directive<NodePart>;
-export function when(condition: any, trueValueOrCaseMap: WhenValue | CaseMap, falseValue?: WhenValue): Directive<NodePart> {
+export function when(
+    condition: any,
+    trueValueOrCaseMap: WhenValue|CaseMap,
+    falseValue?: WhenValue): Directive<NodePart> {
   let caseMap: CaseMap;
   let trueValue: WhenValue;
 
@@ -49,7 +60,7 @@ export function when(condition: any, trueValueOrCaseMap: WhenValue | CaseMap, fa
   }
 
   return directive((part: NodePart) => {
-    let nextValue: WhenValue | undefined;
+    let nextValue: WhenValue|undefined;
 
     if (caseMap) {
       nextValue = caseMap[condition] || caseMap.default;
