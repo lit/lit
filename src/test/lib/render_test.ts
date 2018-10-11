@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, render, svg, templateFactory} from '../../lit-html.js';
+import {AttributePart, directive, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -689,23 +689,33 @@ suite('render()', () => {
 
   suite('directives', () => {
     test('renders directives on NodeParts', () => {
-      const fooDirective = directive((part: NodePart) => {
+      const fooDirective = directive(() => (part: Part) => {
         part.setValue('foo');
       });
 
-      render(html`<div>${fooDirective}</div>`, container);
+      render(html`<div>${fooDirective()}</div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
     });
 
     test('renders directives on AttributeParts', () => {
-      const fooDirective = directive((part: AttributePart) => {
+      const fooDirective = directive(() => (part: AttributePart) => {
         part.setValue('foo');
       });
 
-      render(html`<div foo="${fooDirective}"></div>`, container);
+      render(html`<div foo="${fooDirective()}"></div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div foo="foo"></div>');
+    });
+
+    test('renders directives on PropertyParts', () => {
+      const fooDirective = directive(() => (part: AttributePart) => {
+        part.setValue(1234);
+      });
+
+      render(html`<div .foo="${fooDirective()}"></div>`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.strictEqual((container.firstElementChild as any).foo, 1234);
     });
 
     testSkipChrome41(
@@ -719,13 +729,13 @@ suite('render()', () => {
         <div @test-event=${(e: Event) => {
                 event = e;
               }}>
-          ${directive((part: NodePart) => {
+          ${directive(() => (part: NodePart) => {
                 // This emulates a custom element that fires an event in its
                 // connectedCallback
                 part.startNode.dispatchEvent(new CustomEvent('test-event', {
                   bubbles: true,
                 }));
-              })}
+              })()}
         </div>`,
               container);
           document.body.removeChild(container);
@@ -738,7 +748,7 @@ suite('render()', () => {
           // This tests that attribute directives are called in the commit
           // phase, not the setValue phase
           let event = undefined;
-          const fire = directive((part: AttributePart) => {
+          const fire = directive(() => (part: AttributePart) => {
             part.committer.element.dispatchEvent(new CustomEvent('test-event', {
               bubbles: true,
             }));
@@ -747,20 +757,10 @@ suite('render()', () => {
           render(
               html`<div @test-event=${(e: Event) => {
                 event = e;
-              }} b=${fire}></div>`,
+              }} b=${fire()}></div>`,
               container);
           assert.isOk(event);
         });
-
-    test('renders directives on PropertyParts', () => {
-      const fooDirective = directive((part: AttributePart) => {
-        part.setValue(1234);
-      });
-
-      render(html`<div .foo="${fooDirective}"></div>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-      assert.strictEqual((container.firstElementChild as any).foo, 1234);
-    });
   });
 
   suite('<table>', () => {

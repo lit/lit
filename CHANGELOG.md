@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- ### Added -->
-<!-- ### Changed -->
+### Changed
+* Directive are now defined by passing the entire directive factory function to `directive()`.
 <!-- ### Removed -->
 <!-- ### Fixed -->
 

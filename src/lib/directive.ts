@@ -1,3 +1,4 @@
+
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -16,14 +17,34 @@ import {Part} from './part.js';
 
 const directives = new WeakMap<any, Boolean>();
 
-export interface Directive<P = Part> {
-  (part: P): void;
-}
+export type DirectiveFn = (part: Part) => void;
 
-export const directive = <P = Part>(f: Directive<P>): Directive<P> => {
-  directives.set(f, true);
-  return f;
-};
+/**
+ * Brands a function as a directive so that lit-html will call the function
+ * during template rendering, rather than passing as a value.
+ *
+ * @param f The directive factory function. Must be a function that returns a
+ * function of the signature `(part: Part) => void`. The returned function will
+ * be called with the part object
+ *
+ * @example
+ *
+ * ```
+ * import {directive, html} from 'lit-html';
+ *
+ * const immutable = directive((v) => (part) => {
+ *   if (part.value !== v) {
+ *     part.setValue(v)
+ *   }
+ * });
+ * ```
+ */
+export const directive = <F extends Function>(f: F): F =>
+    ((...args: any[]) => {
+      const d = f(...args);
+      directives.set(d, true);
+      return d;
+    }) as unknown as F;
 
 export const isDirective = (o: any) =>
     typeof o === 'function' && directives.has(o);

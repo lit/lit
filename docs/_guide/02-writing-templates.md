@@ -244,10 +244,16 @@ html`
 
 Directives are functions that can extend lit-html by directly interacting with the Part API.
 
-Directives will usually be created from factory functions that accept some arguments for values and configuration. Directives are created by passing a function to lit-html's `directive()` function:
+Directives are functions that accept some arguments for values and configuration and then return another function that accepts a `Part` object. Directives are created by passing a function to lit-html's `directive()` function:
 
 ```javascript
-html`<div>${directive((part) => { part.setValue('Hello')})}</div>`
+import {directive, html} from 'lit-html';
+
+const hello = directive(() => (part) => {
+  part.setValue('Hello');
+});
+
+html`<div>${hello()}</div>`
 ```
 
 The `part` argument is a `Part` object with an API for directly managing the dynamic DOM associated with expressions. See the `Part` API in api.md.
@@ -255,7 +261,9 @@ The `part` argument is a `Part` object with an API for directly managing the dyn
 Here's an example of a directive that takes a function, and evaluates it in a try/catch to implement exception safe expressions:
 
 ```javascript
-const safe = (f) => directive((part) => {
+import {directive, html, render} from 'lit-html';
+
+const safe = directive((f) => (part) => {
   try {
     return f();
   } catch (e) {
@@ -274,10 +282,13 @@ const render = () => html`foo = ${safe(_=>data.foo)}`;
 This example increments a counter on every render:
 
 ```javascript
-const render = () => html`
-  <div>
-    ${directive((part) => part.setValue((part.previousValue + 1) || 0))}
-  </div>`;
+import {directive, html, render} from 'lit-html';
+
+const counter = directive(() => (part) => {
+  part.setValue((part.previousValue + 1) || 0);
+});
+
+const template = () => html`<div>${counter()}</div>`;
 ```
 
 lit-html includes a few built-in directives:
@@ -289,7 +300,7 @@ Efficiently switches between two templates based on the given condition. The ren
 Example:
 
 ```js
-import { when } from 'lit-html/directives/when';
+import {when} from 'lit-html/directives/when';
 
 let checked = false;
 
@@ -311,7 +322,7 @@ items to values, and DOM will be reused against potentially different items.
 Example:
 
 ```javascript
-import { repeat } from 'lit-html/directives/repeat';
+import {repeat} from 'lit-html/directives/repeat';
 
 const render = () => html`
   <ul>
@@ -330,7 +341,7 @@ For other part types, this directive is a no-op.
 Example:
 
 ```javascript
-import { ifDefined } from 'lit-html/directives/if-defined';
+import {ifDefined} from 'lit-html/directives/if-defined';
 
 const render = () => html`
   <div class=${ifDefined(className)}></div>
@@ -344,7 +355,7 @@ Prevents any re-render until the identity of the expression changes, for example
 Example:
 
 ```js
-import { guard } from 'lit-html/directives/guard';
+import {guard} from 'lit-html/directives/guard';
 
 html`
   <div>
@@ -362,7 +373,7 @@ Renders `defaultContent` until `promise` resolves, then it renders the resolved 
 Example:
 
 ```javascript
-import { until } from 'lit-html/directives/until';
+import {until} from 'lit-html/directives/until';
 
 const render = () => html`
   <p>
