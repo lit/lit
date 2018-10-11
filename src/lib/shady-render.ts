@@ -186,14 +186,15 @@ export const render =
         if (!hasRendered) {
           window.ShadyCSS.styleSubtree((container as ShadowRoot).host);
 
-          Array.from(container.querySelectorAll('*')).forEach((childElement) => {
-            if (!childElement.shadowRoot) {
-              return;
-            }
-            Array.from(childElement.children).forEach((slottedElement) => {
-              window.ShadyCSS.styleSubtree(slottedElement);
-            });
-          });
+          Array.from(container.querySelectorAll('*'))
+              .forEach((childElement) => {
+                if (!childElement.shadowRoot) {
+                  return;
+                }
+                Array.from(childElement.children).forEach((slottedElement) => {
+                  window.ShadyCSS.styleSubtree(slottedElement);
+                });
+              });
         }
       }
     };
