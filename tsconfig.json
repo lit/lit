@@ -3,6 +3,7 @@
     "target": "es2017",
     "module": "es2015",
     "lib": ["es2017", "esnext.asynciterable", "dom"],
+    "types": ["chai", "mocha"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -12,8 +13,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src/**/*.ts"
