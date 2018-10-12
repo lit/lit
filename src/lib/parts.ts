@@ -13,7 +13,7 @@
  */
 
 import {isDirective} from './directive.js';
-import {removeNodes} from './dom.js';
+import {removeNodes, reparentNodes} from './dom.js';
 import {noChange, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
@@ -46,7 +46,7 @@ export class AttributeCommitter {
   }
 
   /**
-   * Creates a single part. Override this to create a differnt type of part.
+   * Creates a single part. Override this to create a different type of part.
    */
   protected _createPart(): AttributePart {
     return new AttributePart(this);
@@ -120,8 +120,11 @@ export class AttributePart implements Part {
 
 export class NodePart implements Part {
   options: RenderOptions;
-  startNode!: Node;
-  endNode!: Node;
+  _startNode: Node|null = null;
+  _endNode: Node|null = null;
+  _startPart: NodePart|null = null;
+  _firstChildPart: NodePart|null = null;
+  _detachedNodes: DocumentFragment|null = null;
   value: any = undefined;
   _pendingValue: any = undefined;
 
@@ -129,47 +132,73 @@ export class NodePart implements Part {
     this.options = options;
   }
 
-  /**
-   * Inserts this part into a container.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  appendInto(container: Node) {
-    this.startNode = container.appendChild(createMarker());
-    this.endNode = container.appendChild(createMarker());
+  attach(parent: Node|NodePart, start?: Node|NodePart|null) {
+    if (parent instanceof Node && start instanceof Node) {
+      this._startNode = start;
+      this._endNode = this._startNode!.nextSibling;
+    } else {
+      const parentNode =
+          parent instanceof Node ? parent : parent._startNode!.parentNode!;
+      let endNode;
+      if (start instanceof NodePart) {
+        endNode = start._endNode;
+      } else if (start instanceof Node) {
+        endNode = start.nextSibling;
+      } else {
+        if (parent instanceof NodePart) {
+          if (parent._firstChildPart !== null) {
+            endNode = parent._firstChildPart._startNode;
+            parent._firstChildPart = this;
+          } else {
+            endNode = parentNode.insertBefore(createMarker(), parent._startNode!.nextSibling);
+          }
+        } else {
+          endNode = parentNode.firstChild;
+        }
+      }
+      if (this._startNode !== null) {
+        if (this._endNode !== endNode) {
+          reparentNodes(parentNode!, this._startNode, this._endNode, endNode);
+        }
+      } else {
+        this._startNode = parentNode.insertBefore(createMarker(), endNode);
+      }
+      if (this._startPart !== null) {
+        this._startPart._endNode = this._endNode;
+      }
+      this._endNode = endNode;
+      if (start instanceof NodePart) {
+        start._endNode = this._startNode;
+        this._startPart = start;
+      }
+    }
   }
 
-  /**
-   * Inserts this part between `ref` and `ref`'s next sibling. Both `ref` and
-   * its next sibling must be static, unchanging nodes such as those that appear
-   * in a literal section of a template.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  insertAfterNode(ref: Node) {
-    this.startNode = ref;
-    this.endNode = ref.nextSibling!;
+  detach(retain?: boolean) {
+    if (this._startPart !== null) {
+      this._startPart._endNode = this._endNode;
+      this._startPart = null;
+    }
+    if (retain) {
+      if (this._detachedNodes === null) {
+        this._detachedNodes = document.createDocumentFragment();
+      }
+      reparentNodes(
+          this._detachedNodes, this._startNode, this._endNode && this._endNode);
+      this._endNode = null;
+    } else {
+      removeNodes(
+          this._startNode!.parentNode!,
+          this._startNode,
+          this._endNode && this._endNode);
+      this._startNode = null;
+      this._endNode = null;
+    }
   }
 
-  /**
-   * Appends this part into a parent part.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  appendIntoPart(part: NodePart) {
-    part._insert(this.startNode = createMarker());
-    part._insert(this.endNode = createMarker());
-  }
-
-  /**
-   * Appends this part after `ref`
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  insertAfterPart(ref: NodePart) {
-    ref._insert(this.startNode = createMarker());
-    this.endNode = ref.endNode;
-    ref.endNode = this.startNode;
+  clear(startNode: Node = this._startNode!) {
+    removeNodes(
+        this._startNode!.parentNode!, startNode.nextSibling, this._endNode);
   }
 
   setValue(value: any): void {
@@ -205,7 +234,7 @@ export class NodePart implements Part {
   }
 
   private _insert(node: Node) {
-    this.endNode.parentNode!.insertBefore(node, this.endNode);
+    this._startNode!.parentNode!.insertBefore(node, this._endNode);
   }
 
   private _commitNode(value: Node): void {
@@ -218,10 +247,11 @@ export class NodePart implements Part {
   }
 
   private _commitText(value: string): void {
-    const node = this.startNode.nextSibling!;
+    const node = this._startNode!.nextSibling!;
     value = value == null ? '' : value;
-    if (node === this.endNode.previousSibling &&
-        node.nodeType === Node.TEXT_NODE) {
+    const lastNode = this._endNode ? this._endNode.previousSibling :
+                                     this._startNode!.parentNode!.lastChild;
+    if (node === lastNode && node.nodeType === Node.TEXT_NODE) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if this.value is primitive?
@@ -281,11 +311,7 @@ export class NodePart implements Part {
       if (itemPart === undefined) {
         itemPart = new NodePart(this.options);
         itemParts.push(itemPart);
-        if (partIndex === 0) {
-          itemPart.appendIntoPart(this);
-        } else {
-          itemPart.insertAfterPart(itemParts[partIndex - 1]);
-        }
+        itemPart.attach(this, itemParts[partIndex - 1]);
       }
       itemPart.setValue(item);
       itemPart.commit();
@@ -295,7 +321,10 @@ export class NodePart implements Part {
     if (partIndex < itemParts.length) {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
-      this.clear(itemPart && itemPart!.endNode);
+      const clearFromNode = itemPart && itemPart._endNode;
+      if (clearFromNode !== null) {
+        this.clear(clearFromNode);
+      }
     }
   }
 
@@ -307,11 +336,6 @@ export class NodePart implements Part {
         this.commit();
       }
     });
-  }
-
-  clear(startNode: Node = this.startNode) {
-    removeNodes(
-        this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
 }
 

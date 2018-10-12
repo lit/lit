@@ -12,44 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {createMarker, directive, Directive, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
+import {directive, Directive, NodePart} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index?: number) => any;
 export type ItemTemplate<T> = (item: T, index?: number) => any;
 
 // Helper functions for manipulating parts
-// TODO(kschaaf): Refactor into Part API?
 const createAndInsertPart =
-    (containerPart: NodePart, beforePart?: NodePart): NodePart => {
-      const container = containerPart.startNode.parentNode as Node;
-      const beforeNode = beforePart === undefined ? containerPart.endNode :
-                                                    beforePart.startNode;
-      const startNode = container.insertBefore(createMarker(), beforeNode);
-      container.insertBefore(createMarker(), beforeNode);
-      const newPart = new NodePart(containerPart.options);
-      newPart.insertAfterNode(startNode);
-      return newPart;
-    };
+  (value: unknown, containerPart: NodePart, afterPart: NodePart):
+      NodePart => {
+        const newPart = new NodePart(containerPart.options);
+        newPart.attach(containerPart, afterPart);
+        updatePart(newPart, value);
+        return newPart;
+      };
 
 const updatePart = (part: NodePart, value: unknown) => {
   part.setValue(value);
   part.commit();
   return part;
-};
-
-const insertPartBefore =
-    (containerPart: NodePart, part: NodePart, ref?: NodePart) => {
-      const container = containerPart.startNode.parentNode as Node;
-      const beforeNode = ref ? ref.startNode : containerPart.endNode;
-      const endNode = part.endNode.nextSibling;
-      if (endNode !== beforeNode) {
-        reparentNodes(container, part.startNode, endNode, beforeNode);
-      }
-    };
-
-const removePart = (part: NodePart) => {
-  removeNodes(
-      part.startNode.parentNode!, part.startNode, part.endNode.nextSibling);
 };
 
 // Helper for generating a map of array item to its index over a subset
@@ -330,14 +311,13 @@ export function repeat<T>(
       } else if (oldKeys[oldHead] === newKeys[newTail]) {
         // Old head matches new tail; update and move to new tail
         newParts[newTail] = updatePart(oldParts[oldHead]!, newValues[newTail]);
-        insertPartBefore(
-            containerPart, oldParts[oldHead]!, newParts[newTail + 1]);
+        newParts[newTail]!.attach(containerPart, oldParts[oldTail]);
         oldHead++;
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
         // Old tail matches new head; update and move to new head
         newParts[newHead] = updatePart(oldParts[oldTail]!, newValues[newHead]);
-        insertPartBefore(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
+        newParts[newHead]!.attach(containerPart, newParts[newHead-1]!);
         oldTail--;
         newHead++;
       } else {
@@ -348,11 +328,11 @@ export function repeat<T>(
         }
         if (!newKeyToIndexMap.has(oldKeys[oldHead])) {
           // Old head is no longer in new list; remove
-          removePart(oldParts[oldHead]!);
+          oldParts[oldHead]!.detach();
           oldHead++;
         } else if (!newKeyToIndexMap.has(oldKeys[oldTail])) {
           // Old tail is no longer in new list; remove
-          removePart(oldParts[oldTail]!);
+          oldParts[oldTail]!.detach();
           oldTail--;
         } else {
           // Any mismatches at this point are due to additions or moves; see if
@@ -361,14 +341,12 @@ export function repeat<T>(
           const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
           if (oldPart === null) {
             // No old part for this value; create a new one and insert it
-            const newPart =
-                createAndInsertPart(containerPart, oldParts[oldHead]!);
-            updatePart(newPart, newValues[newHead]);
-            newParts[newHead] = newPart;
+            newParts[newHead] = createAndInsertPart(
+                newValues[newHead], containerPart, newParts[newHead-1]!);
           } else {
             // Reuse old part
             newParts[newHead] = updatePart(oldPart, newValues[newHead]);
-            insertPartBefore(containerPart, oldPart, oldParts[oldHead]!);
+            oldPart.attach(containerPart, newParts[newHead-1]!);
             // This marks the old part as having been used, so that it will be
             // skipped in the first two checks above
             oldParts[oldIndex as number] = null;
@@ -378,19 +356,17 @@ export function repeat<T>(
       }
     }
     // Add parts for any remaining new values
-    while (newHead <= newTail) {
+    for (; newHead <= newTail; newHead++) {
       // For all remaining additions, we insert before last new tail,
       // since old pointers are no longer valid
-      const newPart =
-          createAndInsertPart(containerPart, newParts[newTail + 1]!);
-      updatePart(newPart, newValues[newHead]);
-      newParts[newHead++] = newPart;
+      newParts[newHead] = createAndInsertPart(
+          newValues[newHead], containerPart, newParts[newHead-1]!);
     }
     // Remove any remaining unused old parts
-    while (oldHead <= oldTail) {
-      const oldPart = oldParts[oldHead++];
+    for (; oldHead <= oldTail; oldHead++) {
+      const oldPart = oldParts[oldHead];
       if (oldPart !== null) {
-        removePart(oldPart);
+        oldPart.detach();
       }
     }
     // Save order of new parts for next round

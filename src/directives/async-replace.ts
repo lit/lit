@@ -53,7 +53,7 @@ export const asyncReplace =
             // previous value display until we can replace it.
             if (i === 0) {
               part.clear();
-              itemPart.appendIntoPart(part);
+              itemPart.attach(part);
             }
 
             // Check to make sure that value is the still the current value of

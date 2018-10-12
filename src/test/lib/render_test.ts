@@ -722,7 +722,12 @@ suite('render()', () => {
           ${directive((part: NodePart) => {
                 // This emulates a custom element that fires an event in its
                 // connectedCallback
-                part.startNode.dispatchEvent(new CustomEvent('test-event', {
+                const innerPart = new NodePart(part.templateFactory);
+                innerPart.attach(part);
+                const node = document.createElement('div');
+                innerPart.setValue(node);
+                innerPart.commit();
+                node.dispatchEvent(new CustomEvent('test-event', {
                   bubbles: true,
                 }));
               })}

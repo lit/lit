@@ -12,13 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart, reparentNodes} from '../lit-html.js';
+import {directive, Directive, NodePart} from '../lit-html.js';
 
 interface PartCache {
   truePart: NodePart;
   falsePart: NodePart;
   prevCondition?: boolean;
-  cacheContainer: DocumentFragment;
 }
 
 const partCaches = new WeakMap<NodePart, PartCache>();
@@ -55,17 +54,13 @@ export const when =
           // Create a new cache if this is the first render
           if (cache === undefined) {
             // Cache consists of two parts, one for each condition, and a
-            // docment fragment which we cache the nodes of the condition that's
-            // not currently rendered.
+            // document fragment which we cache the nodes of the condition
+            // that's not currently rendered.
             cache = {
               truePart: new NodePart(parentPart.options),
-              falsePart: new NodePart(parentPart.options),
-              cacheContainer: document.createDocumentFragment(),
+              falsePart: new NodePart(parentPart.options)
             };
             partCaches.set(parentPart, cache);
-
-            cache.truePart.appendIntoPart(parentPart);
-            cache.falsePart.appendIntoPart(parentPart);
           }
 
           // Based on the condition, select which part to render and which value
@@ -79,18 +74,12 @@ export const when =
             // should be added to the cache.
             const prevPart = condition ? cache.falsePart : cache.truePart;
 
-            // If the next part was rendered, take it from the cache
-            if (nextPart.value) {
-              parentPart.startNode.parentNode!.appendChild(
-                  cache.cacheContainer);
-            }
+            // Attach the next part
+            nextPart.attach(parentPart);
 
             // If the prev part was rendered, move it to the cache
             if (prevPart.value) {
-              reparentNodes(
-                  cache.cacheContainer,
-                  prevPart.startNode,
-                  prevPart.endNode.nextSibling);
+              prevPart.detach(true);
             }
           }
 

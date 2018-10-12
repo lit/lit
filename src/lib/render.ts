@@ -35,19 +35,19 @@ export const parts = new WeakMap<Node, NodePart>();
  *     container. Render options must *not* change between renders to the same
  *     container, as those changes will not effect previously rendered DOM.
  */
-export const render =
-    (result: TemplateResult,
-     container: Element|DocumentFragment,
-     options?: Partial<RenderOptions>) => {
-      let part = parts.get(container);
-      if (part === undefined) {
-        removeNodes(container, container.firstChild);
-        parts.set(container, part = new NodePart({
+export function render(
+    result: TemplateResult,
+    container: Element|DocumentFragment,
+    options?: Partial<RenderOptions>) {
+  let part = parts.get(container);
+  if (part === undefined) {
+    removeNodes(container, container.firstChild);
+    parts.set(container, part = new NodePart({
                                templateFactory,
                                ...options,
                              }));
-        part.appendInto(container);
-      }
-      part.setValue(result);
-      part.commit();
-    };
+    part.attach(container);
+  }
+  part.setValue(result);
+  part.commit();
+}

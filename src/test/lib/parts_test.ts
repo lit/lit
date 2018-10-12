@@ -12,19 +12,414 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
 suite('Parts', () => {
+  suite('NodePart', () => {
+    let container: HTMLElement;
+
+    setup(() => {
+      container = document.createElement('div');
+    });
+
+    const createNodes =
+        (n: number, t = 'n') => {
+          const frag = document.createDocumentFragment();
+          for (let i = 0; i < n; i++) {
+            frag.appendChild(document.createElement(`${t}${i}`));
+          }
+          return frag;
+        };
+
+    suite('static', () => {
+      test('attach to parent node', () => {
+        const part = new NodePart({templateFactory});
+        part.attach(container);
+        part.setValue(createNodes(2));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
+        part.clear();
+        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
+      });
+
+      test('attach after sibling', () => {
+        const start = container.appendChild(document.createElement('s'));
+        const part = new NodePart({templateFactory});
+        part.attach(container, start);
+        part.setValue(createNodes(2));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<s></s><n0></n0><n1></n1>`);
+        part.clear();
+        assert.equal(stripExpressionMarkers(container.innerHTML), `<s></s>`);
+      });
+
+      test('attach before sibling', () => {
+        container.appendChild(document.createElement('e'));
+        const part = new NodePart({templateFactory});
+        part.attach(container);
+        part.setValue(createNodes(2));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<n0></n0><n1></n1><e></e>`);
+        part.clear();
+        assert.equal(stripExpressionMarkers(container.innerHTML), `<e></e>`);
+      });
+
+      test('attach between siblings', () => {
+        const start = container.appendChild(document.createElement('s'));
+        container.appendChild(document.createElement('e'));
+        const part = new NodePart({templateFactory});
+        part.attach(container, start);
+        part.setValue(createNodes(2));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<s></s><n0></n0><n1></n1><e></e>`);
+        part.clear();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<s></s><e></e>`);
+      });
+
+      test('attach after part', () => {
+        const start = new NodePart({templateFactory});
+        start.attach(container);
+        start.setValue(createNodes(2, 's'));
+        start.commit();
+        const part = new NodePart({templateFactory});
+        part.attach(container, start);
+        part.setValue(createNodes(2, 'n'));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<s0></s0><s1></s1><n0></n0><n1></n1>`);
+        part.clear();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<s0></s0><s1></s1>`);
+        start.clear();
+        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
+        part.setValue(createNodes(2, 'n'));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
+        start.setValue(createNodes(2, 's'));
+        start.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<s0></s0><s1></s1><n0></n0><n1></n1>`);
+      });
+
+      test('attach before part', () => {
+        const end = new NodePart({templateFactory});
+        end.attach(container);
+        end.setValue(createNodes(2, 'e'));
+        end.commit();
+        const part = new NodePart({templateFactory});
+        part.attach(container);
+        part.setValue(createNodes(2, 'n'));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<n0></n0><n1></n1><e0></e0><e1></e1>`);
+        part.clear();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<e0></e0><e1></e1>`);
+        part.clear();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<e0></e0><e1></e1>`);
+        end.clear();
+        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
+        part.setValue(createNodes(2, 'n'));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
+        end.setValue(createNodes(2, 'e'));
+        end.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<n0></n0><n1></n1><e0></e0><e1></e1>`);
+      });
+
+      test('attach between parts', () => {
+        const start = new NodePart({templateFactory});
+        start.attach(container);
+        start.setValue(createNodes(2, 's'));
+        start.commit();
+        const end = new NodePart({templateFactory});
+        end.attach(container, start);
+        end.setValue(createNodes(2, 'e'));
+        end.commit();
+        const part = new NodePart({templateFactory});
+        part.attach(container, start);
+        part.setValue(createNodes(2, 'n'));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<s0></s0><s1></s1><n0></n0><n1></n1><e0></e0><e1></e1>`);
+        part.clear();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            `<s0></s0><s1></s1><e0></e0><e1></e1>`);
+        start.clear();
+        end.clear();
+        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
+        part.setValue(createNodes(2, 'n'));
+        part.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
+      });
+    });
+
+    suite('dynamic', () => {
+      let containerPart: NodePart;
+
+      setup(() => {
+        const start = container.appendChild(document.createElement('s'));
+        container.appendChild(document.createElement('e'));
+        containerPart = new NodePart({templateFactory});
+        containerPart.attach(container, start);
+      });
+
+      const createParts =
+          (n: number) => {
+            let last = null;
+            const ret: {[key: string]: NodePart} = {};
+            for (let i = 0; i < n; i++) {
+              const part = new NodePart({templateFactory});
+              const name = String.fromCharCode('a'.charCodeAt(0) + i);
+              part.attach(containerPart, last);
+              part.setValue(createNodes(2, name));
+              part.commit();
+              ret[name] = part;
+              last = part;
+            }
+            return ret;
+          }
+
+      const htmlForParts = (parts: {[key: string]: NodePart}, clearedPart?: string) =>
+        `<s></s>` +
+          Object.keys(parts).filter(p => p !== clearedPart).map(p => 
+          `<${p}0></${p}0><${p}1></${p}1>`).join('') +
+        `<e></e>`;
+
+      const verifyParts = (parts: {[key: string]: NodePart}) => {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
+        for (let p in parts) {
+          parts[p].clear();
+          assert.equal(
+              stripExpressionMarkers(container.innerHTML), htmlForParts(parts, p));
+          parts[p].setValue(createNodes(2, p));
+          parts[p].commit();
+          assert.equal(
+              stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
+        }
+      }
+
+      suite('attach/detach', () => {
+        test('attach to empty container part', () => {
+          // Create & attach
+          const {a} = createParts(1);
+          verifyParts({a});
+          // Detach
+          a.detach();
+          verifyParts({});
+        });
+
+        test('attach to container part after sibling part', () => {
+          // Setup
+          const {a} = createParts(1);
+          verifyParts({a});
+          // Create & attach
+          const b = new NodePart({templateFactory});
+          b.attach(containerPart, a);
+          // Set
+          b.setValue(createNodes(2, 'b'));
+          b.commit();
+          verifyParts({a, b});
+          // Detach
+          b.detach();
+          verifyParts({a});
+        });
+
+        test('attach to container part before sibling part', () => {
+          // Setup
+          const {a} = createParts(1);
+          verifyParts({a});
+          // Create & attach
+          const b = new NodePart({templateFactory});
+          b.attach(containerPart);
+          // Set
+          b.setValue(createNodes(2, 'b'));
+          b.commit();
+          verifyParts({b, a});
+          // Detach
+          b.detach();
+          verifyParts({a});
+        });
+
+        test('attach to container part between sibling parts', () => {
+          // Setup
+          const {a, b} = createParts(2);
+          verifyParts({a, b});
+          // Create & attach
+          const c = new NodePart({templateFactory});
+          c.attach(containerPart);
+          // Set
+          c.setValue(createNodes(2, 'c'));
+          c.commit();
+          verifyParts({c, a, b});
+          // Detach
+          c.detach();
+          verifyParts({a, b});
+        });
+      });
+
+      suite('move', () => {
+        test('move part from beginning to end', () => {
+          // Setup
+          const {a, b, c} = createParts(3);
+          verifyParts({a, b, c});
+          // Move
+          a.attach(containerPart, c);
+          verifyParts({b, c, a});
+        });
+
+        test('move part from end to beginning', () => {
+          // Setup
+          const {a, b, c} = createParts(3);
+          verifyParts({a, b, c});
+          // Move
+          c.attach(containerPart);
+          verifyParts({c, a, b});
+        });
+
+        test('move part to after next part', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Move
+          b.attach(containerPart, c);
+          verifyParts({a, c, b, d});
+        });
+
+        test('move part to before previous part', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Move
+          c.attach(containerPart, a);
+          verifyParts({a, c, b, d});
+        });
+
+        test('move part from middle to beginning', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Move
+          c.attach(containerPart);
+          verifyParts({c, a, b, d});
+        });
+
+        test('move part from middle to end', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Move
+          b.attach(containerPart, d);
+          verifyParts({a, c, d, b});
+        });
+      });
+
+      suite('detach (retain) & re-attach', () => {
+        test('re-attach part from beginning to end', () => {
+          // Setup
+          const {a, b, c} = createParts(3);
+          verifyParts({a, b, c});
+          // Detach & retain
+          a.detach(true);
+          verifyParts({b, c});
+          // Re-attach
+          a.attach(containerPart, c);
+          verifyParts({b, c, a});
+        });
+
+        test('re-attach part from end to beginning', () => {
+          // Setup
+          const {a, b, c} = createParts(3);
+          verifyParts({a, b, c});
+          // Detach & retain
+          c.detach(true);
+          verifyParts({a, b});
+          // Re-attach
+          c.attach(containerPart);
+          verifyParts({c, a, b});
+        });
+
+        test('re-attach part to after next part', () => {
+          // Setup
+          const {a, b, c} = createParts(3);
+          verifyParts({a, b, c});
+          // Detach & retain
+          b.detach(true);
+          verifyParts({a, c});
+          // Re-attach
+          b.attach(containerPart, c);
+          verifyParts({a, c, b});
+        });
+
+        test('re-attach part to before previous part', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Detach & retain
+          c.detach(true);
+          verifyParts({a, b, d});
+          // Re-attach
+          c.attach(containerPart, a);
+          verifyParts({a, c, b, d});
+        });
+
+        test('re-attach part from middle to beginning', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Detach & retain
+          c.detach(true);
+          verifyParts({a, b, d});
+          // Re-attach
+          c.attach(containerPart);
+          verifyParts({c, a, b, d});
+        });
+
+        test('re-attach part from middle to end', () => {
+          // Setup
+          const {a, b, c, d} = createParts(4);
+          verifyParts({a, b, c, d});
+          // Detach & retain
+          b.detach(true);
+          verifyParts({a, c, d});
+          // Re-attach
+          b.attach(containerPart, d);
+          verifyParts({a, c, d, b});
+        });
+      });
+    });
+  });
+
   suite('AttributePart', () => {
     let element: HTMLElement;
     let committer: AttributeCommitter;
     let part: AttributePart;
 
     setup(() => {
-      element = document.createElement('div');
+      element = document.createElement('i');
       committer = new AttributeCommitter(element, 'foo', ['', '']);
       part = committer.parts[0];
     });
@@ -44,19 +439,12 @@ suite('Parts', () => {
 
   suite('NodePart', () => {
     let container: HTMLElement;
-    let startNode: Node;
-    let endNode: Node;
     let part: NodePart;
 
     setup(() => {
       container = document.createElement('div');
-      startNode = createMarker();
-      endNode = createMarker();
-      container.appendChild(startNode);
-      container.appendChild(endNode);
       part = new NodePart({templateFactory});
-      part.startNode = startNode;
-      part.endNode = endNode;
+      part.attach(container);
     });
 
     suite('setValue', () => {
@@ -102,27 +490,18 @@ suite('Parts', () => {
         part.setValue([1, 2, 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('accepts an empty array', () => {
         part.setValue([]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('accepts nested arrays', () => {
         part.setValue([1, [2], 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '', '2', '', '', '3', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('accepts nested templates', () => {
@@ -216,76 +595,38 @@ suite('Parts', () => {
         part.setValue([1, 2, 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '2', '', '3', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('updates when called multiple times with arrays 2', () => {
         part.setValue([1, 2, 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '2', '', '3', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([4, 5]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '45');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '4', '', '5', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([4, 5]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '45');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '4', '', '5', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('updates nested arrays', () => {
         part.setValue([1, [2], 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '', '2', '', '', '3', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
 
         part.setValue([[1], 2, 3]);
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
-        assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '', '1', '', '', '2', '', '3', '', '']);
-        assert.strictEqual<Node>(container.firstChild!, startNode);
-        assert.strictEqual<Node>(container.lastChild!, endNode);
       });
 
       test('updates arrays with siblings', () => {
@@ -345,89 +686,16 @@ suite('Parts', () => {
           });
     });
 
-    suite('insertAfterNode', () => {
-      test(
-          'inserts part and sets values between ref node and its next sibling',
-          () => {
-            const testEndNode = createMarker();
-            container.appendChild(testEndNode);
-            const testPart = new NodePart({templateFactory});
-            testPart.insertAfterNode(endNode);
-            assert.equal(testPart.startNode, endNode);
-            assert.equal(testPart.endNode, testEndNode);
-            const text = document.createTextNode('');
-            testPart.setValue(text);
-            testPart.commit();
-            assert.deepEqual(
-                Array.from(container.childNodes),
-                [startNode, endNode, text, testEndNode]);
-          });
-    });
-
-    suite('appendIntoPart', () => {
-      test(
-          'inserts part and sets values between ref node and its next sibling',
-          () => {
-            const testPart = new NodePart({templateFactory});
-            testPart.appendIntoPart(part);
-            assert.instanceOf(testPart.startNode, Comment);
-            assert.instanceOf(testPart.endNode, Comment);
-            const text = document.createTextNode('');
-            testPart.setValue(text);
-            testPart.commit();
-            assert.deepEqual(Array.from(container.childNodes), [
-              startNode,
-              testPart.startNode,
-              text,
-              testPart.endNode,
-              endNode,
-            ]);
-
-            const parentText = document.createTextNode('');
-            part.setValue(parentText);
-            part.commit();
-            assert.deepEqual(Array.from(container.childNodes), [
-              startNode,
-              parentText,
-              endNode,
-            ]);
-          });
-    });
-
-    suite('insertAfterPart', () => {
-      test('inserts part and sets values after another part', () => {
-        const testPart = new NodePart({templateFactory});
-        testPart.insertAfterPart(part);
-        assert.instanceOf(testPart.startNode, Comment);
-        assert.equal(testPart.endNode, endNode);
-        const text = document.createTextNode('');
-        testPart.setValue(text);
-        testPart.commit();
-        assert.deepEqual(
-            Array.from(container.childNodes),
-            [startNode, testPart.startNode, text, endNode]);
-
-        const previousText = document.createTextNode('');
-        part.setValue(previousText);
-        part.commit();
-        assert.deepEqual(
-            Array.from(container.childNodes),
-            [startNode, previousText, testPart.startNode, text, endNode]);
-      });
-    });
-
     suite('clear', () => {
       test('is a no-op on an already empty range', () => {
         part.clear();
-        assert.deepEqual(
-            Array.from(container.childNodes), [startNode, endNode]);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '');
       });
 
       test('clears a range', () => {
-        container.insertBefore(document.createTextNode('foo'), endNode);
+        container.appendChild(document.createTextNode('foo'));
         part.clear();
-        assert.deepEqual(
-            Array.from(container.childNodes), [startNode, endNode]);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '');
       });
     });
   });

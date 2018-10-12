@@ -83,14 +83,14 @@ export class TemplateInstance {
         // increment the nodeIndex, if we aren't on a node with a part, or the
         // partIndex if we are. By not incrementing the nodeIndex when we find a
         // part, we allow for the next part to be associated with the current
-        // node if neccessasry.
+        // node if necessary.
         if (!isTemplatePartActive(part)) {
           this._parts.push(undefined);
           partIndex++;
         } else if (nodeIndex === part.index) {
           if (part.type === 'node') {
             const part = this.processor.handleTextExpression(this.options);
-            part.insertAfterNode(node);
+            part.attach(node.parentNode!, node);
             this._parts.push(part);
           } else {
             this._parts.push(...this.processor.handleAttributeExpressions(
