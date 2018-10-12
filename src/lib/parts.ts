@@ -404,14 +404,6 @@ export class PropertyCommitter extends AttributeCommitter {
 
 export class PropertyPart extends AttributePart {}
 
-declare global {
-  interface EventListenerOptions {
-    capture?: boolean;
-    once?: boolean;
-    passive?: boolean;
-  }
-}
-
 // Detect event listener options support. If the `capture` property is read
 // from the options object, then options are supported. If not, then the thrid
 // argument to add/removeEventListener is interpreted as the boolean capture
@@ -435,7 +427,7 @@ export class EventPart implements Part {
   eventName: string;
   eventContext?: EventTarget;
   value: any = undefined;
-  _options?: {capture?: boolean, passive?: boolean, once?: boolean};
+  _options?: AddEventListenerOptions;
   _pendingValue: any = undefined;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
