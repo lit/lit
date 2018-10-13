@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, EventPart, html, StaticNodePart, DynamicNodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -36,7 +36,7 @@ suite('Parts', () => {
 
     suite('static', () => {
       test('attach to parent node', () => {
-        const part = new NodePart({templateFactory});
+        const part = new StaticNodePart({templateFactory});
         part.attach(container);
         part.setValue(createNodes(2));
         part.commit();
@@ -48,7 +48,7 @@ suite('Parts', () => {
 
       test('attach after sibling', () => {
         const start = container.appendChild(document.createElement('s'));
-        const part = new NodePart({templateFactory});
+        const part = new StaticNodePart({templateFactory});
         part.attach(container, start);
         part.setValue(createNodes(2));
         part.commit();
@@ -61,7 +61,7 @@ suite('Parts', () => {
 
       test('attach before sibling', () => {
         container.appendChild(document.createElement('e'));
-        const part = new NodePart({templateFactory});
+        const part = new StaticNodePart({templateFactory});
         part.attach(container);
         part.setValue(createNodes(2));
         part.commit();
@@ -75,7 +75,7 @@ suite('Parts', () => {
       test('attach between siblings', () => {
         const start = container.appendChild(document.createElement('s'));
         container.appendChild(document.createElement('e'));
-        const part = new NodePart({templateFactory});
+        const part = new StaticNodePart({templateFactory});
         part.attach(container, start);
         part.setValue(createNodes(2));
         part.commit();
@@ -86,112 +86,25 @@ suite('Parts', () => {
         assert.equal(
             stripExpressionMarkers(container.innerHTML), `<s></s><e></e>`);
       });
-
-      test('attach after part', () => {
-        const start = new NodePart({templateFactory});
-        start.attach(container);
-        start.setValue(createNodes(2, 's'));
-        start.commit();
-        const part = new NodePart({templateFactory});
-        part.attach(container, start);
-        part.setValue(createNodes(2, 'n'));
-        part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<s0></s0><s1></s1><n0></n0><n1></n1>`);
-        part.clear();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), `<s0></s0><s1></s1>`);
-        start.clear();
-        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
-        part.setValue(createNodes(2, 'n'));
-        part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
-        start.setValue(createNodes(2, 's'));
-        start.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<s0></s0><s1></s1><n0></n0><n1></n1>`);
-      });
-
-      test('attach before part', () => {
-        const end = new NodePart({templateFactory});
-        end.attach(container);
-        end.setValue(createNodes(2, 'e'));
-        end.commit();
-        const part = new NodePart({templateFactory});
-        part.attach(container);
-        part.setValue(createNodes(2, 'n'));
-        part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<n0></n0><n1></n1><e0></e0><e1></e1>`);
-        part.clear();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), `<e0></e0><e1></e1>`);
-        part.clear();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), `<e0></e0><e1></e1>`);
-        end.clear();
-        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
-        part.setValue(createNodes(2, 'n'));
-        part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
-        end.setValue(createNodes(2, 'e'));
-        end.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<n0></n0><n1></n1><e0></e0><e1></e1>`);
-      });
-
-      test('attach between parts', () => {
-        const start = new NodePart({templateFactory});
-        start.attach(container);
-        start.setValue(createNodes(2, 's'));
-        start.commit();
-        const end = new NodePart({templateFactory});
-        end.attach(container, start);
-        end.setValue(createNodes(2, 'e'));
-        end.commit();
-        const part = new NodePart({templateFactory});
-        part.attach(container, start);
-        part.setValue(createNodes(2, 'n'));
-        part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<s0></s0><s1></s1><n0></n0><n1></n1><e0></e0><e1></e1>`);
-        part.clear();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            `<s0></s0><s1></s1><e0></e0><e1></e1>`);
-        start.clear();
-        end.clear();
-        assert.equal(stripExpressionMarkers(container.innerHTML), ``);
-        part.setValue(createNodes(2, 'n'));
-        part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), `<n0></n0><n1></n1>`);
-      });
+      
     });
 
     suite('dynamic', () => {
-      let containerPart: NodePart;
+      let containerPart: StaticNodePart;
 
       setup(() => {
         const start = container.appendChild(document.createElement('s'));
         container.appendChild(document.createElement('e'));
-        containerPart = new NodePart({templateFactory});
+        containerPart = new StaticNodePart({templateFactory});
         containerPart.attach(container, start);
       });
 
       const createParts =
           (n: number) => {
-            let last = null;
-            const ret: {[key: string]: NodePart} = {};
+            let last = undefined;
+            const ret: {[key: string]: DynamicNodePart} = {};
             for (let i = 0; i < n; i++) {
-              const part = new NodePart({templateFactory});
+              const part = new DynamicNodePart({templateFactory});
               const name = String.fromCharCode('a'.charCodeAt(0) + i);
               part.attach(containerPart, last);
               part.setValue(createNodes(2, name));
@@ -202,13 +115,13 @@ suite('Parts', () => {
             return ret;
           }
 
-      const htmlForParts = (parts: {[key: string]: NodePart}, clearedPart?: string) =>
+      const htmlForParts = (parts: {[key: string]: DynamicNodePart}, clearedPart?: string) =>
         `<s></s>` +
           Object.keys(parts).filter(p => p !== clearedPart).map(p => 
           `<${p}0></${p}0><${p}1></${p}1>`).join('') +
         `<e></e>`;
 
-      const verifyParts = (parts: {[key: string]: NodePart}) => {
+      const verifyParts = (parts: {[key: string]: DynamicNodePart}) => {
         assert.equal(
             stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
         for (let p in parts) {
@@ -237,7 +150,7 @@ suite('Parts', () => {
           const {a} = createParts(1);
           verifyParts({a});
           // Create & attach
-          const b = new NodePart({templateFactory});
+          const b = new DynamicNodePart({templateFactory});
           b.attach(containerPart, a);
           // Set
           b.setValue(createNodes(2, 'b'));
@@ -253,7 +166,7 @@ suite('Parts', () => {
           const {a} = createParts(1);
           verifyParts({a});
           // Create & attach
-          const b = new NodePart({templateFactory});
+          const b = new DynamicNodePart({templateFactory});
           b.attach(containerPart);
           // Set
           b.setValue(createNodes(2, 'b'));
@@ -269,7 +182,7 @@ suite('Parts', () => {
           const {a, b} = createParts(2);
           verifyParts({a, b});
           // Create & attach
-          const c = new NodePart({templateFactory});
+          const c = new DynamicNodePart({templateFactory});
           c.attach(containerPart);
           // Set
           c.setValue(createNodes(2, 'c'));
@@ -439,11 +352,11 @@ suite('Parts', () => {
 
   suite('NodePart', () => {
     let container: HTMLElement;
-    let part: NodePart;
+    let part: StaticNodePart;
 
     setup(() => {
       container = document.createElement('div');
-      part = new NodePart({templateFactory});
+      part = new StaticNodePart({templateFactory});
       part.attach(container);
     });
 

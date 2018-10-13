@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart} from '../lit-html.js';
+import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
 
 /**
  * A directive that renders the items of an async iterable[1], replacing
@@ -43,7 +43,7 @@ export const asyncReplace =
 
           // We nest a new part to keep track of previous item values separately
           // of the iterable as a value itself.
-          const itemPart = new NodePart(part.options);
+          const itemPart = new DynamicNodePart(part.options);
           part.value = value;
 
           let i = 0;

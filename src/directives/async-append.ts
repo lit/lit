@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart} from '../lit-html.js';
+import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new
@@ -75,7 +75,7 @@ export const asyncAppend =
             // iterable (if we render a new value, we always clear), it may
             // be possible to optimize away the Parts and just re-use the
             // Part.setValue() logic.
-            itemPart = new NodePart(part.options);
+            itemPart = new DynamicNodePart(part.options);
             itemPart.attach(part, prevItemPart);
             itemPart.setValue(v);
             itemPart.commit();

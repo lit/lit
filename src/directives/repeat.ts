@@ -12,22 +12,22 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart} from '../lit-html.js';
+import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index?: number) => any;
 export type ItemTemplate<T> = (item: T, index?: number) => any;
 
 // Helper functions for manipulating parts
 const createAndInsertPart =
-  (value: unknown, containerPart: NodePart, afterPart: NodePart):
-      NodePart => {
-        const newPart = new NodePart(containerPart.options);
-        newPart.attach(containerPart, afterPart);
-        updatePart(newPart, value);
-        return newPart;
-      };
+    (value: unknown, containerPart: NodePart, afterPart: DynamicNodePart):
+        DynamicNodePart => {
+          const newPart = new DynamicNodePart(containerPart.options);
+          newPart.attach(containerPart, afterPart);
+          updatePart(newPart, value);
+          return newPart;
+        };
 
-const updatePart = (part: NodePart, value: unknown) => {
+const updatePart = (part: DynamicNodePart, value: unknown) => {
   part.setValue(value);
   part.commit();
   return part;
@@ -45,7 +45,7 @@ const generateMap = (list: unknown[], start: number, end: number) => {
 };
 
 // Stores previous ordered list of parts and map of key to index
-const partListCache = new WeakMap<NodePart, (NodePart | null)[]>();
+const partListCache = new WeakMap<NodePart, (DynamicNodePart | null)[]>();
 const keyListCache = new WeakMap<NodePart, unknown[]>();
 
 /**
@@ -92,7 +92,7 @@ export function repeat<T>(
     // New part list will be built up as we go (either reused from old parts or
     // created for new keys in this update). This is saved in the above cache
     // at the end of the update.
-    const newParts: NodePart[] = [];
+    const newParts: DynamicNodePart[] = [];
 
     // New value list is eagerly generated from items along with a parallel
     // array indicating its key.

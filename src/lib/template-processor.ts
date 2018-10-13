@@ -13,7 +13,7 @@
  */
 
 import {Part} from './part.js';
-import {NodePart} from './parts.js';
+import {StaticNodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 
 export interface TemplateProcessor {
@@ -34,5 +34,5 @@ export interface TemplateProcessor {
    * Create parts for a text-position binding.
    * @param partOptions
    */
-  handleTextExpression(options: RenderOptions): NodePart;
+  handleTextExpression(options: RenderOptions): StaticNodePart;
 }

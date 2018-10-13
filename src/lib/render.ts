@@ -13,12 +13,12 @@
  */
 
 import {removeNodes} from './dom.js';
-import {NodePart} from './parts.js';
+import {StaticNodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
 import {TemplateResult} from './template-result.js';
 
-export const parts = new WeakMap<Node, NodePart>();
+export const parts = new WeakMap<Node, StaticNodePart>();
 
 /**
  * Renders a template to a container.
@@ -42,7 +42,7 @@ export function render(
   let part = parts.get(container);
   if (part === undefined) {
     removeNodes(container, container.firstChild);
-    parts.set(container, part = new NodePart({
+    parts.set(container, part = new StaticNodePart({
                                templateFactory,
                                ...options,
                              }));

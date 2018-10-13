@@ -118,13 +118,11 @@ export class AttributePart implements Part {
   }
 }
 
-export class NodePart implements Part {
+export abstract class NodePart implements Part {
   options: RenderOptions;
   _startNode: Node|null = null;
   _endNode: Node|null = null;
-  _startPart: NodePart|null = null;
-  _firstChildPart: NodePart|null = null;
-  _detachedNodes: DocumentFragment|null = null;
+  _firstChildPart?: DynamicNodePart = undefined;
   value: any = undefined;
   _pendingValue: any = undefined;
 
@@ -132,71 +130,8 @@ export class NodePart implements Part {
     this.options = options;
   }
 
-  attach(parent: Node|NodePart, start?: Node|NodePart|null) {
-    if (parent instanceof Node && start instanceof Node) {
-      this._startNode = start;
-      this._endNode = this._startNode!.nextSibling;
-    } else {
-      const parentNode =
-          parent instanceof Node ? parent : parent._startNode!.parentNode!;
-      let endNode;
-      if (start instanceof NodePart) {
-        endNode = start._endNode;
-      } else if (start instanceof Node) {
-        endNode = start.nextSibling;
-      } else {
-        if (parent instanceof NodePart) {
-          if (parent._firstChildPart !== null) {
-            endNode = parent._firstChildPart._startNode;
-            parent._firstChildPart = this;
-          } else {
-            endNode = parentNode.insertBefore(createMarker(), parent._startNode!.nextSibling);
-          }
-        } else {
-          endNode = parentNode.firstChild;
-        }
-      }
-      if (this._startNode !== null) {
-        if (this._endNode !== endNode) {
-          reparentNodes(parentNode!, this._startNode, this._endNode, endNode);
-        }
-      } else {
-        this._startNode = parentNode.insertBefore(createMarker(), endNode);
-      }
-      if (this._startPart !== null) {
-        this._startPart._endNode = this._endNode;
-      }
-      this._endNode = endNode;
-      if (start instanceof NodePart) {
-        start._endNode = this._startNode;
-        this._startPart = start;
-      }
-    }
-  }
-
-  detach(retain?: boolean) {
-    if (this._startPart !== null) {
-      this._startPart._endNode = this._endNode;
-      this._startPart = null;
-    }
-    if (retain) {
-      if (this._detachedNodes === null) {
-        this._detachedNodes = document.createDocumentFragment();
-      }
-      reparentNodes(
-          this._detachedNodes, this._startNode, this._endNode && this._endNode);
-      this._endNode = null;
-    } else {
-      removeNodes(
-          this._startNode!.parentNode!,
-          this._startNode,
-          this._endNode && this._endNode);
-      this._startNode = null;
-      this._endNode = null;
-    }
-  }
-
   clear(startNode: Node = this._startNode!) {
+    this._firstChildPart = undefined;
     removeNodes(
         this._startNode!.parentNode!, startNode.nextSibling, this._endNode);
   }
@@ -299,9 +234,9 @@ export class NodePart implements Part {
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this.value as NodePart[];
+    const itemParts = this.value as DynamicNodePart[];
     let partIndex = 0;
-    let itemPart: NodePart|undefined;
+    let itemPart: DynamicNodePart|undefined;
 
     for (const item of value) {
       // Try to reuse an existing part
@@ -309,7 +244,7 @@ export class NodePart implements Part {
 
       // If no existing part, create a new one
       if (itemPart === undefined) {
-        itemPart = new NodePart(this.options);
+        itemPart = new DynamicNodePart(this.options);
         itemParts.push(itemPart);
         itemPart.attach(this, itemParts[partIndex - 1]);
       }
@@ -336,6 +271,93 @@ export class NodePart implements Part {
         this.commit();
       }
     });
+  }
+}
+
+export class StaticNodePart extends NodePart {
+
+  attach(parentNode: Node, startNode?: Node|null) {
+    this._startNode = startNode || parentNode.insertBefore(createMarker(), parentNode.firstChild);
+    this._endNode = this._startNode.nextSibling;
+  }
+
+}
+
+export class DynamicNodePart extends NodePart {
+
+  _parentPart?: NodePart = undefined;
+  _prevPart?: DynamicNodePart = undefined;
+  _nextPart?: DynamicNodePart = undefined;
+  _detachedNodes: DocumentFragment|null = null;
+
+  attach(parentPart: NodePart, prevPart?: DynamicNodePart) {
+    const parentNode = parentPart._startNode!.parentNode!;
+    const nextPart = prevPart ? prevPart._nextPart : parentPart._firstChildPart;
+    let endNode;
+    // Determine new end node (create if necessary)
+    if (prevPart) {
+      endNode = prevPart._endNode;
+    } else if (nextPart) {
+      endNode = nextPart._startNode;
+    } else {
+      endNode = parentNode.insertBefore(createMarker(), parentPart._endNode);
+    }
+    // Create start node or move existing [start...end-1] before end node
+    if (!this._startNode) {
+      this._startNode = parentNode.insertBefore(createMarker(), endNode);
+    } else if (this._endNode !== endNode) {
+      reparentNodes(parentNode!, this._startNode, this._endNode, endNode);
+    }
+    // Unlink old siblings
+    if (this._prevPart) {
+      this._prevPart._nextPart = this._nextPart;
+      this._prevPart._endNode = this._endNode;
+    }
+    if (this._nextPart) {
+      this._nextPart._prevPart = this._prevPart;
+    }
+    // Link new siblings
+    this._endNode = endNode;
+    this._parentPart = parentPart;
+    this._prevPart = prevPart;
+    this._nextPart = nextPart;
+    if (prevPart) {
+      prevPart._nextPart = this;
+      prevPart._endNode = this._startNode;
+    } else {
+      parentPart._firstChildPart = this;
+    }
+    if (nextPart) {
+      nextPart._prevPart = this;
+    }
+  }
+
+  detach(retain?: boolean) {
+    const endNode = (this._prevPart || this._nextPart) ? this._endNode : 
+      this._endNode!.nextSibling;
+    if (this._prevPart) {
+      this._prevPart._endNode = this._endNode;
+      this._prevPart = undefined;
+    } else {
+      this._parentPart!._firstChildPart = this._nextPart;
+    }
+    if (this._nextPart) {
+      this._nextPart._prevPart = this._prevPart;
+    }
+    if (retain) {
+      if (this._detachedNodes === null) {
+        this._detachedNodes = document.createDocumentFragment();
+      }
+      reparentNodes(this._detachedNodes, this._startNode, this._endNode);
+      if (this._endNode !== endNode) {
+        this._endNode!.parentNode!.removeChild(this._endNode!);
+      }
+      this._endNode = null;
+    } else {
+      removeNodes(this._startNode!.parentNode!, this._startNode, endNode);
+      this._startNode = null;
+      this._endNode = null;
+    }
   }
 }
 

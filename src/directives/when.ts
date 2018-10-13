@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart} from '../lit-html.js';
+import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
 
 interface PartCache {
-  truePart: NodePart;
-  falsePart: NodePart;
+  truePart: DynamicNodePart;
+  falsePart: DynamicNodePart;
   prevCondition?: boolean;
 }
 
@@ -57,8 +57,8 @@ export const when =
             // document fragment which we cache the nodes of the condition
             // that's not currently rendered.
             cache = {
-              truePart: new NodePart(parentPart.options),
-              falsePart: new NodePart(parentPart.options)
+              truePart: new DynamicNodePart(parentPart.options),
+              falsePart: new DynamicNodePart(parentPart.options)
             };
             partCaches.set(parentPart, cache);
           }

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, render, svg, templateFactory} from '../../lit-html.js';
+import {AttributePart, directive, html, NodePart, DynamicNodePart, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -722,7 +722,7 @@ suite('render()', () => {
           ${directive((part: NodePart) => {
                 // This emulates a custom element that fires an event in its
                 // connectedCallback
-                const innerPart = new NodePart(part.templateFactory);
+                const innerPart = new DynamicNodePart(part.options);
                 innerPart.attach(part);
                 const node = document.createElement('div');
                 innerPart.setValue(node);
@@ -865,7 +865,7 @@ suite('render()', () => {
       // Make sure the binding takes up the whole element with no text
       // on either side of it
 
-      // Work around a false positive lit-html pluging lint error:
+      // Work around a false positive lit-html plugging lint error:
       const h = html;
       render(
           h`
