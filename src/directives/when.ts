@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
+import {directive, Directive, DynamicNodePart, NodePart} from '../lit-html.js';
 
 interface PartCache {
   truePart: DynamicNodePart;

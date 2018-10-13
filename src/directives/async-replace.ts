@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
+import {directive, Directive, DynamicNodePart, NodePart} from '../lit-html.js';
 
 /**
  * A directive that renders the items of an async iterable[1], replacing

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, NodePart, DynamicNodePart} from '../lit-html.js';
+import {directive, Directive, DynamicNodePart, NodePart} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index?: number) => any;
 export type ItemTemplate<T> = (item: T, index?: number) => any;
@@ -317,7 +317,7 @@ export function repeat<T>(
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
         // Old tail matches new head; update and move to new head
         newParts[newHead] = updatePart(oldParts[oldTail]!, newValues[newHead]);
-        newParts[newHead]!.attach(containerPart, newParts[newHead-1]!);
+        newParts[newHead]!.attach(containerPart, newParts[newHead - 1]!);
         oldTail--;
         newHead++;
       } else {
@@ -342,11 +342,11 @@ export function repeat<T>(
           if (oldPart === null) {
             // No old part for this value; create a new one and insert it
             newParts[newHead] = createAndInsertPart(
-                newValues[newHead], containerPart, newParts[newHead-1]!);
+                newValues[newHead], containerPart, newParts[newHead - 1]!);
           } else {
             // Reuse old part
             newParts[newHead] = updatePart(oldPart, newValues[newHead]);
-            oldPart.attach(containerPart, newParts[newHead-1]!);
+            oldPart.attach(containerPart, newParts[newHead - 1]!);
             // This marks the old part as having been used, so that it will be
             // skipped in the first two checks above
             oldParts[oldIndex as number] = null;
@@ -360,7 +360,7 @@ export function repeat<T>(
       // For all remaining additions, we insert before last new tail,
       // since old pointers are no longer valid
       newParts[newHead] = createAndInsertPart(
-          newValues[newHead], containerPart, newParts[newHead-1]!);
+          newValues[newHead], containerPart, newParts[newHead - 1]!);
     }
     // Remove any remaining unused old parts
     for (; oldHead <= oldTail; oldHead++) {

@@ -13,7 +13,7 @@
  */
 
 import {Part} from './part.js';
-import {AttributeCommitter, BooleanAttributePart, EventPart, StaticNodePart, PropertyCommitter} from './parts.js';
+import {AttributeCommitter, BooleanAttributePart, EventPart, PropertyCommitter, StaticNodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
 

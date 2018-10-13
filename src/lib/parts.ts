@@ -275,16 +275,14 @@ export abstract class NodePart implements Part {
 }
 
 export class StaticNodePart extends NodePart {
-
   attach(parentNode: Node, startNode?: Node|null) {
-    this._startNode = startNode || parentNode.insertBefore(createMarker(), parentNode.firstChild);
+    this._startNode = startNode ||
+        parentNode.insertBefore(createMarker(), parentNode.firstChild);
     this._endNode = this._startNode.nextSibling;
   }
-
 }
 
 export class DynamicNodePart extends NodePart {
-
   _parentPart?: NodePart = undefined;
   _prevPart?: DynamicNodePart = undefined;
   _nextPart?: DynamicNodePart = undefined;
@@ -333,8 +331,9 @@ export class DynamicNodePart extends NodePart {
   }
 
   detach(retain?: boolean) {
-    const endNode = (this._prevPart || this._nextPart) ? this._endNode : 
-      this._endNode!.nextSibling;
+    const endNode = (this._prevPart || this._nextPart) ?
+        this._endNode :
+        this._endNode!.nextSibling;
     if (this._prevPart) {
       this._prevPart._endNode = this._endNode;
       this._prevPart = undefined;

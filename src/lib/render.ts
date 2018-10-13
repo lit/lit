@@ -43,9 +43,9 @@ export function render(
   if (part === undefined) {
     removeNodes(container, container.firstChild);
     parts.set(container, part = new StaticNodePart({
-                               templateFactory,
-                               ...options,
-                             }));
+                           templateFactory,
+                           ...options,
+                         }));
     part.attach(container);
   }
   part.setValue(result);

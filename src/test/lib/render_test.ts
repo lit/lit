@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, DynamicNodePart, render, svg, templateFactory} from '../../lit-html.js';
+import {AttributePart, directive, DynamicNodePart, html, NodePart, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;

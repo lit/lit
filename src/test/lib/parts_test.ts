@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, EventPart, html, StaticNodePart, DynamicNodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, DefaultTemplateProcessor, DynamicNodePart, EventPart, html, render, StaticNodePart, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -25,14 +25,13 @@ suite('Parts', () => {
       container = document.createElement('div');
     });
 
-    const createNodes =
-        (n: number, t = 'n') => {
-          const frag = document.createDocumentFragment();
-          for (let i = 0; i < n; i++) {
-            frag.appendChild(document.createElement(`${t}${i}`));
-          }
-          return frag;
-        };
+    const createNodes = (n: number, t = 'n') => {
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < n; i++) {
+        frag.appendChild(document.createElement(`${t}${i}`));
+      }
+      return frag;
+    };
 
     suite('static', () => {
       test('attach to parent node', () => {
@@ -86,7 +85,6 @@ suite('Parts', () => {
         assert.equal(
             stripExpressionMarkers(container.innerHTML), `<s></s><e></e>`);
       });
-      
     });
 
     suite('dynamic', () => {
@@ -115,25 +113,32 @@ suite('Parts', () => {
             return ret;
           }
 
-      const htmlForParts = (parts: {[key: string]: DynamicNodePart}, clearedPart?: string) =>
-        `<s></s>` +
-          Object.keys(parts).filter(p => p !== clearedPart).map(p => 
-          `<${p}0></${p}0><${p}1></${p}1>`).join('') +
-        `<e></e>`;
+      const htmlForParts =
+          (parts: {[key: string]: DynamicNodePart}, clearedPart?: string) =>
+              `<s></s>` +
+          Object.keys(parts)
+              .filter(p => p !== clearedPart)
+              .map(p => `<${p}0></${p}0><${p}1></${p}1>`)
+              .join('') +
+          `<e></e>`;
 
-      const verifyParts = (parts: {[key: string]: DynamicNodePart}) => {
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
-        for (let p in parts) {
-          parts[p].clear();
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML), htmlForParts(parts, p));
-          parts[p].setValue(createNodes(2, p));
-          parts[p].commit();
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
-        }
-      }
+      const verifyParts =
+          (parts: {[key: string]: DynamicNodePart}) => {
+            assert.equal(
+                stripExpressionMarkers(container.innerHTML),
+                htmlForParts(parts));
+            for (let p in parts) {
+              parts[p].clear();
+              assert.equal(
+                  stripExpressionMarkers(container.innerHTML),
+                  htmlForParts(parts, p));
+              parts[p].setValue(createNodes(2, p));
+              parts[p].commit();
+              assert.equal(
+                  stripExpressionMarkers(container.innerHTML),
+                  htmlForParts(parts));
+            }
+          }
 
       suite('attach/detach', () => {
         test('attach to empty container part', () => {
