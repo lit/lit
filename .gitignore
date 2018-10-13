@@ -1,6 +1,7 @@
 /node_modules/
 /lib/
 /directives/
+/extensions/
 
 /tools/node_modules/
 /tools/lib/
