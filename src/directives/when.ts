@@ -30,8 +30,8 @@ export type CaseMap = {
  * matches the default case is rendered if present. Keys can be strings and
  * symbols.
  *
- * Templates are re-instantiated each re-render. For caching nodes between
- * renders, see the cachingWhen directive.
+ * When switching between conditions, templates re-instantiated. See cachingWhen
+ * for an implementation where nodes are cached when switching conditions.
  *
  * @param condition the condition to check for truthiness
  * @param caseMap object where keys are cases and values are functions which

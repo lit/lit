@@ -181,36 +181,42 @@ suite('cachingWhen', () => {
   suite('cached content is re-injected in the right location', () => {
     test('surrounded by dom nodes', () => {
       function renderWhen(condition: boolean) {
-        render(html`<div>before</div>${cachingWhen(condition,
-            () => html`<div>Condition is true</div>`,
-            () => html`<div>Condition is false</div>`
-          )}<div>after</div>`, container);
+        render(
+            html`<div>before</div>${
+                cachingWhen(
+                    condition,
+                    () => html`<div>Condition is true</div>`,
+                    () =>
+                        html`<div>Condition is false</div>`)}<div>after</div>`,
+            container);
       }
 
       renderWhen(true);
       renderWhen(false);
       renderWhen(true);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>before</div><div>Condition is true</div><div>after</div>'
-      );
+          stripExpressionMarkers(container.innerHTML),
+          '<div>before</div><div>Condition is true</div><div>after</div>');
     });
 
     test('surrounded by parts', () => {
       function renderWhen(condition: boolean) {
-        render(html`${html`<div>before</div>`}${cachingWhen(condition,
-            () => html`<div>Condition is true</div>`,
-            () => html`<div>Condition is false</div>`
-          )}${html`<div>after</div>`}`, container);
+        render(
+            html`${html`<div>before</div>`}${
+                cachingWhen(
+                    condition,
+                    () => html`<div>Condition is true</div>`,
+                    () => html
+                    `<div>Condition is false</div>`)}${html`<div>after</div>`}`,
+            container);
       }
 
       renderWhen(true);
       renderWhen(false);
       renderWhen(true);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>before</div><div>Condition is true</div><div>after</div>'
-      );
+          stripExpressionMarkers(container.innerHTML),
+          '<div>before</div><div>Condition is true</div><div>after</div>');
     });
   });
 });

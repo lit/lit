@@ -106,7 +106,8 @@ export function cachingWhen(
     if (nextCondition !== prevCondition) {
       // take next part from the cache, if it was rendered before
       if (nextCache.part.value) {
-        parentPart.startNode.parentNode!.insertBefore(nextCache.cacheContainer, parentPart.endNode);
+        parentPart.startNode.parentNode!.insertBefore(
+            nextCache.cacheContainer, parentPart.endNode);
       }
 
       // move the prev part from the cache, if it was rendered before
