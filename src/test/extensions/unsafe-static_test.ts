@@ -11,8 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {html, render} from '../../lit-html.js';
 import {unsafeStatic, withUnsafeStatic} from '../../extensions/unsafe-static.js';
+import {html, render} from '../../lit-html.js';
 
 const assert = chai.assert;
 const expect = chai.expect;
@@ -39,7 +39,8 @@ suite('UnsafeStatic', () => {
     const div = unsafeStatic('div');
     const span = unsafeStatic('span');
     const cls = unsafeStatic('class');
-    const template = staticHtml`<${div}><${span} ${cls}="test">Test</${span}></${div}>`;
+    const template =
+        staticHtml`<${div}><${span} ${cls}="test">Test</${span}></${div}>`;
     render(template, container);
 
     assert(container.innerHTML, '<div><span class="test">Test</span></div>');

@@ -75,62 +75,63 @@ export const unsafeStatic = (value: unknown) => new UnsafeStatic(value);
  * the error will be thrown.
  *
  * @param processor `html` function
- *
  */
-export const withUnsafeStatic = (processor: (strings: TemplateStringsArray, ...values: any[]) => TemplateResult) =>
-  (strings: TemplateStringsArray, ...values: any[]) => {
-    let finalStrings: any | undefined = stringsCache.get(strings);
+export const withUnsafeStatic =
+    (processor: (strings: TemplateStringsArray, ...values: any[]) =>
+         TemplateResult) => (strings: TemplateStringsArray, ...values: any[]) => {
+      let finalStrings: any|undefined = stringsCache.get(strings);
 
-    if (!finalStrings) {
-      // Convert the initial array of strings into a new one with merged
-      // static values. Values array is used only to know where the static
-      // value is placed.
-      if (values.some((v) => v instanceof UnsafeStatic)) {
-        finalStrings = [];
+      if (!finalStrings) {
+        // Convert the initial array of strings into a new one with merged
+        // static values. Values array is used only to know where the static
+        // value is placed.
+        if (values.some((v) => v instanceof UnsafeStatic)) {
+          finalStrings = [];
 
-        let previousValueWasStatic = false;
+          let previousValueWasStatic = false;
 
-        for (let i = 0; i < strings.length; i++) {
-          if (previousValueWasStatic) {
-            // Append the string part that follows static value.
-            finalStrings[finalStrings.length - 1] += strings[i];
-          } else {
-            finalStrings.push(strings[i]);
+          for (let i = 0; i < strings.length; i++) {
+            if (previousValueWasStatic) {
+              // Append the string part that follows static value.
+              finalStrings[finalStrings.length - 1] += strings[i];
+            } else {
+              finalStrings.push(strings[i]);
+            }
+
+            // Since length of values array is N and strings array is N+1,
+            // it is necessary to check if we have crossed the values
+            // boundaries.
+            if (i < values.length && values[i] instanceof UnsafeStatic) {
+              // Append static value.
+              finalStrings[finalStrings.length - 1] += String(values[i].value);
+              previousValueWasStatic = true;
+            } else {
+              previousValueWasStatic = false;
+            }
           }
-
-          // Since length of values array is N and strings array is N+1,
-          // it is necessary to check if we have crossed the values boundaries.
-          if (i < values.length && values[i] instanceof UnsafeStatic) {
-            // Append static value.
-            finalStrings[finalStrings.length - 1] += String(values[i].value);
-            previousValueWasStatic = true;
-          } else {
-            previousValueWasStatic = false;
-          }
+        } else {
+          // if there is no static value remember original strings array
+          finalStrings = strings;
         }
-      } else {
-        // if there is no static value remember original strings array
-        finalStrings = strings;
+
+        stringsCache.set(strings, finalStrings);
       }
 
-      stringsCache.set(strings, finalStrings);
-    }
+      // If there is static values remove all statics from it. Otherwise,
+      // just use original values array.
+      const finalValues = finalStrings !== strings ?
+          values.filter((v) => !(v instanceof UnsafeStatic)) :
+          values;
 
-    // If there is static values remove all statics from it. Otherwise,
-    // just use original values array.
-    const finalValues = finalStrings !== strings
-      ? values.filter((v) => !(v instanceof UnsafeStatic))
-      : values;
+      // If user try to replace static value with dynamic one we cannot filter
+      // it. It produces different amount of filtered values we have so we can
+      // catch it and throw an error to avoid undefined behavior during template
+      // update.
+      if (finalValues.length >= finalStrings.length) {
+        throw new Error(
+            'Amount of values provided does not fit amount of available parts. ' +
+            'It could happen if you try to change your UnsafeStatic value to a dynamic one.');
+      }
 
-    // If user try to replace static value with dynamic one we cannot filter it.
-    // It produces different amount of filtered values we have so we can catch
-    // it and throw an error to avoid undefined behavior during template update.
-    if (finalValues.length >= finalStrings.length) {
-      throw new Error(
-        'Amount of values provided does not fit amount of available parts. '
-        + 'It could happen if you try to change your UnsafeStatic value to a dynamic one.'
-      );
-    }
-
-    return processor(finalStrings, ...finalValues);
-  };
+      return processor(finalStrings, ...finalValues);
+    };
