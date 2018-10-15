@@ -45,7 +45,7 @@ const generateMap = (list: unknown[], start: number, end: number) => {
 };
 
 // Stores previous ordered list of parts and map of key to index
-const partListCache = new WeakMap<NodePart, (DynamicNodePart | null)[]>();
+const partListCache = new WeakMap<NodePart, (DynamicNodePart | undefined)[]>();
 const keyListCache = new WeakMap<NodePart, unknown[]>();
 
 /**
@@ -183,14 +183,14 @@ export function repeat<T>(
     // * Once head and tail cannot move, any mismatches are due to either new or
     //   moved items; if a new key is in the previous "old key to old index"
     //   map, move the old part to the new location, otherwise create and insert
-    //   a new part. Note that when moving an old part we null its position in
+    //   a new part. Note that when moving an old part we clear its position in
     //   the oldParts array if it lies between the head and tail so we know to
     //   skip it when the pointers get there.
     //
     // * Example below: neither head nor tail match, and neither were removed;
     //   so find the `newHead` key in the `oldKeyToIndexMap`, and move that old
     //   part's DOM into the next head position (before `oldParts[oldHead]`).
-    //   Last, null the part in the `oldPart` array since it was somewhere in
+    //   Last, clear the part in the `oldPart` array since it was somewhere in
     //   the remaining oldParts still to be scanned (between the head and tail
     //   pointers) so that we know to skip that old part on future iterations.
     //
@@ -222,11 +222,11 @@ export function repeat<T>(
     //            newHead ^        ^ newTail
     //
     // * As mentioned above, items that were moved as a result of being stuck
-    //   (the final else clause in the code below) are marked with null, so we
-    //   always advance old pointers over these so we're comparing the next
+    //   (the final else clause in the code below) are marked with undefined, so
+    //   we always advance old pointers over these so we're comparing the next
     //   actual old value on either end.
     //
-    // * Example below: `oldHead` is null (already placed in newParts), so
+    // * Example below: `oldHead` is undefined (already placed in newParts), so
     //   advance `oldHead`.
     //
     //            oldHead v     v oldTail
@@ -235,8 +235,8 @@ export function repeat<T>(
     //   newKeys:  [0, 2, 1, 4, 3, 7, 6]
     //               newHead ^     ^ newTail
     //
-    // * Note it's not critical to mark old parts as null when they are moved
-    //   from head to tail or tail to head, since they will be outside the
+    // * Note it's not critical to mark old parts as undefined when they are
+    //   moved from head to tail or tail to head, since they will be outside the
     //   pointer range and never visited again.
     //
     // * Example below: Here the old tail key matches the new head key, so
@@ -274,7 +274,7 @@ export function repeat<T>(
     //                     newHead ^ newTail
     //
     // * Note that the order of the if/else clauses is not important to the
-    //   algorithm, as long as the null checks come first (to ensure we're
+    //   algorithm, as long as the undefined checks come first (to ensure we're
     //   always working on valid old parts) and that the final else clause
     //   comes last (since that's where the expensive moves occur). The
     //   order of remaining clauses is is just a simple guess at which cases
@@ -292,11 +292,11 @@ export function repeat<T>(
     //   arises.
 
     while (oldHead <= oldTail && newHead <= newTail) {
-      if (oldParts[oldHead] === null) {
-        // `null` means old part at head has already been used below; skip
+      if (oldParts[oldHead] === undefined) {
+        // `undefined` means old part at head has already been used below; skip
         oldHead++;
-      } else if (oldParts[oldTail] === null) {
-        // `null` means old part at tail has already been used below; skip
+      } else if (oldParts[oldTail] === undefined) {
+        // `undefined` means old part at tail has already been used below; skip
         oldTail--;
       } else if (oldKeys[oldHead] === newKeys[newHead]) {
         // Old head matches new head; update in place
@@ -338,8 +338,8 @@ export function repeat<T>(
           // Any mismatches at this point are due to additions or moves; see if
           // we have an old part we can reuse and move into place
           const oldIndex = oldKeyToIndexMap.get(newKeys[newHead]);
-          const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
-          if (oldPart === null) {
+          const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : undefined;
+          if (oldPart === undefined) {
             // No old part for this value; create a new one and insert it
             newParts[newHead] = createAndInsertPart(
                 newValues[newHead], containerPart, newParts[newHead - 1]!);
@@ -349,7 +349,7 @@ export function repeat<T>(
             oldPart.attach(containerPart, newParts[newHead - 1]!);
             // This marks the old part as having been used, so that it will be
             // skipped in the first two checks above
-            oldParts[oldIndex as number] = null;
+            oldParts[oldIndex as number] = undefined;
           }
           newHead++;
         }
@@ -365,7 +365,7 @@ export function repeat<T>(
     // Remove any remaining unused old parts
     for (; oldHead <= oldTail; oldHead++) {
       const oldPart = oldParts[oldHead];
-      if (oldPart !== null) {
+      if (oldPart !== undefined) {
         oldPart.detach();
       }
     }
