@@ -338,7 +338,8 @@ export function repeat<T>(
           // Any mismatches at this point are due to additions or moves; see if
           // we have an old part we can reuse and move into place
           const oldIndex = oldKeyToIndexMap.get(newKeys[newHead]);
-          const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : undefined;
+          const oldPart =
+              oldIndex !== undefined ? oldParts[oldIndex] : undefined;
           if (oldPart === undefined) {
             // No old part for this value; create a new one and insert it
             newParts[newHead] = createAndInsertPart(
