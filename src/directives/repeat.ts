@@ -15,8 +15,8 @@
 import {DirectiveFn} from '../lib/directive.js';
 import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
-export type KeyFn<T> = (item: T, index?: number) => any;
-export type ItemTemplate<T> = (item: T, index?: number) => any;
+export type KeyFn<T> = (item: T, index: number) => any;
+export type ItemTemplate<T> = (item: T, index: number) => any;
 
 // Helper functions for manipulating parts
 // TODO(kschaaf): Refactor into Part API?
