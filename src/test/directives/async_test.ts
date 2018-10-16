@@ -47,33 +47,28 @@ suite('async', () => {
         html
         `<div>${async(deferred.promise, defaultContent)}</div>`,
         container);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><span>loading...</span></div>');
-    deferred.resolve('foo');
-    await deferred.promise;
-    await new Promise((r) => setTimeout(() => r()));
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div><span>loading...</span></div>');
+        deferred.resolve('foo');
+        await deferred.promise;
+        await new Promise((r) => setTimeout(() => r()));
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
   test('renders changing defaultContent', async () => {
     const t = (d: any) => html`<div>${async(deferred.promise, d)}</div>`;
     render(t('A'), container);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>A</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>A</div>');
 
     render(t('B'), container);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>B</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>B</div>');
 
     deferred.resolve('C');
     await deferred.promise;
     await new Promise((r) => setTimeout(() => r()));
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>C</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>C</div>');
   });
 
   test('renders a Promise to an attribute', async () => {

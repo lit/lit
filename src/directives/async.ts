@@ -14,10 +14,9 @@
 
 import {directive, noChange, Part} from '../lit-html.js';
 
-interface PromisedValue<T = unknown> {
-  promise: Promise<T>;
+interface PromisedValue {
+  promise: Promise<unknown>;
   resolved: boolean;
-  value?: T;
 }
 
 const promises = new WeakMap<Part, PromisedValue>();
@@ -26,8 +25,9 @@ const promises = new WeakMap<Part, PromisedValue>();
  * Renders a Promise to a Part when it resolves. `defaultContent` will be
  * rendered until the Promise resolves.
  */
-export const async = directive((promise: Promise<any>, defaultContent: any = noChange) =>
-    (part: Part) => {
+export const async = directive(
+    (promise: Promise<any>,
+     defaultContent: unknown = noChange) => (part: Part) => {
       let promisedValue = promises.get(part);
 
       if (promisedValue !== undefined && promisedValue.promise === promise) {
@@ -37,6 +37,8 @@ export const async = directive((promise: Promise<any>, defaultContent: any = noC
         if (!promisedValue.resolved && defaultContent !== noChange) {
           part.setValue(defaultContent);
         }
+        // If the Promise has resolved we simply return, as the value was
+        // updated in the then() callback below.
         return;
       }
 
@@ -47,12 +49,11 @@ export const async = directive((promise: Promise<any>, defaultContent: any = noC
         part.setValue(defaultContent);
       }
 
-      Promise.resolve(promise).then((value: any) => {
+      Promise.resolve(promise).then((value: unknown) => {
         const currentPromisedValue = promises.get(part);
         if (currentPromisedValue !== promisedValue) {
           return;
         }
-        promisedValue!.value = value;
         part.setValue(value);
         part.commit();
       });
