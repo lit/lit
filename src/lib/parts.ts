@@ -65,10 +65,10 @@ export class AttributeCommitter {
         if (v != null &&
             (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
           for (const t of v) {
-            text += typeof t === 'string' ? t : String(t);
+            text += String(t);
           }
         } else {
-          text += typeof v === 'string' ? v : String(v);
+          text += String(v);
         }
       }
     }
@@ -227,8 +227,7 @@ export class NodePart implements Part {
       // TODO(justinfagnani): Can we just check if this.value is primitive?
       node.textContent = value;
     } else {
-      this._commitNode(document.createTextNode(
-          typeof value === 'string' ? value : String(value)));
+      this._commitNode(document.createTextNode(String(value)));
     }
     this.value = value;
   }
