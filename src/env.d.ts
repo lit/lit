@@ -1,9 +1,10 @@
 interface ShadyCSS {
   nativeCss: boolean;
   nativeShadow: boolean;
-  styleElement(host: Element, overrideProps?: { [key: string]: string }): void;
+  styleElement(host: Element, overrideProps?: {[key: string]: string}): void;
   prepareTemplateDom(template: Element, elementName: string): void;
-  prepareTemplateStyles(template: Element, elementName: string, typeExtension?: string): void;
+  prepareTemplateStyles(
+      template: Element, elementName: string, typeExtension?: string): void;
 }
 
 interface ShadyDOM {
@@ -17,6 +18,6 @@ interface Window {
 
 /** Allows code to check `instanceof ShadowRoot`. */
 declare interface ShadowRootConstructor {
-  new (): ShadowRoot;
+  new(): ShadowRoot;
 }
 declare const ShadowRoot: ShadowRootConstructor;
