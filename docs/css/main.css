@@ -65,6 +65,10 @@ a {
   flex: 1;
 }
 
+.text-center {
+  text-align: center;
+}
+
 /* top nav */
 .main-nav {
   position: relative;
@@ -269,10 +273,14 @@ footer a {
   position: sticky;
   top: 0;
   left: 0;
-  width: 340px;
+  width: 320px;
   height: 300px;
   box-sizing: border-box;
   padding: 24px;
+}
+
+.toc > #toggleNavButton {
+  display: none;
 }
 
 .toc a:hover {
@@ -282,15 +290,12 @@ footer a {
   transition: transform .3s ease;
 }
 
-.toc {
-  list-style-type: none;
-}
-.toc ul {
-  padding: 0 0 0 16px;
+.toc > ul {
+  padding: 0;
 }
 
-.toc ul ul {
-  padding: 8px 0 0 40px;
+.toc > ul ul {
+  margin-left: 1em;
 }
 
 .toc li {
@@ -321,7 +326,7 @@ footer a {
 article {
   max-width: 860px;
   padding: 40px;
-  margin: -300px 0 0 340px;
+  margin: -300px 0 0 320px;
   border-left: 1px solid #dadce0;
 }
 
@@ -509,17 +514,43 @@ th, td {
     width: auto;
     height: auto;
     padding: 16px 24px;
+    border-bottom: 1px solid #dadce0;
+  }
+
+  .toc > ul {
+    display: none;
+  }
+
+  .toc.open > ul {
+    display: block;
+  }
+
+  .toc > #toggleNavButton {
+    display: block;
+    width: 100%;
+    height: 40px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: inherit;
+    -webkit-appearance: none;
+  }
+
+  .toc > #toggleNavButton::before {
+    content: '\25b6  ';
+  }
+
+  .toc.open > #toggleNavButton::before {
+    content: '\25bc  ';
   }
 
   article {
-    padding: 0 24px;
+    padding: 24px;
     margin-top: 0;
     margin-left: 0;
-  }
-
-  .toc ul {
-    margin: 0;
-    padding: 0;
+    border-left: none;
   }
 
   footer {

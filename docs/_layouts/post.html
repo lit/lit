@@ -3,6 +3,7 @@ layout: default
 ---
 <main>
   <nav class="toc">
+    <button id="toggleNavButton">Menu</button>
     <ul>
       <li>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -43,10 +44,14 @@ layout: default
   searchBox.addEventListener('keypress', function(event) {
     if (event.keyCode === 13) {  // enter
       // Do the search.
-      const site = 'polymer.github.io/lit-html';
+      const site = window.location.hostname;
       const query = searchBox.value;
       window.location = `https://www.google.com/search?q=site%3A${site}+${query}`
       event.preventDefault();
     }
+  });
+  toggleNavButton.addEventListener('click', function(event) {
+    const nav = event.target.parentElement;
+    nav.classList.toggle('open');
   });
 </script>
