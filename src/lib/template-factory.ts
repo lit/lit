@@ -44,13 +44,16 @@ export type TemplateFactory = (result: TemplateResult) => Template;
 export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
   if (templateCache === undefined) {
-    templateCache = new Map<TemplateStringsArray, Template>();
+    templateCache = new Map<string, Template>();
     templateCaches.set(result.type, templateCache);
   }
-  let template = templateCache.get(result.strings);
+  if (result.key === undefined) {
+    result.key = result.strings.join('');
+  }
+  let template = templateCache.get(result.key);
   if (template === undefined) {
     template = new Template(result, result.getTemplateElement());
-    templateCache.set(result.strings, template);
+    templateCache.set(result.key, template);
   }
   return template;
 }
@@ -59,4 +62,4 @@ export function templateFactory(result: TemplateResult) {
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
 export const templateCaches =
-    new Map<string, Map<TemplateStringsArray, Template>>();
+    new Map<string, Map<string, Template>>();
