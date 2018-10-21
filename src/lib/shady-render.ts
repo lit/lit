@@ -18,7 +18,7 @@ import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
-import {Template} from './template.js';
+import {marker, Template} from './template.js';
 
 export {html, svg, TemplateResult} from '../lit-html.js';
 
@@ -52,7 +52,7 @@ const shadyTemplateFactory = (scopeName: string) =>
         templateCaches.set(cacheKey, templateCache);
       }
       if (result.key === undefined) {
-        result.key = result.strings.join('');
+        result.key = result.strings.join(marker);
       }
       let template = templateCache.get(result.key);
       if (template === undefined) {

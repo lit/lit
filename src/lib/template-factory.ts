@@ -13,7 +13,7 @@
  */
 
 import {TemplateResult} from './template-result.js';
-import {Template} from './template.js';
+import {marker, Template} from './template.js';
 
 /**
  * A function type that creates a Template from a TemplateResult.
@@ -48,7 +48,7 @@ export function templateFactory(result: TemplateResult) {
     templateCaches.set(result.type, templateCache);
   }
   if (result.key === undefined) {
-    result.key = result.strings.join('');
+    result.key = result.strings.join(marker);
   }
   let template = templateCache.get(result.key);
   if (template === undefined) {
