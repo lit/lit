@@ -61,5 +61,4 @@ export function templateFactory(result: TemplateResult) {
 // The first argument to JS template tags retain identity across multiple
 // calls to a tag for the same literal, so we can cache work done per literal
 // in a Map.
-export const templateCaches =
-    new Map<string, Map<string, Template>>();
+export const templateCaches = new Map<string, Map<string, Template>>();
