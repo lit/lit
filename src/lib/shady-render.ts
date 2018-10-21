@@ -48,17 +48,20 @@ const shadyTemplateFactory = (scopeName: string) =>
       const cacheKey = getTemplateCacheKey(result.type, scopeName);
       let templateCache = templateCaches.get(cacheKey);
       if (templateCache === undefined) {
-        templateCache = new Map<TemplateStringsArray, Template>();
+        templateCache = new Map<string, Template>();
         templateCaches.set(cacheKey, templateCache);
       }
-      let template = templateCache.get(result.strings);
+      if (result.key === undefined) {
+        result.key = result.strings.join('');
+      }
+      let template = templateCache.get(result.key);
       if (template === undefined) {
         const element = result.getTemplateElement();
         if (compatibleShadyCSSVersion) {
           window.ShadyCSS!.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
-        templateCache.set(result.strings, template);
+        templateCache.set(result.key, template);
       }
       return template;
     };
