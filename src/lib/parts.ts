@@ -443,7 +443,7 @@ export class EventPart implements Part {
     this.element = element;
     this.eventName = eventName;
     this.eventContext = eventContext;
-    this._boundHandleEvent = this.handleEvent.bind(this);
+    this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 
   setValue(value: any): void {
