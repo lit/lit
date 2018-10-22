@@ -480,12 +480,11 @@ export class EventPart implements Part {
   }
 
   handleEvent(event: Event) {
-    const listener = (typeof this.value === 'function') ?
-        this.value :
-        (typeof this.value.handleEvent === 'function') ?
-        this.value.handleEvent :
-        () => null;
-    listener.call(this.eventContext || this.element, event);
+    if (typeof this.value === 'function') {
+      this.value.call(this.eventContext || this.element, event);
+    } else {
+      this.value.handleEvent(event);
+    }
   }
 }
 

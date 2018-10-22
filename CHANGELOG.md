@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Directive are now defined by passing the entire directive factory function to `directive()`.
 <!-- ### Removed -->
-<!-- ### Fixed -->
+### Fixed
+* `eventContext` is no longer used as the `this` value for event listener objects (object with a `handleEvent` method), as the object itself is supposed to be the `this` value.
 
 ## [0.12.0] - 2018-10-05
 ### Changed

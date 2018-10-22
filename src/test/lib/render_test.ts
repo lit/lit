@@ -571,7 +571,7 @@ suite('render()', () => {
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
-      assert.equal(thisValue, eventContext);
+      assert.equal(thisValue, listener);
     });
 
     test('only adds event listener once', () => {
