@@ -220,6 +220,9 @@ export class NodePart implements Part {
   }
 
   private _commitTemplate(value: HTMLTemplateElement): void {
+    if (this.value === value) {
+      return;
+    }
     const cloned = value.cloneNode(true) as HTMLTemplateElement;
     this.clear();
     this._insert(cloned.content);
