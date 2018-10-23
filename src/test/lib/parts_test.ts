@@ -98,6 +98,14 @@ suite('Parts', () => {
         assert.equal(stripExpressionMarkers(container.innerHTML), '<p></p>');
       });
 
+      test('accepts an HTMLTemplateElement', () => {
+        const template = document.createElement('template');
+        template.innerHTML = '<p></p>';
+        part.setValue(template);
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<p></p>');
+      });
+
       test('accepts arrays', () => {
         part.setValue([1, 2, 3]);
         part.commit();

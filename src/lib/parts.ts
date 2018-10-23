@@ -192,6 +192,8 @@ export class NodePart implements Part {
       }
     } else if (value instanceof TemplateResult) {
       this._commitTemplateResult(value);
+    } else if (value instanceof HTMLTemplateElement) {
+      this._commitTemplate(value);
     } else if (value instanceof Node) {
       this._commitNode(value);
     } else if (Array.isArray(value) || value[Symbol.iterator]) {
@@ -214,6 +216,13 @@ export class NodePart implements Part {
     }
     this.clear();
     this._insert(value);
+    this.value = value;
+  }
+
+  private _commitTemplate(value: HTMLTemplateElement): void {
+    const cloned = value.cloneNode(true) as HTMLTemplateElement;
+    this.clear();
+    this._insert(cloned.content);
     this.value = value;
   }
 
