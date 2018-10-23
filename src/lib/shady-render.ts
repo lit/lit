@@ -22,12 +22,6 @@ import {Template} from './template.js';
 
 export {html, svg, TemplateResult} from '../lit-html.js';
 
-declare global {
-  interface Window {
-    ShadyCSS: any;
-  }
-  class ShadowRoot {}
-}
 
 // Get a key to lookup in `templateCaches`.
 const getTemplateCacheKey = (type: string, scopeName: string) =>
@@ -61,7 +55,7 @@ const shadyTemplateFactory = (scopeName: string) =>
       if (template === undefined) {
         const element = result.getTemplateElement();
         if (compatibleShadyCSSVersion) {
-          window.ShadyCSS.prepareTemplateDom(element, scopeName);
+          window.ShadyCSS!.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
         templateCache.set(result.strings, template);
@@ -137,8 +131,8 @@ const prepareTemplateStyles =
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
-      window.ShadyCSS.prepareTemplateStyles(template.element, scopeName);
-      if (window.ShadyCSS.nativeShadow) {
+      window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
+      if (window.ShadyCSS!.nativeShadow) {
         // When in native Shadow DOM, re-add styling to rendered content using
         // the style ShadyCSS produced.
         const style = template.element.content.querySelector('style')!;
@@ -184,7 +178,7 @@ export const render =
         }
         // Update styling if this is the initial render to this container.
         if (!hasRendered) {
-          window.ShadyCSS.styleElement((container as ShadowRoot).host);
+          window.ShadyCSS!.styleElement((container as ShadowRoot).host);
         }
       }
     };
