@@ -150,6 +150,19 @@ const page = html`
 `;
 ```
 
+### HTML Template
+
+Similarly HTML Template can be used. They will be cloned and their content will be attached to the DOM:
+
+```js
+const template = document.createElement('template');
+template.innerHTML = '<div></div>'
+const page = html`
+  ${template}
+  <p>This is some text</p>
+`;
+```
+
 ### Arrays / Iterables
 
 Arrays and Iterables of supported types are supported as well. They can be mixed values of different supported types.
