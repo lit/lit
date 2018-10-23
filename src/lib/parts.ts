@@ -437,11 +437,13 @@ export class EventPart implements Part {
   value: any = undefined;
   _options?: {capture?: boolean, passive?: boolean, once?: boolean};
   _pendingValue: any = undefined;
+  _boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
     this.eventContext = eventContext;
+    this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 
   setValue(value: any): void {
@@ -469,11 +471,13 @@ export class EventPart implements Part {
         newListener != null && (oldListener == null || shouldRemoveListener);
 
     if (shouldRemoveListener) {
-      this.element.removeEventListener(this.eventName, this, this._options);
+      this.element.removeEventListener(
+          this.eventName, this._boundHandleEvent, this._options);
     }
     this._options = getOptions(newListener);
     if (shouldAddListener) {
-      this.element.addEventListener(this.eventName, this, this._options);
+      this.element.addEventListener(
+          this.eventName, this._boundHandleEvent, this._options);
     }
     this.value = newListener;
     this._pendingValue = noChange;
