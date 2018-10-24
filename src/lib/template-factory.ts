@@ -47,18 +47,37 @@ export function templateFactory(result: TemplateResult) {
     templateCache = new Map<string, Template>();
     templateCaches.set(result.type, templateCache);
   }
-  if (result.key === undefined) {
-    result.key = result.strings.join(marker);
+  let key = templateKeys.get(result.strings);
+  if (key !== undefined) {
+    // If templateKeys has the key it's guaranteed to exist in the templateCache
+    return templateCache.get(key)!;
   }
-  let template = templateCache.get(result.key);
+
+  // If the result.strings are new, generate a key and set it in templateKeys
+  key = result.strings.join(marker);
+  templateKeys.set(result.strings, key);
+
+  let template = templateCache.get(key);
   if (template === undefined) {
     template = new Template(result, result.getTemplateElement());
-    templateCache.set(result.key, template);
+  } else {
+    // If a template already exists, refresh the key object in the templateCache
+    templateCache.delete(key);
   }
+  templateCache.set(key, template);
   return template;
 }
 
-// The first argument to JS template tags retain identity across multiple
-// calls to a tag for the same literal, so we can cache work done per literal
-// in a Map.
+/**
+ * The first argument to JS template tags retain identity across multiple
+ * calls to a tag for the same literal, so we can cache work done per literal
+ * in a Map.
+ *
+ * Safari currently has a bug which occasionally breaks this behaviour, so we
+ * have to generate a key that retains identity by joining the
+ * TemplateResult.strings with a marker.
+ */
 export const templateCaches = new Map<string, Map<string, Template>>();
+
+// This maps the TemplateResult.strings to our generated key
+export const templateKeys = new WeakMap<TemplateStringsArray, string>();

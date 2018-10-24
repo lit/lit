@@ -15,7 +15,7 @@
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
-import {templateCaches} from './template-factory.js';
+import {templateCaches, templateKeys} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {marker, Template} from './template.js';
@@ -49,20 +49,27 @@ const shadyTemplateFactory = (scopeName: string) =>
       let templateCache = templateCaches.get(cacheKey);
       if (templateCache === undefined) {
         templateCache = new Map<string, Template>();
-        templateCaches.set(cacheKey, templateCache);
+        templateCaches.set(result.type, templateCache);
       }
-      if (result.key === undefined) {
-        result.key = result.strings.join(marker);
+      let key = templateKeys.get(result.strings);
+      if (key !== undefined) {
+        return templateCache.get(key)!;
       }
-      let template = templateCache.get(result.key);
+
+      key = result.strings.join(marker);
+      templateKeys.set(result.strings, key);
+
+      let template = templateCache.get(key);
       if (template === undefined) {
         const element = result.getTemplateElement();
         if (compatibleShadyCSSVersion) {
           window.ShadyCSS!.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
-        templateCache.set(result.key, template);
+      } else {
+        templateCache.delete(key);
       }
+      templateCache.set(key, template);
       return template;
     };
 
