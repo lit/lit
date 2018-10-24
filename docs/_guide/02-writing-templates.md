@@ -84,7 +84,7 @@ There are a few types of bindings:
     ```
   * Boolean Attribute:
     ```js
-    html`<input type="checkbox" ?checked=${checked}>`
+    html`<input ?disabled=${disabled}>`
     ```
   * Property:
     ```js
