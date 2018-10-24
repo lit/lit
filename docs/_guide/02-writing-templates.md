@@ -84,7 +84,7 @@ There are a few types of bindings:
     ```
   * Boolean Attribute:
     ```js
-    html`<button type="submit" ?disabled=${disabled}>`
+    html`<input ?disabled=${disabled}>`
     ```
   * Property:
     ```js
