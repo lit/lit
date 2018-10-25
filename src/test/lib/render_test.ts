@@ -72,7 +72,8 @@ suite('render()', () => {
 
     testIfHasSymbol('renders a Symbol', () => {
       render(html`<div>${Symbol('A')}</div>`, container);
-      assert.include(container.querySelector('div')!.textContent!.toLowerCase(), 'symbol');
+      assert.include(
+          container.querySelector('div')!.textContent!.toLowerCase(), 'symbol');
     });
 
     test('does not call a function bound to text', () => {
@@ -325,13 +326,15 @@ suite('render()', () => {
     testIfHasSymbol('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
       assert.include(
-          container.querySelector('div')!.getAttribute('foo')!.toLowerCase(), 'symbol');
+          container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
+          'symbol');
     });
 
     testIfHasSymbol('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')]}></div>`, container);
       assert.include(
-          container.querySelector('div')!.getAttribute('foo')!.toLowerCase(), 'symbol');
+          container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
+          'symbol');
     });
 
     test('renders multiple bindings in an attribute', () => {
