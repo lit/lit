@@ -30,7 +30,7 @@ import {html, render} from 'lit-html';
 const sayHi = (name) => html`<h1>Hello ${name}</h1>`;
 render(sayHi('Amy'), document.body);
 
-// subsequent renders wiill update the DOM
+// subsequent renders will update the DOM
 render(sayHi('Zoe'), document.body);
 ```
 
