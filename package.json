@@ -45,8 +45,8 @@
     "typedoc": "^0.12.0",
     "typescript": "^3.1.1",
     "uglify-es": "^3.3.5",
-    "wct-mocha": "^1.0.0-pre.2",
-    "web-component-tester": "^6.9.0-pre.1"
+    "wct-mocha": "^1.0.0-pre.3",
+    "web-component-tester": "^6.9.0"
   },
   "typings": "lit-html.d.ts",
   "dependencies": {}
