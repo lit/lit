@@ -44,27 +44,30 @@ export type TemplateFactory = (result: TemplateResult) => Template;
 export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
   if (templateCache === undefined) {
-    templateCache = new Map<string, Template>();
+    templateCache = new Map<TemplateStringsArray, Template>();
     templateCaches.set(result.type, templateCache);
   }
-  let key = templateKeys.get(result.strings);
-  if (key !== undefined) {
-    // If templateKeys has the key it's guaranteed to exist in the templateCache
-    return templateCache.get(key)!;
+
+  let template = templateCache.get(result.strings);
+  if (template !== undefined) {
+    return template;
   }
 
-  // If the result.strings are new, generate a key and set it in templateKeys
-  key = result.strings.join(marker);
-  templateKeys.set(result.strings, key);
+  // If the TemplateStringsArray is new, generate a key from the strings
+  // This key is shared between all templates with identical content
+  let key = result.strings.join(marker);
 
-  let template = templateCache.get(key);
+  // Check if we already have a Template for this key
+  template = keyedTemplates.get(key);
   if (template === undefined) {
+    // If we have not seen this key before, create a new Template
     template = new Template(result, result.getTemplateElement());
-  } else {
-    // If a template already exists, refresh the key object in the templateCache
-    templateCache.delete(key);
+    // Cache the Template for this key
+    keyedTemplates.set(key, template);
   }
-  templateCache.set(key, template);
+
+  // Cache all future queries for this TemplateStringsArray
+  templateCache.set(result.strings, template);
   return template;
 }
 
@@ -74,10 +77,11 @@ export function templateFactory(result: TemplateResult) {
  * in a Map.
  *
  * Safari currently has a bug which occasionally breaks this behaviour, so we
- * have to generate a key that retains identity by joining the
- * TemplateResult.strings with a marker.
+ * have to check if we processed a template tag already by creating a key that
+ * retains identity by joining the TemplateResult.strings with a marker.
  */
-export const templateCaches = new Map<string, Map<string, Template>>();
+export const templateCaches =
+    new Map<string, Map<TemplateStringsArray, Template>>();
 
-// This maps the TemplateResult.strings to our generated key
-export const templateKeys = new WeakMap<TemplateStringsArray, string>();
+// This maps the generated key strings to Templates
+export const keyedTemplates = new Map<string, Template>();
