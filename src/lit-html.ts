@@ -22,7 +22,7 @@ export {removeNodes, reparentNodes} from './lib/dom.js';
 export {noChange, Part} from './lib/part.js';
 export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isPrimitive, NodePart, PropertyCommitter, PropertyPart} from './lib/parts.js';
 export {parts, render} from './lib/render.js';
-export {keyedTemplates, templateCaches, templateFactory} from './lib/template-factory.js';
+export {templateCaches, templateFactory} from './lib/template-factory.js';
 export {TemplateInstance} from './lib/template-instance.js';
 export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 export {createMarker, isTemplatePartActive, Template} from './lib/template.js';

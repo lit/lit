@@ -44,11 +44,14 @@ export type TemplateFactory = (result: TemplateResult) => Template;
 export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
   if (templateCache === undefined) {
-    templateCache = new Map<TemplateStringsArray, Template>();
+    templateCache = {
+      stringsArray: new Map<TemplateStringsArray, Template>(),
+      keyString: new Map<string, Template>()
+    };
     templateCaches.set(result.type, templateCache);
   }
 
-  let template = templateCache.get(result.strings);
+  let template = templateCache.stringsArray.get(result.strings);
   if (template !== undefined) {
     return template;
   }
@@ -58,16 +61,16 @@ export function templateFactory(result: TemplateResult) {
   let key = result.strings.join(marker);
 
   // Check if we already have a Template for this key
-  template = keyedTemplates.get(key);
+  template = templateCache.keyString.get(key);
   if (template === undefined) {
     // If we have not seen this key before, create a new Template
     template = new Template(result, result.getTemplateElement());
     // Cache the Template for this key
-    keyedTemplates.set(key, template);
+    templateCache.keyString.set(key, template);
   }
 
   // Cache all future queries for this TemplateStringsArray
-  templateCache.set(result.strings, template);
+  templateCache.stringsArray.set(result.strings, template);
   return template;
 }
 
@@ -77,11 +80,13 @@ export function templateFactory(result: TemplateResult) {
  * in a Map.
  *
  * Safari currently has a bug which occasionally breaks this behaviour, so we
- * have to check if we processed a template tag already by creating a key that
- * retains identity by joining the TemplateResult.strings with a marker.
+ * need to cache the Template at two levels. We first cache the
+ * TemplateStringsArray, and if that fails, we cache a key constructed by
+ * joining the strings array.
  */
-export const templateCaches =
-    new Map<string, Map<TemplateStringsArray, Template>>();
+export type templateCache = {
+  stringsArray: Map<TemplateStringsArray, Template>;
+  keyString: Map<string, Template>;
+};
 
-// This maps the generated key strings to Templates
-export const keyedTemplates = new Map<string, Template>();
+export const templateCaches = new Map<string, templateCache>();
