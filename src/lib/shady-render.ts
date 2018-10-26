@@ -48,7 +48,7 @@ const shadyTemplateFactory = (scopeName: string) =>
       let templateCache = templateCaches.get(cacheKey);
       if (templateCache === undefined) {
         templateCache = {
-          stringsArray: new Map<TemplateStringsArray, Template>(),
+          stringsArray: new WeakMap<TemplateStringsArray, Template>(),
           keyString: new Map<string, Template>()
         };
         templateCaches.set(cacheKey, templateCache);
