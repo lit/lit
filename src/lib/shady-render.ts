@@ -60,7 +60,11 @@ const shadyTemplateFactory = (scopeName: string) =>
       let key = result.strings.join(marker) + scopeName;
       template = keyedTemplates.get(key);
       if (template === undefined) {
-        template = new Template(result, result.getTemplateElement());
+        const element = result.getTemplateElement();
+        if (compatibleShadyCSSVersion) {
+          window.ShadyCSS!.prepareTemplateDom(element, scopeName);
+        }
+        template = new Template(result, element);
         keyedTemplates.set(key, template);
       }
       templateCache.set(result.strings, template);
