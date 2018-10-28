@@ -19,6 +19,7 @@ import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
+import { DirectiveResult, DirectiveInstance } from './createDirective.js';
 
 export const isPrimitive = (value: any) =>
     (value === null ||
@@ -177,11 +178,6 @@ export class NodePart implements Part {
   }
 
   commit() {
-    while (isDirective(this._pendingValue)) {
-      const directive = this._pendingValue;
-      this._pendingValue = noChange;
-      directive(this);
-    }
     const value = this._pendingValue;
     if (value === noChange) {
       return;
@@ -190,6 +186,8 @@ export class NodePart implements Part {
       if (value !== this.value) {
         this._commitText(value);
       }
+    } else if (value instanceof DirectiveResult) {
+      this._commitDirectiveResult(value);
     } else if (value instanceof TemplateResult) {
       this._commitTemplateResult(value);
     } else if (value instanceof Node) {
@@ -231,6 +229,19 @@ export class NodePart implements Part {
           typeof value === 'string' ? value : String(value)));
     }
     this.value = value;
+  }
+
+  private _commitDirectiveResult(value: DirectiveResult<any>): void {
+    if(this.value instanceof DirectiveInstance && this.value.create === value.create){
+      this.value.update(...value.params);
+    } else {
+      const part = new NodePart(this.options);
+      part.startNode = this.startNode;
+      part.endNode = this.endNode;
+      const update = value.create(part);
+      update(value.params);
+      this.value = new DirectiveInstance(part, value.create, update);
+    }
   }
 
   private _commitTemplateResult(value: TemplateResult): void {

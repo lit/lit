@@ -1,6 +1,7 @@
 import { Part } from "./part";
 
-export type DirectiveFn<P extends any[]> = (part: Part) => (...params: P) => void;
+export type DirectiveUpdate<P extends any[]> = (...params: P) => void;
+export type DirectiveFn<P extends any[]> = (part: Part) => DirectiveUpdate<P>;
 
 export abstract class DirectiveResult<P extends any[]> {
 
@@ -13,6 +14,21 @@ export abstract class DirectiveResult<P extends any[]> {
     this.create = create;
   }
 };
+
+export class DirectiveInstance<P extends any[]> {
+
+  readonly part: Part
+
+  readonly create: DirectiveFn<P>
+
+  readonly update: DirectiveUpdate<P>;
+
+  constructor(part: Part, create: DirectiveFn<P>, update: DirectiveUpdate<P>){
+    this.part = part;
+    this.create = create;
+    this.update = update;
+  }
+}
 
 export const isDirective = (x: any): x is DirectiveResult<any[]> => x instanceof DirectiveResult;
 
