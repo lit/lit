@@ -44,9 +44,6 @@ export const asyncReplace = createDirective(forNodePart(
         return;
       }
 
-      // We nest a new part to keep track of previous item values separately
-      // of the iterable as a value itself.
-      const itemPart = new NodePart(part.options);
       iterable = value;
 
       let i = 0;
@@ -56,7 +53,6 @@ export const asyncReplace = createDirective(forNodePart(
         // previous value display until we can replace it.
         if (i === 0) {
           part.clear();
-          itemPart.appendIntoPart(part);
         }
 
         // Check to make sure that value is the still the current value of
@@ -73,8 +69,8 @@ export const asyncReplace = createDirective(forNodePart(
           v = mapper(v, i);
         }
 
-        itemPart.setValue(v);
-        itemPart.commit();
+        part.setValue(v);
+        part.commit();
         i++;
       }
     }
