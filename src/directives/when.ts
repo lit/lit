@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, NodePart, Part, reparentNodes} from '../lit-html.js';
+import {NodePart, Part, reparentNodes} from '../lit-html.js';
+import createDirective, { forNodePart } from '../lib/createDirective.js';
 
 interface PartCache {
   truePart: NodePart;
@@ -20,8 +21,6 @@ interface PartCache {
   prevCondition?: boolean;
   cacheContainer: DocumentFragment;
 }
-
-const partCaches = new WeakMap<NodePart, PartCache>();
 
 /**
  * Efficiently switches between two templates based on the given condition. The
@@ -47,31 +46,20 @@ const partCaches = new WeakMap<NodePart, PartCache>();
  * @param trueValue the value to render given a true condition
  * @param falseValue the value to render given a false condition
  */
-export const when = directive(
-    (condition: any, trueValue: () => any, falseValue: () => any) => (
-        parentPart: Part) => {
-      if (!(parentPart instanceof NodePart)) {
-        throw new Error('when can only be used in text bindings');
-      }
+export const when = createDirective(forNodePart(
+  (parentPart: NodePart) => {
+    // Cache consists of two parts, one for each condition, and a
+    // docment fragment which we cache the nodes of the condition that's
+    // not currently rendered.
+    const cache: PartCache = {
+      truePart: new NodePart(parentPart.options),
+      falsePart: new NodePart(parentPart.options),
+      cacheContainer: document.createDocumentFragment(),
+    };
+    cache.truePart.appendIntoPart(parentPart);
+    cache.falsePart.appendIntoPart(parentPart);
 
-      let cache = partCaches.get(parentPart);
-
-      // Create a new cache if this is the first render
-      if (cache === undefined) {
-        // Cache consists of two parts, one for each condition, and a
-        // docment fragment which we cache the nodes of the condition that's
-        // not currently rendered.
-        cache = {
-          truePart: new NodePart(parentPart.options),
-          falsePart: new NodePart(parentPart.options),
-          cacheContainer: document.createDocumentFragment(),
-        };
-        partCaches.set(parentPart, cache);
-
-        cache.truePart.appendIntoPart(parentPart);
-        cache.falsePart.appendIntoPart(parentPart);
-      }
-
+    return (condition: any, trueValue: () => any, falseValue: () => any) => {
       // Based on the condition, select which part to render and which value
       // to set on that part.
       const nextPart = condition ? cache.truePart : cache.falsePart;
@@ -102,4 +90,5 @@ export const when = directive(
       nextPart.commit();
 
       cache.prevCondition = !!condition;
-    });
+    }
+  }));

@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, isPrimitive, NodePart, Part} from '../lit-html.js';
+import {isPrimitive, NodePart, Part} from '../lit-html.js';
+import createDirective, { forNodePart } from '../lib/createDirective.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -22,21 +23,21 @@ import {directive, isPrimitive, NodePart, Part} from '../lit-html.js';
  * vulnerabilities.
  */
 
-const previousValues = new WeakMap<NodePart, string>();
+export const unsafeHTML = createDirective(forNodePart((part: NodePart) => {
+  let init = false;
+  let previousValue: any;
+  return (value: any) => {
+    // Dirty check primitive values
+    if (previousValue === value && isPrimitive(value) && init) {
+      return;
+    }
 
-export const unsafeHTML = directive((value: any) => (part: Part): void => {
-  if (!(part instanceof NodePart)) {
-    throw new Error('unsafeHTML can only be used in text bindings');
+    // Use a <template> to parse HTML into Nodes
+    const tmp = document.createElement('template');
+    tmp.innerHTML = value;
+    part.setValue(document.importNode(tmp.content, true));
+    part.commit();
+    previousValue = value;
+    init = true;
   }
-  // Dirty check primitive values
-  const previousValue = previousValues.get(part);
-  if (previousValue === value && isPrimitive(value)) {
-    return;
-  }
-
-  // Use a <template> to parse HTML into Nodes
-  const tmp = document.createElement('template');
-  tmp.innerHTML = value;
-  part.setValue(document.importNode(tmp.content, true));
-  previousValues.set(part, value);
-});
+}));

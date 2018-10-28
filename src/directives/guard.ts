@@ -12,9 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Part} from '../lit-html.js';
-
-const previousExpressions = new WeakMap<Part, any>();
+import {Part} from '../lit-html.js';
+import createDirective from '../lib/createDirective.js';
 
 /**
  * Creates a guard directive. Prevents any re-render until the identity of the
@@ -36,12 +35,18 @@ const previousExpressions = new WeakMap<Part, any>();
  * @param valueFn function which returns the render value
  */
 export const guard =
-    directive((expression: any, valueFn: () => any) => (part: Part): void => {
+  createDirective((part: Part) => {
+    let init = false;
+    let previousExpression: any;
+    return (expression: any, valueFn: () => any): void => {
       // Dirty check previous expression
-      if (previousExpressions.get(part) === expression) {
+      if (previousExpression === expression && init) {
         return;
       }
 
       part.setValue(valueFn());
-      previousExpressions.set(part, expression);
-    });
+      part.commit();
+      previousExpression = expression;
+      init = true;
+    }
+  });

@@ -12,14 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Part} from '../lit-html.js';
+import {Part} from '../lit-html.js';
+import createDirective from '../lib/createDirective.js';
 
 /**
  * Display `defaultContent` until `promise` resolves.
  */
 export const until =
-    directive((promise: Promise<any>, defaultContent: any) => (part: Part) => {
+    createDirective((part: Part) => (promise: Promise<any>, defaultContent: any) => {
       part.setValue(defaultContent);
       part.commit();
       part.setValue(promise);
+      part.commit();
     });

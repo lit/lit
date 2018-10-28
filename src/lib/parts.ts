@@ -239,7 +239,7 @@ export class NodePart implements Part {
       part.startNode = this.startNode;
       part.endNode = this.endNode;
       const update = value.create(part);
-      update(value.values);
+      update(...value.values);
       this.value = new DirectiveInstance(part, value.create, update);
     }
   }

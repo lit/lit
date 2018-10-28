@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DirectiveFn} from '../lib/directive.js';
-import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
+import {createMarker, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
+import createDirective, { forNodePart, DirectiveFn, DirectiveResult } from '../lib/createDirective.js';
 
 export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -64,10 +64,6 @@ const generateMap = (list: unknown[], start: number, end: number) => {
   return map;
 };
 
-// Stores previous ordered list of parts and map of key to index
-const partListCache = new WeakMap<NodePart, (NodePart | null)[]>();
-const keyListCache = new WeakMap<NodePart, unknown[]>();
-
 /**
  * A directive that repeats a series of values (usually `TemplateResults`)
  * generated from an iterable, and updates those items efficiently when the
@@ -87,25 +83,22 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
  * If no `keyFn` is provided, this directive will perform similar to mapping
  * items to values, and DOM will be reused against potentially different items.
  */
-export const repeat = directive(
-    <T>(items: Iterable<T>,
-        keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
-        template?: ItemTemplate<T>): DirectiveFn => {
-      let keyFn: KeyFn<T>;
-      if (template === undefined) {
-        template = keyFnOrTemplate;
-      } else if (keyFnOrTemplate !== undefined) {
-        keyFn = keyFnOrTemplate as KeyFn<T>;
-      }
-
-      return (containerPart: Part): void => {
-        if (!(containerPart instanceof NodePart)) {
-          throw new Error('repeat can only be used in text bindings');
+export const repeat: <T>(items: Iterable<T>,
+  keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
+  template?: ItemTemplate<T>) => DirectiveResult<[Iterable<T>, KeyFn<T>|ItemTemplate<T>, ItemTemplate<T>?], NodePart> =
+  createDirective(forNodePart(
+    (containerPart: NodePart) => {
+      let oldParts: (NodePart | null)[] = [];
+      let oldKeys: unknown[] = [];
+      return <T>(items: Iterable<T>,
+          keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
+          template?: ItemTemplate<T>) => {
+        let keyFn: KeyFn<T> | undefined;
+        if (template === undefined) {
+          template = keyFnOrTemplate;
+        } else if (keyFnOrTemplate !== undefined) {
+          keyFn = keyFnOrTemplate as KeyFn<T>;
         }
-        // Old part & key lists are retrieved from the last update (associated
-        // with the part for this instance of the directive)
-        const oldParts = partListCache.get(containerPart) || [];
-        const oldKeys = keyListCache.get(containerPart) || [];
 
         // New part list will be built up as we go (either reused from old parts
         // or created for new keys in this update). This is saved in the above
@@ -412,8 +405,8 @@ export const repeat = directive(
             removePart(oldPart);
           }
         }
-        // Save order of new parts for next round
-        partListCache.set(containerPart, newParts);
-        keyListCache.set(containerPart, newKeys);
+
+        oldParts = newParts;
+        oldKeys = newKeys;
       };
-    });
+    }));

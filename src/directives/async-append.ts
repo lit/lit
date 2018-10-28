@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {createMarker, directive, NodePart, Part} from '../lit-html.js';
+import {createMarker, NodePart} from '../lit-html.js';
+import createDirective, { forNodePart } from '../lib/createDirective.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new
@@ -31,12 +32,10 @@ import {createMarker, directive, NodePart, Part} from '../lit-html.js';
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend = directive(
-    <T>(value: AsyncIterable<T>,
-        mapper?: (v: T, index?: number) => any) => async (part: Part) => {
-      if (!(part instanceof NodePart)) {
-        throw new Error('asyncAppend can only be used in text bindings');
-      }
+export const asyncAppend = createDirective(forNodePart(
+  (part: NodePart) => {
+    return async <T>(value: AsyncIterable<T>,
+        mapper?: (v: T, index?: number) => any) => {
       // If we've already set up this particular iterable, we don't need
       // to do anything.
       if (value === part.value) {
@@ -95,4 +94,5 @@ export const asyncAppend = directive(
         itemPart.commit();
         i++;
       }
-    });
+    }
+  }));

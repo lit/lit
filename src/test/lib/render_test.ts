@@ -14,6 +14,7 @@
 
 import {AttributePart, directive, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import createDirective, { forAttributePart } from '../../lib/createDirective.js';
 
 const assert = chai.assert;
 
@@ -689,8 +690,9 @@ suite('render()', () => {
 
   suite('directives', () => {
     test('renders directives on NodeParts', () => {
-      const fooDirective = directive(() => (part: Part) => {
+      const fooDirective = createDirective((part: Part) => () => {
         part.setValue('foo');
+        part.commit();
       });
 
       render(html`<div>${fooDirective()}</div>`, container);
@@ -699,9 +701,10 @@ suite('render()', () => {
     });
 
     test('renders directives on AttributeParts', () => {
-      const fooDirective = directive(() => (part: AttributePart) => {
+      const fooDirective = createDirective(forAttributePart((part: AttributePart) => () => {
         part.setValue('foo');
-      });
+        part.commit();
+      }));
 
       render(html`<div foo="${fooDirective()}"></div>`, container);
       assert.equal(
@@ -709,9 +712,10 @@ suite('render()', () => {
     });
 
     test('renders directives on PropertyParts', () => {
-      const fooDirective = directive(() => (part: AttributePart) => {
+      const fooDirective = createDirective(forAttributePart((part: AttributePart) => () => {
         part.setValue(1234);
-      });
+        part.commit();
+      }));
 
       render(html`<div .foo="${fooDirective()}"></div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
