@@ -13,7 +13,7 @@
  */
 
 import {createMarker, NodePart} from '../lit-html.js';
-import createDirective, { forNodePart } from '../lib/createDirective.js';
+import createDirective, { forNodePart, DirectiveResult } from '../lib/createDirective.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new
@@ -32,7 +32,8 @@ import createDirective, { forNodePart } from '../lib/createDirective.js';
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend = createDirective(forNodePart(
+export const asyncAppend: <T>(value: AsyncIterable<T>,
+  mapper?: (v: T, index?: number) => any) => DirectiveResult<any[], NodePart> = createDirective(forNodePart(
   (part: NodePart) => {
     let iterable: any;
     part.onDetach(() => iterable = {});
