@@ -125,6 +125,7 @@ export class NodePart implements Part {
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
+  _handleDetach: (() => void) | undefined = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -173,15 +174,17 @@ export class NodePart implements Part {
     ref.endNode = this.startNode;
   }
 
+  onDetach(handle: () => void) {
+    this._handleDetach = handle;
+  }
+
   setValue(value: any): void {
     this._pendingValue = value;
   }
 
   commit() {
     const value = this._pendingValue;
-    if (value === noChange) {
-      return;
-    }
+    const previousValue = this.value;
     if (isPrimitive(value)) {
       if (value !== this.value) {
         this._commitText(value);
@@ -199,6 +202,14 @@ export class NodePart implements Part {
     } else {
       // Fallback, will render the string representation
       this._commitText(value);
+    }
+    if(this.value !== previousValue){
+      if(previousValue instanceof DirectiveInstance){
+        const detachedPart = previousValue.part as NodePart;
+        if(detachedPart._handleDetach){
+          detachedPart._handleDetach();
+        }
+      }
     }
   }
 

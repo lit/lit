@@ -34,14 +34,16 @@ import createDirective, { forNodePart } from '../lib/createDirective.js';
  */
 export const asyncAppend = createDirective(forNodePart(
   (part: NodePart) => {
+    let iterable: any;
+    part.onDetach(() => iterable = {});
     return async <T>(value: AsyncIterable<T>,
         mapper?: (v: T, index?: number) => any) => {
       // If we've already set up this particular iterable, we don't need
       // to do anything.
-      if (value === part.value) {
+      if (value === iterable) {
         return;
       }
-      part.value = value;
+      iterable = value;
 
       // We keep track of item Parts across iterations, so that we can
       // share marker nodes between consecutive Parts.
@@ -57,7 +59,7 @@ export const asyncAppend = createDirective(forNodePart(
 
         // Check to make sure that value is the still the current value of
         // the part, and if not bail because a new value owns this part
-        if (part.value !== value) {
+        if (iterable !== value) {
           break;
         }
 

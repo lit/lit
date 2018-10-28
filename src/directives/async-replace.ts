@@ -35,17 +35,19 @@ import createDirective, { forNodePart } from '../lib/createDirective.js';
  */
 export const asyncReplace = createDirective(forNodePart(
   (part: NodePart) => {
+    let iterable: any;
+    part.onDetach(() => iterable = {});
     return async <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) => {
       // If we've already set up this particular iterable, we don't need
       // to do anything.
-      if (value === part.value) {
+      if (value === iterable) {
         return;
       }
 
       // We nest a new part to keep track of previous item values separately
       // of the iterable as a value itself.
       const itemPart = new NodePart(part.options);
-      part.value = value;
+      iterable = value;
 
       let i = 0;
 
@@ -59,7 +61,7 @@ export const asyncReplace = createDirective(forNodePart(
 
         // Check to make sure that value is the still the current value of
         // the part, and if not bail because a new value owns this part
-        if (part.value !== value) {
+        if (iterable !== value) {
           break;
         }
 
