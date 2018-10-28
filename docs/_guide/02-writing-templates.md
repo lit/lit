@@ -304,9 +304,7 @@ import {when} from 'lit-html/directives/when';
 
 let checked = false;
 
-html`
-  when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
-checked`);
+const render = checked => html`<div>${when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not checked`)}</div>`;
 ```
 
 ### `repeat(items, keyfn, template)`
