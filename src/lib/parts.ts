@@ -117,6 +117,11 @@ export class AttributePart implements Part {
     }
     this.committer.commit();
   }
+
+  commitValue(value: any) {
+    this.setValue(value);
+    this.commit();
+  }
 }
 
 export class NodePart implements Part {
@@ -211,6 +216,11 @@ export class NodePart implements Part {
         }
       }
     }
+  }
+
+  commitValue(value: any) {
+    this.setValue(value);
+    this.commit();
   }
 
   private _insert(node: Node) {
@@ -385,6 +395,11 @@ export class BooleanAttributePart implements Part {
     this.value = value;
     this._pendingValue = noChange;
   }
+
+  commitValue(value: any) {
+    this.setValue(value);
+    this.commit();
+  }
 }
 
 /**
@@ -495,6 +510,11 @@ export class EventPart implements Part {
     }
     this.value = newListener;
     this._pendingValue = noChange;
+  }
+
+  commitValue(value: any) {
+    this.setValue(value);
+    this.commit();
   }
 
   handleEvent(event: Event) {

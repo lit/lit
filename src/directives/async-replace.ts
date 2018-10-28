@@ -69,8 +69,7 @@ export const asyncReplace = createDirective(forNodePart(
           v = mapper(v, i);
         }
 
-        part.setValue(v);
-        part.commit();
+        part.commitValue(v);
         i++;
       }
     }

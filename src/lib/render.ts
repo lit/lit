@@ -48,6 +48,5 @@ export const render =
                              }));
         part.appendInto(container);
       }
-      part.setValue(result);
-      part.commit();
+      part.commitValue(result);
     };

@@ -92,8 +92,7 @@ export const asyncAppend = createDirective(forNodePart(
         }
         itemPart = new NodePart(part.options);
         itemPart.insertAfterNode(itemStartNode);
-        itemPart.setValue(v);
-        itemPart.commit();
+        itemPart.commitValue(v);
         i++;
       }
     }

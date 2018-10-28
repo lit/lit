@@ -15,6 +15,12 @@ export interface Part {
    * Commits the current part value, cause it to actually be written to the DOM.
    */
   commit(): void;
+
+  /**
+   * Sets the current part vaule and writes it to the DOM.
+   * @param value The value that will be commited.
+   */
+  commitValue(value: any): void;
 }
 
 /**

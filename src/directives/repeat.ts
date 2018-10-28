@@ -33,8 +33,7 @@ const createAndInsertPart =
     };
 
 const updatePart = (part: NodePart, value: unknown) => {
-  part.setValue(value);
-  part.commit();
+  part.commitValue(value);
   return part;
 };
 

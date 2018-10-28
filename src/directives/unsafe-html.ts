@@ -35,8 +35,7 @@ export const unsafeHTML = createDirective(forNodePart((part: NodePart) => {
     // Use a <template> to parse HTML into Nodes
     const tmp = document.createElement('template');
     tmp.innerHTML = value;
-    part.setValue(document.importNode(tmp.content, true));
-    part.commit();
+    part.commitValue(document.importNode(tmp.content, true));
     previousValue = value;
     init = true;
   }

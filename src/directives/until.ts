@@ -20,8 +20,6 @@ import createDirective from '../lib/createDirective.js';
  */
 export const until =
     createDirective((part: Part) => (promise: Promise<any>, defaultContent: any) => {
-      part.setValue(defaultContent);
-      part.commit();
-      part.setValue(promise);
-      part.commit();
+      part.commitValue(defaultContent);
+      part.commitValue(promise);
     });
