@@ -12,9 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
-import {noChange, Part, DetachHandler} from './part.js';
+import {Part, DetachHandler} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -415,7 +414,6 @@ export class BooleanAttributePart implements Part {
         }
       }
       this.value = value;
-      this._pendingValue = noChange;
     }
 
     if(previousValue != this.value && previousValue instanceof DirectiveInstance){
@@ -548,7 +546,6 @@ export class EventPart implements Part {
             this.eventName, this._boundHandleEvent, this._options);
       }
       this.value = newListener;
-      this._pendingValue = noChange;
     }
 
 
