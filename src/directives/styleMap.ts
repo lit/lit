@@ -12,25 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
+import {AttributePart, Part, PropertyPart} from '../lit-html.js';
+import createDirective from '../lib/createDirective.js';
 
 export interface StyleInfo {
   [name: string]: string;
 }
-
-/**
- * Stores the StyleInfo object applied to a given AttributePart.
- * Used to unset existing values when a new StyleInfo object is applied.
- */
-const styleMapCache = new WeakMap();
-
-/**
- * Stores AttributeParts that have had static styles applied (e.g. `height: 0;`
- * in style="height: 0; ${styleMap()}"). Static styles are applied only the
- * first time the directive is run on a part.
- */
-// Note, could be a WeakSet, but prefer not requiring this polyfill.
-const styleMapStatics = new WeakMap();
 
 /**
  * A directive that applies CSS properties. This must be used in the `style`
@@ -40,26 +27,28 @@ const styleMapStatics = new WeakMap();
  * sets these properties to the element's style.
  * @param styleInfo {StyleInfo}
  */
-export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
+export const styleMap = createDirective((part: Part) => {
   if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
       part.committer.name !== 'style' || part.committer.parts.length > 1) {
     throw new Error(
         'The `styleMap` directive must be used in the style attribute ' +
         'and must be the only part in the attribute.');
   }
+
   // handle static styles
-  if (!styleMapStatics.has(part)) {
-    (part.committer.element as HTMLElement).style.cssText =
-        part.committer.strings.join(' ');
-    styleMapStatics.set(part, true);
-  }
-  // remove old styles that no longer apply
-  const oldInfo = styleMapCache.get(part);
-  for (const name in oldInfo) {
-    if (!(name in styleInfo)) {
-      ((part.committer.element as HTMLElement).style as any)[name] = null;
+  (part.committer.element as HTMLElement).style.cssText = part.committer.strings.join(' ');
+  let oldInfo: StyleInfo | undefined;
+
+  return (styleInfo: StyleInfo) => {
+    // remove old styles that no longer apply
+    if(oldInfo) {
+      for (const name in oldInfo) {
+        if (!(name in styleInfo)) {
+          ((part.committer.element as HTMLElement).style as any)[name] = null;
+        }
+      }
     }
-  }
-  Object.assign((part.committer.element as HTMLElement).style, styleInfo);
-  styleMapCache.set(part, styleInfo);
+    Object.assign((part.committer.element as HTMLElement).style, styleInfo);
+    oldInfo = styleInfo;
+  };
 });

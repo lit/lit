@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
+import {AttributePart, Part, PropertyPart} from '../lit-html.js';
+import createDirective from '../lib/createDirective.js';
 
 
 // On IE11, classList.toggle doesn't accept a second argument.
@@ -34,20 +35,6 @@ export interface ClassInfo {
 }
 
 /**
- * Stores the ClassInfo object applied to a given AttributePart.
- * Used to unset existing values when a new ClassInfo object is applied.
- */
-const classMapCache = new WeakMap();
-
-/**
- * Stores AttributeParts that have had static classes applied (e.g. `foo` in
- * class="foo ${classMap()}"). Static classes are applied only the first time
- * the directive is run on a part.
- */
-// Note, could be a WeakSet, but prefer not requiring this polyfill.
-const classMapStatics = new WeakMap();
-
-/**
  * A directive that applies CSS classes. This must be used in the `class`
  * attribute and must be the only part used in the attribute. It takes each
  * property in the `classInfo` argument and adds the property name to the
@@ -57,32 +44,36 @@ const classMapStatics = new WeakMap();
  * `{foo: bar}` applies the class `foo` if the value of `bar` is truthy.
  * @param classInfo {ClassInfo}
  */
-export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
+export const classMap = createDirective((part: Part) => {
   if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
       part.committer.name !== 'class' || part.committer.parts.length > 1) {
     throw new Error(
         'The `classMap` directive must be used in the `class` attribute ' +
         'and must be the only part in the attribute.');
   }
+
   // handle static classes
-  if (!classMapStatics.has(part)) {
-    part.committer.element.className = part.committer.strings.join(' ');
-    classMapStatics.set(part, true);
-  }
-  // remove old classes that no longer apply
-  const oldInfo = classMapCache.get(part);
-  for (const name in oldInfo) {
-    if (!(name in classInfo)) {
-      part.committer.element.classList.remove(name);
+  part.committer.element.className = part.committer.strings.join(' ');
+
+  let oldInfo: ClassInfo | undefined;
+
+  return (classInfo: ClassInfo) => {
+    // remove old classes that no longer apply
+    if(oldInfo){
+      for (const name in oldInfo) {
+        if (!(name in classInfo)) {
+          part.committer.element.classList.remove(name);
+        }
+      }
     }
-  }
-  // add new classes
-  for (const name in classInfo) {
-    if (!oldInfo || (oldInfo[name] !== classInfo[name])) {
-      // We explicitly want a loose truthy check here because
-      // it seems more convenient that '' and 0 are skipped.
-      part.committer.element.classList.toggle(name, Boolean(classInfo[name]));
+    // add new classes
+    for (const name in classInfo) {
+      if (!oldInfo || (oldInfo[name] !== classInfo[name])) {
+        // We explicitly want a loose truthy check here because
+        // it seems more convenient that '' and 0 are skipped.
+        part.committer.element.classList.toggle(name, Boolean(classInfo[name]));
+      }
     }
-  }
-  classMapCache.set(part, classInfo);
+    oldInfo = classInfo;
+  };
 });

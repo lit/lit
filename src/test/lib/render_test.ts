@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
+import {AttributePart, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import createDirective, { forAttributePart } from '../../lib/createDirective.js';
 
@@ -733,7 +733,7 @@ suite('render()', () => {
         <div @test-event=${(e: Event) => {
                 event = e;
               }}>
-          ${directive(() => (part: NodePart) => {
+          ${createDirective((part: NodePart) => () => {
                 // This emulates a custom element that fires an event in its
                 // connectedCallback
                 part.startNode.dispatchEvent(new CustomEvent('test-event', {
@@ -752,7 +752,7 @@ suite('render()', () => {
           // This tests that attribute directives are called in the commit
           // phase, not the setValue phase
           let event = undefined;
-          const fire = directive(() => (part: AttributePart) => {
+          const fire = createDirective((part: AttributePart) => () => {
             part.committer.element.dispatchEvent(new CustomEvent('test-event', {
               bubbles: true,
             }));

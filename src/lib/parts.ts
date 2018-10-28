@@ -14,7 +14,7 @@
 
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
-import {noChange, Part} from './part.js';
+import {noChange, Part, DetachHandler} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -62,7 +62,7 @@ export class AttributeCommitter {
       text += strings[i];
       const part = this.parts[i];
       if (part !== undefined) {
-        const v = part.value;
+        const v = part.getValue();
         if (v != null &&
             (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
           for (const t of v) {
@@ -89,38 +89,62 @@ export class AttributeCommitter {
 export class AttributePart implements Part {
   committer: AttributeCommitter;
   value: any = undefined;
+  _pendingValue: any;
+  _handleDetach: DetachHandler | undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
   }
 
+  onDetach(handle: DetachHandler) {
+    this._handleDetach = handle;
+  }
+
   setValue(value: any): void {
-    if (value !== noChange && (!isPrimitive(value) || value !== this.value)) {
-      this.value = value;
-      // If the value is a not a directive, dirty the committer so that it'll
-      // call setAttribute. If the value is a directive, it'll dirty the
-      // committer if it calls setValue().
-      if (!isDirective(value)) {
-        this.committer.dirty = true;
-      }
+    this._pendingValue = value;
+  }
+
+  getValue(): any {
+    if(this.value instanceof DirectiveInstance) {
+      return this.value.part.getValue();
+    } else {
+      return this.value;
     }
   }
 
   commit() {
-    while (isDirective(this.value)) {
-      const directive = this.value;
-      this.value = noChange;
-      directive(this);
+    const value = this._pendingValue;
+    const previousValue = this.value;
+    if (value instanceof DirectiveResult) {
+      this._commitDirectiveResult(value);
+    }else{
+      if (!isPrimitive(value) || value !== this.value) {
+        this.value = value;
+        this.committer.dirty = true;
+      }
+      this.committer.commit();
     }
-    if (this.value === noChange) {
-      return;
+
+    if(this.value !== previousValue && previousValue instanceof DirectiveInstance){
+      const detachedPart = previousValue.part;
+      if(detachedPart._handleDetach){
+        detachedPart._handleDetach();
+      }
     }
-    this.committer.commit();
   }
 
   commitValue(value: any) {
     this.setValue(value);
     this.commit();
+  }
+
+  private _commitDirectiveResult(value: DirectiveResult<any>): void {
+    if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
+      const part = new AttributePart(this.committer);
+      const update = value.create(part);
+      this.value = new DirectiveInstance(part, value.create, update);
+    }
+    this.value.update(...value.values);
   }
 }
 
@@ -130,7 +154,7 @@ export class NodePart implements Part {
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
-  _handleDetach: (() => void) | undefined = undefined;
+  _handleDetach: DetachHandler | undefined = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -179,7 +203,7 @@ export class NodePart implements Part {
     ref.endNode = this.startNode;
   }
 
-  onDetach(handle: () => void) {
+  onDetach(handle: DetachHandler) {
     this._handleDetach = handle;
   }
 
@@ -208,12 +232,11 @@ export class NodePart implements Part {
       // Fallback, will render the string representation
       this._commitText(value);
     }
-    if(this.value !== previousValue){
-      if(previousValue instanceof DirectiveInstance){
-        const detachedPart = previousValue.part as NodePart;
-        if(detachedPart._handleDetach){
-          detachedPart._handleDetach();
-        }
+
+    if(this.value !== previousValue && previousValue instanceof DirectiveInstance){
+      const detachedPart = previousValue.part;
+      if(detachedPart._handleDetach){
+        detachedPart._handleDetach();
       }
     }
   }
@@ -253,16 +276,14 @@ export class NodePart implements Part {
   }
 
   private _commitDirectiveResult(value: DirectiveResult<any>): void {
-    if(this.value instanceof DirectiveInstance && this.value.create === value.create){
-      this.value.update(...value.values);
-    } else {
+    if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
       const part = new NodePart(this.options);
       part.startNode = this.startNode;
       part.endNode = this.endNode;
       const update = value.create(part);
-      update(...value.values);
       this.value = new DirectiveInstance(part, value.create, update);
     }
+    this.value.update(...value.values);
   }
 
   private _commitTemplateResult(value: TemplateResult): void {
@@ -360,6 +381,7 @@ export class BooleanAttributePart implements Part {
   strings: string[];
   value: any = undefined;
   _pendingValue: any = undefined;
+  _handleDetach: DetachHandler | undefined;
 
   constructor(element: Element, name: string, strings: string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
@@ -371,34 +393,51 @@ export class BooleanAttributePart implements Part {
     this.strings = strings;
   }
 
+  onDetach(handle: DetachHandler) {
+    this._handleDetach = handle;
+  }
+
   setValue(value: any): void {
     this._pendingValue = value;
   }
 
   commit() {
-    while (isDirective(this._pendingValue)) {
-      const directive = this._pendingValue;
+    const previousValue = this.value;
+    if(this._pendingValue instanceof DirectiveResult){
+      this._commitDirectiveResult(this._pendingValue);
+    }else{
+      const value = !!this._pendingValue;
+      if (this.value !== value) {
+        if (value) {
+          this.element.setAttribute(this.name, '');
+        } else {
+          this.element.removeAttribute(this.name);
+        }
+      }
+      this.value = value;
       this._pendingValue = noChange;
-      directive(this);
     }
-    if (this._pendingValue === noChange) {
-      return;
-    }
-    const value = !!this._pendingValue;
-    if (this.value !== value) {
-      if (value) {
-        this.element.setAttribute(this.name, '');
-      } else {
-        this.element.removeAttribute(this.name);
+
+    if(previousValue != this.value && previousValue instanceof DirectiveInstance){
+      const detachedPart = previousValue.part;
+      if(detachedPart._handleDetach){
+        detachedPart._handleDetach();
       }
     }
-    this.value = value;
-    this._pendingValue = noChange;
   }
 
   commitValue(value: any) {
     this.setValue(value);
     this.commit();
+  }
+
+  private _commitDirectiveResult(value: DirectiveResult<any>){
+    if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
+      const part = new BooleanAttributePart(this.element, this.name, this.strings);
+      const update = value.create(part);
+      this.value = new DirectiveInstance(part, value.create, update);
+    }
+    this.value.update(...value.values);
   }
 }
 
@@ -426,7 +465,7 @@ export class PropertyCommitter extends AttributeCommitter {
 
   _getValue() {
     if (this.single) {
-      return this.parts[0].value;
+      return this.parts[0].getValue();
     }
     return super._getValue();
   }
@@ -467,6 +506,7 @@ export class EventPart implements Part {
   _options?: AddEventListenerOptions;
   _pendingValue: any = undefined;
   _boundHandleEvent: (event: Event) => void;
+  _handleDetach: DetachHandler | undefined;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
@@ -475,46 +515,63 @@ export class EventPart implements Part {
     this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 
+  onDetach(handle: DetachHandler) {
+    this._handleDetach = handle;
+  }
+
   setValue(value: any): void {
     this._pendingValue = value;
   }
 
   commit() {
-    while (isDirective(this._pendingValue)) {
-      const directive = this._pendingValue;
+    const previousValue = this.value;
+    if(this._pendingValue instanceof DirectiveResult){
+      this._commitDirectiveResult(this._pendingValue);
+    }else{
+      const newListener = this._pendingValue;
+      const oldListener = this.value;
+      const shouldRemoveListener = newListener == null ||
+          oldListener != null &&
+              (newListener.capture !== oldListener.capture ||
+              newListener.once !== oldListener.once ||
+              newListener.passive !== oldListener.passive);
+      const shouldAddListener =
+          newListener != null && (oldListener == null || shouldRemoveListener);
+
+      if (shouldRemoveListener) {
+        this.element.removeEventListener(
+            this.eventName, this._boundHandleEvent, this._options);
+      }
+      this._options = getOptions(newListener);
+      if (shouldAddListener) {
+        this.element.addEventListener(
+            this.eventName, this._boundHandleEvent, this._options);
+      }
+      this.value = newListener;
       this._pendingValue = noChange;
-      directive(this);
-    }
-    if (this._pendingValue === noChange) {
-      return;
     }
 
-    const newListener = this._pendingValue;
-    const oldListener = this.value;
-    const shouldRemoveListener = newListener == null ||
-        oldListener != null &&
-            (newListener.capture !== oldListener.capture ||
-             newListener.once !== oldListener.once ||
-             newListener.passive !== oldListener.passive);
-    const shouldAddListener =
-        newListener != null && (oldListener == null || shouldRemoveListener);
 
-    if (shouldRemoveListener) {
-      this.element.removeEventListener(
-          this.eventName, this._boundHandleEvent, this._options);
+    if(previousValue != this.value && previousValue instanceof DirectiveInstance){
+      const detachedPart = previousValue.part;
+      if(detachedPart._handleDetach){
+        detachedPart._handleDetach();
+      }
     }
-    this._options = getOptions(newListener);
-    if (shouldAddListener) {
-      this.element.addEventListener(
-          this.eventName, this._boundHandleEvent, this._options);
-    }
-    this.value = newListener;
-    this._pendingValue = noChange;
   }
 
   commitValue(value: any) {
     this.setValue(value);
     this.commit();
+  }
+
+  private _commitDirectiveResult(value: DirectiveResult<any>){
+    if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
+      const part = new EventPart(this.element, this.eventName, this.eventContext);
+      const update = value.create(part);
+      this.value = new DirectiveInstance(part, value.create, update);
+    }
+    this.value.update(...value.values);
   }
 
   handleEvent(event: Event) {
