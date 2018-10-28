@@ -233,13 +233,13 @@ export class NodePart implements Part {
 
   private _commitDirectiveResult(value: DirectiveResult<any>): void {
     if(this.value instanceof DirectiveInstance && this.value.create === value.create){
-      this.value.update(...value.params);
+      this.value.update(...value.values);
     } else {
       const part = new NodePart(this.options);
       part.startNode = this.startNode;
       part.endNode = this.endNode;
       const update = value.create(part);
-      update(value.params);
+      update(value.values);
       this.value = new DirectiveInstance(part, value.create, update);
     }
   }
