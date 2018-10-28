@@ -765,6 +765,85 @@ suite('render()', () => {
               container);
           assert.isOk(event);
         });
+
+    test('Create is called only once, update is called every time', () => {
+      let createCalls = 0;
+      let updateCalls = 0;
+      const fooDirective = createDirective((_: Part) => {
+        createCalls++;
+        return () => {
+          updateCalls++;
+        };
+      });
+
+      const foo = () => html`<div>${fooDirective()}</div>`;
+      render(foo(), container);
+      render(foo(), container);
+      render(foo(), container);
+      assert.equal(createCalls, 1);
+      assert.equal(updateCalls, 3);
+    });
+
+    test('Create is called each time the directive is reapplied', () => {
+      let createCalls = 0;
+      let updateCalls = 0;
+      const fooDirective = createDirective((_: Part) => {
+        createCalls++;
+        return () => {
+          updateCalls++;
+        };
+      });
+
+      const foo = (condition: boolean) => html`<div>${condition ? fooDirective() : 'nope'}</div>`;
+      render(foo(true), container);
+      render(foo(false), container);
+      render(foo(true), container);
+      assert.equal(createCalls, 2);
+      assert.equal(updateCalls, 2);
+    });
+
+    test('The detach callback is called when the directive is replaced', () => {
+      let detachCalled = false;
+      const fooDirective = createDirective((part: Part) => {
+        part.onDetach(() => detachCalled = true);
+        return () => {};
+      });
+
+      const foo = (condition: boolean) => html`<div>${condition ? fooDirective() : 'nope'}</div>`;
+      render(foo(true), container);
+      render(foo(false), container);
+      assert.isTrue(detachCalled);
+    });
+
+    test('Nested directives setValue correctly', () => {
+      const fooDirective = createDirective((part: Part) => {
+        return (value: any) => {
+          part.commitValue(value);
+        };
+      });
+
+      render(html`<div>${fooDirective(fooDirective('test'))}</div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>test</div>');
+    });
+
+    test('Nested directives called multiple times are created only once', () => {
+      let createdCounts = new Map<Part, number>();
+      const fooDirective = createDirective((part: Part) => {
+        createdCounts.set(part, 1 + (createdCounts.get(part) || 0));
+        return (value: any) => {
+          part.commitValue(value);
+        };
+      });
+
+      const foo = () => html`<div>${fooDirective(fooDirective('test'))}</div>`;
+      render(foo(), container);
+      render(foo(), container);
+      render(foo(), container);
+      assert.equal(createdCounts.size, 2);
+      assert.isTrue(Array.from(createdCounts.values()).every(x => x === 1));
+    });
   });
 
   suite('<table>', () => {
