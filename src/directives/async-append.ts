@@ -13,7 +13,7 @@
  */
 
 import {createMarker, NodePart} from '../lit-html.js';
-import createDirective, { forNodePart, DirectiveResult } from '../lib/createDirective.js';
+import {createDirective, forNodePart, DirectiveResult } from '../lib/createDirective.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new

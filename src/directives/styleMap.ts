@@ -13,7 +13,7 @@
  */
 
 import {AttributePart, Part, PropertyPart} from '../lit-html.js';
-import createDirective from '../lib/createDirective.js';
+import {createDirective} from '../lib/createDirective.js';
 
 export interface StyleInfo {
   [name: string]: string;

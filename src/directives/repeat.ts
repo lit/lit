@@ -13,7 +13,7 @@
  */
 
 import {createMarker, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
-import createDirective, { forNodePart, DirectiveFn, DirectiveResult } from '../lib/createDirective.js';
+import {createDirective, forNodePart, DirectiveFn, DirectiveResult } from '../lib/createDirective.js';
 
 export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;

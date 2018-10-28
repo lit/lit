@@ -13,7 +13,7 @@
  */
 
 import {isPrimitive, NodePart, Part} from '../lit-html.js';
-import createDirective, { forNodePart } from '../lib/createDirective.js';
+import {createDirective, forNodePart } from '../lib/createDirective.js';
 
 /**
  * Renders the result as HTML, rather than text.

@@ -13,7 +13,7 @@
  */
 
 import * as LibDefaultTemplateProcessor from '../lib/default-template-processor.js';
-import * as LibDirective from '../lib/directive.js';
+import * as LibDirective from '../lib/createDirective';
 import * as LibPart from '../lib/part.js';
 import * as LibParts from '../lib/parts.js';
 import * as LibRender from '../lib/render.js';

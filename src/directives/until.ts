@@ -13,7 +13,7 @@
  */
 
 import {Part} from '../lit-html.js';
-import createDirective from '../lib/createDirective.js';
+import {createDirective} from '../lib/createDirective.js';
 
 /**
  * Display `defaultContent` until `promise` resolves.

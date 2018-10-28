@@ -14,7 +14,7 @@
 
 import {AttributePart, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
-import createDirective, { forAttributePart } from '../../lib/createDirective.js';
+import {createDirective, forAttributePart } from '../../lib/createDirective.js';
 
 const assert = chai.assert;
 

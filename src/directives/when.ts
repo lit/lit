@@ -13,7 +13,7 @@
  */
 
 import {NodePart, Part, reparentNodes} from '../lit-html.js';
-import createDirective, { forNodePart } from '../lib/createDirective.js';
+import {createDirective, forNodePart } from '../lib/createDirective.js';
 
 interface PartCache {
   truePart: NodePart;

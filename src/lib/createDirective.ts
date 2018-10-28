@@ -33,7 +33,7 @@ export class DirectiveInstance<V extends any[], P extends Part=Part> {
 
 export const isDirective = (x: any): x is DirectiveResult<any[]> => x instanceof DirectiveResult;
 
-export default function createDirective<V extends any[], P extends Part=Part>(create: DirectiveFn<V, P>): (...values: V) => DirectiveResult<V, P> {
+export function createDirective<V extends any[], P extends Part=Part>(create: DirectiveFn<V, P>): (...values: V) => DirectiveResult<V, P> {
   class Directive extends DirectiveResult<V, P> {};
   return (...values: V) => new Directive(values, create);
 }

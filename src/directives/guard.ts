@@ -13,7 +13,7 @@
  */
 
 import {Part} from '../lit-html.js';
-import createDirective from '../lib/createDirective.js';
+import {createDirective} from '../lib/createDirective.js';
 
 /**
  * Creates a guard directive. Prevents any re-render until the identity of the

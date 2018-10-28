@@ -13,7 +13,7 @@
  */
 
 import {AttributePart, Part} from '../lit-html.js';
-import createDirective from '../lib/createDirective.js';
+import {createDirective} from '../lib/createDirective.js';
 
 /**
  * For AttributeParts, sets the attribute if the value is defined and removes
