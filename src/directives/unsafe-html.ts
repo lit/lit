@@ -38,5 +38,5 @@ export const unsafeHTML = createDirective(forNodePart((part: NodePart) => {
     part.commitValue(document.importNode(tmp.content, true));
     previousValue = value;
     init = true;
-  }
+  };
 }));

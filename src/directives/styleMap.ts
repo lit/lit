@@ -41,7 +41,7 @@ export const styleMap = createDirective((part: Part) => {
 
   return (styleInfo: StyleInfo) => {
     // remove old styles that no longer apply
-    if(oldInfo) {
+    if (oldInfo) {
       for (const name in oldInfo) {
         if (!(name in styleInfo)) {
           ((part.committer.element as HTMLElement).style as any)[name] = null;

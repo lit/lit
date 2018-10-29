@@ -59,7 +59,7 @@ export const classMap = createDirective((part: Part) => {
 
   return (classInfo: ClassInfo) => {
     // remove old classes that no longer apply
-    if(oldInfo){
+    if (oldInfo) {
       for (const name in oldInfo) {
         if (!(name in classInfo)) {
           part.committer.element.classList.remove(name);

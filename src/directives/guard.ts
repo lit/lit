@@ -47,5 +47,5 @@ export const guard =
       part.commitValue(valueFn());
       previousExpression = expression;
       init = true;
-    }
+    };
   });

@@ -806,7 +806,7 @@ suite('render()', () => {
       let detachCalled = false;
       const fooDirective = createDirective((_: Part) => {
         return {
-          detach(){
+          detach() {
             detachCalled = true;
           }
         };
@@ -832,7 +832,7 @@ suite('render()', () => {
     });
 
     test('Nested directives called multiple times are created only once', () => {
-      let createdCounts = new Map<Part, number>();
+      const createdCounts = new Map<Part, number>();
       const fooDirective = createDirective((part: Part) => {
         createdCounts.set(part, 1 + (createdCounts.get(part) || 0));
         return (value: any) => {
@@ -845,7 +845,7 @@ suite('render()', () => {
       render(foo(), container);
       render(foo(), container);
       assert.equal(createdCounts.size, 2);
-      assert.isTrue(Array.from(createdCounts.values()).every(x => x === 1));
+      assert.isTrue(Array.from(createdCounts.values()).every((x) => x === 1));
     });
   });
 

@@ -34,7 +34,7 @@ import {createDirective, forNodePart, DirectiveResult, DirectiveUpdateAndDetach 
  */
 export const asyncAppend: <T>(value: AsyncIterable<T>,
   mapper?: (v: T, index?: number) => any) => DirectiveResult<any[], NodePart> = createDirective(forNodePart(
-  (part: NodePart) => {
+  (part: NodePart): DirectiveUpdateAndDetach<any[]> => {
     let iterable: any;
     return {
       async update<T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) {
@@ -96,8 +96,8 @@ export const asyncAppend: <T>(value: AsyncIterable<T>,
           i++;
         }
       },
-      detach(){
-        iterable = {}
+      detach() {
+        iterable = {};
       }
-    } as DirectiveUpdateAndDetach<any[]>
+    };
   }));

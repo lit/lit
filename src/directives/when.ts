@@ -89,5 +89,5 @@ export const when = createDirective(forNodePart(
       nextPart.commitValue(nextValue);
 
       cache.prevCondition = !!condition;
-    }
+    };
   }));

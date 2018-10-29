@@ -74,7 +74,7 @@ export const asyncReplace: <T>(value: AsyncIterable<T>,
         i++;
       }
       },
-      detach(){
+      detach() {
         iterable = {};
       }
     };
