@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as LibDefaultTemplateProcessor from '../lib/default-template-processor.js';
 import * as LibDirective from '../lib/createDirective';
+import * as LibDefaultTemplateProcessor from '../lib/default-template-processor.js';
 import * as LibPart from '../lib/part.js';
 import * as LibParts from '../lib/parts.js';
 import * as LibRender from '../lib/render.js';

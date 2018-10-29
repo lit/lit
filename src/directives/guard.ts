@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Part} from '../lit-html.js';
 import {createDirective} from '../lib/createDirective.js';
+import {Part} from '../lit-html.js';
 
 /**
  * Creates a guard directive. Prevents any re-render until the identity of the
@@ -34,18 +34,17 @@ import {createDirective} from '../lib/createDirective.js';
  * @param expression the expression to check before re-rendering
  * @param valueFn function which returns the render value
  */
-export const guard =
-  createDirective((part: Part) => {
-    let init = false;
-    let previousExpression: any;
-    return (expression: any, valueFn: () => any): void => {
-      // Dirty check previous expression
-      if (previousExpression === expression && init) {
-        return;
-      }
+export const guard = createDirective((part: Part) => {
+  let init = false;
+  let previousExpression: any;
+  return (expression: any, valueFn: () => any): void => {
+    // Dirty check previous expression
+    if (previousExpression === expression && init) {
+      return;
+    }
 
-      part.commitValue(valueFn());
-      previousExpression = expression;
-      init = true;
-    };
-  });
+    part.commitValue(valueFn());
+    previousExpression = expression;
+    init = true;
+  };
+});

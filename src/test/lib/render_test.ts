@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {createDirective, forAttributePart} from '../../lib/createDirective.js';
 import {AttributePart, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
-import {createDirective, forAttributePart } from '../../lib/createDirective.js';
 
 const assert = chai.assert;
 
@@ -701,10 +701,11 @@ suite('render()', () => {
     });
 
     test('renders directives on AttributeParts', () => {
-      const fooDirective = createDirective(forAttributePart((part: AttributePart) => () => {
-        part.setValue('foo');
-        part.commit();
-      }));
+      const fooDirective =
+          createDirective(forAttributePart((part: AttributePart) => () => {
+            part.setValue('foo');
+            part.commit();
+          }));
 
       render(html`<div foo="${fooDirective()}"></div>`, container);
       assert.equal(
@@ -712,10 +713,11 @@ suite('render()', () => {
     });
 
     test('renders directives on PropertyParts', () => {
-      const fooDirective = createDirective(forAttributePart((part: AttributePart) => () => {
-        part.setValue(1234);
-        part.commit();
-      }));
+      const fooDirective =
+          createDirective(forAttributePart((part: AttributePart) => () => {
+            part.setValue(1234);
+            part.commit();
+          }));
 
       render(html`<div .foo="${fooDirective()}"></div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
@@ -794,7 +796,8 @@ suite('render()', () => {
         };
       });
 
-      const foo = (condition: boolean) => html`<div>${condition ? fooDirective() : 'nope'}</div>`;
+      const foo = (condition: boolean) =>
+          html`<div>${condition ? fooDirective() : 'nope'}</div>`;
       render(foo(true), container);
       render(foo(false), container);
       render(foo(true), container);
@@ -812,7 +815,8 @@ suite('render()', () => {
         };
       });
 
-      const foo = (condition: boolean) => html`<div>${condition ? fooDirective() : 'nope'}</div>`;
+      const foo = (condition: boolean) =>
+          html`<div>${condition ? fooDirective() : 'nope'}</div>`;
       render(foo(true), container);
       render(foo(false), container);
       assert.isTrue(detachCalled);
@@ -827,26 +831,28 @@ suite('render()', () => {
 
       render(html`<div>${fooDirective(fooDirective('test'))}</div>`, container);
       assert.equal(
-          stripExpressionMarkers(container.innerHTML),
-          '<div>test</div>');
+          stripExpressionMarkers(container.innerHTML), '<div>test</div>');
     });
 
-    test('Nested directives called multiple times are created only once', () => {
-      const createdCounts = new Map<Part, number>();
-      const fooDirective = createDirective((part: Part) => {
-        createdCounts.set(part, 1 + (createdCounts.get(part) || 0));
-        return (value: any) => {
-          part.commitValue(value);
-        };
-      });
+    test(
+        'Nested directives called multiple times are created only once', () => {
+          const createdCounts = new Map<Part, number>();
+          const fooDirective = createDirective((part: Part) => {
+            createdCounts.set(part, 1 + (createdCounts.get(part) || 0));
+            return (value: any) => {
+              part.commitValue(value);
+            };
+          });
 
-      const foo = () => html`<div>${fooDirective(fooDirective('test'))}</div>`;
-      render(foo(), container);
-      render(foo(), container);
-      render(foo(), container);
-      assert.equal(createdCounts.size, 2);
-      assert.isTrue(Array.from(createdCounts.values()).every((x) => x === 1));
-    });
+          const foo = () =>
+              html`<div>${fooDirective(fooDirective('test'))}</div>`;
+          render(foo(), container);
+          render(foo(), container);
+          render(foo(), container);
+          assert.equal(createdCounts.size, 2);
+          assert.isTrue(
+              Array.from(createdCounts.values()).every((x) => x === 1));
+        });
   });
 
   suite('<table>', () => {

@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, Part} from '../lit-html.js';
 import {createDirective} from '../lib/createDirective.js';
+import {AttributePart, Part} from '../lit-html.js';
 
 /**
  * For AttributeParts, sets the attribute if the value is defined and removes

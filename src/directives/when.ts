@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {createDirective, forNodePart} from '../lib/createDirective.js';
 import {NodePart, reparentNodes} from '../lit-html.js';
-import {createDirective, forNodePart } from '../lib/createDirective.js';
 
 interface PartCache {
   truePart: NodePart;
@@ -46,48 +46,47 @@ interface PartCache {
  * @param trueValue the value to render given a true condition
  * @param falseValue the value to render given a false condition
  */
-export const when = createDirective(forNodePart(
-  (parentPart: NodePart) => {
-    // Cache consists of two parts, one for each condition, and a
-    // docment fragment which we cache the nodes of the condition that's
-    // not currently rendered.
-    const cache: PartCache = {
-      truePart: new NodePart(parentPart.options),
-      falsePart: new NodePart(parentPart.options),
-      cacheContainer: document.createDocumentFragment(),
-    };
-    cache.truePart.appendIntoPart(parentPart);
-    cache.falsePart.appendIntoPart(parentPart);
+export const when = createDirective(forNodePart((parentPart: NodePart) => {
+  // Cache consists of two parts, one for each condition, and a
+  // docment fragment which we cache the nodes of the condition that's
+  // not currently rendered.
+  const cache: PartCache = {
+    truePart: new NodePart(parentPart.options),
+    falsePart: new NodePart(parentPart.options),
+    cacheContainer: document.createDocumentFragment(),
+  };
+  cache.truePart.appendIntoPart(parentPart);
+  cache.falsePart.appendIntoPart(parentPart);
 
-    return (condition: any, trueValue: () => any, falseValue: () => any) => {
-      // Based on the condition, select which part to render and which value
-      // to set on that part.
-      const nextPart = condition ? cache.truePart : cache.falsePart;
-      const nextValue = condition ? trueValue() : falseValue();
+  return (condition: any, trueValue: () => any, falseValue: () => any) => {
+    // Based on the condition, select which part to render and which value
+    // to set on that part.
+    const nextPart = condition ? cache.truePart : cache.falsePart;
+    const nextValue = condition ? trueValue() : falseValue();
 
-      // If we switched condition, swap nodes to/from the cache.
-      if (!!condition !== cache.prevCondition) {
-        // Get the part which was rendered for the opposite condition. This
-        // should be added to the cache.
-        const prevPart = condition ? cache.falsePart : cache.truePart;
+    // If we switched condition, swap nodes to/from the cache.
+    if (!!condition !== cache.prevCondition) {
+      // Get the part which was rendered for the opposite condition. This
+      // should be added to the cache.
+      const prevPart = condition ? cache.falsePart : cache.truePart;
 
-        // If the next part was rendered, take it from the cache
-        if (nextPart.value) {
-          parentPart.startNode.parentNode!.appendChild(cache.cacheContainer);
-        }
-
-        // If the prev part was rendered, move it to the cache
-        if (prevPart.value) {
-          reparentNodes(
-              cache.cacheContainer,
-              prevPart.startNode,
-              prevPart.endNode.nextSibling);
-        }
+      // If the next part was rendered, take it from the cache
+      if (nextPart.value) {
+        parentPart.startNode.parentNode!.appendChild(cache.cacheContainer);
       }
 
-      // Set the next part's value
-      nextPart.commitValue(nextValue);
+      // If the prev part was rendered, move it to the cache
+      if (prevPart.value) {
+        reparentNodes(
+            cache.cacheContainer,
+            prevPart.startNode,
+            prevPart.endNode.nextSibling);
+      }
+    }
 
-      cache.prevCondition = !!condition;
-    };
-  }));
+    // Set the next part's value
+    nextPart.commitValue(nextValue);
+
+    cache.prevCondition = !!condition;
+  };
+}));

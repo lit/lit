@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, Part, PropertyPart} from '../lit-html.js';
 import {createDirective} from '../lib/createDirective.js';
+import {AttributePart, Part, PropertyPart} from '../lit-html.js';
 
 export interface StyleInfo {
   [name: string]: string;
@@ -36,8 +36,9 @@ export const styleMap = createDirective((part: Part) => {
   }
 
   // handle static styles
-  (part.committer.element as HTMLElement).style.cssText = part.committer.strings.join(' ');
-  let oldInfo: StyleInfo | undefined;
+  (part.committer.element as HTMLElement).style.cssText =
+      part.committer.strings.join(' ');
+  let oldInfo: StyleInfo|undefined;
 
   return (styleInfo: StyleInfo) => {
     // remove old styles that no longer apply

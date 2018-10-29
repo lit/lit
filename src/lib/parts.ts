@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {DirectiveInstance, DirectiveResult} from './createDirective.js';
 import {removeNodes} from './dom.js';
-import {Part, DetachHandler} from './part.js';
+import {DetachHandler, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
-import { DirectiveResult, DirectiveInstance } from './createDirective.js';
 
 export const isPrimitive = (value: any) =>
     (value === null ||
@@ -119,7 +119,8 @@ export class AttributePart implements Part {
       this.committer.commit();
     }
 
-    if (this.value !== previousValue && previousValue instanceof DirectiveInstance && previousValue.detach) {
+    if (this.value !== previousValue &&
+        previousValue instanceof DirectiveInstance && previousValue.detach) {
       previousValue.detach();
     }
   }
@@ -130,7 +131,8 @@ export class AttributePart implements Part {
   }
 
   private _commitDirectiveResult(value: DirectiveResult<any>): void {
-    if (!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
+    if (!(this.value instanceof DirectiveInstance &&
+          this.value.create === value.create)) {
       const part = new AttributePart(this.committer);
       this.value = new DirectiveInstance(part, value.create);
     }
@@ -144,7 +146,7 @@ export class NodePart implements Part {
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
-  _handleDetach: DetachHandler | undefined = undefined;
+  _handleDetach: DetachHandler|undefined = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -219,7 +221,8 @@ export class NodePart implements Part {
       this._commitText(value);
     }
 
-    if (this.value !== previousValue && previousValue instanceof DirectiveInstance && previousValue.detach) {
+    if (this.value !== previousValue &&
+        previousValue instanceof DirectiveInstance && previousValue.detach) {
       previousValue.detach();
     }
   }
@@ -259,7 +262,8 @@ export class NodePart implements Part {
   }
 
   private _commitDirectiveResult(value: DirectiveResult<any>): void {
-    if (!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
+    if (!(this.value instanceof DirectiveInstance &&
+          this.value.create === value.create)) {
       const part = new NodePart(this.options);
       part.startNode = this.startNode;
       part.endNode = this.endNode;
@@ -394,7 +398,8 @@ export class BooleanAttributePart implements Part {
       this.value = value;
     }
 
-    if (previousValue !== this.value && previousValue instanceof DirectiveInstance && previousValue.detach) {
+    if (previousValue !== this.value &&
+        previousValue instanceof DirectiveInstance && previousValue.detach) {
       previousValue.detach();
     }
   }
@@ -405,8 +410,10 @@ export class BooleanAttributePart implements Part {
   }
 
   private _commitDirectiveResult(value: DirectiveResult<any>) {
-    if (!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
-      const part = new BooleanAttributePart(this.element, this.name, this.strings);
+    if (!(this.value instanceof DirectiveInstance &&
+          this.value.create === value.create)) {
+      const part =
+          new BooleanAttributePart(this.element, this.name, this.strings);
       this.value = new DirectiveInstance(part, value.create);
     }
     this.value.update(...value.values);
@@ -500,8 +507,8 @@ export class EventPart implements Part {
       const shouldRemoveListener = newListener == null ||
           oldListener != null &&
               (newListener.capture !== oldListener.capture ||
-              newListener.once !== oldListener.once ||
-              newListener.passive !== oldListener.passive);
+               newListener.once !== oldListener.once ||
+               newListener.passive !== oldListener.passive);
       const shouldAddListener =
           newListener != null && (oldListener == null || shouldRemoveListener);
 
@@ -517,7 +524,8 @@ export class EventPart implements Part {
       this.value = newListener;
     }
 
-    if (previousValue !== this.value && previousValue instanceof DirectiveInstance && previousValue.detach) {
+    if (previousValue !== this.value &&
+        previousValue instanceof DirectiveInstance && previousValue.detach) {
       previousValue.detach();
     }
   }
@@ -528,8 +536,10 @@ export class EventPart implements Part {
   }
 
   private _commitDirectiveResult(value: DirectiveResult<any>) {
-    if (!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
-      const part = new EventPart(this.element, this.eventName, this.eventContext);
+    if (!(this.value instanceof DirectiveInstance &&
+          this.value.create === value.create)) {
+      const part =
+          new EventPart(this.element, this.eventName, this.eventContext);
       this.value = new DirectiveInstance(part, value.create);
     }
     this.value.update(...value.values);

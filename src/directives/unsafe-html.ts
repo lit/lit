@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {createDirective, forNodePart} from '../lib/createDirective.js';
 import {isPrimitive, NodePart} from '../lit-html.js';
-import {createDirective, forNodePart } from '../lib/createDirective.js';
 
 /**
  * Renders the result as HTML, rather than text.

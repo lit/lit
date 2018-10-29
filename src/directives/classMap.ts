@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, Part, PropertyPart} from '../lit-html.js';
 import {createDirective} from '../lib/createDirective.js';
+import {AttributePart, Part, PropertyPart} from '../lit-html.js';
 
 
 // On IE11, classList.toggle doesn't accept a second argument.
@@ -55,7 +55,7 @@ export const classMap = createDirective((part: Part) => {
   // handle static classes
   part.committer.element.className = part.committer.strings.join(' ');
 
-  let oldInfo: ClassInfo | undefined;
+  let oldInfo: ClassInfo|undefined;
 
   return (classInfo: ClassInfo) => {
     // remove old classes that no longer apply

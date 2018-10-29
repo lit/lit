@@ -1,5 +1,5 @@
-import { Part, DetachHandler } from './part';
-import { AttributePart, NodePart } from './parts';
+import {DetachHandler, Part} from './part';
+import {AttributePart, NodePart} from './parts';
 
 const noop = () => {};
 
@@ -10,10 +10,10 @@ export type DirectiveUpdateAndDetach<V extends any[]> = {
   detach?: () => void,
 };
 
-export type DirectiveFn<V extends any[] = any[], P extends Part = Part> = (part: P) => DirectiveUpdate<V> | DirectiveUpdateAndDetach<V>;
+export type DirectiveFn<V extends any[] = any[], P extends Part = Part> =
+    (part: P) => DirectiveUpdate<V>|DirectiveUpdateAndDetach<V>;
 
 export abstract class DirectiveResult<V extends any[], P extends Part = Part> {
-
   readonly values: V;
 
   readonly create: DirectiveFn<V, P>;
@@ -25,7 +25,6 @@ export abstract class DirectiveResult<V extends any[], P extends Part = Part> {
 }
 
 export class DirectiveInstance<V extends any[], P extends Part = Part> {
-
   readonly part: P;
 
   readonly create: DirectiveFn<V, P>;
@@ -43,19 +42,26 @@ export class DirectiveInstance<V extends any[], P extends Part = Part> {
   }
 }
 
-export const isDirective = (x: any): x is DirectiveResult<any[]> => x instanceof DirectiveResult;
+export const isDirective = (x: any): x is DirectiveResult<any[]> =>
+    x instanceof DirectiveResult;
 
-export function createDirective<V extends any[] = any[], P extends Part = Part>(create: DirectiveFn<V, P>): (...values: V) => DirectiveResult<V, P> {
+export function createDirective<V extends any[] = any[], P extends Part = Part>(
+    create: DirectiveFn<V, P>): (...values: V) => DirectiveResult<V, P> {
   class Directive extends DirectiveResult<V, P> {}
   return (...values: V) => new Directive(values, create);
 }
 
-export const forAttributePart = <V extends any[]>(create: DirectiveFn<V, AttributePart>) => (part: AttributePart) => {
-  if (part instanceof AttributePart) return create(part);
-  throw new Error('This directive can only be used with attributes');
-};
+export const forAttributePart =
+    <V extends any[]>(create: DirectiveFn<V, AttributePart>) =>
+        (part: AttributePart) => {
+          if (part instanceof AttributePart)
+            return create(part);
+          throw new Error('This directive can only be used with attributes');
+        };
 
-export const forNodePart = <V extends any[]>(create: DirectiveFn<V, NodePart>) => (part: NodePart) => {
-  if (part instanceof NodePart) return create(part);
-  throw new Error('This directive can only be used with text');
-};
+export const forNodePart =
+    <V extends any[]>(create: DirectiveFn<V, NodePart>) => (part: NodePart) => {
+      if (part instanceof NodePart)
+        return create(part);
+      throw new Error('This directive can only be used with text');
+    };
