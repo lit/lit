@@ -249,7 +249,7 @@ Directives are functions that accept some arguments for values and configuration
 ```javascript
 import {directive, html} from 'lit-html';
 
-const hello = directive(() => (part) => {
+const hello = () => directive(part => {
   part.setValue('Hello');
 });
 
@@ -263,7 +263,7 @@ Here's an example of a directive that takes a function, and evaluates it in a tr
 ```javascript
 import {directive, html, render} from 'lit-html';
 
-const safe = directive((f) => (part) => {
+const safe = f => directive(part => {
   try {
     return f();
   } catch (e) {
