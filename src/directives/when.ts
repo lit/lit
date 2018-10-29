@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePart, Part, reparentNodes} from '../lit-html.js';
+import {NodePart, reparentNodes} from '../lit-html.js';
 import {createDirective, forNodePart } from '../lib/createDirective.js';
 
 interface PartCache {

@@ -89,14 +89,9 @@ export class AttributePart implements Part {
   committer: AttributeCommitter;
   value: any = undefined;
   _pendingValue: any;
-  _handleDetach: DetachHandler | undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
-  }
-
-  onDetach(handle: DetachHandler) {
-    this._handleDetach = handle;
   }
 
   setValue(value: any): void {
@@ -124,11 +119,8 @@ export class AttributePart implements Part {
       this.committer.commit();
     }
 
-    if(this.value !== previousValue && previousValue instanceof DirectiveInstance){
-      const detachedPart = previousValue.part;
-      if(detachedPart._handleDetach){
-        detachedPart._handleDetach();
-      }
+    if(this.value !== previousValue && previousValue instanceof DirectiveInstance && previousValue.detach){
+      previousValue.detach();
     }
   }
 
@@ -140,8 +132,7 @@ export class AttributePart implements Part {
   private _commitDirectiveResult(value: DirectiveResult<any>): void {
     if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
       const part = new AttributePart(this.committer);
-      const update = value.create(part);
-      this.value = new DirectiveInstance(part, value.create, update);
+      this.value = new DirectiveInstance(part, value.create);
     }
     this.value.update(...value.values);
   }
@@ -202,10 +193,6 @@ export class NodePart implements Part {
     ref.endNode = this.startNode;
   }
 
-  onDetach(handle: DetachHandler) {
-    this._handleDetach = handle;
-  }
-
   setValue(value: any): void {
     this._pendingValue = value;
   }
@@ -232,11 +219,8 @@ export class NodePart implements Part {
       this._commitText(value);
     }
 
-    if(this.value !== previousValue && previousValue instanceof DirectiveInstance){
-      const detachedPart = previousValue.part;
-      if(detachedPart._handleDetach){
-        detachedPart._handleDetach();
-      }
+    if(this.value !== previousValue && previousValue instanceof DirectiveInstance && previousValue.detach){
+      previousValue.detach();
     }
   }
 
@@ -279,8 +263,7 @@ export class NodePart implements Part {
       const part = new NodePart(this.options);
       part.startNode = this.startNode;
       part.endNode = this.endNode;
-      const update = value.create(part);
-      this.value = new DirectiveInstance(part, value.create, update);
+      this.value = new DirectiveInstance(part, value.create);
     }
     this.value.update(...value.values);
   }
@@ -380,7 +363,6 @@ export class BooleanAttributePart implements Part {
   strings: string[];
   value: any = undefined;
   _pendingValue: any = undefined;
-  _handleDetach: DetachHandler | undefined;
 
   constructor(element: Element, name: string, strings: string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
@@ -390,10 +372,6 @@ export class BooleanAttributePart implements Part {
     this.element = element;
     this.name = name;
     this.strings = strings;
-  }
-
-  onDetach(handle: DetachHandler) {
-    this._handleDetach = handle;
   }
 
   setValue(value: any): void {
@@ -416,11 +394,8 @@ export class BooleanAttributePart implements Part {
       this.value = value;
     }
 
-    if(previousValue != this.value && previousValue instanceof DirectiveInstance){
-      const detachedPart = previousValue.part;
-      if(detachedPart._handleDetach){
-        detachedPart._handleDetach();
-      }
+    if(previousValue != this.value && previousValue instanceof DirectiveInstance && previousValue.detach){
+      previousValue.detach();
     }
   }
 
@@ -432,8 +407,7 @@ export class BooleanAttributePart implements Part {
   private _commitDirectiveResult(value: DirectiveResult<any>){
     if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
       const part = new BooleanAttributePart(this.element, this.name, this.strings);
-      const update = value.create(part);
-      this.value = new DirectiveInstance(part, value.create, update);
+      this.value = new DirectiveInstance(part, value.create);
     }
     this.value.update(...value.values);
   }
@@ -504,17 +478,12 @@ export class EventPart implements Part {
   _options?: AddEventListenerOptions;
   _pendingValue: any = undefined;
   _boundHandleEvent: (event: Event) => void;
-  _handleDetach: DetachHandler | undefined;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
     this.eventContext = eventContext;
     this._boundHandleEvent = (e) => this.handleEvent(e);
-  }
-
-  onDetach(handle: DetachHandler) {
-    this._handleDetach = handle;
   }
 
   setValue(value: any): void {
@@ -548,12 +517,8 @@ export class EventPart implements Part {
       this.value = newListener;
     }
 
-
-    if(previousValue != this.value && previousValue instanceof DirectiveInstance){
-      const detachedPart = previousValue.part;
-      if(detachedPart._handleDetach){
-        detachedPart._handleDetach();
-      }
+    if(previousValue != this.value && previousValue instanceof DirectiveInstance && previousValue.detach){
+      previousValue.detach();
     }
   }
 
@@ -565,8 +530,7 @@ export class EventPart implements Part {
   private _commitDirectiveResult(value: DirectiveResult<any>){
     if(!(this.value instanceof DirectiveInstance && this.value.create === value.create)) {
       const part = new EventPart(this.element, this.eventName, this.eventContext);
-      const update = value.create(part);
-      this.value = new DirectiveInstance(part, value.create, update);
+      this.value = new DirectiveInstance(part, value.create);
     }
     this.value.update(...value.values);
   }

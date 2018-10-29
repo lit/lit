@@ -13,7 +13,7 @@
  */
 
 import {createMarker, NodePart, removeNodes, reparentNodes} from '../lit-html.js';
-import {createDirective, forNodePart, DirectiveFn, DirectiveResult } from '../lib/createDirective.js';
+import {createDirective, forNodePart, DirectiveResult, DirectiveUpdate } from '../lib/createDirective.js';
 
 export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -86,7 +86,7 @@ export const repeat: <T>(items: Iterable<T>,
   keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
   template?: ItemTemplate<T>) => DirectiveResult<[Iterable<T>, KeyFn<T>|ItemTemplate<T>, ItemTemplate<T>?], NodePart> =
   createDirective(forNodePart(
-    (containerPart: NodePart) => {
+    (containerPart: NodePart): DirectiveUpdate<any[]> => {
       let oldParts: (NodePart | null)[] = [];
       let oldKeys: unknown[] = [];
       return <T>(items: Iterable<T>,

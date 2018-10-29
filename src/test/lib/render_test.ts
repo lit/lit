@@ -804,9 +804,12 @@ suite('render()', () => {
 
     test('The detach callback is called when the directive is replaced', () => {
       let detachCalled = false;
-      const fooDirective = createDirective((part: Part) => {
-        part.onDetach(() => detachCalled = true);
-        return () => {};
+      const fooDirective = createDirective((_: Part) => {
+        return {
+          detach(){
+            detachCalled = true;
+          }
+        };
       });
 
       const foo = (condition: boolean) => html`<div>${condition ? fooDirective() : 'nope'}</div>`;

@@ -23,12 +23,4 @@ export interface Part {
    * @param value The value that will be commited.
    */
   commitValue(value: any): void;
-
-  /**
-   * Sets a callback that will be called when this part is detached from the DOM.
-   * Only a single handler can be registered at a time, so calling this method
-   * multiple times will replace the handler
-   * @param handle The callback that will be called when the part is detached
-   */
-  onDetach(handle: DetachHandler): void;
 }

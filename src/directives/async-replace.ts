@@ -13,7 +13,7 @@
  */
 
 import {NodePart} from '../lit-html.js';
-import {createDirective, forNodePart, DirectiveResult } from '../lib/createDirective.js';
+import {createDirective, forNodePart, DirectiveResult, DirectiveUpdateAndDetach } from '../lib/createDirective.js';
 
 /**
  * A directive that renders the items of an async iterable[1], replacing
@@ -35,10 +35,10 @@ import {createDirective, forNodePart, DirectiveResult } from '../lib/createDirec
  */
 export const asyncReplace: <T>(value: AsyncIterable<T>,
   mapper?: (v: T, index?: number) => any) => DirectiveResult<any[], NodePart> = createDirective(forNodePart(
-  (part: NodePart) => {
+  (part: NodePart): DirectiveUpdateAndDetach<any[]> => {
     let iterable: any;
-    part.onDetach(() => iterable = {});
-    return async <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) => {
+    return {
+      async update<T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) {
       // If we've already set up this particular iterable, we don't need
       // to do anything.
       if (value === iterable) {
@@ -73,5 +73,9 @@ export const asyncReplace: <T>(value: AsyncIterable<T>,
         part.commitValue(v);
         i++;
       }
-    }
+      },
+      detach(){
+        iterable = {};
+      }
+    };
   }));

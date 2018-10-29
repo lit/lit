@@ -22,7 +22,6 @@ import {createDirective} from '../lib/createDirective.js';
  * For other part types, this directive is a no-op.
  */
 export const ifDefined = createDirective((part: Part) => (value: any) => {
-  console.log('isDefined', value);
   if (value === undefined && part instanceof AttributePart) {
     const name = part.committer.name;
     part.committer.element.removeAttribute(name);
