@@ -30,31 +30,23 @@ export const async = directive(
      defaultContent: unknown = noChange) => (part: Part) => {
       let promisedValue = promises.get(part);
 
-      if (promisedValue !== undefined && promisedValue.promise === promise) {
-        // Set the default content if the Promise hasn't resolved *even if
-        // we're getting the same Promise* because the default content
-        // could have changed.
-        if (!promisedValue.resolved && defaultContent !== noChange) {
-          part.setValue(defaultContent);
-        }
-        // If the Promise has resolved we simply return, as the value was
-        // updated in the then() callback below.
-        return;
+      // The first time we see a value we save and await it
+      if (promisedValue === undefined || promisedValue.promise !== promise) {
+        promisedValue = {promise, resolved: false};
+        promises.set(part, promisedValue);
+
+        Promise.resolve(promise).then((value: unknown) => {
+          const currentPromisedValue = promises.get(part);
+          promisedValue!.resolved = true;
+          if (currentPromisedValue === promisedValue) {
+            part.setValue(value);
+            part.commit();
+          }
+        });
       }
 
-      // The following code only ever runs once per Promise instance
-      promisedValue = {promise, resolved: false};
-      promises.set(part, promisedValue);
-      if (defaultContent !== noChange) {
+      // If the promise has not yet resolved, set/update the defaultContent
+      if (!promisedValue.resolved && defaultContent !== noChange) {
         part.setValue(defaultContent);
       }
-
-      Promise.resolve(promise).then((value: unknown) => {
-        const currentPromisedValue = promises.get(part);
-        if (currentPromisedValue !== promisedValue) {
-          return;
-        }
-        part.setValue(value);
-        part.commit();
-      });
     });
