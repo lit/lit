@@ -27,6 +27,28 @@ a:hover {
   background: #f5f5f5;
 }
 
+/* Code styles */
+code, pre {
+  font-family: 'Source Code Pro', 'Roboto Mono', Consolas, Menlo, monospace;
+}
+
+code {
+  background: #F4F4F6;
+  color: black;
+  padding: 2px 4px;
+}
+
+pre code {
+  padding: 0;
+}
+
+pre {
+  font-size: 14px;
+  padding: 24px;
+  background: #F4F4F6;
+  overflow-x: auto;
+}
+
 /* Top nav */
 .main-nav {
   height: 60px;
@@ -93,7 +115,6 @@ main {
 }
 
 .hero .wrapper {
-  /* padding-left/right is set through `.wrapper`. */
   padding-top: 20vh;
   padding-bottom: 20vh;
 }
@@ -136,8 +157,18 @@ main {
   content: "→ ";
 }
 
+section .wrapper {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
 .responsive-row {
   display: flex;
+}
+
+.center {
+  align-items: center;
+  justify-content: center;
 }
 
 /* Main/left nav */
@@ -239,102 +270,10 @@ footer .attribution {
 
 
 /* TODO: figure out if below rules are still needed */
-.current {
-  font-weight: bold;
-}
-
-/* home page */
-section {
-  padding: 60px 24px;
-}
-
-.features {
-  display: flex;
-  justify-content: center;
-  color: black;
-  text-align: center;
-}
-
-.feature {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 300px;
-  padding: 0 16px;
-  box-sizing: border-box;
-}
-
-.feature > .icon {
-  width: 76px;
-  height: 76px;
-}
-
-.feature > p {
-  /* IE11 flexbox bug: https://github.com/philipwalton/flexbugs#2-column-flex-items-set-to-align-itemscenter-overflow-their-container */
-  max-width: 100%;
-}
-
-.main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.main-item {
-  display: flex;
-  max-width: 700px;
-  padding: 16px 0;
-  text-align: left;
-}
-
-.main-item > img {
-  width: auto;
-  height: 100px;
-  padding-right: 32px;
-}
-
-.main-item h2 {
-  margin-top: 0;
-}
-
-.compatibility {
-  text-align: center;
-}
-
-.browsers > img {
-  width: 70px;
-  height: 70px;
-  padding: 20px;
-}
-
 /* table of contents. align the first set of bullets with the title. */
 #table-of-contents + ul {
   list-style-type: none;
   padding: 0;
-}
-code, pre {
-  font-family: 'Source Code Pro', 'Roboto Mono', Consolas, Menlo, monospace !important;
-}
-
-code {
-  background: #F4F4F6;
-  color: black;
-  font-size: inherit;
-  padding: 2px 4px;
-}
-
-pre code {
-  word-break: break-all;
-  padding: 0;
-  white-space: pre;
-}
-pre {
-  white-space: pre;
-  word-wrap: normal;
-  font-size: 14px;
-  padding: 24px;
-  background: #F4F4F6;
-  overflow-x: auto;
 }
 
 table {
@@ -354,63 +293,9 @@ tr {
 th, td {
   padding: 15px 20px;
 }
+/* TODO: figure out if above rules are still needed */
 
-/* small screen */
-@media (max-width: 767px) {
-  /* home page */
-  section {
-    padding: 24px;
-  }
 
-  .features {
-    display: block;
-  }
-
-  .feature {
-    display: block;
-    width: auto;
-    padding: 16px 0;
-  }
-
-  .feature > .icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .feature > p {
-    margin: 4px 0;
-  }
-
-  .main {
-    display: block;
-  }
-
-  .main-item {
-    display: block;
-    padding: 16px 0;
-    text-align: center;
-  }
-
-  .main-item > img {
-    width: 48px;
-    height: auto;
-    padding: 0 0 4px 0;
-  }
-
-  .main-item h2 {
-    margin: 0 0 10px;
-  }
-
-  .main-item p {
-    margin: 4px 0;
-  }
-
-  .browsers > img {
-    width: 40px;
-    height: 40px;
-    padding: 4px;
-  }
-}
 
 @media screen and (min-width: 1400px) {
   .wrapper {
@@ -420,7 +305,8 @@ th, td {
 }
 @media screen and (max-width: 1400px) {
   .wrapper {
-    padding: 0 60px;
+    padding-left: 60px;
+    padding-right: 60px;
   }
 }
 @media screen and (max-width: 1160px) {
@@ -428,7 +314,8 @@ th, td {
     display: none;
   }
   .wrapper {
-    padding: 0 32px;
+    padding-left: 32px;
+    padding-right: 32px;
   }
   .toc {
     padding: 32px 0;
@@ -524,7 +411,8 @@ th, td {
   }
   
   .wrapper {
-    padding: 0 20px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   footer .group {
