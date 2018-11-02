@@ -69,97 +69,53 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Functions</h3>
+							<h3>Variables</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_directives_when_.html#when" class="tsd-kind-icon">when</a></li>
+								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_directives_when_.html#when" class="tsd-kind-icon">when</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
 					<a name="when" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> when</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">when<span class="tsd-signature-symbol">(</span>condition<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, trueValue<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span>, falseValue<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/directives/when.ts#L48">directives/when.ts:48</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Efficiently switches between two templates based on the given condition. The
-										rendered content is cached, and re-used when switching conditions. Templates
-									are evaluated lazily, so the passed values must be functions.</p>
-								</div>
-								<p>While this directive can render any regular part, it makes the most sense
-									when used with TemplateResult since most other values are dirty checked
-								already.</p>
-								<p>Example:</p>
-								<p>let checked = false;</p>
-								<p>html<code>when(checked, () =&gt; html</code>Checkmark is checked<code>, () =&gt; html</code>Checkmark is not
-								checked<code>);</code></p>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>condition: <span class="tsd-signature-type">any</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>the condition to test truthiness against</p>
-										</div>
-									</div>
-								</li>
-								<li>
-									<h5>trueValue: <span class="tsd-signature-type">function</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>the value to render given a true condition</p>
-										</div>
-									</div>
-									<ul class="tsd-parameters">
-										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
-											</ul>
-											<ul class="tsd-descriptions">
-												<li class="tsd-description">
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</li>
-								<li>
-									<h5>falseValue: <span class="tsd-signature-type">function</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>the value to render given a false condition</p>
-										</div>
-									</div>
-									<ul class="tsd-parameters">
-										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
-												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
-											</ul>
-											<ul class="tsd-descriptions">
-												<li class="tsd-description">
-													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+					<div class="tsd-signature tsd-kind-icon">when<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol"> =&nbsp;directive((condition: any, trueValue: () &#x3D;&gt; any, falseValue: () &#x3D;&gt; any) &#x3D;&gt; (parentPart: Part) &#x3D;&gt; {if (!(parentPart instanceof NodePart)) {throw new Error(&#x27;when can only be used in text bindings&#x27;);}let cache &#x3D; partCaches.get(parentPart);// Create a new cache if this is the first renderif (cache &#x3D;&#x3D;&#x3D; undefined) {// Cache consists of two parts, one for each condition, and a// docment fragment which we cache the nodes of the condition that&#x27;s// not currently rendered.cache &#x3D; {truePart: new NodePart(parentPart.options),falsePart: new NodePart(parentPart.options),cacheContainer: document.createDocumentFragment(),};partCaches.set(parentPart, cache);cache.truePart.appendIntoPart(parentPart);cache.falsePart.appendIntoPart(parentPart);}// Based on the condition, select which part to render and which value// to set on that part.const nextPart &#x3D; condition ? cache.truePart : cache.falsePart;const nextValue &#x3D; condition ? trueValue() : falseValue();// If we switched condition, swap nodes to/from the cache.if (!!condition !&#x3D;&#x3D; cache.prevCondition) {// Get the part which was rendered for the opposite condition. This// should be added to the cache.const prevPart &#x3D; condition ? cache.falsePart : cache.truePart;// If the next part was rendered, take it from the cacheif (nextPart.value) {parentPart.startNode.parentNode!.appendChild(cache.cacheContainer);}// If the prev part was rendered, move it to the cacheif (prevPart.value) {reparentNodes(cache.cacheContainer,prevPart.startNode,prevPart.endNode.nextSibling);}}// Set the next part&#x27;s valuenextPart.setValue(nextValue);nextPart.commit();cache.prevCondition &#x3D; !!condition;})</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/directives/when.ts#L50">directives/when.ts:50</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Efficiently switches between two templates based on the given condition. The
+								rendered content is cached, and re-used when switching conditions. Templates
+							are evaluated lazily, so the passed values must be functions.</p>
+						</div>
+						<p>While this directive can render any regular part, it makes the most sense
+							when used with TemplateResult since most other values are dirty checked
+						already.</p>
+						<p>Example:</p>
+						<pre><code>let checked = <span class="hljs-literal">false</span>;
+
+html`
+  <span class="hljs-keyword">when</span>(checked, <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> html`Checkmark is checked`, <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> html`Checkmark is <span class="hljs-keyword">not</span>
+checked`);
+`</code></pre>
+						<dl class="tsd-comment-tags">
+							<dt>param</dt>
+							<dd><p>the condition to test truthiness against</p>
+							</dd>
+							<dt>param</dt>
+							<dd><p>the value to render given a true condition</p>
+							</dd>
+							<dt>param</dt>
+							<dd><p>the value to render given a false condition</p>
+							</dd>
+						</dl>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -176,7 +132,7 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
 						<a href="_directives_when_.html#when" class="tsd-kind-icon">when</a>
 					</li>
 				</ul>
@@ -249,5 +205,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

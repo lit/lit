@@ -69,70 +69,46 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Functions</h3>
+							<h3>Variables</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter"><a href="_directives_async_append_.html#asyncappend" class="tsd-kind-icon">async<wbr>Append</a></li>
+								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_directives_async_append_.html#asyncappend" class="tsd-kind-icon">async<wbr>Append</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
 					<a name="asyncappend" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> async<wbr>Append</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">async<wbr>Append&lt;T&gt;<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AsyncIterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span>, mapper<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/directives/async-append.ts#L34">directives/async-append.ts:34</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>A directive that renders the items of an async iterable[1], appending new
-									values after previous values, similar to the built-in support for iterables.</p>
-								</div>
-								<p>Async iterables are objects with a [Symbol.asyncIterator] method, which
-									returns an iterator who&#39;s <code>next()</code> method returns a Promise. When a new
-									value is available, the Promise resolves and the value is appended to the
-									Part controlled by the directive. If another value other than this
-									directive has been set on the Part, the iterable will no longer be listened
-								to and new values won&#39;t be written to the Part.</p>
-							</div>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>T</h4>
-								</li>
-							</ul>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>value: <span class="tsd-signature-type">AsyncIterable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>An async iterable</p>
-										</div>
-									</div>
-								</li>
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> mapper: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>An optional function that maps from (value, index) to another
-											value. Useful for generating templates for each item in the iterable.</p>
-										</div>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+					<div class="tsd-signature tsd-kind-icon">async<wbr>Append<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol"> =&nbsp;directive(&lt;T&gt;(value: AsyncIterable&lt;T&gt;,mapper?: (v: T, index?: number) &#x3D;&gt; any) &#x3D;&gt; async (part: Part) &#x3D;&gt; {if (!(part instanceof NodePart)) {throw new Error(&#x27;asyncAppend can only be used in text bindings&#x27;);}// If we&#x27;ve already set up this particular iterable, we don&#x27;t need// to do anything.if (value &#x3D;&#x3D;&#x3D; part.value) {return;}part.value &#x3D; value;// We keep track of item Parts across iterations, so that we can// share marker nodes between consecutive Parts.let itemPart;let i &#x3D; 0;for await (let v of value) {// When we get the first value, clear the part. This lets the// previous value display until we can replace it.if (i &#x3D;&#x3D;&#x3D; 0) {part.clear();}// Check to make sure that value is the still the current value of// the part, and if not bail because a new value owns this partif (part.value !&#x3D;&#x3D; value) {break;}// As a convenience, because functional-programming-style// transforms of iterables and async iterables requires a library,// we accept a mapper function. This is especially convenient for// rendering a template for each item.if (mapper !&#x3D;&#x3D; undefined) {v &#x3D; mapper(v, i);}// Like with sync iterables, each item induces a Part, so we need// to keep track of start and end nodes for the Part.// Note: Because these Parts are not updatable like with a sync// iterable (if we render a new value, we always clear), it may// be possible to optimize away the Parts and just re-use the// Part.setValue() logic.let itemStartNode &#x3D; part.startNode;// Check to see if we have a previous item and Partif (itemPart !&#x3D;&#x3D; undefined) {// Create a new node to separate the previous and next PartsitemStartNode &#x3D; createMarker();// itemPart is currently the Part for the previous item. Set// it&#x27;s endNode to the node we&#x27;ll use for the next Part&#x27;s// startNode.itemPart.endNode &#x3D; itemStartNode;part.endNode.parentNode!.insertBefore(itemStartNode, part.endNode);}itemPart &#x3D; new NodePart(part.options);itemPart.insertAfterNode(itemStartNode);itemPart.setValue(v);itemPart.commit();i++;}})</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/directives/async-append.ts#L34">directives/async-append.ts:34</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>A directive that renders the items of an async iterable[1], appending new
+							values after previous values, similar to the built-in support for iterables.</p>
+						</div>
+						<p>Async iterables are objects with a [Symbol.asyncIterator] method, which
+							returns an iterator who&#39;s <code>next()</code> method returns a Promise. When a new
+							value is available, the Promise resolves and the value is appended to the
+							Part controlled by the directive. If another value other than this
+							directive has been set on the Part, the iterable will no longer be listened
+						to and new values won&#39;t be written to the Part.</p>
+						<dl class="tsd-comment-tags">
+							<dt>param</dt>
+							<dd><p>An async iterable</p>
+							</dd>
+							<dt>param</dt>
+							<dd><p>An optional function that maps from (value, index) to another
+								value. Useful for generating templates for each item in the iterable.</p>
+							</dd>
+						</dl>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -149,7 +125,7 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
+					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
 						<a href="_directives_async_append_.html#asyncappend" class="tsd-kind-icon">async<wbr>Append</a>
 					</li>
 				</ul>
@@ -222,5 +198,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

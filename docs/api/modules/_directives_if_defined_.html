@@ -69,45 +69,32 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Functions</h3>
+							<h3>Variables</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_directives_if_defined_.html#ifdefined" class="tsd-kind-icon">if<wbr>Defined</a></li>
+								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_directives_if_defined_.html#ifdefined" class="tsd-kind-icon">if<wbr>Defined</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
 					<a name="ifdefined" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> if<wbr>Defined</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">if<wbr>Defined<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/directives/if-defined.ts#L23">directives/if-defined.ts:23</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>For AttributeParts, sets the attribute if the value is defined and removes
-									the attribute if the value is undefined.</p>
-								</div>
-								<p>For other part types, this directive is a no-op.</p>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>value: <span class="tsd-signature-type">any</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+					<div class="tsd-signature tsd-kind-icon">if<wbr>Defined<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol"> =&nbsp;directive((value: any) &#x3D;&gt; (part: Part) &#x3D;&gt; {if (value &#x3D;&#x3D;&#x3D; undefined &amp;&amp; part instanceof AttributePart) {if (value !&#x3D;&#x3D; part.value) {const name &#x3D; part.committer.name;part.committer.element.removeAttribute(name);}} else {part.setValue(value);}})</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/directives/if-defined.ts#L23">directives/if-defined.ts:23</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>For AttributeParts, sets the attribute if the value is defined and removes
+							the attribute if the value is undefined.</p>
+						</div>
+						<p>For other part types, this directive is a no-op.</p>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -124,7 +111,7 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
 						<a href="_directives_if_defined_.html#ifdefined" class="tsd-kind-icon">if<wbr>Defined</a>
 					</li>
 				</ul>
@@ -197,5 +184,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>
