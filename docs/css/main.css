@@ -172,7 +172,7 @@ section .wrapper {
 }
 
 /* Main/left nav */
-.toc {
+.side-nav {
   /* position: sticky works in Chrome, Firefox, Safari and Edge;
   fallback to position: static for which the nav will just be part
   of the scrolling content. */
@@ -185,35 +185,24 @@ section .wrapper {
   font-weight: 500;
 }
 
-.toc > #toggleNavButton {
+.side-nav > #toggleNavButton {
   display: none;
 }
 
-.toc > ul {
+.side-nav > ul {
   margin: 0;
   padding: 0;
 }
 
-.toc > ul ul {
+.side-nav > ul ul {
   padding-left: 24px;
+  margin-bottom: 20px;
 }
 
-.toc li {
+.side-nav li {
   list-style-type: none;
   margin: 10px 0;
-}
-
-.toc svg {
-  width: 24px;
-  height: 24px;
-  fill: currentcolor;
-  vertical-align: middle;
-}
-
-.toc span {
-  display: inline-block;
-  vertical-align: sub;
-  padding: 0 10px;
+  line-height: 22px;
 }
 
 /* Article area */
@@ -317,7 +306,7 @@ th, td {
     padding-left: 32px;
     padding-right: 32px;
   }
-  .toc {
+  .side-nav {
     padding: 32px 0;
   }
   footer .group {
@@ -358,7 +347,7 @@ th, td {
   }
 
   /* doc page */
-  .toc {
+  .side-nav {
     position: fixed;
     top: 56px;
     left: 0;
@@ -370,16 +359,16 @@ th, td {
     border-bottom: 1px solid rgba(0,0,0,.2);
   }
 
-  .toc > ul {
+  .side-nav > ul {
     display: none;
   }
 
-  .toc.open > ul {
+  .side-nav.open > ul {
     display: block;
     padding: 0 20px;
   }
 
-  .toc > #toggleNavButton {
+  .side-nav > #toggleNavButton {
     display: block;
     width: 100%;
     height: 56px;
@@ -393,11 +382,11 @@ th, td {
     -webkit-appearance: none;
   }
 
-  .toc > #toggleNavButton::before {
+  .side-nav > #toggleNavButton::before {
     content: '\25b6  ';
   }
 
-  .toc.open > #toggleNavButton::before {
+  .side-nav.open > #toggleNavButton::before {
     content: '\25bc  ';
   }
 
