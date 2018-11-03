@@ -14,7 +14,7 @@
 
 import {DirectiveInstance, DirectiveResult} from './createDirective.js';
 import {removeNodes} from './dom.js';
-import {Part, isPrimitive} from './part.js';
+import {isPrimitive, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -218,9 +218,9 @@ export class NodePart implements Part {
 
     if (this.value !== previousValue &&
         previousValue instanceof DirectiveInstance && previousValue.detach) {
-        previousValue.detach();
-      }
+      previousValue.detach();
     }
+  }
 
   commitValue(value: any) {
     this.setValue(value);

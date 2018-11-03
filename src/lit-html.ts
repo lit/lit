@@ -19,7 +19,7 @@ export {createDirective, DirectiveFn, DirectiveInstance, DirectiveResult, Direct
 export {DefaultTemplateProcessor, defaultTemplateProcessor} from './lib/default-template-processor.js';
 // TODO(justinfagnani): remove line when we get NodePart moving methods
 export {removeNodes, reparentNodes} from './lib/dom.js';
-export {Part, isPrimitive} from './lib/part.js';
+export {isPrimitive, Part} from './lib/part.js';
 export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, NodePart, PropertyCommitter, PropertyPart} from './lib/parts.js';
 export {parts, render} from './lib/render.js';
 export {templateCaches, templateFactory} from './lib/template-factory.js';
