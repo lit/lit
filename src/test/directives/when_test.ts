@@ -45,10 +45,7 @@ suite('when', () => {
           html`
             <ol>
               <li>one</li>
-              ${when(
-                    condition,
-                    () => html`<li>two</li>`,
-                    () => html``)}
+              ${when(condition, () => html`<li>two</li>`, () => html``)}
               <li>three</li>
             </ol>
           `,
@@ -121,11 +118,13 @@ suite('when', () => {
       renderWhenWithSiblings(true);
       renderWhenWithSiblings(false);
       assert.equal(container.firstElementChild!.children.length, 2);
-      assert.equal(container.firstElementChild!.lastElementChild!.textContent, 'three');
+      assert.equal(
+          container.firstElementChild!.lastElementChild!.textContent, 'three');
 
       renderWhenWithSiblings(true);
       assert.equal(container.firstElementChild!.children.length, 3);
-      assert.equal(container.firstElementChild!.lastElementChild!.textContent, 'three');
+      assert.equal(
+          container.firstElementChild!.lastElementChild!.textContent, 'three');
     });
   });
 
