@@ -53,9 +53,7 @@ suite('when', () => {
     }
 
     function renderWhenWith(condition: any, truthy: any, falsy: any) {
-      render(
-          html`${when(condition, () => truthy, () => falsy)}`,
-          container);
+      render(html`${when(condition, () => truthy, () => falsy)}`, container);
     }
 
     suite('renders if/then template based on condition', () => {

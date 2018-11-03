@@ -65,11 +65,17 @@ export const when = directive(
               truePart: new NodePart(parentPart.options),
               falsePart: new NodePart(parentPart.options),
               cacheContainer: document.createDocumentFragment(),
+              prevCondition: condition
             };
             partCaches.set(parentPart, cache);
 
-            cache.truePart.appendIntoPart(parentPart);
-            cache.falsePart.appendIntoPart(parentPart);
+            if (condition) {
+              cache.truePart.appendIntoPart(parentPart);
+              cache.falsePart.appendInto(cache.cacheContainer);
+            } else {
+              cache.falsePart.appendIntoPart(parentPart);
+              cache.truePart.appendInto(cache.cacheContainer);
+            }
           }
 
           // Based on the condition, select which part to render and which value
@@ -83,19 +89,15 @@ export const when = directive(
             // should be added to the cache.
             const prevPart = condition ? cache.falsePart : cache.truePart;
 
-            // If the next part was rendered, take it from the cache
-            if (nextPart.value) {
-              parentPart.startNode.parentNode!.insertBefore(
-                  cache.cacheContainer, parentPart.startNode);
-            }
+            // Take the next part from the cache
+            parentPart.startNode.parentNode!.insertBefore(
+                cache.cacheContainer, parentPart.startNode);
 
-            // If the prev part was rendered, move it to the cache
-            if (prevPart.value) {
-              reparentNodes(
-                  cache.cacheContainer,
-                  prevPart.startNode,
-                  prevPart.endNode.nextSibling);
-            }
+            // Move the prev part to the cache
+            reparentNodes(
+                cache.cacheContainer,
+                prevPart.startNode,
+                prevPart.endNode.nextSibling);
           }
 
           // Set the next part's value
