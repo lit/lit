@@ -1,5 +1,3 @@
-export type DetachHandler = () => void;
-
 /**
  * The Part interface represents a dynamic part of a template instance rendered
  * by lit-html.
@@ -24,3 +22,7 @@ export interface Part {
    */
   commitValue(value: any): void;
 }
+
+export const isPrimitive = (value: any) =>
+    (value === null ||
+     !(typeof value === 'object' || typeof value === 'function'));

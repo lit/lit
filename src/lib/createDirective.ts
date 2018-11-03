@@ -1,7 +1,9 @@
-import {DetachHandler, Part} from './part';
+import {Part} from './part';
 import {AttributePart, NodePart} from './parts';
 
 const noop = () => {};
+
+export type DetachHandler = () => void;
 
 export type DirectiveUpdate<V extends any[]> = (...values: V) => void;
 

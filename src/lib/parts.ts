@@ -14,15 +14,11 @@
 
 import {DirectiveInstance, DirectiveResult} from './createDirective.js';
 import {removeNodes} from './dom.js';
-import {DetachHandler, Part} from './part.js';
+import {Part, isPrimitive} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
-
-export const isPrimitive = (value: any) =>
-    (value === null ||
-     !(typeof value === 'object' || typeof value === 'function'));
 
 /**
  * Sets attribute values for AttributeParts, so that the value is only set once
@@ -146,7 +142,6 @@ export class NodePart implements Part {
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
-  _handleDetach: DetachHandler|undefined = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -223,9 +218,9 @@ export class NodePart implements Part {
 
     if (this.value !== previousValue &&
         previousValue instanceof DirectiveInstance && previousValue.detach) {
-      previousValue.detach();
+        previousValue.detach();
+      }
     }
-  }
 
   commitValue(value: any) {
     this.setValue(value);
