@@ -85,7 +85,7 @@ export const when = directive(
 
         // If the next part was rendered, take it from the cache
         if (nextPart.value) {
-          parentPart.startNode.parentNode!.appendChild(cache.cacheContainer);
+          parentPart.startNode.parentNode!.insertBefore(cache.cacheContainer, parentPart.startNode);
         }
 
         // If the prev part was rendered, move it to the cache
