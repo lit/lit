@@ -52,6 +52,12 @@ suite('when', () => {
           container);
     }
 
+    function renderWhenWith(condition: any, truthy: any, falsy: any) {
+      render(
+          html`${when(condition, () => truthy, () => falsy)}`,
+          container);
+    }
+
     suite('renders if/then template based on condition', () => {
       test('initially true', () => {
         renderWhen(true);
@@ -125,6 +131,12 @@ suite('when', () => {
       assert.equal(container.firstElementChild!.children.length, 3);
       assert.equal(
           container.firstElementChild!.lastElementChild!.textContent, 'three');
+    });
+
+    test('handles false case being falsy value', () => {
+      renderWhenWith(false, true, false);
+      renderWhenWith(true, true, false);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'true');
     });
   });
 
