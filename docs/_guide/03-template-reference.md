@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Writing Templates
-slug: writing-templates
+title: Template syntax reference
+slug: template-reference
 ---
 
 {::options toc_levels="1..2" /}
