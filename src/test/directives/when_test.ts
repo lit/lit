@@ -41,7 +41,9 @@ suite('when', () => {
     }
 
     function renderWhenInsideCondition(condition: any) {
-      render(html`${condition ? when(true, () => 'OK', () => null) : 'NOT OK'}`, container);
+      render(
+          html`${condition ? when(true, () => 'OK', () => null) : 'NOT OK'}`,
+          container);
     }
 
     suite('renders if/then template based on condition', () => {

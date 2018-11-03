@@ -136,29 +136,31 @@ suite('asyncReplace', () => {
         stripExpressionMarkers(container.innerHTML), '<div>hello</div>');
   });
 
-  test('should stop iterating when no longer the value of a parent part', async () => {
-    const t = (v: any) => html`<div>${v}</div>`;
-    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+  test(
+      'should stop iterating when no longer the value of a parent part',
+      async () => {
+        const t = (v: any) => html`<div>${v}</div>`;
+        const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-    let running;
-    async function* generator(){
-      running = true;
-      try{
-        while(true){
-          yield 'generated';
-          await delay(10);
+        let running;
+        async function* generator() {
+          running = true;
+          try {
+            while (true) {
+              yield 'generated';
+              await delay(10);
+            }
+          } finally {
+            running = false;
+          }
         }
-      }finally{
-        running = false;
-      }
-    }
 
-    render(t(html`<span>${asyncReplace(generator())}</span>`), container);
-    await delay(30);
-    render(t('hello'), container);
-    await delay(30);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>hello</div>');
-    assert.isFalse(running);
-  })
+        render(t(html`<span>${asyncReplace(generator())}</span>`), container);
+        await delay(30);
+        render(t('hello'), container);
+        await delay(30);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>hello</div>');
+        assert.isFalse(running);
+      })
 });
