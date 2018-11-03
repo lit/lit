@@ -40,6 +40,10 @@ suite('when', () => {
           container);
     }
 
+    function renderWhenInsideCondition(condition: any) {
+      render(html`${condition ? when(true, () => 'OK', () => null) : 'NOT OK'}`, container);
+    }
+
     suite('renders if/then template based on condition', () => {
       test('initially true', () => {
         renderWhen(true);
@@ -98,6 +102,14 @@ suite('when', () => {
       renderWhen('foo');
       assert.equal(trueEl, container.firstElementChild);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    });
+
+    // Based on https://github.com/Polymer/lit-html/issues/606
+    test('handles when nested inside condition', () => {
+      renderWhenInsideCondition(false);
+      renderWhenInsideCondition(true);
+      renderWhenInsideCondition(false);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
     });
   });
 
