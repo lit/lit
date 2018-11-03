@@ -40,6 +40,21 @@ suite('when', () => {
           container);
     }
 
+    function renderWhenWithSiblings(condition: any) {
+      render(
+          html`
+            <ol>
+              <li>one</li>
+              ${when(
+                    condition,
+                    () => html`<li>two</li>`,
+                    () => html``)}
+              <li>three</li>
+            </ol>
+          `,
+          container);
+    }
+
     suite('renders if/then template based on condition', () => {
       test('initially true', () => {
         renderWhen(true);
@@ -98,6 +113,19 @@ suite('when', () => {
       renderWhen('foo');
       assert.equal(trueEl, container.firstElementChild);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    });
+
+    // Based on https://github.com/Polymer/lit-html/issues/565
+    test('handles when directive not being the only child', () => {
+      renderWhenWithSiblings(false);
+      renderWhenWithSiblings(true);
+      renderWhenWithSiblings(false);
+      assert.equal(container.firstElementChild!.children.length, 2);
+      assert.equal(container.firstElementChild!.lastElementChild!.textContent, 'three');
+
+      renderWhenWithSiblings(true);
+      assert.equal(container.firstElementChild!.children.length, 3);
+      assert.equal(container.firstElementChild!.lastElementChild!.textContent, 'three');
     });
   });
 
