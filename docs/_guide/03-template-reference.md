@@ -4,7 +4,7 @@ title: Template syntax reference
 slug: template-reference
 ---
 
-{::options toc_levels="1..2" /}
+{::options toc_levels="1..4" /}
 * ToC
 {:toc}
 
@@ -20,77 +20,83 @@ html`<h1>Hello World</h1>`
 html`<h1>Hello ${name}</h1>`
 ```
 
-## Rendering Templates
-
-A lit-html template expresion does not cause any DOM to be created or updated. It's only a description of DOM, called a TemplateResult. To actually create or update DOM, you need to pass the TemplateResult to the `render()` function, along with a container to render to:
-
-```ts
-import {html, render} from 'lit-html';
-
-const sayHi = (name) => html`<h1>Hello ${name}</h1>`;
-render(sayHi('Amy'), document.body);
-
-// subsequent renders wiill update the DOM
-render(sayHi('Zoe'), document.body);
-```
-
-### Render Options
-
-`render()` also takes an options argument that allows you to specify:
-* `eventContext`: The `this` value to use when invoking event listeners registered with the `@eventName` syntax.
-* `templateFactory`: The TemplateFactory to use. A TemplateFactory creates a Template from a TemplateResult, typically caching Templates based on their static content. Users won't usually supply their own TemplateFactory, but possible use ShadyCSS-integrated when using `/lib/shady-render.js`.
-
-## Thinking Functionally
-
-lit-html is ideal for use in a functional approach to describing UIs. If you think of UI as a function of data, commonly expressed as `UI = f(data)`, you can write lit-html templates that mirror this exactly:
-
-```js
-let ui = (data) => html`...${data}...`;
-```
-
-This kind of function can be called any time data changes, and is extremely cheap to call. The only thing that lit-html does in the `html` tag is forward the arguments to the templates.
-
-When the result is rendered, lit only updates the expressions whose values have changed since the previous render.
-
-This leads to an easy to write and reason about model: always try to describe your UI as a simple function of the data it depends on, an avoid caching intermediate state, or doing manual DOM manipulation. lit-html will almost always be fast enough with the simplest description of your UI.
-
 ## Template Structure
 
-lit-html templates are parsed by the built-in HTML parser before any values are interpolated. This means that the required structure of templates is determined by the HTML specification, and expressions can only occur in certain places.
+lit-html templates must be well-formed HTML, and bindings can only occur in certain places. The templates are parsed by the browser's built-in HTML parser before any values are interpolated. 
 
-The HTML parser in browsers never throws exceptions for malformed HTML. Instead, the specification defines how all malformed HTML cases are handled and what the resulting DOM should be. Most cases of malformed templates are not detectable by lit-html - the only side-effect will be that templates do not behave as you expected - so take extra care to properly structure templates.
-
+**No warnings.** Most cases of malformed templates are not detectable by lit-html, so you won't see any warnings—just templates that don't behave as you expect—so take extra care to structure templates properly. {.alert-warning}
 
 Follow these rules for well-formed templates:
 
- * Templates must be well-formed when all expressions are replaced by empty values.
- * Expressions can only occur in attribute-value and text-content positions.
- * Expressions cannot appear where tag or attribute names would appear.
- * Templates can have multiple top-level elements and text.
- * Templates should not contain unclosed elements - they will be closed by the HTML parser.
+ *  Templates must be well-formed HTML when all expressions are replaced by empty values.
+
+ *  Bindings **_can only occur_** in attribute-value and text-content positions.
+
+    ```html
+`   <!-- attribute value --> \
+    <div label="${label}"></div>
+
+    <!-- text content -->
+    <div>${textContent}</div>
+    ```
+
+
+ *  Expressions **_cannot_** appear where tag or attribute names would appear.
+    
+    ```html
+    <!-- ERROR --> 
+    <${tagName}></${tagName}> 
+
+    <!-- ERROR --> 
+    <div ${attrName}=true></div>
+    ```
+
+
+ *  Templates can have multiple top-level elements and text.
+
+ *  Templates **_should not contain_** unclosed elements—they will be closed by the HTML parser.
+
+    ```js
+    // HTML parser closes this div after "Some text"
+    const template1 = html`<div class="broken-div">Some text`;
+    // When joined, "more text" does not end up in .broken-div
+    const template2 = html`${template1} more text. </div>`;
+    ```
 
 ## Binding Types
 
 Expressions can occur in text content or in attribute value positions.
 
 There are a few types of bindings:
+
   * Text:
+
     ```js
     html`<h1>Hello ${name}</h1>`
     ```
+
+    Text bindings can occur anywhere in the text content of an element.
+
   * Attribute:
+
     ```js
-    html`<div id=${id}></div>`
+    html`<div id=${id}></div`
     ```
+
   * Boolean Attribute:
+
     ```js
-    html`<input ?disabled=${disabled}>`
+    html`<input type="checkbox" ?checked=${checked}>`
     ```
+
   * Property:
+
     ```js
     html`<input .value=${value}>`
     ```
+
   * Event Listener:
+
     ```js
     html`<button @click=${(e) => console.log('clicked')}>Click Me</button>`
     ```
@@ -105,7 +111,8 @@ const listener = {
     console.log('clicked');
   }
   capture: true;
-}
+};
+
 html`<button @click=${listener}>Click Me</button>`
 ```
 
@@ -113,19 +120,30 @@ html`<button @click=${listener}>Click Me</button>`
 
 Each binding type supports different types of values:
 
- * Text content bindings: Many supported types - see below.
+ * Text content bindings: Many supported types—see below.
+
  * Attribute bindings: All values are converted to strings.
+
  * Boolean attribute bindings: All values evaluated for truthiness.
+
  * Property bindings: Any type of value.
+
  * Event handler bindings: Event handler functions or objects only.
+
+### Supported data types for text bindings
 
 Text content bindings accept a large range of value types:
 
-### Primitive Values: String, Number, Boolean, null, undefined
+*   Primitive values.
+*   TemplateResult objects.
+*   DOM nodes.
+*   Arrays or iterables.
 
-Primitives values are converted to strings when interpolated. They are checked for equality to the previous value so that the DOM is not updated if the value hasn't changed.
+#### Primitive Values: String, Number, Boolean, null, undefined
 
-### TemplateResult
+Primitives values are converted to strings when interpolated into text content or attribute values. They are checked for equality to the previous value so that the DOM is not updated if the value hasn't changed.
+
+#### TemplateResult
 
 Templates can be nested by passing a `TemplateResult` as a value of an expression:
 
@@ -138,7 +156,7 @@ const page = html`
 `;
 ```
 
-### Node
+#### Node
 
 Any DOM Node can be passed to a text position expression. The node is attached to the DOM tree at that point, and so removed from any current parent:
 
@@ -150,13 +168,13 @@ const page = html`
 `;
 ```
 
-### Arrays / Iterables
+#### Arrays / Iterables
 
 Arrays and Iterables of supported types are supported as well. They can be mixed values of different supported types.
 
 ```javascript
 const items = [1, 2, 3];
-const render = () => html`items = ${items.map((i) => `item: ${i}`)}`;
+const list = () => html`items = ${items.map((i) => `item: ${i}`)}`;
 ```
 
 ```javascript
@@ -165,17 +183,7 @@ const items = {
   b: 23,
   c: 456,
 };
-const render = () => html`items = ${Object.entries(items)}`;
-```
-
-### Promises
-
-Promises are rendered when they resolve, leaving the previous value in place until they do. Races are handled, so that if an unresolved Promise is overwritten, it won't update the template when it finally resolves.
-
-```javascript
-const render = () => html`
-  The response is ${fetch('sample.txt').then((r) => r.text())}.
-`;
+const list = () => html`items = ${Object.entries(items)}`;
 ```
 
 ## Control Flow with JavaScript
@@ -200,16 +208,16 @@ html`
 You can express conditional logic with if statements outside of a template to compute values to use inside of the template:
 
 ```js
-let userMessage;
-if (user.isloggedIn) {
-  userMessage = html`Welcome ${user.name}`;
-} else {
-  userMessage = html`Please log in`;
+getUserMessage() {
+  if (user.isloggedIn) {
+    return html`Welcome ${user.name}`;
+  } else {
+    return html`Please log in`;
+  }
 }
 
-
 html`
-  ${userMessage}
+  ${getUserMessage()}
 `
 ```
 
@@ -240,58 +248,15 @@ html`
 `;
 ```
 
-## Directives
+## Built-in directives
 
-Directives are functions that can extend lit-html by directly interacting with the Part API.
-
-Directives are functions that accept some arguments for values and configuration and then return another function that accepts a `Part` object. Directives are created by passing a function to lit-html's `directive()` function:
-
-```javascript
-import {directive, html} from 'lit-html';
-
-const hello = directive(() => (part) => {
-  part.setValue('Hello');
-});
-
-html`<div>${hello()}</div>`
-```
-
-The `part` argument is a `Part` object with an API for directly managing the dynamic DOM associated with expressions. See the `Part` API in api.md.
-
-Here's an example of a directive that takes a function, and evaluates it in a try/catch to implement exception safe expressions:
-
-```javascript
-import {directive, html, render} from 'lit-html';
-
-const safe = directive((f) => (part) => {
-  try {
-    return f();
-  } catch (e) {
-    console.error(e);
-  }
-});
-```
-
-Now `safe()` can be used to wrap a function:
-
-```javascript
-let data;
-const render = () => html`foo = ${safe(_=>data.foo)}`;
-```
-
-This example increments a counter on every render:
-
-```javascript
-import {directive, html, render} from 'lit-html';
-
-const counter = directive(() => (part) => {
-  part.setValue((part.previousValue + 1) || 0);
-});
-
-const template = () => html`<div>${counter()}</div>`;
-```
+Directives are functions that can extend lit-html by customizing the way a binding renders.
 
 lit-html includes a few built-in directives:
+
+*   when. A directive for conditional templates.
+*   repeat. Generates a series of values (usually templates) from an array or iterable.
+*   <<<etc.>>>
 
 ### `when(condition, trueTemplate, falseTemplate)`
 
@@ -300,13 +265,13 @@ Efficiently switches between two templates based on the given condition. The ren
 Example:
 
 ```js
-import {when} from 'lit-html/directives/when';
+import { when } from 'lit-html/directives/when';
 
 let checked = false;
-
 html`
-  when(checked, () => html`Checkmark is checked`, () => html`Checkmark is not
-checked`);
+  ${when(checked, () => html`Checkmark is checked`, 
+         () => html`Checkmark is not checked`)}
+`;
 ```
 
 ### `repeat(items, keyfn, template)`
@@ -316,21 +281,22 @@ iterable, and updates those items efficiently when the iterable changes. When
 the `keyFn` is provided, key-to-DOM association is maintained between updates by
 moving DOM when required, and is generally the most efficient way to use
 `repeat` since it performs minimum unnecessary work for insertions amd removals.
-If no `keyFn` is provided, `repeat` will perform similar to a simple map of
-items to values, and DOM will be reused against potentially different items.
 
 Example:
 
-```javascript
-import {repeat} from 'lit-html/directives/repeat';
+```js
+import { repeat } from 'lit-html/directives/repeat';
 
-const render = () => html`
+const myTemplate = () => html`
   <ul>
     ${repeat(items, (i) => i.id, (i, index) => html`
       <li>${index}: ${i.name}</li>`)}
   </ul>
 `;
 ```
+
+If no `keyFn` is provided, `repeat` will perform similar to a simple map of
+items to values, and DOM will be reused against potentially different items.
 
 ### `ifDefined(value)`
 
@@ -341,11 +307,12 @@ For other part types, this directive is a no-op.
 Example:
 
 ```javascript
-import {ifDefined} from 'lit-html/directives/if-defined';
+import { ifDefined } from 'lit-html/directives/if-defined';
 
-const render = () => html`
+const myTemplate = () => html`
   <div class=${ifDefined(className)}></div>
 `;
+
 ```
 
 ### `guard(expression, valueFn)`
@@ -355,9 +322,9 @@ Prevents any re-render until the identity of the expression changes, for example
 Example:
 
 ```js
-import {guard} from 'lit-html/directives/guard';
+import { guard } from 'lit-html/directives/guard';
 
-html`
+const template = html`
   <div>
     ${guard(items, () => items.map(item => html`${item}`))}
   </div>
@@ -373,7 +340,7 @@ Renders `defaultContent` until `promise` resolves, then it renders the resolved 
 Example:
 
 ```javascript
-import {until} from 'lit-html/directives/until';
+import { until } from 'lit-html/directives/until';
 
 const render = () => html`
   <p>
@@ -391,16 +358,17 @@ JavaScript asynchronous iterators provide a generic interface for asynchronous s
 lit-html offers two directives to consume asynchronous iterators:
 
  * `asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+
 appending each new value after the previous.
+
  * `asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+
 replacing the previous value with the new value.
 
 Example:
 
 ```javascript
-
 const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
-
 /**
  * Returns an async iterable that yields increasing integers.
  */
