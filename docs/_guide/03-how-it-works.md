@@ -41,7 +41,7 @@ lit-html creates HTML `<template>` elements from the tagged template literals, a
 
 ## Template Creation
 
-The first time a particular lit-html template is rendered anywhere in the application, lit-html does one-time setup work to create the HTML template behind the scenes. It joins all the literal parts with a special placeholder, similar to `"{{}}"`, then creates a `<template>` and sets its `innerHTML` to the result.
+The first time a particular lit-html template is rendered anywhere in the application, lit-html does one-time setup work to create the HTML template behind the scenes. It joins all the literal parts with a special placeholder, similar to `"{% raw %}{{}}{% endraw %}"`, then creates a `<template>` and sets its `innerHTML` to the result.
 
 If we start with a template like this:
 
@@ -52,7 +52,7 @@ let header = (title) => html`<h1>${title}</h1>`;
 lit-html will generate the following HTML:
 
 ```html
-<h1>{{}}</h1>
+<h1>{% raw %}{{}}{% endraw %}</h1>
 ```
 
 And create a `<template>` from that.

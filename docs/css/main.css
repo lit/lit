@@ -67,6 +67,10 @@ pre {
   z-index: 1000;
 }
 
+.main-nav p {
+  display: flex;
+}
+
 .main-nav a {
   color: inherit;
 }

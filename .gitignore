@@ -34,3 +34,7 @@ pids
 
 # Optional npm cache directory
 .npm
+
+# Docs
+/docs/_site/
+*.pyc
