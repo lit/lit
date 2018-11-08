@@ -12,11 +12,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- ### Added -->
-### Changed
-* Directive are now defined by passing the entire directive factory function to `directive()`.
+<!-- ### Changed -->
 <!-- ### Removed -->
+<!-- ### Fixed -->
+
+## [0.13.0] - 2018-11-08
+### Changed
+* [Breaking] Directives are now defined by passing the entire directive factory function to `directive()`. ([#562](https://github.com/Polymer/lit-html/pull/562))
 ### Fixed
-* `eventContext` is no longer used as the `this` value for event listener objects (object with a `handleEvent` method), as the object itself is supposed to be the `this` value.
+* Fix issue on obscure browsers that do not accept event listener objects by using callback as event part listener ([#581](https://github.com/Polymer/lit-html/pull/581))
+* Fix KeyFn and ItemTemplate types ([#570](https://github.com/Polymer/lit-html/pull/570))
+* Don't use export * to workaround rollup bug ([#556](https://github.com/Polymer/lit-html/pull/556))
+* `eventContext` is no longer used as the `this` value for event listener objects (object with a `handleEvent` method), as the object itself is supposed to be the `this` value. ([#576](https://github.com/Polymer/lit-html/pull/576))
 
 ## [0.12.0] - 2018-10-05
 ### Changed
