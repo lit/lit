@@ -1,6 +1,6 @@
 ---
 layout: post
-title: How it Works
+title: Concepts
 slug: how-it-works
 ---
 
@@ -37,7 +37,7 @@ This means that the strings can be used as a key into a cache so that lit-html c
 
 A `<template>` element is an inert fragment of DOM. Inside a `<template>`, script don't run, images don't load, custom elements aren't upgraded, etc. `<template>`s can be efficiently cloned. They're usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, and will be managed by code at a later time, but it can also be created imperatively with `createElement` and `innerHTML`.
 
-lit-html creates HTML `<template>` elements from the tagged template literals, and then clone's them to create new DOM.
+lit-html creates HTML `<template>` elements from the tagged template literals, and then clones them to create new DOM.
 
 ## Template Creation
 

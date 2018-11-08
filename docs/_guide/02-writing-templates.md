@@ -15,9 +15,9 @@ This section introduces the main features and concepts in lit-html.
 
 ## Render static HTML
 
-The simplest thing to do in lit-html is to render a static HTML. 
+The simplest thing to do in lit-html is to render some static HTML. 
 
-```
+```js
 import {html, render} from 'lit-html'
 // Declare a template
 const  myTemplate = html`<div>Hello World</div>`
@@ -26,9 +26,9 @@ const  myTemplate = html`<div>Hello World</div>`
 render(myTemplate, document.body);
 ```
 
-The lit-html template is a _tagged template literal_(https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals). The template itself looks like a regular JavaScript string, but enclosed in backticks (`) instead of quotes. The browser passes the string to lit-html's `html` tag function. 
+The lit-html template is a [_tagged template literal_](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals). The template itself looks like a regular JavaScript string, but enclosed in backticks (`) instead of quotes. The browser passes the string to lit-html's `html` tag function. 
 
-The `html` tag function returns a `TemplateResult—a` lightweight object that represents the template to be rendered.
+The `html` tag function returns a `TemplateResult`—a lightweight object that represents the template to be rendered.
 
 The `render` function actual creates DOM nodes and appends them to a DOM tree. In this case, the rendered DOM replaces the contents of the document's `body` tag.
 
@@ -36,13 +36,13 @@ The `render` function actual creates DOM nodes and appends them to a DOM tree. I
 
 You can't get very far with a static template. lit-html lets you create bindings using <code>${<em>expression</em>}</code> placeholders in the template literal:
 
-```
+```js
 const aTemplate = html`<h1>${title}</h1>`;
 ```
 
 To make your template dynamic, you can create a _template function_. Call the template function any time your data changes.
 
-```
+```js
 import {html, render} from 'lit-html'
 // Define a template function
 const  myTemplate = (name) => html`<div>Hello ${name}</div>`;
@@ -129,7 +129,7 @@ const clickHandler = {
 
 You can also compose templates to create more complex templates. When a binding in the text content of a template returns a `TemplateResult`, the `TemplateResult` is interpolated in place.
 
-```
+```js
 const myHeader = html`<h1>Header</h1>`;
 const myPage = html`
   ${myHeader}
@@ -267,7 +267,7 @@ To compare this to lit-html's default handling for lists, consider reversing a l
 
 Which repeat is more efficient depends on your use case: if updating the DOM nodes is more expensive than moving them, use the repeat directive. Otherwise, use `Array.map` or looping statements.
 
-#### Caching template results: the cache directive 
+## Caching template results: the cache directive 
 
 In most cases, JavaScript conditionals are all you need for conditional templates. However, if you're switching between large, complicated templates, you might want to save the cost of recreating DOM on each switch. 
 
