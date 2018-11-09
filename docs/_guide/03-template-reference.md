@@ -4,7 +4,7 @@ title: Template syntax reference
 slug: template-reference
 ---
 
-{::options toc_levels="1..4" /}
+{::options toc_levels="1..3" /}
 * ToC
 {:toc}
 

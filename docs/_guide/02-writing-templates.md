@@ -4,7 +4,7 @@ title: Writing templates
 slug: writing-templates
 ---
 
-{::options toc_levels="1..2" /}
+{::options toc_levels="1..3" /}
 * ToC
 {:toc}
 
