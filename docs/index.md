@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-<header class="hero gradient-bg">
+<header class="hero">
 {% include topnav.html %}
 <div class="wrapper">
 <h1 class="hero-title">{{ site.name }}</h1>
