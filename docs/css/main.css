@@ -1,12 +1,16 @@
 /* Theme colors */
 a {
-  color: #e33400;
+  color: #FF2F2F;
 }
 
-.hero,
+.hero {
+  background: #FF2F2F;
+  background: linear-gradient(315deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%), linear-gradient(315deg, #FA5A5A 0%, #FF2F2F 100%);
+}
+
 .main-nav {
-  background: #e33400;
-  background: linear-gradient(175deg, #e33400 0%, #f7beb0 100%);
+  background: #FF2F2F;
+  background: linear-gradient(315deg, #FA5A5A 0%, #FF2F2F 100%);
 }
 
 .hero .hero-title,
