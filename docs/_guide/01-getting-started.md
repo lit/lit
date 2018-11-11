@@ -20,11 +20,17 @@ npm install lit-html
 
 ### unpkg.com
 
-lit-html is also loadable directly from the unpkg.com CDN:
+You can also load lit-html directly from the unpkg.com CDN:
 
 ```js
 import {html, render} from 'https://unpkg.com/lit-html?module';
 ```
+
+### Online editors
+
+You can try out lit-html without installing anything using an online editor that supports modules, like StackBlitz.
+
+*   [lit-html Starter on StackBlitz](https://stackblitz.com/edit/js-pku9ae?file=index.js)
 
 ## Importing
 
@@ -45,12 +51,14 @@ If you use a tool that converts package names into paths, then you can import by
 import {html, render} from 'lit-html';
 ```
 
+**Why JavaScript modules?** For more information on why lit-html is distributed using JavaScript modules, see [JavaScript Modules](concepts#javascript-modules).
+
 ## Rendering a Template
 
 lit-html has two main APIs:
 
-* The `html` template tag used to write templates
-* The `render()` function used to render a template to a DOM container.
+*   The `html` template tag used to write templates
+*   The `render()` function used to render a template to a DOM container.
 
 ```ts
 // Import lit-html
@@ -63,12 +71,6 @@ const myTemplate = (name) => html`<p>Hello ${name}</p>`;
 render(myTemplate('World'), document.body);
 ```
 
-To learn more about templates, see [Writing Templates](./writing-templates.html).
-
-### Why is lit-html distributed as JavaScript modules, not as UMD/CJS/AMD?
-
-Until modules arrived, browsers have not had a standard way to import code from code, and user-land module loaders or bundlers were required. Since there was no standard, competing formats multiplied. Often libraries will publish in a number of formats to support users of different tools, but this causes problems when a common library is depended on by many other intermediate libraries: If some of those intermediate libraries load format A, and others load format B, and yet others load format C, etc., then multiple copies are loaded cause bloat, performance slowdowns, and sometimes hard-to-find bugs.
-
-The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and modules are very well supported by tools, it makes sense for that format to be modules.
+To learn more about templates, see [Writing Templates](./writing-templates).
 
 [lit-html package]: https://www.npmjs.com/package/lit-html
