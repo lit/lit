@@ -95,3 +95,8 @@ Until modules arrived, browsers have not had a standard way to import code from 
 
 The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and modules are very well supported by tools, it makes sense for that format to be modules.
 
+For more information on JavaScript modules:
+
+*   [Using JavaScript Modules on the Web](https://developers.google.com/web/fundamentals/primers/modules) on Web Fundementals.
+
+*   [import statement reference page](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) on MDN.
