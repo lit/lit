@@ -8,7 +8,7 @@ libraries:
 - name: webapp2
   version: "2.5.2"
 
-default_expiration: "1d"
+default_expiration: "1m"
 
 handlers:
 - url: /api
