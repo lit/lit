@@ -28,9 +28,11 @@ import {html, render} from 'https://unpkg.com/lit-html?module';
 
 ### Online editors
 
-You can try out lit-html without installing anything using an online editor that supports modules, like StackBlitz.
+You can try out lit-html without installing anything using an online editor. Below are links to a simple lit-html starter project in some popular online editors:
 
-*   [lit-html Starter on StackBlitz](https://stackblitz.com/edit/js-pku9ae?file=index.js)
+*   [CodeSandbox](https://codesandbox.io/s/wq2wm73o28)
+*   [JSBin](https://jsbin.com/nahocaq/1/edit?html,output)
+*   [StackBlitz](https://stackblitz.com/edit/js-pku9ae?file=index.js)
 
 ## Importing
 
@@ -40,12 +42,17 @@ Modules are increasingly supported in JavaScript environments and are shipping i
 To use lit-html, import it via a path:
 
 ```js
-import {html, render} from './node_modules/lit-html/lit-html.js';
+<script type="module">
+  import {html, render} from './node_modules/lit-html/lit-html.js';
+  ...
+</script>
 ```
+
+The JavaScript `import` statement only works inside module scripts (`<script type="module">`), which can be inline scripts (as shown above) or external scripts.
 
 The path to use depends on where you've installed lit-html to. Browsers only support importing other modules by path, not by package name, so without other tools involved, you'll have to use paths.
 
-If you use a tool that converts package names into paths, then you can import by path:
+If you use a tool that converts package names into paths, then you can import by package name:
 
 ```js
 import {html, render} from 'lit-html';

@@ -55,7 +55,7 @@ Unlike VDOM libraries, lit-html only ever updates the parts of templates that ac
 
 lit-html gives you the full power of JavaScript and functional programming patterns. 
 
-Templates are values that can be computed, passed to and from functions and nested. Expressions are real JavaScript and can include anything you need at all.
+Templates are values that can be computed, passed to and from functions and nested. Expressions are real JavaScript and can include anything you need.
 
 lit-html support many kind of values natively: strings, DOM nodes, heterogeneous lists, nested templates and more.
 
@@ -65,8 +65,6 @@ lit-html support many kind of values natively: strings, DOM nodes, heterogeneous
 ### Extensible
 
 lit-html is extremely customizable and extensible.
-
-Different dialects of templates can be created with additional features for setting element properties, declarative event handlers and more.
 
 Directives customize how values are handled, allowing for asynchronous values, efficient keyed-repeats, error boundaries, and more. lit-html is like your very own a template construction kit.
 
