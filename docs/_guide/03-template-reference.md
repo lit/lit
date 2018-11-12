@@ -24,7 +24,7 @@ html`<h1>Hello ${name}</h1>`
 
 lit-html templates must be well-formed HTML, and bindings can only occur in certain places. The templates are parsed by the browser's built-in HTML parser before any values are interpolated. 
 
-**No warnings.** Most cases of malformed templates are not detectable by lit-html, so you won't see any warnings—just templates that don't behave as you expect—so take extra care to structure templates properly. {.alert-warning}
+**No warnings.** Most cases of malformed templates are not detectable by lit-html, so you won't see any warnings—just templates that don't behave as you expect—so take extra care to structure templates properly. 
 
 Follow these rules for well-formed templates:
 
@@ -252,13 +252,21 @@ html`
 
 Directives are functions that can extend lit-html by customizing the way a binding renders.
 
-lit-html includes a few built-in directives:
+lit-html includes a few built-in directives.
 
-*   when. A directive for conditional templates.
-*   repeat. Generates a series of values (usually templates) from an array or iterable.
-*   <<<etc.>>>
+*   [`when`](#when)
+*   [`repeat`](#repeat)
+*   [`ifDefined`](#ifdefined)
+*   [`guard`](#guard)
+*   [`until`](#until)
+*   [`asyncAppend` and `asyncReplace`](#asyncappend-and-asyncreplace)
 
-### `when(condition, trueTemplate, falseTemplate)`
+**Directives may change.** The exact list of directives included with lit-html, and the API of the directives may be subject to change before lit-html 1.0 is released.
+
+
+### when 
+
+`when(condition, trueTemplate, falseTemplate)`
 
 Efficiently switches between two templates based on the given condition. The rendered content is cached, and re-used when switching conditions. Templates are evaluated lazily, so the passed values must be functions.
 
@@ -274,7 +282,9 @@ html`
 `;
 ```
 
-### `repeat(items, keyfn, template)`
+### repeat 
+
+`repeat(items, keyfn, template)`
 
 Repeats a series of values (usually `TemplateResults`) generated from an
 iterable, and updates those items efficiently when the iterable changes. When
@@ -298,7 +308,9 @@ const myTemplate = () => html`
 If no `keyFn` is provided, `repeat` will perform similar to a simple map of
 items to values, and DOM will be reused against potentially different items.
 
-### `ifDefined(value)`
+### ifDefined
+
+`ifDefined(value)`
 
 For AttributeParts, sets the attribute if the value is defined and removes the attribute if the value is undefined.
 
@@ -315,7 +327,9 @@ const myTemplate = () => html`
 
 ```
 
-### `guard(expression, valueFn)`
+### guard
+
+`guard(expression, valueFn)`
 
 Prevents any re-render until the identity of the expression changes, for example when a primitive changes value or when an object reference changes.
 
@@ -333,7 +347,9 @@ const template = html`
 
 In this case, items are mapped over only when the array reference changes.
 
-### `until(promise, defaultContent)`
+### until
+
+`until(promise, defaultContent)`
 
 Renders `defaultContent` until `promise` resolves, then it renders the resolved value of `promise`.
 
@@ -351,7 +367,10 @@ const render = () => html`
 `;
 ```
 
-### `asyncAppend(asyncIterable)` and `asyncReplace(asyncIterable)`
+### asyncAppend and asyncReplace
+
+`asyncAppend(asyncIterable)`<br>
+`asyncReplace(asyncIterable)`
 
 JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
 

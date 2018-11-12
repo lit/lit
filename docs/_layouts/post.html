@@ -8,18 +8,13 @@ layout: default
     <button id="toggleNavButton">Menu</button>
     <ul>
       <li>
-        <span>Guide</span>
-        <ul>
-          <li>
-            <a href="{{site.baseurl}}/guide">Introduction</a>
-          </li>
-          {% for guide in site.guide %}
-            <li>
-              <a href="{{site.baseurl}}{{guide.url}}">{{guide.title}}</a>
-            </li>
-          {% endfor %}
-        </ul>
+        <a href="{{site.baseurl}}/guide">Introduction</a>
       </li>
+      {% for guide in site.guide %}
+        <li>
+          <a href="{{site.baseurl}}{{guide.url}}">{{guide.title}}</a>
+        </li>
+      {% endfor %}
     </ul>
   </nav>
 

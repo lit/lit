@@ -57,7 +57,7 @@ render(myTemplate('lit-html'), document.body);
 
 When you call the template function, lit-html captures the current expression values. The template function doesn't create any DOM nodes, so it's fast and cheap.
 
-The template function returns a `TemplateResult` that's a function of the input data. This is one of the main principles behind using lit-html: **creating UI as a _function_ of state**.
+The template function returns a `TemplateResult` that's a function of the input data. This is one of the main principles behind using lit-html: **creating UI as a _function_ of state**. 
 
 When you call `render`, **lit-html only updates the parts of the template that have changed since the last render.** This makes lit-html updates very fast.
 
@@ -155,9 +155,6 @@ const myPage(data) = html`
 
 lit-html has no built-in control-flow constructs. Instead you use normal JavaScript expressions and statements.
 
-lit-html also provides some special functions, called _directives_, for use in templates. You can use the `when` directive to help build conditional templates.
-
-
 #### Conditionals with ternary operators
 
 Ternary expressions are a great way to add inline conditionals:
@@ -192,13 +189,13 @@ html`
 
 #### Conditionals with the when directive
 
-<<<TBD. Or cut this section and link to reference section above.>>>
 
 
 ## Repeating templates
 
-You can use standard JavaScript constructs to create repeating templates. lit-html also provides a `repeat` directive that that handles certain kinds of dynamic lists more efficiently.
+You can use standard JavaScript constructs to create repeating templates. 
 
+lit-html also provides some special functions, called _directives_, for use in templates. You can use the  `repeat` directive to build certain kinds of dynamic lists more efficiently.
 
 ###  Repeating templates with Array.map
 
@@ -231,7 +228,6 @@ html`
 `;
 ```
 
-
 ### Repeating templates with the repeat directive
 
 In most cases, using loops or `Array.map` is an efficient way to build repeating templates. However, if you want to reorder a large list, or mutate it by adding and removing individual entries, this approach can involve recreating a large number of DOM nodes. 
@@ -263,7 +259,7 @@ If you re-sort the `employees` array, the `repeat` directive reorders the existi
 To compare this to lit-html's default handling for lists, consider reversing a large list of names:
 
 *   For a list created using `Array.map`, lit-html maintains the DOM nodes for the list items, but reassigns the values. 
-*   For a list created using `repeat`, the `repeat` directive reorders the existing DOM nodes, so the nodes representing the first list item move to the last position.
+*   For a list created using `repeat`, the `repeat` directive reorders the _existing_ DOM nodes, so the nodes representing the first list item move to the last position.
 
 Which repeat is more efficient depends on your use case: if updating the DOM nodes is more expensive than moving them, use the repeat directive. Otherwise, use `Array.map` or looping statements.
 
