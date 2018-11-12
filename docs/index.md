@@ -88,7 +88,7 @@ lit-html is not a framework, nor does it include a component model. It focuses o
 <section>
 <div class="wrapper" style="text-align: center">
 <h2>Browser Compatibility</h2>
-<p>Polymer products work in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </p>
+<p>lit-html works in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </p>
 <div>
 <img width="70" height="70" src="/images/browsers/chrome_128x128.png" alt="chrome logo">
 <img width="70" height="70" src="/images/browsers/firefox_128x128.png" alt="firefox logo">
