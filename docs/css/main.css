@@ -243,6 +243,15 @@ article {
   min-width: 1px;
 }
 
+.disclaimer {
+  border: 1px solid blue;
+  margin: 20px 20px;
+  padding: 6px;
+  border-radius: 4px;
+  color: #666;
+  background-color: #eee;
+}
+
 .prevnext {
   display: flex;
   justify-content: space-between;

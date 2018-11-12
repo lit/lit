@@ -80,6 +80,31 @@ Directives customize how values are handled, allowing for asynchronous values, e
 
 lit-html is not a framework, nor does it include a component model. It focuses on one thing and one thing only: efficiently creating and updating DOM. It can be used standalone for simple tasks, or combined with a framework or component model, like Web Components, for a full-featured UI development platform.
 
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="wrapper" style="text-align: center">
+<h2>Browser Compatibility</h2>
+<p>Polymer products work in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </p>
+<div>
+<img width="70" height="70" src="/images/browsers/chrome_128x128.png" alt="chrome logo">
+<img width="70" height="70" src="/images/browsers/firefox_128x128.png" alt="firefox logo">
+<img width="70" height="70" src="/images/browsers/internet-explorer_128x128.png" alt="internet explorer logo">
+<img width="70" height="70" src="/images/browsers/edge_128x128.png" alt="edge logo">
+<img width="70" height="70" src="/images/browsers/safari_128x128.png" alt="safari logo">
+<img width="70" height="70" src="/images/browsers/opera_128x128.png" alt="opera logo">
+</div>
+</div>
+</section>
+
+<section>
+<div class="wrapper">
+<div class="responsive-row center">
+<div style="max-width: 600px">
+
 ## Announcement at Polymer Summit 2017
 
 <iframe src="https://www.youtube.com/embed/ruql541T7gc"
