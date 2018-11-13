@@ -1,422 +1,306 @@
-/* from "https://fonts.googleapis.com/css?family=Poppins:500,200" to control font loading */
-/* latin */
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 200;
-  src: local('Poppins ExtraLight'), local('Poppins-ExtraLight'), url(https://fonts.gstatic.com/s/poppins/v5/pxiByp8kv8JHgFVrLFj_Z1xlFd2JQEk.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  font-display: optional;
-}
-/* latin */
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Poppins Medium'), local('Poppins-Medium'), url(https://fonts.gstatic.com/s/poppins/v5/pxiByp8kv8JHgFVrLGT9Z1xlFd2JQEk.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  font-display: optional;
+/* Theme colors */
+a {
+  color: #FF2F2F;
 }
 
+.hero {
+  background: #FF2F2F;
+  background: linear-gradient(315deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%), linear-gradient(315deg, #FA5A5A 0%, #FF2F2F 100%);
+}
+
+.main-nav {
+  background: #FF2F2F;
+  background: linear-gradient(315deg, #FA5A5A 0%, #FF2F2F 100%);
+}
+
+.hero .hero-title,
+.hero .hero-link,
+.main-nav {
+  color: #fff;
+}
+
+.hero .hero-title::after {
+  background: #fff;
+}
+
+.grey-bg {
+  background: #f5f5f5;
+}
+
+/* Tagname styles */
 body {
-  min-height: 101vh;
   margin: 0;
-  background-color: #FFF;
-  color: #383838;
-  font-family: 'Roboto', 'Noto', sans-serif;
-  font-size: 16px;
+  padding: 0;
+  font-family: 'Google Sans', 'Roboto', 'Noto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #333;
   line-height: 1.5;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  text-rendering: optimizeLegibility;
-}
-
-h1 {
-  font-family: 'Poppins', 'Roboto', 'Noto', sans-serif;
-  font-size: 32px;
-  letter-spacing: 0.04em;
-}
-
-h2 {
-  font-family: 'Poppins', 'Roboto', 'Noto', sans-serif;
-  font-size: 24px;
-  line-height: 1.3;
-}
-
-h3 {
-  font-family: 'Poppins', 'Roboto', 'Noto', sans-serif;
-  font-size: 20px;
-}
-
-h4 {
-  font-family: 'Poppins', 'Roboto', 'Noto', sans-serif;
-  font-size: 16px;
 }
 
 a {
   text-decoration: none;
-  color: inherit;
 }
 
-.row {
-  display: flex;
-}
-
-.flex {
-  flex: 1;
-}
-
-.text-center {
-  text-align: center;
-}
-
-/* top nav */
-.main-nav {
-  position: relative;
-  font-family: 'Poppins', 'Roboto', 'Noto', sans-serif;
-  display: flex;
-  align-items: center;
-  padding: 0 48px;
-  box-sizing: border-box;
-  font-size: 16px;
-  letter-spacing: 1px;
-  border-bottom: 1px solid #EEEBF3;
-  background: #212124;
-  color: white;
-}
-
-.main-nav > ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.main-nav > ul > li {
-  display: inline-block;
-  padding: 8px 0;
-  margin: 0 12px;
-}
-
-.main-nav > ul > li:hover {
-  color: #FADE4B;
-}
-
-#searchBox {
-  display: inline-block;
-  width: 200px;
-  background: white;
-  border: none;
-  font-family: inherit;
-  font-size: inherit;
-  color: black;
-  margin: 0 10px;
-  border-bottom: 1px solid black;
-  -webkit-appearance: textfield;
-}
-
-#searchBox::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
-
-/* home page */
-.pretty-button {
-  display: inline-block;
-  box-sizing: border-box;
-  margin: 0 4px;
-  padding: 8px 44px;
-  border: 2px solid #000;
-  background-color: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: inherit;
-  text-align: center;
-  text-decoration: none;
-  text-transform: uppercase;
-  border-radius: 0;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.pretty-button:active {
-  background-color: #333;
-  color: #FFF;
-}
-
-.pretty-button:hover {
-  text-decoration: none !important;
-  background-color: #333;
-  color: #FFF;
-}
-
-section {
-  padding: 60px 24px;
-}
-
-.hero {
-  background-color: transparent;
-  background-size: cover;
-}
-
-.hero p {
-  font-size: 20px;
-  max-width: 600px;
-  line-height: 1.5;
-  margin: 24px auto 32px;
-}
-
-.devices {
-  display: block;
-  height: 460px;
-  background-image: url(https://user-images.githubusercontent.com/1369170/39715580-a1be5126-51e2-11e8-8440-96b07be03a3c.png);
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center center;
-}
-
-.hero-buttons {
-  padding-top: 16px;
-}
-
-.features {
-  display: flex;
-  justify-content: center;
-  background-color: #ECEFEF;
-  color: black;
-}
-
-.feature {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 300px;
-  padding: 0 16px;
-  box-sizing: border-box;
-}
-
-.feature > .icon {
-  width: 76px;
-  height: 76px;
-}
-
-.feature > p {
-  /* IE11 flexbox bug: https://github.com/philipwalton/flexbugs#2-column-flex-items-set-to-align-itemscenter-overflow-their-container */
-  max-width: 100%;
-}
-
-.main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #FFF;
-}
-
-.main-item {
-  display: flex;
-  max-width: 700px;
-  padding: 16px 0;
-  text-align: left;
-}
-
-.main-item > img {
-  width: auto;
-  height: 100px;
-  padding-right: 32px;
-}
-
-.main-item h2 {
-  margin-top: 0;
-}
-
-.compatibility {
-  background-color: #F2F2F2;
-}
-
-.browsers > img {
-  width: 70px;
-  height: 70px;
-  padding: 20px;
-}
-
-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  background: #F2F3F4;
-  color: rgba(0,0,0,.4);
-  border-top: 1px solid #dadce0;
-}
-
-footer ul {
-  padding: 0;
-}
-
-footer ul li {
-  display: inline-block;
-}
-
-footer ul li::before {
-  padding: 0 14px;
-  content: '/';
-  color: rgba(0,0,0,.4);
-}
-footer a {
-  color: #202124;
-  font-size: 14px;
-}
-
-/* doc page */
-.toc {
-  font-family: 'Poppins', 'Roboto', 'Noto', sans-serif;
-  /* position: sticky works in Chrome, Firefox, Safari and Edge;
-  fallback to position: static for which the nav will just be part
-  of the scrolling content. */
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 320px;
-  height: 300px;
-  box-sizing: border-box;
-  padding: 24px;
-}
-
-.toc > #toggleNavButton {
-  display: none;
-}
-
-.toc a:hover {
-  border-bottom: 2px solid #FADE4B;
-  -webkit-transition: -webkit-transform .3s ease;
-  -webkit-transition: transform .3s ease;
-  transition: transform .3s ease;
-}
-
-.toc > ul {
-  padding: 0;
-}
-
-.toc > ul ul {
-  margin-left: 1em;
-}
-
-.toc li {
-  padding: 6px 0;
-  list-style-type: none;
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-transition: -webkit-transform .3s ease;
-  -webkit-transition: transform .3s ease;
-  transition: transform .3s ease;
-}
-
-.toc > ul > li {
-  font-weight: bold;
-}
-.toc svg {
-  width: 24px;
-  height: 24px;
-  fill: currentcolor;
-  vertical-align: middle;
-}
-.toc span {
-  display: inline-block;
-  vertical-align: sub;
-  padding: 0 10px;
-}
-
-article {
-  max-width: 860px;
-  padding: 40px;
-  margin: -300px 0 0 320px;
-  border-left: 1px solid #dadce0;
-}
-
-article h1 {
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: normal;
-  line-height: 1.1;
-  margin: 0 0 24px 0;
-  padding-bottom: 8px;
-}
-article h1:after {
-  display: block;
-  width: 60px;
-  height: 5px;
-  content: ' ';
-  background: #FADE4B;
-  margin: 20px 0;
-}
-
-article h2 {
-  font-weight: 600;
-  margin: 64px 0 24px;
-  padding-bottom: 8px;
-}
-
-article h3 {
-  font-weight: 600;
-  margin: 32px 0 16px;
-}
-
-article a {
-  color: #1e88e5;
-}
-
-article a:hover {
+a:hover {
   text-decoration: underline;
 }
 
-article img {
-  max-width: 100%;
-  box-sizing: border-box;
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.14);
-  margin: 20px auto;
-  display: block;
+article p {
+  font-family: 'Roboto', 'Noto', sans-serif;
+  font-size: 16px;
+  line-height: 26px;
 }
 
-.inline img {
-  display: inline-block;
-  margin: 0;
-  vertical-align: middle;
-}
-
-h2 img {
- display: inline-block;
- vertical-align: middle;
-}
-
-p.caption, b {
-  font-weight: 500;
-}
-
-/* table of contents. align the first set of bullets with the title. */
-#table-of-contents + ul {
-  list-style-type: none;
-  padding: 0;
-}
+/* Code styles */
 code, pre {
-  font-family: 'Source Code Pro', 'Roboto Mono', Consolas, Menlo, monospace !important;
+  font-family: 'Source Code Pro', 'Roboto Mono', Consolas, Menlo, monospace;
 }
 
 code {
   background: #F4F4F6;
   color: black;
-  font-size: inherit;
   padding: 2px 4px;
 }
 
 pre code {
-  word-break: break-all;
   padding: 0;
-  white-space: pre;
 }
+
 pre {
-  white-space: pre;
-  word-wrap: normal;
   font-size: 14px;
   padding: 24px;
   background: #F4F4F6;
   overflow-x: auto;
+}
+
+/* Top nav */
+.main-nav {
+  height: 60px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  box-shadow: 0 0 2px rgba(0,0,0,.2);
+  display: flex;
+  padding-left: 60px;
+  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  font-weight: 500;
+  z-index: 1000;
+}
+
+.main-nav p {
+  display: flex;
+}
+
+.main-nav a {
+  color: inherit;
+}
+
+.main-nav .nav-title {
+  font-size: 18px;
+}
+
+.main-nav .flex {
+  flex: 1;
+}
+
+.main-nav .nav-item {
+  font-size: 14px;
+  padding: 0 12px;
+}
+
+.main-nav .icon-github {
+  margin-right: 20px;
+  margin-left: 12px;
+  width: 24px;
+  height: 24px;
+  background-size: cover;
+}
+
+/* Content area */
+main {
+  margin-top: 60px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.wrapper {
+  max-width: 1280px;
+}
+
+/* Landing page */
+.hero .main-nav {
+  position: static;
+  background: none;
+  box-shadow: none;
+}
+
+.hero .main-nav .nav-title {
+  display: none;
+}
+
+.hero .wrapper {
+  padding-top: 20vh;
+  padding-bottom: 20vh;
+}
+
+.hero .hero-title {
+  position: relative;
+  margin-bottom: 16px;
+  padding-right: 5%;
+  font-size: 72px;
+  font-weight: 400;
+}
+
+.hero .hero-title::after {
+  position: absolute;
+  left: 0;
+  bottom: 0px;
+  height: 2px;
+  width: 48px;
+  content: "";
+}
+
+.hero .hero-caption {
+  max-width: 640px;
+  padding-right: 10%;
+  line-height: 38px;
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.hero .hero-link {
+  font-size: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.hero .hero-link::before {
+  content: "→ ";
+}
+
+section .wrapper {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.responsive-row {
+  display: flex;
+  margin-right: -20px;
+}
+
+.responsive-row > * {
+  margin-right: 20px;
+}
+
+.center {
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main/left nav */
+.side-nav {
+  /* position: sticky works in Chrome, Firefox, Safari and Edge;
+  fallback to position: static for which the nav will just be part
+  of the scrolling content. */
+  position: -webkit-sticky;
+  position: sticky;
+  top: 60px;
+  padding: 40px 40px 40px 0;
+  width: 240px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.side-nav > #toggleNavButton {
+  display: none;
+}
+
+.side-nav > ul {
+  margin: 0;
+  padding: 0;
+}
+
+.side-nav > ul ul {
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+.side-nav li {
+  list-style-type: none;
+  margin: 10px 0;
+  line-height: 22px;
+}
+
+/* Article area */
+article {
+  flex: 1;
+  margin: 40px 0;
+  /* Set min-width so article width will shrink
+  (and code snippets will horizontally scroll). */
+  min-width: 1px;
+}
+
+.disclaimer {
+  border: 1px solid blue;
+  margin: 20px 20px;
+  padding: 6px;
+  border-radius: 4px;
+  color: #666;
+  background-color: #eee;
+}
+
+.prevnext {
+  display: flex;
+  justify-content: space-between;
+}
+
+.next {
+  text-align: right;
+  order: 2
+}
+
+.prev {
+  order: 1
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid #d9d9d9;
+}
+
+footer .wrapper {
+  margin-top: 24px;
+  /* No spacing between child elements. */
+  font-size: 0px;
+}
+
+footer .group {
+  display: inline-block;
+  vertical-align: top;
+  width: 240px;
+  font-size: 14px;
+  line-height: 24px;
+  margin: 0 40px 24px 0;
+}
+
+footer .attribution {
+  display: inline-block;
+  vertical-align: top;
+  font-size: 14px;
+  line-height: 24px;
+  margin-bottom: 24px;
+}
+
+
+
+/* TODO: figure out if below rules are still needed */
+/* table of contents. align the first set of bullets with the title. */
+#table-of-contents + ul {
+  list-style-type: none;
+  padding: 0;
 }
 
 table {
@@ -436,99 +320,97 @@ tr {
 th, td {
   padding: 15px 20px;
 }
+/* TODO: figure out if above rules are still needed */
 
-/* small screen */
-@media (max-width: 767px) {
-  /* home page */
-  section {
-    padding: 24px;
+
+
+@media screen and (min-width: 1400px) {
+  .wrapper {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media screen and (max-width: 1400px) {
+  .wrapper {
+    padding-left: 60px;
+    padding-right: 60px;
+  }
+}
+@media screen and (max-width: 1160px) {
+  #secondary-nav {
+    display: none;
+  }
+  .wrapper {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  .side-nav {
+    padding: 32px 24px 32px 0;
+  }
+  footer .group {
+    margin-right: 24px;
+  }
+  .main-nav {
+    padding-left: 32px;
+  }
+  article {
+    margin: 32px 0;
+  }
+  .block {
+    margin-bottom: 24px;
+  }
+}
+@media screen and (max-width: 640px) {
+  .main-nav {
+    height: 56px;
+    padding-left: 20px;
   }
 
-  .devices {
-    height: 200px;
+  main {
+    margin-top: 56px;
   }
 
-  .hero-buttons {
-    display: flex;
+  .hero .hero-title {
+    font-size: 56px;
+    line-height: 64px;
+  }
+  
+  .hero .hero-caption {
+    font-size: 22px;
+    line-height: 32px;
+  }
+
+  .responsive-row {
     flex-direction: column;
-    align-items: center;
-  }
-
-  .hero-buttons > * {
-    width: 240px;
-    margin: 8px 0;
-  }
-
-  .features {
-    display: block;
-  }
-
-  .feature {
-    display: block;
-    width: auto;
-    padding: 16px 0;
-  }
-
-  .feature > .icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .feature > p {
-    margin: 4px 0;
-  }
-
-  .main {
-    display: block;
-  }
-
-  .main-item {
-    display: block;
-    padding: 16px 0;
-    text-align: center;
-  }
-
-  .main-item > img {
-    width: 48px;
-    height: auto;
-    padding: 0 0 4px 0;
-  }
-
-  .main-item h2 {
-    margin: 0 0 10px;
-  }
-
-  .main-item p {
-    margin: 4px 0;
-  }
-
-  .browsers > img {
-    width: 40px;
-    height: 40px;
-    padding: 4px;
   }
 
   /* doc page */
-  .toc {
-    position: static;
+  .side-nav {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    padding: 0;
     width: auto;
     height: auto;
-    padding: 16px 24px;
-    border-bottom: 1px solid #dadce0;
+    background: #FFF;
+    border-bottom: 1px solid rgba(0,0,0,.2);
   }
 
-  .toc > ul {
+  .side-nav > ul {
     display: none;
   }
 
-  .toc.open > ul {
+  .side-nav.open > ul {
     display: block;
+    padding: 0 20px;
   }
 
-  .toc > #toggleNavButton {
+  .side-nav > #toggleNavButton {
     display: block;
     width: 100%;
-    height: 40px;
+    height: 56px;
+    padding: 0 20px;
     text-align: left;
     background: none;
     border: none;
@@ -538,65 +420,30 @@ th, td {
     -webkit-appearance: none;
   }
 
-  .toc > #toggleNavButton::before {
+  .side-nav > #toggleNavButton::before {
     content: '\25b6  ';
   }
 
-  .toc.open > #toggleNavButton::before {
+  .side-nav.open > #toggleNavButton::before {
     content: '\25bc  ';
   }
 
   article {
-    padding: 24px;
-    margin-top: 0;
-    margin-left: 0;
-    border-left: none;
-  }
-
-  footer {
-    flex-direction: column;
-    align-items: start;
-  }
-  footer ul {
     margin: 0;
-    padding: 0;
+    padding: 20px 0;
   }
 
-  footer ul li::before {
-    display: none;
+  .side-nav + article {
+    margin-top: 56px;
+  }
+  
+  .wrapper {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
-  footer ul li::after {
-    padding: 0 14px;
-    content: '/';
-    color: rgba(0,0,0,.4);
-  }
-
-  .main-nav {
-    padding: 0 24px;
-  }
-}
-
-@media (max-width: 575px) {
-  /* top nav */
-  .main-nav {
-    flex-direction: column;
-    padding-top: 14px;
-  }
-
-  .main-nav > ul {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .main-nav > ul > li {
-    margin: 0 4px;
-  }
-}
-
-@media (max-width: 360px) {
-  .main-nav > ul > li {
-    font-size: 13px;
+  footer .group {
+    width: 50%;
+    margin-right: 0;
   }
 }

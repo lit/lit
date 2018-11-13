@@ -1,16 +1,19 @@
 ---
-layout: post
-title: lit-html
+layout: default
 ---
+<header class="hero">
+{% include topnav.html %}
+<div class="wrapper">
+<h1 class="hero-title">{{ site.name }}</h1>
+<p class="hero-caption">{{ site.description }}</p>
+<a class="hero-link" href="{{ site.baseurl }}/guide">Get Started</a>
+</div>
+</header>
+
+<section>
+<div class="wrapper">
 
 ## Next-generation HTML Templates in JavaScript
-
-lit-html: An efficient, expressive, extensible HTML templating library for JavaScript.
-
-<div class="hero-buttons">
-  <a class="pretty-button" href="/lit-html/guide">Get Started</a>
-  <a class="pretty-button" href="https://github.com/Polymer/lit-html">GitHub</a>
-</div>
 
 lit-html lets you write HTML templates in JavaScript, then efficiently render and _re-render_ those templates together with data to create and update DOM:
 
@@ -28,50 +31,87 @@ render(sayHello('World'), document.body);
 render(sayHello('Everyone'), document.body);
 ```
 
+</div>
+</section>
+
+<section class="grey-bg">
+<div class="wrapper">
+
 ## Why use lit-html?
 
-<section class="features">
-  <div class="feature">
-    <h3>Efficient</h3>
-    <p>
-      lit-html is extremely fast. It uses fast platform features like HTML <code>&lt;template></code> elements with native cloning.
-    </p>
-    <p>
-      Unlike VDOM libraries, lit-html only ever updates the parts of templates that actually change - it doesn't re-render the entire view.
-    </p>
-  </div>
+<div class="responsive-row">
+<div style="flex: 1">
 
-  <div class="feature">
-    <h3>Expressive</h3>
-    <p>
-      lit-html gives you the full power of JavaScript and functional programming patterns. 
-    </p>
-    <p>
-      Templates are values that can be computed, passed to and from functions and nested. Expressions are real JavaScript and can include anything you need at all.
-    </p>
-    <p>
-      lit-html support many kind of values natively: strings, DOM nodes, heterogeneous lists, Promises, nested templates and more.
-    </p>
-  </div>
+### Efficient
 
-  <div class="feature">
-    <h3>Extensible</h3>
-    <p>
-      lit-html is extremely customizable and extensible.
-    </p>
-    <p>
-      Different dialects of templates can be created with additional features for setting element properties, declarative event handlers and more.
-    </p>
-    <p>
-      Directives customize how values are handled, allowing for asynchronous values, efficient keyed-repeats, error boundaries, and more. lit-html is like your very own a template construction kit.
-    </p>
-  </div>
+lit-html is extremely fast. It uses fast platform features like HTML `<template>` elements with native cloning.
+
+Unlike VDOM libraries, lit-html only ever updates the parts of templates that actually change - it doesn't re-render the entire view.
+
+</div>
+<div style="flex: 1">
+
+### Expressive
+
+lit-html gives you the full power of JavaScript and functional programming patterns. 
+
+Templates are values that can be computed, passed to and from functions and nested. Expressions are real JavaScript and can include anything you need.
+
+lit-html support many kind of values natively: strings, DOM nodes, heterogeneous lists, nested templates and more.
+
+</div>
+<div style="flex: 1">
+
+### Extensible
+
+lit-html is extremely customizable and extensible.
+
+Directives customize how values are handled, allowing for asynchronous values, efficient keyed-repeats, error boundaries, and more. lit-html is like your very own a template construction kit.
+
+</div>
+</div>
+</div>
 </section>
+
+<section>
+<div class="wrapper">
+<div class="responsive-row center">
+<div style="max-width: 600px">
 
 lit-html is not a framework, nor does it include a component model. It focuses on one thing and one thing only: efficiently creating and updating DOM. It can be used standalone for simple tasks, or combined with a framework or component model, like Web Components, for a full-featured UI development platform.
 
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="wrapper" style="text-align: center">
+<h2>Browser Compatibility</h2>
+<p>lit-html works in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </p>
+<div>
+<img width="70" height="70" src="/images/browsers/chrome_128x128.png" alt="chrome logo">
+<img width="70" height="70" src="/images/browsers/firefox_128x128.png" alt="firefox logo">
+<img width="70" height="70" src="/images/browsers/internet-explorer_128x128.png" alt="internet explorer logo">
+<img width="70" height="70" src="/images/browsers/edge_128x128.png" alt="edge logo">
+<img width="70" height="70" src="/images/browsers/safari_128x128.png" alt="safari logo">
+<img width="70" height="70" src="/images/browsers/opera_128x128.png" alt="opera logo">
+</div>
+</div>
+</section>
+
+<section>
+<div class="wrapper">
+<div class="responsive-row center">
+<div style="max-width: 600px">
+
 ## Announcement at Polymer Summit 2017
 
-<div class="row">
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/ruql541T7gc" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<iframe src="https://www.youtube.com/embed/ruql541T7gc"
+    style="width: 560px; height: 315px; max-width: 100%; border: none"
+    allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
 </div>
+</div>
+</div>
+</section>
