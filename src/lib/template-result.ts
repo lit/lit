@@ -64,7 +64,30 @@ export class TemplateResult {
       html += isTextBinding ? nodeMarker : marker;
     }
     html += this.strings[l];
-    return html;
+    const selfClosing = html.split('/>');
+    for (let i = 0; i < selfClosing.length - 1; i++) {
+      const x = selfClosing[i];
+      let sIndex = x.lastIndexOf('<');
+      let signatureValid = false;
+      while (!signatureValid) {
+        const signature = x.substr(sIndex + 1);
+        const qMatch = signature.match(/"/g); // make sure we are not inside of an attribute
+        if (qMatch) {
+          if (qMatch.length % 2 === 0) {
+            signatureValid = true;
+          } else {
+            sIndex = x.substr(sIndex).lastIndexOf('<');
+          }
+        } else {
+          signatureValid = true;
+        }
+      }
+      const tagM = x.substr(sIndex + 1).match(/[\w-]+/);
+      if (tagM) {
+        selfClosing[i] = `${x}></${tagM[0]}>`;
+      }
+    }
+    return selfClosing.join('');
   }
 
   getTemplateElement(): HTMLTemplateElement {
