@@ -26,6 +26,8 @@ export {templateCaches, templateFactory} from './lib/template-factory.js';
 export {TemplateInstance} from './lib/template-instance.js';
 export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
+export {TemplateProcessor} from './lib/template-processor.js';
+export {RenderOptions} from './lib/render-options.js';
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
