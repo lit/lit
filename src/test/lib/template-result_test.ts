@@ -39,6 +39,7 @@ suite('TemplateResult', () => {
 
   test('self-closing elements', () => {
     const templateHTML = html`<custom-element test="<3" />`.getHTML();
-    assert.deepEqual(templateHTML, '<custom-element test="<3" ></custom-element>');
+    assert.deepEqual(
+        templateHTML, '<custom-element test="<3" ></custom-element>');
   });
 });

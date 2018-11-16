@@ -71,7 +71,8 @@ export class TemplateResult {
       let signatureValid = false;
       while (!signatureValid) {
         const signature = x.substr(sIndex + 1);
-        const qMatch = signature.match(/"/g); // make sure we are not inside of an attribute
+        const qMatch = signature.match(
+            /"/g);  // make sure we are not inside of an attribute
         if (qMatch) {
           if (qMatch.length % 2 === 0) {
             signatureValid = true;
