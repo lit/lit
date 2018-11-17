@@ -59,7 +59,7 @@ export class NodeRemovalToken {
   }
 
   commit() {
-    commitRemoveNode(this.container, this.target);
+    commitRemoveNode(this.target, this.container);
   }
 }
 
