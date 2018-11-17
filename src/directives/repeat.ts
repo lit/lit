@@ -54,12 +54,12 @@ export class NodeRemovalToken {
   private _isCommitted: boolean = false;
   constructor(public target: Node, public container: Node) {
   }
+  preventDefault =
+      () => {
+        this.defaultPrevented = true;
+      }
 
-  preventDefault() {
-    this.defaultPrevented = true;
-  }
-
-  commit() {
+  commit = () => {
     if (this._isCommitted)
       return;
     commitRemoveNode(this.target, this.container);
