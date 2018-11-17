@@ -83,12 +83,15 @@ const removeNodesWithRemovalHandler =
       let node = startNode;
       // We cannot assume here the node will be present. Since we
       // give away control to the user, if the user does something potentially
-      // harmful like removing the endNode, we'd end up in an infinite loop.
+      // harmful like removing the endNode and setting it equal to the current
+      // one, however unlikely, could put us in an infinite loop.
       // So, it's important to check first.
       while (node && node !== endNode) {
         const next = node.nextSibling;
         // Check if it's a marker node, which is a comment node with value ''.
-        if (!(node.nodeType === node.COMMENT_NODE && node.nodeValue === '')) {
+        if (node.nodeType === node.COMMENT_NODE && node.nodeValue === '') {
+          commitRemoveNode(node, container);
+        } else {
           const token = new NodeRemovalToken(node, container);
           nodeRemovalHandler(token);
           if (!token.defaultPrevented)
