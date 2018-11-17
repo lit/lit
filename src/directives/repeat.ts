@@ -49,7 +49,21 @@ const insertPartBefore =
     };
 
 
-export type NodeRemovalHandler = (node: Node, commit: Function) => void;
+export class NodeRemovalToken {
+  public defaultPrevented: boolean = false;
+  constructor(public target: Node, public container: Node) {
+  }
+
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+
+  commit() {
+    commitRemoveNode(this.container, this.target);
+  }
+}
+
+export type NodeRemovalHandler = (token: NodeRemovalToken) => void;
 
 /**
  * Removes nodes, starting from `startNode` (inclusive) to `endNode`
@@ -68,9 +82,12 @@ const removeNodesWithRemovalHandler =
           return throwIllegalNodeModification();
         const next = node.nextSibling;
         // Check if it's a marker node, which is a comment node with value ''.
-        if (!(node.nodeType === node.COMMENT_NODE && node.nodeValue === ''))
-          nodeRemovalHandler(
-              node, commitRemoveNode.bind(null, container, node));
+        if (!(node.nodeType === node.COMMENT_NODE && node.nodeValue === '')) {
+          let token = new NodeRemovalToken(node, container);
+          nodeRemovalHandler(token);
+          if (!token.defaultPrevented)
+            token.commit();
+        }
         node = next;
       }
     };
@@ -79,12 +96,12 @@ function throwIllegalNodeModification() {
   throw new Error('illegal node mutation');
 }
 
-function commitRemoveNode(container: Node, child: Node) {
+function commitRemoveNode(node: Node, container: Node) {
   // container can be null in the off-chance that the user
   // performed an illegal mutation.
   if (!container)
     throwIllegalNodeModification();
-  container.removeChild(child);
+  container.removeChild(node);
 }
 
 const removePart =
