@@ -13,7 +13,7 @@
  */
 
 import {DirectiveFn} from '../lib/directive.js';
-import {createMarker, directive, NodePart, Part, reparentNodes} from '../lit-html.js';
+import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -49,36 +49,52 @@ const insertPartBefore =
     };
 
 
-export type OnRemoveFn = (node: Node, commit: Function) => void;
+export type NodeRemovalHandler = (node: Node, commit: Function) => void;
 
 /**
-* Removes nodes, starting from `startNode` (inclusive) to `endNode`
-* (exclusive), from `container`.
-*/
-const removeNodes =
-  (container: Node, startNode: Node | null, endNode: Node | null = null, onRemove?: OnRemoveFn):
-    void => {
-    let node = startNode;
-    while (node !== endNode) {
-      const n = node!.nextSibling;
-      const nodeToBeRemoved = node!;
-      if (onRemove !== undefined) {
-        onRemove(nodeToBeRemoved, () => commitRemoveNode(container, nodeToBeRemoved));
-      } else {
-        commitRemoveNode(container, nodeToBeRemoved);
+ * Removes nodes, starting from `startNode` (inclusive) to `endNode`
+ * (exclusive), from `container`, with onRemove callback.
+ */
+const removeNodesWithRemovalHandler =
+    (container: Node,
+     startNode: Node|null,
+     endNode: Node|null = null,
+     nodeRemovalHandler?: NodeRemovalHandler): void => {
+      if (nodeRemovalHandler === undefined)
+        return removeNodes(container, startNode, endNode);
+      let node = startNode;
+      while (node !== endNode) {
+        if (!node)
+          return throwIllegalNodeModification();
+        const next = node.nextSibling;
+        // Check if it's a marker node, which is a comment node with value ''.
+        if (!(node.nodeType === node.COMMENT_NODE && node.nodeValue === ''))
+          nodeRemovalHandler(
+              node, commitRemoveNode.bind(null, container, node));
+        node = next;
       }
-      node = n;
-    }
-  };
+    };
+
+function throwIllegalNodeModification() {
+  throw new Error('illegal node mutation');
+}
 
 function commitRemoveNode(container: Node, child: Node) {
+  // container can be null in the off-chance that the user
+  // performed an illegal mutation.
+  if (!container)
+    throwIllegalNodeModification();
   container.removeChild(child);
 }
 
-const removePart = (part: NodePart, onRemove?: OnRemoveFn) => {
-    removeNodes(
-      part.startNode.parentNode!, part.startNode, part.endNode.nextSibling, onRemove);
-};
+const removePart =
+    (part: NodePart, nodeRemovalHandler?: NodeRemovalHandler) => {
+      removeNodesWithRemovalHandler(
+          part.startNode.parentNode!,
+          part.startNode,
+          part.endNode.nextSibling,
+          nodeRemovalHandler);
+    };
 
 // Helper for generating a map of array item to its index over a subset
 // of an array (used to lazily generate `newKeyToIndexMap` and
@@ -117,7 +133,8 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
 export const repeat = directive(
     <T>(items: Iterable<T>,
         keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
-        template?: ItemTemplate<T>, onRemove?: OnRemoveFn): DirectiveFn => {
+        template?: ItemTemplate<T>,
+        onRemove?: NodeRemovalHandler): DirectiveFn => {
       let keyFn: KeyFn<T>;
       if (template === undefined) {
         template = keyFnOrTemplate;
