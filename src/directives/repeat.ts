@@ -51,6 +51,7 @@ const insertPartBefore =
 
 export class NodeRemovalToken {
   public defaultPrevented: boolean = false;
+  private _isCommitted: boolean = false;
   constructor(public target: Node, public container: Node) {
   }
 
@@ -59,7 +60,10 @@ export class NodeRemovalToken {
   }
 
   commit() {
-    commitRemoveNode(this.target, this.container);
+    if (this._isCommitted)
+      return;
+    commitRemoveNode(this.container, this.target);
+    this._isCommitted = true;
   }
 }
 
