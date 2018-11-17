@@ -13,7 +13,7 @@
  */
 
 import {DirectiveFn} from '../lib/directive.js';
-import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
+import {createMarker, directive, NodePart, Part, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;
@@ -48,9 +48,36 @@ const insertPartBefore =
       }
     };
 
-const removePart = (part: NodePart) => {
-  removeNodes(
-      part.startNode.parentNode!, part.startNode, part.endNode.nextSibling);
+
+export type OnRemoveFn = (node: Node, commit: Function) => void;
+
+/**
+* Removes nodes, starting from `startNode` (inclusive) to `endNode`
+* (exclusive), from `container`.
+*/
+const removeNodes =
+  (container: Node, startNode: Node | null, endNode: Node | null = null, onRemove?: OnRemoveFn):
+    void => {
+    let node = startNode;
+    while (node !== endNode) {
+      const n = node!.nextSibling;
+      const nodeToBeRemoved = node!;
+      if (onRemove !== undefined) {
+        onRemove(nodeToBeRemoved, () => commitRemoveNode(container, nodeToBeRemoved));
+      } else {
+        commitRemoveNode(container, nodeToBeRemoved);
+      }
+      node = n;
+    }
+  };
+
+function commitRemoveNode(container: Node, child: Node) {
+  container.removeChild(child);
+}
+
+const removePart = (part: NodePart, onRemove?: OnRemoveFn) => {
+    removeNodes(
+      part.startNode.parentNode!, part.startNode, part.endNode.nextSibling, onRemove);
 };
 
 // Helper for generating a map of array item to its index over a subset
@@ -90,7 +117,7 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
 export const repeat = directive(
     <T>(items: Iterable<T>,
         keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
-        template?: ItemTemplate<T>): DirectiveFn => {
+        template?: ItemTemplate<T>, onRemove?: OnRemoveFn): DirectiveFn => {
       let keyFn: KeyFn<T>;
       if (template === undefined) {
         template = keyFnOrTemplate;
@@ -366,11 +393,11 @@ export const repeat = directive(
             }
             if (!newKeyToIndexMap.has(oldKeys[oldHead])) {
               // Old head is no longer in new list; remove
-              removePart(oldParts[oldHead]!);
+              removePart(oldParts[oldHead]!, onRemove);
               oldHead++;
             } else if (!newKeyToIndexMap.has(oldKeys[oldTail])) {
               // Old tail is no longer in new list; remove
-              removePart(oldParts[oldTail]!);
+              removePart(oldParts[oldTail]!, onRemove);
               oldTail--;
             } else {
               // Any mismatches at this point are due to additions or moves; see
@@ -409,7 +436,7 @@ export const repeat = directive(
         while (oldHead <= oldTail) {
           const oldPart = oldParts[oldHead++];
           if (oldPart !== null) {
-            removePart(oldPart);
+            removePart(oldPart, onRemove);
           }
         }
         // Save order of new parts for next round
