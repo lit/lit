@@ -10,7 +10,7 @@ Efficient, Expressive, Extensible HTML templates in JavaScript
 
 ## Documentation
 
-Full documentation is available at [polymer.github.io/lit-html](https://polymer.github.io/lit-html).
+Full documentation is available at [https://lit-html.polymer-project.org/](https://lit-html.polymer-project.org).
 
 ## Overview
 
