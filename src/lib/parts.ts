@@ -16,9 +16,8 @@ import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
 import {noChange, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
-import {TemplateInstance} from './template-instance.js';
-import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
+import { primitiveHandler } from './nodepart.js';
 
 export const isPrimitive = (value: any) =>
     (value === null ||
@@ -186,127 +185,17 @@ export class NodePart implements Part {
     if (value === noChange) {
       return;
     }
-    if (isPrimitive(value)) {
-      if (value !== this.value) {
-        this._commitText(value);
-      }
-    } else if (value instanceof TemplateResult) {
-      this._commitTemplateResult(value);
-    } else if (value instanceof Node) {
-      this._commitNode(value);
-    } else if (Array.isArray(value) || value[Symbol.iterator]) {
-      this._commitIterable(value);
-    } else if (value.then !== undefined) {
-      this._commitPromise(value);
+
+    const handler = this.options.nodePartValueHandlers.find((handler) => handler.test(value));
+    if (handler === undefined) {
+      primitiveHandler.insert(this, value);
     } else {
-      // Fallback, will render the string representation
-      this._commitText(value);
+      handler.insert(this, value);
     }
   }
 
   private _insert(node: Node) {
     this.endNode.parentNode!.insertBefore(node, this.endNode);
-  }
-
-  private _commitNode(value: Node): void {
-    if (this.value === value) {
-      return;
-    }
-    this.clear();
-    this._insert(value);
-    this.value = value;
-  }
-
-  private _commitText(value: string): void {
-    const node = this.startNode.nextSibling!;
-    value = value == null ? '' : value;
-    if (node === this.endNode.previousSibling &&
-        node.nodeType === Node.TEXT_NODE) {
-      // If we only have a single text node between the markers, we can just
-      // set its value, rather than replacing it.
-      // TODO(justinfagnani): Can we just check if this.value is primitive?
-      node.textContent = value;
-    } else {
-      this._commitNode(document.createTextNode(
-          typeof value === 'string' ? value : String(value)));
-    }
-    this.value = value;
-  }
-
-  private _commitTemplateResult(value: TemplateResult): void {
-    const template = this.options.templateFactory(value);
-    if (this.value && this.value.template === template) {
-      this.value.update(value.values);
-    } else {
-      // Make sure we propagate the template processor from the TemplateResult
-      // so that we use its syntax extension, etc. The template factory comes
-      // from the render function options so that it can control template
-      // caching and preprocessing.
-      const instance =
-          new TemplateInstance(template, value.processor, this.options);
-      const fragment = instance._clone();
-      instance.update(value.values);
-      this._commitNode(fragment);
-      this.value = instance;
-    }
-  }
-
-  private _commitIterable(value: any): void {
-    // For an Iterable, we create a new InstancePart per item, then set its
-    // value to the item. This is a little bit of overhead for every item in
-    // an Iterable, but it lets us recurse easily and efficiently update Arrays
-    // of TemplateResults that will be commonly returned from expressions like:
-    // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
-
-    // If _value is an array, then the previous render was of an
-    // iterable and _value will contain the NodeParts from the previous
-    // render. If _value is not an array, clear this part and make a new
-    // array for NodeParts.
-    if (!Array.isArray(this.value)) {
-      this.value = [];
-      this.clear();
-    }
-
-    // Lets us keep track of how many items we stamped so we can clear leftover
-    // items from a previous render
-    const itemParts = this.value as NodePart[];
-    let partIndex = 0;
-    let itemPart: NodePart|undefined;
-
-    for (const item of value) {
-      // Try to reuse an existing part
-      itemPart = itemParts[partIndex];
-
-      // If no existing part, create a new one
-      if (itemPart === undefined) {
-        itemPart = new NodePart(this.options);
-        itemParts.push(itemPart);
-        if (partIndex === 0) {
-          itemPart.appendIntoPart(this);
-        } else {
-          itemPart.insertAfterPart(itemParts[partIndex - 1]);
-        }
-      }
-      itemPart.setValue(item);
-      itemPart.commit();
-      partIndex++;
-    }
-
-    if (partIndex < itemParts.length) {
-      // Truncate the parts array so _value reflects the current state
-      itemParts.length = partIndex;
-      this.clear(itemPart && itemPart!.endNode);
-    }
-  }
-
-  private _commitPromise(value: Promise<any>): void {
-    this.value = value;
-    value.then((v: any) => {
-      if (this.value === value) {
-        this.setValue(v);
-        this.commit();
-      }
-    });
   }
 
   clear(startNode: Node = this.startNode) {

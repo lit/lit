@@ -13,8 +13,10 @@
  */
 
 import {TemplateFactory} from './template-factory.js';
+import { NodePartValueHandler } from './nodepart.js';
 
 export interface RenderOptions {
   templateFactory: TemplateFactory;
   eventContext?: EventTarget;
+  nodePartValueHandlers: NodePartValueHandler<any>[];
 }

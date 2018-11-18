@@ -14,8 +14,13 @@
 
 import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import { getDefaultHandlers } from '../../lib/nodepart.js';
 
 const assert = chai.assert;
+const defaultOptions = {
+  templateFactory,
+  nodePartValueHandlers: getDefaultHandlers()
+};
 
 suite('Parts', () => {
   suite('AttributePart', () => {
@@ -54,7 +59,7 @@ suite('Parts', () => {
       endNode = createMarker();
       container.appendChild(startNode);
       container.appendChild(endNode);
-      part = new NodePart({templateFactory});
+      part = new NodePart(defaultOptions);
       part.startNode = startNode;
       part.endNode = endNode;
     });
@@ -159,10 +164,10 @@ suite('Parts', () => {
               element: Element, name: string, strings: string[]) {
             if (name[0] === '&') {
               return super.handleAttributeExpressions(
-                  element, name.slice(1), strings, {templateFactory});
+                  element, name.slice(1), strings, defaultOptions);
             }
             return super.handleAttributeExpressions(
-                element, name, strings, {templateFactory});
+                element, name, strings, defaultOptions);
           }
         }
         const processor = new TestTemplateProcessor();
@@ -351,7 +356,7 @@ suite('Parts', () => {
           () => {
             const testEndNode = createMarker();
             container.appendChild(testEndNode);
-            const testPart = new NodePart({templateFactory});
+            const testPart = new NodePart(defaultOptions);
             testPart.insertAfterNode(endNode);
             assert.equal(testPart.startNode, endNode);
             assert.equal(testPart.endNode, testEndNode);
@@ -368,7 +373,7 @@ suite('Parts', () => {
       test(
           'inserts part and sets values between ref node and its next sibling',
           () => {
-            const testPart = new NodePart({templateFactory});
+            const testPart = new NodePart(defaultOptions);
             testPart.appendIntoPart(part);
             assert.instanceOf(testPart.startNode, Comment);
             assert.instanceOf(testPart.endNode, Comment);
@@ -396,7 +401,7 @@ suite('Parts', () => {
 
     suite('insertAfterPart', () => {
       test('inserts part and sets values after another part', () => {
-        const testPart = new NodePart({templateFactory});
+        const testPart = new NodePart(defaultOptions);
         testPart.insertAfterPart(part);
         assert.instanceOf(testPart.startNode, Comment);
         assert.equal(testPart.endNode, endNode);

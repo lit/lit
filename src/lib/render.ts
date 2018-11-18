@@ -17,6 +17,7 @@ import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
 import {TemplateResult} from './template-result.js';
+import { getDefaultHandlers } from './nodepart.js';
 
 export const parts = new WeakMap<Node, NodePart>();
 
@@ -44,6 +45,7 @@ export const render =
         removeNodes(container, container.firstChild);
         parts.set(container, part = new NodePart({
                                templateFactory,
+                               nodePartValueHandlers: getDefaultHandlers(),
                                ...options,
                              }));
         part.appendInto(container);
