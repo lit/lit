@@ -14,7 +14,7 @@
 
 import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
-import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from './template.js';
+import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
 
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -39,32 +39,28 @@ export class TemplateResult {
    * Returns a string of HTML used to create a `<template>` element.
    */
   getHTML(): string {
-    const l = this.strings.length - 1;
-    let html = '';
-    let isTextBinding = true;
-    for (let i = 0; i < l; i++) {
-      const s = this.strings[i];
-      html += s;
-      const close = s.lastIndexOf('>');
-      // We're in a text position if the previous string closed its last tag, an
-      // attribute position if the string opened an unclosed tag, and unchanged
-      // if the string had no brackets at all:
-      //
-      // "...>...": text position. open === -1, close > -1
-      // "...<...": attribute position. open > -1
-      // "...": no change. open === -1, close === -1
-      isTextBinding =
-          (close > -1 || isTextBinding) && s.indexOf('<', close + 1) === -1;
-
-      if (!isTextBinding && rewritesStyleAttribute) {
-        html = html.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
-          return (p2 === 'style') ? `${p1}style$${p3}` : match;
-        });
+    const endIndex = this.strings.length - 1;
+    return this.strings.reduce((acc, s, i) => {
+      if (i === endIndex) {
+        return acc + s;
       }
-      html += isTextBinding ? nodeMarker : marker;
-    }
-    html += this.strings[l];
-    return html;
+      // Append a suffix to all bound attribute names to opt out of special
+      // attribute value parsing that IE11 and Edge do, like for style and
+      // many SVG attributes.
+      // The Template class also appends the same suffix when looking up
+      // attributes to creat Parts.
+      let addedMarker = false;
+      acc += s.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
+        addedMarker = true;
+        return (p2.substring(p2.length - 5) === boundAttributeSuffix) ?
+            match :
+            `${p1}${p2}${boundAttributeSuffix}${p3}${marker}`;
+      });
+      if (!addedMarker) {
+        acc += nodeMarker;
+      }
+      return acc;
+    }, '');
   }
 
   getTemplateElement(): HTMLTemplateElement {
