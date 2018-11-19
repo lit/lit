@@ -97,21 +97,20 @@ suite('Parts', () => {
         containerPart.attach(container, start);
       });
 
-      const createParts =
-          (n: number) => {
-            let last = undefined;
-            const ret: {[key: string]: DynamicNodePart} = {};
-            for (let i = 0; i < n; i++) {
-              const part = new DynamicNodePart({templateFactory});
-              const name = String.fromCharCode('a'.charCodeAt(0) + i);
-              part.attach(containerPart, last);
-              part.setValue(createNodes(2, name));
-              part.commit();
-              ret[name] = part;
-              last = part;
-            }
-            return ret;
-          };
+      const createParts = (n: number) => {
+        let last = undefined;
+        const ret: {[key: string]: DynamicNodePart} = {};
+        for (let i = 0; i < n; i++) {
+          const part = new DynamicNodePart({templateFactory});
+          const name = String.fromCharCode('a'.charCodeAt(0) + i);
+          part.attach(containerPart, last);
+          part.setValue(createNodes(2, name));
+          part.commit();
+          ret[name] = part;
+          last = part;
+        }
+        return ret;
+      };
 
       const htmlForParts =
           (parts: {[key: string]: DynamicNodePart}, clearedPart?: string) =>
@@ -122,23 +121,20 @@ suite('Parts', () => {
               .join('') +
           `<e></e>`;
 
-      const verifyParts =
-          (parts: {[key: string]: DynamicNodePart}) => {
-            assert.equal(
-                stripExpressionMarkers(container.innerHTML),
-                htmlForParts(parts));
-            for (const p in parts) {
-              parts[p].clear();
-              assert.equal(
-                  stripExpressionMarkers(container.innerHTML),
-                  htmlForParts(parts, p));
-              parts[p].setValue(createNodes(2, p));
-              parts[p].commit();
-              assert.equal(
-                  stripExpressionMarkers(container.innerHTML),
-                  htmlForParts(parts));
-            }
-          };
+      const verifyParts = (parts: {[key: string]: DynamicNodePart}) => {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
+        for (const p in parts) {
+          parts[p].clear();
+          assert.equal(
+              stripExpressionMarkers(container.innerHTML),
+              htmlForParts(parts, p));
+          parts[p].setValue(createNodes(2, p));
+          parts[p].commit();
+          assert.equal(
+              stripExpressionMarkers(container.innerHTML), htmlForParts(parts));
+        }
+      };
 
       suite('attach/detach', () => {
         test('attach to empty container part', () => {
