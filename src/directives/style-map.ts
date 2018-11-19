@@ -33,11 +33,20 @@ const styleMapCache = new WeakMap();
 const styleMapStatics = new WeakMap();
 
 /**
- * A directive that applies CSS properties. This must be used in the `style`
- * attribute and must be the only part used in the attribute. It takes the
- * property names in the `styleInfo` object and adds the property values as a
- * css style propertes. For example `{backgroundColor: 'red', borderTop: '5px'}`
- * sets these properties to the element's style.
+ * A directive that applies CSS properties to an element.
+ *
+ * `styleMap` can only be used in the `style` attribute and must be the only
+ * expression in the attribute. It takes the property names in the `styleInfo`
+ * object and adds the property values as CSS propertes. Property names with
+ * dashes (`-`) are assumed to be valid CSS property names and set on the
+ * element's style object using `setProperty()`. Names without dashes are
+ * assumed to be camelCased JavaScript property names and set on the element's
+ * style object using property assignment, allowing the style object to
+ * translate JavaScript-style names to CSS property names.
+ *
+ * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
+ * '0'})` sets the `background-color`, `border-top` and `--size` properties.
+ *
  * @param styleInfo {StyleInfo}
  */
 export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
@@ -47,19 +56,34 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
         'The `styleMap` directive must be used in the style attribute ' +
         'and must be the only part in the attribute.');
   }
-  // handle static styles
+
+  // Handle static styles the first time we see a Part
   if (!styleMapStatics.has(part)) {
     (part.committer.element as HTMLElement).style.cssText =
         part.committer.strings.join(' ');
     styleMapStatics.set(part, true);
   }
-  // remove old styles that no longer apply
+  const style = (part.committer.element as HTMLElement).style;
+
+  // Remove old properties that no longer exist in styleInfo
   const oldInfo = styleMapCache.get(part);
   for (const name in oldInfo) {
     if (!(name in styleInfo)) {
-      ((part.committer.element as HTMLElement).style as any)[name] = null;
+      if (name.indexOf('-') === -1) {
+        (style as any)[name] = null;
+      } else {
+        style.removeProperty(name);
+      }
     }
   }
-  Object.assign((part.committer.element as HTMLElement).style, styleInfo);
+
+  // Add or update properties
+  for (const name in styleInfo) {
+    if (name.indexOf('-') === -1) {
+      (style as any)[name] = styleInfo[name];
+    } else {
+      style.setProperty(name, styleInfo[name]);
+    }
+  }
   styleMapCache.set(part, styleInfo);
 });

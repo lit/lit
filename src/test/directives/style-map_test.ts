@@ -12,12 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
-/// <reference path="../../../node_modules/@types/chai/index.d.ts" />
-
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
+
+const ua = window.navigator.userAgent;
+const isChrome41 = ua.indexOf('Chrome/41') > 0;
+const isIE = ua.indexOf('Trident/') > 0;
+const testIfSupportsCSSVariables = isIE || isChrome41 ? test.skip : test;
 
 const assert = chai.assert;
 
@@ -38,9 +40,9 @@ suite('styleMap', () => {
     container = document.createElement('div');
   });
 
-  test('adds and updates styles', () => {
-    renderStyleMap({marginTop: '2px', paddingBottom: '4px', opacity: '0.5'});
-    const el = container.firstElementChild! as HTMLElement;
+  test('adds and updates properties', () => {
+    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px', opacity: '0.5'});
+    const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     assert.equal(el.style.opacity, '0.5');
@@ -50,9 +52,9 @@ suite('styleMap', () => {
     assert.equal(el.style.opacity, '0.55');
   });
 
-  test('removes styles', () => {
-    renderStyleMap({marginTop: '2px', paddingBottom: '4px'});
-    const el = container.firstElementChild! as HTMLElement;
+  test('removes properties', () => {
+    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px'});
+    const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     renderStyleMap({});
@@ -60,9 +62,9 @@ suite('styleMap', () => {
     assert.equal(el.style.paddingBottom, '');
   });
 
-  test('works with static styles', () => {
-    renderStyleMapStatic({marginTop: '2px', paddingBottom: '4px'});
-    const el = container.firstElementChild! as HTMLElement;
+  test('works with static properties', () => {
+    renderStyleMapStatic({marginTop: '2px', 'padding-bottom': '4px'});
+    const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.height, '1px');
     assert.equal(el.style.color, 'red');
     assert.equal(el.style.marginTop, '2px');
@@ -72,6 +74,16 @@ suite('styleMap', () => {
     assert.equal(el.style.color, 'red');
     assert.equal(el.style.marginTop, '');
     assert.equal(el.style.paddingBottom, '');
+  });
+
+  testIfSupportsCSSVariables('adds and removes CSS variables', () => {
+    renderStyleMap({'--size': '2px'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('--size'), '2px');
+    renderStyleMap({'--size': '4px'});
+    assert.equal(el.style.getPropertyValue('--size'), '4px');
+    renderStyleMap({});
+    assert.equal(el.style.getPropertyValue('--size'), '');
   });
 
   test('throws when used on non-style attribute', () => {
