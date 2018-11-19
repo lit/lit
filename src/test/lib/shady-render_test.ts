@@ -17,12 +17,6 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
-declare global {
-  interface Window {
-    ShadyDOM: any;  // tslint:disable-line
-  }
-}
-
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');

@@ -91,7 +91,7 @@
 					<div class="tsd-signature tsd-kind-icon">parts<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">WeakMap</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">, </span><a href="../classes/_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;new WeakMap&lt;Node, NodePart&gt;()</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/render.ts#L20">lib/render.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/render.ts#L21">lib/render.ts:21</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -100,15 +100,15 @@
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
 					<a name="render" class="tsd-anchor"></a>
-					<h3>render</h3>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> render</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a>, container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span>, templateFactory<span class="tsd-signature-symbol">?: </span><a href="_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a>, container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/render.ts#L36">lib/render.ts:36</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/render.ts#L38">lib/render.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -123,23 +123,30 @@
 								<li>
 									<h5>result: <a href="../classes/_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>a TemplateResult created by evaluating a template tag like
-										<code>html</code> or <code>svg</code>.</p>
+										<div class="lead">
+											<p>a TemplateResult created by evaluating a template tag like
+											<code>html</code> or <code>svg</code>.</p>
+										</div>
 									</div>
 								</li>
 								<li>
 									<h5>container: <span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>A DOM parent to render to. The entire contents are either
-											replaced, or efficiently updated if the same result type was previous
-										rendered there.</p>
+										<div class="lead">
+											<p>A DOM parent to render to. The entire contents are either
+												replaced, or efficiently updated if the same result type was previous
+											rendered there.</p>
+										</div>
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> templateFactory: <a href="_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a><span class="tsd-signature-symbol"> =&nbsp;defaultTemplateFactory</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>a function to create a Template or retreive one from
-										cache.</p>
+										<div class="lead">
+											<p>RenderOptions for the entire render tree rendered to this
+												container. Render options must <em>not</em> change between renders to the same
+											container, as those changes will not effect previously rendered DOM.</p>
+										</div>
 									</div>
 								</li>
 							</ul>
@@ -238,5 +245,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

@@ -1,32 +1,20 @@
 ---
 layout: default
 ---
-<main>
-  <nav class="toc">
+{% include topnav.html %}
+
+<main class="wrapper">
+  <nav class="side-nav">
+    <button id="toggleNavButton">Menu</button>
     <ul>
       <li>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            <path d="M0 0h24v24H0z" fill="none"/>
-        </svg>
-        <input id="searchBox" type="search" placeholder="Search site">
+        <a href="{{site.baseurl}}/guide">Introduction</a>
       </li>
-      <li>
-        <svg class="toc-icon" viewBox="0 0 24 24">
-          <path xmlns="http://www.w3.org/2000/svg" d="M18,2H6C4.9,2,4,2.9,4,4v16c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V4C20,2.9,19.1,2,18,2z M9,4h2v5l-1-0.75L9,9V4z M18,20H6V4   h1v9l3-2.25L13,13V4h5V20z"/>
-        </svg>
-        <span>Guide</span>
-      </li>
-      <ul>
+      {% for guide in site.guide %}
         <li>
-          <a href="{{site.baseurl}}/guide">Introduction</a>
+          <a href="{{site.baseurl}}{{guide.url}}">{{guide.title}}</a>
         </li>
-        {% for guide in site.guide %}
-          <li>
-            <a href="{{site.baseurl}}{{guide.url}}">{{guide.title}}</a>
-          </li>
-        {% endfor %}
-      </ul>
+      {% endfor %}
     </ul>
   </nav>
 
@@ -35,18 +23,15 @@ layout: default
       {{ page.title }}
     </h1>
 
+    <div class="disclaimer">This documentation is a work in progress. It describes prerelease software, and is subject to change.</div>
+
     {{ content }}
   </article>
 </main>
 
 <script>
-  searchBox.addEventListener('keypress', function(event) {
-    if (event.keyCode === 13) {  // enter
-      // Do the search.
-      const site = 'polymer.github.io/lit-html';
-      const query = searchBox.value;
-      window.location = `https://www.google.com/search?q=site%3A${site}+${query}`
-      event.preventDefault();
-    }
+  toggleNavButton.addEventListener('click', function(event) {
+    const nav = event.target.parentElement;
+    nav.classList.toggle('open');
   });
 </script>

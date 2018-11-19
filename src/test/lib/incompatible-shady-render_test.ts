@@ -18,7 +18,6 @@ const assert = chai.assert;
 
 declare global {
   interface Window {
-    ShadyDOM: any;  // tslint:disable-line
     WarnCount: number;
   }
 }

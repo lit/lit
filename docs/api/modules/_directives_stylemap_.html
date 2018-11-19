@@ -75,51 +75,38 @@
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
-							<h3>Functions</h3>
+							<h3>Variables</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_directives_stylemap_.html#stylemap" class="tsd-kind-icon">style<wbr>Map</a></li>
+								<li class="tsd-kind-variable tsd-parent-kind-external-module"><a href="_directives_stylemap_.html#stylemap" class="tsd-kind-icon">style<wbr>Map</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-external-module">
 					<a name="stylemap" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> style<wbr>Map</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">style<wbr>Map<span class="tsd-signature-symbol">(</span>styleInfo<span class="tsd-signature-symbol">: </span><a href="../interfaces/_directives_stylemap_.styleinfo.html" class="tsd-signature-type">StyleInfo</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.attributepart.html" class="tsd-signature-type">AttributePart</a><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/directives/styleMap.ts#L43">directives/styleMap.ts:43</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>A directive that applies CSS properties. This must be used in the <code>style</code>
-										attribute and must be the only part used in the attribute. It takes the
-										property names in the <code>styleInfo</code> object and adds the property values as a
-										css style propertes. For example <code>{backgroundColor: &#39;red&#39;, borderTop: &#39;5px&#39;}</code>
-									sets these properties to the element&#39;s style.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>styleInfo: <a href="../interfaces/_directives_stylemap_.styleinfo.html" class="tsd-signature-type">StyleInfo</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-										</div>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><a href="../classes/_lib_parts_.attributepart.html" class="tsd-signature-type">AttributePart</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+					<div class="tsd-signature tsd-kind-icon">style<wbr>Map<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">(Anonymous function)</span><span class="tsd-signature-symbol"> =&nbsp;directive((styleInfo: StyleInfo) &#x3D;&gt; (part: Part) &#x3D;&gt; {if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||part.committer.name !&#x3D;&#x3D; &#x27;style&#x27; || part.committer.parts.length &gt; 1) {throw new Error(&#x27;The &#x60;styleMap&#x60; directive must be used in the style attribute &#x27; +&#x27;and must be the only part in the attribute.&#x27;);}// handle static stylesif (!styleMapStatics.has(part)) {(part.committer.element as HTMLElement).style.cssText &#x3D;part.committer.strings.join(&#x27; &#x27;);styleMapStatics.set(part, true);}// remove old styles that no longer applyconst oldInfo &#x3D; styleMapCache.get(part);for (const name in oldInfo) {if (!(name in styleInfo)) {((part.committer.element as HTMLElement).style as any)[name] &#x3D; null;}}Object.assign((part.committer.element as HTMLElement).style, styleInfo);styleMapCache.set(part, styleInfo);})</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/directives/styleMap.ts#L43">directives/styleMap.ts:43</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>A directive that applies CSS properties. This must be used in the <code>style</code>
+								attribute and must be the only part used in the attribute. It takes the
+								property names in the <code>styleInfo</code> object and adds the property values as a
+								css style propertes. For example <code>{backgroundColor: &#39;red&#39;, borderTop: &#39;5px&#39;}</code>
+							sets these properties to the element&#39;s style.</p>
+						</div>
+						<dl class="tsd-comment-tags">
+							<dt>param</dt>
+							<dd></dd>
+						</dl>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -139,7 +126,7 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-external-module">
 						<a href="../interfaces/_directives_stylemap_.styleinfo.html" class="tsd-kind-icon">Style<wbr>Info</a>
 					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
+					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
 						<a href="_directives_stylemap_.html#stylemap" class="tsd-kind-icon">style<wbr>Map</a>
 					</li>
 				</ul>
@@ -212,5 +199,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

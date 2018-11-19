@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, DynamicNodePart, NodePart} from '../lit-html.js';
+import {directive, DynamicNodePart, NodePart, Part} from '../lit-html.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new
@@ -31,9 +31,12 @@ import {directive, Directive, DynamicNodePart, NodePart} from '../lit-html.js';
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend =
-    <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any):
-        Directive<NodePart> => directive(async (part: NodePart) => {
+export const asyncAppend = directive(
+    <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) =>
+        async (part: Part) => {
+          if (!(part instanceof NodePart)) {
+            throw new Error('asyncAppend can only be used in text bindings');
+          }
           // If we've already set up this particular iterable, we don't need
           // to do anything.
           if (value === part.value) {

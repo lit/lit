@@ -69,15 +69,15 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Interfaces</h3>
+							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-interface tsd-parent-kind-external-module tsd-has-type-parameter"><a href="../interfaces/_lib_directive_.directive.html" class="tsd-kind-icon">Directive</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-external-module"><a href="_lib_directive_.html#directivefn" class="tsd-kind-icon">Directive<wbr>Fn</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter"><a href="_lib_directive_.html#directive-1" class="tsd-kind-icon">directive</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter"><a href="_lib_directive_.html#directive" class="tsd-kind-icon">directive</a></li>
 								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_directive_.html#isdirective" class="tsd-kind-icon">is<wbr>Directive</a></li>
 							</ul>
 						</section>
@@ -85,33 +85,80 @@
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Type aliases</h2>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-external-module">
+					<a name="directivefn" class="tsd-anchor"></a>
+					<h3>Directive<wbr>Fn</h3>
+					<div class="tsd-signature tsd-kind-icon">Directive<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/directive.ts#L20">lib/directive.ts:20</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>part<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>part: <a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
-					<a name="directive-1" class="tsd-anchor"></a>
+					<a name="directive" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> directive</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">directive&lt;P&gt;<span class="tsd-signature-symbol">(</span>f<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">P</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">P</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">directive&lt;F&gt;<span class="tsd-signature-symbol">(</span>f<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/directive.ts#L23">lib/directive.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/directive.ts#L42">lib/directive.ts:42</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Brands a function as a directive so that lit-html will call the function
+									during template rendering, rather than passing as a value.</p>
+								</div>
+							</div>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
 							<ul class="tsd-type-parameters">
 								<li>
-									<h4>P</h4>
+									<h4>F<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span></h4>
 								</li>
 							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>f: <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">P</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>f: <span class="tsd-signature-type">F</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The directive factory function. Must be a function that returns a
+												function of the signature <code>(part: Part) =&gt; void</code>. The returned function will
+											be called with the part object</p>
+										</div>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_directive_.directive.html" class="tsd-signature-type">Directive</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">P</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">F</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -125,7 +172,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/directive.ts#L28">lib/directive.ts:28</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/directive.ts#L49">lib/directive.ts:49</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -153,11 +200,11 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-external-module tsd-has-type-parameter">
-						<a href="../interfaces/_lib_directive_.directive.html" class="tsd-kind-icon">Directive</a>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
+						<a href="_lib_directive_.html#directivefn" class="tsd-kind-icon">Directive<wbr>Fn</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-has-type-parameter">
-						<a href="_lib_directive_.html#directive-1" class="tsd-kind-icon">directive</a>
+						<a href="_lib_directive_.html#directive" class="tsd-kind-icon">directive</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-external-module">
 						<a href="_lib_directive_.html#isdirective" class="tsd-kind-icon">is<wbr>Directive</a>
@@ -232,5 +279,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

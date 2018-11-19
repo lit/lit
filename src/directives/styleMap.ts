@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, Directive, PropertyPart} from '../lit-html.js';
+import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 export interface StyleInfo {
   [name: string]: string;
@@ -40,27 +40,26 @@ const styleMapStatics = new WeakMap();
  * sets these properties to the element's style.
  * @param styleInfo {StyleInfo}
  */
-export const styleMap = (styleInfo: StyleInfo): Directive<AttributePart> =>
-    directive((part: AttributePart) => {
-      if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
-          part.committer.name !== 'style' || part.committer.parts.length > 1) {
-        throw new Error(
-            'The `styleMap` directive must be used in the style attribute ' +
-            'and must be the only part in the attribute.');
-      }
-      // handle static styles
-      if (!styleMapStatics.has(part)) {
-        (part.committer.element as HTMLElement).style.cssText =
-            part.committer.strings.join(' ');
-        styleMapStatics.set(part, true);
-      }
-      // remove old styles that no longer apply
-      const oldInfo = styleMapCache.get(part);
-      for (const name in oldInfo) {
-        if (!(name in styleInfo)) {
-          ((part.committer.element as HTMLElement).style as any)[name] = null;
-        }
-      }
-      Object.assign((part.committer.element as HTMLElement).style, styleInfo);
-      styleMapCache.set(part, styleInfo);
-    });
+export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
+  if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
+      part.committer.name !== 'style' || part.committer.parts.length > 1) {
+    throw new Error(
+        'The `styleMap` directive must be used in the style attribute ' +
+        'and must be the only part in the attribute.');
+  }
+  // handle static styles
+  if (!styleMapStatics.has(part)) {
+    (part.committer.element as HTMLElement).style.cssText =
+        part.committer.strings.join(' ');
+    styleMapStatics.set(part, true);
+  }
+  // remove old styles that no longer apply
+  const oldInfo = styleMapCache.get(part);
+  for (const name in oldInfo) {
+    if (!(name in styleInfo)) {
+      ((part.committer.element as HTMLElement).style as any)[name] = null;
+    }
+  }
+  Object.assign((part.committer.element as HTMLElement).style, styleInfo);
+  styleMapCache.set(part, styleInfo);
+});
