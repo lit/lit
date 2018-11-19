@@ -52,7 +52,8 @@ export class TemplateResult {
       let addedMarker = false;
       acc += s.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
         addedMarker = true;
-        return (p2.substring(p2.length - 5) === boundAttributeSuffix) ?
+        return (p2.substring(p2.length - boundAttributeSuffix.length) ===
+                boundAttributeSuffix) ?
             match :
             `${p1}${p2}${boundAttributeSuffix}${p3}${marker}`;
       });
