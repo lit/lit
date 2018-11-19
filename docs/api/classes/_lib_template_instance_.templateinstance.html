@@ -96,8 +96,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_instance_.templateinstance.html#_gettemplate" class="tsd-kind-icon">_get<wbr>Template</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_instance_.templateinstance.html#_parts" class="tsd-kind-icon">_parts</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_instance_.templateinstance.html#options" class="tsd-kind-icon">options</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_instance_.templateinstance.html#processor" class="tsd-kind-icon">processor</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_instance_.templateinstance.html#template" class="tsd-kind-icon">template</a></li>
 							</ul>
@@ -118,13 +118,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Template<wbr>Instance<span class="tsd-signature-symbol">(</span>template<span class="tsd-signature-symbol">: </span><a href="_lib_template_.template.html" class="tsd-signature-type">Template</a>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a>, getTemplate<span class="tsd-signature-symbol">: </span><a href="../modules/_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_template_instance_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Template<wbr>Instance<span class="tsd-signature-symbol">(</span>template<span class="tsd-signature-symbol">: </span><a href="_lib_template_.template.html" class="tsd-signature-type">Template</a>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_template_instance_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L30">lib/template-instance.ts:30</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L31">lib/template-instance.ts:31</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -136,7 +136,7 @@
 									<h5>processor: <a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></h5>
 								</li>
 								<li>
-									<h5>getTemplate: <a href="../modules/_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a></h5>
+									<h5>options: <a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_lib_template_instance_.templateinstance.html" class="tsd-signature-type">TemplateInstance</a></h4>
@@ -147,22 +147,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="_gettemplate" class="tsd-anchor"></a>
-					<h3>_get<wbr>Template</h3>
-					<div class="tsd-signature tsd-kind-icon">_get<wbr>Template<span class="tsd-signature-symbol">:</span> <a href="../modules/_lib_template_factory_.html#templatefactory" class="tsd-signature-type">TemplateFactory</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L29">lib/template-instance.ts:29</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="_parts" class="tsd-anchor"></a>
 					<h3>_parts</h3>
 					<div class="tsd-signature tsd-kind-icon">_parts<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L27">lib/template-instance.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L28">lib/template-instance.ts:28</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="options" class="tsd-anchor"></a>
+					<h3>options</h3>
+					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L30">lib/template-instance.ts:30</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -172,7 +172,7 @@
 					<div class="tsd-signature tsd-kind-icon">processor<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L28">lib/template-instance.ts:28</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L29">lib/template-instance.ts:29</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -182,7 +182,7 @@
 					<div class="tsd-signature tsd-kind-icon">template<span class="tsd-signature-symbol">:</span> <a href="_lib_template_.template.html" class="tsd-signature-type">Template</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L30">lib/template-instance.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L31">lib/template-instance.ts:31</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -199,7 +199,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L55">lib/template-instance.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L56">lib/template-instance.ts:56</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DocumentFragment</span></h4>
@@ -216,7 +216,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/template-instance.ts#L40">lib/template-instance.ts:40</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-instance.ts#L41">lib/template-instance.ts:41</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -253,10 +253,10 @@
 								<a href="_lib_template_instance_.templateinstance.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_instance_.templateinstance.html#_gettemplate" class="tsd-kind-icon">_get<wbr>Template</a>
+								<a href="_lib_template_instance_.templateinstance.html#_parts" class="tsd-kind-icon">_parts</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_instance_.templateinstance.html#_parts" class="tsd-kind-icon">_parts</a>
+								<a href="_lib_template_instance_.templateinstance.html#options" class="tsd-kind-icon">options</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_lib_template_instance_.templateinstance.html#processor" class="tsd-kind-icon">processor</a>
@@ -344,5 +344,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

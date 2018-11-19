@@ -94,8 +94,11 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#_boundhandleevent" class="tsd-kind-icon">_bound<wbr>Handle<wbr>Event</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#_options" class="tsd-kind-icon">_options</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#element" class="tsd-kind-icon">element</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#eventcontext" class="tsd-kind-icon">event<wbr>Context</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#eventname" class="tsd-kind-icon">event<wbr>Name</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.eventpart.html#value" class="tsd-kind-icon">value</a></li>
 							</ul>
@@ -117,13 +120,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Event<wbr>Part<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_parts_.eventpart.html" class="tsd-signature-type">EventPart</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Event<wbr>Part<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, eventContext<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EventTarget</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_parts_.eventpart.html" class="tsd-signature-type">EventPart</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L410">lib/parts.ts:410</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L432">lib/parts.ts:432</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -134,6 +137,9 @@
 								<li>
 									<h5>eventName: <span class="tsd-signature-type">string</span></h5>
 								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> eventContext: <span class="tsd-signature-type">EventTarget</span></h5>
+								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="_lib_parts_.eventpart.html" class="tsd-signature-type">EventPart</a></h4>
 						</li>
@@ -143,12 +149,53 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_boundhandleevent" class="tsd-anchor"></a>
+					<h3>_bound<wbr>Handle<wbr>Event</h3>
+					<div class="tsd-signature tsd-kind-icon">_bound<wbr>Handle<wbr>Event<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L432">lib/parts.ts:432</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Event</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>event: <span class="tsd-signature-type">Event</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_options" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> _options</h3>
+					<div class="tsd-signature tsd-kind-icon">_options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AddEventListenerOptions</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L430">lib/parts.ts:430</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="_pendingvalue" class="tsd-anchor"></a>
 					<h3>_pending<wbr>Value</h3>
 					<div class="tsd-signature tsd-kind-icon">_pending<wbr>Value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L410">lib/parts.ts:410</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L431">lib/parts.ts:431</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -158,7 +205,17 @@
 					<div class="tsd-signature tsd-kind-icon">element<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Element</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L407">lib/parts.ts:407</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L426">lib/parts.ts:426</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="eventcontext" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> event<wbr>Context</h3>
+					<div class="tsd-signature tsd-kind-icon">event<wbr>Context<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">EventTarget</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L428">lib/parts.ts:428</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -168,7 +225,7 @@
 					<div class="tsd-signature tsd-kind-icon">event<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L408">lib/parts.ts:408</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L427">lib/parts.ts:427</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -179,7 +236,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#value">value</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L409">lib/parts.ts:409</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L429">lib/parts.ts:429</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -197,7 +254,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#commit">commit</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L421">lib/parts.ts:421</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L445">lib/parts.ts:445</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -214,7 +271,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L441">lib/parts.ts:441</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L478">lib/parts.ts:478</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -238,7 +295,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#setvalue">setValue</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/7bb2143/src/lib/parts.ts#L417">lib/parts.ts:417</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L441">lib/parts.ts:441</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -284,10 +341,19 @@
 								<a href="_lib_parts_.eventpart.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_lib_parts_.eventpart.html#_boundhandleevent" class="tsd-kind-icon">_bound<wbr>Handle<wbr>Event</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_lib_parts_.eventpart.html#_options" class="tsd-kind-icon">_options</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_lib_parts_.eventpart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_lib_parts_.eventpart.html#element" class="tsd-kind-icon">element</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_lib_parts_.eventpart.html#eventcontext" class="tsd-kind-icon">event<wbr>Context</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_lib_parts_.eventpart.html#eventname" class="tsd-kind-icon">event<wbr>Name</a>
@@ -390,5 +456,14 @@
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
 <script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+<script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-39334307-23', '');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>
