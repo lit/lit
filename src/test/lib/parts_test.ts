@@ -111,14 +111,14 @@ suite('Parts', () => {
               last = part;
             }
             return ret;
-          }
+          };
 
       const htmlForParts =
           (parts: {[key: string]: DynamicNodePart}, clearedPart?: string) =>
               `<s></s>` +
           Object.keys(parts)
-              .filter(p => p !== clearedPart)
-              .map(p => `<${p}0></${p}0><${p}1></${p}1>`)
+              .filter((p) => (p) !== clearedPart)
+              .map((p) => `<${p}0></${p}0><${p}1></${p}1>`)
               .join('') +
           `<e></e>`;
 
@@ -127,7 +127,7 @@ suite('Parts', () => {
             assert.equal(
                 stripExpressionMarkers(container.innerHTML),
                 htmlForParts(parts));
-            for (let p in parts) {
+            for (const p in parts) {
               parts[p].clear();
               assert.equal(
                   stripExpressionMarkers(container.innerHTML),
@@ -138,7 +138,7 @@ suite('Parts', () => {
                   stripExpressionMarkers(container.innerHTML),
                   htmlForParts(parts));
             }
-          }
+          };
 
       suite('attach/detach', () => {
         test('attach to empty container part', () => {

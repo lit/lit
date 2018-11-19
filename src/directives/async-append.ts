@@ -70,7 +70,7 @@ export const asyncAppend = directive(
               v = mapper(v, i);
             }
 
-            let prevItemPart = itemPart;
+            const prevItemPart = itemPart;
 
             // Like with sync iterables, each item induces a Part, so we need
             // to keep track of start and end nodes for the Part.
