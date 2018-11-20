@@ -22,7 +22,6 @@ import {lastAttributeNameRegex, marker, nodeMarker, rewritesStyleAttribute} from
  */
 export class TemplateResult {
   strings: TemplateStringsArray;
-  key?: string;
   values: any[];
   type: string;
   processor: TemplateProcessor;
