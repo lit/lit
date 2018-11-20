@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {StyleInfo, styleMap} from '../../directives/styleMap.js';
+import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
