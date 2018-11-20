@@ -40,26 +40,25 @@ export class TemplateResult {
    */
   getHTML(): string {
     const endIndex = this.strings.length - 1;
-    return this.strings.reduce((acc, s, i) => {
-      if (i === endIndex) {
-        return acc + s;
-      }
+    let html = '';
+    for (let i = 0; i < endIndex; i++) {
+      const s = this.strings[i];
       // Append a suffix to all bound attribute names to opt out of special
       // attribute value parsing that IE11 and Edge do, like for style and
       // many SVG attributes.
       // The Template class also appends the same suffix when looking up
       // attributes to creat Parts.
       let addedMarker = false;
-      acc += s.replace(
+      html += s.replace(
           lastAttributeNameRegex, (_match, whitespace, name, value) => {
             addedMarker = true;
             return whitespace + name + boundAttributeSuffix + value + marker;
           });
       if (!addedMarker) {
-        acc += nodeMarker;
+        html += nodeMarker;
       }
-      return acc;
-    }, '');
+    }
+    return html + this.strings[endIndex];
   }
 
   getTemplateElement(): HTMLTemplateElement {
