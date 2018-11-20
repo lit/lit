@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- ### Added -->
-<!-- ### Changed -->
+### Changed
+* [Breaking] Renamed `classMap` and `styleMap` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
