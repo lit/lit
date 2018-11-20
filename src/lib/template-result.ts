@@ -50,13 +50,11 @@ export class TemplateResult {
       // The Template class also appends the same suffix when looking up
       // attributes to creat Parts.
       let addedMarker = false;
-      acc += s.replace(lastAttributeNameRegex, (match, p1, p2, p3) => {
-        addedMarker = true;
-        return (p2.substring(p2.length - boundAttributeSuffix.length) ===
-                boundAttributeSuffix) ?
-            match :
-            `${p1}${p2}${boundAttributeSuffix}${p3}${marker}`;
-      });
+      acc += s.replace(
+          lastAttributeNameRegex, (_match, whitespace, name, value) => {
+            addedMarker = true;
+            return whitespace + name + boundAttributeSuffix + value + marker;
+          });
       if (!addedMarker) {
         acc += nodeMarker;
       }
