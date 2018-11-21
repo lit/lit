@@ -254,7 +254,6 @@ Directives are functions that can extend lit-html by customizing the way a bindi
 
 lit-html includes a few built-in directives.
 
-*   [`when`](#when)
 *   [`repeat`](#repeat)
 *   [`ifDefined`](#ifdefined)
 *   [`guard`](#guard)
@@ -262,25 +261,6 @@ lit-html includes a few built-in directives.
 *   [`asyncAppend` and `asyncReplace`](#asyncappend-and-asyncreplace)
 
 **Directives may change.** The exact list of directives included with lit-html, and the API of the directives may be subject to change before lit-html 1.0 is released.
-
-
-### when 
-
-`when(condition, trueTemplate, falseTemplate)`
-
-Efficiently switches between two templates based on the given condition. The rendered content is cached, and re-used when switching conditions. Templates are evaluated lazily, so the passed values must be functions.
-
-Example:
-
-```js
-import { when } from 'lit-html/directives/when';
-
-let checked = false;
-html`
-  ${when(checked, () => html`Checkmark is checked`, 
-         () => html`Checkmark is not checked`)}
-`;
-```
 
 ### repeat 
 

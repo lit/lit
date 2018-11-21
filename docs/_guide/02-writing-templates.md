@@ -187,10 +187,6 @@ html`
 `
 ```
 
-#### Conditionals with the when directive
-
-
-
 ## Repeating templates
 
 You can use standard JavaScript constructs to create repeating templates. 

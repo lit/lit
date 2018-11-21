@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Added -->
 ### Changed
 * [Breaking] Renamed `classMap` and `styleMap` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
-<!-- ### Removed -->
+### Removed
+* [Breaking] Removed the when() directive.  Users may achieve similar behavior by wrapping a ternary with the `cache` directive.
 <!-- ### Fixed -->
 
 ## [0.13.0] - 2018-11-08
