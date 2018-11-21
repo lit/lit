@@ -58,7 +58,7 @@ export function templateFactory(result: TemplateResult) {
 
   // If the TemplateStringsArray is new, generate a key from the strings
   // This key is shared between all templates with identical content
-  let key = result.strings.join(marker);
+  const key = result.strings.join(marker);
 
   // Check if we already have a Template for this key
   template = templateCache.keyString.get(key);
