@@ -13,7 +13,7 @@
  */
 
 
-import {html, render, svg} from '../lit-html.js';
+import {html, render, svg} from '../../lit-html.js';
 
 /** 
  * Adapted from the Ractive.js clock example: http://www.ractivejs.org/examples/clock/
