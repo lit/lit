@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ## Unreleased
-<!-- ### Added -->
+### Added
+* Added the `cache()` directive to cache DOM created from templates for fast switching between templates.
 ### Changed
 * [Breaking] Renamed `classMap` and `styleMap` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
 <!-- ### Removed -->
