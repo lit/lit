@@ -71,7 +71,6 @@ export const cache = directive((value: any) => (part: Part) => {
       }
       reparentNodes(
           cachedTemplate.nodes, part.startNode.nextSibling, part.endNode);
-      part.clear();
     }
   }
 
