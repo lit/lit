@@ -143,7 +143,7 @@ suite('asyncReplace', () => {
     }
 
     const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
-    const delay = (delay: number) => new Promise(res => setTimeout(res, delay));
+    const delay = (delay: number) => new Promise((res) => setTimeout(res, delay));
 
     render(component(generator(delay(20), 'slow')), container);
     render(component(generator(delay(10), 'fast')), container);
