@@ -52,17 +52,17 @@ export const asyncReplace = directive(
           let i = 0;
 
           for await (let v of value) {
+            // Check to make sure that value is the still the current value of
+            // the part, and if not bail because a new value owns this part
+            if (part.value !== value) {
+              break;
+            }
+
             // When we get the first value, clear the part. This let's the
             // previous value display until we can replace it.
             if (i === 0) {
               part.clear();
               itemPart.appendIntoPart(part);
-            }
-
-            // Check to make sure that value is the still the current value of
-            // the part, and if not bail because a new value owns this part
-            if (part.value !== value) {
-              break;
             }
 
             // As a convenience, because functional-programming-style
