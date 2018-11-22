@@ -59,7 +59,7 @@ const shadyTemplateFactory = (scopeName: string) =>
         return template;
       }
 
-      let key = result.strings.join(marker);
+      const key = result.strings.join(marker);
       template = templateCache.keyString.get(key);
       if (template === undefined) {
         const element = result.getTemplateElement();
@@ -79,10 +79,10 @@ const TEMPLATE_TYPES = ['html', 'svg'];
  * Removes all style elements from Templates for the given scopeName.
  */
 const removeStylesFromLitTemplates = (scopeName: string) => {
-  TEMPLATE_TYPES.forEach(type => {
+  TEMPLATE_TYPES.forEach((type) => {
     const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
     if (templates !== undefined) {
-      templates.keyString.forEach(template => {
+      templates.keyString.forEach((template) => {
         const {element: {content}} = template;
         // IE 11 doesn't support the iterable param Set constructor
         const styles = new Set<Element>();
