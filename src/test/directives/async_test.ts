@@ -266,7 +266,8 @@ suite('async', () => {
     const promise1 = Promise.resolve('foo');
     const promise2 = Promise.resolve('bar');
 
-    const t = (p1: Promise<any>, p2: Promise<any>) => html`<div>${async(p1, p2)}</div>`;
+    const t = (p1: Promise<any>, p2: Promise<any>) =>
+        html`<div>${async(p1, p2)}</div>`;
 
     render(t(promise1, promise2), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');

@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {isPrimitive} from '../lib/parts.js';
 import {directive, Part} from '../lit-html.js';
-import { isPrimitive } from '../lib/parts.js';
 
 interface AsyncState {
   lastRenderedIndex?: number;
@@ -27,7 +27,6 @@ const _state = new WeakMap<Part, AsyncState>();
  * rendered until the Promise resolves.
  */
 export const async = directive((...args: any[]) => (part: Part) => {
-
   let state = _state.get(part)!;
   if (state === undefined) {
     state = {
@@ -57,7 +56,8 @@ export const async = directive((...args: any[]) => (part: Part) => {
       if (index === -1) {
         return;
       }
-      if (state.lastRenderedIndex === undefined || index < state.lastRenderedIndex) {
+      if (state.lastRenderedIndex === undefined ||
+          index < state.lastRenderedIndex) {
         state.lastRenderedIndex = index;
         part.setValue(value);
         part.commit();
