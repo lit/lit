@@ -15,14 +15,9 @@
 import {directive, Part} from '../lit-html.js';
 import { isPrimitive } from '../lib/parts.js';
 
-interface PromisedValue {
-  index: number;
-  resolved: boolean;
-}
-
 interface AsyncState {
-  index?: number;
-  promises: WeakMap<any, PromisedValue>;
+  lastRenderedIndex?: number;
+  values: unknown[];
 }
 
 const _state = new WeakMap<Part, AsyncState>();
@@ -36,45 +31,37 @@ export const async = directive((...args: any[]) => (part: Part) => {
   let state = _state.get(part)!;
   if (state === undefined) {
     state = {
-      index: undefined,
-      promises: new WeakMap<any, PromisedValue>(),
+      values: [],
     };
     _state.set(part, state);
-  } else {
-    state.promises = new WeakMap<any, PromisedValue>();
   }
+  const previousValues = state.values;
+  state.values = args;
 
-  let i = -1;
-  for (const promise of args) {
-    i++;
-    if (state.index !== undefined && i > state.index) {
-      break;
+  for (let i = 0; i < args.length; i++) {
+    const promise = args[i];
+    if (promise === previousValues[i]) {
+      continue;
     }
     if (isPrimitive(promise) || typeof promise.then !== 'function') {
       part.setValue(promise);
-      state.index = i;
+      state.lastRenderedIndex = i;
       break;
     }
-    let promisedValue = state.promises.get(promise);
 
-    // The first time we see a value we save and await it
-    if (promisedValue === undefined) {
-      promisedValue = {resolved: false, index: i};
-      state.promises.set(promise, promisedValue);
+    // We have a value that we haven't seen before, forget what we rendered
+    state.lastRenderedIndex = undefined;
 
-      Promise.resolve(promise).then((value: unknown) => {
-        if (!state.promises.has(promise)) {
-          return;
-        }
-        promisedValue!.resolved = true;
-        if (state.index === undefined || promisedValue!.index < state.index) {
-          state.index = promisedValue!.index;
-          part.setValue(value);
-          part.commit();
-        }
-      });
-    } else {
-      promisedValue.index = i;
-    }
+    Promise.resolve(promise).then((value: unknown) => {
+      const index = state.values.indexOf(promise);
+      if (index === -1) {
+        return;
+      }
+      if (state.lastRenderedIndex === undefined || index < state.lastRenderedIndex) {
+        state.lastRenderedIndex = index;
+        part.setValue(value);
+        part.commit();
+      }
+    });
   }
 });

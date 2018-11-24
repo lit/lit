@@ -262,7 +262,7 @@ suite('async', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
-  test.only('renders Promises with changing priorities', async () => {
+  test('renders Promises with changing priorities', async () => {
     const promise1 = Promise.resolve('foo');
     const promise2 = Promise.resolve('bar');
 
