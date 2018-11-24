@@ -12,41 +12,69 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, noChange, Part} from '../lit-html.js';
+import {directive, Part} from '../lit-html.js';
+import { isPrimitive } from '../lib/parts.js';
 
 interface PromisedValue {
-  promise: Promise<unknown>;
+  index: number;
   resolved: boolean;
 }
 
-const promises = new WeakMap<Part, PromisedValue>();
+interface AsyncState {
+  index?: number;
+  promises: WeakMap<any, PromisedValue>;
+}
+
+const _state = new WeakMap<Part, AsyncState>();
 
 /**
  * Renders a Promise to a Part when it resolves. `defaultContent` will be
  * rendered until the Promise resolves.
  */
-export const async = directive(
-    (promise: Promise<any>,
-     defaultContent: unknown = noChange) => (part: Part) => {
-      let promisedValue = promises.get(part);
+export const async = directive((...args: any[]) => (part: Part) => {
 
-      // The first time we see a value we save and await it
-      if (promisedValue === undefined || promisedValue.promise !== promise) {
-        promisedValue = {promise, resolved: false};
-        promises.set(part, promisedValue);
+  let state = _state.get(part)!;
+  if (state === undefined) {
+    state = {
+      index: undefined,
+      promises: new WeakMap<any, PromisedValue>(),
+    };
+    _state.set(part, state);
+  } else {
+    state.promises = new WeakMap<any, PromisedValue>();
+  }
 
-        Promise.resolve(promise).then((value: unknown) => {
-          const currentPromisedValue = promises.get(part);
-          promisedValue!.resolved = true;
-          if (currentPromisedValue === promisedValue) {
-            part.setValue(value);
-            part.commit();
-          }
-        });
-      }
+  let i = -1;
+  for (const promise of args) {
+    i++;
+    if (state.index !== undefined && i > state.index) {
+      break;
+    }
+    if (isPrimitive(promise) || typeof promise.then !== 'function') {
+      part.setValue(promise);
+      state.index = i;
+      break;
+    }
+    let promisedValue = state.promises.get(promise);
 
-      // If the promise has not yet resolved, set/update the defaultContent
-      if (!promisedValue.resolved && defaultContent !== noChange) {
-        part.setValue(defaultContent);
-      }
-    });
+    // The first time we see a value we save and await it
+    if (promisedValue === undefined) {
+      promisedValue = {resolved: false, index: i};
+      state.promises.set(promise, promisedValue);
+
+      Promise.resolve(promise).then((value: unknown) => {
+        if (!state.promises.has(promise)) {
+          return;
+        }
+        promisedValue!.resolved = true;
+        if (state.index === undefined || promisedValue!.index < state.index) {
+          state.index = promisedValue!.index;
+          part.setValue(value);
+          part.commit();
+        }
+      });
+    } else {
+      promisedValue.index = i;
+    }
+  }
+});

@@ -41,7 +41,7 @@ suite('async', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
-  test('renders defaultContent immediately', async () => {
+  test('renders non-Promises immediately', async () => {
     const defaultContent = html`<span>loading...</span>`;
     render(
         html`<div>${async(deferred.promise, defaultContent)}</div>`, container);
@@ -53,7 +53,7 @@ suite('async', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
-  test('renders defaultContent only once', async () => {
+  test('renders low-priority content only once', async () => {
     const defaultContent = html`<span>loading...</span>`;
     const go = () => render(
         html`<div>${async(deferred.promise, defaultContent)}</div>`, container);
@@ -178,7 +178,7 @@ suite('async', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
-  test('renders racing Promises correctly', async () => {
+  test('renders racing Promises across renders correctly', async () => {
     let resolve1: (v: any) => void;
     const promise1 = new Promise((res, _) => {
       resolve1 = res;
@@ -188,17 +188,14 @@ suite('async', () => {
       resolve2 = res;
     });
 
-    let promise = promise1;
-
-    const t = () => html`<div>${async(promise)}</div>`;
+    const t = (promise: any) => html`<div>${async(promise)}</div>`;
 
     // First render, first Promise, no value
-    render(t(), container);
+    render(t(promise1), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
-    promise = promise2;
     // Second render, second Promise, still no value
-    render(t(), container);
+    render(t(promise2), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Resolve the first Promise, should not update the container
@@ -211,8 +208,7 @@ suite('async', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
-  // This test is aspirational
-  test.skip('renders racing primary and defaultContent Promises', async () => {
+  test('renders Promises resolving in high-to-low priority', async () => {
     let resolve1: (v: any) => void;
     const promise1 = new Promise((res, _) => {
       resolve1 = res;
@@ -222,7 +218,7 @@ suite('async', () => {
       resolve2 = res;
     });
 
-    const t = () => html`<div>${async(promise1, async(promise2))}</div>`;
+    const t = () => html`<div>${async(promise1, promise2)}</div>`;
 
     // First render with neither Promise resolved
     render(t(), container);
@@ -233,9 +229,55 @@ suite('async', () => {
     await promise1;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
-    // Resolve the defaultContent Promise, should not update the container
+    // Resolve the secondary Promise, should not update the container
     resolve2!('bar');
     await promise2;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+  });
+
+  test('renders Promises resolving in low-to-high priority', async () => {
+    let resolve1: (v: any) => void;
+    const promise1 = new Promise((res, _) => {
+      resolve1 = res;
+    });
+    let resolve2: (v: any) => void;
+    const promise2 = new Promise((res, _) => {
+      resolve2 = res;
+    });
+
+    const t = () => html`<div>${async(promise1, promise2)}</div>`;
+
+    // First render with neither Promise resolved
+    render(t(), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    // Resolve the secondary Promise, updates the DOM
+    resolve2!('bar');
+    await promise2;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
+
+    // Resolve the primary Promise, updates the DOM
+    resolve1!('foo');
+    await promise1;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+  });
+
+  test.only('renders Promises with changing priorities', async () => {
+    const promise1 = Promise.resolve('foo');
+    const promise2 = Promise.resolve('bar');
+
+    const t = (p1: Promise<any>, p2: Promise<any>) => html`<div>${async(p1, p2)}</div>`;
+
+    render(t(promise1, promise2), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    // Await a microtask to let both Promise then callbacks go
+    await 0;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
+    render(t(promise2, promise1), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+    // Await a microtask to let both Promise then callbacks go
+    await 0;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 });
