@@ -10,14 +10,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
-### Added
-* Added the `cache()` directive to cache DOM created from templates for fast switching between templates.
-### Changed
-* [Breaking] Renamed `classMap` and `styleMap` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
-### Removed
-* [Breaking] Removed the when() directive.  Users may achieve similar behavior by wrapping a ternary with the `cache` directive.
+<!-- ## Unreleased -->
+<!-- ### Changed -->
+<!-- ### Added -->
+<!-- ### Removed -->
 <!-- ### Fixed -->
+
+## Unreleased
+### Changed
+* `until()` can not take any number of sync or async arguments. ([#555](https://github.com/Polymer/lit-html/pull/555))
+### Added
+* Removed Promise as a supposed node-position value type. ([#555](https://github.com/Polymer/lit-html/pull/555))
+* [Breaking] Renamed `classMap.js` and `styleMap.js` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
+* [Breaking] Removed the `when()` directive.  Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
+### Removed
 
 ## [0.13.0] - 2018-11-08
 ### Changed
@@ -37,8 +43,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Event listeners are called with a configurable `this` reference, which is set via the `eventContext` option to `render()`. ([#523](https://github.com/Polymer/lit-html/pull/523))
 * Support for event listener options, by passing the listener itself as both the second and third arguments to add/removeEventListener().
 
-<!-- ### Removed -->
-<!-- ### Fixed -->
 
 ## [0.11.4] - 2018-09-17
 ### Fixed
