@@ -29,7 +29,7 @@ suite('async', () => {
     deferred = new Deferred<string>();
   });
 
-  test('renders a Promise', async () => {
+  test('renders a Promise when it resolves', async () => {
     let resolve: (v: any) => void;
     const promise = new Promise((res, _) => {
       resolve = res;
@@ -54,10 +54,11 @@ suite('async', () => {
   });
 
   test('renders low-priority content only once', async () => {
-    const defaultContent = html`<span>loading...</span>`;
     const go = () => render(
-        html`<div>${async(deferred.promise, defaultContent)}</div>`, container);
+        html`<div>${async(deferred.promise, 'loading...')}</div>`, container);
     go();
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div>loading...</div>');
     deferred.resolve('foo');
     await deferred.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
@@ -266,8 +267,7 @@ suite('async', () => {
     const promise1 = Promise.resolve('foo');
     const promise2 = Promise.resolve('bar');
 
-    const t = (p1: Promise<any>, p2: Promise<any>) =>
-        html`<div>${async(p1, p2)}</div>`;
+    const t = (p1: any, p2: any) => html`<div>${async(p1, p2)}</div>`;
 
     render(t(promise1, promise2), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
@@ -277,8 +277,34 @@ suite('async', () => {
 
     render(t(promise2, promise1), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
-    // Await a microtask to let both Promise then callbacks go
     await 0;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
+  });
+
+  test('renders low-priority content when arguments change', async () => {
+    let resolve1: (v: any) => void;
+    const promise1 = new Promise((res, _) => {
+      resolve1 = res;
+    });
+    const promise2 = Promise.resolve('bar');
+
+    const t = (p1: any, p2: any) => html`<div>${async(p1, p2)}</div>`;
+
+    render(t('string', promise2), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div>string</div>');
+    // Await a microtask to let both Promise then callbacks go
+    await 0;
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div>string</div>');
+
+    render(t(promise1, promise2), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div>string</div>');
+    await 0;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
+    resolve1!('foo');
+    await promise1;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 });

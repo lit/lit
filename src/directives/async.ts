@@ -16,15 +16,35 @@ import {isPrimitive} from '../lib/parts.js';
 import {directive, Part} from '../lit-html.js';
 
 interface AsyncState {
+  /**
+   * The last rendered index of a call to async(). A value only renders if its
+   * index is less than the `lastRenderedIndex`.
+   */
   lastRenderedIndex?: number;
+
   values: unknown[];
 }
 
 const _state = new WeakMap<Part, AsyncState>();
 
 /**
- * Renders a Promise to a Part when it resolves. `defaultContent` will be
- * rendered until the Promise resolves.
+ * Renders one of a series of values, including Promises, to a Part.
+ *
+ * Values are rendered in priority order, with the first argument having the
+ * highest priority and the last argument having the lowest priority. If a
+ * value is a Promise, low-priority values will be rendered until it resolves.
+ *
+ * The priority of values can be used to create placeholder content for async
+ * data. For example, a Promise with pending content can be the first,
+ * highest-priority, argument, and a non_promise loading indicator template can
+ * be used as the second, lower-priority, argument. The loading indicator will
+ * render immediately, and the primary content will render when the Promise
+ * resolves.
+ *
+ * Example:
+ *
+ *     const content = fetch('./content.txt').then(r => r.text());
+ *     html`${async(content, html`<span>Loading...</span>`)}`
  */
 export const async = directive((...args: any[]) => (part: Part) => {
   let state = _state.get(part)!;
@@ -35,31 +55,41 @@ export const async = directive((...args: any[]) => (part: Part) => {
     _state.set(part, state);
   }
   const previousValues = state.values;
+  let changedSinceLastRender = false;
   state.values = args;
 
   for (let i = 0; i < args.length; i++) {
-    const promise = args[i];
-    if (promise === previousValues[i]) {
+    const value = args[i];
+
+    // If we've seen this value before, we've already handled it.
+    if (value === previousValues[i] && !changedSinceLastRender) {
       continue;
     }
-    if (isPrimitive(promise) || typeof promise.then !== 'function') {
-      part.setValue(promise);
+    changedSinceLastRender = true;
+
+    // Render non-Promise values immediately
+    if (isPrimitive(value) || typeof value.then !== 'function') {
+      part.setValue(value);
       state.lastRenderedIndex = i;
+      // Since a lower-priority value will never overwrite a higher-priority
+      // synchronous value, we can stop processsing now.
       break;
     }
 
-    // We have a value that we haven't seen before, forget what we rendered
+    // We have a Promise that we haven't seen before, so priorities may have
+    // changed. Forget what we rendered before.
     state.lastRenderedIndex = undefined;
 
-    Promise.resolve(promise).then((value: unknown) => {
-      const index = state.values.indexOf(promise);
-      if (index === -1) {
-        return;
-      }
-      if (state.lastRenderedIndex === undefined ||
-          index < state.lastRenderedIndex) {
+    Promise.resolve(value).then((resolvedValue: unknown) => {
+      const index = state.values.indexOf(value);
+      // If state.values doesn't contain the value, we've re-rendered without
+      // the value, so don't render it. Then, only render if the value is
+      // higher-priority than what's already been rendered.
+      if (index > -1 &&
+          (state.lastRenderedIndex === undefined ||
+           index < state.lastRenderedIndex)) {
         state.lastRenderedIndex = index;
-        part.setValue(value);
+        part.setValue(resolvedValue);
         part.commit();
       }
     });
