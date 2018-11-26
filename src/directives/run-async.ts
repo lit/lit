@@ -19,6 +19,8 @@ interface AsyncRunState {
   promise: Promise<unknown>;
   abortController: AbortController;
   state: 'initial'|'pending'|'success'|'failure';
+  resolvePending: () => void;
+  rejectPending: (e: Error) => void;
 }
 
 const runs = new WeakMap<Part, AsyncRunState>();
@@ -60,8 +62,15 @@ export const runAsync = directive(
         if (currentRunState !== undefined &&
             currentRunState.state === 'pending') {
           currentRunState.abortController.abort();
+          currentRunState.rejectPending(new Error()); // Should be AbortError
         }
         const abortController = new AbortController();
+        let resolvePending!: () => void;
+        let rejectPending!: (e: Error) => void;
+        const pendingPromise = new Promise((res, rej) => {
+          resolvePending = res;
+          rejectPending = rej;
+        });
         const promise = f(key, {signal: abortController.signal});
         // The state is immediately 'pending', since the function has been
         // executed, but if the function throws an InitialStateError to
@@ -72,6 +81,8 @@ export const runAsync = directive(
           promise,
           state: 'pending',
           abortController,
+          resolvePending,
+          rejectPending,
         };
         runs.set(part, runState);
 
@@ -79,6 +90,7 @@ export const runAsync = directive(
             (value: unknown) => {
               runState.state = 'success';
               const currentRunState = runs.get(part);
+              runState.resolvePending();
               if (currentRunState !== runState) {
                 return;
               }
@@ -87,6 +99,7 @@ export const runAsync = directive(
             },
             (error: Error) => {
               const currentRunState = runs.get(part);
+              runState.rejectPending(new Error());
               if (currentRunState !== runState) {
                 return;
               }
@@ -106,13 +119,14 @@ export const runAsync = directive(
             });
 
         (async () => {
+          // Wait a microtask for the initial render of the Part to complete
           await 0;
           const currentRunState = runs.get(part);
           if (currentRunState === runState &&
               currentRunState.state === 'pending') {
             part.startNode.parentNode!.dispatchEvent(new CustomEvent(
                 'pending-state',
-                {composed: true, bubbles: true, detail: {promise}}));
+                {composed: true, bubbles: true, detail: {promise: pendingPromise}}));
           }
         })();
       }
@@ -125,4 +139,8 @@ export const runAsync = directive(
       }
     });
 
+/**
+ * Error thrown by async tasks when the task couldn't be started based on the
+ * key passed to it.
+ */
 export class InitialStateError extends Error {}
