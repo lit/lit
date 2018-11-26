@@ -38,7 +38,7 @@ const runs = new WeakMap<Part, AsyncRunState>();
  */
 export const runAsync = directive(
     <K>(key: K,
-        f: (key: K, options: {signal?: AbortSignal}) => Promise<unknown>,
+        task: (key: K, options: {signal?: AbortSignal}) => Promise<unknown>,
         templates: {
           success: (result: any) => any,
           pending?: () => any,
@@ -49,13 +49,17 @@ export const runAsync = directive(
       const currentRunState = runs.get(part);
 
       // The first time we see a value we save and await the work function.
+      // TODO(justinfagnani): allow a custom invalidate function
       if (currentRunState === undefined || currentRunState.key !== key) {
-        // cancel a pending request
+        // Abort a pending request if there is one
         if (currentRunState !== undefined &&
             currentRunState.state === 'pending') {
           currentRunState.abortController.abort();
-          currentRunState.rejectPending(new Error());  // Should be AbortError
+          // TODO(justinfagnani): This should be an AbortError, but it's not
+          // implemented yet
+          currentRunState.rejectPending(new Error());
         }
+        // TODO(justinfagnani): feature detect AbortController
         const abortController = new AbortController();
         let resolvePending!: () => void;
         let rejectPending!: (e: Error) => void;
@@ -63,7 +67,7 @@ export const runAsync = directive(
           resolvePending = res;
           rejectPending = rej;
         });
-        const promise = f(key, {signal: abortController.signal});
+        const promise = task(key, {signal: abortController.signal});
         // The state is immediately 'pending', since the function has been
         // executed, but if the function throws an InitialStateError to
         // indicate that it couldn't even start processing, then we will set
