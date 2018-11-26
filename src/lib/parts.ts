@@ -466,8 +466,8 @@ export class EventPart implements Part {
       this.element.removeEventListener(
           this.eventName, this._boundHandleEvent, this._options);
     }
-    this._options = getOptions(newListener);
     if (shouldAddListener) {
+      this._options = getOptions(newListener);
       this.element.addEventListener(
           this.eventName, this._boundHandleEvent, this._options);
     }
