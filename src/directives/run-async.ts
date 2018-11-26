@@ -25,15 +25,6 @@ interface AsyncRunState {
 
 const runs = new WeakMap<Part, AsyncRunState>();
 
-export type RunAsyncDirective<K> = (
-    key: K,
-    f: (key: K, options: {signal?: AbortSignal}) => Promise<unknown>,
-    success: (result: any) => any,
-    pending?: () => any,
-    initial?: () => any,
-    failure?: (e: Error) => any,
-    ) => void;
-
 /**
  * Runs an async function whenever the key changes, and calls one of several
  * lit-html template functions depending on the state of the async call:
@@ -46,14 +37,15 @@ export type RunAsyncDirective<K> = (
  *  - failure() is called if the function rejects.
  */
 export const runAsync = directive(
-    <K>(
-        key: K,
+    <K>(key: K,
         f: (key: K, options: {signal?: AbortSignal}) => Promise<unknown>,
-        success: (result: any) => any,
-        pending?: () => any,
-        initial?: () => any,
-        failure?: (e: Error) => any,
-        ) => (part: NodePart) => {
+        templates: {
+          success: (result: any) => any,
+          pending?: () => any,
+          initial?: () => any,
+          failure?: (e: Error) => any
+        }) => (part: NodePart) => {
+      const {success, pending, initial, failure} = templates;
       const currentRunState = runs.get(part);
 
       // The first time we see a value we save and await the work function.
@@ -62,7 +54,7 @@ export const runAsync = directive(
         if (currentRunState !== undefined &&
             currentRunState.state === 'pending') {
           currentRunState.abortController.abort();
-          currentRunState.rejectPending(new Error()); // Should be AbortError
+          currentRunState.rejectPending(new Error());  // Should be AbortError
         }
         const abortController = new AbortController();
         let resolvePending!: () => void;
@@ -124,9 +116,12 @@ export const runAsync = directive(
           const currentRunState = runs.get(part);
           if (currentRunState === runState &&
               currentRunState.state === 'pending') {
-            part.startNode.parentNode!.dispatchEvent(new CustomEvent(
-                'pending-state',
-                {composed: true, bubbles: true, detail: {promise: pendingPromise}}));
+            part.startNode.parentNode!.dispatchEvent(
+                new CustomEvent('pending-state', {
+                  composed: true,
+                  bubbles: true,
+                  detail: {promise: pendingPromise}
+                }));
           }
         })();
       }

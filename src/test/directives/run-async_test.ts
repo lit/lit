@@ -30,14 +30,12 @@ suite('runAsync', () => {
       (key: string,
        f: (s: string, options: {signal?: AbortSignal}) => Promise<string>) =>
           render(
-              html`${
-                  runAsync(
-                      key,
-                      f,
-                      (s) => html`Success: ${s}`,
-                      () => 'Pending',
-                      () => `Initial`,
-                      (e: Error) => `Error: ${e.message}`)}`,
+              html`${runAsync(key, f, {
+                success: (s) => html`Success: ${s}`,
+                pending: () => 'Pending',
+                initial: () => `Initial`,
+                failure: (e: Error) => `Error: ${e.message}`
+              })}`,
               container);
 
   test('renders pending then success templates', async () => {
@@ -119,7 +117,8 @@ suite('runAsync', () => {
       await pendingPromise!;
       assert.fail();
     } catch (e) {
-      assert.equal(stripExpressionMarkers(container.innerHTML), 'Success: test2');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), 'Success: test2');
     }
   });
 
