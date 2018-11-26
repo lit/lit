@@ -27,6 +27,9 @@ const hasAbortController = typeof AbortController === 'function';
 
 const runs = new WeakMap<Part, AsyncRunState>();
 
+export type Task<K> = (key: K, options: {signal?: AbortSignal}) =>
+    Promise<unknown>;
+
 /**
  * Runs an async function whenever the key changes, and calls one of several
  * lit-html template functions depending on the state of the async call:
@@ -37,112 +40,111 @@ const runs = new WeakMap<Part, AsyncRunState>();
  *    which lets the function indicate that it couldn't proceed with the
  *    provided key. This is usually the case when there isn't data to load.
  *  - failure() is called if the function rejects.
+ *
+ * @param key A parameter passed to the task function. The task function is only
+ *     called when they key changes.
+ * @param task An async function to run when the key changes
+ * @param templates The templates to render for each state of the task
  */
-export const runAsync = directive(
-    <K>(key: K,
-        task: (key: K, options: {signal?: AbortSignal}) => Promise<unknown>,
-        templates: {
-          success: (result: any) => any,
-          pending?: () => any,
-          initial?: () => any,
-          failure?: (e: Error) => any
-        }) => (part: NodePart) => {
-      const {success, pending, initial, failure} = templates;
-      const currentRunState = runs.get(part);
+export const runAsync = directive(<K>(key: K, task: Task<K>, templates: {
+                                    success: (result: any) => any,
+                                    pending?: () => any,
+                                    initial?: () => any,
+                                    failure?: (e: Error) => any
+                                  }) => (part: NodePart) => {
+  const {success, pending, initial, failure} = templates;
+  const currentRunState = runs.get(part);
 
-      // The first time we see a value we save and await the work function.
-      // TODO(justinfagnani): allow a custom invalidate function
-      if (currentRunState === undefined || currentRunState.key !== key) {
-        // Abort a pending request if there is one
-        if (currentRunState !== undefined &&
-            currentRunState.state === 'pending') {
-          if (currentRunState.abortController !== undefined) {
-            currentRunState.abortController.abort();
-          }
-          // TODO(justinfagnani): This should be an AbortError, but it's not
-          // implemented yet
-          currentRunState.rejectPending(new Error());
-        }
-        const abortController =
-            hasAbortController ? new AbortController() : undefined;
-        const abortSignal =
-            hasAbortController ? abortController!.signal : undefined;
-        let resolvePending!: () => void;
-        let rejectPending!: (e: Error) => void;
-        const pendingPromise = new Promise((res, rej) => {
-          resolvePending = res;
-          rejectPending = rej;
-        });
-        const promise = task(key, {signal: abortSignal});
-        // The state is immediately 'pending', since the function has been
-        // executed, but if the function throws an InitialStateError to
-        // indicate that it couldn't even start processing, then we will set
-        // the state to 'initial'.
-        const runState: AsyncRunState = {
-          key,
-          promise,
-          state: 'pending',
-          abortController,
-          resolvePending,
-          rejectPending,
-        };
-        runs.set(part, runState);
-
-        Promise.resolve(promise).then(
-            (value: unknown) => {
-              runState.state = 'success';
-              const currentRunState = runs.get(part);
-              runState.resolvePending();
-              if (currentRunState !== runState) {
-                return;
-              }
-              part.setValue(success(value));
-              part.commit();
-            },
-            (error: Error) => {
-              const currentRunState = runs.get(part);
-              runState.rejectPending(new Error());
-              if (currentRunState !== runState) {
-                return;
-              }
-              if (error instanceof InitialStateError &&
-                  typeof initial === 'function') {
-                runState!.state = 'initial';
-                part.setValue(initial());
-                part.commit();
-              } else {
-                runState!.state = 'failure';
-                if (typeof failure === 'function') {
-                  // render success callback
-                  part.setValue(failure(error));
-                  part.commit();
-                }
-              }
-            });
-
-        (async () => {
-          // Wait a microtask for the initial render of the Part to complete
-          await 0;
-          const currentRunState = runs.get(part);
-          if (currentRunState === runState &&
-              currentRunState.state === 'pending') {
-            part.startNode.parentNode!.dispatchEvent(
-                new CustomEvent('pending-state', {
-                  composed: true,
-                  bubbles: true,
-                  detail: {promise: pendingPromise}
-                }));
-          }
-        })();
+  // The first time we see a value we save and await the work function.
+  // TODO(justinfagnani): allow a custom invalidate function
+  if (currentRunState === undefined || currentRunState.key !== key) {
+    // Abort a pending request if there is one
+    if (currentRunState !== undefined && currentRunState.state === 'pending') {
+      if (currentRunState.abortController !== undefined) {
+        currentRunState.abortController.abort();
       }
-
-      // If the promise has not yet resolved, set/update the defaultContent
-      if ((currentRunState === undefined ||
-           currentRunState.state === 'pending') &&
-          typeof pending === 'function') {
-        part.setValue(pending());
-      }
+      // TODO(justinfagnani): This should be an AbortError, but it's not
+      // implemented yet
+      currentRunState.rejectPending(new Error());
+    }
+    const abortController =
+        hasAbortController ? new AbortController() : undefined;
+    const abortSignal =
+        hasAbortController ? abortController!.signal : undefined;
+    let resolvePending!: () => void;
+    let rejectPending!: (e: Error) => void;
+    const pendingPromise = new Promise((res, rej) => {
+      resolvePending = res;
+      rejectPending = rej;
     });
+    const promise = task(key, {signal: abortSignal});
+    // The state is immediately 'pending', since the function has been
+    // executed, but if the function throws an InitialStateError to
+    // indicate that it couldn't even start processing, then we will set
+    // the state to 'initial'.
+    const runState: AsyncRunState = {
+      key,
+      promise,
+      state: 'pending',
+      abortController,
+      resolvePending,
+      rejectPending,
+    };
+    runs.set(part, runState);
+
+    Promise.resolve(promise).then(
+        (value: unknown) => {
+          runState.state = 'success';
+          const currentRunState = runs.get(part);
+          runState.resolvePending();
+          if (currentRunState !== runState) {
+            return;
+          }
+          part.setValue(success(value));
+          part.commit();
+        },
+        (error: Error) => {
+          const currentRunState = runs.get(part);
+          runState.rejectPending(new Error());
+          if (currentRunState !== runState) {
+            return;
+          }
+          if (error instanceof InitialStateError &&
+              typeof initial === 'function') {
+            runState!.state = 'initial';
+            part.setValue(initial());
+            part.commit();
+          } else {
+            runState!.state = 'failure';
+            if (typeof failure === 'function') {
+              // render success callback
+              part.setValue(failure(error));
+              part.commit();
+            }
+          }
+        });
+
+    (async () => {
+      // Wait a microtask for the initial render of the Part to complete
+      await 0;
+      const currentRunState = runs.get(part);
+      if (currentRunState === runState && currentRunState.state === 'pending') {
+        part.startNode.parentNode!.dispatchEvent(
+            new CustomEvent('pending-state', {
+              composed: true,
+              bubbles: true,
+              detail: {promise: pendingPromise}
+            }));
+      }
+    })();
+  }
+
+  // If the promise has not yet resolved, set/update the defaultContent
+  if ((currentRunState === undefined || currentRunState.state === 'pending') &&
+      typeof pending === 'function') {
+    part.setValue(pending());
+  }
+});
 
 /**
  * Error thrown by async tasks when the task couldn't be started based on the
