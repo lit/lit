@@ -19,6 +19,9 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+const hasAbortController = typeof AbortController === 'function';
+const testIfHasAbortController = hasAbortController ? test : test.skip;
+
 suite('runAsync', () => {
   let container: HTMLDivElement;
 
@@ -101,28 +104,29 @@ suite('runAsync', () => {
     }
   });
 
-  test('fires pending-state with a rejecting Promise on abort', async () => {
-    let pendingPromise: Promise<any>;
-    container.addEventListener('pending-state', (e: Event) => {
-      pendingPromise = (e as CustomEvent).detail.promise;
-    });
-    renderTest('test', () => new Promise(() => {}));
-    assert.equal(stripExpressionMarkers(container.innerHTML), 'Pending');
-    await 0;
-    assert.isDefined(pendingPromise!);
+  testIfHasAbortController(
+      'fires pending-state with a rejecting Promise on abort', async () => {
+        let pendingPromise: Promise<any>;
+        container.addEventListener('pending-state', (e: Event) => {
+          pendingPromise = (e as CustomEvent).detail.promise;
+        });
+        renderTest('test', () => new Promise(() => {}));
+        assert.equal(stripExpressionMarkers(container.innerHTML), 'Pending');
+        await 0;
+        assert.isDefined(pendingPromise!);
 
-    renderTest('test2', async (s: string) => s);
-    // The pending Promise will reject when the task completes successfully
-    try {
-      await pendingPromise!;
-      assert.fail();
-    } catch (e) {
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML), 'Success: test2');
-    }
-  });
+        renderTest('test2', async (s: string) => s);
+        // The pending Promise will reject when the task completes successfully
+        try {
+          await pendingPromise!;
+          assert.fail();
+        } catch (e) {
+          assert.equal(
+              stripExpressionMarkers(container.innerHTML), 'Success: test2');
+        }
+      });
 
-  test('aborts tasks when key changes', async () => {
+  testIfHasAbortController('aborts tasks when key changes', async () => {
     let resolve1: () => void;
     let aborted = false;
     let resolve2: () => void;

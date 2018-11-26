@@ -17,11 +17,13 @@ import {directive, NodePart, Part} from '../lit-html.js';
 interface AsyncRunState {
   key: unknown;
   promise: Promise<unknown>;
-  abortController: AbortController;
+  abortController?: AbortController;
   state: 'initial'|'pending'|'success'|'failure';
   resolvePending: () => void;
   rejectPending: (e: Error) => void;
 }
+
+const hasAbortController = typeof AbortController === 'function';
 
 const runs = new WeakMap<Part, AsyncRunState>();
 
@@ -54,20 +56,24 @@ export const runAsync = directive(
         // Abort a pending request if there is one
         if (currentRunState !== undefined &&
             currentRunState.state === 'pending') {
-          currentRunState.abortController.abort();
+          if (currentRunState.abortController !== undefined) {
+            currentRunState.abortController.abort();
+          }
           // TODO(justinfagnani): This should be an AbortError, but it's not
           // implemented yet
           currentRunState.rejectPending(new Error());
         }
-        // TODO(justinfagnani): feature detect AbortController
-        const abortController = new AbortController();
+        const abortController =
+            hasAbortController ? new AbortController() : undefined;
+        const abortSignal =
+            hasAbortController ? abortController!.signal : undefined;
         let resolvePending!: () => void;
         let rejectPending!: (e: Error) => void;
         const pendingPromise = new Promise((res, rej) => {
           resolvePending = res;
           rejectPending = rej;
         });
-        const promise = task(key, {signal: abortController.signal});
+        const promise = task(key, {signal: abortSignal});
         // The state is immediately 'pending', since the function has been
         // executed, but if the function throws an InitialStateError to
         // indicate that it couldn't even start processing, then we will set
