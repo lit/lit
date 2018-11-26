@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- ### Changed -->
-<!-- ### Added -->
+### Added
+* Added `runAsync()` directve to run async tasks and render templates based on the task state. ([#657](https://github.com/Polymer/lit-html/pull/657))
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
