@@ -21,8 +21,8 @@ import {TemplateResult} from './template-result.js';
 export const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
 
 /**
- * An expression marker used text-positions, not attribute positions,
- * in template.
+ * An expression marker used text-positions, multi-binding attributes, and
+ * attributes with markup-like text values.
  */
 export const nodeMarker = `<!--${marker}-->`;
 
