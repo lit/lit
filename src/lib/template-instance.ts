@@ -16,7 +16,6 @@
 import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
-// import {TemplateFactory} from './template-factory.js';
 import {TemplateProcessor} from './template-processor.js';
 import {isTemplatePartActive, Template} from './template.js';
 
