@@ -1,12 +1,12 @@
 ---
 layout: default
 ---
-<header class="hero">
+<header class="hero" markdown="0">
 {% include topnav.html %}
 <div class="wrapper">
-<h1 class="hero-title">{{ site.name }}</h1>
+<div class="hero-title">{{ site.name }}</div>
 <p class="hero-caption">{{ site.description }}</p>
-<a class="hero-link" href="{{ site.baseurl }}/guide">Get Started</a>
+<a class="hero-link link-with-arrow" href="{{ site.baseurl }}/guide">Get Started</a>
 </div>
 </header>
 
