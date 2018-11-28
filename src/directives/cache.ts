@@ -39,7 +39,7 @@ const templateCaches =
  */
 export const cache = directive((value: any) => (part: Part) => {
   if (!(part instanceof NodePart)) {
-    throw new Error('when can only be used in text bindings');
+    throw new Error('cache can only be used in text bindings');
   }
 
   let templateCache = templateCaches.get(part);
