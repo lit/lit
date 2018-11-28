@@ -261,6 +261,19 @@ suite('render()', () => {
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
     });
 
+    test('renders SVG with bindings', () => {
+      const container = document.createElement('svg');
+      const pathDefinition = 'M7 14l5-5 5 5z';
+      const t = svg`<path d="${pathDefinition}" />`;
+      render(t, container);
+      const path = container.firstElementChild as SVGPathElement;
+      // IE and Edge rewrite paths, so check a normalized value too
+      assert.include(
+          ['M7 14l5-5 5 5z', 'M 7 14 l 5 -5 l 5 5 Z'],
+          path.getAttribute('d'),
+          pathDefinition);
+    });
+
     test('renders templates with comments', () => {
       const t = html`
         <div>
@@ -366,6 +379,20 @@ suite('render()', () => {
       }
     });
 
+    test('renders multiple bindings in a style attribute', () => {
+      const t = html`<div style="${'color'}: ${'red'}"></div>`;
+      render(t, container);
+      if (isIe) {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div style="color: red;"></div>');
+      } else {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div style="color: red"></div>');
+      }
+    });
+
     test('renders a binding in a class attribute', () => {
       render(html`<div class="${'red'}"></div>`, container);
       assert.equal(
@@ -397,18 +424,20 @@ suite('render()', () => {
     test(
         'renders to an attribute expression after an attribute literal', () => {
           render(html`<div a="b" foo="${'bar'}"></div>`, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<div a="b" foo="bar"></div>');
+          // IE and Edge can switch attribute order!
+          assert.include(
+              ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
+              stripExpressionMarkers(container.innerHTML));
         });
 
     test(
         'renders to an attribute expression before an attribute literal',
         () => {
           render(html`<div foo="${'bar'}" a="b"></div>`, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<div a="b" foo="bar"></div>');
+          // IE and Edge can switch attribute order!
+          assert.include(
+              ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
+              stripExpressionMarkers(container.innerHTML));
         });
 
     // Regression test for exception in template parsing caused by attributes

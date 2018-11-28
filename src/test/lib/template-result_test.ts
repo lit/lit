@@ -17,10 +17,6 @@ import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
 
-const ua = window.navigator.userAgent;
-const isIe = ua.indexOf('Trident/') > 0;
-const testOnIE = isIe ? test : test.skip;
-
 suite('TemplateResult', () => {
   test('strings are identical for multiple calls', () => {
     const t = () => html``;
@@ -32,8 +28,8 @@ suite('TemplateResult', () => {
     assert.deepEqual(html`${foo}${bar}`.values, [foo, bar]);
   });
 
-  testOnIE('style attributes are renamed on IE', () => {
+  test('style attributes are renamed', () => {
     const templateHTML = html`<div style="color: ${'red'}"></div>`.getHTML();
-    assert.equal(templateHTML, `<div style$="color: ${marker}"></div>`);
+    assert.equal(templateHTML, `<div style$lit$="color: ${marker}"></div>`);
   });
 });

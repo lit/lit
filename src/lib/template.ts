@@ -21,18 +21,17 @@ import {TemplateResult} from './template-result.js';
 export const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
 
 /**
- * An expression marker used text-positions, not attribute positions,
- * in template.
+ * An expression marker used text-positions, multi-binding attributes, and
+ * attributes with markup-like text values.
  */
 export const nodeMarker = `<!--${marker}-->`;
 
 export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 
-export const rewritesStyleAttribute = (() => {
-  const el = document.createElement('div');
-  el.setAttribute('style', '{{bad value}}');
-  return el.getAttribute('style') !== '{{bad value}}';
-})();
+/**
+ * Suffix appended to all bound attribute names.
+ */
+export const boundAttributeSuffix = '$lit$';
 
 /**
  * An updateable Template that tracks the location of dynamic parts.
@@ -87,18 +86,12 @@ export class Template {
               // Find the attribute name
               const name = lastAttributeNameRegex.exec(stringForPart)![2];
               // Find the corresponding attribute
-              // If the attribute name contains special characters, lower-case
-              // it so that on XML nodes with case-sensitive getAttribute() we
-              // can still find the attribute, which will have been lower-cased
-              // by the parser.
-              //
-              // If the attribute name doesn't contain special character, it's
-              // important to _not_ lower-case it, in case the name is
-              // case-sensitive, like with XML attributes like "viewBox".
+              // All bound attributes have had a suffix added in
+              // TemplateResult#getHTML to opt out of special attribute
+              // handling. To look up the attribute value we also need to add
+              // the suffix.
               const attributeLookupName =
-                  (rewritesStyleAttribute && name === 'style') ?
-                  'style$' :
-                  /^[a-zA-Z-]*$/.test(name) ? name : name.toLowerCase();
+                  name.toLowerCase() + boundAttributeSuffix;
               const attributeValue = node.getAttribute(attributeLookupName)!;
               const strings = attributeValue.split(markerRegex);
               this.parts.push({type: 'attribute', index, name, strings});
