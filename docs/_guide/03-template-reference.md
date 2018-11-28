@@ -257,7 +257,7 @@ lit-html includes a few built-in directives.
 *   [`repeat`](#repeat)
 *   [`ifDefined`](#ifdefined)
 *   [`guard`](#guard)
-*   [`async`](#async)
+*   [`until`](#until)
 *   [`asyncAppend` and `asyncReplace`](#asyncappend-and-asyncreplace)
 
 **Directives may change.** The exact list of directives included with lit-html, and the API of the directives may be subject to change before lit-html 1.0 is released.
@@ -327,9 +327,9 @@ const template = html`
 
 In this case, items are mapped over only when the array reference changes.
 
-### async
+### until
 
-`async(...values)`
+`until(...values)`
 
 Renders one of a series of values, including Promises, to a Part.
 
@@ -347,7 +347,7 @@ resolves.
 Example:
 
 ```javascript
-import { async } from 'lit-html/directives/async.js';
+import { until } from 'lit-html/directives/until.js';
 
 const content = fetch('./content.txt').then(r => r.text());
 
