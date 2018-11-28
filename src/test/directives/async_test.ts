@@ -307,4 +307,35 @@ suite('async', () => {
     await promise1;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
+
+  test('renders Promises resolving after changing priority', async () => {
+    let resolve1: (v: any) => void;
+    const promise1 = new Promise((res, _) => {
+      resolve1 = res;
+    });
+    let resolve2: (v: any) => void;
+    const promise2 = new Promise((res, _) => {
+      resolve2 = res;
+    });
+
+    const t = (p1: any, p2: any) => html`<div>${async(p1, p2)}</div>`;
+
+    // First render with neither Promise resolved
+    render(t(promise1, promise2), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    // Change priorities
+    render(t(promise2, promise1), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    // Resolve the primary Promise, updates the DOM
+    resolve1!('foo');
+    await promise1;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
+    // Resolve the secondary Promise, also updates the DOM
+    resolve2!('bar');
+    await promise2;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
+  });
 });
