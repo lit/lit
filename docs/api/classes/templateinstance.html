@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>BooleanAttributePart | lit-html</title>
+	<title>TemplateInstance | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -51,16 +51,13 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../index.html">Globals</a>
+					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_lib_parts_.html">&quot;lib/parts&quot;</a>
-				</li>
-				<li>
-					<a href="_lib_parts_.booleanattributepart.html">BooleanAttributePart</a>
+					<a href="templateinstance.html">TemplateInstance</a>
 				</li>
 			</ul>
-			<h1>Class BooleanAttributePart</h1>
+			<h1>Class TemplateInstance</h1>
 		</div>
 	</div>
 </header>
@@ -70,25 +67,17 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Implements a boolean attribute, roughly as defined in the HTML
-						specification.</p>
+						<p>An instance of a <code>Template</code> that can be attached to the DOM and updated
+						with new values.</p>
 					</div>
-					<p>If the value is truthy, then the attribute is present with a value of
-					&#39;&#39;. If the value is falsey, the attribute is removed.</p>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">BooleanAttributePart</span>
+						<span class="target">TemplateInstance</span>
 					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implements</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -98,24 +87,23 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="templateinstance.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#element" class="tsd-kind-icon">element</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#name" class="tsd-kind-icon">name</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#strings" class="tsd-kind-icon">strings</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#value" class="tsd-kind-icon">value</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="templateinstance.html#_parts" class="tsd-kind-icon">_parts</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="templateinstance.html#options" class="tsd-kind-icon">options</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="templateinstance.html#processor" class="tsd-kind-icon">processor</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="templateinstance.html#template" class="tsd-kind-icon">template</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#commit" class="tsd-kind-icon">commit</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_lib_parts_.booleanattributepart.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="templateinstance.html#_clone" class="tsd-kind-icon">_clone</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="templateinstance.html#update" class="tsd-kind-icon">update</a></li>
 							</ul>
 						</section>
 					</div>
@@ -127,28 +115,28 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Boolean<wbr>Attribute<wbr>Part<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_parts_.booleanattributepart.html" class="tsd-signature-type">BooleanAttributePart</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Template<wbr>Instance<span class="tsd-signature-symbol">(</span>template<span class="tsd-signature-symbol">: </span><a href="template.html" class="tsd-signature-type">Template</a>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="templateinstance.html" class="tsd-signature-type">TemplateInstance</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L330">lib/parts.ts:330</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L31">lib/template-instance.ts:31</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>element: <span class="tsd-signature-type">Element</span></h5>
+									<h5>template: <a href="template.html" class="tsd-signature-type">Template</a></h5>
 								</li>
 								<li>
-									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<h5>processor: <a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></h5>
 								</li>
 								<li>
-									<h5>strings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>options: <a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_lib_parts_.booleanattributepart.html" class="tsd-signature-type">BooleanAttributePart</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="templateinstance.html" class="tsd-signature-type">TemplateInstance</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -156,53 +144,42 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="_pendingvalue" class="tsd-anchor"></a>
-					<h3>_pending<wbr>Value</h3>
-					<div class="tsd-signature tsd-kind-icon">_pending<wbr>Value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;undefined</span></div>
+					<a name="_parts" class="tsd-anchor"></a>
+					<h3>_parts</h3>
+					<div class="tsd-signature tsd-kind-icon">_parts<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L330">lib/parts.ts:330</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L28">lib/template-instance.ts:28</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="element" class="tsd-anchor"></a>
-					<h3>element</h3>
-					<div class="tsd-signature tsd-kind-icon">element<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Element</span></div>
+					<a name="options" class="tsd-anchor"></a>
+					<h3>options</h3>
+					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L326">lib/parts.ts:326</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L30">lib/template-instance.ts:30</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="name" class="tsd-anchor"></a>
-					<h3>name</h3>
-					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="processor" class="tsd-anchor"></a>
+					<h3>processor</h3>
+					<div class="tsd-signature tsd-kind-icon">processor<span class="tsd-signature-symbol">:</span> <a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L327">lib/parts.ts:327</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L29">lib/template-instance.ts:29</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="strings" class="tsd-anchor"></a>
-					<h3>strings</h3>
-					<div class="tsd-signature tsd-kind-icon">strings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<a name="template" class="tsd-anchor"></a>
+					<h3>template</h3>
+					<div class="tsd-signature tsd-kind-icon">template<span class="tsd-signature-symbol">:</span> <a href="template.html" class="tsd-signature-type">Template</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L328">lib/parts.ts:328</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="value" class="tsd-anchor"></a>
-					<h3>value</h3>
-					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;undefined</span></div>
-					<aside class="tsd-sources">
-						<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#value">value</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L329">lib/parts.ts:329</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L31">lib/template-instance.ts:31</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -210,41 +187,39 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="commit" class="tsd-anchor"></a>
-					<h3>commit</h3>
+					<a name="_clone" class="tsd-anchor"></a>
+					<h3>_clone</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">commit<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">_clone<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DocumentFragment</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#commit">commit</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L346">lib/parts.ts:346</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L56">lib/template-instance.ts:56</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DocumentFragment</span></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="setvalue" class="tsd-anchor"></a>
-					<h3>set<wbr>Value</h3>
+					<a name="update" class="tsd-anchor"></a>
+					<h3>update</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Value<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">update<span class="tsd-signature-symbol">(</span>values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_lib_part_.part.html">Part</a>.<a href="../interfaces/_lib_part_.part.html#setvalue">setValue</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L342">lib/parts.ts:342</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-instance.ts#L41">lib/template-instance.ts:41</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>value: <span class="tsd-signature-type">any</span></h5>
+									<h5>values: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -257,69 +232,42 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
-						<a href="../index.html"><em>Globals</em></a>
-					</li>
-					<li class="current tsd-kind-external-module">
-						<a href="../modules/_lib_parts_.html">"lib/parts"</a>
+						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.attributecommitter.html" class="tsd-kind-icon">Attribute<wbr>Committer</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.attributepart.html" class="tsd-kind-icon">Attribute<wbr>Part</a>
-					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.booleanattributepart.html" class="tsd-kind-icon">Boolean<wbr>Attribute<wbr>Part</a>
+					<li class="current tsd-kind-class">
+						<a href="templateinstance.html" class="tsd-kind-icon">Template<wbr>Instance</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="templateinstance.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a>
+								<a href="templateinstance.html#_parts" class="tsd-kind-icon">_parts</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#element" class="tsd-kind-icon">element</a>
+								<a href="templateinstance.html#options" class="tsd-kind-icon">options</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#name" class="tsd-kind-icon">name</a>
+								<a href="templateinstance.html#processor" class="tsd-kind-icon">processor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#strings" class="tsd-kind-icon">strings</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#value" class="tsd-kind-icon">value</a>
+								<a href="templateinstance.html#template" class="tsd-kind-icon">template</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#commit" class="tsd-kind-icon">commit</a>
+								<a href="templateinstance.html#_clone" class="tsd-kind-icon">_clone</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_lib_parts_.booleanattributepart.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a>
+								<a href="templateinstance.html#update" class="tsd-kind-icon">update</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.eventpart.html" class="tsd-kind-icon">Event<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.propertycommitter.html" class="tsd-kind-icon">Property<wbr>Committer</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_parts_.propertypart.html" class="tsd-kind-icon">Property<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lib_parts_.html#isprimitive" class="tsd-kind-icon">is<wbr>Primitive</a>
-					</li>
 				</ul>
 			</nav>
 		</div>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>DefaultTemplateProcessor | lit-html</title>
+	<title>Part | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -51,16 +51,13 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../index.html">Globals</a>
+					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_lib_default_template_processor_.html">&quot;lib/default-template-processor&quot;</a>
-				</li>
-				<li>
-					<a href="_lib_default_template_processor_.defaulttemplateprocessor.html">DefaultTemplateProcessor</a>
+					<a href="part.html">Part</a>
 				</li>
 			</ul>
-			<h1>Class DefaultTemplateProcessor</h1>
+			<h1>Interface Part</h1>
 		</div>
 	</div>
 </header>
@@ -70,7 +67,8 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Creates Parts when a template is instantiated.</p>
+						<p>The Part interface represents a dynamic part of a template instance rendered
+						by lit-html.</p>
 					</div>
 				</div>
 			</section>
@@ -78,14 +76,18 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">DefaultTemplateProcessor</span>
+						<span class="target">Part</span>
 					</li>
 				</ul>
 			</section>
 			<section class="tsd-panel">
-				<h3>Implements</h3>
+				<h3>Implemented by</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></li>
+					<li><a href="../classes/attributepart.html" class="tsd-signature-type">AttributePart</a></li>
+					<li><a href="../classes/booleanattributepart.html" class="tsd-signature-type">BooleanAttributePart</a></li>
+					<li><a href="../classes/eventpart.html" class="tsd-signature-type">EventPart</a></li>
+					<li><a href="../classes/nodepart.html" class="tsd-signature-type">NodePart</a></li>
+					<li><a href="../classes/propertypart.html" class="tsd-signature-type">PropertyPart</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -93,92 +95,86 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="part.html#value" class="tsd-kind-icon">value</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_lib_default_template_processor_.defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_lib_default_template_processor_.defaulttemplateprocessor.html#handletextexpression" class="tsd-kind-icon">handle<wbr>Text<wbr>Expression</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="part.html#commit" class="tsd-kind-icon">commit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="part.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="value" class="tsd-anchor"></a>
+					<h3>value</h3>
+					<div class="tsd-signature tsd-kind-icon">value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/part.ts#L6">lib/part.ts:6</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="handleattributeexpressions" class="tsd-anchor"></a>
-					<h3>handle<wbr>Attribute<wbr>Expressions</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">[]</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="commit" class="tsd-anchor"></a>
+					<h3>commit</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">commit<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_lib_template_processor_.templateprocessor.html">TemplateProcessor</a>.<a href="../interfaces/_lib_template_processor_.templateprocessor.html#handleattributeexpressions">handleAttributeExpressions</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/default-template-processor.ts#L33">lib/default-template-processor.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/part.ts#L17">lib/part.ts:17</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Create parts for an attribute-position binding, given the event, attribute
-									name, and string literals.</p>
+									<p>Commits the current part value, cause it to actually be written to the DOM.</p>
 								</div>
 							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>element: <span class="tsd-signature-type">Element</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The element containing the binding</p>
-									</div>
-								</li>
-								<li>
-									<h5>name: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The attribute name</p>
-									</div>
-								</li>
-								<li>
-									<h5>strings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The string literals. There are always at least two strings,
-										event for fully-controlled bindings with a single expression.</p>
-									</div>
-								</li>
-								<li>
-									<h5>options: <a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/_lib_part_.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="handletextexpression" class="tsd-anchor"></a>
-					<h3>handle<wbr>Text<wbr>Expression</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">handle<wbr>Text<wbr>Expression<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setvalue" class="tsd-anchor"></a>
+					<h3>set<wbr>Value</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Value<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_lib_template_processor_.templateprocessor.html">TemplateProcessor</a>.<a href="../interfaces/_lib_template_processor_.templateprocessor.html#handletextexpression">handleTextExpression</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/default-template-processor.ts#L54">lib/default-template-processor.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/part.ts#L12">lib/part.ts:12</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Create parts for a text-position binding.</p>
+									<p>Sets the current part value, but does not write it to the DOM.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>options: <a href="../interfaces/_lib_render_options_.renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
+									<h5>value: <span class="tsd-signature-type">any</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The value that will be committed.</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_lib_parts_.nodepart.html" class="tsd-signature-type">NodePart</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -188,10 +184,7 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
-						<a href="../index.html"><em>Globals</em></a>
-					</li>
-					<li class="current tsd-kind-external-module">
-						<a href="../modules/_lib_default_template_processor_.html">"lib/default-<wbr>template-<wbr>processor"</a>
+						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 				</ul>
 			</nav>
@@ -199,22 +192,22 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_default_template_processor_.defaulttemplateprocessor.html" class="tsd-kind-icon">Default<wbr>Template<wbr>Processor</a>
+					<li class="current tsd-kind-interface">
+						<a href="part.html" class="tsd-kind-icon">Part</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_lib_default_template_processor_.defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="part.html#value" class="tsd-kind-icon">value</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_lib_default_template_processor_.defaulttemplateprocessor.html#handletextexpression" class="tsd-kind-icon">handle<wbr>Text<wbr>Expression</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="part.html#commit" class="tsd-kind-icon">commit</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="part.html#setvalue" class="tsd-kind-icon">set<wbr>Value</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lib_default_template_processor_.html#defaulttemplateprocessor-1" class="tsd-kind-icon">default<wbr>Template<wbr>Processor</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
