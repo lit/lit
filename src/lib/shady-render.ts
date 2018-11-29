@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
@@ -165,30 +166,48 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
   scopeName: string;
 }
 
+const fragment = document.createDocumentFragment();
+
 export const render =
-    (result: TemplateResult,
+    (result: any,
      container: Element|DocumentFragment,
      options: ShadyRenderOptions) => {
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
-      litRender(
-          result,
-          container,
-          {templateFactory: shadyTemplateFactory(scopeName), ...options} as
-              RenderOptions);
-      // When rendering a TemplateResult, scope the template with ShadyCSS
-      if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
-          result instanceof TemplateResult) {
-        // Scope the element template one time only for this scope.
-        if (!shadyRenderSet.has(scopeName)) {
-          const part = parts.get(container)!;
-          const instance = part.value as TemplateInstance;
-          prepareTemplateStyles(
-              container as ShadowRoot, instance.template, scopeName);
-        }
-        // Update styling if this is the initial render to this container.
-        if (!hasRendered) {
-          window.ShadyCSS!.styleElement((container as ShadowRoot).host);
-        }
+      const needsScoping = container instanceof ShadowRoot &&
+          compatibleShadyCSSVersion && result instanceof TemplateResult;
+      // handle first render to a scope specially...
+      if (needsScoping && !shadyRenderSet.has(scopeName)) {
+        // (1) render into a fragment so that we have a chance to
+        // prepareTemplateStyles before sub-elements hit the DOM (where they
+        // would normally render);
+        litRender(
+            result,
+            fragment,
+            {templateFactory: shadyTemplateFactory(scopeName), ...options} as
+                RenderOptions);
+        const part = parts.get(fragment)!;
+        parts.delete(fragment);
+        // (2) When rendering a TemplateResult, scope the template with ShadyCSS
+        // one time only for this scope.
+        const instance = part.value as TemplateInstance;
+        prepareTemplateStyles(fragment, instance.template, scopeName);
+        // (3) render the fragment into the container and make sure the
+        // container knows its `part` is the one we just rendered. This ensures
+        // DOM will be re-used on subsequent renders.
+        removeNodes(container, container.firstChild);
+        container.appendChild(fragment);
+        parts.set(container, part);
+      } else {
+        litRender(
+            result,
+            container,
+            {templateFactory: shadyTemplateFactory(scopeName), ...options} as
+                RenderOptions);
+      }
+      // After elements have hit the DOM, update styling if this is the
+      // initial render to this container.
+      if (!hasRendered && needsScoping) {
+        window.ShadyCSS!.styleElement((container as ShadowRoot).host);
       }
     };
