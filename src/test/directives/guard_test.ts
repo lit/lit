@@ -25,8 +25,8 @@ const assert = chai.assert;
 suite('guard', () => {
   let container: HTMLDivElement;
 
-  function renderGuarded(expression: any, value: () => any) {
-    render(html`<div>${guard(expression, value)}</div>`, container);
+  function renderGuarded(value: any, f: () => any) {
+    render(html`<div>${guard(value, f)}</div>`, container);
   }
 
   setup(() => {
@@ -60,9 +60,58 @@ suite('guard', () => {
     assert.equal(callCount, 2);
   });
 
-  test('dirty checks non-primitive values', () => {
+  test('renders with undefined the first time', () => {
+    let callCount = 0;
+    let renderCount = 0;
+
+    const guardedTemplate = () => {
+      callCount += 1;
+      return html`${renderCount}`;
+    };
+
+    renderCount += 1;
+    renderGuarded(undefined, guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+    renderCount += 1;
+    renderGuarded(undefined, guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+    assert.equal(callCount, 1);
+  });
+
+  test('dirty checks array values', () => {
     let callCount = 0;
     let items = ['foo', 'bar'];
+
+    const guardedTemplate = () => {
+      callCount += 1;
+      return html`<ul>${items.map((i) => html`<li>${i}</li>`)}`;
+    };
+
+    renderGuarded([items], guardedTemplate);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><ul><li>foo</li><li>bar</li></ul></div>');
+
+    items.push('baz');
+    renderGuarded([items], guardedTemplate);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><ul><li>foo</li><li>bar</li></ul></div>');
+
+    items = [...items];
+    renderGuarded([items], guardedTemplate);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>');
+
+    assert.equal(callCount, 2);
+  });
+
+  test('dirty checks arrays of values', () => {
+    let callCount = 0;
+    const items = ['foo', 'bar'];
 
     const guardedTemplate = () => {
       callCount += 1;
@@ -73,14 +122,13 @@ suite('guard', () => {
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
         '<div><ul><li>foo</li><li>bar</li></ul></div>');
-    items.push('baz');
 
-    renderGuarded(items, guardedTemplate);
+    renderGuarded(['foo', 'bar'], guardedTemplate);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
         '<div><ul><li>foo</li><li>bar</li></ul></div>');
 
-    items = [...items];
+    items.push('baz');
     renderGuarded(items, guardedTemplate);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
