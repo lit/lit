@@ -311,7 +311,7 @@ const myTemplate = () => html`
 
 `guard(expression, valueFn)`
 
-Prevents any re-render until the identity of the expression changes, for example when a primitive changes value or when an object reference changes.
+Prevents any re-render unless the identity of the expression changes, for example when a primitive changes value or when an object reference changes.
 
 Example:
 
@@ -329,22 +329,29 @@ In this case, items are mapped over only when the array reference changes.
 
 ### until
 
-`until(promise, defaultContent)`
+`until(...values)`
 
-Renders `defaultContent` until `promise` resolves, then it renders the resolved value of `promise`.
+Renders one of a series of values, including Promises, to a Part.
+
+Values are rendered in priority order, with the first argument having the
+highest priority and the last argument having the lowest priority. If a
+value is a Promise, low-priority values will be rendered until it resolves.
+
+The priority of values can be used to create placeholder content for async
+data. For example, a Promise with pending content can be the first,
+highest-priority, argument, and a non_promise loading indicator template can
+be used as the second, lower-priority, argument. The loading indicator will
+render immediately, and the primary content will render when the Promise
+resolves.
 
 Example:
 
 ```javascript
-import { until } from 'lit-html/directives/until';
+import { until } from 'lit-html/directives/until.js';
 
-const render = () => html`
-  <p>
-    ${until(
-        fetch('content.txt').then((r) => r.text()),
-        html`<span>Loading...</span>`)}
-  </p>
-`;
+const content = fetch('./content.txt').then(r => r.text());
+
+html`${async(content, html`<span>Loading...</span>`)}`
 ```
 
 ### asyncAppend and asyncReplace
