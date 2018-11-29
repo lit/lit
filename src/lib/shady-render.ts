@@ -166,8 +166,61 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
   scopeName: string;
 }
 
-const fragment = document.createDocumentFragment();
-
+/**
+ * Extension to the standard `render` method which supports rendering
+ * to ShadowRoots when the ShadyDOM (https://github.com/webcomponents/shadydom)
+ * and ShadyCSS (https://github.com/webcomponents/shadycss) polyfills are used
+ * or when the webcomponentsjs (https://github.com/webcomponents/webcomponentsjs)
+ * polyfill is used.
+ *
+ * Adds a `scopeName` option which is used to scope element DOM and stylesheets
+ * when native ShadowDOM is unavailable. The `scopeName` will be added to
+ * the class attribute of all rendered DOM. In addition, any style elements will
+ * be automatically re-written with this `scopeName` selector and moved out
+ * of the rendered DOM and into the document <head>.
+ *
+ * It is common to use this render method in conjunction with a custom element
+ * which renders a shadowRoot. When this is done, typically the element's
+ * `localName` should be used as the `scopeName`.
+ *
+ * In addition to DOM scoping, ShadyCSS also supports a basic shim for css
+ * custom properties (needed only on older browsers like IE11) and a shim for
+ * a deprecated feature called `@apply` that supports applying a set of css
+ * custom properties to a given location.
+ *
+ * Usage considerations:
+ *
+ * * Part values in <style> elements are only applied the first time a given
+ * `scopeName` renders. Subsequent changes to parts in style elements will have
+ * no effect. Because of this, parts in style elements should only be used for
+ * values that will never change, for example parts that set scope-wide theme
+ * values or parts which render shared style elements.
+ *
+ * * Note, due to a limitation of the ShadyDOM polyfill, rendering in a
+ * custom element's `constructor` is not supported. Instead rendering should either
+ * done asynchronously, for example at microtask timing (e.g. Promise.resolve()),
+ * or be deferred until the element's `connectedCallback` first runs.
+ *
+ * Usage considerations when using shimmed custom properties or `@apply`:
+ *
+ * * Whenever any dynamic changes are made which affect
+ * css custom properties, `ShadyCSS.styleElement(element)` must be called
+ * to update the element. This render method automatically does this on first
+ * render, but if subsequent changes are made, this call is required. When
+ * rendering via a custom element, it's common to include this call in the element's
+ * `connectedCallback`.
+ *
+ * * Rendering a ShadowRoot within a directive is not supported.
+ *
+ * * Shimmed custom properties may only be defined either for an entire
+ * shadowRoot (e.g. via `:host`) or via a rule that directly matches an element
+ * with a shadowRoot. In other words, instead of flowing from parent to child as
+ * do native css custom properties, shimmed custom properties flow only from
+ * shadowRoots to nested shadowRoots.
+ *
+ * * When using `@apply` mixing css shorthand property names with
+ * non-shorthand names (for example `border` and `border-width`) is not supported.
+ */
 export const render =
     (result: any,
      container: Element|DocumentFragment,
@@ -178,6 +231,9 @@ export const render =
           compatibleShadyCSSVersion && result instanceof TemplateResult;
       // handle first render to a scope specially...
       if (needsScoping && !shadyRenderSet.has(scopeName)) {
+        // NOTE, we cannot reuse just one document fragment since
+        // nested renders can occur synchronously.
+        const fragment = document.createDocumentFragment();
         // (1) render into a fragment so that we have a chance to
         // prepareTemplateStyles before sub-elements hit the DOM (where they
         // would normally render);
