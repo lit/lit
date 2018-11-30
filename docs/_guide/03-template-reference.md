@@ -351,7 +351,7 @@ import { until } from 'lit-html/directives/until.js';
 
 const content = fetch('./content.txt').then(r => r.text());
 
-html`${async(content, html`<span>Loading...</span>`)}`
+html`${until(content, html`<span>Loading...</span>`)}`
 ```
 
 ### asyncAppend and asyncReplace
