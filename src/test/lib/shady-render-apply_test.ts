@@ -170,10 +170,12 @@ suite('shady-render @apply', () => {
         const applyProducer = document.createElement('apply-producer-ce');
         document.body.appendChild(applyProducer);
         renderShadowRoot(producerContent, applyProducer);
-        const user1 = applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
+        const user1 =
+            applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
         const userInProducerStyle1 =
             getComputedStyle(user1!.shadowRoot!.querySelector('div')!);
-        const user2 = applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
+        const user2 =
+            applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
         const userInProducerStyle2 =
             getComputedStyle(user2!.shadowRoot!.querySelector('div')!);
         assert.equal(
