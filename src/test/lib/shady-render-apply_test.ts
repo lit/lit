@@ -127,12 +127,14 @@ suite('shady-render @apply', () => {
 
   // TODO(sorvell): remove skip when this ShadyCSS PR is merged:
   // https://github.com/webcomponents/shadycss/pull/227.
-  const testOrSkip = (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);
-  testOrSkip('@apply styles flow to custom elements that render in connectedCallback', () => {
-
-    class E extends HTMLElement {
-      connectedCallback() {
-        const result = htmlWithApply`<style>
+  const testOrSkip =
+      (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);
+  testOrSkip(
+      '@apply styles flow to custom elements that render in connectedCallback',
+      () => {
+        class E extends HTMLElement {
+          connectedCallback() {
+            const result = htmlWithApply`<style>
           div {
             border-top: 6px solid black;
             margin-top: 8px;
@@ -140,13 +142,13 @@ suite('shady-render @apply', () => {
           }
         </style>
         <div>Testing...</div>`;
-        renderShadowRoot(result, this);
-      }
-    }
-    customElements.define('apply-user-directive1', E);
-    customElements.define('apply-user-directive2', class extends E {});
+            renderShadowRoot(result, this);
+          }
+        }
+        customElements.define('apply-user-directive1', E);
+        customElements.define('apply-user-directive2', class extends E {});
 
-    const producerContent = htmlWithApply`
+        const producerContent = htmlWithApply`
       <style>
         apply-user-directive1 {
           --stuff-directive: {
@@ -165,29 +167,30 @@ suite('shady-render @apply', () => {
       <apply-user-directive1></apply-user-directive1>
       <apply-user-directive2></apply-user-directive2>
     `;
-    const applyProducer = document.createElement('apply-producer-directive');
-    document.body.appendChild(applyProducer);
-    renderShadowRoot(producerContent, applyProducer);
-    const user1 =
-        applyProducer.shadowRoot!.querySelector('apply-user-directive1')!;
-    const userInProducerStyle1 = getComputedStyle(
-        user1!.shadowRoot!.querySelector('div')!);
-    const user2 =
-        applyProducer.shadowRoot!.querySelector('apply-user-directive2')!;
-    const userInProducerStyle2 = getComputedStyle(
-        user2!.shadowRoot!.querySelector('div')!);
-    assert.equal(
-        userInProducerStyle1.getPropertyValue('border-top-width').trim(),
-        '10px');
-    assert.equal(
-        userInProducerStyle1.getPropertyValue('padding-top').trim(),
-        '20px');
-    assert.equal(
-        userInProducerStyle2.getPropertyValue('border-top-width').trim(),
-        '5px');
-    assert.equal(
-        userInProducerStyle2.getPropertyValue('padding-top').trim(),
-        '10px');
-    document.body.removeChild(applyProducer);
-  });
+        const applyProducer =
+            document.createElement('apply-producer-directive');
+        document.body.appendChild(applyProducer);
+        renderShadowRoot(producerContent, applyProducer);
+        const user1 =
+            applyProducer.shadowRoot!.querySelector('apply-user-directive1')!;
+        const userInProducerStyle1 =
+            getComputedStyle(user1!.shadowRoot!.querySelector('div')!);
+        const user2 =
+            applyProducer.shadowRoot!.querySelector('apply-user-directive2')!;
+        const userInProducerStyle2 =
+            getComputedStyle(user2!.shadowRoot!.querySelector('div')!);
+        assert.equal(
+            userInProducerStyle1.getPropertyValue('border-top-width').trim(),
+            '10px');
+        assert.equal(
+            userInProducerStyle1.getPropertyValue('padding-top').trim(),
+            '20px');
+        assert.equal(
+            userInProducerStyle2.getPropertyValue('border-top-width').trim(),
+            '5px');
+        assert.equal(
+            userInProducerStyle2.getPropertyValue('padding-top').trim(),
+            '10px');
+        document.body.removeChild(applyProducer);
+      });
 });

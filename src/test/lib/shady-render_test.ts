@@ -18,7 +18,6 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 const assert = chai.assert;
 
 suite('shady-render', () => {
-
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
     document.body.appendChild(container);
@@ -91,13 +90,12 @@ suite('shady-render', () => {
   test('multiple renders re-use rendered DOM', () => {
     const container = document.createElement('scope-re-use');
     document.body.appendChild(container);
-    const renderTemplate =
-        (a: string) => {
-          const result = html`
+    const renderTemplate = (a: string) => {
+      const result = html`
             <div id="a">${a}</div>
       `;
-          renderShadowRoot(result, container);
-        };
+      renderShadowRoot(result, container);
+    };
     renderTemplate('a');
     const renderedNode = container.shadowRoot!.querySelector('#a');
     renderTemplate('b');
