@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## Unreleased
+## [0.14.0] - 2018-11-30
 ### Changed
 * `until()` can now take any number of sync or async arguments. ([#555](https://github.com/Polymer/lit-html/pull/555))
 * [Breaking] `guard()` supports multiple dependencies. If the first argument to `guard()` is an array, the array items are checked for equality to previous values. ([#666](https://github.com/Polymer/lit-html/pull/666))
