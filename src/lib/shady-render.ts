@@ -206,12 +206,11 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  *
  * * Whenever any dynamic changes are made which affect
  * css custom properties, `ShadyCSS.styleElement(element)` must be called
- * to update the element. This render method automatically does this on first
- * render, but if subsequent changes are made, this call is required. When
- * rendering via a custom element, it's common to include this call in the
- * element's `connectedCallback`.
- *
- * * Rendering a ShadowRoot within a directive is not supported.
+ * to update the element. There are two cases when this is needed:
+ * (1) the element is connected to a new parent, (2) a class is added to the
+ * element that causes it to match different custom properties.
+ * To address the first case when rendering a custom element, `styleElement`
+ * should be called in the element's `connectedCallback`.
  *
  * * Shimmed custom properties may only be defined either for an entire
  * shadowRoot (e.g. via `:host`) or via a rule that directly matches an element
@@ -243,9 +242,10 @@ export const render =
           {templateFactory: shadyTemplateFactory(scopeName), ...options} as
               RenderOptions);
       // When performing first scope render,
-      // (1) we've rendered into a fragment so that there's a chance to
+      // (1) We've rendered into a fragment so that there's a chance to
       // `prepareTemplateStyles` before sub-elements hit the DOM
-      // (where they would normally render);
+      // (which might cause them to render based on a common pattern of
+      // rendering in a custom element's `connectedCallback`);
       // (2) Scope the template with ShadyCSS one time only for this scope.
       // (3) Render the fragment into the container and make sure the
       // container knows its `part` is the one we just rendered. This ensures

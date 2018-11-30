@@ -135,48 +135,45 @@ suite('shady-render @apply', () => {
         class E extends HTMLElement {
           connectedCallback() {
             const result = htmlWithApply`<style>
-          div {
-            border-top: 6px solid black;
-            margin-top: 8px;
-            @apply --stuff-directive;
-          }
-        </style>
-        <div>Testing...</div>`;
+              div {
+                border-top: 6px solid black;
+                margin-top: 8px;
+                @apply --stuff-ce;
+              }
+            </style>
+            <div>Testing...</div>`;
             renderShadowRoot(result, this);
           }
         }
-        customElements.define('apply-user-directive1', E);
-        customElements.define('apply-user-directive2', class extends E {});
+        customElements.define('apply-user-ce1', E);
+        customElements.define('apply-user-ce2', class extends E {});
 
         const producerContent = htmlWithApply`
-      <style>
-        apply-user-directive1 {
-          --stuff-directive: {
-            border-top: 10px solid orange;
-            padding-top: 20px;
-          };
-        }
+          <style>
+            apply-user-ce1 {
+              --stuff-ce: {
+                border-top: 10px solid orange;
+                padding-top: 20px;
+              };
+            }
 
-        apply-user-directive2 {
-          --stuff-directive: {
-            border-top: 5px solid orange;
-            padding-top: 10px;
-          };
-        }
-      </style>
-      <apply-user-directive1></apply-user-directive1>
-      <apply-user-directive2></apply-user-directive2>
-    `;
-        const applyProducer =
-            document.createElement('apply-producer-directive');
+            apply-user-ce2 {
+              --stuff-ce: {
+                border-top: 5px solid orange;
+                padding-top: 10px;
+              };
+            }
+          </style>
+          <apply-user-ce1></apply-user-ce1>
+          <apply-user-ce2></apply-user-ce2>
+        `;
+        const applyProducer = document.createElement('apply-producer-ce');
         document.body.appendChild(applyProducer);
         renderShadowRoot(producerContent, applyProducer);
-        const user1 =
-            applyProducer.shadowRoot!.querySelector('apply-user-directive1')!;
+        const user1 = applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
         const userInProducerStyle1 =
             getComputedStyle(user1!.shadowRoot!.querySelector('div')!);
-        const user2 =
-            applyProducer.shadowRoot!.querySelector('apply-user-directive2')!;
+        const user2 = applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
         const userInProducerStyle2 =
             getComputedStyle(user2!.shadowRoot!.querySelector('div')!);
         assert.equal(
