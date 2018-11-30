@@ -87,6 +87,22 @@ suite('shady-render', () => {
     document.body.removeChild(container2);
   });
 
+  test('multiple renders re-use rendered DOM', () => {
+    const container = document.createElement('scope-re-use');
+    document.body.appendChild(container);
+    const renderTemplate = (a: string) => {
+      const result = html`
+            <div id="a">${a}</div>
+      `;
+      renderShadowRoot(result, container);
+    };
+    renderTemplate('a');
+    const renderedNode = container.shadowRoot!.querySelector('#a');
+    renderTemplate('b');
+    assert.equal(container.shadowRoot!.querySelector('#a'), renderedNode);
+    document.body.removeChild(container);
+  });
+
   test('styles with css custom properties render', () => {
     const container = document.createElement('scope-4');
     document.body.appendChild(container);

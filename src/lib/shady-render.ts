@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
@@ -165,30 +166,110 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
   scopeName: string;
 }
 
+/**
+ * Extension to the standard `render` method which supports rendering
+ * to ShadowRoots when the ShadyDOM (https://github.com/webcomponents/shadydom)
+ * and ShadyCSS (https://github.com/webcomponents/shadycss) polyfills are used
+ * or when the webcomponentsjs
+ * (https://github.com/webcomponents/webcomponentsjs) polyfill is used.
+ *
+ * Adds a `scopeName` option which is used to scope element DOM and stylesheets
+ * when native ShadowDOM is unavailable. The `scopeName` will be added to
+ * the class attribute of all rendered DOM. In addition, any style elements will
+ * be automatically re-written with this `scopeName` selector and moved out
+ * of the rendered DOM and into the document <head>.
+ *
+ * It is common to use this render method in conjunction with a custom element
+ * which renders a shadowRoot. When this is done, typically the element's
+ * `localName` should be used as the `scopeName`.
+ *
+ * In addition to DOM scoping, ShadyCSS also supports a basic shim for css
+ * custom properties (needed only on older browsers like IE11) and a shim for
+ * a deprecated feature called `@apply` that supports applying a set of css
+ * custom properties to a given location.
+ *
+ * Usage considerations:
+ *
+ * * Part values in <style> elements are only applied the first time a given
+ * `scopeName` renders. Subsequent changes to parts in style elements will have
+ * no effect. Because of this, parts in style elements should only be used for
+ * values that will never change, for example parts that set scope-wide theme
+ * values or parts which render shared style elements.
+ *
+ * * Note, due to a limitation of the ShadyDOM polyfill, rendering in a
+ * custom element's `constructor` is not supported. Instead rendering should
+ * either done asynchronously, for example at microtask timing (e.g.
+ * Promise.resolve()), or be deferred until the element's `connectedCallback`
+ * first runs.
+ *
+ * Usage considerations when using shimmed custom properties or `@apply`:
+ *
+ * * Whenever any dynamic changes are made which affect
+ * css custom properties, `ShadyCSS.styleElement(element)` must be called
+ * to update the element. There are two cases when this is needed:
+ * (1) the element is connected to a new parent, (2) a class is added to the
+ * element that causes it to match different custom properties.
+ * To address the first case when rendering a custom element, `styleElement`
+ * should be called in the element's `connectedCallback`.
+ *
+ * * Shimmed custom properties may only be defined either for an entire
+ * shadowRoot (e.g. via `:host`) or via a rule that directly matches an element
+ * with a shadowRoot. In other words, instead of flowing from parent to child as
+ * do native css custom properties, shimmed custom properties flow only from
+ * shadowRoots to nested shadowRoots.
+ *
+ * * When using `@apply` mixing css shorthand property names with
+ * non-shorthand names (for example `border` and `border-width`) is not
+ * supported.
+ */
 export const render =
     (result: TemplateResult,
      container: Element|DocumentFragment,
      options: ShadyRenderOptions) => {
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
+      const needsScoping = container instanceof ShadowRoot &&
+          compatibleShadyCSSVersion && result instanceof TemplateResult;
+      // Handle first render to a scope specially...
+      const firstScopeRender = needsScoping && !shadyRenderSet.has(scopeName);
+      // On first scope render, render into a fragment; this cannot be a single
+      // fragment that is reused since nested renders can occur synchronously.
+      const renderContainer =
+          firstScopeRender ? document.createDocumentFragment() : container;
       litRender(
           result,
-          container,
+          renderContainer,
           {templateFactory: shadyTemplateFactory(scopeName), ...options} as
               RenderOptions);
-      // When rendering a TemplateResult, scope the template with ShadyCSS
-      if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
-          result instanceof TemplateResult) {
-        // Scope the element template one time only for this scope.
-        if (!shadyRenderSet.has(scopeName)) {
-          const part = parts.get(container)!;
-          const instance = part.value as TemplateInstance;
+      // When performing first scope render,
+      // (1) We've rendered into a fragment so that there's a chance to
+      // `prepareTemplateStyles` before sub-elements hit the DOM
+      // (which might cause them to render based on a common pattern of
+      // rendering in a custom element's `connectedCallback`);
+      // (2) Scope the template with ShadyCSS one time only for this scope.
+      // (3) Render the fragment into the container and make sure the
+      // container knows its `part` is the one we just rendered. This ensures
+      // DOM will be re-used on subsequent renders.
+      if (firstScopeRender) {
+        const part = parts.get(renderContainer)!;
+        parts.delete(renderContainer);
+        if (part.value instanceof TemplateInstance) {
           prepareTemplateStyles(
-              container as ShadowRoot, instance.template, scopeName);
+              renderContainer as DocumentFragment,
+              part.value.template,
+              scopeName);
         }
-        // Update styling if this is the initial render to this container.
-        if (!hasRendered) {
-          window.ShadyCSS!.styleElement((container as ShadowRoot).host);
-        }
+        removeNodes(container, container.firstChild);
+        container.appendChild(renderContainer);
+        parts.set(container, part);
+      }
+      // After elements have hit the DOM, update styling if this is the
+      // initial render to this container.
+      // This is needed whenever dynamic changes are made so it would be
+      // safest to do every render; however, this would regress performance
+      // so we leave it up to the user to call `ShadyCSSS.styleElement`
+      // for dynamic changes.
+      if (!hasRendered && needsScoping) {
+        window.ShadyCSS!.styleElement((container as ShadowRoot).host);
       }
     };
