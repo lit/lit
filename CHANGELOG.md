@@ -20,11 +20,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * `until()` can now take any number of sync or async arguments. ([#555](https://github.com/Polymer/lit-html/pull/555))
 * [Breaking] `guard()` supports multiple dependencies. If the first argument to `guard()` is an array, the array items are checked for equality to previous values. ([#666](https://github.com/Polymer/lit-html/pull/666))
-### Added
-* Removed Promise as a supposed node-position value type. ([#555](https://github.com/Polymer/lit-html/pull/555))
 * [Breaking] Renamed `classMap.js` and `styleMap.js` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
-* [Breaking] Removed the `when()` directive.  Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
+### Added
+* Added `cache()` directive. ([#646](https://github.com/Polymer/lit-html/pull/646))
+* Removed Promise as a supposed node-position value type. ([#555](https://github.com/Polymer/lit-html/pull/555))
+* Added a minimal `<template>` polyfill. 
 ### Removed
+* [Breaking] Removed the `when()` directive.  Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
+### Fixed
+* Bound attribute names are rewritten to avoid IE/Edge removing SVG and style attributes. ([#640](https://github.com/Polymer/lit-html/pull/640))
+* Ensure shady-render prepares styling for a scope before attaching child elements. ([#664](https://github.com/Polymer/lit-html/pull/664))
+* Handle CSS Custom Variables in the styleMap directive. [#642](https://github.com/Polymer/lit-html/pull/642))
 
 ## [0.13.0] - 2018-11-08
 ### Changed
