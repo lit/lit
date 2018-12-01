@@ -311,7 +311,7 @@ const myTemplate = () => html`
 
 `guard(expressions, valueFn)`
 
-Avoids re-evaluating an expensive template functions (`valueFn`) unless one of the identified expressions changes identity.
+Avoids re-evaluating an expensive template function (`valueFn`) unless one of the identified expressions changes identity. Returns the value of `valueFn`, which may be cached.
 
 The `expressions` argument can either be a single (non-array) expression, or an array of multiple expressions to monitor. 
 
