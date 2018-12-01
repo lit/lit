@@ -309,9 +309,14 @@ const myTemplate = () => html`
 
 ### guard
 
-`guard(expression, valueFn)`
+`guard(expressions, valueFn)`
 
-Prevents any re-render unless the identity of the expression changes, for example when a primitive changes value or when an object reference changes.
+Avoids re-evaluating an expensive template functions (`valueFn`) unless one of the identified expressions changes identity.
+
+The `expressions` argument can either be a single (non-array) expression, or an array of multiple expressions to monitor. 
+
+The `guard` directive caches the last-known value of `valueFn`, and only re-evaluates `valueFn` if the identity of any of the expressions changes (for example when a primitive changes value or when an object reference changes). 
+
 
 Example:
 
@@ -320,12 +325,12 @@ import { guard } from 'lit-html/directives/guard';
 
 const template = html`
   <div>
-    ${guard(items, () => items.map(item => html`${item}`))}
+    ${guard([items], () => items.map(item => html`${item}`))}
   </div>
 `
 ```
 
-In this case, items are mapped over only when the array reference changes.
+In this case, the `items` array is mapped over only when the array reference changes.
 
 ### until
 
