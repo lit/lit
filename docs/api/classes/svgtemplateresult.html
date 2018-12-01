@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>TemplateResult | lit-html</title>
+	<title>SVGTemplateResult | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -51,16 +51,13 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../index.html">Globals</a>
+					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_lib_template_result_.html">&quot;lib/template-result&quot;</a>
-				</li>
-				<li>
-					<a href="_lib_template_result_.templateresult.html">TemplateResult</a>
+					<a href="svgtemplateresult.html">SVGTemplateResult</a>
 				</li>
 			</ul>
-			<h1>Class TemplateResult</h1>
+			<h1>Class SVGTemplateResult</h1>
 		</div>
 	</div>
 </header>
@@ -70,19 +67,21 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>The return type of <code>html</code>, which holds a Template and the values from
-						interpolated expressions.</p>
+						<p>A TemplateResult for SVG fragments.</p>
 					</div>
+					<p>This class wraps HTMl in an <code>&lt;svg&gt;</code> tag in order to parse its contents in the
+						SVG namespace, then modifies the template to remove the <code>&lt;svg&gt;</code> tag so that
+					clones only container the original fragment.</p>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">TemplateResult</span>
+						<a href="templateresult.html" class="tsd-signature-type">TemplateResult</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<a href="_lib_template_result_.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a>
+								<span class="target">SVGTemplateResult</span>
 							</li>
 						</ul>
 					</li>
@@ -92,44 +91,45 @@
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
-						<section class="tsd-index-section ">
+						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><a href="svgtemplateresult.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
-						<section class="tsd-index-section ">
+						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#processor" class="tsd-kind-icon">processor</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#strings" class="tsd-kind-icon">strings</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#type" class="tsd-kind-icon">type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#values" class="tsd-kind-icon">values</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="svgtemplateresult.html#processor" class="tsd-kind-icon">processor</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="svgtemplateresult.html#strings" class="tsd-kind-icon">strings</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="svgtemplateresult.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="svgtemplateresult.html#values" class="tsd-kind-icon">values</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#gethtml" class="tsd-kind-icon">getHTML</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_lib_template_result_.templateresult.html#gettemplateelement" class="tsd-kind-icon">get<wbr>Template<wbr>Element</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="svgtemplateresult.html#gethtml" class="tsd-kind-icon">getHTML</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="svgtemplateresult.html#gettemplateelement" class="tsd-kind-icon">get<wbr>Template<wbr>Element</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group ">
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Template<wbr>Result<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></li>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">new SVGTemplate<wbr>Result<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L27">lib/template-result.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L27">lib/template-result.ts:27</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -144,92 +144,93 @@
 									<h5>type: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
-									<h5>processor: <a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></h5>
+									<h5>processor: <a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></h4>
 						</li>
 					</ul>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group ">
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
 					<a name="processor" class="tsd-anchor"></a>
 					<h3>processor</h3>
-					<div class="tsd-signature tsd-kind-icon">processor<span class="tsd-signature-symbol">:</span> <a href="../interfaces/_lib_template_processor_.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></div>
+					<div class="tsd-signature tsd-kind-icon">processor<span class="tsd-signature-symbol">:</span> <a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#processor">processor</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L27">lib/template-result.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L27">lib/template-result.ts:27</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
 					<a name="strings" class="tsd-anchor"></a>
 					<h3>strings</h3>
 					<div class="tsd-signature tsd-kind-icon">strings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TemplateStringsArray</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#strings">strings</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L24">lib/template-result.ts:24</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L24">lib/template-result.ts:24</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
 					<a name="type" class="tsd-anchor"></a>
 					<h3>type</h3>
 					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#type">type</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L26">lib/template-result.ts:26</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L26">lib/template-result.ts:26</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
 					<a name="values" class="tsd-anchor"></a>
 					<h3>values</h3>
 					<div class="tsd-signature tsd-kind-icon">values<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#values">values</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L25">lib/template-result.ts:25</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L25">lib/template-result.ts:25</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 					<a name="gethtml" class="tsd-anchor"></a>
 					<h3>getHTML</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 						<li class="tsd-signature tsd-kind-icon">getHTML<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Overrides <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#gethtml">getHTML</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L41">lib/template-result.ts:41</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L85">lib/template-result.ts:85</a></li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Returns a string of HTML used to create a <code>&lt;template&gt;</code> element.</p>
-								</div>
-							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 					<a name="gettemplateelement" class="tsd-anchor"></a>
 					<h3>get<wbr>Template<wbr>Element</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 						<li class="tsd-signature tsd-kind-icon">get<wbr>Template<wbr>Element<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">HTMLTemplateElement</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Overrides <a href="templateresult.html">TemplateResult</a>.<a href="templateresult.html#gettemplateelement">getTemplateElement</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template-result.ts#L70">lib/template-result.ts:70</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/template-result.ts#L89">lib/template-result.ts:89</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">HTMLTemplateElement</span></h4>
@@ -242,43 +243,37 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
-						<a href="../index.html"><em>Globals</em></a>
-					</li>
-					<li class="current tsd-kind-external-module">
-						<a href="../modules/_lib_template_result_.html">"lib/template-<wbr>result"</a>
+						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_template_result_.svgtemplateresult.html" class="tsd-kind-icon">SVGTemplate<wbr>Result</a>
-					</li>
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_template_result_.templateresult.html" class="tsd-kind-icon">Template<wbr>Result</a>
+					<li class="current tsd-kind-class">
+						<a href="svgtemplateresult.html" class="tsd-kind-icon">SVGTemplate<wbr>Result</a>
 						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
+								<a href="svgtemplateresult.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#processor" class="tsd-kind-icon">processor</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="svgtemplateresult.html#processor" class="tsd-kind-icon">processor</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#strings" class="tsd-kind-icon">strings</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="svgtemplateresult.html#strings" class="tsd-kind-icon">strings</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#type" class="tsd-kind-icon">type</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="svgtemplateresult.html#type" class="tsd-kind-icon">type</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#values" class="tsd-kind-icon">values</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="svgtemplateresult.html#values" class="tsd-kind-icon">values</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#gethtml" class="tsd-kind-icon">getHTML</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+								<a href="svgtemplateresult.html#gethtml" class="tsd-kind-icon">getHTML</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_lib_template_result_.templateresult.html#gettemplateelement" class="tsd-kind-icon">get<wbr>Template<wbr>Element</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+								<a href="svgtemplateresult.html#gettemplateelement" class="tsd-kind-icon">get<wbr>Template<wbr>Element</a>
 							</li>
 						</ul>
 					</li>

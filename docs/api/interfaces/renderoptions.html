@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Template | lit-html</title>
+	<title>RenderOptions | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -51,34 +51,24 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../index.html">Globals</a>
+					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="../modules/_lib_template_.html">&quot;lib/template&quot;</a>
-				</li>
-				<li>
-					<a href="_lib_template_.template.html">Template</a>
+					<a href="renderoptions.html">RenderOptions</a>
 				</li>
 			</ul>
-			<h1>Class Template</h1>
+			<h1>Interface RenderOptions</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>An updateable Template that tracks the location of dynamic parts.</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Template</span>
+						<span class="target">RenderOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -87,69 +77,34 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Constructors</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="_lib_template_.template.html#constructor" class="tsd-kind-icon">constructor</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_.template.html#element" class="tsd-kind-icon">element</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_lib_template_.template.html#parts" class="tsd-kind-icon">parts</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="renderoptions.html#eventcontext" class="tsd-kind-icon">event<wbr>Context</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="renderoptions.html#templatefactory" class="tsd-kind-icon">template<wbr>Factory</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
-					<a name="constructor" class="tsd-anchor"></a>
-					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Template<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a>, element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">HTMLTemplateElement</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_lib_template_.template.html" class="tsd-signature-type">Template</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template.ts#L42">lib/template.ts:42</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>result: <a href="_lib_template_result_.templateresult.html" class="tsd-signature-type">TemplateResult</a></h5>
-								</li>
-								<li>
-									<h5>element: <span class="tsd-signature-type">HTMLTemplateElement</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_lib_template_.template.html" class="tsd-signature-type">Template</a></h4>
-						</li>
-					</ul>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="element" class="tsd-anchor"></a>
-					<h3>element</h3>
-					<div class="tsd-signature tsd-kind-icon">element<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">HTMLTemplateElement</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="eventcontext" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> event<wbr>Context</h3>
+					<div class="tsd-signature tsd-kind-icon">event<wbr>Context<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">EventTarget</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template.ts#L42">lib/template.ts:42</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/render-options.ts#L19">lib/render-options.ts:19</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="parts" class="tsd-anchor"></a>
-					<h3>parts</h3>
-					<div class="tsd-signature tsd-kind-icon">parts<span class="tsd-signature-symbol">:</span> <a href="../modules/_lib_template_.html#templatepart" class="tsd-signature-type">TemplatePart</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[]</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="templatefactory" class="tsd-anchor"></a>
+					<h3>template<wbr>Factory</h3>
+					<div class="tsd-signature tsd-kind-icon">template<wbr>Factory<span class="tsd-signature-symbol">:</span> <a href="../globals.html#templatefactory" class="tsd-signature-type">TemplateFactory</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/template.ts#L41">lib/template.ts:41</a></li>
+							<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/render-options.ts#L18">lib/render-options.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -159,10 +114,7 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
-						<a href="../index.html"><em>Globals</em></a>
-					</li>
-					<li class="current tsd-kind-external-module">
-						<a href="../modules/_lib_template_.html">"lib/template"</a>
+						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 				</ul>
 			</nav>
@@ -170,46 +122,19 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module">
-						<a href="_lib_template_.template.html" class="tsd-kind-icon">Template</a>
+					<li class="current tsd-kind-interface">
+						<a href="renderoptions.html" class="tsd-kind-icon">Render<wbr>Options</a>
 						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="_lib_template_.template.html#constructor" class="tsd-kind-icon">constructor</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="renderoptions.html#eventcontext" class="tsd-kind-icon">event<wbr>Context</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_.template.html#element" class="tsd-kind-icon">element</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class">
-								<a href="_lib_template_.template.html#parts" class="tsd-kind-icon">parts</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="renderoptions.html#templatefactory" class="tsd-kind-icon">template<wbr>Factory</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-type-alias tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#templatepart" class="tsd-kind-icon">Template<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#lastattributenameregex" class="tsd-kind-icon">last<wbr>Attribute<wbr>Name<wbr>Regex</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#marker" class="tsd-kind-icon">marker</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#markerregex" class="tsd-kind-icon">marker<wbr>Regex</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#nodemarker" class="tsd-kind-icon">node<wbr>Marker</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#rewritesstyleattribute" class="tsd-kind-icon">rewrites<wbr>Style<wbr>Attribute</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#createmarker" class="tsd-kind-icon">create<wbr>Marker</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="../modules/_lib_template_.html#istemplatepartactive" class="tsd-kind-icon">is<wbr>Template<wbr>Part<wbr>Active</a>
-					</li>
 				</ul>
 			</nav>
 		</div>

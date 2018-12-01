@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>&quot;lib/parts&quot; | lit-html</title>
+	<title>DefaultTemplateProcessor | lit-html</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -51,66 +51,131 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../index.html">Globals</a>
+					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="_lib_parts_.html">&quot;lib/parts&quot;</a>
+					<a href="defaulttemplateprocessor.html">DefaultTemplateProcessor</a>
 				</li>
 			</ul>
-			<h1>External module &quot;lib/parts&quot;</h1>
+			<h1>Class DefaultTemplateProcessor</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Creates Parts when a template is instantiated.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">DefaultTemplateProcessor</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../interfaces/templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></li>
+				</ul>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Classes</h3>
+							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.attributecommitter.html" class="tsd-kind-icon">Attribute<wbr>Committer</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.attributepart.html" class="tsd-kind-icon">Attribute<wbr>Part</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.booleanattributepart.html" class="tsd-kind-icon">Boolean<wbr>Attribute<wbr>Part</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.eventpart.html" class="tsd-kind-icon">Event<wbr>Part</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.propertycommitter.html" class="tsd-kind-icon">Property<wbr>Committer</a></li>
-								<li class="tsd-kind-class tsd-parent-kind-external-module"><a href="../classes/_lib_parts_.propertypart.html" class="tsd-kind-icon">Property<wbr>Part</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Functions</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="_lib_parts_.html#isprimitive" class="tsd-kind-icon">is<wbr>Primitive</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="defaulttemplateprocessor.html#handletextexpression" class="tsd-kind-icon">handle<wbr>Text<wbr>Expression</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
-					<a name="isprimitive" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> is<wbr>Primitive</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-						<li class="tsd-signature tsd-kind-icon">is<wbr>Primitive<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="handleattributeexpressions" class="tsd-anchor"></a>
+					<h3>handle<wbr>Attribute<wbr>Expressions</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/templateprocessor.html">TemplateProcessor</a>.<a href="../interfaces/templateprocessor.html#handleattributeexpressions">handleAttributeExpressions</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/3a14f29/src/lib/parts.ts#L23">lib/parts.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/default-template-processor.ts#L33">lib/default-template-processor.ts:33</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create parts for an attribute-position binding, given the event, attribute
+									name, and string literals.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>value: <span class="tsd-signature-type">any</span></h5>
+									<h5>element: <span class="tsd-signature-type">Element</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The element containing the binding</p>
+									</div>
+								</li>
+								<li>
+									<h5>name: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The attribute name</p>
+									</div>
+								</li>
+								<li>
+									<h5>strings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The string literals. There are always at least two strings,
+										event for fully-controlled bindings with a single expression.</p>
+									</div>
+								</li>
+								<li>
+									<h5>options: <a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">[]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="handletextexpression" class="tsd-anchor"></a>
+					<h3>handle<wbr>Text<wbr>Expression</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">handle<wbr>Text<wbr>Expression<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="nodepart.html" class="tsd-signature-type">NodePart</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/templateprocessor.html">TemplateProcessor</a>.<a href="../interfaces/templateprocessor.html#handletextexpression">handleTextExpression</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/Polymer/lit-html/blob/a12ee4e/src/lib/default-template-processor.ts#L54">lib/default-template-processor.ts:54</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create parts for a text-position binding.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>options: <a href="../interfaces/renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="nodepart.html" class="tsd-signature-type">NodePart</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -120,39 +185,27 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class="globals  ">
-						<a href="../index.html"><em>Globals</em></a>
-					</li>
-					<li class="current tsd-kind-external-module">
-						<a href="_lib_parts_.html">"lib/parts"</a>
+						<a href="../globals.html"><em>Globals</em></a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.attributecommitter.html" class="tsd-kind-icon">Attribute<wbr>Committer</a>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class">
+						<a href="defaulttemplateprocessor.html" class="tsd-kind-icon">Default<wbr>Template<wbr>Processor</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="defaulttemplateprocessor.html#handletextexpression" class="tsd-kind-icon">handle<wbr>Text<wbr>Expression</a>
+							</li>
+						</ul>
 					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.attributepart.html" class="tsd-kind-icon">Attribute<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.booleanattributepart.html" class="tsd-kind-icon">Boolean<wbr>Attribute<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.eventpart.html" class="tsd-kind-icon">Event<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.nodepart.html" class="tsd-kind-icon">Node<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.propertycommitter.html" class="tsd-kind-icon">Property<wbr>Committer</a>
-					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-external-module">
-						<a href="../classes/_lib_parts_.propertypart.html" class="tsd-kind-icon">Property<wbr>Part</a>
-					</li>
-					<li class=" tsd-kind-function tsd-parent-kind-external-module">
-						<a href="_lib_parts_.html#isprimitive" class="tsd-kind-icon">is<wbr>Primitive</a>
-					</li>
+				</ul>
+				<ul class="after-current">
 				</ul>
 			</nav>
 		</div>

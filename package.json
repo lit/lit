@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
-    "gen-docs": "typedoc --readme none --mode modules --ignoreCompilerErrors --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api --gaID UA-39334307-23 ./src",
+    "gen-docs": "typedoc --readme ./docs/_api-readme.md --mode file --ignoreCompilerErrors --excludeNotExported --excludePrivate --out ./docs/api --gaID UA-39334307-23 ./src/lit-html.ts ./src/lib/*.ts ./src/directives/*.ts",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
