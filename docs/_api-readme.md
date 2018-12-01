@@ -16,12 +16,12 @@ Import from individual modules in the `lit-html/directives/` folder:
 import {repeat} from 'lit-html/directives/repeat.js';
 ```
 
-- [asyncAppend](./globals.html#asyncAppend)
-- [asyncReplace](./globals.html#asyncReplace)
-- [classMap](./globals.html#classMap)
+- [asyncAppend](./globals.html#asyncappend)
+- [asyncReplace](./globals.html#asyncreplace)
+- [classMap](./globals.html#classmap)
 - [guard](./globals.html#guard)
-- [ifDefined](./globals.html#ifDefined)
+- [ifDefined](./globals.html#ifdefined)
 - [repeat](./globals.html#repeat)
-- [styleMap](./globals.html#styleMap)
-- [unsafeHTML](./globals.html#unsafeHTML)
+- [styleMap](./globals.html#stylemap)
+- [unsafeHTML](./globals.html#unsafehtml)
 - [until](./globals.html#until)
