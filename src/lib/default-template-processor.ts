@@ -33,19 +33,21 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
   handleAttributeExpressions(
       element: Element, name: string, strings: string[],
       options: RenderOptions): Part[] {
-    const prefix = name[0];
-    if (prefix === '.') {
-      const comitter = new PropertyCommitter(element, name.slice(1), strings);
-      return comitter.parts;
+    const [prefix] = name;
+    let comitter;
+
+    switch (prefix) {
+      case '.':
+        comitter = new PropertyCommitter(element, name.slice(1), strings);
+        return comitter.parts;
+      case '@':
+        return [new EventPart(element, name.slice(1), options.eventContext)];
+      case '?':
+        return [new BooleanAttributePart(element, name.slice(1), strings)];
+      default:
+        comitter = new AttributeCommitter(element, name, strings);
+        return comitter.parts;
     }
-    if (prefix === '@') {
-      return [new EventPart(element, name.slice(1), options.eventContext)];
-    }
-    if (prefix === '?') {
-      return [new BooleanAttributePart(element, name.slice(1), strings)];
-    }
-    const comitter = new AttributeCommitter(element, name, strings);
-    return comitter.parts;
   }
   /**
    * Create parts for a text-position binding.

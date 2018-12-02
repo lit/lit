@@ -29,20 +29,19 @@ export const isPrimitive = (value: any) =>
  * even if there are multiple parts for an attribute.
  */
 export class AttributeCommitter {
-  element: Element;
-  name: string;
-  strings: string[];
-  parts: AttributePart[];
+  element!: Element;
+  name!: string;
+  strings!: string[];
+  parts!: AttributePart[];
   dirty = true;
 
   constructor(element: Element, name: string, strings: string[]) {
-    this.element = element;
-    this.name = name;
-    this.strings = strings;
-    this.parts = [];
-    for (let i = 0; i < strings.length - 1; i++) {
-      this.parts[i] = this._createPart();
-    }
+    Object.assign(this, {
+      element,
+      name,
+      strings,
+      parts: strings.map(() => this._createPart())
+    });
   }
 
   /**
@@ -53,27 +52,27 @@ export class AttributeCommitter {
   }
 
   protected _getValue(): any {
-    const strings = this.strings;
-    const l = strings.length - 1;
     let text = '';
 
-    for (let i = 0; i < l; i++) {
-      text += strings[i];
-      const part = this.parts[i];
-      if (part !== undefined) {
-        const v = part.value;
-        if (v != null &&
-            (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
-          for (const t of v) {
-            text += typeof t === 'string' ? t : String(t);
-          }
-        } else {
-          text += typeof v === 'string' ? v : String(v);
-        }
-      }
-    }
+    this.strings.forEach((stringValue, index) => {
+      text += stringValue;
+      const part = this.parts[index];
 
-    text += strings[l];
+      if (part === undefined) {
+        return;
+      }
+
+      const { value } = part;
+
+      if (value != null && (Array.isArray(value) || typeof value !== 'string' && value[Symbol.iterator])) {
+        for (const v of value) {
+          text += `${v}`;
+        }
+      } else {
+        text += `${value}`;
+      }
+    });
+
     return text;
   }
 
