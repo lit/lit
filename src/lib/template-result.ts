@@ -47,7 +47,7 @@ export class TemplateResult {
       // 1) Appends a suffix to all bound attribute names to opt out of special
       // attribute value parsing that IE11 and Edge do, like for style and
       // many SVG attributes. The Template class also appends the same suffix
-      // when looking up attributes to creat Parts.
+      // when looking up attributes to create Parts.
       // 2) Adds an unquoted-attribute-safe marker for the first expression in
       // an attribute. Subsequent attribute expressions will use node markers,
       // and this is safe since attributes with multiple expressions are
