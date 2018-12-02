@@ -197,7 +197,7 @@ export class NodePart implements Part {
     } else if (Array.isArray(value) || value[Symbol.iterator]) {
       this._commitIterable(value);
     } else if (value === nothing) {
-      this.value = undefined;
+      this.value = nothing;
       this.clear();
     } else {
       // Fallback, will render the string representation

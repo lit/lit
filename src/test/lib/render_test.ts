@@ -81,7 +81,9 @@ suite('render()', () => {
       const template = (i: any) => html`<div>${i}</div>`;
       render(template('foo'), container);
       render(template(nothing), container)
-      assert.equal(container.querySelector('div')!.innerHTML, '');
+      const children = Array.from(container.querySelector('div')!.childNodes);
+      assert.isEmpty(
+          children.filter(node => node.nodeType !== Node.COMMENT_NODE));
     });
 
     testIfHasSymbol('renders a Symbol', () => {
