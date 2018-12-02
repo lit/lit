@@ -24,6 +24,8 @@ export const isPrimitive = (value: any) =>
     (value === null ||
      !(typeof value === 'object' || typeof value === 'function'));
 
+export const isString = (value: any) => typeof value === 'string';
+
 /**
  * Sets attribute values for AttributeParts, so that the value is only set once
  * even if there are multiple parts for an attribute.
@@ -40,7 +42,7 @@ export class AttributeCommitter {
       element,
       name,
       strings,
-      parts: strings.map(() => this._createPart())
+      parts: strings.slice(0, -1).map(() => this._createPart())
     });
   }
 
@@ -66,10 +68,10 @@ export class AttributeCommitter {
 
       if (value != null && (Array.isArray(value) || typeof value !== 'string' && value[Symbol.iterator])) {
         for (const v of value) {
-          text += `${v}`;
+          text += isString(v) ? v : String(v);
         }
       } else {
-        text += `${value}`;
+        text += isString(value) ? value : String(value);
       }
     });
 
