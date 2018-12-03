@@ -64,9 +64,11 @@ export class AttributeCommitter {
         return;
       }
 
-      const { value } = part;
+      const {value} = part;
 
-      if (value != null && (Array.isArray(value) || typeof value !== 'string' && value[Symbol.iterator])) {
+      if (value != null &&
+          (Array.isArray(value) ||
+           typeof value !== 'string' && value[Symbol.iterator])) {
         for (const v of value) {
           text += isString(v) ? v : String(v);
         }
