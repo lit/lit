@@ -190,7 +190,7 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  *
  * Usage considerations:
  *
- * * Part values in <style> elements are only applied the first time a given
+ * * Part values in `<style>` elements are only applied the first time a given
  * `scopeName` renders. Subsequent changes to parts in style elements will have
  * no effect. Because of this, parts in style elements should only be used for
  * values that will never change, for example parts that set scope-wide theme
