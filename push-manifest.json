@@ -1,6 +1,7 @@
 {
   "/": {
     "src/shop-app.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
@@ -11,10 +12,12 @@
   },
   "/list/.*": {
     "src/shop-app.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
     "src/shop-list.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
@@ -25,10 +28,12 @@
   },
   "/detail/.*": {
     "src/shop-app.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
     "src/shop-detail.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
@@ -39,10 +44,12 @@
   },
   "/cart": {
     "src/shop-app.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
     "src/shop-cart.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
@@ -53,10 +60,12 @@
   },
   "/checkout": {
     "src/shop-app.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
     "src/shop-checkout.js": {
+      "crossorigin": "anonymous",
       "type": "script",
       "weight": 1
     },
