@@ -47,6 +47,38 @@ $ npm install lit-html
 `lit-html` is under active development and has not yet had a 1.0 release. The
 internal API may still change somewhat. The `html` and `render` API is stable.
 
+## Documentation site
+
+You can find the source for the lit-html documentation site in the `docs` folder. Guides are written in Markdown, and the site is built using the Jekyll static site generator. 
+ 
+This section describes how to build the documentation site.
+
+### Prerequisites
+
+To build the documentation site, you need Jekyll. If you already have Ruby and the gem pacakge manager, run the following command to install Jekyll:
+
+`gem install bundler jekyll`
+
+For more information, see [the Jekyll website](https://jekyllrb.com/).
+
+Previewing the docs requires the [App Engine Standard Environment for Python 2.7](https://cloud.google.com/appengine/docs/standard/python/quickstart). 
+
+### Building and previewing
+
+To build the API docs:
+
+`npm run gen-docs`
+
+To build the documentation site and preview it from a local server:
+
+```
+cd docs
+npm run build
+npm run serve
+```
+
+Point a browser at [localhost:8080](localhost:8080) to preview the site.
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
