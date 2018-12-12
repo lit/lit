@@ -12,6 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {Part} from './part.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';

@@ -12,6 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * Module to add shady DOM/shady CSS polyfill support to lit-html template rendering.
+ * 
+ * @module shady-render
+ * @preferred
+ */
+
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';

@@ -1,4 +1,3 @@
-
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -11,6 +10,10 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * @module lit-html
  */
 
 import {Part} from './part.js';

@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
-    "gen-docs": "typedoc --readme ./docs/_api-readme.md --mode file --ignoreCompilerErrors --excludeNotExported --excludePrivate --out ./docs/api --gaID UA-39334307-23 ./src/lit-html.ts ./src/lib/*.ts ./src/directives/*.ts",
+    "gen-docs": "(cd docs/_api && sh copy_api.sh) &&  typedoc --readme docs/_api/readme.md  --mode modules --theme minimal --ignoreCompilerErrors --excludeNotExported --excludePrivate --out ./docs/api --gaID UA-39334307-23 docs/_api/tmp/lit-html.ts docs/_api/tmp/lib/shady-render.ts",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
@@ -44,6 +44,7 @@
     "rollup-plugin-terser": "^1.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.13.0",
+    "typedoc-plugin-external-module-name": "^1.1.3",
     "typescript": "^3.1.1",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
