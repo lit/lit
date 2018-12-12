@@ -55,8 +55,10 @@ export class TemplateResult {
       const match = lastAttributeNameRegex.exec(s);
       if (match) {
         // We're starting a new bound attribute.
-        // Add the safe attribute suffix, and use unquoted-attribute-safe marker.
-        html += s.substr(0, match.index) + match[1] + match[2] + boundAttributeSuffix + match[3] + marker;
+        // Add the safe attribute suffix, and use unquoted-attribute-safe
+        // marker.
+        html += s.substr(0, match.index) + match[1] + match[2] +
+            boundAttributeSuffix + match[3] + marker;
       } else {
         // We're either in a bound node, or trailing bound attribute.
         // Either way, nodeMarker is safe to use.
