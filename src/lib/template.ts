@@ -51,9 +51,7 @@ export class Template {
       // null
       const walker = document.createTreeWalker(
           content,
-          133 /* NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT |
-                 NodeFilter.SHOW_TEXT */
-          ,
+          133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
           null as any,
           false);
       // The actual previous node, accounting for removals: if a node is removed
@@ -143,7 +141,7 @@ export class Template {
             // https://github.com/PolymerLabs/lit-html/issues/147
             const previousSibling = node.previousSibling;
             if (previousSibling === null || previousSibling !== previousNode ||
-                previousSibling.nodeType !== Node.TEXT_NODE) {
+                previousSibling.nodeType !== 3 /* Node.TEXT_NODE */) {
               parent.insertBefore(createMarker(), node);
             } else {
               index--;
