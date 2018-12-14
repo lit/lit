@@ -243,11 +243,13 @@ Where:
 For example:
 
 ```js
-const employeeList = (employees) => html` 
-  <ul> 
-    ${repeat(employees, (employee) => employee.id, (employee) =>
-        html`<li>${employee.familyName}, ${employee.givenName}</li>`}
-  </ul>`
+const employeeList = (employees) => html`
+  <ul>
+    ${repeat(employees, (employee) => employee.id, (employee) => html`
+      <li>${employee.familyName}, ${employee.givenName}</li>
+    `)}
+  </ul>
+`
 ```
 
 If you re-sort the `employees` array, the `repeat` directive reorders the existing DOM nodes. 
