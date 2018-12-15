@@ -245,8 +245,8 @@ For example:
 ```js
 const employeeList = (employees) => html`
   <ul>
-    ${repeat(employees, (employee) => employee.id, (employee) => html`
-      <li>${employee.familyName}, ${employee.givenName}</li>
+    ${repeat(employees, (employee) => employee.id, (employee, index) => html`
+      <li>${index}: ${employee.familyName}, ${employee.givenName}</li>
     `)}
   </ul>
 `
