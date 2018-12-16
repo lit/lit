@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { directive, NodePart, Part } from '../lit-html.js';
+import {directive, NodePart, Part} from '../lit-html.js';
 
 /**
  * Renders the result as HTML, rather than text.
@@ -23,14 +23,15 @@ import { directive, NodePart, Part } from '../lit-html.js';
  */
 
 type CachedTemplate = {
-  template: HTMLTemplateElement;
-  fragment: DocumentFragment;
+  template: HTMLTemplateElement; fragment: DocumentFragment;
 };
 
-// Use a cache for TemplateElements so we don't have to parse the same HTML string twice
+// Use a cache for TemplateElements so we don't have to parse the same HTML
+// string twice
 const templateCache = new Map<string, HTMLTemplateElement>();
 
-// For each part, remember the TemplateElement that was last used to render in that part, and the DocumentFragment that was last set as a value.
+// For each part, remember the TemplateElement that was last used to render in
+// that part, and the DocumentFragment that was last set as a value.
 const partValues = new WeakMap<NodePart, CachedTemplate>();
 
 export const unsafeHTML = directive((value: any) => (part: Part): void => {
@@ -53,12 +54,13 @@ export const unsafeHTML = directive((value: any) => (part: Part): void => {
   /**
    * Need to render only if one of the following is true
    * - This part never rendered unsafeHTML previously
-   * - The new template is different from the previously rendered template
-   * - The current value of the part is different from the previously rendered fragment
+   * - The new template is different from the previousl template
+   * - The current value of the part is different from the previous fragment
    */
-  if (!previousValue || template !== previousValue.template || part.value !== previousValue.fragment) {
+  if (!previousValue || template !== previousValue.template ||
+      part.value !== previousValue.fragment) {
     const fragment = document.importNode(template.content, true);
     part.setValue(fragment);
-    partValues.set(part, { template, fragment });
+    partValues.set(part, {template, fragment});
   }
 });

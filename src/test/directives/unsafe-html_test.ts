@@ -79,7 +79,9 @@ suite('unsafeHTML', () => {
 
     // Initial unsafeHTML render
     render(t(unsafeHTML(value)), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div><span></span></div>');
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><span></span></div>');
 
     // Re-render with a non-unsafeHTML value
     render(t(primitive), container);
@@ -87,6 +89,8 @@ suite('unsafeHTML', () => {
 
     // Re-render with unsafeHTML again
     render(t(unsafeHTML(value)), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div><span></span></div>');
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><span></span></div>');
   });
 });
