@@ -41,6 +41,7 @@ export const unsafeHTML = directive((value: any) => (part: Part): void => {
   // Cast value to String only if necessary, to improve cache lookups
   const htmlString = typeof value === 'string' ? value : String(value);
 
+  // Get a TemplateElement that represents this htmlString
   let template = templateCache.get(htmlString);
   if (!template) {
     template = document.createElement('template');
@@ -52,8 +53,8 @@ export const unsafeHTML = directive((value: any) => (part: Part): void => {
   /**
    * Need to render only if one of the following is true
    * - This part never rendered unsafeHTML previously
-   * - The new template does not match the previously rendered template
-   * - The previously rendered fragment is not the current value of the part
+   * - The new template is different from the previously rendered template
+   * - The current value of the part is different from the previously rendered fragment
    */
   if (!previousValue || template !== previousValue.template || part.value !== previousValue.fragment) {
     const fragment = document.importNode(template.content, true);
