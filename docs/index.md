@@ -95,7 +95,7 @@ lit-html is not a framework, nor does it include a component model. It focuses o
 <div class="wrapper">
 
 <h1 class="title">Browser Compatibility</h1>
-<h2 class="description">PWA Starter Kit works in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </h2>
+<h2 class="description">lit-html works in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </h2>
 <div id="browser-thumbnails" style="margin-bottom: 20px;">
 <img width="56" width="56" src="{{ site.baseurl }}/images/browsers/chrome_128x128.png" alt="chrome logo">
 <img width="56" width="56" src="{{ site.baseurl }}/images/browsers/firefox_128x128.png" alt="firefox logo">
