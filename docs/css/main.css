@@ -60,10 +60,6 @@ h2.description {
   color: #999;
 }
 
-ol li,
-ul li {
-  padding-left: 12px;
-}
 
 /* Code styles */
 code, pre {
@@ -338,7 +334,7 @@ section p {
 }
 
 .side-nav > ul ul {
-  padding-left: 24px;
+  padding-left: 20px;
   margin-bottom: 20px;
 }
 
@@ -357,6 +353,9 @@ article {
 }
 
 article h1 {
+  margin: 60px 0 16px 0;
+}
+article h1:first-child {
   margin: 6px 0 16px 0;
 }
 
@@ -379,6 +378,7 @@ article p {
   max-width: 640px;
 }
 
+
 article ol,
 article ul {
   padding-left: 24px;
@@ -398,6 +398,7 @@ article ol li {
 
 .alert {
   position: relative;
+  z-index: -1;
   margin: 24px 0;
   padding: 1px 20px 1px 56px;
   box-shadow: 0 0 2px #ccc;
