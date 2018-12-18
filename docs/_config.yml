@@ -11,3 +11,6 @@ collections:
 include:
   - "_*_.html"
   - "_*_.*.html"
+exclude: 
+  - README.md
+  - node_modules

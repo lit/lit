@@ -12,6 +12,24 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ *
+ * Main lit-html module.
+ *
+ * Main exports:
+ *
+ * -  [[html]]
+ * -  [[svg]]
+ * -  [[render]]
+ *
+ * @module lit-html
+ * @preferred
+ */
+
+/**
+ * Do not remove this comment; it keeps typedoc from misplacing the module
+ * docs.
+ */
 import {defaultTemplateProcessor} from './lib/default-template-processor.js';
 import {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 

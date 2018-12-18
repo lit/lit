@@ -1,8 +1,14 @@
 {
   "private": true,
   "scripts": {
+    "gen-api-docs": "(cd _api && sh copy_api.sh) &&  typedoc --name \"lit-html API\" --readme _api/readme.md  --mode modules --theme minimal --tsconfig ../tsconfig.json --ignoreCompilerErrors --excludeNotExported --excludePrivate --out ./api --gaID UA-39334307-23 _api/tmp/lit-html.ts _api/tmp/lib/shady-render.ts",
     "build": "jekyll build",
-    "serve": "dev_appserver.py _site/app.yaml",
+    "build-all": "npm run gen-api-docs && jekyll build",
+    "serve": "dev_appserver.py --port 9001 --admin_port 8901 _site/app.yaml",
     "deploy": "npm run build && gcloud app deploy _site/app.yaml --project polymer-lit-html --no-promote"
+  },
+  "devDependencies": {
+    "typedoc": "^0.13.0",
+    "typedoc-plugin-external-module-name": "^1.1.3"
   }
 }

@@ -12,6 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
 import {noChange, Part} from './part.js';

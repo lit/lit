@@ -39,4 +39,6 @@ pids
 # Docs
 .DS_Store
 /docs/_site/
+/docs/_api/tmp/
+/docs/node_modules/
 *.pyc

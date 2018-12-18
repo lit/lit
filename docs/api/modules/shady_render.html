@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>lit-html API | lit-html API</title>
+	<title>shady-render | lit-html API</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style type="text/css">/*! normalize.css v1.1.3 | MIT License | git.io/normalize */
@@ -879,7 +879,7 @@ img { max-width: 100%; }
 		<div class="container">
 			<div class="table-wrap">
 				<div class="table-cell">
-					<strong><a href="index.html">lit-html API</a></strong>
+					<strong><a href="../index.html">lit-html API</a></strong>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -909,37 +909,216 @@ img { max-width: 100%; }
 </header>
 <nav class="tsd-navigation secondary">
 	<ul>
+		<li class=" tsd-kind-interface tsd-parent-kind-external-module">
+			<a href="../interfaces/shady_render.shadyrenderoptions.html" class="tsd-kind-icon">Shady<wbr>Render<wbr>Options</a>
+		</li>
+		<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+			<a href="shady_render.html#insertnodeintotemplate" class="tsd-kind-icon">insert<wbr>Node<wbr>Into<wbr>Template</a>
+		</li>
+		<li class=" tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+			<a href="shady_render.html#removenodesfromtemplate" class="tsd-kind-icon">remove<wbr>Nodes<wbr>From<wbr>Template</a>
+		</li>
+		<li class=" tsd-kind-function tsd-parent-kind-external-module">
+			<a href="shady_render.html#render" class="tsd-kind-icon">render</a>
+		</li>
 	</ul>
 </nav>
 <div class="container container-main">
 	<div class="content-wrap">
-		<div class="tsd-panel tsd-typography">
-			<h2 id="main-exports">Main exports</h2>
-			<p>Import the main lit-html functions from the <a href="./modules/lit_html.html"><code>lit-html</code></a> module:</p>
-			<pre><code class="language-js"><span class="hljs-keyword">import</span> {render, html, svg} <span class="hljs-keyword">from</span> <span class="hljs-string">'lit-html'</span>;</code></pre>
-			<ul>
-				<li><a href="./modules/lit_html.html#html">html</a></li>
-				<li><a href="./modules/lit_html.html#svg">svg</a></li>
-				<li><a href="./modules/lit_html.html#render">render</a></li>
-			</ul>
-			<h2 id="directives">Directives</h2>
-			<p>lit-html comes with a set of directives. You can import them as individual modules from the <code>lit-html/directives/</code> folder:</p>
-			<pre><code class="language-js"><span class="hljs-keyword">import</span> {repeat} <span class="hljs-keyword">from</span> <span class="hljs-string">'lit-html/directives/repeat.js'</span>;</code></pre>
-			<p>For a list of directives that ship with lit-html, see the <a href="/guide/template-reference#built-in-directives">Template syntax reference</a>.</p>
-		</div>
-		<div style="position:relative;"><a name="typedoc-main-index" class="tsd-anchor"></a></div>
+		<section class="tsd-panel tsd-comment">
+			<div class="tsd-comment tsd-typography">
+				<div class="lead">
+					<p>Module to add shady DOM/shady CSS polyfill support to lit-html template rendering.
+					See the <a href="shady_render.html#render">render</a> method for details.</p>
+				</div>
+			</div>
+		</section>
 		<section class="tsd-panel-group tsd-index-group">
 			<h2>Index</h2>
 			<section class="tsd-panel tsd-index-panel">
 				<div class="tsd-index-content">
-					<section class="tsd-index-section tsd-is-external">
-						<h3>External modules</h3>
+					<section class="tsd-index-section ">
+						<h3>Interfaces</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-external-module tsd-is-external"><a href="modules/lit_html.html" class="tsd-kind-icon">lit-<wbr>html</a></li>
-							<li class="tsd-kind-external-module tsd-is-external"><a href="modules/shady_render.html" class="tsd-kind-icon">shady-<wbr>render</a></li>
+							<li class="tsd-kind-interface tsd-parent-kind-external-module"><a href="../interfaces/shady_render.shadyrenderoptions.html" class="tsd-kind-icon">Shady<wbr>Render<wbr>Options</a></li>
+						</ul>
+					</section>
+					<section class="tsd-index-section ">
+						<h3>Functions</h3>
+						<ul class="tsd-index-list">
+							<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external"><a href="shady_render.html#insertnodeintotemplate" class="tsd-kind-icon">insert<wbr>Node<wbr>Into<wbr>Template</a></li>
+							<li class="tsd-kind-function tsd-parent-kind-external-module tsd-is-external"><a href="shady_render.html#removenodesfromtemplate" class="tsd-kind-icon">remove<wbr>Nodes<wbr>From<wbr>Template</a></li>
+							<li class="tsd-kind-function tsd-parent-kind-external-module"><a href="shady_render.html#render" class="tsd-kind-icon">render</a></li>
 						</ul>
 					</section>
 				</div>
+			</section>
+		</section>
+		<section class="tsd-panel-group tsd-member-group ">
+			<h2>Functions</h2>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+				<a name="insertnodeintotemplate" class="tsd-anchor"></a>
+				<h3>insert<wbr>Node<wbr>Into<wbr>Template</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+					<li class="tsd-signature tsd-kind-icon">insert<wbr>Node<wbr>Into<wbr>Template<span class="tsd-signature-symbol">(</span>template<span class="tsd-signature-symbol">: </span><a href="../classes/lit_html.template.html" class="tsd-signature-type">Template</a>, node<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Node</span>, refNode<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in lib/modify-template.ts:95</li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Inserts the given node into the Template, optionally before the given
+									refNode. In addition to inserting the node into the Template, the Template
+								part indices are updated to match the mutated Template DOM.</p>
+							</div>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>template: <a href="../classes/lit_html.template.html" class="tsd-signature-type">Template</a></h5>
+							</li>
+							<li>
+								<h5>node: <span class="tsd-signature-type">Node</span></h5>
+							</li>
+							<li>
+								<h5><span class="tsd-flag ts-flagDefault value">Default value</span> refNode: <span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> =&nbsp;null</span></h5>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+				<a name="removenodesfromtemplate" class="tsd-anchor"></a>
+				<h3>remove<wbr>Nodes<wbr>From<wbr>Template</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module tsd-is-external">
+					<li class="tsd-signature tsd-kind-icon">remove<wbr>Nodes<wbr>From<wbr>Template<span class="tsd-signature-symbol">(</span>template<span class="tsd-signature-symbol">: </span><a href="../classes/lit_html.template.html" class="tsd-signature-type">Template</a>, nodesToRemove<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in lib/modify-template.ts:27</li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Removes the list of nodes from a Template safely. In addition to removing
+									nodes from the Template, the Template part indices are updated to match
+								the mutated Template DOM.</p>
+							</div>
+							<p>As the template is walked the removal state is tracked and
+							part indices are adjusted as needed.</p>
+							<p>div
+								div#1 (remove) &lt;-- start removing (removing node is div#1)
+								div
+								div#2 (remove)  &lt;-- continue removing (removing node is still div#1)
+								div
+								div &lt;-- stop removing since previous sibling is the removing node (div#1,
+							removed 4 nodes)</p>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>template: <a href="../classes/lit_html.template.html" class="tsd-signature-type">Template</a></h5>
+							</li>
+							<li>
+								<h5>nodesToRemove: <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Node</span><span class="tsd-signature-symbol">&gt;</span></h5>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-external-module">
+				<a name="render" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> render</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
+					<li class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../classes/lit_html.templateresult.html" class="tsd-signature-type">TemplateResult</a>, container<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/shady_render.shadyrenderoptions.html" class="tsd-signature-type">ShadyRenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in lib/shady-render.ts:221</li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Extension to the standard <code>render</code> method which supports rendering
+									to ShadowRoots when the ShadyDOM (<a href="https://github.com/webcomponents/shadydom">https://github.com/webcomponents/shadydom</a>)
+									and ShadyCSS (<a href="https://github.com/webcomponents/shadycss">https://github.com/webcomponents/shadycss</a>) polyfills are used
+									or when the webcomponentsjs
+								(<a href="https://github.com/webcomponents/webcomponentsjs">https://github.com/webcomponents/webcomponentsjs</a>) polyfill is used.</p>
+							</div>
+							<p>Adds a <code>scopeName</code> option which is used to scope element DOM and stylesheets
+								when native ShadowDOM is unavailable. The <code>scopeName</code> will be added to
+								the class attribute of all rendered DOM. In addition, any style elements will
+								be automatically re-written with this <code>scopeName</code> selector and moved out
+							of the rendered DOM and into the document <code>&lt;head&gt;</code>.</p>
+							<p>It is common to use this render method in conjunction with a custom element
+								which renders a shadowRoot. When this is done, typically the element&#39;s
+							<code>localName</code> should be used as the <code>scopeName</code>.</p>
+							<p>In addition to DOM scoping, ShadyCSS also supports a basic shim for css
+								custom properties (needed only on older browsers like IE11) and a shim for
+								a deprecated feature called <code>@apply</code> that supports applying a set of css
+							custom properties to a given location.</p>
+							<p>Usage considerations:</p>
+							<ul>
+								<li><p>Part values in <code>&lt;style&gt;</code> elements are only applied the first time a given
+										<code>scopeName</code> renders. Subsequent changes to parts in style elements will have
+										no effect. Because of this, parts in style elements should only be used for
+										values that will never change, for example parts that set scope-wide theme
+									values or parts which render shared style elements.</p>
+								</li>
+								<li><p>Note, due to a limitation of the ShadyDOM polyfill, rendering in a
+										custom element&#39;s <code>constructor</code> is not supported. Instead rendering should
+										either done asynchronously, for example at microtask timing (for example
+										<code>Promise.resolve()</code>), or be deferred until the first time the element&#39;s <code>connectedCallback</code>
+									runs.</p>
+								</li>
+							</ul>
+							<p>Usage considerations when using shimmed custom properties or <code>@apply</code>:</p>
+							<ul>
+								<li><p>Whenever any dynamic changes are made which affect
+										css custom properties, <code>ShadyCSS.styleElement(element)</code> must be called
+										to update the element. There are two cases when this is needed:
+										(1) the element is connected to a new parent, (2) a class is added to the
+										element that causes it to match different custom properties.
+										To address the first case when rendering a custom element, <code>styleElement</code>
+									should be called in the element&#39;s <code>connectedCallback</code>.</p>
+								</li>
+								<li><p>Shimmed custom properties may only be defined either for an entire
+										shadowRoot (for example, in a <code>:host</code> rule) or via a rule that directly matches an element
+										with a shadowRoot. In other words, instead of flowing from parent to child as
+										do native css custom properties, shimmed custom properties flow only from
+									shadowRoots to nested shadowRoots.</p>
+								</li>
+								<li><p>When using <code>@apply</code> mixing css shorthand property names with
+										non-shorthand names (for example <code>border</code> and <code>border-width</code>) is not
+									supported.</p>
+								</li>
+							</ul>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>result: <a href="../classes/lit_html.templateresult.html" class="tsd-signature-type">TemplateResult</a></h5>
+							</li>
+							<li>
+								<h5>container: <span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DocumentFragment</span></h5>
+							</li>
+							<li>
+								<h5>options: <a href="../interfaces/shady_render.shadyrenderoptions.html" class="tsd-signature-type">ShadyRenderOptions</a></h5>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
 			</section>
 		</section>
 		<footer class="with-border-bottom">
