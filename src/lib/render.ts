@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/** 
+/**
  * @module lit-html
  */
 

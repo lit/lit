@@ -13,14 +13,17 @@
  */
 
 /**
- * Module to add shady DOM/shady CSS polyfill support to lit-html template rendering.
- * See the [[render]] method for details.
- * 
+ * Module to add shady DOM/shady CSS polyfill support to lit-html template
+ * rendering. See the [[render]] method for details.
+ *
  * @module shady-render
  * @preferred
  */
 
- /** Do not remove this comment; it keeps typedoc from misplacing the module docs. */
+/**
+ * Do not remove this comment; it keeps typedoc from misplacing the module
+ * docs.
+ */
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
@@ -208,8 +211,8 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  * * Note, due to a limitation of the ShadyDOM polyfill, rendering in a
  * custom element's `constructor` is not supported. Instead rendering should
  * either done asynchronously, for example at microtask timing (for example
- * `Promise.resolve()`), or be deferred until the first time the element's `connectedCallback`
- * runs.
+ * `Promise.resolve()`), or be deferred until the first time the element's
+ * `connectedCallback` runs.
  *
  * Usage considerations when using shimmed custom properties or `@apply`:
  *
@@ -222,10 +225,10 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  * should be called in the element's `connectedCallback`.
  *
  * * Shimmed custom properties may only be defined either for an entire
- * shadowRoot (for example, in a `:host` rule) or via a rule that directly matches an element
- * with a shadowRoot. In other words, instead of flowing from parent to child as
- * do native css custom properties, shimmed custom properties flow only from
- * shadowRoots to nested shadowRoots.
+ * shadowRoot (for example, in a `:host` rule) or via a rule that directly
+ * matches an element with a shadowRoot. In other words, instead of flowing from
+ * parent to child as do native css custom properties, shimmed custom properties
+ * flow only from shadowRoots to nested shadowRoots.
  *
  * * When using `@apply` mixing css shorthand property names with
  * non-shorthand names (for example `border` and `border-width`) is not
