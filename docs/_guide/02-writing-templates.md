@@ -26,7 +26,7 @@ const  myTemplate = html`<div>Hello World</div>`
 render(myTemplate, document.body);
 ```
 
-The lit-html template is a [_tagged template literal_](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals). The template itself looks like a regular JavaScript string, but enclosed in backticks (`) instead of quotes. The browser passes the string to lit-html's `html` tag function. 
+The lit-html template is a [_tagged template literal_](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals). The template itself looks like a regular JavaScript string, but enclosed in backticks (`` ` ``) instead of quotes. The browser passes the string to lit-html's `html` tag function. 
 
 The `html` tag function returns a `TemplateResult`—a lightweight object that represents the template to be rendered.
 
