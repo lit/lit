@@ -97,12 +97,12 @@ lit-html is not a framework, nor does it include a component model. It focuses o
 <h1 class="title">Browser Compatibility</h1>
 <h2 class="description">lit-html works in all major browsers (Chrome, Firefox, IE, Edge, Safari, and Opera). </h2>
 <div id="browser-thumbnails" style="margin-bottom: 20px;">
-<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/chrome_128x128.png" alt="chrome logo">
-<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/firefox_128x128.png" alt="firefox logo">
-<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/internet-explorer_128x128.png" alt="internet explorer logo">
-<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/edge_128x128.png" alt="edge logo">
-<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/safari_128x128.png" alt="safari logo">
-<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/opera_128x128.png" alt="opera logo">
+<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/chrome_128x128.png" alt="Chrome logo">
+<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/firefox_128x128.png" alt="Firefox logo">
+<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/internet-explorer_128x128.png" alt="Internet Explorer logo">
+<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/edge_128x128.png" alt="Edge logo">
+<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/safari_128x128.png" alt="Safari logo">
+<img width="56" width="56" src="{{ site.baseurl }}/images/browsers/opera_128x128.png" alt="Opera logo">
 </div>
 
 </div>
