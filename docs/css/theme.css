@@ -1,5 +1,9 @@
 /* Theme colors */
-a {
+a,
+h1,
+h2,
+h3,
+h4 {
   color: #FF2F2F;
 }
 
@@ -29,4 +33,9 @@ a {
 
 .hero-link.link-with-arrow::before {
   content: url('data:image/svg+xml; utf8, <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="%23FFFFFF"><path d="M21.5 12.495L16 18h-3l4.498-4.5H3v-2h14.498L13 7h3z"/></svg>');
+}
+
+@media screen and (max-width: 1160px) {
+#section-snippet .responsive-row {
+  flex-direction: column;
 }
