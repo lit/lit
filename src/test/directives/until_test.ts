@@ -53,15 +53,33 @@ suite('until', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
-  test('renders low-priority content only once', async () => {
+  test('renders primitive low-priority content only once', async () => {
     const go = () => render(
         html`<div>${until(deferred.promise, 'loading...')}</div>`, container);
+
     go();
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div>loading...</div>');
     deferred.resolve('foo');
     await deferred.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
+    go();
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+  });
+
+  test('renders non-primitive low-priority content only once', async () => {
+    const go = () => render(
+        html`<div>${until(deferred.promise, html`loading...`)}</div>`,
+        container);
+
+    go();
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div>loading...</div>');
+    deferred.resolve('foo');
+    await deferred.promise;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
     go();
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
@@ -290,6 +308,7 @@ suite('until', () => {
 
     const t = (p1: any, p2: any) => html`<div>${until(p1, p2)}</div>`;
 
+    // First render a high-priority value
     render(t('string', promise2), container);
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div>string</div>');
@@ -298,13 +317,17 @@ suite('until', () => {
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div>string</div>');
 
+    // Then render new Promises with the low-priority Promise already resolved
     render(t(promise1, promise2), container);
+    // Because they're Promises, nothing happens synchronously
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div>string</div>');
     await 0;
+    // Low-priority renders
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
     resolve1!('foo');
     await promise1;
+    // High-priority renders
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
