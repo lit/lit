@@ -37,7 +37,7 @@ export {DefaultTemplateProcessor, defaultTemplateProcessor} from './lib/default-
 export {directive, DirectiveFn, isDirective} from './lib/directive.js';
 // TODO(justinfagnani): remove line when we get NodePart moving methods
 export {removeNodes, reparentNodes} from './lib/dom.js';
-export {noChange, Part} from './lib/part.js';
+export {noChange, nothing, Part} from './lib/part.js';
 export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isPrimitive, NodePart, PropertyCommitter, PropertyPart} from './lib/parts.js';
 export {RenderOptions} from './lib/render-options.js';
 export {parts, render} from './lib/render.js';

@@ -40,3 +40,8 @@ export interface Part {
  * should not be written to the DOM.
  */
 export const noChange = {};
+
+/**
+ * A sentinel value that signals a NodePart to fully clear its content.
+ */
+export const nothing = {};

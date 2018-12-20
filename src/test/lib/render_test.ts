@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
+import {AttributePart, directive, html, noChange, NodePart, nothing, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -43,8 +43,7 @@ suite('render()', () => {
 
   suite('text', () => {
     test('renders plain text expression', () => {
-      const result = html`test`;
-      render(result, container);
+      render(html`test`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
     });
 
@@ -68,6 +67,23 @@ suite('render()', () => {
     test('renders null', () => {
       render(html`<div>${null}</div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    });
+
+    test('renders noChange', () => {
+      const template = (i: any) => html`<div>${i}</div>`;
+      render(template('foo'), container);
+      render(template(noChange), container)
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+    });
+
+    test('renders nothing', () => {
+      const template = (i: any) => html`<div>${i}</div>`;
+      render(template('foo'), container);
+      render(template(nothing), container)
+      const children = Array.from(container.querySelector('div')!.childNodes);
+      assert.isEmpty(
+          children.filter(node => node.nodeType !== Node.COMMENT_NODE));
     });
 
     testIfHasSymbol('renders a Symbol', () => {
