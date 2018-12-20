@@ -230,7 +230,7 @@ export class NodePart implements Part {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if this.value is primitive?
-      node.textContent = value;
+      (node as Text).data = value;
     } else {
       this._commitNode(document.createTextNode(
           typeof value === 'string' ? value : String(value)));
