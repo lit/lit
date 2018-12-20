@@ -116,12 +116,12 @@ export class Template {
                   node);
               this.parts.push({type: 'node', index: ++index});
             }
-            parent.insertBefore(
-                strings[lastIndex] === '' ?
-                    createMarker() :
-                    document.createTextNode(strings[lastIndex]),
-                node);
-            nodesToRemove.push(node);
+            if (strings[lastIndex] === '') {
+              parent.insertBefore(createMarker(), node);
+              nodesToRemove.push(node);
+            } else {
+              node.nodeValue = strings[lastIndex];
+            }
           }
         } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
           if (node.nodeValue === marker) {
