@@ -64,10 +64,10 @@ export class Template {
       let lastPartIndex = 0;
       while (walker.nextNode()) {
         index++;
-        const node = walker.currentNode as Element;
+        const node = walker.currentNode as Element | Comment | Text;
         if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-          if (node.hasAttributes()) {
-            const attributes = node.attributes;
+          if ((node as Element).hasAttributes()) {
+            const attributes = (node as Element).attributes;
             // Per
             // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
             // attributes are not guaranteed to be returned in document order.
@@ -92,21 +92,22 @@ export class Template {
               // the suffix.
               const attributeLookupName =
                   name.toLowerCase() + boundAttributeSuffix;
-              const attributeValue = node.getAttribute(attributeLookupName)!;
+              const attributeValue =
+                  (node as Element).getAttribute(attributeLookupName)!;
               const strings = attributeValue.split(markerRegex);
               this.parts.push({type: 'attribute', index, name, strings});
-              node.removeAttribute(attributeLookupName);
+              (node as Element).removeAttribute(attributeLookupName);
               partIndex += strings.length - 1;
             }
           }
-          if (node.tagName === 'TEMPLATE') {
+          if ((node as Element).tagName === 'TEMPLATE') {
             _prepareTemplate(node as HTMLTemplateElement);
           }
         } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-          const nodeValue = node.nodeValue!;
-          if (nodeValue.indexOf(marker) >= 0) {
+          const data = (node as Text).data!;
+          if (data.indexOf(marker) >= 0) {
             const parent = node.parentNode!;
-            const strings = nodeValue.split(markerRegex);
+            const strings = data.split(markerRegex);
             const lastIndex = strings.length - 1;
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
@@ -123,13 +124,13 @@ export class Template {
               parent.insertBefore(createMarker(), node);
               nodesToRemove.push(node);
             } else {
-              node.nodeValue = strings[lastIndex];
+              (node as Text).data = strings[lastIndex];
             }
             // We have a part for each match found
             partIndex += lastIndex;
           }
         } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
-          if (node.nodeValue === marker) {
+          if ((node as Comment).data === marker) {
             const parent = node.parentNode!;
             // Add a new marker node to be the startNode of the Part if any of
             // the following are true:
@@ -144,7 +145,7 @@ export class Template {
             // If we don't have a nextSibling, keep this node so we have an end.
             // Else, we can remove it to save future costs.
             if (node.nextSibling === null) {
-              node.nodeValue = '';
+              (node as Comment).data = '';
             } else {
               nodesToRemove.push(node);
               index--;
@@ -152,7 +153,8 @@ export class Template {
             partIndex++;
           } else {
             let i = -1;
-            while ((i = node.nodeValue!.indexOf(marker, i + 1)) !== -1) {
+            while ((i = (node as Comment).data!.indexOf(marker, i + 1)) !==
+                   -1) {
               // Comment node has a binding marker inside, make an inactive part
               // The binding won't work, but subsequent bindings will
               // TODO (justinfagnani): consider whether it's even worth it to
