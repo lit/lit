@@ -24,16 +24,16 @@
  * Do not remove this comment; it keeps typedoc from misplacing the module
  * docs.
  */
-import {removeNodes} from './dom.js';
-import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
-import {RenderOptions} from './render-options.js';
-import {parts, render as litRender} from './render.js';
-import {templateCaches} from './template-factory.js';
-import {TemplateInstance} from './template-instance.js';
-import {TemplateResult} from './template-result.js';
-import {marker, Template} from './template.js';
+import {removeNodes} from './dom';
+import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template';
+import {RenderOptions} from './render-options';
+import {parts, render as litRender} from './render';
+import {templateCaches} from './template-factory';
+import {TemplateInstance} from './template-instance';
+import {TemplateResult} from './template-result';
+import {marker, Template} from './template';
 
-export {html, svg, TemplateResult} from '../lit-html.js';
+export {html, svg, TemplateResult} from '../lit-html';
 
 // Get a key to lookup in `templateCaches`.
 const getTemplateCacheKey = (type: string, scopeName: string) =>

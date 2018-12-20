@@ -16,13 +16,13 @@
  * @module lit-html
  */
 
-import {isDirective} from './directive.js';
-import {removeNodes} from './dom.js';
-import {noChange, nothing, Part} from './part.js';
-import {RenderOptions} from './render-options.js';
-import {TemplateInstance} from './template-instance.js';
-import {TemplateResult} from './template-result.js';
-import {createMarker} from './template.js';
+import {isDirective} from './directive';
+import {removeNodes} from './dom';
+import {noChange, nothing, Part} from './part';
+import {RenderOptions} from './render-options';
+import {TemplateInstance} from './template-instance';
+import {TemplateResult} from './template-result';
+import {createMarker} from './template';
 
 export const isPrimitive = (value: any) =>
     (value === null ||

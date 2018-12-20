@@ -16,7 +16,7 @@
  * @module lit-html
  */
 
-import {Part} from './part.js';
+import {Part} from './part';
 
 const directives = new WeakMap<any, Boolean>();
 

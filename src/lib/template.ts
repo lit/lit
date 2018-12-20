@@ -16,7 +16,7 @@
  * @module lit-html
  */
 
-import {TemplateResult} from './template-result.js';
+import {TemplateResult} from './template-result';
 
 /**
  * An expression marker with embedded unique key to avoid collision with

@@ -16,9 +16,9 @@
  * @module lit-html
  */
 
-import {reparentNodes} from './dom.js';
-import {TemplateProcessor} from './template-processor.js';
-import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
+import {reparentNodes} from './dom';
+import {TemplateProcessor} from './template-processor';
+import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template';
 
 /**
  * The return type of `html`, which holds a Template and the values from

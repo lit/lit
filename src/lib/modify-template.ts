@@ -16,7 +16,7 @@
  * @module shady-render
  */
 
-import {isTemplatePartActive, Template, TemplatePart} from './template.js';
+import {isTemplatePartActive, Template, TemplatePart} from './template';
 
 const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
 

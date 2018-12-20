@@ -16,10 +16,10 @@
  * @module lit-html
  */
 
-import {Part} from './part.js';
-import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
-import {RenderOptions} from './render-options.js';
-import {TemplateProcessor} from './template-processor.js';
+import {Part} from './part';
+import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts';
+import {RenderOptions} from './render-options';
+import {TemplateProcessor} from './template-processor';
 
 /**
  * Creates Parts when a template is instantiated.

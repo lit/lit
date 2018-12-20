@@ -1,5 +1,6 @@
 /node_modules/
 /lib/
+/dist/
 /directives/
 /polyfills/
 
@@ -15,6 +16,9 @@
 /test/**/*.d.ts.map
 /test/**/*.js
 /test/**/*.js.map
+
+# Compiler cache
+.rpt2_cache/
 
 /lit-html.bundled.js
 

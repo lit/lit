@@ -16,7 +16,7 @@
  * @module lit-html
  */
 
-import {TemplateFactory} from './template-factory.js';
+import {TemplateFactory} from './template-factory';
 
 export interface RenderOptions {
   templateFactory: TemplateFactory;
