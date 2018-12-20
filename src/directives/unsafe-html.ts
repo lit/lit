@@ -15,16 +15,17 @@
 import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
 
+interface PreviousValue {
+  value: any;
+  fragment: DocumentFragment;
+}
+
 // For each part, remember the value that was last rendered to the part by the
 // unsafeHTML directive, and the DocumentFragment that was last set as a value.
 // The DocumentFragment is used as a unique key to check if the last value
 // rendered to the part was with unsafeHTML. If not, we'll always re-render the
 // value passed to unsafeHTML.
-const previousValues = new WeakMap < NodePart, {
-  value: any;
-  fragment: DocumentFragment;
-}
-> ();
+const previousValues = new WeakMap<NodePart, PreviousValue>();
 
 /**
  * Renders the result as HTML, rather than text.

@@ -46,7 +46,8 @@ export const initTemplatePolyfill = (forced = false) => {
   };
 
   const capturedCreateElement = Document.prototype.createElement;
-  Document.prototype.createElement = function createElement(tagName: string, options?: ElementCreationOptions) {
+  Document.prototype.createElement = function createElement(
+      tagName: string, options?: ElementCreationOptions) {
     let el = capturedCreateElement.call(this, tagName, options);
     if (el.localName === 'template') {
       el = capturedCreateElement.call(this, 'div');
