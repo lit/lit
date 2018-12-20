@@ -12,7 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, isPrimitive, NodePart, Part} from '../lit-html.js';
+import {isPrimitive} from '../lib/parts.js';
+import {directive, NodePart, Part} from '../lit-html.js';
+
+interface PreviousValue {
+  value: any;
+  fragment: DocumentFragment;
+}
+
+// For each part, remember the value that was last rendered to the part by the
+// unsafeHTML directive, and the DocumentFragment that was last set as a value.
+// The DocumentFragment is used as a unique key to check if the last value
+// rendered to the part was with unsafeHTML. If not, we'll always re-render the
+// value passed to unsafeHTML.
+const previousValues = new WeakMap<NodePart, PreviousValue>();
 
 /**
  * Renders the result as HTML, rather than text.
@@ -21,22 +34,21 @@ import {directive, isPrimitive, NodePart, Part} from '../lit-html.js';
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-
-const previousValues = new WeakMap<NodePart, string>();
-
 export const unsafeHTML = directive((value: any) => (part: Part): void => {
   if (!(part instanceof NodePart)) {
     throw new Error('unsafeHTML can only be used in text bindings');
   }
-  // Dirty check primitive values
+
   const previousValue = previousValues.get(part);
-  if (previousValue === value && isPrimitive(value)) {
+
+  if (previousValue !== undefined && isPrimitive(value) &&
+      value === previousValue.value && part.value === previousValue.fragment) {
     return;
   }
 
-  // Use a <template> to parse HTML into Nodes
-  const tmp = document.createElement('template');
-  tmp.innerHTML = value;
-  part.setValue(document.importNode(tmp.content, true));
-  previousValues.set(part, value);
+  const template = document.createElement('template');
+  template.innerHTML = value;
+  const fragment = document.importNode(template.content, true);
+  part.setValue(fragment);
+  previousValues.set(part, {value, fragment});
 });
