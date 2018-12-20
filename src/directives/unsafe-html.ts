@@ -12,7 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
+
+// For each part, remember the value that was last rendered to the part by the
+// unsafeHTML directive, and the DocumentFragment that was last set as a value.
+// The DocumentFragment is used as a unique key to check if the last value
+// rendered to the part was with unsafeHTML. If not, we'll always re-render the
+// value passed to unsafeHTML.
+const previousValues = new WeakMap < NodePart, {
+  value: any;
+  fragment: DocumentFragment;
+}
+> ();
 
 /**
  * Renders the result as HTML, rather than text.
@@ -21,46 +33,21 @@ import {directive, NodePart, Part} from '../lit-html.js';
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-
-type CachedTemplate = {
-  template: HTMLTemplateElement; fragment: DocumentFragment;
-};
-
-// Use a cache for TemplateElements so we don't have to parse the same HTML
-// string twice
-const templateCache = new Map<string, HTMLTemplateElement>();
-
-// For each part, remember the TemplateElement that was last used to render in
-// that part, and the DocumentFragment that was last set as a value.
-const partValues = new WeakMap<NodePart, CachedTemplate>();
-
 export const unsafeHTML = directive((value: any) => (part: Part): void => {
   if (!(part instanceof NodePart)) {
     throw new Error('unsafeHTML can only be used in text bindings');
   }
 
-  // Cast value to String only if necessary, to improve cache lookups
-  const htmlString = typeof value === 'string' ? value : String(value);
+  const previousValue = previousValues.get(part);
 
-  // Get a TemplateElement that represents this htmlString
-  let template = templateCache.get(htmlString);
-  if (!template) {
-    template = document.createElement('template');
-    template.innerHTML = htmlString;
-    templateCache.set(htmlString, template);
+  if (previousValue !== undefined && isPrimitive(value) &&
+      value === previousValue.value && part.value === previousValue.fragment) {
+    return;
   }
 
-  const previousValue = partValues.get(part);
-  /**
-   * Need to render only if one of the following is true
-   * - This part never rendered unsafeHTML previously
-   * - The new template is different from the previousl template
-   * - The current value of the part is different from the previous fragment
-   */
-  if (!previousValue || template !== previousValue.template ||
-      part.value !== previousValue.fragment) {
-    const fragment = document.importNode(template.content, true);
-    part.setValue(fragment);
-    partValues.set(part, {template, fragment});
-  }
+  const template = document.createElement('template');
+  template.innerHTML = value;
+  const fragment = document.importNode(template.content, true);
+  part.setValue(fragment);
+  previousValues.set(part, {value, fragment});
 });
