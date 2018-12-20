@@ -58,7 +58,10 @@ export class Template {
           133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
           null as any,
           false);
-      let lastStartIndex = 0;
+      // Keeps track of the last index associated with a part. We try to delete
+      // unnecessary nodes, but we never want to associate two different parts
+      // to the same index. They must have a constant node between.
+      let lastPartIndex = 0;
       while (walker.nextNode()) {
         index++;
         const node = walker.currentNode as Element;
@@ -105,8 +108,6 @@ export class Template {
             const parent = node.parentNode!;
             const strings = nodeValue.split(markerRegex);
             const lastIndex = strings.length - 1;
-            // We have a part for each match found
-            partIndex += lastIndex;
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             for (let i = 0; i < lastIndex; i++) {
@@ -122,6 +123,8 @@ export class Template {
             } else {
               node.nodeValue = strings[lastIndex];
             }
+            // We have a part for each match found
+            partIndex += lastIndex;
           }
         } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
           if (node.nodeValue === marker) {
@@ -130,11 +133,11 @@ export class Template {
             // the following are true:
             //  * We don't have a previousSibling
             //  * The previousSibling is already the start of a previous part
-            if (node.previousSibling === null || index === lastStartIndex) {
+            if (node.previousSibling === null || index === lastPartIndex) {
               index++;
               parent.insertBefore(createMarker(), node);
             }
-            lastStartIndex = index;
+            lastPartIndex = index;
             this.parts.push({type: 'node', index});
             // If we don't have a nextSibling, keep this node.
             // Else, remove it to save memory.
