@@ -117,6 +117,8 @@ export class Template {
                   node);
               this.parts.push({type: 'node', index: ++index});
             }
+            // If there's no text, we must insert a comment to mark our place.
+            // Else, we can trust it will stick around after cloning.
             if (strings[lastIndex] === '') {
               parent.insertBefore(createMarker(), node);
               nodesToRemove.push(node);
@@ -139,8 +141,8 @@ export class Template {
             }
             lastPartIndex = index;
             this.parts.push({type: 'node', index});
-            // If we don't have a nextSibling, keep this node.
-            // Else, remove it to save memory.
+            // If we don't have a nextSibling, keep this node so we have an end.
+            // Else, we can remove it to save future costs.
             if (node.nextSibling === null) {
               node.nodeValue = '';
             } else {
