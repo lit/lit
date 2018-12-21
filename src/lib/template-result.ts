@@ -12,6 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
@@ -43,23 +47,26 @@ export class TemplateResult {
     let html = '';
     for (let i = 0; i < endIndex; i++) {
       const s = this.strings[i];
-      // This replace() call does two things:
-      // 1) Appends a suffix to all bound attribute names to opt out of special
+      // This exec() call does two things:
+      // 1) Appends a suffix to the bound attribute name to opt out of special
       // attribute value parsing that IE11 and Edge do, like for style and
       // many SVG attributes. The Template class also appends the same suffix
-      // when looking up attributes to creat Parts.
+      // when looking up attributes to create Parts.
       // 2) Adds an unquoted-attribute-safe marker for the first expression in
       // an attribute. Subsequent attribute expressions will use node markers,
       // and this is safe since attributes with multiple expressions are
       // guaranteed to be quoted.
-      let addedMarker = false;
-      html += s.replace(
-          lastAttributeNameRegex, (_match, whitespace, name, value) => {
-            addedMarker = true;
-            return whitespace + name + boundAttributeSuffix + value + marker;
-          });
-      if (!addedMarker) {
-        html += nodeMarker;
+      const match = lastAttributeNameRegex.exec(s);
+      if (match) {
+        // We're starting a new bound attribute.
+        // Add the safe attribute suffix, and use unquoted-attribute-safe
+        // marker.
+        html += s.substr(0, match.index) + match[1] + match[2] +
+            boundAttributeSuffix + match[3] + marker;
+      } else {
+        // We're either in a bound node, or trailing bound attribute.
+        // Either way, nodeMarker is safe to use.
+        html += s + nodeMarker;
       }
     }
     return html + this.strings[endIndex];

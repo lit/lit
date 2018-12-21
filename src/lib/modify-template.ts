@@ -12,10 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module shady-render
+ */
+
 import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 
-const walkerNodeFilter =
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT;
+const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
 
 /**
  * Removes the list of nodes from a Template safely. In addition to removing
@@ -76,7 +79,7 @@ export function removeNodesFromTemplate(
 }
 
 const countNodes = (node: Node) => {
-  let count = (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ? 0 : 1;
+  let count = (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */) ? 0 : 1;
   const walker =
       document.createTreeWalker(node, walkerNodeFilter, null as any, false);
   while (walker.nextNode()) {

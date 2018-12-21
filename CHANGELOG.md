@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [1.0.0-rc.1] - 2018-12-13
+### Fixed
+* Documentation updates.
+* Fixed typing for template_polyfill `createElement` call.
+
 ## [0.14.0] - 2018-11-30
 ### Changed
 * `until()` can now take any number of sync or async arguments. ([#555](https://github.com/Polymer/lit-html/pull/555))

@@ -12,6 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
 
 import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
@@ -89,7 +92,7 @@ export class TemplateInstance {
         } else if (nodeIndex === part.index) {
           if (part.type === 'node') {
             const part = this.processor.handleTextExpression(this.options);
-            part.insertAfterNode(node);
+            part.insertAfterNode(node.previousSibling!);
             this._parts.push(part);
           } else {
             this._parts.push(...this.processor.handleAttributeExpressions(

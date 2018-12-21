@@ -12,9 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
-import {noChange, Part} from './part.js';
+import {noChange, nothing, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -196,6 +200,9 @@ export class NodePart implements Part {
       this._commitNode(value);
     } else if (Array.isArray(value) || value[Symbol.iterator]) {
       this._commitIterable(value);
+    } else if (value === nothing) {
+      this.value = nothing;
+      this.clear();
     } else {
       // Fallback, will render the string representation
       this._commitText(value);
@@ -219,7 +226,7 @@ export class NodePart implements Part {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
     if (node === this.endNode.previousSibling &&
-        node.nodeType === Node.TEXT_NODE) {
+        node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if this.value is primitive?

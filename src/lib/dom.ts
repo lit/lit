@@ -12,6 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
+/**
+ * True if the custom elements polyfill is in use.
+ */
 export const isCEPolyfill = window.customElements !== undefined &&
     (window.customElements as any).polyfillWrapFlushCallback !== undefined;
 

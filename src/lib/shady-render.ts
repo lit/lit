@@ -12,6 +12,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * Module to add shady DOM/shady CSS polyfill support to lit-html template
+ * rendering. See the [[render]] method for details.
+ *
+ * @module shady-render
+ * @preferred
+ */
+
+/**
+ * Do not remove this comment; it keeps typedoc from misplacing the module
+ * docs.
+ */
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
@@ -177,7 +189,7 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  * when native ShadowDOM is unavailable. The `scopeName` will be added to
  * the class attribute of all rendered DOM. In addition, any style elements will
  * be automatically re-written with this `scopeName` selector and moved out
- * of the rendered DOM and into the document <head>.
+ * of the rendered DOM and into the document `<head>`.
  *
  * It is common to use this render method in conjunction with a custom element
  * which renders a shadowRoot. When this is done, typically the element's
@@ -190,7 +202,7 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  *
  * Usage considerations:
  *
- * * Part values in <style> elements are only applied the first time a given
+ * * Part values in `<style>` elements are only applied the first time a given
  * `scopeName` renders. Subsequent changes to parts in style elements will have
  * no effect. Because of this, parts in style elements should only be used for
  * values that will never change, for example parts that set scope-wide theme
@@ -198,9 +210,9 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  *
  * * Note, due to a limitation of the ShadyDOM polyfill, rendering in a
  * custom element's `constructor` is not supported. Instead rendering should
- * either done asynchronously, for example at microtask timing (e.g.
- * Promise.resolve()), or be deferred until the element's `connectedCallback`
- * first runs.
+ * either done asynchronously, for example at microtask timing (for example
+ * `Promise.resolve()`), or be deferred until the first time the element's
+ * `connectedCallback` runs.
  *
  * Usage considerations when using shimmed custom properties or `@apply`:
  *
@@ -213,10 +225,10 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  * should be called in the element's `connectedCallback`.
  *
  * * Shimmed custom properties may only be defined either for an entire
- * shadowRoot (e.g. via `:host`) or via a rule that directly matches an element
- * with a shadowRoot. In other words, instead of flowing from parent to child as
- * do native css custom properties, shimmed custom properties flow only from
- * shadowRoots to nested shadowRoots.
+ * shadowRoot (for example, in a `:host` rule) or via a rule that directly
+ * matches an element with a shadowRoot. In other words, instead of flowing from
+ * parent to child as do native css custom properties, shimmed custom properties
+ * flow only from shadowRoots to nested shadowRoots.
  *
  * * When using `@apply` mixing css shorthand property names with
  * non-shorthand names (for example `border` and `border-width`) is not

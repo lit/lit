@@ -12,6 +12,8 @@ Efficient, Expressive, Extensible HTML templates in JavaScript
 
 Full documentation is available at [lit-html.polymer-project.org](https://lit-html.polymer-project.org).
 
+Docs source is in the `docs` folder. To build the site youself, see the instructions in [docs/README.md](docs/README.md).
+
 ## Overview
 
 `lit-html` lets you write [HTML templates](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) in JavaScript with [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
