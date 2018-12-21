@@ -120,7 +120,7 @@ html`<button @click=${listener}>Click Me</button>`
 
 Each binding type supports different types of values:
 
- * Text content bindings: Many supported types—see below.
+ * Text content bindings: Many types, see [Supported data types for text bindings](#supported-data-types-for-text-bindings).
 
  * Attribute bindings: All values are converted to strings.
 
@@ -188,7 +188,7 @@ const list = () => html`items = ${Object.entries(items)}`;
 
 ## Control Flow with JavaScript
 
-lit-html has no built-in control-flow constructs. Instead you use normal JavaScript expressions and statements:
+lit-html has no built-in control-flow constructs. Instead you use normal JavaScript expressions and statements.
 
 ### Ifs with ternary operators
 
@@ -254,115 +254,23 @@ Directives are functions that can extend lit-html by customizing the way a bindi
 
 lit-html includes a few built-in directives.
 
-*   [`repeat`](#repeat)
+*   [`asyncAppend` and `asyncReplace`](#asyncappend-and-asyncreplace)
+*   [`classMap`](#classmap)
 *   [`ifDefined`](#ifdefined)
 *   [`guard`](#guard)
+*   [`repeat`](#repeat)
+*   [`styleMap`](#stylemap)
+*   [`unsafeHTML`](#unsafehtml)
 *   [`until`](#until)
-*   [`asyncAppend` and `asyncReplace`](#asyncappend-and-asyncreplace)
 
 **Directives may change.** The exact list of directives included with lit-html, and the API of the directives may be subject to change before lit-html 1.0 is released.
-
-### repeat 
-
-`repeat(items, keyfn, template)`
-
-Repeats a series of values (usually `TemplateResults`) generated from an
-iterable, and updates those items efficiently when the iterable changes. When
-the `keyFn` is provided, key-to-DOM association is maintained between updates by
-moving DOM when required, and is generally the most efficient way to use
-`repeat` since it performs minimum unnecessary work for insertions amd removals.
-
-Example:
-
-```js
-import { repeat } from 'lit-html/directives/repeat';
-
-const myTemplate = () => html`
-  <ul>
-    ${repeat(items, (i) => i.id, (i, index) => html`
-      <li>${index}: ${i.name}</li>`)}
-  </ul>
-`;
-```
-
-If no `keyFn` is provided, `repeat` will perform similar to a simple map of
-items to values, and DOM will be reused against potentially different items.
-
-### ifDefined
-
-`ifDefined(value)`
-
-For AttributeParts, sets the attribute if the value is defined and removes the attribute if the value is undefined.
-
-For other part types, this directive is a no-op.
-
-Example:
-
-```javascript
-import { ifDefined } from 'lit-html/directives/if-defined';
-
-const myTemplate = () => html`
-  <div class=${ifDefined(className)}></div>
-`;
-
-```
-
-### guard
-
-`guard(expressions, valueFn)`
-
-Avoids re-evaluating an expensive template function (`valueFn`) unless one of the identified expressions changes identity. Returns the value of `valueFn`, which may be cached.
-
-The `expressions` argument can either be a single (non-array) expression, or an array of multiple expressions to monitor. 
-
-The `guard` directive caches the last-known value of `valueFn`, and only re-evaluates `valueFn` if the identity of any of the expressions changes (for example when a primitive changes value or when an object reference changes). 
-
-
-Example:
-
-```js
-import { guard } from 'lit-html/directives/guard';
-
-const template = html`
-  <div>
-    ${guard([items], () => items.map(item => html`${item}`))}
-  </div>
-`
-```
-
-In this case, the `items` array is mapped over only when the array reference changes.
-
-### until
-
-`until(...values)`
-
-Renders one of a series of values, including Promises, to a Part.
-
-Values are rendered in priority order, with the first argument having the
-highest priority and the last argument having the lowest priority. If a
-value is a Promise, low-priority values will be rendered until it resolves.
-
-The priority of values can be used to create placeholder content for async
-data. For example, a Promise with pending content can be the first,
-highest-priority, argument, and a non_promise loading indicator template can
-be used as the second, lower-priority, argument. The loading indicator will
-render immediately, and the primary content will render when the Promise
-resolves.
-
-Example:
-
-```javascript
-import { until } from 'lit-html/directives/until.js';
-
-const content = fetch('./content.txt').then(r => r.text());
-
-html`${until(content, html`<span>Loading...</span>`)}`
-```
 
 ### asyncAppend and asyncReplace
 
 `asyncAppend(asyncIterable)`<br>
 `asyncReplace(asyncIterable)`
+
+Location: text bindings
 
 JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
 
@@ -409,3 +317,174 @@ const streamingResponse = (async () => {
 })();
 render(html`π is: ${asyncAppend(streamingResponse)}`, document.body);
 ```
+
+### classMap
+
+`class=${classMap(classObj)}`
+
+Location: attribute bindings (must be the entire value of the `class` attribute)
+
+Sets a list of classes based on an object. Each key in the object is treated as a class name, if the value associated with the key is truthy, that class is added to the element. 
+
+```
+let classes = { highlight: true, enabled: true, hidden: false };`
+
+html`<div class=${classMap(classes)>Classy text</div>`;
+// renders as <div class="highlight enabled">Classy text</div>
+```
+
+Note that you can only use `classMap` in an attribute binding for the `class` attribute, and it must be the entire value of the attribute.
+
+
+```
+// DON'T DO THIS
+html`<div class="someClass ${classMap(moreClasses}">Broken div</div>`;
+```
+
+
+### ifDefined
+
+`ifDefined(value)`
+
+Location: attribute bindings
+
+For AttributeParts, sets the attribute if the value is defined and removes the attribute if the value is undefined.
+
+For other part types, this directive is a no-op.
+
+Example:
+
+```javascript
+import { ifDefined } from 'lit-html/directives/if-defined';
+
+const myTemplate = () => html`
+  <div class=${ifDefined(className)}></div>
+`;
+
+```
+
+### guard
+
+`guard(dependencies, valueFn)`
+
+Location: any
+
+Renders the value returned by `valueFn`. Only re-evaluates `valueFn` when one of the 
+dependencies changes identity. 
+
+Where:
+
+-   `dependencies` is an array of values to monitor for changes. (For backwards compatibility, 
+     `dependencies` can be a single, non-array value.)
+-   `valueFn` is a function that returns a renderable value.
+
+`guard` is useful with immutable data patterns, by preventing expensive work
+until data updates.
+
+Example:
+
+```js
+import { guard } from 'lit-html/directives/guard';
+
+const template = html`
+  <div>
+    ${guard([immutableItems], () => immutableItems.map(item => html`${item}`))}
+  </div>
+`
+```
+
+In this case, the `immutableItems` array is mapped over only when the array reference changes.
+
+### repeat 
+
+`repeat(items, keyfn, template)`
+
+Location: text bindings
+
+Repeats a series of values (usually `TemplateResults`) generated from an
+iterable, and updates those items efficiently when the iterable changes. When
+the `keyFn` is provided, key-to-DOM association is maintained between updates by
+moving DOM when required, and is generally the most efficient way to use
+`repeat` since it performs minimum unnecessary work for insertions amd removals.
+
+Example:
+
+```js
+import { repeat } from 'lit-html/directives/repeat';
+
+const myTemplate = () => html`
+  <ul>
+    ${repeat(items, (i) => i.id, (i, index) => html`
+      <li>${index}: ${i.name}</li>`)}
+  </ul>
+`;
+```
+
+If no `keyFn` is provided, `repeat` will perform similar to a simple map of
+items to values, and DOM will be reused against potentially different items.
+
+### styleMap
+
+`style=${styleMap(styles)}`
+
+Location: attribute bindings (must be the entire value of the `style` attribute)
+
+The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value of for that property. For example:
+
+```
+let styles = { backgroundColor: 'blue', color: 'white'}'
+html`<p style=${styleMap(styles}>Hello style!</p>`;
+```
+
+For CSS properties that contain dashes, you can either use the camel-case equivalent, or put the property name in quotes. For example, you can write the the CSS property `font-family` as either `fontFamily` or `'font-family'`:
+
+```
+{ fontFamily: 'roboto' }
+{ 'font-family': 'roboto }
+```
+
+The styleMap directive can only be used as a value for the style attribute, and it must be the entire value of the attribute.
+
+### unsafeHTML
+
+`unsafeHTML(html)`
+
+Location: text bindings
+
+Renders the result as HTML, rather than text.
+
+Note, this is unsafe to use with any user-provided input that hasn't been
+sanitized or escaped, as it may lead to cross-site-scripting vulnerabilities.
+
+### until
+
+`until(...values)`
+
+Location: any
+
+Renders placeholder content until the final content is available. 
+
+Takes a series of values, including Promises.
+
+Values are rendered in priority order, with the first argument having the
+highest priority and the last argument having the lowest priority. If a
+value is a Promise, a lower-priority values will be rendered until it resolves.
+
+The priority of values can be used to create placeholder content for async
+data. For example, a Promise with pending content can be the first,
+highest-priority, argument, and a non-promise loading indicator template can
+be used as the second, lower-priority, argument. The loading indicator will
+render immediately, and the primary content will render when the Promise
+resolves.
+
+Example:
+
+```javascript
+import { until } from 'lit-html/directives/until.js';
+
+const content = fetch('./content.txt').then(r => r.text());
+
+html`${until(content, html`<span>Loading...</span>`)}`
+```
+
+
