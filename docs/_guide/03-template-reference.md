@@ -255,6 +255,7 @@ Directives are functions that can extend lit-html by customizing the way a bindi
 lit-html includes a few built-in directives.
 
 *   [`asyncAppend` and `asyncReplace`](#asyncappend-and-asyncreplace)
+*   [`cache`](#cache)
 *   [`classMap`](#classmap)
 *   [`ifDefined`](#ifdefined)
 *   [`guard`](#guard)
@@ -317,6 +318,31 @@ const streamingResponse = (async () => {
 })();
 render(html`π is: ${asyncAppend(streamingResponse)}`, document.body);
 ```
+
+### cache
+
+`cache(conditionalTemplate)`
+
+Location: text bindings
+
+Caches the rendered DOM nodes for templates when they're not in use. The `conditionalTemplate` argument is an expression that can return one of several templates. `cache` renders the current
+value of `conditionalTemplate`. When the template changes, the directive caches the _current_ DOM nodes before switching to the new value. 
+
+Example:
+
+```js
+const detailView = (data) => html`<div>...</div>`; 
+const summaryView = (data) => html`<div>...</div>`;
+
+html`${cache(data.showDetails
+  ? detailView(data) 
+  : summaryView(data)
+)}`
+```
+
+When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
+
+The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
 
 ### classMap
 
@@ -423,6 +449,9 @@ const myTemplate = () => html`
 If no `keyFn` is provided, `repeat` will perform similar to a simple map of
 items to values, and DOM will be reused against potentially different items.
 
+See [Repeating templates with the repeat directive](writing-templates#repeating-templates-with-the-repeat-directive) for a discussion
+of when to use `repeat` and when to use standard JavaScript flow control. 
+
 ### styleMap
 
 `style=${styleMap(styles)}`
@@ -431,14 +460,14 @@ Location: attribute bindings (must be the entire value of the `style` attribute)
 
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value of for that property. For example:
 
-```
+```js
 let styles = { backgroundColor: 'blue', color: 'white'}'
 html`<p style=${styleMap(styles}>Hello style!</p>`;
 ```
 
 For CSS properties that contain dashes, you can either use the camel-case equivalent, or put the property name in quotes. For example, you can write the the CSS property `font-family` as either `fontFamily` or `'font-family'`:
 
-```
+```js
 { fontFamily: 'roboto' }
 { 'font-family': 'roboto }
 ```
@@ -451,10 +480,20 @@ The styleMap directive can only be used as a value for the style attribute, and 
 
 Location: text bindings
 
-Renders the result as HTML, rather than text.
+Renders the argument as HTML, rather than text.
 
 Note, this is unsafe to use with any user-provided input that hasn't been
 sanitized or escaped, as it may lead to cross-site-scripting vulnerabilities.
+
+Example:
+
+```js
+const markup = '<div>Some HTML to render.</div>';
+const template = html`
+  Look out, potentially unsafe HTML ahead:
+  ${unsafeHTML(markup)}
+`;
+```
 
 ### until
 
@@ -464,17 +503,15 @@ Location: any
 
 Renders placeholder content until the final content is available. 
 
-Takes a series of values, including Promises.
-
-Values are rendered in priority order, with the first argument having the
-highest priority and the last argument having the lowest priority. If a
-value is a Promise, a lower-priority values will be rendered until it resolves.
+Takes a series of values, including Promises. Values are rendered in priority order, 
+with the first argument having thehighest priority and the last argument having the 
+lowest priority. If a value is a Promise, a lower-priority values will be rendered until it resolves.
 
 The priority of values can be used to create placeholder content for async
 data. For example, a Promise with pending content can be the first,
 highest-priority, argument, and a non-promise loading indicator template can
-be used as the second, lower-priority, argument. The loading indicator will
-render immediately, and the primary content will render when the Promise
+be used as the second, lower-priority, argument. The loading indicator 
+renders immediately, and the primary content will render when the Promise
 resolves.
 
 Example:
