@@ -44,7 +44,7 @@ export class TemplateResult {
    */
   getHTML(): string {
     const endIndex = this.strings.length - 1;
-    let html = '';
+    const html = [];
     for (let i = 0; i < endIndex; i++) {
       const s = this.strings[i];
       // This exec() call does two things:
@@ -61,15 +61,16 @@ export class TemplateResult {
         // We're starting a new bound attribute.
         // Add the safe attribute suffix, and use unquoted-attribute-safe
         // marker.
-        html += s.substr(0, match.index) + match[1] + match[2] +
-            boundAttributeSuffix + match[3] + marker;
+        html.push(s.substr(0, match.index) , match[1] , match[2] ,
+            boundAttributeSuffix , match[3] , marker);
       } else {
         // We're either in a bound node, or trailing bound attribute.
         // Either way, nodeMarker is safe to use.
-        html += s + nodeMarker;
+        html.push(s , nodeMarker);
       }
     }
-    return html + this.strings[endIndex];
+    html.push(this.strings[endIndex]);
+    return html.join('');
   }
 
   getTemplateElement(): HTMLTemplateElement {
