@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {guard} from '../../directives/guard.js';
-import {repeat} from '../../directives/repeat.js';
-import {until} from '../../directives/until.js';
-import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {guard} from '../../directives/guard';
+import {repeat} from '../../directives/repeat';
+import {until} from '../../directives/until';
+import {render} from '../../lib/render';
+import {html} from '../../lit-html';
+import {stripExpressionMarkers} from '../test-utils/strip-markers';
 
 const assert = chai.assert;
 

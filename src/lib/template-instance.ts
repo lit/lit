@@ -16,11 +16,11 @@
  * @module lit-html
  */
 
-import {isCEPolyfill} from './dom.js';
-import {Part} from './part.js';
-import {RenderOptions} from './render-options.js';
-import {TemplateProcessor} from './template-processor.js';
-import {isTemplatePartActive, Template} from './template.js';
+import {isCEPolyfill} from './dom';
+import {Part} from './part';
+import {RenderOptions} from './render-options';
+import {isTemplatePartActive, Template} from './template';
+import {TemplateProcessor} from './template-processor';
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated

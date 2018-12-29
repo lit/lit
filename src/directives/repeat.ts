@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DirectiveFn} from '../lib/directive.js';
-import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
+import {DirectiveFn} from '../lib/directive';
+import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html';
 
 export type KeyFn<T> = (item: T, index: number) => any;
 export type ItemTemplate<T> = (item: T, index: number) => any;

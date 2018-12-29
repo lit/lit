@@ -16,11 +16,11 @@
  * @module lit-html
  */
 
-import {removeNodes} from './dom.js';
-import {NodePart} from './parts.js';
-import {RenderOptions} from './render-options.js';
-import {templateFactory} from './template-factory.js';
-import {TemplateResult} from './template-result.js';
+import {removeNodes} from './dom';
+import {NodePart} from './parts';
+import {RenderOptions} from './render-options';
+import {templateFactory} from './template-factory';
+import {TemplateResult} from './template-result';
 
 export const parts = new WeakMap<Node, NodePart>();
 

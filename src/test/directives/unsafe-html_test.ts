@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {unsafeHTML} from '../../directives/unsafe-html.js';
-import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {unsafeHTML} from '../../directives/unsafe-html';
+import {render} from '../../lib/render';
+import {html} from '../../lit-html';
+import {stripExpressionMarkers} from '../test-utils/strip-markers';
 
 const assert = chai.assert;
 

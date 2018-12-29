@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {insertNodeIntoTemplate, removeNodesFromTemplate} from '../../lib/modify-template.js';
-import {render} from '../../lib/render.js';
-import {html, templateFactory} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {insertNodeIntoTemplate, removeNodesFromTemplate} from '../../lib/modify-template';
+import {render} from '../../lib/render';
+import {html, templateFactory} from '../../lit-html';
+import {stripExpressionMarkers} from '../test-utils/strip-markers';
 
 const assert = chai.assert;
 

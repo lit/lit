@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Part} from '../lit-html.js';
+import {directive, Part} from '../lit-html';
 
 const previousValues = new WeakMap<Part, unknown>();
 

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
+import {AttributePart, directive, Part, PropertyPart} from '../lit-html';
 
 
 // On IE11, classList.toggle doesn't accept a second argument.

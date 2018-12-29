@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {asyncReplace} from '../../directives/async-replace.js';
-import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
-import {TestAsyncIterable} from '../lib/test-async-iterable.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {asyncReplace} from '../../directives/async-replace';
+import {render} from '../../lib/render';
+import {html} from '../../lit-html';
+import {TestAsyncIterable} from '../lib/test-async-iterable';
+import {stripExpressionMarkers} from '../test-utils/strip-markers';
 
 const assert = chai.assert;
 

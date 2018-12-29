@@ -16,8 +16,8 @@
  * @module lit-html
  */
 
-import {TemplateResult} from './template-result.js';
-import {marker, Template} from './template.js';
+import {marker, Template} from './template';
+import {TemplateResult} from './template-result';
 
 /**
  * A function type that creates a Template from a TemplateResult.

@@ -15,9 +15,9 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {ClassInfo, classMap} from '../../directives/class-map.js';
-import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {ClassInfo, classMap} from '../../directives/class-map';
+import {render} from '../../lib/render';
+import {html} from '../../lit-html';
 
 const assert = chai.assert;
 

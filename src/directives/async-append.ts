@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {createMarker, directive, NodePart, Part} from '../lit-html.js';
+import {createMarker, directive, NodePart, Part} from '../lit-html';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new

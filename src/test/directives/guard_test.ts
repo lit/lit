@@ -15,10 +15,10 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {guard} from '../../directives/guard.js';
-import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {guard} from '../../directives/guard';
+import {render} from '../../lib/render';
+import {html} from '../../lit-html';
+import {stripExpressionMarkers} from '../test-utils/strip-markers';
 
 const assert = chai.assert;
 

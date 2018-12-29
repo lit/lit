@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {StyleInfo, styleMap} from '../../directives/style-map.js';
-import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {StyleInfo, styleMap} from '../../directives/style-map';
+import {render} from '../../lib/render';
+import {html} from '../../lit-html';
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;

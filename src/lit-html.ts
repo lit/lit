@@ -30,22 +30,22 @@
  * Do not remove this comment; it keeps typedoc from misplacing the module
  * docs.
  */
-import {defaultTemplateProcessor} from './lib/default-template-processor.js';
-import {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
+import {defaultTemplateProcessor} from './lib/default-template-processor';
+import {SVGTemplateResult, TemplateResult} from './lib/template-result';
 
-export {DefaultTemplateProcessor, defaultTemplateProcessor} from './lib/default-template-processor.js';
-export {directive, DirectiveFn, isDirective} from './lib/directive.js';
+export {DefaultTemplateProcessor, defaultTemplateProcessor} from './lib/default-template-processor';
+export {directive, DirectiveFn, isDirective} from './lib/directive';
 // TODO(justinfagnani): remove line when we get NodePart moving methods
-export {removeNodes, reparentNodes} from './lib/dom.js';
-export {noChange, nothing, Part} from './lib/part.js';
-export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isPrimitive, NodePart, PropertyCommitter, PropertyPart} from './lib/parts.js';
-export {RenderOptions} from './lib/render-options.js';
-export {parts, render} from './lib/render.js';
-export {templateCaches, templateFactory} from './lib/template-factory.js';
-export {TemplateInstance} from './lib/template-instance.js';
-export {TemplateProcessor} from './lib/template-processor.js';
-export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
-export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
+export {removeNodes, reparentNodes} from './lib/dom';
+export {noChange, nothing, Part} from './lib/part';
+export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isPrimitive, NodePart, PropertyCommitter, PropertyPart} from './lib/parts';
+export {parts, render} from './lib/render';
+export {RenderOptions} from './lib/render-options';
+export {createMarker, isTemplatePartActive, Template} from './lib/template';
+export {templateCaches, templateFactory} from './lib/template-factory';
+export {TemplateInstance} from './lib/template-instance';
+export {TemplateProcessor} from './lib/template-processor';
+export {SVGTemplateResult, TemplateResult} from './lib/template-result';
 
 /**
  * Interprets a template literal as an HTML template that can efficiently

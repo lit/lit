@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isPrimitive} from '../lib/parts.js';
-import {directive, Part} from '../lit-html.js';
+import {isPrimitive} from '../lib/parts';
+import {directive, Part} from '../lit-html';
 
 interface AsyncState {
   /**
