@@ -39,8 +39,8 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
       options: RenderOptions): Part[] {
     const prefix = name[0];
     if (prefix === '.') {
-      const comitter = new PropertyCommitter(element, name.slice(1), strings);
-      return comitter.parts;
+      const committer = new PropertyCommitter(element, name.slice(1), strings);
+      return committer.parts;
     }
     if (prefix === '@') {
       return [new EventPart(element, name.slice(1), options.eventContext)];
@@ -48,8 +48,8 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
     if (prefix === '?') {
       return [new BooleanAttributePart(element, name.slice(1), strings)];
     }
-    const comitter = new AttributeCommitter(element, name, strings);
-    return comitter.parts;
+    const committer = new AttributeCommitter(element, name, strings);
+    return committer.parts;
   }
   /**
    * Create parts for a text-position binding.
