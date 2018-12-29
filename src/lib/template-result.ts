@@ -25,18 +25,9 @@ import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from '
  * interpolated expressions.
  */
 export class TemplateResult {
-  strings: TemplateStringsArray;
-  values: any[];
-  type: string;
-  processor: TemplateProcessor;
-
   constructor(
-      strings: TemplateStringsArray, values: any[], type: string,
-      processor: TemplateProcessor) {
-    this.strings = strings;
-    this.values = values;
-    this.type = type;
-    this.processor = processor;
+      public strings: TemplateStringsArray, public values: any[],
+      public type: string, public processor: TemplateProcessor) {
   }
 
   /**

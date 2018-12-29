@@ -42,10 +42,8 @@ export const boundAttributeSuffix = '$lit$';
  */
 export class Template {
   parts: TemplatePart[] = [];
-  element: HTMLTemplateElement;
 
-  constructor(result: TemplateResult, element: HTMLTemplateElement) {
-    this.element = element;
+  constructor(result: TemplateResult, public element: HTMLTemplateElement) {
     let index = -1;
     let partIndex = 0;
     const nodesToRemove: Node[] = [];

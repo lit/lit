@@ -33,24 +33,18 @@ export const isPrimitive = (value: any) =>
  * even if there are multiple parts for an attribute.
  */
 export class AttributeCommitter {
-  element: Element;
-  name: string;
-  strings: string[];
-  parts: AttributePart[];
+  parts: AttributePart[] = [];
   dirty = true;
 
-  constructor(element: Element, name: string, strings: string[]) {
-    this.element = element;
-    this.name = name;
-    this.strings = strings;
-    this.parts = [];
+  constructor(
+      public element: Element, public name: string, public strings: string[]) {
     for (let i = 0; i < strings.length - 1; i++) {
       this.parts[i] = this._createPart();
     }
   }
 
   /**
-   * Creates a single part. Override this to create a differnt type of part.
+   * Creates a single part. Override this to create a different type of part.
    */
   protected _createPart(): AttributePart {
     return new AttributePart(this);
@@ -90,11 +84,9 @@ export class AttributeCommitter {
 }
 
 export class AttributePart implements Part {
-  committer: AttributeCommitter;
   value: any = undefined;
 
-  constructor(comitter: AttributeCommitter) {
-    this.committer = comitter;
+  constructor(public committer: AttributeCommitter) {
   }
 
   setValue(value: any): void {
@@ -123,14 +115,12 @@ export class AttributePart implements Part {
 }
 
 export class NodePart implements Part {
-  options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
   value: any = undefined;
   _pendingValue: any = undefined;
 
-  constructor(options: RenderOptions) {
-    this.options = options;
+  constructor(public options: RenderOptions) {
   }
 
   /**
@@ -318,20 +308,15 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
-  element: Element;
-  name: string;
-  strings: string[];
   value: any = undefined;
   _pendingValue: any = undefined;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(
+      public element: Element, public name: string, public strings: string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
     }
-    this.element = element;
-    this.name = name;
-    this.strings = strings;
   }
 
   setValue(value: any): void {
@@ -418,18 +403,14 @@ try {
 }
 
 export class EventPart implements Part {
-  element: Element;
-  eventName: string;
-  eventContext?: EventTarget;
   value: any = undefined;
   _options?: AddEventListenerOptions;
   _pendingValue: any = undefined;
   _boundHandleEvent: (event: Event) => void;
 
-  constructor(element: Element, eventName: string, eventContext?: EventTarget) {
-    this.element = element;
-    this.eventName = eventName;
-    this.eventContext = eventContext;
+  constructor(
+      public element: Element, public eventName: string,
+      public eventContext?: EventTarget) {
     this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 

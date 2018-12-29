@@ -28,16 +28,10 @@ import {isTemplatePartActive, Template} from './template.js';
  */
 export class TemplateInstance {
   _parts: Array<Part|undefined> = [];
-  processor: TemplateProcessor;
-  options: RenderOptions;
-  template: Template;
 
   constructor(
-      template: Template, processor: TemplateProcessor,
-      options: RenderOptions) {
-    this.template = template;
-    this.processor = processor;
-    this.options = options;
+      public template: Template, public processor: TemplateProcessor,
+      public options: RenderOptions) {
   }
 
   update(values: any[]) {
