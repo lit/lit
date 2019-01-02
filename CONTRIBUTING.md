@@ -6,7 +6,7 @@ There are many ways to contribute to lit-html project, and we have many differen
 
 ## Code of Conduct
 
-We have a [Code of Conduct](https://github.com/Polymer/polymer/wiki/Code-of-Conduct), please follow it in all interactions with project maintainers and fellow users.
+We have a [Code of Conduct](./CODE_OF_CONDUCT.md), please follow it in all interactions with project maintainers and fellow users.
 
 ## Filing Issues
 
