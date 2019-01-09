@@ -131,8 +131,9 @@ const prepareTemplateStyles =
       const styles = renderedDOM.querySelectorAll('style');
       // If there are no styles, skip unnecessary work
       if (styles.length === 0) {
-        // ensure prepareTemplateStyles is called to support adding any
-        // styles via `prepareAdoptedCssText`
+        // Ensure prepareTemplateStyles is called to support adding
+        // styles via `prepareAdoptedCssText` since that requires that
+        // `prepareTemplateStyles` is called.
         window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
         return;
       }
