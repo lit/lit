@@ -129,8 +129,11 @@ const prepareTemplateStyles =
       shadyRenderSet.add(scopeName);
       // Move styles out of rendered DOM and store.
       const styles = renderedDOM.querySelectorAll('style');
-      // If there are no styles, there's no work to do.
+      // If there are no styles, skip unnecessary work
       if (styles.length === 0) {
+        // ensure prepareTemplateStyles is called to support adding any
+        // styles via `prepareAdoptedCssText`
+        window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
         return;
       }
       const condensedStyle = document.createElement('style');
