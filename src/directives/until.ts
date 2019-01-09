@@ -55,17 +55,15 @@ export const until = directive((...args: any[]) => (part: Part) => {
     _state.set(part, state);
   }
   const previousValues = state.values;
-  let changedSinceLastRender = false;
   state.values = args;
 
   for (let i = 0; i < args.length; i++) {
-    const value = args[i];
-
-    // If we've seen this value before, we've already handled it.
-    if (value === previousValues[i] && !changedSinceLastRender) {
-      continue;
+    // If we've rendered a higher-priority value already, stop.
+    if (state.lastRenderedIndex !== undefined && i > state.lastRenderedIndex) {
+      break;
     }
-    changedSinceLastRender = true;
+
+    const value = args[i];
 
     // Render non-Promise values immediately
     if (isPrimitive(value) || typeof value.then !== 'function') {
@@ -74,6 +72,12 @@ export const until = directive((...args: any[]) => (part: Part) => {
       // Since a lower-priority value will never overwrite a higher-priority
       // synchronous value, we can stop processsing now.
       break;
+    }
+
+    // If this is a Promise we've already handled, skip it.
+    if (state.lastRenderedIndex !== undefined &&
+        typeof value.then === 'function' && value === previousValues[i]) {
+      continue;
     }
 
     // We have a Promise that we haven't seen before, so priorities may have
