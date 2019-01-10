@@ -16,6 +16,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [1.0.0-rc.2] - 2019-01-09
+### Changed
+* Performance improvements to template processing. ([#690](https://github.com/Polymer/lit-html/pull/690))
+### Added
+* Added the `nothing` sentinel value which can be used to clear a part. ([#673](https://github.com/Polymer/lit-html/pull/673))
+### Fixed
+* Fixed #702: a bug with the `unsafeHTML` directive when changing between unsafe and other values. ([#703](https://github.com/Polymer/lit-html/pull/703))
+* Fixed #708: a bug with the `until` directive where placeholders could overwrite resolved Promises. ([#721](https://github.com/Polymer/lit-html/pull/721))
+
+
 ## [1.0.0-rc.1] - 2018-12-13
 ### Fixed
 * Documentation updates.
