@@ -33,7 +33,7 @@ import {createMarker, directive, NodePart, Part} from '../lit-html.js';
  */
 export const asyncAppend = directive(
     <T>(value: AsyncIterable<T>,
-        mapper?: (v: T, index?: number) => any) => async (part: Part) => {
+        mapper?: (v: T, index?: number) => T) => async (part: Part) => {
       if (!(part instanceof NodePart)) {
         throw new Error('asyncAppend can only be used in text bindings');
       }

@@ -27,6 +27,11 @@ interface AsyncState {
 
 const _state = new WeakMap<Part, AsyncState>();
 
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return value != null &&
+    typeof (value as {then?: unknown}).then === 'function';
+}
+
 /**
  * Renders one of a series of values, including Promises, to a Part.
  *
@@ -46,7 +51,7 @@ const _state = new WeakMap<Part, AsyncState>();
  *     const content = fetch('./content.txt').then(r => r.text());
  *     html`${until(content, html`<span>Loading...</span>`)}`
  */
-export const until = directive((...args: any[]) => (part: Part) => {
+export const until = directive((...args: unknown[]) => (part: Part) => {
   let state = _state.get(part)!;
   if (state === undefined) {
     state = {
@@ -66,7 +71,7 @@ export const until = directive((...args: any[]) => (part: Part) => {
     const value = args[i];
 
     // Render non-Promise values immediately
-    if (isPrimitive(value) || typeof value.then !== 'function') {
+    if (isPrimitive(value) || isThenable(value)) {
       part.setValue(value);
       state.lastRenderedIndex = i;
       // Since a lower-priority value will never overwrite a higher-priority
@@ -76,7 +81,7 @@ export const until = directive((...args: any[]) => (part: Part) => {
 
     // If this is a Promise we've already handled, skip it.
     if (state.lastRenderedIndex !== undefined &&
-        typeof value.then === 'function' && value === previousValues[i]) {
+        isThenable(value) && value === previousValues[i]) {
       continue;
     }
 

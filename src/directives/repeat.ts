@@ -15,8 +15,8 @@
 import {DirectiveFn} from '../lib/directive.js';
 import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
-export type KeyFn<T> = (item: T, index: number) => any;
-export type ItemTemplate<T> = (item: T, index: number) => any;
+export type KeyFn<T> = (item: T, index: number) => unknown;
+export type ItemTemplate<T> = (item: T, index: number) => unknown;
 
 // Helper functions for manipulating parts
 // TODO(kschaaf): Refactor into Part API?
@@ -416,4 +416,6 @@ export const repeat = directive(
         partListCache.set(containerPart, newParts);
         keyListCache.set(containerPart, newKeys);
       };
-    });
+    }) as <T>(items: Iterable<T>,
+      keyFnOrTemplate: KeyFn<T>|ItemTemplate<T>,
+      template?: ItemTemplate<T>) => DirectiveFn;

@@ -20,6 +20,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 // Set Symbol.asyncIterator on browsers without it
 if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
   Object.defineProperty(Symbol, 'Symbol.asyncIterator', {value: Symbol()});

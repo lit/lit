@@ -24,9 +24,17 @@ import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
 
-export const isPrimitive = (value: any) =>
-    (value === null ||
+// https://tc39.github.io/ecma262/#sec-typeof-operator
+export type Primitive = null | undefined | boolean | number | string | Symbol | bigint;
+export function isPrimitive(value: unknown): value is Primitive {
+    return (value === null ||
      !(typeof value === 'object' || typeof value === 'function'));
+}
+
+function isIterable(value: unknown): value is Iterable<unknown> {
+  return !!(value != null &&
+  (Array.isArray(value) || typeof value !== 'string' && (value as Iterable<unknown>)[Symbol.iterator]));
+}
 
 /**
  * Sets attribute values for AttributeParts, so that the value is only set once
@@ -56,7 +64,7 @@ export class AttributeCommitter {
     return new AttributePart(this);
   }
 
-  protected _getValue(): any {
+  protected _getValue(): unknown {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
@@ -66,8 +74,7 @@ export class AttributeCommitter {
       const part = this.parts[i];
       if (part !== undefined) {
         const v = part.value;
-        if (v != null &&
-            (Array.isArray(v) || typeof v !== 'string' && v[Symbol.iterator])) {
+        if (isIterable(v)) {
           for (const t of v) {
             text += typeof t === 'string' ? t : String(t);
           }
@@ -84,20 +91,20 @@ export class AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      this.element.setAttribute(this.name, this._getValue());
+      this.element.setAttribute(this.name, String(this._getValue()));
     }
   }
 }
 
 export class AttributePart implements Part {
   committer: AttributeCommitter;
-  value: any = undefined;
+  value: unknown = undefined;
 
   constructor(comitter: AttributeCommitter) {
     this.committer = comitter;
   }
 
-  setValue(value: any): void {
+  setValue(value: unknown): void {
     if (value !== noChange && (!isPrimitive(value) || value !== this.value)) {
       this.value = value;
       // If the value is a not a directive, dirty the committer so that it'll
@@ -126,8 +133,8 @@ export class NodePart implements Part {
   options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
-  value: any = undefined;
-  _pendingValue: any = undefined;
+  value: unknown = undefined;
+  _pendingValue: unknown = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -176,7 +183,7 @@ export class NodePart implements Part {
     ref.endNode = this.startNode;
   }
 
-  setValue(value: any): void {
+  setValue(value: unknown): void {
     this._pendingValue = value;
   }
 
@@ -198,7 +205,7 @@ export class NodePart implements Part {
       this._commitTemplateResult(value);
     } else if (value instanceof Node) {
       this._commitNode(value);
-    } else if (Array.isArray(value) || value[Symbol.iterator]) {
+    } else if (isIterable(value)) {
       this._commitIterable(value);
     } else if (value === nothing) {
       this.value = nothing;
@@ -222,7 +229,7 @@ export class NodePart implements Part {
     this.value = value;
   }
 
-  private _commitText(value: string): void {
+  private _commitText(value: unknown): void {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
     if (node === this.endNode.previousSibling &&
@@ -230,7 +237,7 @@ export class NodePart implements Part {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if this.value is primitive?
-      (node as Text).data = value;
+      (node as Text).data = typeof value === 'string' ? value : String(value);
     } else {
       this._commitNode(document.createTextNode(
           typeof value === 'string' ? value : String(value)));
@@ -240,7 +247,7 @@ export class NodePart implements Part {
 
   private _commitTemplateResult(value: TemplateResult): void {
     const template = this.options.templateFactory(value);
-    if (this.value && this.value.template === template) {
+    if (this.value instanceof TemplateInstance) {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
@@ -256,7 +263,7 @@ export class NodePart implements Part {
     }
   }
 
-  private _commitIterable(value: any): void {
+  private _commitIterable(value: Iterable<unknown>): void {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
@@ -321,8 +328,8 @@ export class BooleanAttributePart implements Part {
   element: Element;
   name: string;
   strings: string[];
-  value: any = undefined;
-  _pendingValue: any = undefined;
+  value: unknown = undefined;
+  _pendingValue: unknown = undefined;
 
   constructor(element: Element, name: string, strings: string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
@@ -334,7 +341,7 @@ export class BooleanAttributePart implements Part {
     this.strings = strings;
   }
 
-  setValue(value: any): void {
+  setValue(value: unknown): void {
     this._pendingValue = value;
   }
 
@@ -392,6 +399,7 @@ export class PropertyCommitter extends AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
+      // tslint:disable-next-line:no-any
       (this.element as any)[this.name] = this._getValue();
     }
   }
@@ -412,18 +420,21 @@ try {
       return false;
     }
   };
+  // tslint:disable-next-line:no-any
   window.addEventListener('test', options as any, options);
+  // tslint:disable-next-line:no-any
   window.removeEventListener('test', options as any, options);
 } catch (_e) {
 }
+
 
 export class EventPart implements Part {
   element: Element;
   eventName: string;
   eventContext?: EventTarget;
-  value: any = undefined;
+  value: unknown = undefined;
   _options?: AddEventListenerOptions;
-  _pendingValue: any = undefined;
+  _pendingValue: unknown = undefined;
   _boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
@@ -433,7 +444,7 @@ export class EventPart implements Part {
     this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 
-  setValue(value: any): void {
+  setValue(value: unknown): void {
     this._pendingValue = value;
   }
 
@@ -447,8 +458,8 @@ export class EventPart implements Part {
       return;
     }
 
-    const newListener = this._pendingValue;
-    const oldListener = this.value;
+    const newListener = this._pendingValue as undefined | AddEventListenerOptions;
+    const oldListener = this.value as undefined | AddEventListenerOptions;
     const shouldRemoveListener = newListener == null ||
         oldListener != null &&
             (newListener.capture !== oldListener.capture ||
@@ -474,7 +485,7 @@ export class EventPart implements Part {
     if (typeof this.value === 'function') {
       this.value.call(this.eventContext || this.element, event);
     } else {
-      this.value.handleEvent(event);
+      (this.value as {handleEvent(event: Event): unknown}).handleEvent(event);
     }
   }
 }
@@ -482,7 +493,7 @@ export class EventPart implements Part {
 // We copy options because of the inconsistent behavior of browsers when reading
 // the third argument of add/removeEventListener. IE11 doesn't support options
 // at all. Chrome 41 only reads `capture` if the argument is an object.
-const getOptions = (o: any) => o &&
+const getOptions = (o: AddEventListenerOptions|undefined) => o &&
     (eventOptionsSupported ?
          {capture: o.capture, passive: o.passive, once: o.once} :
-         o.capture);
+         o.capture as AddEventListenerOptions);

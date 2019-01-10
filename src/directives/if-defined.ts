@@ -20,7 +20,7 @@ import {AttributePart, directive, Part} from '../lit-html.js';
  *
  * For other part types, this directive is a no-op.
  */
-export const ifDefined = directive((value: any) => (part: Part) => {
+export const ifDefined = directive((value: unknown) => (part: Part) => {
   if (value === undefined && part instanceof AttributePart) {
     if (value !== part.value) {
       const name = part.committer.name;

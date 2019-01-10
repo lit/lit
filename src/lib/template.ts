@@ -56,7 +56,7 @@ export class Template {
       const walker = document.createTreeWalker(
           content,
           133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-          null as any,
+          null,
           false);
       // Keeps track of the last index associated with a part. We try to delete
       // unnecessary nodes, but we never want to associate two different parts
