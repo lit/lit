@@ -432,13 +432,17 @@ try {
 }
 
 
+type EventHandler = ((this: EventTarget, event: Event) => unknown) | {
+  handleEvent(event: Event): unknown;
+};
+type EventHandlerWithOptions = EventHandler & Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
   element: Element;
   eventName: string;
   eventContext?: EventTarget;
-  value: unknown = undefined;
+  value: undefined | EventHandlerWithOptions = undefined;
   _options?: AddEventListenerOptions;
-  _pendingValue: unknown = undefined;
+  _pendingValue: undefined | EventHandlerWithOptions = undefined;
   _boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
@@ -448,23 +452,22 @@ export class EventPart implements Part {
     this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 
-  setValue(value: unknown): void {
+  setValue(value: undefined | EventHandlerWithOptions): void {
     this._pendingValue = value;
   }
 
   commit() {
     while (isDirective(this._pendingValue)) {
       const directive = this._pendingValue;
-      this._pendingValue = noChange;
+      this._pendingValue = noChange as EventHandlerWithOptions;
       directive(this);
     }
     if (this._pendingValue === noChange) {
       return;
     }
 
-    const newListener =
-        this._pendingValue as undefined | AddEventListenerOptions;
-    const oldListener = this.value as undefined | AddEventListenerOptions;
+    const newListener = this._pendingValue;
+    const oldListener = this.value;
     const shouldRemoveListener = newListener == null ||
         oldListener != null &&
             (newListener.capture !== oldListener.capture ||
@@ -483,7 +486,7 @@ export class EventPart implements Part {
           this.eventName, this._boundHandleEvent, this._options);
     }
     this.value = newListener;
-    this._pendingValue = noChange;
+    this._pendingValue = noChange as EventHandlerWithOptions;
   }
 
   handleEvent(event: Event) {
