@@ -95,7 +95,7 @@ export class AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      this.element.setAttribute(this.name, String(this._getValue()));
+      this.element.setAttribute(this.name, this._getValue() as string);
     }
   }
 }
@@ -241,7 +241,7 @@ export class NodePart implements Part {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if this.value is primitive?
-      (node as Text).data = typeof value === 'string' ? value : String(value);
+      (node as Text).data = value as string;
     } else {
       this._commitNode(document.createTextNode(
           typeof value === 'string' ? value : String(value)));
