@@ -71,7 +71,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
     if (!(name in styleInfo)) {
       if (name.indexOf('-') === -1) {
         // tslint:disable-next-line:no-any
-        (style as any)[name as keyof StyleInfo] = null;
+        (style as any)[name] = null;
       } else {
         style.removeProperty(name);
       }

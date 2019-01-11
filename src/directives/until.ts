@@ -27,10 +27,10 @@ interface AsyncState {
 
 const _state = new WeakMap<Part, AsyncState>();
 
-function isThenable(value: unknown): value is PromiseLike<unknown> {
+const isThenable = (value: unknown): value is PromiseLike<unknown> => {
   return value != null &&
       typeof (value as {then?: unknown}).then === 'function';
-}
+};
 
 /**
  * Renders one of a series of values, including Promises, to a Part.

@@ -47,7 +47,7 @@ export const unsafeHTML = directive((value: unknown) => (part: Part): void => {
   }
 
   const template = document.createElement('template');
-  template.innerHTML = String(value);
+  template.innerHTML = value as string;  // innerHTML casts to string internally
   const fragment = document.importNode(template.content, true);
   part.setValue(fragment);
   previousValues.set(part, {value, fragment});

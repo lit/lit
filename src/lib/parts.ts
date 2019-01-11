@@ -26,19 +26,19 @@ import {createMarker} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
-export function isPrimitive(value: unknown): value is Primitive {
+export const isPrimitive = (value: unknown): value is Primitive => {
   return (
       value === null ||
       !(typeof value === 'object' || typeof value === 'function'));
-}
+};
 
-function isIterable(value: unknown): value is Iterable<unknown> {
+const isIterable = (value: unknown): value is Iterable<unknown> => {
   return !!(
       value != null &&
       (Array.isArray(value) ||
        typeof value !== 'string' &&
            (value as Iterable<unknown>)[Symbol.iterator]));
-}
+};
 
 /**
  * Sets attribute values for AttributeParts, so that the value is only set once
