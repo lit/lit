@@ -432,17 +432,17 @@ try {
 }
 
 
-type EventHandler = ((this: EventTarget, event: Event) => unknown) | {
+type EventHandler = ((this: EventTarget, event: Event) => unknown)|{
   handleEvent(event: Event): unknown;
 };
-type EventHandlerWithOptions = EventHandler & Partial<AddEventListenerOptions>;
+type EventHandlerWithOptions = EventHandler&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
   element: Element;
   eventName: string;
   eventContext?: EventTarget;
-  value: undefined | EventHandlerWithOptions = undefined;
+  value: undefined|EventHandlerWithOptions = undefined;
   _options?: AddEventListenerOptions;
-  _pendingValue: undefined | EventHandlerWithOptions = undefined;
+  _pendingValue: undefined|EventHandlerWithOptions = undefined;
   _boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
@@ -452,7 +452,7 @@ export class EventPart implements Part {
     this._boundHandleEvent = (e) => this.handleEvent(e);
   }
 
-  setValue(value: undefined | EventHandlerWithOptions): void {
+  setValue(value: undefined|EventHandlerWithOptions): void {
     this._pendingValue = value;
   }
 
