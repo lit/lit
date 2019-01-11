@@ -53,6 +53,6 @@ export const directive = <F extends DirectiveFactory>(f: F): F =>
       return d;
     }) as F;
 
-export function isDirective (o: unknown): o is DirectiveFn {
-   return typeof o === 'function' && directives.has(o);
+export function isDirective(o: unknown): o is DirectiveFn {
+  return typeof o === 'function' && directives.has(o);
 }

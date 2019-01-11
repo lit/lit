@@ -29,7 +29,7 @@ const _state = new WeakMap<Part, AsyncState>();
 
 function isThenable(value: unknown): value is PromiseLike<unknown> {
   return value != null &&
-    typeof (value as {then?: unknown}).then === 'function';
+      typeof (value as {then?: unknown}).then === 'function';
 }
 
 /**
@@ -80,8 +80,8 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
     }
 
     // If this is a Promise we've already handled, skip it.
-    if (state.lastRenderedIndex !== undefined &&
-        isThenable(value) && value === previousValues[i]) {
+    if (state.lastRenderedIndex !== undefined && isThenable(value) &&
+        value === previousValues[i]) {
       continue;
     }
 

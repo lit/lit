@@ -80,8 +80,7 @@ export function removeNodesFromTemplate(
 
 const countNodes = (node: Node) => {
   let count = (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */) ? 0 : 1;
-  const walker =
-      document.createTreeWalker(node, walkerNodeFilter, null, false);
+  const walker = document.createTreeWalker(node, walkerNodeFilter, null, false);
   while (walker.nextNode()) {
     count++;
   }

@@ -25,15 +25,19 @@ import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
-export type Primitive = null | undefined | boolean | number | string | Symbol | bigint;
+export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
 export function isPrimitive(value: unknown): value is Primitive {
-    return (value === null ||
-     !(typeof value === 'object' || typeof value === 'function'));
+  return (
+      value === null ||
+      !(typeof value === 'object' || typeof value === 'function'));
 }
 
 function isIterable(value: unknown): value is Iterable<unknown> {
-  return !!(value != null &&
-  (Array.isArray(value) || typeof value !== 'string' && (value as Iterable<unknown>)[Symbol.iterator]));
+  return !!(
+      value != null &&
+      (Array.isArray(value) ||
+       typeof value !== 'string' &&
+           (value as Iterable<unknown>)[Symbol.iterator]));
 }
 
 /**
@@ -458,7 +462,8 @@ export class EventPart implements Part {
       return;
     }
 
-    const newListener = this._pendingValue as undefined | AddEventListenerOptions;
+    const newListener =
+        this._pendingValue as undefined | AddEventListenerOptions;
     const oldListener = this.value as undefined | AddEventListenerOptions;
     const shouldRemoveListener = newListener == null ||
         oldListener != null &&
