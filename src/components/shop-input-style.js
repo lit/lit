@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { html } from '@polymer/lit-element';
+import { html } from 'lit-element';
 
 export const shopInputStyle = html`
 <style>

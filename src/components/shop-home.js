@@ -9,7 +9,7 @@
  */
 
 import { PageViewElement } from './page-view-element.js';
-import { html } from '@polymer/lit-element';
+import { html } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { shopButtonStyle } from './shop-button-style.js';
 import './shop-image.js';

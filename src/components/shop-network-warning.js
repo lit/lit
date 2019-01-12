@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from '@polymer/lit-element';
+import { LitElement, html } from 'lit-element';
 import { shopButtonStyle } from './shop-button-style.js';
 import '@polymer/iron-icon';
 import './shop-icons.js';
