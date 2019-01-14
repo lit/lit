@@ -73,7 +73,7 @@ lit-html support many kind of values natively: strings, DOM nodes, heterogeneous
 
 ## Extensible
 
-lit-html is extremely customizable and extensible. Directives customize how values are handled, allowing for asynchronous values, efficient keyed-repeats, error boundaries, and more. lit-html is like your very own a template construction kit.
+lit-html is extremely customizable and extensible. Directives customize how values are handled, allowing for asynchronous values, efficient keyed-repeats, error boundaries, and more. lit-html is like your very own template construction kit.
 
 </div>
 </div>
