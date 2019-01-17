@@ -16,7 +16,7 @@ import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 
 export interface ClassInfo {
-  [name: string]: string|boolean|number;
+  readonly [name: string]: string|boolean|number;
 }
 
 /**

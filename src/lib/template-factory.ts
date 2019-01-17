@@ -89,8 +89,9 @@ export function templateFactory(result: TemplateResult) {
  * joining the strings array.
  */
 export type templateCache = {
-  stringsArray: WeakMap<TemplateStringsArray, Template>;
-  keyString: Map<string, Template>;
+  readonly stringsArray: WeakMap<TemplateStringsArray, Template>; readonly keyString: Map<
+                                                                               string,
+                                                                               Template>;
 };
 
 export const templateCaches = new Map<string, templateCache>();
