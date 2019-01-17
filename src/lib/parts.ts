@@ -32,14 +32,6 @@ export const isPrimitive = (value: unknown): value is Primitive => {
       !(typeof value === 'object' || typeof value === 'function'));
 };
 
-const isIterable = (value: unknown): value is Iterable<unknown> => {
-  return !!(
-      value != null &&
-      (Array.isArray(value) ||
-       typeof value !== 'string' &&
-           (value as Iterable<unknown>)[Symbol.iterator]));
-};
-
 /**
  * Sets attribute values for AttributeParts, so that the value is only set once
  * even if there are multiple parts for an attribute.
@@ -78,8 +70,10 @@ export class AttributeCommitter {
       const part = this.parts[i];
       if (part !== undefined) {
         const v = part.value;
-        if (isIterable(v)) {
-          for (const t of v) {
+        if (v != null &&
+            // tslint:disable-next-line:no-any
+            (Array.isArray(v) || typeof v !== 'string' && (v as any)[Symbol.iterator])) {
+          for (const t of v as Iterable<unknown>) {
             text += typeof t === 'string' ? t : String(t);
           }
         } else {
@@ -209,8 +203,10 @@ export class NodePart implements Part {
       this._commitTemplateResult(value);
     } else if (value instanceof Node) {
       this._commitNode(value);
-    } else if (isIterable(value)) {
-      this._commitIterable(value);
+    } else if (Array.isArray(value) ||
+               // tslint:disable-next-line:no-any
+               (value as any)[Symbol.iterator]) {
+      this._commitIterable(value as Iterable<unknown>);
     } else if (value === nothing) {
       this.value = nothing;
       this.clear();
