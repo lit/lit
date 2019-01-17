@@ -428,10 +428,7 @@ try {
 }
 
 
-type EventHandler = ((this: EventTarget, event: Event) => unknown)|{
-  handleEvent(event: Event): unknown;
-};
-type EventHandlerWithOptions = EventHandler&Partial<AddEventListenerOptions>;
+type EventHandlerWithOptions = EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
   element: Element;
   eventName: string;
