@@ -490,7 +490,7 @@ export class EventPart implements Part {
     if (typeof this.value === 'function') {
       this.value.call(this.eventContext || this.element, event);
     } else {
-      (this.value as {handleEvent(event: Event): unknown}).handleEvent(event);
+      (this.value as EventListenerObject).handleEvent(event);
     }
   }
 }
