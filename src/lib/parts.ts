@@ -251,7 +251,7 @@ export class NodePart implements Part {
 
   private _commitTemplateResult(value: TemplateResult): void {
     const template = this.options.templateFactory(value);
-    if (this.value instanceof TemplateInstance) {
+    if (this.value instanceof TemplateInstance && this.value.template === template) {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
