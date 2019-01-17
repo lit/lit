@@ -66,7 +66,8 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
     const value = args[i];
 
     // Render non-Promise values immediately
-    if (isPrimitive(value) || typeof (value as {then?: unknown}).then !== 'function') {
+    if (isPrimitive(value) ||
+        typeof (value as {then?: unknown}).then !== 'function') {
       part.setValue(value);
       state.lastRenderedIndex = i;
       // Since a lower-priority value will never overwrite a higher-priority
@@ -76,7 +77,8 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
 
     // If this is a Promise we've already handled, skip it.
     if (state.lastRenderedIndex !== undefined &&
-        typeof (value as {then?: unknown}).then === 'function' && value === previousValues[i]) {
+        typeof (value as {then?: unknown}).then === 'function' &&
+        value === previousValues[i]) {
       continue;
     }
 

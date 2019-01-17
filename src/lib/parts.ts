@@ -72,7 +72,8 @@ export class AttributeCommitter {
         const v = part.value;
         if (v != null &&
             // tslint:disable-next-line:no-any
-            (Array.isArray(v) || typeof v !== 'string' && (v as any)[Symbol.iterator])) {
+            (Array.isArray(v) ||
+             typeof v !== 'string' && (v as any)[Symbol.iterator])) {
           for (const t of v as Iterable<unknown>) {
             text += typeof t === 'string' ? t : String(t);
           }
@@ -203,9 +204,10 @@ export class NodePart implements Part {
       this._commitTemplateResult(value);
     } else if (value instanceof Node) {
       this._commitNode(value);
-    } else if (Array.isArray(value) ||
-               // tslint:disable-next-line:no-any
-               (value as any)[Symbol.iterator]) {
+    } else if (
+        Array.isArray(value) ||
+        // tslint:disable-next-line:no-any
+        (value as any)[Symbol.iterator]) {
       this._commitIterable(value as Iterable<unknown>);
     } else if (value === nothing) {
       this.value = nothing;
@@ -247,7 +249,8 @@ export class NodePart implements Part {
 
   private _commitTemplateResult(value: TemplateResult): void {
     const template = this.options.templateFactory(value);
-    if (this.value instanceof TemplateInstance && this.value.template === template) {
+    if (this.value instanceof TemplateInstance &&
+        this.value.template === template) {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult
@@ -428,7 +431,8 @@ try {
 }
 
 
-type EventHandlerWithOptions = EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
+type EventHandlerWithOptions =
+    EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
   element: Element;
   eventName: string;
