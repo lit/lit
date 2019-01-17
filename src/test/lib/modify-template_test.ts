@@ -19,6 +19,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 suite('add/remove nodes from template', () => {
   let container: HTMLElement;
 

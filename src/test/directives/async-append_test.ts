@@ -55,7 +55,7 @@ suite('asyncAppend', () => {
     await iterable.push('foo');
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
-    await iterable.push(undefined);
+    await iterable.push(undefined as unknown as string);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 

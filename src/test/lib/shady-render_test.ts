@@ -17,6 +17,8 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');

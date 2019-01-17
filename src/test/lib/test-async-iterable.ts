@@ -42,7 +42,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
    * has been emitted by the iterator. push() must not be called before
    * a previous call has completed, so always await a push() call.
    */
-  async push(value: any): Promise<void> {
+  async push(value: T): Promise<void> {
     const currentValue = this._nextValue;
     const currentResolveValue = this._resolveNextValue;
     this._nextValue =
