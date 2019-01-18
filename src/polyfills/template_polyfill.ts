@@ -27,6 +27,7 @@ export const initTemplatePolyfill = (forced = false) => {
   }
   const contentDoc = document.implementation.createHTMLDocument('template');
 
+  // tslint:disable-next-line:no-any
   const upgrade = (template: any) => {
     template.content = contentDoc.createDocumentFragment();
     Object.defineProperty(template, 'innerHTML', {

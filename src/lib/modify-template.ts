@@ -40,7 +40,7 @@ export function removeNodesFromTemplate(
     template: Template, nodesToRemove: Set<Node>) {
   const {element: {content}, parts} = template;
   const walker =
-      document.createTreeWalker(content, walkerNodeFilter, null as any, false);
+      document.createTreeWalker(content, walkerNodeFilter, null, false);
   let partIndex = nextActiveIndexInTemplateParts(parts);
   let part = parts[partIndex];
   let nodeIndex = -1;
@@ -80,8 +80,7 @@ export function removeNodesFromTemplate(
 
 const countNodes = (node: Node) => {
   let count = (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */) ? 0 : 1;
-  const walker =
-      document.createTreeWalker(node, walkerNodeFilter, null as any, false);
+  const walker = document.createTreeWalker(node, walkerNodeFilter, null, false);
   while (walker.nextNode()) {
     count++;
   }
@@ -114,7 +113,7 @@ export function insertNodeIntoTemplate(
     return;
   }
   const walker =
-      document.createTreeWalker(content, walkerNodeFilter, null as any, false);
+      document.createTreeWalker(content, walkerNodeFilter, null, false);
   let partIndex = nextActiveIndexInTemplateParts(parts);
   let insertCount = 0;
   let walkerIndex = -1;

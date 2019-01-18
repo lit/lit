@@ -17,6 +17,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 const isTemplatePolyfilled =
     ((HTMLTemplateElement as any).decorate != null ||
      (window as any).ShadyDOM && (window as any).ShadyDOM.inUse);

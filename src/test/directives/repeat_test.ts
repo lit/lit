@@ -21,6 +21,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 function assertItemIdentity(
     oldChildren: HTMLElement[],
     newChildren: HTMLElement[],

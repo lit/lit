@@ -18,7 +18,10 @@
 
 import {Part} from './part.js';
 
-const directives = new WeakMap<any, Boolean>();
+const directives = new WeakMap<object, true>();
+
+// tslint:disable-next-line:no-any
+export type DirectiveFactory = (...args: any[]) => object;
 
 export type DirectiveFn = (part: Part) => void;
 
@@ -42,12 +45,14 @@ export type DirectiveFn = (part: Part) => void;
  * });
  * ```
  */
-export const directive = <F extends Function>(f: F): F =>
-    ((...args: any[]) => {
+// tslint:disable-next-line:no-any
+export const directive = <F extends DirectiveFactory>(f: F): F =>
+    ((...args: unknown[]) => {
       const d = f(...args);
       directives.set(d, true);
       return d;
-    }) as unknown as F;
+    }) as F;
 
-export const isDirective = (o: any) =>
-    typeof o === 'function' && directives.has(o);
+export const isDirective = (o: unknown): o is DirectiveFn => {
+  return typeof o === 'function' && directives.has(o);
+};

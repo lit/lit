@@ -22,7 +22,7 @@ export interface StyleInfo {
  * Stores the StyleInfo object applied to a given AttributePart.
  * Used to unset existing values when a new StyleInfo object is applied.
  */
-const styleMapCache = new WeakMap();
+const styleMapCache = new WeakMap<AttributePart, StyleInfo>();
 
 /**
  * Stores AttributeParts that have had static styles applied (e.g. `height: 0;`
@@ -30,7 +30,7 @@ const styleMapCache = new WeakMap();
  * first time the directive is run on a part.
  */
 // Note, could be a WeakSet, but prefer not requiring this polyfill.
-const styleMapStatics = new WeakMap();
+const styleMapStatics = new WeakMap<AttributePart, true>();
 
 /**
  * A directive that applies CSS properties to an element.
@@ -70,6 +70,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   for (const name in oldInfo) {
     if (!(name in styleInfo)) {
       if (name.indexOf('-') === -1) {
+        // tslint:disable-next-line:no-any
         (style as any)[name] = null;
       } else {
         style.removeProperty(name);
@@ -80,6 +81,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   // Add or update properties
   for (const name in styleInfo) {
     if (name.indexOf('-') === -1) {
+      // tslint:disable-next-line:no-any
       (style as any)[name] = styleInfo[name];
     } else {
       style.setProperty(name, styleInfo[name]);

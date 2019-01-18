@@ -23,6 +23,8 @@ const testIfSupportsCSSVariables = isIE || isChrome41 ? test.skip : test;
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 suite('styleMap', () => {
   let container: HTMLDivElement;
 

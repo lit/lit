@@ -42,7 +42,7 @@
     "rollup-plugin-filesize": "^4.0.1",
     "rollup-plugin-terser": "^1.0.1",
     "tslint": "^5.11.0",
-    "typescript": "^3.1.1",
+    "typescript": "^3.2.2",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"

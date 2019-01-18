@@ -26,12 +26,12 @@ import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from '
  */
 export class TemplateResult {
   strings: TemplateStringsArray;
-  values: any[];
+  values: unknown[];
   type: string;
   processor: TemplateProcessor;
 
   constructor(
-      strings: TemplateStringsArray, values: any[], type: string,
+      strings: TemplateStringsArray, values: unknown[], type: string,
       processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;

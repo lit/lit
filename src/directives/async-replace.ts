@@ -33,7 +33,7 @@ import {directive, NodePart, Part} from '../lit-html.js';
  *     value. Useful for generating templates for each item in the iterable.
  */
 export const asyncReplace = directive(
-    <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => any) =>
+    <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => unknown) =>
         async (part: Part) => {
           if (!(part instanceof NodePart)) {
             throw new Error('asyncReplace can only be used in text bindings');
@@ -70,7 +70,9 @@ export const asyncReplace = directive(
             // we accept a mapper function. This is especially convenient for
             // rendering a template for each item.
             if (mapper !== undefined) {
-              v = mapper(v, i);
+              // This is safe because T must otherwise be treated as unknown by
+              // the rest of the system.
+              v = mapper(v, i) as T;
             }
 
             itemPart.setValue(v);

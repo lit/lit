@@ -33,7 +33,7 @@ import {createMarker, directive, NodePart, Part} from '../lit-html.js';
  */
 export const asyncAppend = directive(
     <T>(value: AsyncIterable<T>,
-        mapper?: (v: T, index?: number) => any) => async (part: Part) => {
+        mapper?: (v: T, index?: number) => unknown) => async (part: Part) => {
       if (!(part instanceof NodePart)) {
         throw new Error('asyncAppend can only be used in text bindings');
       }
@@ -67,7 +67,9 @@ export const asyncAppend = directive(
         // we accept a mapper function. This is especially convenient for
         // rendering a template for each item.
         if (mapper !== undefined) {
-          v = mapper(v, i);
+          // This is safe because T must otherwise be treated as unknown by
+          // the rest of the system.
+          v = mapper(v, i) as T;
         }
 
         // Like with sync iterables, each item induces a Part, so we need
