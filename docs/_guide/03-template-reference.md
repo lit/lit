@@ -352,7 +352,7 @@ Location: attribute bindings (must be the entire value of the `class` attribute)
 
 Sets a list of classes based on an object. Each key in the object is treated as a class name, if the value associated with the key is truthy, that class is added to the element. 
 
-```
+```js
 let classes = { highlight: true, enabled: true, hidden: false };`
 
 html`<div class=${classMap(classes)>Classy text</div>`;
@@ -362,7 +362,7 @@ html`<div class=${classMap(classes)>Classy text</div>`;
 Note that you can only use `classMap` in an attribute binding for the `class` attribute, and it must be the entire value of the attribute.
 
 
-```
+```js
 // DON'T DO THIS
 html`<div class="someClass ${classMap(moreClasses}">Broken div</div>`;
 ```
@@ -384,9 +384,8 @@ Example:
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 const myTemplate = () => html`
-  <div class=${ifDefined(className)}></div>
+  <img src="/images/${ifDefined(image.filename)}">
 `;
-
 ```
 
 ### guard
@@ -416,14 +415,15 @@ const template = html`
   <div>
     ${guard([immutableItems], () => immutableItems.map(item => html`${item}`))}
   </div>
-`
+`;
 ```
 
 In this case, the `immutableItems` array is mapped over only when the array reference changes.
 
 ### repeat 
 
-`repeat(items, keyfn, template)`
+`repeat(items, keyfn, template)`<br>
+`repeat(items, template)`
 
 Location: text bindings
 
@@ -472,7 +472,7 @@ For CSS properties that contain dashes, you can either use the camel-case equiva
 { 'font-family': 'roboto }
 ```
 
-The styleMap directive can only be used as a value for the style attribute, and it must be the entire value of the attribute.
+The `styleMap` directive can only be used as a value for the `style` attribute, and it must be the entire value of the attribute.
 
 ### unsafeHTML
 
