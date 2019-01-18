@@ -504,8 +504,8 @@ Location: any
 Renders placeholder content until the final content is available. 
 
 Takes a series of values, including Promises. Values are rendered in priority order, 
-with the first argument having thehighest priority and the last argument having the 
-lowest priority. If a value is a Promise, a lower-priority values will be rendered until it resolves.
+ with the first argument having the highest priority and the last argument having the 
+ lowest priority. If a value is a Promise, a lower-priority value will be rendered until it resolves.
 
 The priority of values can be used to create placeholder content for async
 data. For example, a Promise with pending content can be the first,
