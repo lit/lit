@@ -8,7 +8,7 @@ slug: concepts
 * ToC
 {:toc}
 
-`lit-html` utilizes some unique properties of JavaScript template literals and HTML `<template>` elements to function and achieve fast performance. So it's helpful to understand them first.
+lit-html utilizes some unique properties of JavaScript template literals and HTML `<template>` elements to function and achieve fast performance. So it's helpful to understand them first.
 
 ## Tagged Template Literals
 
@@ -33,9 +33,9 @@ The key features of template tags that lit-html utilizes to make updates fast is
 
 This means that the strings can be used as a key into a cache so that lit-html can do the template preparation just once, the first time it renders a template, and updates skip that work.
 
-## HTML `<template>` Elements
+## HTML template Elements
 
-A `<template>` element is an inert fragment of DOM. Inside a `<template>`, script don't run, images don't load, custom elements aren't upgraded, etc. `<template>`s can be efficiently cloned. They're usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, and will be managed by code at a later time, but it can also be created imperatively with `createElement` and `innerHTML`.
+A `<template>` element contains an inert fragment of DOM. Inside the template's content, script don't run, images don't load, custom elements aren't upgraded, and so on. The content can be efficiently cloned. Template elements are usually used to tell the HTML parser that a section of the document must not be instantiated when parsed, and will be managed by code at a later time; but template elements can also be created imperatively with `createElement` and `innerHTML`.
 
 lit-html creates HTML `<template>` elements from the tagged template literals, and then clones them to create new DOM.
 
@@ -63,7 +63,7 @@ Then lit-html walks the template's DOM and extracts the placeholders and records
 <h1></h1>
 ```
 
-And there's an auxillary table of where the expressions were:
+lit-html keeps an auxillary table of where the expressions were:
 
 `[{type: 'node', index: 1}]`
 
@@ -71,11 +71,11 @@ And there's an auxillary table of where the expressions were:
 
 `render()` takes a `TemplateResult` and renders it to a DOM container. On the initial render it clones the template, then walks it using the remembered placeholder positions, to create `Part` objects.
 
-A `Part` is a "hole" in the DOM where values can be injected. lit-html includes two type of parts by default: `NodePart` and `AttributePart`, which let you set text content and attribute values respectively. The `Part`s, container, and template they were created from are grouped together in an object called a `TemplateInstance`.
+A `Part` is a "hole" in the DOM where values can be injected. lit-html has subclasses of `Part` for each type of binding: `NodePart` for text content bindings, `AttributePart` for attribute bindings, and so on. The `Part` objects, container, and the template they were created from are grouped together in an object called a `TemplateInstance`.
 
 ## Thinking Functionally
 
-lit-html is ideal for use in a functional approach to describing UIs. If you think of UI as a function of data, commonly expressed as `UI = f(data)`, you can write lit-html templates that mirror this exactly:
+lit-html is ideal for use in a functional approach to describing UIs. If you think of UI as a function of data, commonly expressed as `UI = f(data)`, you can write lit-html templates that mirrors this exactly:
 
 ```js
 let ui = (data) => html`...${data}...`;
@@ -83,9 +83,9 @@ let ui = (data) => html`...${data}...`;
 
 This kind of function can be called any time data changes, and is extremely cheap to call. The only thing that lit-html does in the `html` tag is forward the arguments to the templates.
 
-When the result is rendered, lit only updates the expressions whose values have changed since the previous render.
+When the result is rendered, lit-html only updates the expressions whose values have changed since the previous render.
 
-This leads to model that's easy to write and easy to reason about: always try to describe your UI as a simple function of the data it depends on, an avoid caching intermediate state, or doing manual DOM manipulation. lit-html will almost always be fast enough with the simplest description of your UI.
+This leads to a model that's easy to write and easy to reason about: always try to describe your UI as a simple function of the data it depends on, and avoid caching intermediate state, or doing manual DOM manipulation. lit-html will almost always be fast enough with the simplest description of your UI.
 
 ## JavaScript Modules
 
