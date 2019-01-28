@@ -18,9 +18,10 @@ This section introduces the main features and concepts in lit-html.
 The simplest thing to do in lit-html is to render some static HTML. 
 
 ```js
-import {html, render} from 'lit-html'
+import {html, render} from 'lit-html';
+
 // Declare a template
-const  myTemplate = html`<div>Hello World</div>`
+const myTemplate = html`<div>Hello World</div>`;
 
 // Render the template
 render(myTemplate, document.body);
@@ -30,7 +31,7 @@ The lit-html template is a [_tagged template literal_](https://developer.mozilla
 
 The `html` tag function returns a `TemplateResult`—a lightweight object that represents the template to be rendered.
 
-The `render` function actual creates DOM nodes and appends them to a DOM tree. In this case, the rendered DOM replaces the contents of the document's `body` tag.
+The `render` function actually creates DOM nodes and appends them to a DOM tree. In this case, the rendered DOM replaces the contents of the document's `body` tag.
 
 ## Render dynamic text content
 
@@ -43,13 +44,14 @@ const aTemplate = html`<h1>${title}</h1>`;
 To make your template dynamic, you can create a _template function_. Call the template function any time your data changes.
 
 ```js
-import {html, render} from 'lit-html'
+import {html, render} from 'lit-html';
+
 // Define a template function
-const  myTemplate = (name) => html`<div>Hello ${name}</div>`;
+const myTemplate = (name) => html`<div>Hello ${name}</div>`;
 
 // Render the template with some data
 render(myTemplate('world'), document.body);
-...
+
 // ... Later on ... 
 // Render the template with different data
 render(myTemplate('lit-html'), document.body);
@@ -66,7 +68,7 @@ When you call `render`, **lit-html only updates the parts of the template that h
 The previous example shows interpolating a simple text value, but the binding can include any kind of JavaScript expression:
 
 ```js
-const  myTemplate = (subtotal, tax) => html`<div>Total: ${subtotal + tax}</div>`;
+const myTemplate = (subtotal, tax) => html`<div>Total: ${subtotal + tax}</div>`;
 const myTemplate2 = (name) => html`<div>${formatName(name.given, name.family, name.title)}</div>`;
 ```
 
@@ -86,7 +88,7 @@ Since attribute values are always strings, the expression should return a value 
 Use the `?` prefix for a boolean attribute binding. The attribute is added if the expression evaluates to a truthy value, removed if it evaluates to a falsy value:
 
 ```js
-const myTemplate2(data) = html`<div ?disabled="${!data.active}">Stylish text.</div>`;
+const myTemplate2(data) = html`<div ?disabled=${!data.active}>Stylish text.</div>`;
 ```
 
 ## Bind to properties
@@ -94,7 +96,7 @@ const myTemplate2(data) = html`<div ?disabled="${!data.active}">Stylish text.</d
 You can also bind to a node's JavaScript properties using the `.` prefix and the property name:
 
 ```js
-const myTemplate3(data) = html`<my-list .listItems=${data.items}></my-list>`
+const myTemplate3(data) = html`<my-list .listItems=${data.items}></my-list>`;
 ```
 
 You can use property bindings to pass complex data down the tree to subcomponents.
@@ -106,7 +108,7 @@ Note that the property name in this example—`listItems`—is mixed case. Altho
 Templates can also include declarative event handlers. An event handler looks like an attribute binding, but with the prefix `@` followed by an event name:
 
 ```js
-const myTemplate = () => html`<button @click=${clickHandler}>Click Me!</button>`
+const myTemplate = () => html`<button @click=${clickHandler}>Click Me!</button>`;
 ```
 
 This is equivalent to calling `addEventListener('click', clickHandler)` on the button element.
@@ -118,11 +120,11 @@ const clickHandler = {
   // handleEvent method is required.
   handleEvent(e) { 
     console.log('clicked!');
-  }
-  // event listener object can also define zero or more of the event 
+  },
+  // event listener objects can also define zero or more of the event 
   // listener options: capture, passive, and once.
-  capture: true;
-}
+  capture: true,
+};
 ```
 
 ### Nest and compose templates
@@ -209,7 +211,7 @@ Note that this expression returns an array of `TemplateResult` objects. lit-html
 
 ### Repeating templates with looping statements
 
-You can also build an array of templates and pass it in to a template binding.
+You can also build an array of templates and pass it into a template binding.
 
 ```js
 const itemTemplates = [];
@@ -238,7 +240,7 @@ Where:
 
 *   `items` is an Array or iterable.
 *   `keyFunction` is a function that takes a single item as an argument and returns a guaranteed unique key for that item.
-*   `itemTemplate` is a template function that takes the item and its current index as arguments, and returns a TemplateResult.
+*   `itemTemplate` is a template function that takes the item and its current index as arguments, and returns a `TemplateResult`.
 
 For example:
 
@@ -249,7 +251,7 @@ const employeeList = (employees) => html`
       <li>${index}: ${employee.familyName}, ${employee.givenName}</li>
     `)}
   </ul>
-`
+`;
 ```
 
 If you re-sort the `employees` array, the `repeat` directive reorders the existing DOM nodes. 
@@ -279,5 +281,5 @@ html`${cache(data.showDetails
 
 When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
 
-The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
+The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and update it with the latest data.
 
