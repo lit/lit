@@ -424,7 +424,8 @@
   searchBox.addEventListener('keypress', function(event) {
     if (event.keyCode === 13 /* enter */) {
       const site = window.location.hostname;
-      const query = searchBox.value;
+      const query = encodeURIComponent(searchBox.value);
+      ga('send', 'pageview', '/search?q='+query);
       window.location = 'https://www.google.com/search?q=site%3A'+site+'+'+query;
       event.preventDefault();
     }
