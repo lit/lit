@@ -22,9 +22,10 @@ Previewing the docs requires the [App Engine Standard Environment for Python 2.7
 
 2. Install npm dependencies for the docs site.
 
-     cd lit-html/docs
-     npm install
-
+```
+cd lit-html/docs
+npm install
+```
 
 ### Building and previewing
 
