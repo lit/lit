@@ -65,7 +65,7 @@ import {html, render} from 'lit-html';
 lit-html has two main APIs:
 
 *   The `html` template tag used to write templates.
-*   The `render()` function used to render a template to a DOM container
+*   The `render()` function used to render a template to a DOM container.
 
 ```ts
 // Import lit-html
