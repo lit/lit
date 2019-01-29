@@ -4,7 +4,7 @@ title: Styling templates
 slug: styling-templates
 ---
 
-lit-html just renders HTML; you can style HTML created with lit-html like any other HTML, using CSS. How you apply styles to lit-html templates depends on how you're using it—for example, if you're using lit-html inside a component system like LitElement, you can follow the patterns used by that component system.
+lit-html focuses on one thing: rendering HTML. How you apply styles to the HTML lit-html creates depends on how you're using it—for example, if you're using lit-html inside a component system like LitElement, you can follow the patterns used by that component system.
 
 In most cases you should **not** use lit-html bindings inside a style sheet. It's more efficient to use lit-html bindings to manipulate the `class` and `style` attributes.  
 
