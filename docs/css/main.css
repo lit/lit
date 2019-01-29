@@ -367,8 +367,8 @@ section p {
   line-height: 22px;
 }
 
-.side-nav li.active {
-  font-weight: bold;
+.side-nav li:not(.active) a {
+  color: #222;
 }
 
 /* Article area */

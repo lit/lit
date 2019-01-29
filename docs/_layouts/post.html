@@ -7,7 +7,7 @@ layout: default
   <nav class="side-nav">
     <button id="toggleNavButton">Menu</button>
     <ul>
-      <li class="{% if page.url == '/guide.html' %}active{% endif %}">
+      <li class="{% if page.url == '/guide' %}active{% endif %}">
         <a href="{{site.baseurl}}/guide">Introduction</a>
       </li>
       {% for guide in site.guide %}
