@@ -12,7 +12,7 @@ slug: getting-started
 
 ### npm
 
-lit-htm is distributed on npm, in the [lit-html package].
+lit-html is distributed on npm, in the [lit-html package].
 
 ```
 npm install lit-html
@@ -37,7 +37,7 @@ You can try out lit-html without installing anything using an online editor. Bel
 ## Importing
 
 lit-html is written in and distributed as standard JavaScript modules.
-Modules are increasingly supported in JavaScript environments and are shipping in Chrome, Opera and Safari, and soon will be in Firefox and Edge.
+Modules are increasingly supported in JavaScript environments and are shipping in Chrome, Opera and Safari, and will soon be in Firefox and Edge.
 
 To use lit-html, import it via a path:
 
@@ -50,7 +50,7 @@ To use lit-html, import it via a path:
 
 The JavaScript `import` statement only works inside module scripts (`<script type="module">`), which can be inline scripts (as shown above) or external scripts.
 
-The path to use depends on where you've installed lit-html to. Browsers only support importing other modules by path, not by package name, so without other tools involved, you'll have to use paths.
+The path to use depends on where you've installed lit-html. Browsers only support importing other modules by path, not by package name, so without other tools involved, you'll have to use paths.
 
 If you use a tool that converts package names into paths, then you can import by package name:
 
@@ -65,7 +65,7 @@ import {html, render} from 'lit-html';
 lit-html has two main APIs:
 
 *   The `html` template tag used to write templates
-*   The `render()` function used to render a template to a DOM container.
+*   The `render()` function used to render a template to a DOM container
 
 ```ts
 // Import lit-html
