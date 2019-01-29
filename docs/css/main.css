@@ -367,6 +367,10 @@ section p {
   line-height: 22px;
 }
 
+.side-nav li.active {
+  font-weight: bold;
+}
+
 /* Article area */
 article {
   flex: 1;
