@@ -41,4 +41,7 @@ const result = myTemplate({title: 'Hello', body: 'lit-html is cool'});
 render(result, document.body);
 ```
 
+
+Ready to try it yourself? Head over to [Getting Started](/guide/getting-started).
+
 [template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
