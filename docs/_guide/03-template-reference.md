@@ -353,7 +353,7 @@ Location: attribute bindings (must be the entire value of the `class` attribute)
 Sets a list of classes based on an object. Each key in the object is treated as a class name, and if the value associated with the key is truthy, that class is added to the element.
 
 ```js
-let classes = { highlight: true, enabled: true, hidden: false };`
+let classes = { highlight: true, enabled: true, hidden: false };
 
 html`<div class=${classMap(classes)>Classy text</div>`;
 // renders as <div class="highlight enabled">Classy text</div>
@@ -461,7 +461,7 @@ Location: attribute bindings (must be the entire value of the `style` attribute)
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
 ```js
-let styles = { backgroundColor: 'blue', color: 'white'}
+let styles = { backgroundColor: 'blue', color: 'white'};
 html`<p style=${styleMap(styles}>Hello style!</p>`;
 ```
 
