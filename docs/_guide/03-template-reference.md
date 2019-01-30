@@ -273,7 +273,7 @@ lit-html includes a few built-in directives.
 
 Location: text bindings
 
-JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
+JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
 
 lit-html offers two directives to consume asynchronous iterators:
 
@@ -342,7 +342,7 @@ html`${cache(data.showDetails
 
 When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
 
-The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
+The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
 
 ### classMap
 
@@ -350,10 +350,10 @@ The `cache` directive caches the generated DOM for a given binding and input tem
 
 Location: attribute bindings (must be the entire value of the `class` attribute)
 
-Sets a list of classes based on an object. Each key in the object is treated as a class name, if the value associated with the key is truthy, that class is added to the element. 
+Sets a list of classes based on an object. Each key in the object is treated as a class name, and if the value associated with the key is truthy, that class is added to the element.
 
 ```js
-let classes = { highlight: true, enabled: true, hidden: false };`
+let classes = { highlight: true, enabled: true, hidden: false };
 
 html`<div class=${classMap(classes)>Classy text</div>`;
 // renders as <div class="highlight enabled">Classy text</div>
@@ -458,10 +458,10 @@ of when to use `repeat` and when to use standard JavaScript flow control.
 
 Location: attribute bindings (must be the entire value of the `style` attribute)
 
-The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value of for that property. For example:
+The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
 ```js
-let styles = { backgroundColor: 'blue', color: 'white'}'
+let styles = { backgroundColor: 'blue', color: 'white'};
 html`<p style=${styleMap(styles}>Hello style!</p>`;
 ```
 
@@ -469,7 +469,7 @@ For CSS properties that contain dashes, you can either use the camel-case equiva
 
 ```js
 { fontFamily: 'roboto' }
-{ 'font-family': 'roboto }
+{ 'font-family': 'roboto' }
 ```
 
 The `styleMap` directive can only be used as a value for the `style` attribute, and it must be the entire value of the attribute.
@@ -508,9 +508,9 @@ Takes a series of values, including Promises. Values are rendered in priority or
  lowest priority. If a value is a Promise, a lower-priority value will be rendered until it resolves.
 
 The priority of values can be used to create placeholder content for async
-data. For example, a Promise with pending content can be the first,
-highest-priority, argument, and a non-promise loading indicator template can
-be used as the second, lower-priority, argument. The loading indicator 
+data. For example, a Promise with pending content can be the first
+(highest-priority) argument, and a non-promise loading indicator template can
+be used as the second (lower-priority) argument. The loading indicator
 renders immediately, and the primary content will render when the Promise
 resolves.
 
