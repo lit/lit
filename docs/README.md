@@ -22,9 +22,10 @@ Previewing the docs requires the [App Engine Standard Environment for Python 2.7
 
 2. Install npm dependencies for the docs site.
 
-     cd lit-html/docs
-     npm install
-
+    ```
+    cd lit-html/docs
+    npm install
+    ```
 
 ### Building and previewing
 
@@ -49,5 +50,3 @@ API docs unless you're making changes to the doc comments in the lit-html source
 To regenerate the API docs and rebuild the  site, run the following command:
 
 `npm run build-all`
-
-
