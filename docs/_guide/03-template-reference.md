@@ -342,7 +342,7 @@ html`${cache(data.showDetails
 
 When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
 
-The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
+The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
 
 ### classMap
 
@@ -461,7 +461,7 @@ Location: attribute bindings (must be the entire value of the `style` attribute)
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
 ```js
-let styles = { backgroundColor: 'blue', color: 'white'}'
+let styles = { backgroundColor: 'blue', color: 'white'}
 html`<p style=${styleMap(styles}>Hello style!</p>`;
 ```
 
@@ -469,7 +469,7 @@ For CSS properties that contain dashes, you can either use the camel-case equiva
 
 ```js
 { fontFamily: 'roboto' }
-{ 'font-family': 'roboto }
+{ 'font-family': 'roboto' }
 ```
 
 The `styleMap` directive can only be used as a value for the `style` attribute, and it must be the entire value of the attribute.
