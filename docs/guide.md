@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Introduction
-url: /guide/
+permalink: /guide
 ---
 
 {::options toc_levels="1..2" /}
