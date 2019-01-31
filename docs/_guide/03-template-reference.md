@@ -33,7 +33,7 @@ Follow these rules for well-formed templates:
  *  Bindings **_can only occur_** in attribute-value and text-content positions.
 
     ```html
-`   <!-- attribute value --> \
+    <!-- attribute value -->
     <div label="${label}"></div>
 
     <!-- text content -->
