@@ -33,7 +33,7 @@ Follow these rules for well-formed templates:
  *  Bindings **_can only occur_** in attribute-value and text-content positions.
 
     ```html
-`   <!-- attribute value --> \
+    <!-- attribute value -->
     <div label="${label}"></div>
 
     <!-- text content -->
@@ -277,13 +277,9 @@ JavaScript asynchronous iterators provide a generic interface for asynchronous s
 
 lit-html offers two directives to consume asynchronous iterators:
 
- * `asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+ * `asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration), appending each new value after the previous.
 
-appending each new value after the previous.
-
- * `asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
-
-replacing the previous value with the new value.
+ * `asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration), replacing the previous value with the new value.
 
 Example:
 
