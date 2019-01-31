@@ -7,11 +7,11 @@ layout: default
   <nav class="side-nav">
     <button id="toggleNavButton">Menu</button>
     <ul>
-      <li>
+      <li class="{% if page.url == '/guide' %}active{% endif %}">
         <a href="{{site.baseurl}}/guide">Introduction</a>
       </li>
       {% for guide in site.guide %}
-        <li>
+        <li class="{% if page.url == guide.url %}active{% endif %}">
           <a href="{{site.baseurl}}{{guide.url}}">{{guide.title}}</a>
         </li>
       {% endfor %}
@@ -22,13 +22,6 @@ layout: default
     <h1>
       {{ page.title }}
     </h1>
-
-    <div class="alert alert-info">
-      <p>
-        This documentation is a work in progress. It describes prerelease software, and is subject to change.
-      </p>
-    </div>
-
     {{ content }}
   </article>
 </main>
