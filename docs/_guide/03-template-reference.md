@@ -273,17 +273,13 @@ lit-html includes a few built-in directives.
 
 Location: text bindings
 
-JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
+JavaScript asynchronous iterators provide a generic interface for asynchronous sequential access to data. Much like an iterator, a consumer requests the next data item with a call to `next()`, but with asynchronous iterators `next()` returns a `Promise`, allowing the iterator to provide the item when it's ready.
 
 lit-html offers two directives to consume asynchronous iterators:
 
- * `asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
+ * `asyncAppend` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration), appending each new value after the previous.
 
-appending each new value after the previous.
-
- * `asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration),
-
-replacing the previous value with the new value.
+ * `asyncReplace` renders the values of an [async iterable](https://github.com/tc39/proposal-async-iteration), replacing the previous value with the new value.
 
 Example:
 
