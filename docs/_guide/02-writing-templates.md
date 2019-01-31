@@ -101,9 +101,9 @@ You can use property bindings to pass complex data down the tree to subcomponent
 
 Note that the property name in this example—`listItems`—is mixed case. Although HTML attributes are case-insensitive, lit-html preserves the case when it processes the template.
 
-## Add event handlers
+## Add event listeners
 
-Templates can also include declarative event handlers. An event handler looks like an attribute binding, but with the prefix `@` followed by an event name:
+Templates can also include declarative event listeners. An event listener looks like an attribute binding, but with the prefix `@` followed by an event name:
 
 ```js
 const myTemplate = () => html`<button @click=${clickHandler}>Click Me!</button>`
@@ -111,7 +111,7 @@ const myTemplate = () => html`<button @click=${clickHandler}>Click Me!</button>`
 
 This is equivalent to calling `addEventListener('click', clickHandler)` on the button element.
 
-The event handler can be either a plain function, or an object with a `handleEvent` method:
+The event listener can be either a plain function, or an object with a `handleEvent` method:
 
 ```js
 const clickHandler = {
@@ -125,7 +125,11 @@ const clickHandler = {
 }
 ```
 
-### Nest and compose templates
+**Event listener objects.** When you specify a listener using an event listener object,
+the listener object itself is set as the event context (`this` value).
+{.alert .alert-info}
+
+## Nest and compose templates
 
 You can also compose templates to create more complex templates. When a binding in the text content of a template returns a `TemplateResult`, the `TemplateResult` is interpolated in place.
 
@@ -187,13 +191,13 @@ html`
 `
 ```
 
-## Repeating templates
+### Repeating templates
 
 You can use standard JavaScript constructs to create repeating templates. 
 
 lit-html also provides some special functions, called _directives_, for use in templates. You can use the  `repeat` directive to build certain kinds of dynamic lists more efficiently.
 
-###  Repeating templates with Array.map
+####  Repeating templates with Array.map
 
 To render lists, you can use `Array.map` to transform a list of data into a list of templates:
 
@@ -207,7 +211,7 @@ html`
 
 Note that this expression returns an array of `TemplateResult` objects. lit-html will render an array or iterable of subtemplates and other values.
 
-### Repeating templates with looping statements
+#### Repeating templates with looping statements
 
 You can also build an array of templates and pass it in to a template binding.
 
@@ -224,7 +228,7 @@ html`
 `;
 ```
 
-### Repeating templates with the repeat directive
+#### Repeating templates with the repeat directive
 
 In most cases, using loops or `Array.map` is an efficient way to build repeating templates. However, if you want to reorder a large list, or mutate it by adding and removing individual entries, this approach can involve recreating a large number of DOM nodes. 
 

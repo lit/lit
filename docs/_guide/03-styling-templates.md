@@ -4,22 +4,25 @@ title: Styling templates
 slug: styling-templates
 ---
 
+{::options toc_levels="1..3" /}
+* ToC
+{:toc}
+
 lit-html focuses on one thing: rendering HTML. How you apply styles to the HTML lit-html creates depends on how you're using it—for example, if you're using lit-html inside a component system like LitElement, you can follow the patterns used by that component system.
 
-In most cases you should **not** use lit-html bindings inside a style sheet. It's more efficient to use lit-html bindings to manipulate the `class` and `style` attributes.  
+In general, how you style HTML will depend on whether you're using shadow DOM:
 
-lit-html provides two directives for manipulating an element's `class` and `style` attributes:
+*   If you aren't using shadow DOM, you can style HTML using global style sheets.
+*   If you're using shadow DOM (for example, in LitElement), then you can add style sheets inside the shadow root.
+
+To help with dynamic styling, lit-html provides two directives for manipulating an element's `class` and `style` attributes:
 
 *   [`classMap`](template-reference#classmap) sets classes on an element based on the properties of an object.
 *   [`styleMap`](template-reference#stylemap) sets the styles on an element based on a map of style properties and values.
 
-See [classMap](template-reference#classmap) and [styleMap](template-reference#stylemap) in the Template syntax reference.
-
-There are also some special considerations when using lit-html to render into a shadow root.
-
 ## Rendering in shadow DOM
 
-When rendering into a shadow root, you usually want to add a stylesheet inside the shadow root to the template, to you can style the contents of the shadow root. 
+When rendering into a shadow root, you usually want to add a style sheet inside the shadow root to the template, to you can style the contents of the shadow root. 
 
 ```js
 html`
@@ -31,17 +34,20 @@ html`
 `;
 ```
 
+This pattern may seem inefficient, since the same style sheet is reproduced in a each instance of an element. However, the browser can deduplicate multiple instances of the same style sheet, so the cost of parsing the style sheet is only paid once. 
 
-### Don't use bindings in stylesheets 
+A new feature available in some browsers is [Constructable Stylesheets Objects](https://wicg.github.io/construct-stylesheets/). This proposed standard allows multiple shadow roots to explicitly share style sheets. LitElement uses this feature in its [static `styles` property](https://lit-element.polymer-project.org/guide/styles#define-styles-in-a-static-styles-property). 
 
-As long as the contents of the stylesheet stay identical, the browser should be able to deduplicate multiple instances of the same stylesheet. Binding to values in the stylesheet is an antipattern, because it defeats the browser's stylesheet optimizations.
+### Bindings in style sheets 
+
+Binding to values in the style sheet is an antipattern, because it defeats the browser's style sheet optimizations. It's also not supported by the ShadyCSS polyfill.
 
 ```js
 // DON'T DO THIS
 html`
   <style>
     :host {
-      background-color: ${themeColor};  \
+      background-color: ${themeColor};
     }
   </style>
   ... 
@@ -52,7 +58,7 @@ Alternatives to using bindings in a style sheet:
 *   Use [CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) to pass values down the tree.
 *   Use bindings in the `class` and `style` attributes to control the styling of child elements.
 
-	
+See [Inline styles with styleMap](#stylemap) and [Setting classes with classMap](#classmap) for examples of binding to the `style` and `class` attributes.
 
 
 ### Polyfilled shadow DOM: ShadyDOM and ShadyCSS
@@ -67,9 +73,16 @@ The [ShadyCSS README](https://github.com/webcomponents/shadycss#usage) provides 
 *   You **don't** need to call `ShadyCSS.prepareTemplate`.  Instead pass the scope name as a render option. For custom elements, use the element name as a scope name. For example:
 
     ```js
-    import { render, TemplateResult } from 'lit-html/lib/shady-render';
+    import {render, TemplateResult} from 'lit-html/lib/shady-render';
 
-    render(this.myTemplate(), this.shadowRoot, { scopeName: this.tagName.toLowerCase() });
+    class MyShadyBaseClass extends HTMLElement {
+
+      // ...
+
+      _update() {
+        render(this.myTemplate(), this.shadowRoot, { scopeName: this.tagName.toLowerCase() });
+      } 
+    }
     ```
 
     Where `this.myTemplate` is a method that returns a `TemplateResult`.
@@ -92,3 +105,43 @@ The [ShadyCSS README](https://github.com/webcomponents/shadycss#usage) provides 
       }
     }
     ```
+
+## Inline styles with styleMap {#stylemap}
+
+You can use the `styleMap` directive to set inline styles on an element in the template.
+
+```js
+const normalStyles = {};
+const highlightStyles = { color: 'white', backgroundColor: 'red'};
+let highlight = true;
+
+const myTemplate = () => {
+  html`
+    <div style=${styleMap(highlight ? highlightStyles : normalStyles)}>
+      Hi there!
+    </div>
+  `;
+};
+```
+
+More information: see See [styleMap](template-reference#stylemap) in the Template syntax reference.
+
+## Setting classes with classMap {#classmap}
+
+Like `styleMap`, the `classMap` directive lets you set a group of classes based on an object:
+
+```js
+// Define a base set of classes for all menu items
+const baseClasses = { 
+  'menu-item': true,
+  // ...
+};
+
+const itemTemplate = (item) => {
+  // Merge in dynamically-generated classes
+  const mergedClasses = Object.assign({active: item.active}, baseClasses);
+  return html`<div class=${classMap(mergedClasses)}>Classy text</div>`
+}
+```
+
+More information: see [classMap](template-reference#classmap) in the Template syntax reference.
