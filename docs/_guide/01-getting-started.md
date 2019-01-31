@@ -30,9 +30,9 @@ import {html, render} from 'https://unpkg.com/lit-html?module';
 
 You can try out lit-html without installing anything using an online editor. Below are links to a simple lit-html starter project in some popular online editors:
 
-*   [CodeSandbox](https://codesandbox.io/s/wq2wm73o28)
-*   [JSBin](https://jsbin.com/nahocaq/1/edit?html,output)
-*   [StackBlitz](https://stackblitz.com/edit/js-pku9ae?file=index.js)
+*   [CodeSandbox](https://codesandbox.io/s/wq2wm73o28){:target="_blank"}
+*   [JSBin](https://jsbin.com/nahocaq/1/edit?html,output){:target="_blank"}
+*   [StackBlitz](https://stackblitz.com/edit/js-pku9ae?file=index.js){:target="_blank"}
 
 ## Importing
 
