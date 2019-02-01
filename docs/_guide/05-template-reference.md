@@ -284,6 +284,8 @@ lit-html offers two directives to consume asynchronous iterators:
 Example:
 
 ```javascript
+import {asyncReplace} from 'lit-html/directives/async-replace.js';
+
 const wait = (t) => new Promise((resolve) => setTimeout(resolve, t));
 /**
  * Returns an async iterable that yields increasing integers.
@@ -304,6 +306,8 @@ render(html`
 In the near future, `ReadableStream`s will be async iterables, enabling streaming `fetch()` directly into a template:
 
 ```javascript
+import {asyncAppend} from 'lit-html/directives/async-append.js';
+
 // Endpoint that returns a billion digits of PI, streamed.
 const url =
     'https://cors-anywhere.herokuapp.com/http://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt';
@@ -327,6 +331,8 @@ value of `conditionalTemplate`. When the template changes, the directive caches 
 Example:
 
 ```js
+import {cache} from 'lit-html/directives/cache.js';
+
 const detailView = (data) => html`<div>...</div>`; 
 const summaryView = (data) => html`<div>...</div>`;
 
@@ -349,6 +355,8 @@ Location: attribute bindings (must be the entire value of the `class` attribute)
 Sets a list of classes based on an object. Each key in the object is treated as a class name, and if the value associated with the key is truthy, that class is added to the element.
 
 ```js
+import {classMap} from 'lit-html/directives/class-map.js';
+
 let classes = { highlight: true, enabled: true, hidden: false };
 
 html`<div class=${classMap(classes)>Classy text</div>`;
@@ -377,7 +385,7 @@ For other part types, this directive is a no-op.
 Example:
 
 ```javascript
-import { ifDefined } from 'lit-html/directives/if-defined';
+import {ifDefined} from 'lit-html/directives/if-defined';
 
 const myTemplate = () => html`
   <img src="/images/${ifDefined(image.filename)}">
@@ -405,7 +413,7 @@ until data updates.
 Example:
 
 ```js
-import { guard } from 'lit-html/directives/guard';
+import {guard} from 'lit-html/directives/guard';
 
 const template = html`
   <div>
@@ -432,7 +440,7 @@ moving DOM when required, and is generally the most efficient way to use
 Example:
 
 ```js
-import { repeat } from 'lit-html/directives/repeat';
+import {repeat} from 'lit-html/directives/repeat';
 
 const myTemplate = () => html`
   <ul>
@@ -457,6 +465,8 @@ Location: attribute bindings (must be the entire value of the `style` attribute)
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
 ```js
+import {styleMap} from 'lit-html/directives/stype-map.js';
+
 let styles = { backgroundColor: 'blue', color: 'white'};
 html`<p style=${styleMap(styles}>Hello style!</p>`;
 ```
@@ -484,6 +494,8 @@ sanitized or escaped, as it may lead to cross-site-scripting vulnerabilities.
 Example:
 
 ```js
+import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
+
 const markup = '<div>Some HTML to render.</div>';
 const template = html`
   Look out, potentially unsafe HTML ahead:
@@ -513,7 +525,7 @@ resolves.
 Example:
 
 ```javascript
-import { until } from 'lit-html/directives/until.js';
+import {until} from 'lit-html/directives/until.js';
 
 const content = fetch('./content.txt').then(r => r.text());
 
