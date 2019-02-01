@@ -72,6 +72,10 @@ code {
   padding: 2px 4px;
 }
 
+a code {
+  color: inherit;
+}
+
 pre code {
   padding: 0;
 }
