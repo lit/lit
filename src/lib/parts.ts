@@ -71,8 +71,8 @@ export class AttributeCommitter {
       if (part !== undefined) {
         const v = part.value;
         if (v != null &&
-            // tslint:disable-next-line:no-any
             (Array.isArray(v) ||
+             // tslint:disable-next-line:no-any
              typeof v !== 'string' && (v as any)[Symbol.iterator])) {
           for (const t of v as Iterable<unknown>) {
             text += typeof t === 'string' ? t : String(t);
