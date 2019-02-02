@@ -247,6 +247,14 @@ suite('render()', () => {
 
     test('renders comments with bindings', () => {
       const t = html`
+        <!-- ${'foo'} -->
+        <p>${'bar'}</p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.textContent, 'bar');
+    });
+
+    test('renders comments with attribute-like bindings', () => {
+      const t = html`
         <!-- <div class="${'foo'}"></div> -->
         <p>${'bar'}</p>`;
       render(t, container);
