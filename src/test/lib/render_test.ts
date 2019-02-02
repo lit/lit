@@ -261,6 +261,20 @@ suite('render()', () => {
       assert.equal(container.querySelector('p')!.textContent, 'baz');
     });
 
+    test('does not break with an attempted dynamic start tag', () => {
+      // this won't work, but we'd like it to not throw an exception or break
+      // other bindings
+      render(html`<${'div'}></div><p>${'foo'}</p>`, container);
+      assert.equal(container.querySelector('p')!.textContent, 'foo');
+    });
+
+    test('does not break with an attempted dynamic end tag', () => {
+      // this won't work, but we'd like it to not throw an exception or break
+      // other bindings
+      render(html`<div></${'div'}><p>${'foo'}</p>`, container);
+      assert.equal(container.querySelector('p')!.textContent, 'foo');
+    });
+
     test('renders legacy marker sequences in text nodes', () => {
       // {{}} used to be the marker text and it was important to test that
       // markers in user-templates weren't interpreted as expressions
