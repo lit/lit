@@ -47,6 +47,15 @@ export {TemplateProcessor} from './lib/template-processor.js';
 export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
 
+declare global {
+  interface Window {
+    litHtmlVersions?: string[];
+  }
+}
+
+window.litHtmlVersions = window.litHtmlVersions || [];
+window.litHtmlVersions.push('1.0.0');
+
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
