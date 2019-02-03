@@ -550,6 +550,9 @@ This is fine, but in lit-html there is a slightly more descriptive way
 of doing this: There is the sentinel value of `nothing`. So instead of `
 `'' you can do this: 
 ```js
+import {nothing} from 'lit-html';
+
+
 html`
   ${user.isAdmin
       ? html`<button>DELETE</button>`
