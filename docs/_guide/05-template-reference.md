@@ -582,4 +582,4 @@ html`<shadow-element>
 `;
 ``` 
 If the user is logged in, the DELETE-button will be rendered. If the user is not logged in the part will clear,
-therefore the slot is empty and renders its fallback content: "Sorry, no content available. I am just fallback content" 
+therefore the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" will be rendered.
