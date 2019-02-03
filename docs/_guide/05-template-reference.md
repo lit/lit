@@ -546,6 +546,7 @@ html`
 `;
 ``` 
 
+
 This is fine, but in lit-html there is a slightly more descriptive way 
 of doing this: There is the sentinel value of `nothing`. So instead of `
 `'' you can do this: 
@@ -560,3 +561,25 @@ html`
   }
 `;
 ``` 
+`nothing` clears the Part, so it really renders nothing, not even an empty string.
+Why is this important? Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. 
+The template looks like this:
+```js
+html`<slot>Sorry, no content available. I am just fallback content</slot>`;
+``` 
+The slot defines fallback content for when there is no content defined to be put in the slot. 
+So, extending on our first example:
+```js
+import {nothing} from 'lit-html';
+
+
+html`<shadow-element>
+  ${user.isAdmin
+      ? html`<button>DELETE</button>`
+      : nothing
+  }
+  </shadow-element>
+`;
+``` 
+If the user is logged in, the DELETE-button will be rendered. If the user is not logged in the part will clear,
+therefore the slot is empty and renders its fallback content: "Sorry, no content available. I am just fallback content" 
