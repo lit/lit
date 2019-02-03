@@ -532,4 +532,28 @@ const content = fetch('./content.txt').then(r => r.text());
 html`${until(content, html`<span>Loading...</span>`)}`
 ```
 
+## Rendering nothing
+Very often you may conditionally render something, but in the other case
+you do not want to render anything at all. So, if you are using ternary 
+operators in one case you might return your template and in the other you
+might just return an empty string like in the following example:
+```js
+html`
+  ${user.isAdmin
+      ? html`<button>DELETE</button>`
+      : ''
+  }
+`;
+``` 
 
+This is fine, but in lit-html there is a slightly more descriptive way 
+of doing this: There is the sentinel value of `nothing`. So instead of `
+`'' you can do this: 
+```js
+html`
+  ${user.isAdmin
+      ? html`<button>DELETE</button>`
+      : nothing
+  }
+`;
+``` 
