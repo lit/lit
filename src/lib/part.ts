@@ -30,7 +30,14 @@ export interface Part {
   setValue(value: unknown): void;
 
   /**
-   * Commits the current part value, cause it to actually be written to the DOM.
+   * Commits the current part value, causing it to actually be written to the
+   * DOM.
+   *
+   * Directives are run at the start of `commit`, so that if they call
+   * `part.setValue(...)` synchronously that value will be used in the current
+   * commit, and there's no need to call `part.commit()` within the directive.
+   * If directives set a part value asynchronously, then they must call
+   * `part.commit()` manually.
    */
   commit(): void;
 }

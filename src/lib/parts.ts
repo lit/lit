@@ -33,8 +33,9 @@ export const isPrimitive = (value: unknown): value is Primitive => {
 };
 
 /**
- * Sets attribute values for AttributeParts, so that the value is only set once
- * even if there are multiple parts for an attribute.
+ * Writes attribute values to the DOM for a group of AttributeParts bound to a
+ * single attibute. The value is only set once even if there are multiple parts
+ * for an attribute.
  */
 export class AttributeCommitter {
   element: Element;
@@ -95,6 +96,9 @@ export class AttributeCommitter {
   }
 }
 
+/**
+ * A Part that controls all or part of an attribute value.
+ */
 export class AttributePart implements Part {
   committer: AttributeCommitter;
   value: unknown = undefined;
@@ -128,6 +132,14 @@ export class AttributePart implements Part {
   }
 }
 
+/**
+ * A Part that controls a location within a Node tree. Like a Range, NodePart
+ * has start and end locations and can set and update the Nodes between those
+ * locations.
+ *
+ * NodeParts support several value types: primitives, Nodes, TemplateResults,
+ * as well as arrays and iterables of those types.
+ */
 export class NodePart implements Part {
   options: RenderOptions;
   startNode!: Node;
@@ -140,7 +152,7 @@ export class NodePart implements Part {
   }
 
   /**
-   * Inserts this part into a container.
+   * Appends this part into a container.
    *
    * This part must be empty, as its contents are not automatically moved.
    */
@@ -150,9 +162,9 @@ export class NodePart implements Part {
   }
 
   /**
-   * Inserts this part between `ref` and `ref`'s next sibling. Both `ref` and
-   * its next sibling must be static, unchanging nodes such as those that appear
-   * in a literal section of a template.
+   * Inserts this part after the `ref` node (between `ref` and `ref`'s next
+   * sibling). Both `ref` and its next sibling must be static, unchanging nodes
+   * such as those that appear in a literal section of a template.
    *
    * This part must be empty, as its contents are not automatically moved.
    */
@@ -172,7 +184,7 @@ export class NodePart implements Part {
   }
 
   /**
-   * Appends this part after `ref`
+   * Inserts this part after the `ref` part.
    *
    * This part must be empty, as its contents are not automatically moved.
    */
