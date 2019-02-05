@@ -138,7 +138,7 @@ export class AttributePart implements Part {
  * locations.
  *
  * NodeParts support several value types: primitives, Nodes, TemplateResults,
- * and arrays and iterables of those.
+ * as well as arrays and iterables of those types.
  */
 export class NodePart implements Part {
   options: RenderOptions;
