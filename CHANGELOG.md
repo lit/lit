@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [1.0.0] - 2019-02-05
+### Changed
+* Tons of docs updates ([#746](https://github.com/Polymer/lit-html/pull/746)), ([#675](https://github.com/Polymer/lit-html/pull/675)), ([#724](https://github.com/Polymer/lit-html/pull/724)), ([#753](https://github.com/Polymer/lit-html/pull/753)), ([#764](https://github.com/Polymer/lit-html/pull/764)), ([#763](https://github.com/Polymer/lit-html/pull/763)), ([#765](https://github.com/Polymer/lit-html/pull/765)), ([#767](https://github.com/Polymer/lit-html/pull/767)), ([#768](https://github.com/Polymer/lit-html/pull/768)), ([#734](https://github.com/Polymer/lit-html/pull/734)), ([#771](https://github.com/Polymer/lit-html/pull/771)), ([#766](https://github.com/Polymer/lit-html/pull/766)), ([#773](https://github.com/Polymer/lit-html/pull/773)), ([#770](https://github.com/Polymer/lit-html/pull/770)), ([#769](https://github.com/Polymer/lit-html/pull/769)), ([#777](https://github.com/Polymer/lit-html/pull/777)), ([#776](https://github.com/Polymer/lit-html/pull/776)), ([#754](https://github.com/Polymer/lit-html/pull/754)), ([#779](https://github.com/Polymer/lit-html/pull/779))
+### Added
+* Global version of `lit-html` on window ([#790](https://github.com/Polymer/lit-html/pull/790)).
+### Fixed
+* Removed use of `any` outside of test code ([#741](https://github.com/Polymer/lit-html/pull/741)).
+
 ## [1.0.0-rc.2] - 2019-01-09
 ### Changed
 * Performance improvements to template processing. ([#690](https://github.com/Polymer/lit-html/pull/690))
@@ -39,7 +47,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Added `cache()` directive. ([#646](https://github.com/Polymer/lit-html/pull/646))
 * Removed Promise as a supposed node-position value type. ([#555](https://github.com/Polymer/lit-html/pull/555))
-* Added a minimal `<template>` polyfill. 
+* Added a minimal `<template>` polyfill.
 ### Removed
 * [Breaking] Removed the `when()` directive.  Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
 ### Fixed
