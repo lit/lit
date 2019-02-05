@@ -55,7 +55,7 @@ declare global {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-// TODO: inject version number
+// TODO(justinfagnani): inject version number at build time
 (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.0.0');
 
 /**
