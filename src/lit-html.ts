@@ -47,6 +47,17 @@ export {TemplateProcessor} from './lib/template-processor.js';
 export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
 
+declare global {
+  interface Window {
+    litHtmlVersions: string[];
+  }
+}
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for lit-html usage.
+// TODO(justinfagnani): inject version number at build time
+(window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.0.0');
+
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
