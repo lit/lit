@@ -49,12 +49,14 @@ export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
 
 declare global {
   interface Window {
-    litHtmlVersions?: string[];
+    litHtmlVersions: string[];
   }
 }
 
-window.litHtmlVersions = window.litHtmlVersions || [];
-window.litHtmlVersions.push('1.0.0');
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for lit-html usage.
+// TODO: inject version number
+(window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.0.0');
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
