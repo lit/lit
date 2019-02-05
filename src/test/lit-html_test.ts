@@ -84,5 +84,4 @@ suite('index.js', () => {
   test('adds a version number', () => {
     assert.equal(window['litHtmlVersions'].length, 1);
   });
-
 });
