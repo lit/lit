@@ -536,32 +536,45 @@ html`${until(content, html`<span>Loading...</span>`)}`
 Very often you may conditionally render something, but in the other case
 you do not want to render anything at all. So, if you are using ternary 
 operators in one case you might return your template and in the other you
-might just return an empty string like in the following example:
-```js
-html`
-  ${user.isAdmin
+want to return no content lit-html leaves you with a couple options:
+* an empty string (`''`)
+* null
+* undefined
+* nothing sentinel
+### An empty string
+If you return an empty string somewhere in your template, an empty text node 
+will be rendered, but to the user it will seem like nothing was rendered. 
+
+````js
+${user.isAdmin
       ? html`<button>DELETE</button>`
       : ''
   }
-`;
-``` 
+````
+This does the trick and works great and efficiently in most cases. It does
+not work with slot fallback content.
+### null or undefined
+If you return `null` or `undefined` in your template, lit-html will use these as values. 
+This works most of the time, but may lead to unexpected behavior as the DOM itself does not
+handle the two equally:
 
+````js
+document.getElementById('container').innerHTML = null;`
+````
+will produce an empty div while
+````js
+document.getElementById('container').innerHTML = undefined;
+````
+produces a div with the text undefined in it. Also an attribute binding
+with `null` like this
+````js
+html`<input type="text" placeholder=${null}>`
+````
+will set the placeholder attribute to the string null and not an empty value.
+### nothing and the slot fallback content
+`nothing` is a sentinel value provided by lit-html. It really does render nothing, because
+it clears the Part.
 
-This is fine, but in lit-html there is a slightly more descriptive way 
-of doing this: There is the sentinel value of `nothing`. So instead of `
-`'' you can do this: 
-```js
-import {nothing} from 'lit-html';
-
-
-html`
-  ${user.isAdmin
-      ? html`<button>DELETE</button>`
-      : nothing
-  }
-`;
-``` 
-`nothing` clears the Part, so it really renders nothing, not even an empty string.
 Why is this important? Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. 
 The template looks like this:
 ```js
@@ -583,3 +596,11 @@ html`<shadow-element>
 ``` 
 If the user is logged in, the DELETE-button will be rendered. If the user is not logged in the part will clear,
 therefore the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" will be rendered.
+### Performance
+All the options for rendering no content have small differences in performance depending on when and where you use them. 
+However, these should be not noticeable to the user/developer. 
+
+If you still want to know more, it basically depends on the DOM manipulations needed to get the desired result. 
+For example if you have a text node and you want it to be empty, then setting its text content to an empty string is less DOM manipulation than having to
+remove the text node and add a new node containing nothing. However, if you used to have complex content like a `TemplateResult`
+where you now want no content, `nothing` can just remove all the nodes.    
