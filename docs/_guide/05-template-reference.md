@@ -571,6 +571,13 @@ with `null` like this
 html`<input type="text" placeholder=${null}>`
 ````
 will set the placeholder attribute to the string null and not an empty value.
+
+The same applies for 
+````js
+html`<input type="text" placeholder=${undefined}>`
+````
+which will set the placeholder attribute to "undefined". If you want to remove the attribute if its value
+is undefined take a look at the [`ifDefined`](#ifdefined) directive.
 ### nothing and the slot fallback content
 `nothing` is a sentinel value provided by lit-html. It really does render nothing, because
 it clears the Part.
