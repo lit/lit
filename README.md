@@ -41,10 +41,9 @@ render(helloTemplate('Kevin'), document.body);
 $ npm install lit-html
 ```
 
-## Status
+## Status: stable
 
-`lit-html` is under active development and has not yet had a 1.0 release. The
-internal API may still change somewhat. The `html` and `render` API is stable.
+The first stable release of `lit-html`, 1.0.0 was released Feb 5, 2019. See the [announcement blog post](https://www.polymer-project.org/blog/2019-02-05-lit-element-and-lit-html-release).
 
 ## Contributing
 
