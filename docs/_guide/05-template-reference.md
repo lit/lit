@@ -468,7 +468,7 @@ The `styleMap` directive sets styles on an element based on an object, where eac
 import {styleMap} from 'lit-html/directives/stype-map.js';
 
 let styles = { backgroundColor: 'blue', color: 'white'};
-html`<p style=${styleMap(styles}>Hello style!</p>`;
+html`<p style=${styleMap(styles)}>Hello style!</p>`;
 ```
 
 For CSS properties that contain dashes, you can either use the camel-case equivalent, or put the property name in quotes. For example, you can write the the CSS property `font-family` as either `fontFamily` or `'font-family'`:
