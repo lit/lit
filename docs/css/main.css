@@ -13,6 +13,13 @@ a {
   text-decoration: none;
 }
 
+:target::before {
+  content: "";
+  display: block;
+  height: 60px;
+  margin-top: -60px;
+}
+
 h1 {
   font-size: 40px;
   line-height: 48px;
@@ -87,26 +94,6 @@ pre {
   overflow-x: auto;
   max-width: 720px;
   box-sizing: border-box;
-}
-
-/* Logo lockup */
-#logo-lockup {
-  white-space: nowrap;
-  margin-bottom: -30px;
-}
-#logo-lockup::before {
-  width: 64px;
-  height: 44px;
-  background-image: url(../images/logos/p-logo.svg);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  display: inline-block;
-  margin-right: 20px;
-  content: '';
-}
-#logo-lockup::after {
-  display: none;
 }
 
 
@@ -201,6 +188,7 @@ main {
   margin-top: 60px;
   display: flex;
   align-items: flex-start;
+  justify-content: center;
 }
 
 .wrapper {
@@ -371,7 +359,7 @@ section p {
   line-height: 22px;
 }
 
-.side-nav li:not(.active) a {
+.side-nav li:not(.active) > a {
   color: #222;
 }
 
@@ -581,6 +569,10 @@ th, td {
   }
 }
 @media screen and (max-width: 640px) {
+  :target::before {
+    height: 112px;
+    margin-top: -112px;
+  }
 
   h1 {
     font-size: 32px;
@@ -627,14 +619,6 @@ th, td {
 
   .responsive-row {
     flex-direction: column;
-  }
-  #logo-lockup {
-    margin-bottom: -20px;
-  }
-  #logo-lockup::before {
-    margin-right: 12px;
-    width: 38px;
-    height: 26px;
   }
 
   #section-features h2 {
