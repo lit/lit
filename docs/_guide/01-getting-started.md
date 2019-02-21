@@ -41,7 +41,7 @@ Modules are increasingly supported in JavaScript environments and have shipped i
 
 To use lit-html, import it via a path:
 
-```js
+```html
 <script type="module">
   import {html, render} from './node_modules/lit-html/lit-html.js';
   ...
