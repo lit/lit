@@ -465,7 +465,7 @@ Location: attribute bindings (must be the entire value of the `style` attribute)
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
 ```js
-import {styleMap} from 'lit-html/directives/stype-map.js';
+import {styleMap} from 'lit-html/directives/style-map.js';
 
 let styles = { backgroundColor: 'blue', color: 'white'};
 html`<p style=${styleMap(styles)}>Hello style!</p>`;
