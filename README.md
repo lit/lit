@@ -41,11 +41,6 @@ render(helloTemplate('Kevin'), document.body);
 $ npm install lit-html
 ```
 
-## Status
-
-`lit-html` is under active development and has not yet had a 1.0 release. The
-internal API may still change somewhat. The `html` and `render` API is stable.
-
 ## Contributing
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
