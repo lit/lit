@@ -80,7 +80,7 @@ By default, an expression in the value of an attribute creates an attribute bind
 
 ```js
 // set the class attribute
-const myTemplate(data) = html`<div class=${data.cssClass}>Stylish text.</div>`;
+const myTemplate = (data) => html`<div class=${data.cssClass}>Stylish text.</div>`;
 ```
 
 Since attribute values are always strings, the expression should return a value that can be converted into a string.
@@ -88,7 +88,7 @@ Since attribute values are always strings, the expression should return a value 
 Use the `?` prefix for a boolean attribute binding. The attribute is added if the expression evaluates to a truthy value, removed if it evaluates to a falsy value:
 
 ```js
-const myTemplate2(data) = html`<div ?disabled=${!data.active}>Stylish text.</div>`;
+const myTemplate2 = (data) => html`<div ?disabled=${!data.active}>Stylish text.</div>`;
 ```
 
 ## Bind to properties
@@ -96,7 +96,7 @@ const myTemplate2(data) = html`<div ?disabled=${!data.active}>Stylish text.</div
 You can also bind to a node's JavaScript properties using the `.` prefix and the property name:
 
 ```js
-const myTemplate3(data) = html`<my-list .listItems=${data.items}></my-list>`;
+const myTemplate3 = (data) => html`<my-list .listItems=${data.items}></my-list>`;
 ```
 
 You can use property bindings to pass complex data down the tree to subcomponents.
@@ -149,7 +149,7 @@ You can use any expression that returns a `TemplateResult`, like another templat
 // some complex view
 const myListView = (items) => html`<ul>...</ul>`;
 
-const myPage(data) = html`
+const myPage = (data) => html`
   ${myHeader}
   ${myListView(data.items)}
 `;
