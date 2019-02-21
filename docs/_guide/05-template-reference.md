@@ -359,7 +359,7 @@ import {classMap} from 'lit-html/directives/class-map.js';
 
 let classes = { highlight: true, enabled: true, hidden: false };
 
-html`<div class=${classMap(classes)>Classy text</div>`;
+html`<div class=${classMap(classes)}>Classy text</div>`;
 // renders as <div class="highlight enabled">Classy text</div>
 ```
 
