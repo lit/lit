@@ -368,7 +368,7 @@ Note that you can only use `classMap` in an attribute binding for the `class` at
 
 ```js
 // DON'T DO THIS
-html`<div class="someClass ${classMap(moreClasses}">Broken div</div>`;
+html`<div class="someClass ${classMap(moreClasses)}">Broken div</div>`;
 ```
 
 
