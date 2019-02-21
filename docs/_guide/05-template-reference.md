@@ -109,8 +109,8 @@ Event listeners can be functions or objects with a `handleEvent` method. Listene
 const listener = {
   handleEvent(e) {
     console.log('clicked');
-  }
-  capture: true;
+  },
+  capture: true,
 };
 
 html`<button @click=${listener}>Click Me</button>`
@@ -467,7 +467,7 @@ The `styleMap` directive sets styles on an element based on an object, where eac
 ```js
 import {styleMap} from 'lit-html/directives/style-map.js';
 
-let styles = { backgroundColor: 'blue', color: 'white'};
+let styles = { backgroundColor: 'blue', color: 'white' };
 html`<p style=${styleMap(styles)}>Hello style!</p>`;
 ```
 
