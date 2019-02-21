@@ -24,6 +24,10 @@ import {removeNodes, reparentNodes} from '../lib/dom.js';
  * polyfill: https://github.com/webcomponents/template
  */
 export const initTemplatePolyfill = (forced = false) => {
+  // Minimal polyfills (like this one) may provide only a subset of Template's
+  // functionality. So, we explicitly check that at least content is present to
+  // prevent installing patching with multiple polyfills, which might happen if
+  // multiple versions of lit-html were included on a page.
   if (!forced && 'content' in document.createElement('template')) {
     return;
   }
@@ -39,9 +43,8 @@ export const initTemplatePolyfill = (forced = false) => {
     Object.defineProperties(template, {
       content: {
         ...descriptor,
-        get() {
-          return content;
-        },
+        writable: false,
+        value: content,
       },
       innerHTML: {
         ...descriptor,
