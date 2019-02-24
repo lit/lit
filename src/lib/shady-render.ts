@@ -240,12 +240,13 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  */
 export const render =
     (result: TemplateResult,
-     container: Element|DocumentFragment,
+     container: Element|DocumentFragment|ShadowRoot,
      options: ShadyRenderOptions) => {
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
-      const needsScoping = container instanceof ShadowRoot &&
-          compatibleShadyCSSVersion && result instanceof TemplateResult;
+      const needsScoping = compatibleShadyCSSVersion &&
+          container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
+          !!(container as ShadowRoot).host && result instanceof TemplateResult;
       // Handle first render to a scope specially...
       const firstScopeRender = needsScoping && !shadyRenderSet.has(scopeName);
       // On first scope render, render into a fragment; this cannot be a single
