@@ -68,14 +68,14 @@ export class TemplateInstance {
     const parts = this.template.parts;
     let partIndex = 0;
     let nodeIndex = 0;
+    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+    const walker = document.createTreeWalker(
+        document,
+        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+        null,
+        false);
     const _prepareInstance = (fragment: DocumentFragment) => {
-      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
-      // null
-      const walker = document.createTreeWalker(
-          fragment,
-          133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-          null,
-          false);
+      walker.currentNode = fragment;
       let node = walker.nextNode();
       // Loop through all the nodes and parts of a template
       while (partIndex < parts.length && node !== null) {
@@ -103,6 +103,7 @@ export class TemplateInstance {
           nodeIndex++;
           if (node.nodeName === 'TEMPLATE') {
             _prepareInstance((node as HTMLTemplateElement).content);
+            walker.currentNode = node;
           }
           node = walker.nextNode();
         }
