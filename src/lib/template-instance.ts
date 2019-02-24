@@ -62,54 +62,57 @@ export class TemplateInstance {
     const fragment =
         this.template.element.content.cloneNode(true) as DocumentFragment;
 
+    const stack: Node[] = [];
     const parts = this.template.parts;
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        document,
+        fragment,
         133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
         null,
         false);
     let partIndex = 0;
     let nodeIndex = 0;
     let part: TemplatePart;
-    const _prepareInstance = (fragment: DocumentFragment) => {
-      walker.currentNode = fragment;
-      let node = walker.nextNode();
-      // Loop through all the nodes and parts of a template
-      while (partIndex < parts.length) {
-        part = parts[partIndex];
-        if (!isTemplatePartActive(part)) {
-          this._parts.push(undefined);
-          partIndex++;
-          continue;
-        }
-        // Progress the tree walker until we find our next part's node.
-        // Note that multiple parts may share the same node (attribute parts
-        // on a single element), so this loop may not run at all.
-        while (nodeIndex < part.index) {
-          nodeIndex++;
-          if (node!.nodeName === 'TEMPLATE') {
-            _prepareInstance((node as HTMLTemplateElement).content);
-            walker.currentNode = node!;
-          }
-          if ((node = walker.nextNode()) === null) {
-            // We've exhausted all the nodes in a nested template.
-            return;
-          }
-        }
-        // We've arrived at our part's node.
-        if (part.type === 'node') {
-          const part = this.processor.handleTextExpression(this.options);
-          part.insertAfterNode(node!.previousSibling!);
-          this._parts.push(part);
-        } else {
-          this._parts.push(...this.processor.handleAttributeExpressions(
-              node as Element, part.name, part.strings, this.options));
-        }
+    let node = walker.nextNode();
+    // Loop through all the nodes and parts of a template
+    while (partIndex < parts.length) {
+      part = parts[partIndex];
+      if (!isTemplatePartActive(part)) {
+        this._parts.push(undefined);
         partIndex++;
+        continue;
       }
-    };
-    _prepareInstance(fragment);
+
+      // Progress the tree walker until we find our next part's node.
+      // Note that multiple parts may share the same node (attribute parts
+      // on a single element), so this loop may not run at all.
+      while (nodeIndex < part.index) {
+        nodeIndex++;
+        if (node!.nodeName === 'TEMPLATE') {
+          stack.push(node!);
+          walker.currentNode = (node as HTMLTemplateElement).content;
+        }
+        if ((node = walker.nextNode()) === null) {
+          // We've exhausted the content inside a nested template element.
+          // Because we still have parts (the outer for-loop), we know:
+          // - There is a template in the stack
+          // - The walker will find a nextNode outside the temlpate
+          walker.currentNode = stack.pop()!;
+          node = walker.nextNode();
+        }
+      }
+
+      // We've arrived at our part's node.
+      if (part.type === 'node') {
+        const part = this.processor.handleTextExpression(this.options);
+        part.insertAfterNode(node!.previousSibling!);
+        this._parts.push(part);
+      } else {
+        this._parts.push(...this.processor.handleAttributeExpressions(
+            node as Element, part.name, part.strings, this.options));
+      }
+      partIndex++;
+    }
 
     // Now that the instance is prepared, upgrade any nested custom elements so
     // that they can do their setup before the template parts are committed.
