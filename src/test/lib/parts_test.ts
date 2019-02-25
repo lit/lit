@@ -184,8 +184,10 @@ suite('Parts', () => {
         assert.equal(
             stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
+        const originalDiv = container.firstElementChild;
         value = html`<span>bar</span>`;
         render(t(), container);
+        assert.equal(container.firstElementChild, originalDiv);
         assert.equal(
             stripExpressionMarkers(container.innerHTML),
             '<div><span>bar</span></div>');
@@ -199,10 +201,41 @@ suite('Parts', () => {
             stripExpressionMarkers(container.innerHTML),
             '<div><span>bar</span></div>');
 
+        const originalDiv = container.firstElementChild;
         value = 'foo';
         render(t(), container);
+        assert.equal(container.firstElementChild, originalDiv);
         assert.equal(
             stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+      });
+
+      test('reuses previous TemplateResult if it matches', () => {
+        let value: string|TemplateResult = 'foo';
+        // These are identical templates, but do not share an identical
+        // TemplateStringsArray. This is to similate Safari's caching bug.
+        // https://bugs.webkit.org/show_bug.cgi?id=190756
+        const t1 = () => html`<div>${value}</div>`;
+        const t2 = () => html`<div>${value}</div>`;
+        const t3 = () => html`<div>${value}</div>`;
+
+        render(t1(), container);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
+        // Attempt now with the second template
+        const originalDiv = container.firstElementChild;
+        render(t2(), container);
+        assert.equal(container.firstElementChild, originalDiv);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+
+        // Attempt now with the third template and a new value
+        value = html`<span>bar</span>`;
+        render(t3(), container);
+        assert.equal(container.firstElementChild, originalDiv);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div><span>bar</span></div>');
       });
 
       test('updates when called multiple times with simple values', () => {

@@ -22,7 +22,7 @@ suite('Template', () => {
     const countNodes =
         (result: TemplateResult,
          getNodes: (f: DocumentFragment) => NodeList) => {
-          const template = new Template(result, result.getTemplateElement());
+          const template = new Template(result);
           return getNodes(template.element.content).length;
         };
 
@@ -46,7 +46,7 @@ suite('Template', () => {
         ${3}
         <span a="${4}">${5}</span>
       </div>`;
-    const parts = new Template(result, result.getTemplateElement()).parts;
+    const parts = new Template(result).parts;
     assert.equal(parts.length, 5);
   });
 
@@ -63,7 +63,7 @@ suite('Template', () => {
         <p>${9}</p>
         <div aThing="${10}"></div>
       </div>`;
-    const template = new Template(result, result.getTemplateElement());
+    const template = new Template(result);
     const parts = template.parts as Array<{name: string}>;
     const names = parts.map((p) => p.name);
     const expectedAttributeNames = [

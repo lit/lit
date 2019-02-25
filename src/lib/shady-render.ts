@@ -28,12 +28,17 @@ import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
-import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {marker, Template} from './template.js';
 
 export {html, svg, TemplateResult} from '../lit-html.js';
+
+export type templateCache = {
+  stringsArray: WeakMap<TemplateStringsArray, Template>;
+  keyString: Map<string, Template>;
+};
+export const templateCaches = new Map<string, templateCache>();
 
 // Get a key to lookup in `templateCaches`.
 const getTemplateCacheKey = (type: string, scopeName: string) =>
@@ -75,11 +80,10 @@ const shadyTemplateFactory = (scopeName: string) =>
       const key = result.strings.join(marker);
       template = templateCache.keyString.get(key);
       if (template === undefined) {
-        const element = result.getTemplateElement();
+        template = new Template(result);
         if (compatibleShadyCSSVersion) {
-          window.ShadyCSS!.prepareTemplateDom(element, scopeName);
+          window.ShadyCSS!.prepareTemplateDom(template.element, scopeName);
         }
-        template = new Template(result, element);
         templateCache.keyString.set(key, template);
       }
       templateCache.stringsArray.set(result.strings, template);

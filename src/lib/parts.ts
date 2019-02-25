@@ -21,7 +21,7 @@ import {removeNodes} from './dom.js';
 import {noChange, nothing, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
-import {TemplateResult} from './template-result.js';
+import {TemplateResult, templateResultsEqual} from './template-result.js';
 import {createMarker} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
@@ -262,7 +262,7 @@ export class NodePart implements Part {
   private _commitTemplateResult(value: TemplateResult): void {
     const template = this.options.templateFactory(value);
     if (this.value instanceof TemplateInstance &&
-        this.value.template === template) {
+        templateResultsEqual(this.value.template.result, value)) {
       this.value.update(value.values);
     } else {
       // Make sure we propagate the template processor from the TemplateResult

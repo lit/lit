@@ -41,11 +41,32 @@ export const boundAttributeSuffix = '$lit$';
  * An updateable Template that tracks the location of dynamic parts.
  */
 export class Template {
-  parts: TemplatePart[] = [];
-  element: HTMLTemplateElement;
+  private _parts: TemplatePart[]|undefined = undefined;
+  private _element: HTMLTemplateElement|undefined = undefined;
+  result: TemplateResult;
 
-  constructor(result: TemplateResult, element: HTMLTemplateElement) {
-    this.element = element;
+  constructor(result: TemplateResult) {
+    this.result = result;
+  }
+
+  get element(): HTMLTemplateElement {
+    if (!this._element) {
+      this._process();
+    }
+    return this._element!;
+  }
+
+  get parts(): TemplatePart[] {
+    if (!this._parts) {
+      this._process();
+    }
+    return this._parts!;
+  }
+
+  private _process(): void {
+    const parts = this._parts = [] as TemplatePart[];
+    this._element = this.result.getTemplateElement();
+
     let index = -1;
     let partIndex = 0;
     const nodesToRemove: Node[] = [];
@@ -82,7 +103,7 @@ export class Template {
             while (count-- > 0) {
               // Get the template literal section leading up to the first
               // expression in this attribute
-              const stringForPart = result.strings[partIndex];
+              const stringForPart = this.result.strings[partIndex];
               // Find the attribute name
               const name = lastAttributeNameRegex.exec(stringForPart)![2];
               // Find the corresponding attribute
@@ -95,7 +116,7 @@ export class Template {
               const attributeValue =
                   (node as Element).getAttribute(attributeLookupName)!;
               const strings = attributeValue.split(markerRegex);
-              this.parts.push({type: 'attribute', index, name, strings});
+              parts.push({type: 'attribute', index, name, strings});
               (node as Element).removeAttribute(attributeLookupName);
               partIndex += strings.length - 1;
             }
@@ -116,7 +137,7 @@ export class Template {
                   (strings[i] === '') ? createMarker() :
                                         document.createTextNode(strings[i]),
                   node);
-              this.parts.push({type: 'node', index: ++index});
+              parts.push({type: 'node', index: ++index});
             }
             // If there's no text, we must insert a comment to mark our place.
             // Else, we can trust it will stick around after cloning.
@@ -141,7 +162,7 @@ export class Template {
               parent.insertBefore(createMarker(), node);
             }
             lastPartIndex = index;
-            this.parts.push({type: 'node', index});
+            parts.push({type: 'node', index});
             // If we don't have a nextSibling, keep this node so we have an end.
             // Else, we can remove it to save future costs.
             if (node.nextSibling === null) {
@@ -159,13 +180,13 @@ export class Template {
               // The binding won't work, but subsequent bindings will
               // TODO (justinfagnani): consider whether it's even worth it to
               // make bindings in comments work
-              this.parts.push({type: 'node', index: -1});
+              parts.push({type: 'node', index: -1});
             }
           }
         }
       }
     };
-    _prepareTemplate(element);
+    _prepareTemplate(this._element);
     // Remove text binding nodes after the walk to not disturb the TreeWalker
     for (const n of nodesToRemove) {
       n.parentNode!.removeChild(n);

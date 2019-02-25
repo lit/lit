@@ -100,3 +100,22 @@ export class SVGTemplateResult extends TemplateResult {
     return template;
   }
 }
+
+export const templateResultsEqual =
+    (a: TemplateResult, b: TemplateResult): boolean => {
+      if (a === b) {
+        return true;
+      }
+      // Some environments (:ahem: Safari) are buggy...
+      const aStrings = a.strings;
+      const bStrings = b.strings;
+      if (aStrings.length !== bStrings.length) {
+        return false;
+      }
+      for (let i = 0; i < aStrings.length; i++) {
+        if (aStrings[i] !== bStrings[i]) {
+          return false;
+        }
+      }
+      return true;
+    };

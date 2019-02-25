@@ -44,7 +44,7 @@ export {parts, render} from './lib/render.js';
 export {templateCaches, templateFactory} from './lib/template-factory.js';
 export {TemplateInstance} from './lib/template-instance.js';
 export {TemplateProcessor} from './lib/template-processor.js';
-export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
+export {SVGTemplateResult, TemplateResult, templateResultsEqual} from './lib/template-result.js';
 export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
 
 declare global {
