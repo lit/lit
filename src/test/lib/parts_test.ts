@@ -41,6 +41,44 @@ suite('Parts', () => {
             part.setValue('bar');
             assert.equal(committer.dirty, false);
           });
+
+      test('does not iterate iterable primitives', () => {
+        (Number.prototype as any)[Symbol.iterator] = function() {
+          let i = -1;
+          const limit = this.valueOf();
+          return {
+            next() {
+              if (++i < limit) {
+                return {value: i, done: false};
+              }
+              return {done: true};
+            },
+          };
+        };
+
+        try {
+          part.setValue(3);
+          part.commit();
+          assert.equal(element.getAttribute('foo'), '3');
+        } finally {
+          delete (Number.prototype as any)[Symbol.iterator];
+        }
+      });
+
+      test('does not iterate string primitives', () => {
+        const iterator = String.prototype[Symbol.iterator];
+        String.prototype[Symbol.iterator] = function() {
+          throw new Error('FAIL');
+        };
+
+        try {
+          part.setValue('bar');
+          part.commit();
+          assert.equal(element.getAttribute('foo'), 'bar');
+        } finally {
+          String.prototype[Symbol.iterator] = iterator;
+        }
+      });
     });
   });
 

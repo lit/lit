@@ -10,11 +10,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
 <!-- ### Changed -->
 <!-- ### Added -->
 <!-- ### Removed -->
-<!-- ### Fixed -->
+### Fixed
+
+* Primitive values in attributes are now always simply stringified, regardless of whether they are iterable. ([#830](https://github.com/Polymer/lit-html/pull/830))
 
 ## [1.0.0] - 2019-02-05
 ### Changed

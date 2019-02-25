@@ -31,6 +31,11 @@ export const isPrimitive = (value: unknown): value is Primitive => {
       value === null ||
       !(typeof value === 'object' || typeof value === 'function'));
 };
+export const isIterable = (value: unknown): value is Iterable<unknown> => {
+  return Array.isArray(value) ||
+      // tslint:disable-next-line:no-any
+      !!(value && (value as any)[Symbol.iterator]);
+};
 
 /**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
@@ -71,15 +76,12 @@ export class AttributeCommitter {
       const part = this.parts[i];
       if (part !== undefined) {
         const v = part.value;
-        if (v != null &&
-            (Array.isArray(v) ||
-             // tslint:disable-next-line:no-any
-             typeof v !== 'string' && (v as any)[Symbol.iterator])) {
-          for (const t of v as Iterable<unknown>) {
+        if (isPrimitive(v) || !isIterable(v)) {
+          text += typeof v === 'string' ? v : String(v);
+        } else {
+          for (const t of v) {
             text += typeof t === 'string' ? t : String(t);
           }
-        } else {
-          text += typeof v === 'string' ? v : String(v);
         }
       }
     }
@@ -216,11 +218,8 @@ export class NodePart implements Part {
       this._commitTemplateResult(value);
     } else if (value instanceof Node) {
       this._commitNode(value);
-    } else if (
-        Array.isArray(value) ||
-        // tslint:disable-next-line:no-any
-        (value as any)[Symbol.iterator]) {
-      this._commitIterable(value as Iterable<unknown>);
+    } else if (isIterable(value)) {
+      this._commitIterable(value);
     } else if (value === nothing) {
       this.value = nothing;
       this.clear();
