@@ -15,9 +15,3 @@ interface Window {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
 }
-
-/** Allows code to check `instanceof ShadowRoot`. */
-declare interface ShadowRootConstructor {
-  new(): ShadowRoot;
-}
-declare const ShadowRoot: ShadowRootConstructor;
