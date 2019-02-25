@@ -16,7 +16,6 @@
  * @module lit-html
  */
 
-import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
@@ -56,14 +55,12 @@ export class TemplateInstance {
   }
 
   _clone(): DocumentFragment {
-    // When using the Custom Elements polyfill, clone the node, rather than
-    // importing it, to keep the fragment in the template's document. This
-    // leaves the fragment inert so custom elements won't upgrade and
-    // potentially modify their contents by creating a polyfilled ShadowRoot
-    // while we traverse the tree.
-    const fragment = isCEPolyfill ?
-        this.template.element.content.cloneNode(true) as DocumentFragment :
-        document.importNode(this.template.element.content, true);
+    // Clone the node, rather than importing it, to keep the fragment in the
+    // template's document. This leaves the fragment inert so custom elements
+    // won't upgrade and potentially modify their contents before we traverse
+    // the tree.
+    const fragment =
+        this.template.element.content.cloneNode(true) as DocumentFragment;
 
     const parts = this.template.parts;
     let partIndex = 0;
@@ -109,10 +106,11 @@ export class TemplateInstance {
       }
     };
     _prepareInstance(fragment);
-    if (isCEPolyfill) {
-      document.adoptNode(fragment);
-      customElements.upgrade(fragment);
-    }
+
+    // Now that the instance is prepared, upgrade any nested custom elements so
+    // that they can do their setup before the template parts are committed.
+    document.adoptNode(fragment);
+    customElements.upgrade(fragment);
     return fragment;
   }
 }
