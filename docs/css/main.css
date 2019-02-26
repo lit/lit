@@ -139,6 +139,11 @@ time {
   color: inherit;
 }
 
+/* Override TypeDoc theme underline on hover. */
+.main-nav a:hover {
+  text-decoration: none;
+}
+
 .main-nav .nav-title {
   font-size: 18px;
 }
