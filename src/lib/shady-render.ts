@@ -129,8 +129,9 @@ const prepareTemplateStyles =
       shadyRenderSet.add(scopeName);
       // Move styles out of rendered DOM and store.
       const styles = renderedDOM.querySelectorAll('style');
+      const {length} = styles;
       // If there are no styles, skip unnecessary work
-      if (styles.length === 0) {
+      if (length === 0) {
         // Ensure prepareTemplateStyles is called to support adding
         // styles via `prepareAdoptedCssText` since that requires that
         // `prepareTemplateStyles` is called.
@@ -143,7 +144,7 @@ const prepareTemplateStyles =
       // part indices.
       // NOTE: collecting styles is inefficient for browsers but ShadyCSS
       // currently does this anyway. When it does not, this should be changed.
-      for (let i = 0; i < styles.length; i++) {
+      for (let i = 0; i < length; i++) {
         const style = styles[i];
         style.parentNode!.removeChild(style);
         condensedStyle.textContent! += style.textContent;
