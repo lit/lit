@@ -149,7 +149,8 @@ time {
 
 .main-nav .nav-item {
   font-size: 14px;
-  padding: 0 12px;
+  padding: 18px 12px;
+  align-self: stretch;
 }
 
 .main-nav .icon {
@@ -590,6 +591,10 @@ th, td {
   .main-nav {
     height: 56px;
     padding-left: 20px;
+  }
+  
+  .main-nav .nav-item {
+    padding: 16px 12px;
   }
 
   main {
