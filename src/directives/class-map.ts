@@ -15,20 +15,6 @@
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 
-// On IE11, classList.toggle doesn't accept a second argument.
-// Since this is so minor, we just polyfill it.
-if (window.navigator.userAgent.match('Trident')) {
-  DOMTokenList.prototype.toggle = function(
-      token: string, force?: boolean|undefined) {
-    if (force === undefined || force) {
-      this.add(token);
-    } else {
-      this.remove(token);
-    }
-    return force === undefined ? true : force;
-  };
-}
-
 export interface ClassInfo {
   [name: string]: string|boolean|number;
 }
@@ -38,14 +24,6 @@ export interface ClassInfo {
  * Used to unset existing values when a new ClassInfo object is applied.
  */
 const classMapCache = new WeakMap();
-
-/**
- * Stores AttributeParts that have had static classes applied (e.g. `foo` in
- * class="foo ${classMap()}"). Static classes are applied only the first time
- * the directive is run on a part.
- */
-// Note, could be a WeakSet, but prefer not requiring this polyfill.
-const classMapStatics = new WeakMap();
 
 /**
  * A directive that applies CSS classes. This must be used in the `class`
@@ -64,24 +42,33 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
         'The `classMap` directive must be used in the `class` attribute ' +
         'and must be the only part in the attribute.');
   }
+
+  const {committer} = part;
+  const {element} = committer;
+
   // handle static classes
-  if (!classMapStatics.has(part)) {
-    part.committer.element.className = part.committer.strings.join(' ');
-    classMapStatics.set(part, true);
+  if (!classMapCache.has(part)) {
+    element.className = committer.strings.join(' ');
   }
+
+  const {classList} = element;
+
   // remove old classes that no longer apply
   const oldInfo = classMapCache.get(part);
   for (const name in oldInfo) {
     if (!(name in classInfo)) {
-      part.committer.element.classList.remove(name);
+      classList.remove(name);
     }
   }
+
   // add new classes
   for (const name in classInfo) {
-    if (!oldInfo || (oldInfo[name] !== classInfo[name])) {
+    const value = classInfo[name];
+    if (!oldInfo || value !== oldInfo[name]) {
       // We explicitly want a loose truthy check here because
       // it seems more convenient that '' and 0 are skipped.
-      part.committer.element.classList.toggle(name, Boolean(classInfo[name]));
+      const method = value ? 'add' : 'remove';
+      classList[method](name);
     }
   }
   classMapCache.set(part, classInfo);
