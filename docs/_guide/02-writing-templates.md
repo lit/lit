@@ -267,6 +267,43 @@ To compare this to lit-html's default handling for lists, consider reversing a l
 
 Which repeat is more efficient depends on your use case: if updating the DOM nodes is more expensive than moving them, use the repeat directive. Otherwise, use `Array.map` or looping statements.
 
+### Rendering nothing
+Sometimes, you may want to render nothing at all. The values `undefined`, `null` and the empty string (`''`) in a text binding all render an empty text node. In most cases, that's exactly what you want:
+````js
+import {html} from 'lit-html';
+${user.isAdmin
+      ? html`<button>DELETE</button>`
+      : ''
+  }
+````
+
+#### nothing and the slot fallback content
+`nothing` is a sentinel value provided by lit-html. It really does render nothing, because
+it clears the Part.
+
+Why is this important? Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. 
+The template looks like this:
+```js
+import {html} from 'lit-html';
+html`<slot>Sorry, no content available. I am just fallback content</slot>`;
+``` 
+The slot defines fallback content for when there is no content defined to be put in the slot. 
+So, extending on our previous example:
+```js
+import {nothing, html} from 'lit-html';
+
+html`
+<shadow-element>${user.isAdmin
+        ? html`<button>DELETE</button>`
+        : nothing
+      }</shadow-element>
+`;
+``` 
+If the user is logged in, DELETE button is rendered. If the user is not logged in, nothing is rendered inside of `shadow-element`.
+therefore the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" will be rendered.
+
+**Whitespace creates text nodes.** For the example to work, the text binding inside `<shadow-element>` must be the **entire** contents of `<shadow-element>`. Any whitespace outside of the binding delimiters adds static text nodes to the template, suppressing the fallback content. However, whitespace _inside_ the binding delimiters is fine.
+
 ## Caching template results: the cache directive 
 
 In most cases, JavaScript conditionals are all you need for conditional templates. However, if you're switching between large, complicated templates, you might want to save the cost of recreating DOM on each switch. 
@@ -286,83 +323,3 @@ html`${cache(data.showDetails
 When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
 
 The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and update it with the latest data.
-### Rendering nothing
-Very often you may conditionally render something, but in the other case
-you do not want to render anything at all. So, if you are using ternary 
-operators in one case you might return your template and in the other you
-want to return no content lit-html leaves you with a couple options:
-* an empty string (`''`)
-* null
-* undefined
-* nothing sentinel
-#### An empty string
-If you return an empty string somewhere in your template, an empty text node 
-will be rendered, but to the user it will seem like nothing was rendered. 
-
-````js
-${user.isAdmin
-      ? html`<button>DELETE</button>`
-      : ''
-  }
-````
-This does the trick and works great and efficiently in most cases. It does
-not work with slot fallback content.
-#### null or undefined
-If you return `null` or `undefined` in your template, lit-html will use these as values. 
-This works most of the time, but may lead to unexpected behavior as the DOM itself does not
-handle the two equally:
-
-````js
-document.getElementById('container').innerHTML = null;`
-````
-will produce an empty div while
-````js
-document.getElementById('container').innerHTML = undefined;
-````
-produces a div with the text undefined in it. Also an attribute binding
-with `null` like this
-````js
-html`<input type="text" placeholder=${null}>`
-````
-will set the placeholder attribute to the string null and not an empty value.
-
-The same applies for 
-````js
-html`<input type="text" placeholder=${undefined}>`
-````
-which will set the placeholder attribute to "undefined". If you want to remove the attribute if its value
-is undefined take a look at the [`ifDefined`](#ifdefined) directive.
-#### nothing and the slot fallback content
-`nothing` is a sentinel value provided by lit-html. It really does render nothing, because
-it clears the Part.
-
-Why is this important? Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. 
-The template looks like this:
-```js
-html`<slot>Sorry, no content available. I am just fallback content</slot>`;
-``` 
-The slot defines fallback content for when there is no content defined to be put in the slot. 
-So, extending on our first example:
-```js
-import {nothing} from 'lit-html';
-
-
-html`<shadow-element>
-  ${user.isAdmin
-      ? html`<button>DELETE</button>`
-      : nothing
-  }
-  </shadow-element>
-`;
-``` 
-If the user is logged in, the DELETE-button will be rendered. If the user is not logged in the part will clear,
-therefore the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" will be rendered.
-#### Performance
-All the options for rendering no content have small differences in performance depending on when and where you use them. 
-However, these should be not noticeable to the user/developer. 
-
-If you still want to know more, it basically depends on the DOM manipulations needed to get the desired result. 
-For example if you have a text node and you want it to be empty, then setting its text content to an empty string is less DOM manipulation than having to
-remove the text node and add a new node containing nothing. However, if you used to have complex content like a `TemplateResult`
-where you now want no content, `nothing` can just remove all the nodes.    
-
