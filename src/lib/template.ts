@@ -49,15 +49,14 @@ export class Template {
     let index = -1;
     let partIndex = 0;
     const nodesToRemove: Node[] = [];
+    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+    const walker = document.createTreeWalker(
+        document,
+        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+        null,
+        false);
     const _prepareTemplate = (template: HTMLTemplateElement) => {
-      const content = template.content;
-      // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be
-      // null
-      const walker = document.createTreeWalker(
-          content,
-          133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-          null,
-          false);
+      walker.currentNode = template.content;
       // Keeps track of the last index associated with a part. We try to delete
       // unnecessary nodes, but we never want to associate two different parts
       // to the same index. They must have a constant node between.
@@ -103,6 +102,7 @@ export class Template {
           }
           if ((node as Element).tagName === 'TEMPLATE') {
             _prepareTemplate(node as HTMLTemplateElement);
+            walker.currentNode = node;
           }
         } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
           const data = (node as Text).data!;
