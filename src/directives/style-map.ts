@@ -25,14 +25,6 @@ export interface StyleInfo {
 const styleMapCache = new WeakMap<AttributePart, StyleInfo>();
 
 /**
- * Stores AttributeParts that have had static styles applied (e.g. `height: 0;`
- * in style="height: 0; ${styleMap()}"). Static styles are applied only the
- * first time the directive is run on a part.
- */
-// Note, could be a WeakSet, but prefer not requiring this polyfill.
-const styleMapStatics = new WeakMap<AttributePart, true>();
-
-/**
  * A directive that applies CSS properties to an element.
  *
  * `styleMap` can only be used in the `style` attribute and must be the only
@@ -57,13 +49,13 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
         'and must be the only part in the attribute.');
   }
 
+  const {committer} = part;
+  const {style} = committer.element as HTMLElement;
+
   // Handle static styles the first time we see a Part
-  if (!styleMapStatics.has(part)) {
-    (part.committer.element as HTMLElement).style.cssText =
-        part.committer.strings.join(' ');
-    styleMapStatics.set(part, true);
+  if (!styleMapCache.has(part)) {
+    style.cssText = committer.strings.join(' ');
   }
-  const style = (part.committer.element as HTMLElement).style;
 
   // Remove old properties that no longer exist in styleInfo
   const oldInfo = styleMapCache.get(part);
