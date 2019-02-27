@@ -966,6 +966,15 @@ suite('render()', () => {
     }
     customElements.define('property-tester', PropertySetterElement);
 
+    class MutatesInConstructorElement extends HTMLElement {
+      constructor() {
+        super();
+        this.innerHTML = '<div></div>';
+      }
+    }
+    customElements.define(
+        'mutates-in-constructor', MutatesInConstructorElement);
+
     teardown(() => {
       if (container.parentElement === document.body) {
         document.body.removeChild(container);
@@ -1033,6 +1042,19 @@ suite('render()', () => {
           assert.equal(instance.value, 'foo');
           assert.isTrue(instance.calledSetter);
         });
+
+    test('does not upgrade elements until after parts are established', () => {
+      render(
+          html`
+            <mutates-in-constructor></mutates-in-constructor>
+            <span>${'test'}</span>
+      `,
+          container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), `
+            <mutates-in-constructor><div></div></mutates-in-constructor>
+            <span>test</span>
+      `);
+    });
   });
 
   suite('updates', () => {
