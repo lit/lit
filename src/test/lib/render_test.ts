@@ -1125,7 +1125,7 @@ suite('render()', () => {
       // Wait for mutation callback to be called
       await new Promise((resolve) => setTimeout(resolve));
 
-      const elementNodes: Array<Node> = [];
+      const elementNodes: Node[] = [];
       for (const record of mutationRecords) {
         elementNodes.push(...Array.from(record.addedNodes)
                               .filter((n) => n.nodeType === Node.ELEMENT_NODE));
