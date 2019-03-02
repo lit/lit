@@ -74,7 +74,7 @@ suite('add/remove nodes from template', () => {
     const template = templateFactory(result);
     const fragment1 = document.createDocumentFragment();
     fragment1.appendChild(document.createElement('div'));
-    (fragment1.firstChild as HTMLElement)!.innerHTML = '<span>1</span>';
+    (fragment1.firstChild as HTMLElement).innerHTML = '<span>1</span>';
     insertNodeIntoTemplate(
         template, fragment1, template.element.content.firstChild);
     const fragment2 = document.createDocumentFragment();

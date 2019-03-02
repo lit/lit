@@ -549,7 +549,7 @@ suite('render()', () => {
 
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
-      let event: Event;
+      let event: Event|undefined = undefined;
       const listener = function(this: any, e: any) {
         event = e;
         thisValue = this;
@@ -558,14 +558,17 @@ suite('render()', () => {
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
+      if (event === undefined) {
+        throw new Error(`Event listener never fired!`);
+      }
       assert.equal(thisValue, eventContext);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
       if (typeof MouseEvent === 'function') {
-        assert.instanceOf(event!, MouseEvent);
+        assert.instanceOf(event, MouseEvent);
       } else {
-        assert.isDefined((event! as MouseEvent).initMouseEvent);
+        assert.isDefined((event as MouseEvent).initMouseEvent);
       }
     });
 

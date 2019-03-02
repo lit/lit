@@ -97,13 +97,13 @@ suite('shady-render @apply', () => {
           document.body.appendChild(applyProducer);
           renderShadowRoot(producerContent, applyProducer);
           const usersInProducer =
-              applyProducer.shadowRoot!.querySelectorAll('apply-user')!;
+              applyProducer.shadowRoot!.querySelectorAll('apply-user');
           renderShadowRoot(applyUserContent, usersInProducer[0]);
           renderShadowRoot(applyUserContent, usersInProducer[1]);
           const userInProducerStyle1 = getComputedStyle(
-              usersInProducer[0]!.shadowRoot!.querySelector('div')!);
+              usersInProducer[0].shadowRoot!.querySelector('div')!);
           const userInProducerStyle2 = getComputedStyle(
-              usersInProducer[1]!.shadowRoot!.querySelector('div')!);
+              usersInProducer[1].shadowRoot!.querySelector('div')!);
           assert.equal(
               userInProducerStyle1.getPropertyValue('border-top-width').trim(),
               '10px');
@@ -173,11 +173,11 @@ suite('shady-render @apply', () => {
         const user1 =
             applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
         const userInProducerStyle1 =
-            getComputedStyle(user1!.shadowRoot!.querySelector('div')!);
+            getComputedStyle(user1.shadowRoot!.querySelector('div')!);
         const user2 =
             applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
         const userInProducerStyle2 =
-            getComputedStyle(user2!.shadowRoot!.querySelector('div')!);
+            getComputedStyle(user2.shadowRoot!.querySelector('div')!);
         assert.equal(
             userInProducerStyle1.getPropertyValue('border-top-width').trim(),
             '10px');

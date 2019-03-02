@@ -154,7 +154,7 @@ suite('shady-render', () => {
         const e = (container.shadowRoot!).querySelector('scope-4a-sub')!;
         renderShadowRoot(shadowContent, e);
         assert.equal(
-            getComputedStyle(e!).getPropertyValue('border-top-width').trim(),
+            getComputedStyle(e).getPropertyValue('border-top-width').trim(),
             '2px');
         document.body.removeChild(container);
       });
@@ -187,15 +187,15 @@ suite('shady-render', () => {
             container);
         const elements =
             (container.shadowRoot!).querySelectorAll('scope-4b-sub');
-        renderShadowRoot(nestedContent, elements[0]!);
-        renderShadowRoot(nestedContent, elements[1]!);
+        renderShadowRoot(nestedContent, elements[0]);
+        renderShadowRoot(nestedContent, elements[1]);
         assert.equal(
-            getComputedStyle(elements[0]!)
+            getComputedStyle(elements[0])
                 .getPropertyValue('border-top-width')
                 .trim(),
             '2px');
         assert.equal(
-            getComputedStyle(elements[1]!)
+            getComputedStyle(elements[1])
                 .getPropertyValue('border-top-width')
                 .trim(),
             '2px');
