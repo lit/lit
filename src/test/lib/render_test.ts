@@ -315,6 +315,14 @@ suite('render()', () => {
       assert.equal(container.innerText, 'AC');
     });
 
+    test('renders comments with multiple bindings followed by attr', () => {
+      const t = html`
+        <!-- <div class="${'foo'}">${'bar'}</div> -->
+        <p baz=${'qux'}></p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.getAttribute('baz'), 'qux');
+    });
+
     test('does not break with an attempted dynamic start tag', () => {
       // this won't work, but we'd like it to not throw an exception or break
       // other bindings
