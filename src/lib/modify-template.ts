@@ -16,124 +16,54 @@
  * @module shady-render
  */
 
-import {isTemplatePartActive, Template, TemplatePart} from './template.js';
-
-const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
+import {partMarker, Template, TemplatePart} from './template.js';
 
 /**
- * Removes the list of nodes from a Template safely. In addition to removing
- * nodes from the Template, the Template part indices are updated to match
- * the mutated Template DOM.
- *
- * As the template is walked the removal state is tracked and
- * part indices are adjusted as needed.
- *
- * div
- *   div#1 (remove) <-- start removing (removing node is div#1)
- *     div
- *       div#2 (remove)  <-- continue removing (removing node is still div#1)
- *         div
- * div <-- stop removing since previous sibling is the removing node (div#1,
- * removed 4 nodes)
+ * Removes all style elements from the template. In addition to removing
+ * elements, the Template's parts array is updated to match the mutated
+ * Template DOM.
  */
-export function removeNodesFromTemplate(
-    template: Template, nodesToRemove: Set<Node>) {
-  const {element: {content}, parts} = template;
-  const walker =
-      document.createTreeWalker(content, walkerNodeFilter, null, false);
-  let partIndex = nextActiveIndexInTemplateParts(parts);
-  let part = parts[partIndex];
-  let nodeIndex = -1;
-  let removeCount = 0;
-  const nodesToRemoveInTemplate = [];
-  let currentRemovingNode: Node|null = null;
-  while (walker.nextNode()) {
-    nodeIndex++;
-    const node = walker.currentNode as Element;
-    // End removal if stepped past the removing node
-    if (node.previousSibling === currentRemovingNode) {
-      currentRemovingNode = null;
-    }
-    // A node to remove was found in the template
-    if (nodesToRemove.has(node)) {
-      nodesToRemoveInTemplate.push(node);
-      // Track node we're removing
-      if (currentRemovingNode === null) {
-        currentRemovingNode = node;
-      }
-    }
-    // When removing, increment count by which to adjust subsequent part indices
-    if (currentRemovingNode !== null) {
-      removeCount++;
-    }
-    while (part !== undefined && part.index === nodeIndex) {
-      // If part is in a removed node deactivate it by setting index to -1 or
-      // adjust the index as needed.
-      part.index = currentRemovingNode !== null ? -1 : part.index - removeCount;
-      // go to the next active part.
-      partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
-      part = parts[partIndex];
-    }
-  }
-  nodesToRemoveInTemplate.forEach((n) => n.parentNode!.removeChild(n));
-}
-
-const countNodes = (node: Node) => {
-  let count = (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */) ? 0 : 1;
-  const walker = document.createTreeWalker(node, walkerNodeFilter, null, false);
-  while (walker.nextNode()) {
-    count++;
-  }
-  return count;
-};
-
-const nextActiveIndexInTemplateParts =
-    (parts: TemplatePart[], startIndex = -1) => {
-      for (let i = startIndex + 1; i < parts.length; i++) {
-        const part = parts[i];
-        if (isTemplatePartActive(part)) {
-          return i;
-        }
-      }
-      return -1;
-    };
-
-/**
- * Inserts the given node into the Template, optionally before the given
- * refNode. In addition to inserting the node into the Template, the Template
- * part indices are updated to match the mutated Template DOM.
- */
-export function insertNodeIntoTemplate(
-    template: Template, node: Node, refNode: Node|null = null) {
-  const {element: {content}, parts} = template;
-  // If there's no refNode, then put node at end of template.
-  // No part indices need to be shifted in this case.
-  if (refNode === null || refNode === undefined) {
-    content.appendChild(node);
+export function removeStylesFromTemplate(template: Template) {
+  const {parts, element: {content}} = template;
+  const styles = content.querySelectorAll('style');
+  const {length} = styles;
+  if (length === 0) {
     return;
   }
-  const walker =
-      document.createTreeWalker(content, walkerNodeFilter, null, false);
-  let partIndex = nextActiveIndexInTemplateParts(parts);
-  let insertCount = 0;
-  let walkerIndex = -1;
-  while (walker.nextNode()) {
-    walkerIndex++;
-    const walkerNode = walker.currentNode as Element;
-    if (walkerNode === refNode) {
-      insertCount = countNodes(node);
-      refNode.parentNode!.insertBefore(node, refNode);
+
+  for (let i = 0; i < length; i++) {
+    const style = styles[i];
+    const {previousSibling, parentNode} = style;
+
+    parentNode!.removeChild(style);
+
+    // Is the previousSibling a part marker comment? If so, we need to remove
+    // it.
+    if (isPartMarker(previousSibling)) {
+      removePartForMarker(parts, previousSibling);
+      parentNode!.removeChild(previousSibling);
     }
-    while (partIndex !== -1 && parts[partIndex].index === walkerIndex) {
-      // If we've inserted the node, simply adjust all subsequent parts
-      if (insertCount > 0) {
-        while (partIndex !== -1) {
-          parts[partIndex].index += insertCount;
-          partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
-        }
-        return;
+
+    // If there are any part markers for text nodes (the only possible binding
+    // in a style element), we need to update those indices in the parts array,
+    // too.
+    for (let child = style.firstChild; child !== null;
+         child = child.nextSibling) {
+      if (isPartMarker(child)) {
+        removePartForMarker(parts, child);
       }
-      partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
     }
   }
 }
+
+const removePartForMarker =
+    (parts: Array<TemplatePart|undefined>, comment: Comment) => {
+      // The part marker signifies the NodePart's index in the 16 low bits.
+      const packed = parseInt(comment.data.slice(partMarker.length), 10);
+      parts[packed & 0xffff] = undefined;
+    };
+
+const isPartMarker = (comment: Node|null): comment is Comment => {
+  return comment !== null && comment.nodeType === 8 /* Node.COMMENT_NODE */ &&
+      (comment as Comment).data.slice(0, partMarker.length) === partMarker;
+};

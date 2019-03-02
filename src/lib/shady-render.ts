@@ -25,7 +25,7 @@
  * docs.
  */
 import {removeNodes} from './dom.js';
-import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
+import {removeStylesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
@@ -91,18 +91,12 @@ const TEMPLATE_TYPES = ['html', 'svg'];
 /**
  * Removes all style elements from Templates for the given scopeName.
  */
-const removeStylesFromLitTemplates = (scopeName: string) => {
+const removeStylesFromAllTemplates = (scopeName: string) => {
   TEMPLATE_TYPES.forEach((type) => {
     const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
     if (templates !== undefined) {
       templates.keyString.forEach((template) => {
-        const {element: {content}} = template;
-        // IE 11 doesn't support the iterable param Set constructor
-        const styles = new Set<Element>();
-        Array.from(content.querySelectorAll('style')).forEach((s: Element) => {
-          styles.add(s);
-        });
-        removeNodesFromTemplate(template, styles);
+        removeStylesFromTemplate(template);
       });
     }
   });
@@ -162,15 +156,9 @@ const prepareTemplateStyles =
         condensedStyle.textContent! += style.textContent;
       }
       // Remove styles from nested templates in this scope.
-      removeStylesFromLitTemplates(scopeName);
-      // And then put the condensed style into the "root" template passed in as
-      // `template`.
-      const content = templateElement.content;
-      if (!!template) {
-        insertNodeIntoTemplate(template, condensedStyle, content.firstChild);
-      } else {
-        content.insertBefore(condensedStyle, content.firstChild);
-      }
+      removeStylesFromAllTemplates(scopeName);
+      const {content} = templateElement;
+      content.insertBefore(condensedStyle, content.firstChild);
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
@@ -180,19 +168,6 @@ const prepareTemplateStyles =
         // When in native Shadow DOM, ensure the style created by ShadyCSS is
         // included in initially rendered output (`renderedDOM`).
         renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
-      } else if (!!template) {
-        // When no style is left in the template, parts will be broken as a
-        // result. To fix this, we put back the style node ShadyCSS removed
-        // and then tell lit to remove that node from the template.
-        // There can be no style in the template in 2 cases (1) when Shady DOM
-        // is in use, ShadyCSS removes all styles, (2) when native Shadow DOM
-        // is in use ShadyCSS removes the style if it contains no content.
-        // NOTE, ShadyCSS creates its own style so we can safely add/remove
-        // `condensedStyle` here.
-        content.insertBefore(condensedStyle, content.firstChild);
-        const removes = new Set<Node>();
-        removes.add(condensedStyle);
-        removeNodesFromTemplate(template, removes);
       }
     };
 

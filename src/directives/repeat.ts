@@ -25,8 +25,8 @@ const createAndInsertPart =
       const container = containerPart.startNode.parentNode as Node;
       const beforeNode =
           beforePart == null ? containerPart.endNode : beforePart.startNode;
-      const startNode = container.insertBefore(createMarker(), beforeNode);
-      container.insertBefore(createMarker(), beforeNode);
+      const startNode = container.insertBefore(createMarker(''), beforeNode);
+      container.insertBefore(createMarker(''), beforeNode);
       const newPart = new NodePart(containerPart.options, undefined);
       newPart.insertAfterNode(startNode);
       return newPart;

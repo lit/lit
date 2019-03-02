@@ -84,7 +84,7 @@ export const asyncAppend = directive(
         // Check to see if we have a previous item and Part
         if (itemPart !== undefined) {
           // Create a new node to separate the previous and next Parts
-          itemStartNode = createMarker();
+          itemStartNode = createMarker('');
           // itemPart is currently the Part for the previous item. Set
           // it's endNode to the node we'll use for the next Part's
           // startNode.

@@ -20,7 +20,7 @@ import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
-import {isTemplatePartActive, Template, TemplatePart} from './template.js';
+import {partMarker, Template, templateMarker} from './template.js';
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
@@ -98,57 +98,87 @@ export class TemplateInstance {
         this.template.element.content.cloneNode(true) as DocumentFragment :
         document.importNode(this.template.element.content, true);
 
-    const stack: Node[] = [];
-    const parts = this.template.parts;
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        fragment,
-        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-        null,
-        false);
-    let partIndex = 0;
-    let nodeIndex = 0;
-    let part: TemplatePart;
-    let node = walker.nextNode();
-    // Loop through all the nodes and parts of a template
-    while (partIndex < parts.length) {
-      part = parts[partIndex];
-      if (!isTemplatePartActive(part)) {
-        this.__parts.push(undefined);
-        partIndex++;
+        fragment, 128 /* NodeFilter.SHOW_COMMENT */, null, false);
+    const stack: Element[] = [];
+    const {parts} = this.template;
+
+    // Count the active number of parts. This will allow us to early exit after
+    // finding the last part, instead of exhausting the entire tree.
+    let partCount = 0;
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] !== undefined) {
+        partCount++;
+      }
+    }
+
+    while (partCount > 0) {
+      const comment = walker.nextNode() as Comment;
+
+      if (comment === null) {
+        // We've exhausted the content inside a nested template element.
+        // Because we still have parts (the outer for-loop), we know:
+        // * There is a template in the stack
+        // * The walker will find a nextNode outside the template
+        walker.currentNode = stack.pop()!;
         continue;
       }
 
-      // Progress the tree walker until we find our next part's node.
-      // Note that multiple parts may share the same node (attribute parts
-      // on a single element), so this loop may not run at all.
-      while (nodeIndex < part.index) {
-        nodeIndex++;
-        if (node!.nodeName === 'TEMPLATE') {
-          stack.push(node!);
-          walker.currentNode = (node as HTMLTemplateElement).content;
-        }
-        if ((node = walker.nextNode()) === null) {
-          // We've exhausted the content inside a nested template element.
-          // Because we still have parts (the outer for-loop), we know:
-          // - There is a template in the stack
-          // - The walker will find a nextNode outside the template
-          walker.currentNode = stack.pop()!;
-          node = walker.nextNode();
-        }
+      const {data} = comment;
+      if (data === '') {
+        continue;
       }
 
-      // We've arrived at our part's node.
-      if (part.type === 'node') {
-        const textPart =
-            this.processor.handleTextExpression(this.options, part);
-        textPart.insertAfterNode(node!.previousSibling!);
-        this.__parts.push(textPart);
-      } else {
-        this.__parts.push(...this.processor.handleAttributeExpressions(
-            node as Element, part.name, part.strings, this.options, part));
+      // Does this comment start with the part marker?
+      if (data.slice(0, partMarker.length) === partMarker) {
+        // The part marker packs the part index in the 16 low bits and
+        // attribute count (if it's an attribute binding) in the 16 high bits.
+        const packed = parseInt(data.slice(partMarker.length), 10);
+        let partIndex = packed & 0xffff;
+        let attributeCount = packed >>> 16;
+
+        // We know the part marker comes directly before the node we care
+        // about. The marker itself is dead weight after this, so we can remove
+        // it by advancing the walker to the real node.
+        const nextNode = comment.nextSibling!;
+        walker.currentNode = nextNode;
+        comment.parentNode!.removeChild(comment);
+
+        if (attributeCount === 0) {
+          // A Node TemplatePart. The part marker was inserted between the
+          // startNode and the endNode, meaning nextNode is the endNode.
+          const part = this.processor.handleTextExpression(this.options);
+          part.insertAfterNode(nextNode.previousSibling!);
+          this.__parts[partIndex] = part;
+          partCount--;
+        } else {
+          // An Attribute TemplatePart. The part marker is directly before the
+          // element with the attribute bindings, and the attributeCount tells
+          // us how many attributes were bound. Note that each bound attribute
+          // can have multiple bindings.
+          while (attributeCount-- > 0) {
+            const part = parts[partIndex] as {
+              name: string;
+              strings: readonly string[];
+            };
+            const attrs = this.processor.handleAttributeExpressions(
+                nextNode as Element, part.name, part.strings, this.options);
+            for (let p = 0; p < attrs.length; p++) {
+              this.__parts[partIndex++] = attrs[p];
+            }
+            partCount -= attrs.length;
+          }
+        }
+      } else if (data === templateMarker) {
+        // A template marker comes directly after the template element. By
+        // advancing the walker to the template's content, we're able to remove
+        // the marker.
+        const template = comment.previousSibling! as HTMLTemplateElement;
+        walker.currentNode = template.content;
+        comment.parentNode!.removeChild(comment);
+        stack.push(template);
       }
-      partIndex++;
     }
 
     if (isCEPolyfill) {
