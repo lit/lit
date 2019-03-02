@@ -33,6 +33,16 @@ export const nodeMarker = `<!--${marker}-->`;
 export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 
 /**
+ * A marker used to say the next sibling holds a part.
+ */
+export const partMarker = `${marker}-part:`;
+
+/**
+ * A marker that says the previous sibling is a template element.
+ */
+export const templateMarker = `${marker}-template`;
+
+/**
  * Suffix appended to all bound attribute names.
  */
 export const boundAttributeSuffix = '$lit$';
@@ -41,26 +51,27 @@ export const boundAttributeSuffix = '$lit$';
  * An updateable Template that tracks the location of dynamic parts.
  */
 export class Template {
-  parts: TemplatePart[] = [];
+  parts: Array<TemplatePart|undefined> = [];
   element: HTMLTemplateElement;
 
   constructor(result: TemplateResult, element: HTMLTemplateElement) {
     this.element = element;
 
-    const nodesToRemove: Node[] = [];
-    const stack: Node[] = [];
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         element.content,
         133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
         null,
         false);
-    // Keeps track of the last index associated with a part. We try to delete
-    // unnecessary nodes, but we never want to associate two different parts
-    // to the same index. They must have a constant node between.
-    let lastPartIndex = 0;
-    let index = -1;
+    const nodesToRemove: Node[] = [];
+    const stack: Node[] = [];
+
+    // Keeps track of the last part's staring node. We try to delete
+    // unnecessary nodes, but we never want to associate two different parts to
+    // the same starting node. They must have a constant node between.
+    let lastPartStart = null;
     let partIndex = 0;
+
     while (true) {
       const node = walker.nextNode() as Element | Comment | Text | null;
       if (node === null) {
@@ -74,7 +85,6 @@ export class Template {
         walker.currentNode = template;
         continue;
       }
-      index++;
 
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
         if ((node as Element).hasAttributes()) {
@@ -90,6 +100,9 @@ export class Template {
             if (attributes[i].value.indexOf(marker) >= 0) {
               count++;
             }
+          }
+          if (count > 0) {
+            insertPartMarker(node, partIndex, count);
           }
           while (count-- > 0) {
             // Get the template literal section leading up to the first
@@ -107,13 +120,15 @@ export class Template {
             const attributeValue =
                 (node as Element).getAttribute(attributeLookupName)!;
             const strings = attributeValue.split(markerRegex);
-            this.parts.push({type: 'attribute', index, name, strings});
+            this.parts.push({type: 'attribute', name, strings});
             (node as Element).removeAttribute(attributeLookupName);
             partIndex += strings.length - 1;
           }
         }
         if ((node as Element).tagName === 'TEMPLATE') {
-          stack.push(node);
+          const tm = createMarker(templateMarker);
+          node.parentNode!.insertBefore(tm, node.nextSibling);
+          stack.push(tm);
           walker.currentNode = (node as HTMLTemplateElement).content;
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
@@ -126,21 +141,20 @@ export class Template {
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
             parent.insertBefore(
-                (strings[i] === '') ? createMarker() :
+                (strings[i] === '') ? createMarker('') :
                                       document.createTextNode(strings[i]),
                 node);
-            this.parts.push({type: 'node', index: ++index});
+            insertPartMarker(node, partIndex++, 0);
+            this.parts.push({type: 'node'});
           }
           // If there's no text, we must insert a comment to mark our place.
           // Else, we can trust it will stick around after cloning.
           if (strings[lastIndex] === '') {
-            parent.insertBefore(createMarker(), node);
+            parent.insertBefore(createMarker(''), node);
             nodesToRemove.push(node);
           } else {
             (node as Text).data = strings[lastIndex];
           }
-          // We have a part for each match found
-          partIndex += lastIndex;
         }
       } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
         if ((node as Comment).data === marker) {
@@ -149,21 +163,20 @@ export class Template {
           // the following are true:
           //  * We don't have a previousSibling
           //  * The previousSibling is already the start of a previous part
-          if (node.previousSibling === null || index === lastPartIndex) {
-            index++;
-            parent.insertBefore(createMarker(), node);
+          const {previousSibling} = node;
+          if (previousSibling === null || previousSibling === lastPartStart) {
+            lastPartStart = parent.insertBefore(createMarker(''), node);
           }
-          lastPartIndex = index;
-          this.parts.push({type: 'node', index});
+          insertPartMarker(node, partIndex++, 0);
+          this.parts.push({type: 'node'});
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
           if (node.nextSibling === null) {
             (node as Comment).data = '';
           } else {
+            lastPartStart = node;
             nodesToRemove.push(node);
-            index--;
           }
-          partIndex++;
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -171,7 +184,8 @@ export class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this.parts.push({type: 'node', index: -1});
+            this.parts.push(undefined);
+            partIndex++;
           }
         }
       }
@@ -202,14 +216,20 @@ export class Template {
  */
 export type TemplatePart = {
   type: 'node',
-  index: number
-}|{type: 'attribute', index: number, name: string, strings: string[]};
-
-export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
+}|{type: 'attribute', name: string, strings: string[]};
 
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
-export const createMarker = () => document.createComment('');
+export const createMarker = (data: string) => document.createComment(data);
+
+// Creates a comment with the part index and number of attributes. The
+// attribute count occupies the 16 high bits, and the part index the 16 low
+// bits.
+export const insertPartMarker =
+    (node: Node, partIndex: number, attributeCount: number) =>
+        node.parentNode!.insertBefore(
+            createMarker(`${partMarker}${attributeCount << 16 | partIndex}`),
+            node);
 
 /**
  * This regex extracts the attribute name preceding an attribute-position

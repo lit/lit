@@ -159,8 +159,8 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   appendInto(container: Node) {
-    this.startNode = container.appendChild(createMarker());
-    this.endNode = container.appendChild(createMarker());
+    this.startNode = container.appendChild(createMarker(''));
+    this.endNode = container.appendChild(createMarker(''));
   }
 
   /**
@@ -181,8 +181,8 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   appendIntoPart(part: NodePart) {
-    part._insert(this.startNode = createMarker());
-    part._insert(this.endNode = createMarker());
+    part._insert(this.startNode = createMarker(''));
+    part._insert(this.endNode = createMarker(''));
   }
 
   /**
@@ -191,7 +191,7 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   insertAfterPart(ref: NodePart) {
-    ref._insert(this.startNode = createMarker());
+    ref._insert(this.startNode = createMarker(''));
     this.endNode = ref.endNode;
     ref.endNode = this.startNode;
   }

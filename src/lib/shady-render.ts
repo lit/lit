@@ -25,7 +25,6 @@
  * docs.
  */
 import {removeNodes} from './dom.js';
-import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
@@ -97,12 +96,9 @@ const removeStylesFromLitTemplates = (scopeName: string) => {
     if (templates !== undefined) {
       templates.keyString.forEach((template) => {
         const {element: {content}} = template;
-        // IE 11 doesn't support the iterable param Set constructor
-        const styles = new Set<Element>();
         Array.from(content.querySelectorAll('style')).forEach((s: Element) => {
-          styles.add(s);
+          s.parentNode!.removeChild(s);
         });
-        removeNodesFromTemplate(template, styles);
       });
     }
   });
@@ -153,8 +149,8 @@ const prepareTemplateStyles =
       removeStylesFromLitTemplates(scopeName);
       // And then put the condensed style into the "root" template passed in as
       // `template`.
-      insertNodeIntoTemplate(
-          template, condensedStyle, template.element.content.firstChild);
+      const {content} = template.element;
+      content.insertBefore(condensedStyle, content.firstChild);
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
@@ -164,18 +160,6 @@ const prepareTemplateStyles =
         // the style ShadyCSS produced.
         const style = template.element.content.querySelector('style')!;
         renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
-      } else {
-        // When not in native Shadow DOM, at this point ShadyCSS will have
-        // removed the style from the lit template and parts will be broken as a
-        // result. To fix this, we put back the style node ShadyCSS removed
-        // and then tell lit to remove that node from the template.
-        // NOTE, ShadyCSS creates its own style so we can safely add/remove
-        // `condensedStyle` here.
-        template.element.content.insertBefore(
-            condensedStyle, template.element.content.firstChild);
-        const removes = new Set();
-        removes.add(condensedStyle);
-        removeNodesFromTemplate(template, removes);
       }
     };
 

@@ -19,7 +19,7 @@
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
-import {isTemplatePartActive, Template, TemplatePart} from './template.js';
+import {partMarker, Template, templateMarker} from './template.js';
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
@@ -62,56 +62,76 @@ export class TemplateInstance {
     const fragment =
         this.template.element.content.cloneNode(true) as DocumentFragment;
 
-    const stack: Node[] = [];
-    const parts = this.template.parts;
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
-        fragment,
-        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-        null,
-        false);
-    let partIndex = 0;
-    let nodeIndex = 0;
-    let part: TemplatePart;
-    let node = walker.nextNode();
-    // Loop through all the nodes and parts of a template
-    while (partIndex < parts.length) {
-      part = parts[partIndex];
-      if (!isTemplatePartActive(part)) {
-        this._parts.push(undefined);
-        partIndex++;
+        fragment, 128 /* NodeFilter.SHOW_COMMENT */, null, false);
+    const stack: Element[] = [];
+    const {parts} = this.template;
+
+    // Count the active number of parts. In a normal render (not ShadyCSS),
+    // this will allow us to early exit after finding the last part.
+    let partCount = 0;
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] !== undefined) {
+        partCount++;
+      }
+    }
+
+    while (partCount > 0) {
+      const comment = walker.nextNode() as Comment;
+
+      // If element is null, that means we've either:
+      // * Traversed all elements in the current template, and need to process
+      //   a nested template.
+      // * ShadyCSS mucked with the template.
+      if (comment === null) {
+        const template = stack.pop();
+        if (template === undefined) {
+          // ShadyCSS removed a style element that had a binding. Oh well.
+          break;
+        }
+        walker.currentNode = template;
+        continue;
+      }
+      const {data} = comment;
+      if (data === '') {
         continue;
       }
 
-      // Progress the tree walker until we find our next part's node.
-      // Note that multiple parts may share the same node (attribute parts
-      // on a single element), so this loop may not run at all.
-      while (nodeIndex < part.index) {
-        nodeIndex++;
-        if (node!.nodeName === 'TEMPLATE') {
-          stack.push(node!);
-          walker.currentNode = (node as HTMLTemplateElement).content;
-        }
-        if ((node = walker.nextNode()) === null) {
-          // We've exhausted the content inside a nested template element.
-          // Because we still have parts (the outer for-loop), we know:
-          // - There is a template in the stack
-          // - The walker will find a nextNode outside the temlpate
-          walker.currentNode = stack.pop()!;
-          node = walker.nextNode();
-        }
-      }
+      // Does this comment starts with the part marker?
+      if (data.lastIndexOf(partMarker, 0) === 0) {
+        const packed = parseInt(data.slice(partMarker.length), 10);
+        let partIndex = packed & 0xffff;
+        let attributeCount = packed >>> 16;
 
-      // We've arrived at our part's node.
-      if (part.type === 'node') {
-        const part = this.processor.handleTextExpression(this.options);
-        part.insertAfterNode(node!.previousSibling!);
-        this._parts.push(part);
-      } else {
-        this._parts.push(...this.processor.handleAttributeExpressions(
-            node as Element, part.name, part.strings, this.options));
+        const next = comment.nextSibling!;
+        walker.currentNode = next;
+        comment.parentNode!.removeChild(comment);
+
+        if (attributeCount === 0) {
+          const part = this.processor.handleTextExpression(this.options);
+          part.insertAfterNode(next.previousSibling!);
+          this._parts[partIndex] = part;
+          partCount--;
+        } else {
+          // Multiple Attribute TemplateParts can be bound onto a single
+          // attribute, and multiple attributes-with-bindings onto the element.
+          while (attributeCount-- > 0) {
+            const part = parts[partIndex] as {name: string, strings: string[]};
+            const attrs = this.processor.handleAttributeExpressions(
+                next as Element, part.name, part.strings, this.options);
+            for (let p = 0; p < attrs.length; p++) {
+              this._parts[partIndex++] = attrs[p];
+            }
+            partCount -= attrs.length;
+          }
+        }
+      } else if (data === templateMarker) {
+        const template = comment.previousSibling! as HTMLTemplateElement;
+        walker.currentNode = template.content;
+        comment.parentNode!.removeChild(comment);
+        stack.push(template);
       }
-      partIndex++;
     }
 
     // Now that the instance is prepared, upgrade any nested custom elements so
