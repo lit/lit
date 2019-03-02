@@ -558,7 +558,7 @@ suite('render()', () => {
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
-      if (event ===  undefined) {
+      if (event === undefined) {
         throw new Error(`Event listener never fired!`);
       }
       assert.equal(thisValue, eventContext);

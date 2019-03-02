@@ -224,7 +224,8 @@ suite('until', () => {
     const deferred1 = new Deferred<any>();
     const deferred2 = new Deferred<any>();
 
-    const t = () => html`<div>${until(deferred1.promise, deferred2.promise)}</div>`;
+    const t = () =>
+        html`<div>${until(deferred1.promise, deferred2.promise)}</div>`;
 
     // First render with neither Promise resolved
     render(t(), container);
@@ -245,7 +246,8 @@ suite('until', () => {
     const deferred1 = new Deferred<any>();
     const deferred2 = new Deferred<any>();
 
-    const t = () => html`<div>${until(deferred1.promise, deferred2.promise)}</div>`;
+    const t = () =>
+        html`<div>${until(deferred1.promise, deferred2.promise)}</div>`;
 
     // First render with neither Promise resolved
     render(t(), container);
