@@ -421,7 +421,7 @@ export const repeat =
                   // For all remaining additions, we insert before last new
                   // tail, since old pointers are no longer valid
                   const newPart = createAndInsertPart(
-                      containerPart, newParts[newTail + 1]!);
+                      containerPart, newParts[newTail + 1]);
                   updatePart(newPart, newValues[newHead]);
                   newParts[newHead++] = newPart;
                 }

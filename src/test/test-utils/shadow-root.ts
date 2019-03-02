@@ -21,5 +21,5 @@ export const renderShadowRoot = (result: TemplateResult, element: Element) => {
   if (!element.shadowRoot) {
     element.attachShadow({mode: 'open'});
   }
-  render(result, element.shadowRoot!, {scopeName: element.localName!});
+  render(result, element.shadowRoot!, {scopeName: element.localName});
 };

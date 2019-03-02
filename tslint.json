@@ -15,6 +15,7 @@
     "no-trailing-whitespace": true,
     "no-var-keyword": true,
     "no-any": true,
+    "no-unnecessary-type-assertion": true,
     "one-line": [
       true,
       "check-open-brace",

@@ -321,7 +321,7 @@ export class NodePart implements Part {
     if (partIndex < itemParts.length) {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
-      this.clear(itemPart && itemPart!.endNode);
+      this.clear(itemPart && itemPart.endNode);
     }
   }
 
