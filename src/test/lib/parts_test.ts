@@ -90,8 +90,8 @@ suite('Parts', () => {
 
     setup(() => {
       container = document.createElement('div');
-      startNode = createMarker();
-      endNode = createMarker();
+      startNode = createMarker('');
+      endNode = createMarker('');
       container.appendChild(startNode);
       container.appendChild(endNode);
       part = new NodePart({templateFactory});
@@ -436,7 +436,7 @@ suite('Parts', () => {
       test(
           'inserts part and sets values between ref node and its next sibling',
           () => {
-            const testEndNode = createMarker();
+            const testEndNode = createMarker('');
             container.appendChild(testEndNode);
             const testPart = new NodePart({templateFactory});
             testPart.insertAfterNode(endNode);

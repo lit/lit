@@ -33,6 +33,16 @@ export const nodeMarker = `<!--${marker}-->`;
 export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 
 /**
+ * A marker used to say the next sibling holds a part.
+ */
+export const partMarker = `${marker}-part:`;
+
+/**
+ * A marker that says the previous sibling is a template element.
+ */
+export const templateMarker = `${marker}-template`;
+
+/**
  * Suffix appended to all bound attribute names.
  */
 export const boundAttributeSuffix = '$lit$';
@@ -41,38 +51,38 @@ export const boundAttributeSuffix = '$lit$';
  * An updateable Template that tracks the location of dynamic parts.
  */
 export class Template {
-  readonly parts: TemplatePart[] = [];
+  readonly parts: Array<TemplatePart|undefined> = [];
   readonly element: HTMLTemplateElement;
 
   constructor(result: TemplateResult, element: HTMLTemplateElement) {
     this.element = element;
 
-    const nodesToRemove: Node[] = [];
-    const stack: Node[] = [];
     // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
     const walker = document.createTreeWalker(
         element.content,
         133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
         null,
         false);
-    // Keeps track of the last index associated with a part. We try to delete
-    // unnecessary nodes, but we never want to associate two different parts
-    // to the same index. They must have a constant node between.
-    let lastPartIndex = 0;
-    let index = -1;
+    const nodesToRemove: Node[] = [];
+    const stack: Node[] = [];
+
+    // Keeps track of the last part's staring node. We try to delete
+    // unnecessary nodes, but we never want to associate two different parts to
+    // the same starting node. They must have a constant node between.
+    let lastPartStart = null;
     let partIndex = 0;
+
     const {strings, values: {length}} = result;
     while (partIndex < length) {
       const node = walker.nextNode() as Element | Comment | Text | null;
       if (node === null) {
         // We've exhausted the content inside a nested template element.
         // Because we still have parts (the outer for-loop), we know:
-        // - There is a template in the stack
-        // - The walker will find a nextNode outside the template
+        // * There is a template in the stack
+        // * The walker will find a nextNode outside the template
         walker.currentNode = stack.pop()!;
         continue;
       }
-      index++;
 
       if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
         if ((node as Element).hasAttributes()) {
@@ -88,6 +98,10 @@ export class Template {
             if (endsWith(attributes[i].name, boundAttributeSuffix)) {
               count++;
             }
+          }
+
+          if (count > 0) {
+            insertPartMarker(node, partIndex, count);
           }
           while (count-- > 0) {
             // Get the template literal section leading up to the first
@@ -106,12 +120,22 @@ export class Template {
                 (node as Element).getAttribute(attributeLookupName)!;
             (node as Element).removeAttribute(attributeLookupName);
             const statics = attributeValue.split(markerRegex);
-            this.parts.push({type: 'attribute', index, name, strings: statics});
+            this.parts.push({type: 'attribute', name, strings: statics});
             partIndex += statics.length - 1;
           }
         }
+
         if ((node as Element).tagName === 'TEMPLATE') {
-          stack.push(node);
+          // Insert a template marker _after_ the template. This is so that we
+          // don't get confused if the template also has an attribute binding
+          // (which would have inserted a partMarker before the template).
+          //
+          // TODO If we could figure out if this template holds no bindings, we
+          // could skip generating this template marker. That'll speed up
+          // TemplateInstance cloning later on.
+          const tm = createMarker(templateMarker);
+          node.parentNode!.insertBefore(tm, node.nextSibling);
+          stack.push(tm);
           walker.currentNode = (node as HTMLTemplateElement).content;
         }
       } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
@@ -120,13 +144,14 @@ export class Template {
           const parent = node.parentNode!;
           const strings = data.split(markerRegex);
           const lastIndex = strings.length - 1;
+
           // Generate a new text node for each literal section
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
             let insert: Node;
             let s = strings[i];
             if (s === '') {
-              insert = createMarker();
+              insert = createMarker('');
             } else {
               const match = lastAttributeNameRegex.exec(s);
               if (match !== null && endsWith(match[2], boundAttributeSuffix)) {
@@ -136,41 +161,42 @@ export class Template {
               insert = document.createTextNode(s);
             }
             parent.insertBefore(insert, node);
-            this.parts.push({type: 'node', index: ++index});
+            insertPartMarker(node, partIndex++, 0);
+            this.parts.push({type: 'node'});
           }
+
           // If there's no text, we must insert a comment to mark our place.
           // Else, we can trust it will stick around after cloning.
           if (strings[lastIndex] === '') {
-            parent.insertBefore(createMarker(), node);
+            parent.insertBefore(createMarker(''), node);
             nodesToRemove.push(node);
           } else {
             (node as Text).data = strings[lastIndex];
           }
-          // We have a part for each match found
-          partIndex += lastIndex;
         }
       } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
         if ((node as Comment).data === marker) {
           const parent = node.parentNode!;
+
           // Add a new marker node to be the startNode of the Part if any of
           // the following are true:
           //  * We don't have a previousSibling
           //  * The previousSibling is already the start of a previous part
-          if (node.previousSibling === null || index === lastPartIndex) {
-            index++;
-            parent.insertBefore(createMarker(), node);
+          const {previousSibling} = node;
+          if (previousSibling === null || previousSibling === lastPartStart) {
+            lastPartStart = parent.insertBefore(createMarker(''), node);
           }
-          lastPartIndex = index;
-          this.parts.push({type: 'node', index});
+          insertPartMarker(node, partIndex++, 0);
+          this.parts.push({type: 'node'});
+
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
           if (node.nextSibling === null) {
             (node as Comment).data = '';
           } else {
+            lastPartStart = node;
             nodesToRemove.push(node);
-            index--;
           }
-          partIndex++;
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -178,7 +204,7 @@ export class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this.parts.push({type: 'node', index: -1});
+            this.parts.push(undefined);
             partIndex++;
           }
         }
@@ -215,14 +241,20 @@ const endsWith = (str: string, suffix: string): boolean => {
  */
 export type TemplatePart = {
   readonly type: 'node',
-  index: number
-}|{readonly type: 'attribute', index: number, readonly name: string, readonly strings: ReadonlyArray<string>};
-
-export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
+}|{readonly type: 'attribute', readonly name: string, readonly strings: ReadonlyArray<string>};
 
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
-export const createMarker = () => document.createComment('');
+export const createMarker = (data: string) => document.createComment(data);
+
+// Creates a comment with the part index and number of attributes. The
+// attribute count occupies the 16 high bits, and the part index the 16 low
+// bits.
+export const insertPartMarker =
+    (node: Node, partIndex: number, attributeCount: number) =>
+        node.parentNode!.insertBefore(
+            createMarker(`${partMarker}${attributeCount << 16 | partIndex}`),
+            node);
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
