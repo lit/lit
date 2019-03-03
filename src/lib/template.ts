@@ -101,6 +101,7 @@ export class Template {
               count++;
             }
           }
+
           if (count > 0) {
             insertPartMarker(node, partIndex, count);
           }
@@ -125,7 +126,15 @@ export class Template {
             partIndex += strings.length - 1;
           }
         }
+
         if ((node as Element).tagName === 'TEMPLATE') {
+          // Insert a template marker _after_ the template. This is so that we
+          // don't get confused if the template also has an attribute binding
+          // (which would have inserted a partMarker before the template).
+          //
+          // TODO If we could figure out if this template holds no bindings, we
+          // could skip generating this template marker. That'll speed up
+          // TemplateInstance cloning later on.
           const tm = createMarker(templateMarker);
           node.parentNode!.insertBefore(tm, node.nextSibling);
           stack.push(tm);
@@ -137,6 +146,7 @@ export class Template {
           const parent = node.parentNode!;
           const strings = data.split(markerRegex);
           const lastIndex = strings.length - 1;
+
           // Generate a new text node for each literal section
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
@@ -147,6 +157,7 @@ export class Template {
             insertPartMarker(node, partIndex++, 0);
             this.parts.push({type: 'node'});
           }
+
           // If there's no text, we must insert a comment to mark our place.
           // Else, we can trust it will stick around after cloning.
           if (strings[lastIndex] === '') {
@@ -159,6 +170,7 @@ export class Template {
       } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
         if ((node as Comment).data === marker) {
           const parent = node.parentNode!;
+
           // Add a new marker node to be the startNode of the Part if any of
           // the following are true:
           //  * We don't have a previousSibling
@@ -169,6 +181,7 @@ export class Template {
           }
           insertPartMarker(node, partIndex++, 0);
           this.parts.push({type: 'node'});
+
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
           if (node.nextSibling === null) {

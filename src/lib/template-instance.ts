@@ -68,8 +68,8 @@ export class TemplateInstance {
     const stack: Element[] = [];
     const {parts} = this.template;
 
-    // Count the active number of parts. In a normal render (not ShadyCSS),
-    // this will allow us to early exit after finding the last part.
+    // Count the active number of parts. This will allow us to early exit after
+    // finding the last part, instead of exhausting the entire tree.
     let partCount = 0;
     for (let i = 0; i < parts.length; i++) {
       if (parts[i] !== undefined) {
@@ -83,38 +83,48 @@ export class TemplateInstance {
       if (comment === null) {
         // We've exhausted the content inside a nested template element.
         // Because we still have parts (the outer for-loop), we know:
-        // - There is a template in the stack
-        // - The walker will find a nextNode outside the temlpate
+        // * There is a template in the stack
+        // * The walker will find a nextNode outside the template
         walker.currentNode = stack.pop()!;
         continue;
       }
+
       const {data} = comment;
       if (data === '') {
         continue;
       }
 
-      // Does this comment starts with the part marker?
+      // Does this comment start with the part marker?
       if (data.lastIndexOf(partMarker, 0) === 0) {
+        // The part marker packs the part index in the 16 low bits and
+        // attribute count (if it's an attribute binding) in the 16 high bits.
         const packed = parseInt(data.slice(partMarker.length), 10);
         let partIndex = packed & 0xffff;
         let attributeCount = packed >>> 16;
 
-        const next = comment.nextSibling!;
-        walker.currentNode = next;
+        // We know the part marker comes directly before the node we care
+        // about. The marker itself is dead weight after this, so we can remove
+        // it by advancing the walker to the real node.
+        const nextNode = comment.nextSibling!;
+        walker.currentNode = nextNode;
         comment.parentNode!.removeChild(comment);
 
         if (attributeCount === 0) {
+          // A Node TemplatePart. The part marker was inserted between the
+          // startNode and the endNode, meaning nextNode is the endNode.
           const part = this.processor.handleTextExpression(this.options);
-          part.insertAfterNode(next.previousSibling!);
+          part.insertAfterNode(nextNode.previousSibling!);
           this._parts[partIndex] = part;
           partCount--;
         } else {
-          // Multiple Attribute TemplateParts can be bound onto a single
-          // attribute, and multiple attributes-with-bindings onto the element.
+          // An Attribute TemplatePart. The part marker is directly before the
+          // element with the attribute bindings, and the attributeCount tells
+          // us how many attributes were bound. Note that each bound attribute
+          // can have multiple bindings.
           while (attributeCount-- > 0) {
             const part = parts[partIndex] as {name: string, strings: string[]};
             const attrs = this.processor.handleAttributeExpressions(
-                next as Element, part.name, part.strings, this.options);
+                nextNode as Element, part.name, part.strings, this.options);
             for (let p = 0; p < attrs.length; p++) {
               this._parts[partIndex++] = attrs[p];
             }
@@ -122,6 +132,9 @@ export class TemplateInstance {
           }
         }
       } else if (data === templateMarker) {
+        // A template marker comes directly after the template element. By
+        // advancing the walker to the template's content, we're able to remove
+        // the marker.
         const template = comment.previousSibling! as HTMLTemplateElement;
         walker.currentNode = template.content;
         comment.parentNode!.removeChild(comment);
