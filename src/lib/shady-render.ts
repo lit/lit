@@ -25,6 +25,7 @@
  * docs.
  */
 import {removeNodes} from './dom.js';
+import {removeStylesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
@@ -90,15 +91,12 @@ const TEMPLATE_TYPES = ['html', 'svg'];
 /**
  * Removes all style elements from Templates for the given scopeName.
  */
-const removeStylesFromLitTemplates = (scopeName: string) => {
+const removeStylesFromAllTemplates = (scopeName: string) => {
   TEMPLATE_TYPES.forEach((type) => {
     const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
     if (templates !== undefined) {
       templates.keyString.forEach((template) => {
-        const {element: {content}} = template;
-        Array.from(content.querySelectorAll('style')).forEach((s: Element) => {
-          s.parentNode!.removeChild(s);
-        });
+        removeStylesFromTemplate(template);
       });
     }
   });
@@ -146,9 +144,7 @@ const prepareTemplateStyles =
         condensedStyle.textContent! += style.textContent;
       }
       // Remove styles from nested templates in this scope.
-      removeStylesFromLitTemplates(scopeName);
-      // And then put the condensed style into the "root" template passed in as
-      // `template`.
+      removeStylesFromAllTemplates(scopeName);
       const {content} = template.element;
       content.insertBefore(condensedStyle, content.firstChild);
       // Note, it's important that ShadyCSS gets the template that `lit-html`

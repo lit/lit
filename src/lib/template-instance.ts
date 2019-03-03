@@ -80,17 +80,12 @@ export class TemplateInstance {
     while (partCount > 0) {
       const comment = walker.nextNode() as Comment;
 
-      // If element is null, that means we've either:
-      // * Traversed all elements in the current template, and need to process
-      //   a nested template.
-      // * ShadyCSS mucked with the template.
       if (comment === null) {
-        const template = stack.pop();
-        if (template === undefined) {
-          // ShadyCSS removed a style element that had a binding. Oh well.
-          break;
-        }
-        walker.currentNode = template;
+        // We've exhausted the content inside a nested template element.
+        // Because we still have parts (the outer for-loop), we know:
+        // - There is a template in the stack
+        // - The walker will find a nextNode outside the temlpate
+        walker.currentNode = stack.pop()!;
         continue;
       }
       const {data} = comment;
