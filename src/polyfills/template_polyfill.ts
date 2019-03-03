@@ -43,8 +43,9 @@ export const initTemplatePolyfill = (forced = false) => {
     Object.defineProperties(template, {
       content: {
         ...descriptor,
-        writable: false,
-        value: content,
+        get() {
+          return content;
+        },
       },
       innerHTML: {
         ...descriptor,
