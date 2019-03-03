@@ -61,16 +61,19 @@ export class Template {
     let lastPartIndex = 0;
     let index = -1;
     let partIndex = 0;
-    while (true) {
+    const {strings, values: {length}} = result;
+    while (partIndex < length) {
       const node = walker.nextNode() as Element | Comment | Text | null;
       if (node === null) {
+        // We've exhausted the content inside a nested template element.
+        // Because we still have parts (the outer for-loop), we know:
+        // - There is a template in the stack
+        // - The walker will find a nextNode outside the template
         const template = stack.pop();
         if (!template) {
           // Done traversing.
           break;
         }
-        // We've exhausted the content inside a nested template element. Reset
-        // the walker to the template element itself and try to walk from there.
         walker.currentNode = template;
         continue;
       }
@@ -94,7 +97,7 @@ export class Template {
           while (count-- > 0) {
             // Get the template literal section leading up to the first
             // expression in this attribute
-            const stringForPart = result.strings[partIndex];
+            const stringForPart = strings[partIndex];
             // Find the attribute name
             const name = lastAttributeNameRegex.exec(stringForPart)![2];
             // Find the corresponding attribute
@@ -107,9 +110,9 @@ export class Template {
             const attributeValue =
                 (node as Element).getAttribute(attributeLookupName)!;
             (node as Element).removeAttribute(attributeLookupName);
-            const strings = attributeValue.split(markerRegex);
-            this.parts.push({type: 'attribute', index, name, strings});
-            partIndex += strings.length - 1;
+            const statics = attributeValue.split(markerRegex);
+            this.parts.push({type: 'attribute', index, name, strings: statics});
+            partIndex += statics.length - 1;
           }
         }
         if ((node as Element).tagName === 'TEMPLATE') {
