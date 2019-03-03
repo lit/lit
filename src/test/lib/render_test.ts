@@ -268,6 +268,14 @@ suite('render()', () => {
       assert.equal(container.querySelector('p')!.textContent, 'bar');
     });
 
+    test('renders comments with bindings followed by attr', () => {
+      const t = html`
+        <!-- ${'foo'} -->
+        <p bar=${'baz'}></p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.getAttribute('bar'), 'baz');
+    });
+
     test('renders comments with multiple bindings', () => {
       const t = html`
         <!-- <div class="${'foo'}">${'bar'}</div> -->
@@ -317,7 +325,7 @@ suite('render()', () => {
 
     test('renders comments with multiple bindings followed by attr', () => {
       const t = html`
-        <!-- <div class="${'foo'}">${'bar'}</div> -->
+        <!-- ${'foo'} ${'bar'} -->
         <p baz=${'qux'}></p>`;
       render(t, container);
       assert.equal(container.querySelector('p')!.getAttribute('baz'), 'qux');
