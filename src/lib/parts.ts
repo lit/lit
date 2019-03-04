@@ -375,8 +375,8 @@ export class BooleanAttributePart implements Part {
       } else {
         this.element.removeAttribute(this.name);
       }
+      this.value = value;
     }
-    this.value = value;
     this._pendingValue = noChange;
   }
 }
