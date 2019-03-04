@@ -69,5 +69,5 @@ const removePartForMarker =
 
 const isPartMarker = (comment: Node|null): comment is Comment => {
   return comment !== null && comment.nodeType === 8 /* Node.COMMENT_NODE */ &&
-      (comment as Comment).data.lastIndexOf(partMarker, 0) === 0;
+      (comment as Comment).data.slice(0, partMarker.length) === partMarker;
 };

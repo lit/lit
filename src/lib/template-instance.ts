@@ -95,7 +95,7 @@ export class TemplateInstance {
       }
 
       // Does this comment start with the part marker?
-      if (data.lastIndexOf(partMarker, 0) === 0) {
+      if (data.slice(0, partMarker.length) === partMarker) {
         // The part marker packs the part index in the 16 low bits and
         // attribute count (if it's an attribute binding) in the 16 high bits.
         const packed = parseInt(data.slice(partMarker.length), 10);
