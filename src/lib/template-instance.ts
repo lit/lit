@@ -27,7 +27,7 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
  * with new values.
  */
 export class TemplateInstance {
-  readonly _parts: Array<Part|undefined> = [];
+  private readonly __parts: Array<Part|undefined> = [];
   readonly processor: TemplateProcessor;
   readonly options: RenderOptions;
   readonly template: Template;
@@ -42,20 +42,20 @@ export class TemplateInstance {
 
   update(values: ReadonlyArray<unknown>) {
     let i = 0;
-    for (const part of this._parts) {
+    for (const part of this.__parts) {
       if (part !== undefined) {
         part.setValue(values[i]);
       }
       i++;
     }
-    for (const part of this._parts) {
+    for (const part of this.__parts) {
       if (part !== undefined) {
         part.commit();
       }
     }
   }
 
-  _clone(): DocumentFragment {
+  clone(): DocumentFragment {
     // There are a number of steps in the lifecycle of a template instance's
     // DOM fragment:
     //  1. Clone - create the instance fragment
@@ -114,7 +114,7 @@ export class TemplateInstance {
     while (partIndex < parts.length) {
       part = parts[partIndex];
       if (!isTemplatePartActive(part)) {
-        this._parts.push(undefined);
+        this.__parts.push(undefined);
         partIndex++;
         continue;
       }
@@ -142,9 +142,9 @@ export class TemplateInstance {
       if (part.type === 'node') {
         const part = this.processor.handleTextExpression(this.options);
         part.insertAfterNode(node!.previousSibling!);
-        this._parts.push(part);
+        this.__parts.push(part);
       } else {
-        this._parts.push(...this.processor.handleAttributeExpressions(
+        this.__parts.push(...this.processor.handleAttributeExpressions(
             node as Element, part.name, part.strings, this.options));
       }
       partIndex++;

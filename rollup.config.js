@@ -26,6 +26,9 @@ export default {
       warnings: true,
       mangle: {
         module: true,
+        properties: {
+          regex: /^__/,
+        },
       },
     }),
     filesize({
