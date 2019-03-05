@@ -16,17 +16,6 @@
  * @module lit-html
  */
 
-interface MaybePolyfilledCe extends CustomElementRegistry {
-  polyfillWrapFlushCallback?: object;
-}
-
-/**
- * True if the custom elements polyfill is in use.
- */
-export const isCEPolyfill = window.customElements !== undefined &&
-    (window.customElements as MaybePolyfilledCe).polyfillWrapFlushCallback !==
-        undefined;
-
 /**
  * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
  * into another container (could be the same container), before `before`. If
