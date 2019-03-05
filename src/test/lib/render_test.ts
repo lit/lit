@@ -269,6 +269,12 @@ suite('render()', () => {
       assert.equal(container.querySelector('p')!.textContent, 'baz');
     });
 
+    test('does not inject text from comments with bindings', () => {
+      const t = html`<p>${'foo'}<!-- ${'baz'} -->${'bar'}</p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.textContent, 'foobar');
+    });
+
     test('does not break with an attempted dynamic start tag', () => {
       // this won't work, but we'd like it to not throw an exception or break
       // other bindings
