@@ -153,26 +153,27 @@ const prepareTemplateStyles =
       removeStylesFromLitTemplates(scopeName);
       // And then put the condensed style into the "root" template passed in as
       // `template`.
+      const content = template.element.content;
       insertNodeIntoTemplate(
-          template, condensedStyle, template.element.content.firstChild);
+          template, condensedStyle, content.firstChild);
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
       window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
       if (window.ShadyCSS!.nativeShadow) {
-        // When in native Shadow DOM, re-add styling to rendered content using
-        // the style ShadyCSS produced.
-        const style = template.element.content.querySelector('style');
-        // Note, an empty style will be eliminated so don't try to re-insert it.
-        if (style !== null) {
+        // When in native Shadow DOM, ensure the style created by Shady CSS is
+        // included in the lit template used for subsequent renders (`content`)
+        // and the initially rendered output (`renderedDOM`).
+        const style = content.querySelector('style');
+        if (style === null) {
+          // Shady CSS can remove a style if there's no content in it; if so
+          // put it back so that part indexing remains unchanged.
+          content.insertBefore(
+              document.createElement('style'),
+              content.firstChild);
+        } else {
           renderedDOM.insertBefore(
               style.cloneNode(true), renderedDOM.firstChild);
-          // However, we do need to ensure the template has a style in it if
-          // ShadyCSS eliminated it.
-        } else {
-          template.element.content.insertBefore(
-              document.createElement('style'),
-              template.element.content.firstChild);
         }
       } else {
         // When not in native Shadow DOM, at this point ShadyCSS will have
@@ -181,8 +182,8 @@ const prepareTemplateStyles =
         // and then tell lit to remove that node from the template.
         // NOTE, ShadyCSS creates its own style so we can safely add/remove
         // `condensedStyle` here.
-        template.element.content.insertBefore(
-            condensedStyle, template.element.content.firstChild);
+        content.insertBefore(
+            condensedStyle, content.firstChild);
         const removes = new Set();
         removes.add(condensedStyle);
         removeNodesFromTemplate(template, removes);
