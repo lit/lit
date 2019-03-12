@@ -16,7 +16,7 @@
  * @module lit-html
  */
 
-import { TemplateProcessor } from './template-processor.js';
+import {TemplateProcessor} from './template-processor.js';
 
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -28,7 +28,9 @@ export class TemplateResult {
   type: string;
   processor: TemplateProcessor;
 
-  constructor(strings: TemplateStringsArray, values: unknown[], type: string, processor: TemplateProcessor) {
+  constructor(
+      strings: TemplateStringsArray, values: unknown[], type: string,
+      processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;
     this.type = type;

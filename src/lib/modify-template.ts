@@ -30,22 +30,21 @@ import {
 export function removeStylesFromTemplate(template: Template) {
   const {
     // parts,
-    element: { content }
+    element: {content}
   } = template;
   const styles = content.querySelectorAll('style');
-  const { length } = styles;
+  const {length} = styles;
   if (length === 0) {
     return;
   }
 
-  // const walker = document.createTreeWalker(document, 128 /* NodeFilter.SHOW_COMMENT */, null, false);
+  // const walker = document.createTreeWalker(document, 128 /*
+  // NodeFilter.SHOW_COMMENT */, null, false);
 
   for (let i = 0; i < length; i++) {
     const style = styles[i];
-    const {
-      // previousSibling,
-      parentNode
-    } = style;
+    const {// previousSibling,
+           parentNode} = style;
 
     parentNode!.removeChild(style);
 
@@ -56,8 +55,10 @@ export function removeStylesFromTemplate(template: Template) {
     //   parentNode!.removeChild(previousSibling);
     // }
 
-    // // If there are any part markers for text nodes (the only possible binding
-    // // in a style element), we need to update those indices in the parts array,
+    // // If there are any part markers for text nodes (the only possible
+    // binding
+    // // in a style element), we need to update those indices in the parts
+    // array,
     // // too.
     // walker.currentNode = style;
     // while (walker.nextNode()) {
@@ -69,12 +70,14 @@ export function removeStylesFromTemplate(template: Template) {
   }
 }
 
-// const removePartForMarker = (parts: Array<TemplatePart | undefined>, comment: Comment) => {
+// const removePartForMarker = (parts: Array<TemplatePart | undefined>, comment:
+// Comment) => {
 //   // The part marker signifies the NodePart's index in the 16 low bits.
 //   const packed = parseInt(comment.data.slice(marker.length), 10);
 //   parts[packed & 0xffff] = undefined;
 // };
 
 // const isPartMarker = (comment: Node | null): comment is Comment => {
-//   return comment !== null && comment.nodeType === 8 /* Node.COMMENT_NODE */ && (comment as Comment).data.slice(0, marker.length) === marker;
+//   return comment !== null && comment.nodeType === 8 /* Node.COMMENT_NODE */
+//   && (comment as Comment).data.slice(0, marker.length) === marker;
 // };

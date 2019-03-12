@@ -16,15 +16,13 @@
  * @module lit-html
  */
 
-import { TemplateResult } from './template-result.js';
+import {TemplateResult} from './template-result.js';
 
 /**
  * An expression marker with embedded unique key to avoid collision with
  * possible text in templates.
  */
-export const marker = `{{lit-${Math.random()
-  .toString(36)
-  .slice(2)}}}`;
+export const marker = `{{lit-${Math.random().toString(36).slice(2)}}}`;
 
 /**
  * An expression marker for text-positions, nodes with attributes, and
@@ -40,7 +38,8 @@ const tagRegex = /<[^\0-\x1F\x7F-\x9F "'>=/]+(>)?/;
 /**
  * A regular expression that groups the name of the last attribute defined
  */
-const lastAttributeNameRegex = /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F "'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d"']*$/;
+const lastAttributeNameRegex =
+    /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F "'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d"']*$/;
 
 /**
  * A regular expression for all characters that close a tag context
@@ -57,13 +56,13 @@ const closeCommentRegex = /-->/;
  */
 const closeStyleRegex = /<\/style>/;
 
-type parser = (htmlString: string) => string | undefined;
+type parser = (htmlString: string) => string|undefined;
 /**
  * Parser state
  */
 let outputString: string;
 let parts: Array<Array<TemplatePart>> = [];
-let currentPart: TemplatePart | undefined;
+let currentPart: TemplatePart|undefined;
 let tagString: string;
 let tagHasBinding: boolean;
 let parse: parser;
@@ -71,11 +70,12 @@ let parseContext: parser;
 
 /**
  * Parses a string that is in a free text context.
- * It consumes tokens from the input string until the context enters another context (tag, comment, style).
- * If the end of the string is reached, it inserts a marker for a dynamic text part.
- * Returns the remainder of the string after all text tokens have been consumed.
+ * It consumes tokens from the input string until the context enters another
+ * context (tag, comment, style). If the end of the string is reached, it
+ * inserts a marker for a dynamic text part. Returns the remainder of the string
+ * after all text tokens have been consumed.
  */
-const parseText = (htmlString: string): string | undefined => {
+const parseText = (htmlString: string): string|undefined => {
   const match = htmlString.match(tagRegex);
   if (match) {
     // Skip parsing tags if the tag is immediately closed;
@@ -104,7 +104,7 @@ const parseText = (htmlString: string): string | undefined => {
     return htmlString;
   } else {
     outputString += htmlString + nodeMarker;
-    parts.push([{ type: 'node', strings: [] }]);
+    parts.push([{type: 'node', strings: []}]);
     parse = parseText;
     return;
   }
@@ -112,10 +112,11 @@ const parseText = (htmlString: string): string | undefined => {
 
 /**
  * Parses a string that is in a comment context.
- * It consumes tokens from the input string until the comment closes and returns to a text context.
- * If the end of the string is reached, it inserts a marker for a dynamic comment part.
+ * It consumes tokens from the input string until the comment closes and returns
+ * to a text context. If the end of the string is reached, it inserts a marker
+ * for a dynamic comment part.
  */
-const parseComment = (htmlString: string): string | undefined => {
+const parseComment = (htmlString: string): string|undefined => {
   const match = htmlString.match(closeCommentRegex);
   if (match) {
     const commentEnd = match.index! + 3;
@@ -129,7 +130,7 @@ const parseComment = (htmlString: string): string | undefined => {
     return parseText(htmlString.slice(commentEnd));
   } else {
     if (!currentPart) {
-      currentPart = { type: 'comment', strings: [] };
+      currentPart = {type: 'comment', strings: []};
       parts.push([currentPart]);
       htmlString = htmlString.slice(4);
     }
@@ -140,10 +141,11 @@ const parseComment = (htmlString: string): string | undefined => {
 
 /**
  * Parses a string that is in a style context.
- * It consumes tokens from the input string until the style tag closes and returns to a text context.
- * If the end of the string is reached, it inserts a marker for a dynamic comment part.
+ * It consumes tokens from the input string until the style tag closes and
+ * returns to a text context. If the end of the string is reached, it inserts a
+ * marker for a dynamic comment part.
  */
-const parseStyle = (htmlString: string): string | undefined => {
+const parseStyle = (htmlString: string): string|undefined => {
   const match = htmlString.match(closeStyleRegex);
   if (match) {
     const styleEnd = match.index! + 8;
@@ -159,7 +161,7 @@ const parseStyle = (htmlString: string): string | undefined => {
     return htmlString.slice(styleEnd);
   } else {
     if (!currentPart) {
-      currentPart = { type: 'style', strings: [] };
+      currentPart = {type: 'style', strings: []};
       parts.push([currentPart]);
     }
     currentPart.strings!.push(htmlString);
@@ -168,7 +170,7 @@ const parseStyle = (htmlString: string): string | undefined => {
   }
 };
 
-const parseTag = (htmlString: string): string | undefined => {
+const parseTag = (htmlString: string): string|undefined => {
   let match = htmlString.match(nodeEscapeRegex);
   if (match) {
     const tagEnd = match.index! + 1;
@@ -193,13 +195,15 @@ const parseTag = (htmlString: string): string | undefined => {
       tagHasBinding = true;
     }
     match = htmlString.match(lastAttributeNameRegex) as RegExpMatchArray;
-    parts[parts.length - 1].push({ type: 'attribute', name: match[1], strings: ['', ''] });
+    parts[parts.length - 1].push(
+        {type: 'attribute', name: match[1], strings: ['', '']});
     tagString += htmlString.slice(0, match.index);
     return;
   }
 };
 
-const parseAttribute = (delimiter: string) => (htmlString: string): string | undefined => {
+const parseAttribute = (delimiter: string) => (
+    htmlString: string): string|undefined => {
   const index = htmlString.indexOf(delimiter);
   if (index >= 0) {
     if (currentPart) {
@@ -220,7 +224,7 @@ const parseAttribute = (delimiter: string) => (htmlString: string): string | und
         parts.push([]);
         tagHasBinding = true;
       }
-      currentPart = { type: 'attribute', name: match[1], strings: [htmlString] };
+      currentPart = {type: 'attribute', name: match[1], strings: [htmlString]};
       parts[parts.length - 1].push(currentPart);
     }
     return;
@@ -250,7 +254,8 @@ export class Template {
       htmlString = strings[i];
       do {
         htmlString = parse(htmlString);
-      } while (htmlString !== undefined); // Important, we must continue when string === ''
+      } while (htmlString !==
+               undefined);  // Important, we must continue when string === ''
     }
     // Only parse the last string until we hit text context;
     htmlString = strings[lastString];
@@ -280,11 +285,23 @@ export class Template {
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
  */
-export type TemplatePart =
-  | { type: 'node'; strings: string[] | undefined }
-  | { type: 'attribute'; name: string; strings: string[] }
-  | { type: 'comment'; strings: string[] }
-  | { type: 'style'; strings: string[] };
+export type TemplatePart =|{
+  type: 'node';
+  strings: string[]|undefined
+}
+|{
+  type: 'attribute';
+  name: string;
+  strings: string[]
+}
+|{
+  type: 'comment';
+  strings: string[]
+}
+|{
+  type: 'style';
+  strings: string[]
+};
 
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
@@ -293,10 +310,12 @@ export const createMarker = (data: string) => document.createComment(data);
 // Creates a comment with the part index and number of attributes. The
 // attribute count occupies the 16 high bits, and the part index the 16 low
 // bits.
-// export const insertPartMarker = (node: Node, partIndex: number, attributeCount: number) => {
+// export const insertPartMarker = (node: Node, partIndex: number,
+// attributeCount: number) => {
 //   return;
 // };
-// node.parentNode!.insertBefore(createMarker(`${partMarker}${(attributeCount << 16) | partIndex}`), node);
+// node.parentNode!.insertBefore(createMarker(`${partMarker}${(attributeCount <<
+// 16) | partIndex}`), node);
 
 /**
  * This regex extracts the attribute name preceding an attribute-position

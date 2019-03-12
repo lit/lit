@@ -13,7 +13,7 @@
  */
 
 // import { marker } from '../../lib/template.js';
-import { html } from '../../lit-html.js';
+import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -24,14 +24,12 @@ suite('TemplateResult', () => {
   });
 
   test('values contain interpolated values', () => {
-    const foo = 'foo',
-      bar = 1;
+    const foo = 'foo', bar = 1;
     assert.deepEqual(
-      html`
+        html`
         ${foo}${bar}
       `.values,
-      [foo, bar]
-    );
+        [foo, bar]);
   });
 
   // test('style attributes are renamed', () => {
