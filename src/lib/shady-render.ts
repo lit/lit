@@ -163,7 +163,7 @@ const prepareTemplateStyles =
         // When in native Shadow DOM, re-add styling to rendered content using
         // the style ShadyCSS produced.
         const style = template.element.content.querySelector('style');
-        // Note, an empty style will be eliminated so don't try to re-insert it.
+        // Note, an empty style will be removed by Shady CSS so don't try to re-insert it.
         if (style !== null) {
           renderedDOM.insertBefore(
               style.cloneNode(true), renderedDOM.firstChild);
