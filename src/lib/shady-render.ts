@@ -161,12 +161,12 @@ const prepareTemplateStyles =
       // needed (e.g. @apply native Shadow DOM case).
       window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
       if (window.ShadyCSS!.nativeShadow) {
-        // When in native Shadow DOM, ensure the style created by Shady CSS is
+        // When in native Shadow DOM, ensure the style created by ShadyCSS is
         // included in the lit template used for subsequent renders (`content`)
         // and the initially rendered output (`renderedDOM`).
         const style = content.querySelector('style');
         if (style === null) {
-          // Shady CSS can remove a style if there's no content in it; if so
+          // ShadyCSS can remove a style if there's no content in it; if so
           // put it back so that part indexing remains unchanged.
           content.insertBefore(
               document.createElement('style'),

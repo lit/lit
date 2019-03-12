@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Added -->
 <!-- ### Removed -->
 ### Fixed
-* Prevents empty styles from causing exceptions or breaking rendering when using `shady-render` ([#760](https://github.com/Polymer/lit-html/issues/760)).
+* Prevent empty styles from causing exceptions or breaking rendering when using `shady-render` ([#760](https://github.com/Polymer/lit-html/issues/760)).
 * Primitive values in attributes are now always simply stringified, regardless of whether they are iterable. ([#830](https://github.com/Polymer/lit-html/pull/830))
 
 ## [1.0.0] - 2019-02-05
