@@ -84,7 +84,7 @@ export class Template {
           // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
           // attributes are not guaranteed to be returned in document order.
           // In particular, Edge/IE can return them out of order, so we cannot
-          // assume a correspondance between part index and attribute index.
+          // assume a correspondence between part index and attribute index.
           let count = 0;
           for (let i = 0; i < length; i++) {
             if (attributes[i].value.indexOf(marker) >= 0) {
