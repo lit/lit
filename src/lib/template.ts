@@ -16,198 +16,251 @@
  * @module lit-html
  */
 
-import {TemplateResult} from './template-result.js';
+import { TemplateResult } from './template-result.js';
 
 /**
  * An expression marker with embedded unique key to avoid collision with
  * possible text in templates.
  */
-export const marker = `{{lit-${String(Math.random()).slice(2)}}}`;
+export const marker = `{{lit-${Math.random()
+  .toString(36)
+  .slice(2)}}}`;
 
 /**
- * An expression marker used text-positions, multi-binding attributes, and
- * attributes with markup-like text values.
+ * An expression marker for text-positions, nodes with attributes, and
+ * style tags with dynamic values.
  */
 export const nodeMarker = `<!--${marker}-->`;
 
-export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
+/**
+ * A regular expression for HTML tags
+ */
+const tagRegex = /<[^\0-\x1F\x7F-\x9F "'>=/]+(>)?/;
 
 /**
- * A marker used to say the next sibling holds a part.
+ * A regular expression that groups the name of the last attribute defined
  */
-export const partMarker = `${marker}-part:`;
+const lastAttributeNameRegex = /[ \x09\x0a\x0c\x0d]([^\0-\x1F\x7F-\x9F "'>=/]+)[ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d"']*$/;
 
 /**
- * A marker that says the previous sibling is a template element.
+ * A regular expression for all characters that close a tag context
  */
-export const templateMarker = `${marker}-template`;
+const nodeEscapeRegex = /([>'"])/;
 
 /**
- * Suffix appended to all bound attribute names.
+ * A regular expression for a comment close
  */
-export const boundAttributeSuffix = '$lit$';
+const closeCommentRegex = /-->/;
+
+/**
+ * A regular expression for a closing style tag
+ */
+const closeStyleRegex = /<\/style>/;
+
+type parser = (htmlString: string) => string | undefined;
+/**
+ * Parser state
+ */
+let outputString: string;
+let parts: Array<Array<TemplatePart>> = [];
+let currentPart: TemplatePart | undefined;
+let tagString: string;
+let tagHasBinding: boolean;
+let parse: parser;
+let parseContext: parser;
+
+/**
+ * Parses a string that is in a free text context.
+ * It consumes tokens from the input string until the context enters another context (tag, comment, style).
+ * If the end of the string is reached, it inserts a marker for a dynamic text part.
+ * Returns the remainder of the string after all text tokens have been consumed.
+ */
+const parseText = (htmlString: string): string | undefined => {
+  const match = htmlString.match(tagRegex);
+  if (match) {
+    // Skip parsing tags if the tag is immediately closed;
+    if (match[1]) {
+      outputString += htmlString.slice(0, match.index) + match[0];
+      htmlString = htmlString.slice(match[0].length + match.index!);
+      if (match[0] === '<style>') {
+        parse = parseStyle;
+      } else {
+        parse = parseText;
+      }
+    } else {
+      outputString += htmlString.slice(0, match.index);
+      htmlString = htmlString.slice(match.index);
+      if (htmlString.slice(0, 4) === `<!--`) {
+        parse = parseComment;
+      } else {
+        parse = parseTag;
+        if (htmlString.slice(0, 6) === `<style`) {
+          parseContext = parseStyle;
+        } else {
+          parseContext = parseText;
+        }
+      }
+    }
+    return htmlString;
+  } else {
+    outputString += htmlString + nodeMarker;
+    parts.push([{ type: 'node', strings: [] }]);
+    parse = parseText;
+    return;
+  }
+};
+
+/**
+ * Parses a string that is in a comment context.
+ * It consumes tokens from the input string until the comment closes and returns to a text context.
+ * If the end of the string is reached, it inserts a marker for a dynamic comment part.
+ */
+const parseComment = (htmlString: string): string | undefined => {
+  const match = htmlString.match(closeCommentRegex);
+  if (match) {
+    const commentEnd = match.index! + 3;
+    if (currentPart) {
+      outputString += nodeMarker;
+      currentPart.strings!.push(htmlString.slice(0, match.index));
+      currentPart = undefined;
+    } else {
+      outputString += htmlString.slice(0, commentEnd);
+    }
+    return parseText(htmlString.slice(commentEnd));
+  } else {
+    if (!currentPart) {
+      currentPart = { type: 'comment', strings: [] };
+      parts.push([currentPart]);
+      htmlString = htmlString.slice(4);
+    }
+    currentPart.strings!.push(htmlString);
+    return;
+  }
+};
+
+/**
+ * Parses a string that is in a style context.
+ * It consumes tokens from the input string until the style tag closes and returns to a text context.
+ * If the end of the string is reached, it inserts a marker for a dynamic comment part.
+ */
+const parseStyle = (htmlString: string): string | undefined => {
+  const match = htmlString.match(closeStyleRegex);
+  if (match) {
+    const styleEnd = match.index! + 8;
+    if (currentPart) {
+      outputString += '</style>' + nodeMarker;
+      currentPart.strings!.push(htmlString.slice(0, match.index));
+      currentPart = undefined;
+      parse = parseText;
+    } else {
+      outputString += htmlString.slice(0, styleEnd);
+    }
+    parse = parseText;
+    return htmlString.slice(styleEnd);
+  } else {
+    if (!currentPart) {
+      currentPart = { type: 'style', strings: [] };
+      parts.push([currentPart]);
+    }
+    currentPart.strings!.push(htmlString);
+    // output.push(string, marker);
+    return;
+  }
+};
+
+const parseTag = (htmlString: string): string | undefined => {
+  let match = htmlString.match(nodeEscapeRegex);
+  if (match) {
+    const tagEnd = match.index! + 1;
+    if (match[1] === `>`) {
+      if (tagHasBinding) {
+        outputString += nodeMarker;
+        tagHasBinding = false;
+      }
+      outputString += tagString + htmlString.slice(0, tagEnd);
+      tagString = '';
+      parse = parseContext;
+      return htmlString.slice(tagEnd);
+    } else {
+      parse = parseAttribute(match[1]);
+      tagString += htmlString.slice(0, tagEnd);
+      return htmlString.slice(tagEnd);
+    }
+  } else {
+    // Bare attribute
+    if (!tagHasBinding) {
+      parts.push([]);
+      tagHasBinding = true;
+    }
+    match = htmlString.match(lastAttributeNameRegex) as RegExpMatchArray;
+    parts[parts.length - 1].push({ type: 'attribute', name: match[1], strings: ['', ''] });
+    tagString += htmlString.slice(0, match.index);
+    return;
+  }
+};
+
+const parseAttribute = (delimiter: string) => (htmlString: string): string | undefined => {
+  const index = htmlString.indexOf(delimiter);
+  if (index >= 0) {
+    if (currentPart) {
+      currentPart.strings!.push(htmlString.slice(0, index));
+    } else {
+      tagString += htmlString.slice(0, index + 1);
+    }
+    currentPart = undefined;
+    parse = parseTag;
+    return htmlString.slice(index + 1);
+  } else {
+    if (currentPart) {
+      currentPart.strings!.push(htmlString);
+    } else {
+      const match = tagString.match(lastAttributeNameRegex) as RegExpMatchArray;
+      tagString = tagString.slice(0, match.index);
+      if (!tagHasBinding) {
+        parts.push([]);
+        tagHasBinding = true;
+      }
+      currentPart = { type: 'attribute', name: match[1], strings: [htmlString] };
+      parts[parts.length - 1].push(currentPart);
+    }
+    return;
+  }
+};
 
 /**
  * An updateable Template that tracks the location of dynamic parts.
  */
 export class Template {
-  parts: Array<TemplatePart|undefined> = [];
+  parts: Array<Array<TemplatePart>> = [];
   element: HTMLTemplateElement;
 
-  constructor(result: TemplateResult, element: HTMLTemplateElement) {
-    this.element = element;
+  constructor(result: TemplateResult) {
+    this.element = document.createElement('template');
+    // Reset the global parser variables
+    parts = [];
+    outputString = '';
+    tagString = '';
+    tagHasBinding = false;
+    parse = parseText;
 
-    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-    const walker = document.createTreeWalker(
-        element.content,
-        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-        null,
-        false);
-    const nodesToRemove: Node[] = [];
-    const stack: Node[] = [];
-
-    // Keeps track of the last part's staring node. We try to delete
-    // unnecessary nodes, but we never want to associate two different parts to
-    // the same starting node. They must have a constant node between.
-    let lastPartStart = null;
-    let partIndex = 0;
-
-    while (true) {
-      const node = walker.nextNode() as Element | Comment | Text | null;
-      if (node === null) {
-        const template = stack.pop();
-        if (!template) {
-          // Done traversing.
-          break;
-        }
-        // We've exhausted the content inside a nested template element. Reset
-        // the walker to the template element itself and try to walk from there.
-        walker.currentNode = template;
-        continue;
-      }
-
-      if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-        if ((node as Element).hasAttributes()) {
-          const attributes = (node as Element).attributes;
-          const {length} = attributes;
-          // Per
-          // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
-          // attributes are not guaranteed to be returned in document order.
-          // In particular, Edge/IE can return them out of order, so we cannot
-          // assume a correspondance between part index and attribute index.
-          let count = 0;
-          for (let i = 0; i < length; i++) {
-            if (attributes[i].value.indexOf(marker) >= 0) {
-              count++;
-            }
-          }
-
-          if (count > 0) {
-            insertPartMarker(node, partIndex, count);
-          }
-          while (count-- > 0) {
-            // Get the template literal section leading up to the first
-            // expression in this attribute
-            const stringForPart = result.strings[partIndex];
-            // Find the attribute name
-            const name = lastAttributeNameRegex.exec(stringForPart)![2];
-            // Find the corresponding attribute
-            // All bound attributes have had a suffix added in
-            // TemplateResult#getHTML to opt out of special attribute
-            // handling. To look up the attribute value we also need to add
-            // the suffix.
-            const attributeLookupName =
-                name.toLowerCase() + boundAttributeSuffix;
-            const attributeValue =
-                (node as Element).getAttribute(attributeLookupName)!;
-            const strings = attributeValue.split(markerRegex);
-            this.parts.push({type: 'attribute', name, strings});
-            (node as Element).removeAttribute(attributeLookupName);
-            partIndex += strings.length - 1;
-          }
-        }
-
-        if ((node as Element).tagName === 'TEMPLATE') {
-          // Insert a template marker _after_ the template. This is so that we
-          // don't get confused if the template also has an attribute binding
-          // (which would have inserted a partMarker before the template).
-          //
-          // TODO If we could figure out if this template holds no bindings, we
-          // could skip generating this template marker. That'll speed up
-          // TemplateInstance cloning later on.
-          const tm = createMarker(templateMarker);
-          node.parentNode!.insertBefore(tm, node.nextSibling);
-          stack.push(tm);
-          walker.currentNode = (node as HTMLTemplateElement).content;
-        }
-      } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-        const data = (node as Text).data;
-        if (data.indexOf(marker) >= 0) {
-          const parent = node.parentNode!;
-          const strings = data.split(markerRegex);
-          const lastIndex = strings.length - 1;
-
-          // Generate a new text node for each literal section
-          // These nodes are also used as the markers for node parts
-          for (let i = 0; i < lastIndex; i++) {
-            parent.insertBefore(
-                (strings[i] === '') ? createMarker('') :
-                                      document.createTextNode(strings[i]),
-                node);
-            insertPartMarker(node, partIndex++, 0);
-            this.parts.push({type: 'node'});
-          }
-
-          // If there's no text, we must insert a comment to mark our place.
-          // Else, we can trust it will stick around after cloning.
-          if (strings[lastIndex] === '') {
-            parent.insertBefore(createMarker(''), node);
-            nodesToRemove.push(node);
-          } else {
-            (node as Text).data = strings[lastIndex];
-          }
-        }
-      } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
-        if ((node as Comment).data === marker) {
-          const parent = node.parentNode!;
-
-          // Add a new marker node to be the startNode of the Part if any of
-          // the following are true:
-          //  * We don't have a previousSibling
-          //  * The previousSibling is already the start of a previous part
-          const {previousSibling} = node;
-          if (previousSibling === null || previousSibling === lastPartStart) {
-            lastPartStart = parent.insertBefore(createMarker(''), node);
-          }
-          insertPartMarker(node, partIndex++, 0);
-          this.parts.push({type: 'node'});
-
-          // If we don't have a nextSibling, keep this node so we have an end.
-          // Else, we can remove it to save future costs.
-          if (node.nextSibling === null) {
-            (node as Comment).data = '';
-          } else {
-            lastPartStart = node;
-            nodesToRemove.push(node);
-          }
-        } else {
-          let i = -1;
-          while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
-            // Comment node has a binding marker inside, make an inactive part
-            // The binding won't work, but subsequent bindings will
-            // TODO (justinfagnani): consider whether it's even worth it to
-            // make bindings in comments work
-            this.parts.push(undefined);
-            partIndex++;
-          }
-        }
-      }
+    const strings = result.strings;
+    let htmlString;
+    const lastString = strings.length - 1;
+    for (let i = 0; i < lastString; i++) {
+      htmlString = strings[i];
+      do {
+        htmlString = parse(htmlString);
+      } while (htmlString !== undefined); // Important, we must continue when string === ''
     }
-
-    // Remove text binding nodes after the walk to not disturb the TreeWalker
-    for (const n of nodesToRemove) {
-      n.parentNode!.removeChild(n);
+    // Only parse the last string until we hit text context;
+    htmlString = strings[lastString];
+    while (parse !== parseText) {
+      htmlString = parse(htmlString!);
     }
+    outputString += htmlString;
+
+    this.parts = parts;
+    this.element.innerHTML = outputString;
   }
 }
 
@@ -227,9 +280,11 @@ export class Template {
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
  */
-export type TemplatePart = {
-  type: 'node',
-}|{type: 'attribute', name: string, strings: string[]};
+export type TemplatePart =
+  | { type: 'node'; strings: string[] | undefined }
+  | { type: 'attribute'; name: string; strings: string[] }
+  | { type: 'comment'; strings: string[] }
+  | { type: 'style'; strings: string[] };
 
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
@@ -238,11 +293,10 @@ export const createMarker = (data: string) => document.createComment(data);
 // Creates a comment with the part index and number of attributes. The
 // attribute count occupies the 16 high bits, and the part index the 16 low
 // bits.
-export const insertPartMarker =
-    (node: Node, partIndex: number, attributeCount: number) =>
-        node.parentNode!.insertBefore(
-            createMarker(`${partMarker}${attributeCount << 16 | partIndex}`),
-            node);
+// export const insertPartMarker = (node: Node, partIndex: number, attributeCount: number) => {
+//   return;
+// };
+// node.parentNode!.insertBefore(createMarker(`${partMarker}${(attributeCount << 16) | partIndex}`), node);
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
@@ -269,5 +323,3 @@ export const insertPartMarker =
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
-export const lastAttributeNameRegex =
-    /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;

@@ -16,8 +16,8 @@
  * @module lit-html
  */
 
-import {TemplateResult} from './template-result.js';
-import {marker, Template} from './template.js';
+import { TemplateResult } from './template-result.js';
+import { marker, Template } from './template.js';
 
 /**
  * A function type that creates a Template from a TemplateResult.
@@ -68,7 +68,7 @@ export function templateFactory(result: TemplateResult) {
   template = templateCache.keyString.get(key);
   if (template === undefined) {
     // If we have not seen this key before, create a new Template
-    template = new Template(result, result.getTemplateElement());
+    template = new Template(result);
     // Cache the Template for this key
     templateCache.keyString.set(key, template);
   }

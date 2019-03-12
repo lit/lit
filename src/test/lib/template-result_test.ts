@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {marker} from '../../lib/template.js';
-import {html} from '../../lit-html.js';
+// import { marker } from '../../lib/template.js';
+import { html } from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -24,12 +24,18 @@ suite('TemplateResult', () => {
   });
 
   test('values contain interpolated values', () => {
-    const foo = 'foo', bar = 1;
-    assert.deepEqual(html`${foo}${bar}`.values, [foo, bar]);
+    const foo = 'foo',
+      bar = 1;
+    assert.deepEqual(
+      html`
+        ${foo}${bar}
+      `.values,
+      [foo, bar]
+    );
   });
 
-  test('style attributes are renamed', () => {
-    const templateHTML = html`<div style="color: ${'red'}"></div>`.getHTML();
-    assert.equal(templateHTML, `<div style$lit$="color: ${marker}"></div>`);
-  });
+  // test('style attributes are renamed', () => {
+  //   const templateHTML = html`<div style="color: ${'red'}"></div>`.getHTML();
+  //   assert.equal(templateHTML, `<div style$lit$="color: ${marker}"></div>`);
+  // });
 });
