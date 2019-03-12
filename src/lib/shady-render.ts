@@ -162,8 +162,18 @@ const prepareTemplateStyles =
       if (window.ShadyCSS!.nativeShadow) {
         // When in native Shadow DOM, re-add styling to rendered content using
         // the style ShadyCSS produced.
-        const style = template.element.content.querySelector('style')!;
-        renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
+        const style = template.element.content.querySelector('style');
+        // Note, an empty style will be eliminated so don't try to re-insert it.
+        if (style !== null) {
+          renderedDOM.insertBefore(
+              style.cloneNode(true), renderedDOM.firstChild);
+          // However, we do need to ensure the template has a style in it if
+          // ShadyCSS eliminated it.
+        } else {
+          template.element.content.insertBefore(
+              document.createElement('style'),
+              template.element.content.firstChild);
+        }
       } else {
         // When not in native Shadow DOM, at this point ShadyCSS will have
         // removed the style from the lit template and parts will be broken as a
