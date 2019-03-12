@@ -84,9 +84,12 @@ export class TemplateInstance {
               partDescription.strings,
               this.options);
           parts.forEach((part) => this._parts.push(part));
+          commentNode.parentNode!.removeChild(commentNode);
         } else if (partDescription.type === 'comment') {
+          // TODO: Make something that handles comment expressions
           const part = this.processor.handleTextExpression(this.options);
           part.insertAfterNode(commentNode);
+          commentNode.parentNode!.removeChild(commentNode);
           this._parts.push(part);
         } else {
           // Style Node
@@ -100,6 +103,7 @@ export class TemplateInstance {
             part.insertAfterNode(styleNode.childNodes[i]);
             this._parts.push(part);
           }
+          commentNode.parentNode!.removeChild(commentNode);
         }
       });
     });
