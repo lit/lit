@@ -47,9 +47,7 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
  * attribute, or text. `node` is the node where the value is being inserted.
  */
 export type DomSanitizer =
-    (value: unknown,
-     name: string,
-     type: ('property'|'attribute'),
+    (value: unknown, name: string, type: ('property'|'attribute'|'text'),
      node: Node) => unknown;
 
 
@@ -108,15 +106,12 @@ export class AttributeCommitter {
     // String(value)
     if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0]) {
       const v = parts[0].value;
-      if (Array.isArray(v)) {
-        if (v.length === 1) {
-          return v[0];
-        }
+      if (Array.isArray(v) && v.length === 1) {
+        return v[0];
       } else {
         return v;
       }
     }
-
     let text = '';
 
     for (let i = 0; i < l; i++) {
@@ -299,12 +294,11 @@ export class NodePart implements Part {
     value = value == null ? '' : value;
     if (node === this.endNode.previousSibling &&
         node.nodeType === 3 /* Node.TEXT_NODE */) {
+      // If we only have a single text node between the markers, we can just
+      // set its value, rather than replacing it.
       if (sanitizeDOMValue) {
         value = sanitizeDOMValue(value, 'data', 'property', node);
       }
-      // If we only have a single text node between the markers, we can just
-      // set its value, rather than replacing it.
-      // TODO(justinfagnani): Can we just check if this.value is primitive?
       (node as Text).data = typeof value === 'string' ? value : String(value);
     } else {
       // When setting text content, for security purposes it matters a lot what
@@ -314,7 +308,8 @@ export class NodePart implements Part {
       const textNode = document.createTextNode('');
       this.__commitNode(textNode);
       if (sanitizeDOMValue) {
-        value = String(sanitizeDOMValue(value, 'data', 'property', textNode));
+        value = String(
+            sanitizeDOMValue(value, 'textContent', 'property', textNode));
       }
       textNode.data = typeof value === 'string' ? value : String(value);
     }
@@ -327,6 +322,22 @@ export class NodePart implements Part {
         this.value.template === template) {
       this.value.update(value.values);
     } else {
+      // `value` is a template result that was constructed without knowledge of
+      // the parent we're about to write it into. sanitizeDOMValue hasn't been
+      // made aware of this relationship, and for scripts and style specifically
+      // this is known to be unsafe. So in the case where the user is in
+      // "secure mode" (i.e. when there's a sanitizeDOMValue set), we just want
+      // to forbid this because it's not a use case we want to support.
+      // We check for sanitizeDOMValue is to prevent this from
+      // being a breaking change to the library.
+      const parent = this.endNode.parentNode!;
+      if (sanitizeDOMValue !== undefined && parent.nodeName === 'STYLE' ||
+          parent.nodeName === 'SCRIPT') {
+        this._commitText(
+            '/* lit-html will not write ' +
+            'TemplateResults to scripts and styles */');
+        return;
+      }
       // Make sure we propagate the template processor from the TemplateResult
       // so that we use its syntax extension, etc. The template factory comes
       // from the render function options so that it can control template
