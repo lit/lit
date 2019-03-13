@@ -695,7 +695,7 @@ suite('setSanitizeDOMValue', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
     assert.deepEqual(sanitizerCalls, [
-      {value: 'foo', name: 'data', type: 'property', nodeName: '#text'},
+      {value: 'foo', name: 'textContent', type: 'property', nodeName: '#text'},
       {value: safeFoo, name: 'data', type: 'property', nodeName: '#text'}
     ]);
   });
@@ -713,7 +713,7 @@ suite('setSanitizeDOMValue', () => {
         '<div>hello big world</div>');
 
     assert.deepEqual(sanitizerCalls, [
-      {value: 'big', name: 'data', type: 'property', nodeName: '#text'},
+      {value: 'big', name: 'textContent', type: 'property', nodeName: '#text'},
       {value: safeBig, name: 'data', type: 'property', nodeName: '#text'}
     ]);
   });
