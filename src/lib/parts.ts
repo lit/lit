@@ -106,8 +106,10 @@ export class AttributeCommitter {
     // String(value)
     if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0]) {
       const v = parts[0].value;
-      if (Array.isArray(v) && v.length === 1) {
-        return v[0];
+      if (Array.isArray(v)) {
+        if (v.length === 1) {
+          return v[0];
+        }
       } else {
         return v;
       }
