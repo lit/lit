@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {__testOnlyClearSanitizerDoNotCallOrElse} from '../../lib/parts.js';
 import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, setSanitizeDOMValue, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
@@ -680,7 +681,7 @@ suite('setSanitizeDOMValue', () => {
   });
 
   teardown(() => {
-    setSanitizeDOMValue(undefined as any);
+    __testOnlyClearSanitizerDoNotCallOrElse();
     sanitizerCalls.length = 0;
   });
 

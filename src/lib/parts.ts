@@ -38,16 +38,33 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
 };
 
 /**
- * A global callback used to sanitize any value before inserting it into the
- * DOM.
+ * A global callback used to sanitize any value before it is written into the
+ * DOM. This can be used to implement a security policy of allowed and
+ * disallowed values.
  *
- * `value` is the value to sanitize.
- * `name` is the name of an attribute or property (for example, href).
- * `type` indicates where the value is being inserted: one of property,
- * attribute, or text. `node` is the node where the value is being inserted.
+ * One way of using this callback would be to check attributes and properties
+ * against a list of high risk fields, and require that values written to such
+ * fields be instances of a class which is safe by construction. Closure's Safe
+ * HTML Types is one implementation of this technique (
+ * https://github.com/google/safe-html-types/blob/master/doc/safehtml-types.md).
+ * The TrustedTypes polyfill in API-only mode could also be used as a basis
+ * for this technique (https://github.com/WICG/trusted-types).
+ *
+ * @param value The value to sanitize. Will be the actual value passed into the
+ *   lit-html template literal, so this could be of any type.
+ * @param name The name of an attribute or property (for example, 'href').
+ * @param type Indicates whether the write that's about to be performed will
+ *   be to a property or a node.
+ * @param node The HTML node (usually either a #text node or an Element) that
+ *   is being written to.
+ * @returns The value to write. Typically this is `value`, unless
+ *   `value` is determined to be unsafe, in which case a harmless sentinel value
+ *   should be returned instead.
  */
-export type DomSanitizer =
-    (value: unknown, name: string, type: ('property'|'attribute'|'text'),
+export type DOMSanitizer =
+    (value: unknown,
+     name: string,
+     type: ('property'|'attribute'),
      node: Node) => unknown;
 
 
@@ -55,12 +72,21 @@ export type DomSanitizer =
  * A global callback used to sanitize any value before inserting it into the
  * DOM.
  */
-// tslint:disable-next-line:prefer-const
-let sanitizeDOMValue: DomSanitizer|undefined;
+let sanitizeDOMValue: DOMSanitizer|undefined;
 
-export function setSanitizeDOMValue(newSanitizer: DomSanitizer) {
+/** Sets the global DOM sanitization callback. */
+export const setSanitizeDOMValue = (newSanitizer: DOMSanitizer) => {
+  if (sanitizeDOMValue !== undefined) {
+    throw new Error(
+        `Attempted to overwrite existing lit-html security policy.` +
+        ` setSanitizeDOMValue should be called at most once.`);
+  }
   sanitizeDOMValue = newSanitizer;
-}
+};
+
+export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
+  sanitizeDOMValue = undefined;
+};
 
 /**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
@@ -104,13 +130,11 @@ export class AttributeCommitter {
     // string. Instead we want to just return the value itself directly,
     // so that sanitizeDOMValue can get the actual value rather than
     // String(value)
+    // The exception is if v is an array, in which case we do want to smash
+    // it together into a string without calling String() on the array.
     if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0]) {
       const v = parts[0].value;
-      if (Array.isArray(v)) {
-        if (v.length === 1) {
-          return v[0];
-        }
-      } else {
+      if (!Array.isArray(v)) {
         return v;
       }
     }
@@ -335,7 +359,7 @@ export class NodePart implements Part {
       const parent = this.endNode.parentNode!;
       if (sanitizeDOMValue !== undefined && parent.nodeName === 'STYLE' ||
           parent.nodeName === 'SCRIPT') {
-        this._commitText(
+        this.__commitText(
             '/* lit-html will not write ' +
             'TemplateResults to scripts and styles */');
         return;
