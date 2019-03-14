@@ -167,7 +167,7 @@ const prepareTemplateStyles =
         renderedDOM.insertBefore(
             style.cloneNode(true), renderedDOM.firstChild);
       } else {
-        // When no style is left in the template, arts will be broken as a
+        // When no style is left in the template, parts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
         // and then tell lit to remove that node from the template.
         // There can be no style in the template in 2 cases (1) when Shady DOM
