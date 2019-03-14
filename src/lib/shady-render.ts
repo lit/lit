@@ -160,26 +160,19 @@ const prepareTemplateStyles =
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
       window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
-      if (window.ShadyCSS!.nativeShadow) {
+      const style = content.querySelector('style');
+      if (window.ShadyCSS!.nativeShadow && style !== null) {
         // When in native Shadow DOM, ensure the style created by ShadyCSS is
-        // included in the lit template used for subsequent renders (`content`)
-        // and the initially rendered output (`renderedDOM`).
-        const style = content.querySelector('style');
-        if (style === null) {
-          // ShadyCSS can remove a style if there's no content in it; if so
-          // put it back so that part indexing remains unchanged.
-          content.insertBefore(
-              document.createElement('style'),
-              content.firstChild);
-        } else {
-          renderedDOM.insertBefore(
-              style.cloneNode(true), renderedDOM.firstChild);
-        }
+        // included in initially rendered output (`renderedDOM`).
+        renderedDOM.insertBefore(
+            style.cloneNode(true), renderedDOM.firstChild);
       } else {
-        // When not in native Shadow DOM, at this point ShadyCSS will have
-        // removed the style from the lit template and parts will be broken as a
+        // When no style is left in the template, arts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
         // and then tell lit to remove that node from the template.
+        // There can be no style in the template in 2 cases (1) when Shady DOM
+        // is in use, ShadyCSS removes all styles, (2) when native Shadow DOM
+        // is in use ShadyCSS removes the style if it contains no content.
         // NOTE, ShadyCSS creates its own style so we can safely add/remove
         // `condensedStyle` here.
         content.insertBefore(
