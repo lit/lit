@@ -17,7 +17,7 @@
  */
 
 import {Part} from './part.js';
-import {NodePart} from './parts.js';
+import {CommentPart, NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 
 export interface TemplateProcessor {
@@ -39,4 +39,6 @@ export interface TemplateProcessor {
    * @param partOptions
    */
   handleTextExpression(options: RenderOptions): NodePart;
+
+  handleCommentExpression(node: Comment): CommentPart;
 }

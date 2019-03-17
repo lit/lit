@@ -127,7 +127,8 @@ const parseComment = (htmlString: string): string|undefined => {
     } else {
       outputString += htmlString.slice(0, commentEnd);
     }
-    return parseText(htmlString.slice(commentEnd));
+    parse = parseText;
+    return htmlString.slice(commentEnd);
   } else {
     if (!currentPart) {
       currentPart = {type: 'comment', strings: []};
@@ -287,20 +288,20 @@ export class Template {
  */
 export type TemplatePart =|{
   type: 'node';
-  strings: string[]|undefined
+  strings: string[]|undefined;
 }
 |{
   type: 'attribute';
   name: string;
-  strings: string[]
+  strings: string[];
 }
 |{
   type: 'comment';
-  strings: string[]
+  strings: string[];
 }
 |{
   type: 'style';
-  strings: string[]
+  strings: string[];
 };
 
 // Allows `document.createComment('')` to be renamed for a

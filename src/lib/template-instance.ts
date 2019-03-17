@@ -67,14 +67,18 @@ export class TemplateInstance {
         fragment, 128 /* NodeFilter.SHOW_COMMENT */, null, false);
     const {parts} = this.template;
 
-    parts.forEach((partList) => {
+    parts.forEach(partList => {
       let commentNode = walker.nextNode() as Comment;
       while (commentNode.data !== marker) {
         commentNode = walker.nextNode() as Comment;
       }
-      partList.forEach((partDescription) => {
+      partList.forEach(partDescription => {
         if (partDescription.type === 'node') {
           const part = this.processor.handleTextExpression(this.options);
+          if (!commentNode.nextSibling) {
+            commentNode.parentNode!.appendChild(document.createComment(''));
+          }
+          commentNode.data = '';
           part.insertAfterNode(commentNode);
           this._parts.push(part);
         } else if (partDescription.type === 'attribute') {
@@ -83,19 +87,15 @@ export class TemplateInstance {
               partDescription.name,
               partDescription.strings,
               this.options);
-          parts.forEach((part) => this._parts.push(part));
-          commentNode.parentNode!.removeChild(commentNode);
+          parts.forEach(part => this._parts.push(part));
         } else if (partDescription.type === 'comment') {
-          // TODO: Make something that handles comment expressions
-          const part = this.processor.handleTextExpression(this.options);
-          part.insertAfterNode(commentNode);
-          commentNode.parentNode!.removeChild(commentNode);
+          const part = this.processor.handleCommentExpression(commentNode);
           this._parts.push(part);
         } else {
           // Style Node
           // TODO: Make this way less dirty
           const styleNode = commentNode.previousSibling as Element;
-          partDescription.strings.forEach((s) => {
+          partDescription.strings.forEach(s => {
             styleNode.appendChild(document.createTextNode(s));
           });
           for (let i = 0; i++; i < partDescription.strings.length - 1) {
@@ -106,6 +106,11 @@ export class TemplateInstance {
           commentNode.parentNode!.removeChild(commentNode);
         }
       });
+
+      // TODO: Remove redundant comment nodes?
+      // if (partList[0].type === 'comment' || partList[0].type === 'style') {
+      //   commentNode.parentNode!.removeChild(commentNode);
+      // }
     });
 
     return fragment;

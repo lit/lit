@@ -134,6 +134,37 @@ export class AttributePart implements Part {
   }
 }
 
+export class CommentPart implements Part {
+  node: Comment;
+  value: unknown = undefined;
+  _pendingValue: unknown = undefined;
+  constructor(node: Comment) {
+    this.node = node;
+  }
+
+  setValue(value: unknown): void {
+    this._pendingValue = value;
+  }
+
+  commit() {
+    while (isDirective(this._pendingValue)) {
+      const directive = this._pendingValue;
+      this._pendingValue = noChange;
+      directive(this);
+    }
+    const value = this._pendingValue;
+    if (value === noChange) {
+      return;
+    }
+    if (isPrimitive(value)) {
+      if (value !== this.value) {
+        this.value = value;
+        this.node.data = (typeof value === 'string' ? value : String(value));
+      }
+    }
+  }
+}
+
 /**
  * A Part that controls a location within a Node tree. Like a Range, NodePart
  * has start and end locations and can set and update the Nodes between those

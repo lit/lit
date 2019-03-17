@@ -17,7 +17,7 @@
  */
 
 import {Part} from './part.js';
-import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
+import {AttributeCommitter, BooleanAttributePart, CommentPart, EventPart, NodePart, PropertyCommitter} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
 
@@ -57,6 +57,10 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
    */
   handleTextExpression(options: RenderOptions) {
     return new NodePart(options);
+  }
+
+  handleCommentExpression(node: Comment) {
+    return new CommentPart(node);
   }
 }
 
