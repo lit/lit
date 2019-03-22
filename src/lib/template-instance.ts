@@ -114,10 +114,14 @@ export class TemplateInstance {
       partIndex++;
     }
 
-    // Now that the instance is prepared, upgrade any nested custom elements so
-    // that they can do their setup before the template parts are committed.
     document.adoptNode(fragment);
-    customElements.upgrade(fragment);
+    if (typeof customElements !== 'undefined') {
+      // Now that the instance is prepared, upgrade any nested custom elements
+      // so that they can do their setup before the template parts are
+      // committed. Note that document.adoptNode does not upgrade custom
+      // elements.
+      customElements.upgrade(fragment);
+    }
     return fragment;
   }
 }
