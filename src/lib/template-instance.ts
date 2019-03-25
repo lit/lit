@@ -27,10 +27,10 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
  * with new values.
  */
 export class TemplateInstance {
-  _parts: Array<Part|undefined> = [];
-  processor: TemplateProcessor;
-  options: RenderOptions;
-  template: Template;
+  readonly _parts: Array<Part|undefined> = [];
+  readonly processor: TemplateProcessor;
+  readonly options: RenderOptions;
+  readonly template: Template;
 
   constructor(
       template: Template, processor: TemplateProcessor,
@@ -40,7 +40,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  update(values: unknown[]) {
+  update(values: ReadonlyArray<unknown>) {
     let i = 0;
     for (const part of this._parts) {
       if (part !== undefined) {

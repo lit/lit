@@ -21,7 +21,7 @@
  * by lit-html.
  */
 export interface Part {
-  value: unknown;
+  readonly value: unknown;
 
   /**
    * Sets the current part value, but does not write it to the DOM.
