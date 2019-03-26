@@ -286,6 +286,30 @@ suite('shady-render', () => {
         document.body.removeChild(container);
       });
 
+  test('empty styles are ok', function() {
+    const container1 = document.createElement('scope-empty-style');
+    document.body.appendChild(container1);
+    const renderTemplate = (foo: string, container: Element) => {
+      const result =
+          html`<div id="a">${foo}</div><style></style><div id="b">${foo}</div>`;
+      renderShadowRoot(result, container);
+    };
+    renderTemplate('foo', container1);
+    assert.equal(
+        container1.shadowRoot!.querySelector('#a')!.textContent, `foo`);
+    assert.equal(
+        container1.shadowRoot!.querySelector('#b')!.textContent, `foo`);
+    const container2 = document.createElement('scope-empty-style');
+    document.body.appendChild(container2);
+    renderTemplate('bar', container2);
+    assert.equal(
+        container2.shadowRoot!.querySelector('#a')!.textContent, `bar`);
+    assert.equal(
+        container2.shadowRoot!.querySelector('#b')!.textContent, `bar`);
+    document.body.removeChild(container1);
+    document.body.removeChild(container2);
+  });
+
   test('part values render into styles once per scope', function() {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
       this.skip();
