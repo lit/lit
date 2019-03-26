@@ -41,8 +41,8 @@ export const boundAttributeSuffix = '$lit$';
  * An updateable Template that tracks the location of dynamic parts.
  */
 export class Template {
-  parts: TemplatePart[] = [];
-  element: HTMLTemplateElement;
+  readonly parts: TemplatePart[] = [];
+  readonly element: HTMLTemplateElement;
 
   constructor(result: TemplateResult, element: HTMLTemplateElement) {
     this.element = element;
@@ -201,9 +201,9 @@ export class Template {
  * to Part.update().
  */
 export type TemplatePart = {
-  type: 'node',
+  readonly type: 'node',
   index: number
-}|{type: 'attribute', index: number, name: string, strings: string[]};
+}|{readonly type: 'attribute', index: number, readonly name: string, readonly strings: ReadonlyArray<string>};
 
 export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 

@@ -43,19 +43,19 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
  * for an attribute.
  */
 export class AttributeCommitter {
-  element: Element;
-  name: string;
-  strings: string[];
-  parts: AttributePart[];
+  readonly element: Element;
+  readonly name: string;
+  readonly strings: ReadonlyArray<string>;
+  readonly parts: ReadonlyArray<AttributePart>;
   dirty = true;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     this.element = element;
     this.name = name;
     this.strings = strings;
     this.parts = [];
     for (let i = 0; i < strings.length - 1; i++) {
-      this.parts[i] = this._createPart();
+      (this.parts as AttributePart[])[i] = this._createPart();
     }
   }
 
@@ -102,7 +102,7 @@ export class AttributeCommitter {
  * A Part that controls all or part of an attribute value.
  */
 export class AttributePart implements Part {
-  committer: AttributeCommitter;
+  readonly committer: AttributeCommitter;
   value: unknown = undefined;
 
   constructor(comitter: AttributeCommitter) {
@@ -143,7 +143,7 @@ export class AttributePart implements Part {
  * as well as arrays and iterables of those types.
  */
 export class NodePart implements Part {
-  options: RenderOptions;
+  readonly options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
@@ -339,13 +339,13 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
-  element: Element;
-  name: string;
-  strings: string[];
+  readonly element: Element;
+  readonly name: string;
+  readonly strings: ReadonlyArray<string>;
   value: unknown = undefined;
   _pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -391,9 +391,9 @@ export class BooleanAttributePart implements Part {
  * a string first.
  */
 export class PropertyCommitter extends AttributeCommitter {
-  single: boolean;
+  readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
@@ -445,13 +445,13 @@ try {
 type EventHandlerWithOptions =
     EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
-  element: Element;
-  eventName: string;
-  eventContext?: EventTarget;
+  readonly element: Element;
+  readonly eventName: string;
+  readonly eventContext?: EventTarget;
   value: undefined|EventHandlerWithOptions = undefined;
   _options?: AddEventListenerOptions;
   _pendingValue: undefined|EventHandlerWithOptions = undefined;
-  _boundHandleEvent: (event: Event) => void;
+  readonly _boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;

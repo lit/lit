@@ -17,8 +17,8 @@ import {Template} from '../lib/template.js';
 import {directive, NodePart, Part, reparentNodes, TemplateResult} from '../lit-html.js';
 
 type CachedTemplate = {
-  instance: TemplateInstance,
-  nodes: DocumentFragment
+  readonly instance: TemplateInstance,
+  readonly nodes: DocumentFragment
 };
 const templateCaches =
     new WeakMap<NodePart, WeakMap<Template, CachedTemplate>>();

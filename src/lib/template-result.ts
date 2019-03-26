@@ -25,14 +25,14 @@ import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from '
  * interpolated expressions.
  */
 export class TemplateResult {
-  strings: TemplateStringsArray;
-  values: unknown[];
-  type: string;
-  processor: TemplateProcessor;
+  readonly strings: TemplateStringsArray;
+  readonly values: ReadonlyArray<unknown>;
+  readonly type: string;
+  readonly processor: TemplateProcessor;
 
   constructor(
-      strings: TemplateStringsArray, values: unknown[], type: string,
-      processor: TemplateProcessor) {
+      strings: TemplateStringsArray, values: ReadonlyArray<unknown>,
+      type: string, processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;
     this.type = type;

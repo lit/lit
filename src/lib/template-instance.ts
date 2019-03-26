@@ -16,6 +16,7 @@
  * @module lit-html
  */
 
+import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
@@ -26,10 +27,10 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
  * with new values.
  */
 export class TemplateInstance {
-  _parts: Array<Part|undefined> = [];
-  processor: TemplateProcessor;
-  options: RenderOptions;
-  template: Template;
+  readonly _parts: Array<Part|undefined> = [];
+  readonly processor: TemplateProcessor;
+  readonly options: RenderOptions;
+  readonly template: Template;
 
   constructor(
       template: Template, processor: TemplateProcessor,
@@ -39,7 +40,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  update(values: unknown[]) {
+  update(values: ReadonlyArray<unknown>) {
     let i = 0;
     for (const part of this._parts) {
       if (part !== undefined) {
@@ -55,12 +56,47 @@ export class TemplateInstance {
   }
 
   _clone(): DocumentFragment {
-    // Clone the node, rather than importing it, to keep the fragment in the
-    // template's document. This leaves the fragment inert so custom elements
-    // won't upgrade and potentially modify their contents before we traverse
-    // the tree.
-    const fragment =
-        this.template.element.content.cloneNode(true) as DocumentFragment;
+    // There are a number of steps in the lifecycle of a template instance's
+    // DOM fragment:
+    //  1. Clone - create the instance fragment
+    //  2. Adopt - adopt into the main document
+    //  3. Process - find part markers and create parts
+    //  4. Upgrade - upgrade custom elements
+    //  5. Update - set node, attribute, property, etc., values
+    //  6. Connect - connect to the document. Optional and outside of this
+    //     method.
+    //
+    // We have a few constraints on the ordering of these steps:
+    //  * We need to upgrade before updating, so that property values will pass
+    //    through any property setters.
+    //  * We would like to process before upgrading so that we're sure that the
+    //    cloned fragment is inert and not disturbed by self-modifying DOM.
+    //  * We want custom elements to upgrade even in disconnected fragments.
+    //
+    // Given these constraints, with full custom elements support we would
+    // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
+    //
+    // But Safari dooes not implement CustomElementRegistry#upgrade, so we
+    // can not implement that order and still have upgrade-before-update and
+    // upgrade disconnected fragments. So we instead sacrifice the
+    // process-before-upgrade constraint, since in Custom Elements v1 elements
+    // must not modify their light DOM in the constructor. We still have issues
+    // when co-existing with CEv0 elements like Polymer 1, and with polyfills
+    // that don't strictly adhere to the no-modification rule because shadow
+    // DOM, which may be created in the constructor, is emulated by being placed
+    // in the light DOM.
+    //
+    // The resulting order is on native is: Clone, Adopt, Upgrade, Process,
+    // Update, Connect. document.importNode() performs Clone, Adopt, and Upgrade
+    // in one step.
+    //
+    // The Custom Elements v1 polyfill supports upgrade(), so the order when
+    // polyfilled is the more ideal: Clone, Process, Adopt, Upgrade, Update,
+    // Connect.
+
+    const fragment = isCEPolyfill ?
+        this.template.element.content.cloneNode(true) as DocumentFragment :
+        document.importNode(this.template.element.content, true);
 
     const stack: Node[] = [];
     const parts = this.template.parts;
@@ -114,10 +150,10 @@ export class TemplateInstance {
       partIndex++;
     }
 
-    // Now that the instance is prepared, upgrade any nested custom elements so
-    // that they can do their setup before the template parts are committed.
-    document.adoptNode(fragment);
-    customElements.upgrade(fragment);
+    if (isCEPolyfill) {
+      document.adoptNode(fragment);
+      customElements.upgrade(fragment);
+    }
     return fragment;
   }
 }

@@ -972,7 +972,7 @@ suite('render()', () => {
     class MutatesInConstructorElement extends HTMLElement {
       constructor() {
         super();
-        this.innerHTML = '<div></div>';
+        this.appendChild(document.createElement('div'));
       }
     }
     customElements.define(
@@ -1046,18 +1046,18 @@ suite('render()', () => {
           assert.isTrue(instance.calledSetter);
         });
 
-    test('does not upgrade elements until after parts are established', () => {
-      render(
-          html`
+    // We need Safari to implement customElements.upgrade before we can enable
+    // this.
+    test.skip(
+        'does not upgrade elements until after parts are established', () => {
+          render(
+              html`
             <mutates-in-constructor></mutates-in-constructor>
             <span>${'test'}</span>
       `,
-          container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), `
-            <mutates-in-constructor><div></div></mutates-in-constructor>
-            <span>test</span>
-      `);
-    });
+              container);
+          assert.equal(container.querySelector('span')!.textContent, 'test');
+        });
   });
 
   suite('updates', () => {

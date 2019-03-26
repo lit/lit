@@ -17,7 +17,7 @@
  */
 
 interface MaybePolyfilledCe extends CustomElementRegistry {
-  polyfillWrapFlushCallback?: object;
+  readonly polyfillWrapFlushCallback?: object;
 }
 
 /**
