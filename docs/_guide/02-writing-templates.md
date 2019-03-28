@@ -127,9 +127,13 @@ const clickHandler = {
 };
 ```
 
+{:.alert .alert-info}
+<div>
+
 **Event listener objects.** When you specify a listener using an event listener object,
 the listener object itself is set as the event context (`this` value).
-{.alert .alert-info}
+
+</div>
 
 ## Nest and compose templates
 

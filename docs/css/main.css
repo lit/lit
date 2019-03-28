@@ -417,7 +417,6 @@ article ol li {
 
 .alert {
   position: relative;
-  z-index: -1;
   margin: 24px 0;
   padding: 1px 20px 1px 56px;
   box-shadow: 0 0 2px #ccc;
