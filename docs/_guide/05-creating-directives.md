@@ -137,15 +137,59 @@ const myTemplate = () =>
 
 Here, the rendered template shows "Waiting for promise to resolve," followed one second later by "Promise is resolved."
 
+
+## Maintaining state between renders {#maintaining-state}
+
+If your directive needs to maintain state between renders, you can rely on the fact that the `Part` object representing a given location in the DOM stays the same between calls to `render`. In the `renderCounter` example, the part's value serves as the state.
+
+If you need to store more complicated state, you can can use a [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap), using the `Part` as a key.
+
+```js
+import {directive} from from 'lit-html';
+
+// Define the map at module level
+const stateMap = new WeakMap();
+
+const statefulDirective = directive(() => {(part) => {
+  let myState = stateMap.get(part);
+  if (myState === undefined) {
+    // Initialize state for this location
+    myState = {};
+    stateMap.set(part, myState);
+  }
+  // ... use the state somehow
+});
+```
+
+<div class="alert alert-info">
+
+**Why a WeakMap?** Using a weak map ensures that the `Part` objects and state data can  be garbage collected when they're no longer in use, preventing a memory leak. For more information, see the [MDN page on WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap).
+
+</div>
+
 ## Repeating directives in content bindings
 
-Sometimes you want a directive to manage multiple nested parts. For example, a directive that renders a list of items (like `repeat`) might create a nested part for each item. Keeping separate parts lets you manipulate them efficiently: for example, you can change the value of a single part without re-rendering the entire list. 
+Sometimes you want a directive to manage multiple nested parts. For example, a directive that renders a list of items (like `repeat`) might create a nested part for each item. Keeping separate parts lets you manipulate them efficiently: for example, you can change the value of a single part without re-rendering the entire list.
 
 To create nested parts, you construct [`NodePart`](/api/classes/lit_html.nodepart.html) instances and associate them with specific locations in the DOM. The section of DOM controlled by a given `NodePart` needs to be delimited by static nodes that serve as markers. (lit-html usually uses comment nodes for these markers.)
 
-<img alt="Diagram showing a tree of DOM nodes and a NodePart object. The DOM tree consists of a parent node and seveal child nodes, with two of the child nodes identified as 'marker nodes.' The NodePart object has a startNode property, which points to the first marker node, and an endNode property, which points to the second marker node. Child nodes between the two marker nodes are identified as 'nodes managed by NodePart.'" src="/images/guides/node-part-markers.png" style="max-width: 515px;">
+<img alt="Diagram showing a tree of DOM nodes and a NodePart object. The DOM tree consists of a parent node and several child nodes, with two of the child nodes identified as 'marker nodes.' The NodePart object has a startNode property, which points to the first marker node, and an endNode property, which points to the second marker node. Child nodes between the two marker nodes are identified as 'nodes managed by NodePart.'" src="/images/guides/node-part-markers.png" style="max-width: 515px;">
 
 As shown in the diagram, the nodes managed by the `NodePart` appear between its `startNode` and `endNode`. The following code creates and adds a new, nested part inside an existing part (the "container part"). 
+
+```js
+import {NodePart} from 'lit-html';
+const newPart = new NodePart(containerPart.options);
+
+newPart.appendIntoPart(containerPart);
+```
+
+The end result looks something like this:
+
+<img alt="Diagram showing a tree of DOM nodes and a two NodePart objects. The DOM tree consists of a parent node and several child nodes, with two pairs of child nodes identified as 'marker nodes.' The container NodePart object has a startNode property, which points to the first marker node, and an endNode property, which points to the last marker node. The nested NodePart object has startNode and endNode properties that point to the second and third marker nodes. Child nodes between the second and third marker nodes are identified as 'nodes managed by nested NodePart.'" src="/images/guides/nested-node-parts.png" style="max-width: 535px;">
+
+The `appendIntoPart` method creates the marker nodes and inserts the nested part for you. In some cases, you may need to manually manage the marker nodes (for example, if you're inserting a nested part into the middle of the child list). In this case, you can use code like this:
+
 
 ```js
 import {NodePart, createMarker} from 'lit-html';
@@ -162,39 +206,27 @@ container.insertBefore(createMarker(), containerPart.endNode);
 newPart.insertAfterNode(startNode);
 ```
 
-If you don't need to manage the marker nodes yourself, you can use the [appendIntoPart](/api/classes/lit_html.nodepart.html#appendintopart) convenience method: 
-
-```js
-import {NodePart} from 'lit-html';
-const newPart = new NodePart(containerPart.options);
-
-newPart.appendIntoPart(containerPart);
-```
-
-The end result looks something like this:
-
-<img alt="Diagram showing a tree of DOM nodes and a two NodePart objects. The DOM tree consists of a parent node and seveal child nodes, with two pairs of child nodes identified as 'marker nodes.' The cointainer NodePart object has a startNode property, which points to the first marker node, and an endNode property, which points to the last marker node. The nested NodePart object has startNode and endNode properties that point to the second and third marker nodes. Child nodes between the second and third marker nodes are identified as 'nodes managed by nested NodePart.'" src="/images/guides/nested-node-parts.png" style="max-width: 535px;">
-
-Putting it all together—the following example directive takes a value and inserts it into the DOM _twice_ by creating two nested parts.
+Putting it all together—the following example directive takes a value and inserts it into the DOM _twice_ by creating two nested parts. As shown in [Maintaining state between renders](#maintaining-state), it uses a `WeakMap` to store these nested parts.
 
 ```js
 // Import lit-html APIs
-import {html, render, directive, NodePart, createMarker} from 'lit-html';
+import {html, render, directive, NodePart, appendIntoPart} from 'lit-html';
+
+// Stores the nested parts associated with a single instance of the directive
+const nestedPartMap = new WeakMap();
+
+// Creates a new nested part and adds it to the DOM
+// managed by containerPart
+const createAndAppendPart = (containerPart) => {
+  const newPart = new NodePart(containerPart.options);
+  newPart.appendIntoPart(containerPart);
+
+  return newPart;
+}
 
 // duplicate directive takes a single value, and renders it
 // in the DOM twice
 const duplicate = directive((value) => {
-  let part1;
-  let part2;
-
-  // Creates a new nested part and adds it to the DOM
-  // managed by containerPart
-  const createAndAppendPart = (containerPart) => {
-    const newPart = new NodePart(containerPart.options);
-    newPart.appendIntoPart(containerPart);
-
-    return newPart;
-  }
 
   // the directive function itself
   return (containerPart) => {
@@ -202,10 +234,15 @@ const duplicate = directive((value) => {
       throw new Error('duplicate directive can only be used in content bindings');
     }
 
-    if (part1 === undefined) { 
+    let part1, part2;
+    const nestedParts = nestedPartMap.get(containerPart);
+    if (nestedParts === undefined) {
       // create parts
       part1 = createAndAppendPart(containerPart);
       part2 = createAndAppendPart(containerPart);
+      nestedPartMap.set(containerPart, [part1, part2]);
+    } else {
+      [part1, part2] = nestedParts;
     }
 
     // for imperatively created parts, need to call commit()
