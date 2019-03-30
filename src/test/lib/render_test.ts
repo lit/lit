@@ -549,7 +549,7 @@ suite('render()', () => {
 
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
-      let event: Event;
+      let event: Event|undefined = undefined;
       const listener = function(this: any, e: any) {
         event = e;
         thisValue = this;
@@ -558,14 +558,17 @@ suite('render()', () => {
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
+      if (event === undefined) {
+        throw new Error(`Event listener never fired!`);
+      }
       assert.equal(thisValue, eventContext);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
       if (typeof MouseEvent === 'function') {
-        assert.instanceOf(event!, MouseEvent);
+        assert.instanceOf(event, MouseEvent);
       } else {
-        assert.isDefined((event! as MouseEvent).initMouseEvent);
+        assert.isDefined((event as MouseEvent).initMouseEvent);
       }
     });
 
@@ -969,7 +972,7 @@ suite('render()', () => {
     class MutatesInConstructorElement extends HTMLElement {
       constructor() {
         super();
-        this.innerHTML = '<div></div>';
+        this.appendChild(document.createElement('div'));
       }
     }
     customElements.define(
@@ -1043,18 +1046,18 @@ suite('render()', () => {
           assert.isTrue(instance.calledSetter);
         });
 
-    test('does not upgrade elements until after parts are established', () => {
-      render(
-          html`
+    // We need Safari to implement customElements.upgrade before we can enable
+    // this.
+    test.skip(
+        'does not upgrade elements until after parts are established', () => {
+          render(
+              html`
             <mutates-in-constructor></mutates-in-constructor>
             <span>${'test'}</span>
       `,
-          container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), `
-            <mutates-in-constructor><div></div></mutates-in-constructor>
-            <span>test</span>
-      `);
-    });
+              container);
+          assert.equal(container.querySelector('span')!.textContent, 'test');
+        });
   });
 
   suite('updates', () => {
@@ -1125,7 +1128,7 @@ suite('render()', () => {
       // Wait for mutation callback to be called
       await new Promise((resolve) => setTimeout(resolve));
 
-      const elementNodes: Array<Node> = [];
+      const elementNodes: Node[] = [];
       for (const record of mutationRecords) {
         elementNodes.push(...Array.from(record.addedNodes)
                               .filter((n) => n.nodeType === Node.ELEMENT_NODE));

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
+  "homepage": "https://lit-html.polymer-project.org/",
   "repository": "Polymer/lit-html",
   "main": "lit-html.js",
   "module": "lit-html.js",
@@ -43,7 +44,7 @@
     "rollup-plugin-filesize": "^4.0.1",
     "rollup-plugin-terser": "^1.0.1",
     "tslint": "^5.11.0",
-    "typescript": "^3.2.2",
+    "typescript": "^3.4.1",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"

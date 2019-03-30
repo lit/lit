@@ -32,14 +32,11 @@ suite('until', () => {
   });
 
   test('renders a Promise when it resolves', async () => {
-    let resolve: (v: any) => void;
-    const promise = new Promise((res, _) => {
-      resolve = res;
-    });
-    render(html`<div>${until(promise)}</div>`, container);
+    const deferred = new Deferred<any>();
+    render(html`<div>${until(deferred.promise)}</div>`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-    resolve!('foo');
-    await promise;
+    deferred.resolve('foo');
+    await deferred.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
@@ -200,86 +197,70 @@ suite('until', () => {
   });
 
   test('renders racing Promises across renders correctly', async () => {
-    let resolve1: (v: any) => void;
-    const promise1 = new Promise((res, _) => {
-      resolve1 = res;
-    });
-    let resolve2: (v: any) => void;
-    const promise2 = new Promise((res, _) => {
-      resolve2 = res;
-    });
+    const deferred1 = new Deferred<any>();
+    const deferred2 = new Deferred<any>();
 
     const t = (promise: any) => html`<div>${until(promise)}</div>`;
 
     // First render, first Promise, no value
-    render(t(promise1), container);
+    render(t(deferred1.promise), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Second render, second Promise, still no value
-    render(t(promise2), container);
+    render(t(deferred2.promise), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Resolve the first Promise, should not update the container
-    resolve1!('foo');
-    await promise1;
+    deferred1.resolve('foo');
+    await deferred1.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     // Resolve the second Promise, should update the container
-    resolve2!('bar');
-    await promise2;
+    deferred2.resolve('bar');
+    await deferred2.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
   test('renders Promises resolving in high-to-low priority', async () => {
-    let resolve1: (v: any) => void;
-    const promise1 = new Promise((res, _) => {
-      resolve1 = res;
-    });
-    let resolve2: (v: any) => void;
-    const promise2 = new Promise((res, _) => {
-      resolve2 = res;
-    });
+    const deferred1 = new Deferred<any>();
+    const deferred2 = new Deferred<any>();
 
-    const t = () => html`<div>${until(promise1, promise2)}</div>`;
+    const t = () =>
+        html`<div>${until(deferred1.promise, deferred2.promise)}</div>`;
 
     // First render with neither Promise resolved
     render(t(), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Resolve the primary Promise, updates the DOM
-    resolve1!('foo');
-    await promise1;
+    deferred1.resolve('foo');
+    await deferred1.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
     // Resolve the secondary Promise, should not update the container
-    resolve2!('bar');
-    await promise2;
+    deferred2.resolve('bar');
+    await deferred2.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
   test('renders Promises resolving in low-to-high priority', async () => {
-    let resolve1: (v: any) => void;
-    const promise1 = new Promise((res, _) => {
-      resolve1 = res;
-    });
-    let resolve2: (v: any) => void;
-    const promise2 = new Promise((res, _) => {
-      resolve2 = res;
-    });
+    const deferred1 = new Deferred<any>();
+    const deferred2 = new Deferred<any>();
 
-    const t = () => html`<div>${until(promise1, promise2)}</div>`;
+    const t = () =>
+        html`<div>${until(deferred1.promise, deferred2.promise)}</div>`;
 
     // First render with neither Promise resolved
     render(t(), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Resolve the secondary Promise, updates the DOM
-    resolve2!('bar');
-    await promise2;
+    deferred2.resolve('bar');
+    await deferred2.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
 
     // Resolve the primary Promise, updates the DOM
-    resolve1!('foo');
-    await promise1;
+    deferred1.resolve('foo');
+    await deferred1.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
@@ -302,10 +283,7 @@ suite('until', () => {
   });
 
   test('renders low-priority content when arguments change', async () => {
-    let resolve1: (v: any) => void;
-    const promise1 = new Promise((res, _) => {
-      resolve1 = res;
-    });
+    const deferred1 = new Deferred<any>();
     const promise2 = Promise.resolve('bar');
 
     const t = (p1: any, p2: any) => html`<div>${until(p1, p2)}</div>`;
@@ -320,47 +298,41 @@ suite('until', () => {
         stripExpressionMarkers(container.innerHTML), '<div>string</div>');
 
     // Then render new Promises with the low-priority Promise already resolved
-    render(t(promise1, promise2), container);
+    render(t(deferred1.promise, promise2), container);
     // Because they're Promises, nothing happens synchronously
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div>string</div>');
     await 0;
     // Low-priority renders
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
-    resolve1!('foo');
-    await promise1;
+    deferred1.resolve('foo');
+    await deferred1.promise;
     // High-priority renders
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
   test('renders Promises resolving after changing priority', async () => {
-    let resolve1: (v: any) => void;
-    const promise1 = new Promise((res, _) => {
-      resolve1 = res;
-    });
-    let resolve2: (v: any) => void;
-    const promise2 = new Promise((res, _) => {
-      resolve2 = res;
-    });
+    const deferred1 = new Deferred<any>();
+    const deferred2 = new Deferred<any>();
 
     const t = (p1: any, p2: any) => html`<div>${until(p1, p2)}</div>`;
 
     // First render with neither Promise resolved
-    render(t(promise1, promise2), container);
+    render(t(deferred1.promise, deferred2.promise), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Change priorities
-    render(t(promise2, promise1), container);
+    render(t(deferred2.promise, deferred1.promise), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     // Resolve the primary Promise, updates the DOM
-    resolve1!('foo');
-    await promise1;
+    deferred1.resolve('foo');
+    await deferred1.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
     // Resolve the secondary Promise, also updates the DOM
-    resolve2!('bar');
-    await promise2;
+    deferred2.resolve('bar');
+    await deferred2.promise;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 });

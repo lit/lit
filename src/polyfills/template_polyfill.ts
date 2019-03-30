@@ -43,8 +43,9 @@ export const initTemplatePolyfill = (forced = false) => {
     Object.defineProperties(template, {
       content: {
         ...descriptor,
-        writable: false,
-        value: content,
+        get() {
+          return content;
+        },
       },
       innerHTML: {
         ...descriptor,
@@ -61,7 +62,7 @@ export const initTemplatePolyfill = (forced = false) => {
   Document.prototype.createElement = function createElement(
       tagName: string, options?: ElementCreationOptions) {
     const el = capturedCreateElement.call(this, tagName, options);
-    if (el.localName === 'template') {
+    if (el.tagName === 'TEMPLATE') {
       upgrade(el as HTMLTemplateElement);
     }
     return el;

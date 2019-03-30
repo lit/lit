@@ -15,7 +15,7 @@
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 export interface StyleInfo {
-  [name: string]: string;
+  readonly [name: string]: string;
 }
 
 /**

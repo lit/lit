@@ -16,8 +16,8 @@ import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
 
 interface PreviousValue {
-  value: unknown;
-  fragment: DocumentFragment;
+  readonly value: unknown;
+  readonly fragment: DocumentFragment;
 }
 
 // For each part, remember the value that was last rendered to the part by the
