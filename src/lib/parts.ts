@@ -31,25 +31,31 @@ export const isPrimitive = (value: unknown): value is Primitive => {
       value === null ||
       !(typeof value === 'object' || typeof value === 'function'));
 };
+export const isIterable = (value: unknown): value is Iterable<unknown> => {
+  return Array.isArray(value) ||
+      // tslint:disable-next-line:no-any
+      !!(value && (value as any)[Symbol.iterator]);
+};
 
 /**
- * Sets attribute values for AttributeParts, so that the value is only set once
- * even if there are multiple parts for an attribute.
+ * Writes attribute values to the DOM for a group of AttributeParts bound to a
+ * single attibute. The value is only set once even if there are multiple parts
+ * for an attribute.
  */
 export class AttributeCommitter {
-  element: Element;
-  name: string;
-  strings: string[];
-  parts: AttributePart[];
+  readonly element: Element;
+  readonly name: string;
+  readonly strings: ReadonlyArray<string>;
+  readonly parts: ReadonlyArray<AttributePart>;
   dirty = true;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     this.element = element;
     this.name = name;
     this.strings = strings;
     this.parts = [];
     for (let i = 0; i < strings.length - 1; i++) {
-      this.parts[i] = this._createPart();
+      (this.parts as AttributePart[])[i] = this._createPart();
     }
   }
 
@@ -70,15 +76,12 @@ export class AttributeCommitter {
       const part = this.parts[i];
       if (part !== undefined) {
         const v = part.value;
-        if (v != null &&
-            (Array.isArray(v) ||
-             // tslint:disable-next-line:no-any
-             typeof v !== 'string' && (v as any)[Symbol.iterator])) {
-          for (const t of v as Iterable<unknown>) {
+        if (isPrimitive(v) || !isIterable(v)) {
+          text += typeof v === 'string' ? v : String(v);
+        } else {
+          for (const t of v) {
             text += typeof t === 'string' ? t : String(t);
           }
-        } else {
-          text += typeof v === 'string' ? v : String(v);
         }
       }
     }
@@ -95,8 +98,11 @@ export class AttributeCommitter {
   }
 }
 
+/**
+ * A Part that controls all or part of an attribute value.
+ */
 export class AttributePart implements Part {
-  committer: AttributeCommitter;
+  readonly committer: AttributeCommitter;
   value: unknown = undefined;
 
   constructor(comitter: AttributeCommitter) {
@@ -128,8 +134,16 @@ export class AttributePart implements Part {
   }
 }
 
+/**
+ * A Part that controls a location within a Node tree. Like a Range, NodePart
+ * has start and end locations and can set and update the Nodes between those
+ * locations.
+ *
+ * NodeParts support several value types: primitives, Nodes, TemplateResults,
+ * as well as arrays and iterables of those types.
+ */
 export class NodePart implements Part {
-  options: RenderOptions;
+  readonly options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
@@ -140,7 +154,7 @@ export class NodePart implements Part {
   }
 
   /**
-   * Inserts this part into a container.
+   * Appends this part into a container.
    *
    * This part must be empty, as its contents are not automatically moved.
    */
@@ -150,9 +164,9 @@ export class NodePart implements Part {
   }
 
   /**
-   * Inserts this part between `ref` and `ref`'s next sibling. Both `ref` and
-   * its next sibling must be static, unchanging nodes such as those that appear
-   * in a literal section of a template.
+   * Inserts this part after the `ref` node (between `ref` and `ref`'s next
+   * sibling). Both `ref` and its next sibling must be static, unchanging nodes
+   * such as those that appear in a literal section of a template.
    *
    * This part must be empty, as its contents are not automatically moved.
    */
@@ -172,7 +186,7 @@ export class NodePart implements Part {
   }
 
   /**
-   * Appends this part after `ref`
+   * Inserts this part after the `ref` part.
    *
    * This part must be empty, as its contents are not automatically moved.
    */
@@ -204,11 +218,8 @@ export class NodePart implements Part {
       this._commitTemplateResult(value);
     } else if (value instanceof Node) {
       this._commitNode(value);
-    } else if (
-        Array.isArray(value) ||
-        // tslint:disable-next-line:no-any
-        (value as any)[Symbol.iterator]) {
-      this._commitIterable(value as Iterable<unknown>);
+    } else if (isIterable(value)) {
+      this._commitIterable(value);
     } else if (value === nothing) {
       this.value = nothing;
       this.clear();
@@ -310,7 +321,7 @@ export class NodePart implements Part {
     if (partIndex < itemParts.length) {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
-      this.clear(itemPart && itemPart!.endNode);
+      this.clear(itemPart && itemPart.endNode);
     }
   }
 
@@ -328,13 +339,13 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
-  element: Element;
-  name: string;
-  strings: string[];
+  readonly element: Element;
+  readonly name: string;
+  readonly strings: ReadonlyArray<string>;
   value: unknown = undefined;
   _pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -380,9 +391,9 @@ export class BooleanAttributePart implements Part {
  * a string first.
  */
 export class PropertyCommitter extends AttributeCommitter {
-  single: boolean;
+  readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: string[]) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
@@ -434,13 +445,13 @@ try {
 type EventHandlerWithOptions =
     EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
-  element: Element;
-  eventName: string;
-  eventContext?: EventTarget;
+  readonly element: Element;
+  readonly eventName: string;
+  readonly eventContext?: EventTarget;
   value: undefined|EventHandlerWithOptions = undefined;
   _options?: AddEventListenerOptions;
   _pendingValue: undefined|EventHandlerWithOptions = undefined;
-  _boundHandleEvent: (event: Event) => void;
+  readonly _boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;

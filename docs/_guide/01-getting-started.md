@@ -14,7 +14,7 @@ slug: getting-started
 
 lit-html is distributed on npm, in the [lit-html package].
 
-```
+```bash
 npm install lit-html
 ```
 
@@ -37,11 +37,11 @@ You can try out lit-html without installing anything using an online editor. Bel
 ## Importing
 
 lit-html is written in and distributed as standard JavaScript modules.
-Modules are increasingly supported in JavaScript environments and are shipping in Chrome, Opera and Safari, and will soon be in Firefox and Edge.
+Modules are increasingly supported in JavaScript environments and have shipped in Chrome, Firefox, Edge, Safari, and Opera.
 
 To use lit-html, import it via a path:
 
-```js
+```html
 <script type="module">
   import {html, render} from './node_modules/lit-html/lit-html.js';
   ...
@@ -57,6 +57,11 @@ If you use a tool that converts package names into paths, then you can import by
 ```js
 import {html, render} from 'lit-html';
 ```
+
+For simplicity, the examples in these docs use package names (also known as node-style module specifiers).
+
+See [Tools](tools) for information on build tools and dev servers you can use to convert node-style module specifiers to 
+browser-style module specifiers. 
 
 **Why JavaScript modules?** For more information on why lit-html is distributed using JavaScript modules, see [JavaScript Modules](concepts#javascript-modules).
 

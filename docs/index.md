@@ -65,7 +65,7 @@ lit-html gives you the full power of JavaScript and functional programming patte
 
 Templates are values that can be computed, passed to and from functions and nested. Expressions are real JavaScript and can include anything you need.
 
-lit-html support many kind of values natively: strings, DOM nodes, heterogeneous lists, nested templates and more.
+lit-html supports many kind of values natively: strings, DOM nodes, heterogeneous lists, nested templates and more.
 
 </div>
 <div style="flex: 1">

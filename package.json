@@ -1,8 +1,9 @@
 {
   "name": "lit-html",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
+  "homepage": "https://lit-html.polymer-project.org/",
   "repository": "Polymer/lit-html",
   "main": "lit-html.js",
   "module": "lit-html.js",
@@ -27,7 +28,8 @@
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
@@ -42,7 +44,7 @@
     "rollup-plugin-filesize": "^4.0.1",
     "rollup-plugin-terser": "^1.0.1",
     "tslint": "^5.11.0",
-    "typescript": "^3.2.2",
+    "typescript": "^3.4.1",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"

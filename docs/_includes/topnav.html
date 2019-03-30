@@ -1,7 +1,7 @@
 <nav class="main-nav" markdown="0">
   <a class="nav-title" href="{{ site.baseurl }}/">{{ site.name }}</a>
   <div class="flex"></div>
-  <a class="nav-item" href="{{ site.baseurl }}/guide">Guide</a>
+  <a class="nav-item{% if page.url contains '/guide' %} active{% endif %}" href="{{ site.baseurl }}/guide">Guide</a>
   <a class="nav-item" href="{{ site.baseurl }}/api/index.html">API</a>
   <a class="icon" href="https://github.com/polymer/lit-html" title="GitHub">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentcolor">

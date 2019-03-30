@@ -17,6 +17,10 @@ h4 {
   background: linear-gradient(315deg, #FA5A5A 0%, #FF2F2F 100%);
 }
 
+.nav-item.active {
+  border-bottom: 2px solid #fff;
+}
+
 .hero-title,
 .hero-link,
 .main-nav {
@@ -36,6 +40,7 @@ h4 {
 }
 
 @media screen and (max-width: 1160px) {
-#section-snippet .responsive-row {
-  flex-direction: column;
+  #section-snippet .responsive-row {
+    flex-direction: column;
+  }
 }

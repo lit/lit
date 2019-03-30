@@ -17,7 +17,7 @@
  */
 
 interface MaybePolyfilledCe extends CustomElementRegistry {
-  polyfillWrapFlushCallback?: object;
+  readonly polyfillWrapFlushCallback?: object;
 }
 
 /**
@@ -28,35 +28,31 @@ export const isCEPolyfill = window.customElements !== undefined &&
         undefined;
 
 /**
- * Reparents nodes, starting from `startNode` (inclusive) to `endNode`
- * (exclusive), into another container (could be the same container), before
- * `beforeNode`. If `beforeNode` is null, it appends the nodes to the
- * container.
+ * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
+ * into another container (could be the same container), before `before`. If
+ * `before` is null, it appends the nodes to the container.
  */
 export const reparentNodes =
     (container: Node,
      start: Node|null,
      end: Node|null = null,
      before: Node|null = null): void => {
-      let node = start;
-      while (node !== end) {
-        const n = node!.nextSibling;
-        container.insertBefore(node!, before as Node);
-        node = n;
+      while (start !== end) {
+        const n = start!.nextSibling;
+        container.insertBefore(start!, before);
+        start = n;
       }
     };
 
 /**
- * Removes nodes, starting from `startNode` (inclusive) to `endNode`
- * (exclusive), from `container`.
+ * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
+ * `container`.
  */
 export const removeNodes =
-    (container: Node, startNode: Node|null, endNode: Node|null = null):
-        void => {
-          let node = startNode;
-          while (node !== endNode) {
-            const n = node!.nextSibling;
-            container.removeChild(node!);
-            node = n;
-          }
-        };
+    (container: Node, start: Node|null, end: Node|null = null): void => {
+      while (start !== end) {
+        const n = start!.nextSibling;
+        container.removeChild(start!);
+        start = n;
+      }
+    };

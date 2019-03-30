@@ -13,6 +13,13 @@ a {
   text-decoration: none;
 }
 
+:target::before {
+  content: "";
+  display: block;
+  height: 60px;
+  margin-top: -60px;
+}
+
 h1 {
   font-size: 40px;
   line-height: 48px;
@@ -89,26 +96,6 @@ pre {
   box-sizing: border-box;
 }
 
-/* Logo lockup */
-#logo-lockup {
-  white-space: nowrap;
-  margin-bottom: -30px;
-}
-#logo-lockup::before {
-  width: 64px;
-  height: 44px;
-  background-image: url(../images/logos/p-logo.svg);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  display: inline-block;
-  margin-right: 20px;
-  content: '';
-}
-#logo-lockup::after {
-  display: none;
-}
-
 
 /* blog styling */
 .author-img {
@@ -152,6 +139,11 @@ time {
   color: inherit;
 }
 
+/* Override TypeDoc theme underline on hover. */
+.main-nav a:hover {
+  text-decoration: none;
+}
+
 .main-nav .nav-title {
   font-size: 18px;
 }
@@ -162,7 +154,8 @@ time {
 
 .main-nav .nav-item {
   font-size: 14px;
-  padding: 0 12px;
+  padding: 18px 12px;
+  align-self: stretch;
 }
 
 .main-nav .icon {
@@ -201,6 +194,7 @@ main {
   margin-top: 60px;
   display: flex;
   align-items: flex-start;
+  justify-content: center;
 }
 
 .wrapper {
@@ -371,7 +365,7 @@ section p {
   line-height: 22px;
 }
 
-.side-nav li:not(.active) a {
+.side-nav li:not(.active) > a {
   color: #222;
 }
 
@@ -423,7 +417,6 @@ article ol li {
 
 .alert {
   position: relative;
-  z-index: -1;
   margin: 24px 0;
   padding: 1px 20px 1px 56px;
   box-shadow: 0 0 2px #ccc;
@@ -581,6 +574,10 @@ th, td {
   }
 }
 @media screen and (max-width: 640px) {
+  :target::before {
+    height: 112px;
+    margin-top: -112px;
+  }
 
   h1 {
     font-size: 32px;
@@ -598,6 +595,10 @@ th, td {
   .main-nav {
     height: 56px;
     padding-left: 20px;
+  }
+  
+  .main-nav .nav-item {
+    padding: 16px 12px;
   }
 
   main {
@@ -627,14 +628,6 @@ th, td {
 
   .responsive-row {
     flex-direction: column;
-  }
-  #logo-lockup {
-    margin-bottom: -20px;
-  }
-  #logo-lockup::before {
-    margin-right: 12px;
-    width: 38px;
-    height: 26px;
   }
 
   #section-features h2 {

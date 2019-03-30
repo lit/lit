@@ -109,8 +109,8 @@ Event listeners can be functions or objects with a `handleEvent` method. Listene
 const listener = {
   handleEvent(e) {
     console.log('clicked');
-  }
-  capture: true;
+  },
+  capture: true,
 };
 
 html`<button @click=${listener}>Click Me</button>`
@@ -359,7 +359,7 @@ import {classMap} from 'lit-html/directives/class-map.js';
 
 let classes = { highlight: true, enabled: true, hidden: false };
 
-html`<div class=${classMap(classes)>Classy text</div>`;
+html`<div class=${classMap(classes)}>Classy text</div>`;
 // renders as <div class="highlight enabled">Classy text</div>
 ```
 
@@ -368,7 +368,7 @@ Note that you can only use `classMap` in an attribute binding for the `class` at
 
 ```js
 // DON'T DO THIS
-html`<div class="someClass ${classMap(moreClasses}">Broken div</div>`;
+html`<div class="someClass ${classMap(moreClasses)}">Broken div</div>`;
 ```
 
 
@@ -465,10 +465,10 @@ Location: attribute bindings (must be the entire value of the `style` attribute)
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
 ```js
-import {styleMap} from 'lit-html/directives/stype-map.js';
+import {styleMap} from 'lit-html/directives/style-map.js';
 
-let styles = { backgroundColor: 'blue', color: 'white'};
-html`<p style=${styleMap(styles}>Hello style!</p>`;
+let styles = { backgroundColor: 'blue', color: 'white' };
+html`<p style=${styleMap(styles)}>Hello style!</p>`;
 ```
 
 For CSS properties that contain dashes, you can either use the camel-case equivalent, or put the property name in quotes. For example, you can write the the CSS property `font-family` as either `fontFamily` or `'font-family'`:

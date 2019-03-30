@@ -80,4 +80,8 @@ suite('index.js', () => {
       assert.property(LitHtml, key);
     });
   });
+
+  test('adds a version number', () => {
+    assert.equal(window['litHtmlVersions'].length, 1);
+  });
 });
