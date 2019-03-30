@@ -82,7 +82,7 @@ export class TemplateResult {
 /**
  * A TemplateResult for SVG fragments.
  *
- * This class wraps HTMl in an `<svg>` tag in order to parse its contents in the
+ * This class wraps HTML in an `<svg>` tag in order to parse its contents in the
  * SVG namespace, then modifies the template to remove the `<svg>` tag so that
  * clones only container the original fragment.
  */
