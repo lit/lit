@@ -270,6 +270,43 @@ To compare this to lit-html's default handling for lists, consider reversing a l
 
 Which repeat is more efficient depends on your use case: if updating the DOM nodes is more expensive than moving them, use the repeat directive. Otherwise, use `Array.map` or looping statements.
 
+### Rendering nothing
+Sometimes, you may want to render nothing at all. The values `undefined`, `null` and the empty string (`''`) in a text binding all render an empty text node. In most cases, that's exactly what you want:
+````js
+import {html} from 'lit-html';
+${user.isAdmin
+      ? html`<button>DELETE</button>`
+      : ''
+  }
+````
+The DOM in some cases inconsistent with its behavior towards `undefined` & `null`. Using an empty string (`''`) is the most consistent. 
+#### nothing and the slot fallback content
+`nothing` is a sentinel value provided by lit-html. It really does render nothing, because
+it clears the Part.
+
+Why is this important? Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. 
+The template looks like this:
+```js
+import {html} from 'lit-html';
+html`<slot>Sorry, no content available. I am just fallback content</slot>`;
+``` 
+The slot defines fallback content for when there is no content defined to be put in the slot. 
+So, extending on our previous example:
+```js
+import {nothing, html} from 'lit-html';
+
+html`
+<shadow-element>${user.isAdmin
+        ? html`<button>DELETE</button>`
+        : nothing
+      }</shadow-element>
+`;
+``` 
+If the user is logged in, DELETE button is rendered. If the user is not logged in, nothing is rendered inside of `shadow-element`.
+therefore the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" will be rendered.
+
+**Whitespace creates text nodes.** For the example to work, the text binding inside `<shadow-element>` must be the **entire** contents of `<shadow-element>`. Any whitespace outside of the binding delimiters adds static text nodes to the template, suppressing the fallback content. However, whitespace _inside_ the binding delimiters is fine.
+
 ## Caching template results: the cache directive 
 
 In most cases, JavaScript conditionals are all you need for conditional templates. However, if you're switching between large, complicated templates, you might want to save the cost of recreating DOM on each switch. 
@@ -289,4 +326,3 @@ html`${cache(data.showDetails
 When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
 
 The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the  `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and update it with the latest data.
-

@@ -531,5 +531,3 @@ const content = fetch('./content.txt').then(r => r.text());
 
 html`${until(content, html`<span>Loading...</span>`)}`
 ```
-
-
