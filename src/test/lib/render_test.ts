@@ -285,6 +285,24 @@ suite('render()', () => {
       assert.equal(container.innerText, 'AC');
     });
 
+    test('handles attribute bindings with comment-like values', () => {
+      const t = html`A<div foo="<!--${'bar'}">B</div>C`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of
+      // comments!
+      assert.equal(container.innerText, 'ABC');
+    });
+
+    test('handles comments with attribute-like content', () => {
+      const t = html`A<!-- foo=${'bar'}-->B`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of
+      // comments!
+      assert.equal(container.innerText, 'AB');
+    });
+
     test('handles elements in comments with node bindings', () => {
       const t = html`A<!-- <div>${'B'}</div> -->C`;
       render(t, container);

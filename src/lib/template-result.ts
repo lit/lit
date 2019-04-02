@@ -45,28 +45,51 @@ export class TemplateResult {
   getHTML(): string {
     const l = this.strings.length - 1;
     let html = '';
-    let isTextBinding = true;
+    let isCommentBinding = false;
+
     for (let i = 0; i < l; i++) {
       const s = this.strings[i];
-      const match = lastAttributeNameRegex.exec(s);
-      const close = s.lastIndexOf('>');
-      // We're in a text position if the previous string closed its last tag, an
-      // attribute position if the string opened an unclosed tag, and unchanged
-      // if the string had no brackets at all:
+      // For each binding we want to determine the kind of marker to insert
+      // into the template source before it's parsed by the browser's HTML
+      // parser. The marker type is based on whether the expression is in an
+      // attribute, text, or comment poisition.
+      //   * For node-position bindings we insert a comment with the marker
+      //     sentinel as its text content, like <!--{{lit-guid}}-->.
+      //   * For attribute bindings we insert just the marker sentinel for the
+      //     first binding, so that we support unquoted attribute bindings.
+      //     Subsequent bindings can use a comment marker because multi-binding
+      //     attributes must be quoted.
+      //   * For comment bindings we insert just the marker sentinel so we don't
+      //     close the comment.
       //
-      // "...>...": text position. open === -1, close > -1
-      // "...<...": attribute position. open > -1
-      // "...": no change. open === -1, close === -1
-      isTextBinding = match === null && (close > -1 || isTextBinding) &&
-          s.indexOf('<', close + 1) === -1;
-
-      if (isTextBinding) {
-        html += s + nodeMarker;
-      } else if (match) {
-        html += s.substr(0, match.index) + match[1] + match[2] +
-            boundAttributeSuffix + match[3] + marker;
+      // The following code scans the template source, but is *not* an HTML
+      // parser. We don't need to track the tree structure of the HTML, only
+      // whether a binding is inside a comment, and if not, if it appears to be
+      // the first binding in an attribute.
+      const commentOpen = s.lastIndexOf('<!--');
+      // We're in comment position if we have a comment open with no following
+      // comment close. Because <-- can appear in an attribute value there can
+      // be false positives.
+      isCommentBinding = (commentOpen > -1 || isCommentBinding) &&
+          s.indexOf('-->', commentOpen + 1) === -1;
+      // Check to see if we have an attribute-like sequence preceeding the
+      // expression. This can match "name=value" like structures in text,
+      // comments, and attribute values, so there can be false-positives.
+      const attributeMatch = lastAttributeNameRegex.exec(s);
+      if (attributeMatch === null) {
+        // We're only in this branch if we don't have a attribute-like
+        // preceeding sequence. For comments, this guards against unusual
+        // attribute values like <div foo="<!--${'bar'}">. Cases like
+        // <!-- foo=${'bar'}--> are handled correctly in the attribute branch
+        // below.
+        html += s + (isCommentBinding ? marker : nodeMarker);
       } else {
-        html += s + marker;
+        // For attributes we use just a marker sentinel, and also append a
+        // $lit$ suffix to the name to opt-out of attribute-specific parsing
+        // that IE and Edge do for style and certain SVG attributes.
+        html += s.substr(0, attributeMatch.index) + attributeMatch[1] +
+            attributeMatch[2] + boundAttributeSuffix + attributeMatch[3] +
+            marker;
       }
     }
     html += this.strings[l];
