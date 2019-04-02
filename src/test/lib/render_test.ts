@@ -269,12 +269,28 @@ suite('render()', () => {
       assert.equal(container.querySelector('p')!.textContent, 'baz');
     });
 
-    test('does not inject text from comments with bindings', () => {
-      const t = html`<p>${'foo'}<!-- ${'baz'} ${'baz'} -->${'bar'}</p>`;
+    test('handles comments with bindings', () => {
+      const t = html`<p>A<!-- ${'B'} ${'C'} -->D</p>`;
       render(t, container);
       // Use innerText instead of textContent because of a crazy bug in
       // Chrome 41 where textContent would include the textContent of comments!
-      assert.equal(container.querySelector('p')!.innerText, 'foobar');
+      assert.equal(container.querySelector('p')!.innerText, 'AD');
+    });
+
+    test('handles elements in comments with attribute bindings', () => {
+      const t = html`A<!-- <div foo=${'bar'}>B</div> -->C`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of comments!
+      assert.equal(container.innerText, 'AC');
+    });
+
+    test('handles elements in comments with node bindings', () => {
+      const t = html`A<!-- <div>${'B'}</div> -->C`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of comments!
+      assert.equal(container.innerText, 'AC');
     });
 
     test('does not break with an attempted dynamic start tag', () => {
