@@ -272,7 +272,9 @@ suite('render()', () => {
     test('does not inject text from comments with bindings', () => {
       const t = html`<p>${'foo'}<!-- ${'baz'} ${'baz'} -->${'bar'}</p>`;
       render(t, container);
-      assert.equal(container.querySelector('p')!.textContent, 'foobar');
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of comments!
+      assert.equal(container.querySelector('p')!.innerText, 'foobar');
     });
 
     test('does not break with an attempted dynamic start tag', () => {
