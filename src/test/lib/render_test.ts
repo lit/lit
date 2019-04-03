@@ -278,7 +278,7 @@ suite('render()', () => {
     });
 
     test('handles elements in comments with attribute bindings', () => {
-      const t = html`A<!-- <div foo=${'bar'}>B</div> -->C`;
+      const t = html`A<!-- <div foo=${'bar'}>B</div>${'baz'} -->C`;
       render(t, container);
       // Use innerText instead of textContent because of a crazy bug in
       // Chrome 41 where textContent would include the textContent of comments!
@@ -301,7 +301,7 @@ suite('render()', () => {
     });
 
     test('handles elements in comments with node bindings', () => {
-      const t = html`A<!-- <div>${'B'}</div> -->C`;
+      const t = html`A<!-- <div>${'B'}</div>${'baz'} -->C`;
       render(t, container);
       // Use innerText instead of textContent because of a crazy bug in
       // Chrome 41 where textContent would include the textContent of comments!
