@@ -55,7 +55,7 @@ export class TemplateInstance {
     }
   }
 
-  clone(): DocumentFragment {
+  _clone(): DocumentFragment {
     // There are a number of steps in the lifecycle of a template instance's
     // DOM fragment:
     //  1. Clone - create the instance fragment

@@ -270,7 +270,7 @@ export class NodePart implements Part {
       // caching and preprocessing.
       const instance =
           new TemplateInstance(template, value.processor, this.options);
-      const fragment = instance.clone();
+      const fragment = instance._clone();
       instance.update(value.values);
       this.__commitNode(fragment);
       this.value = instance;
