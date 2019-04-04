@@ -87,7 +87,7 @@ export class Template {
           // assume a correspondence between part index and attribute index.
           let count = 0;
           for (let i = 0; i < length; i++) {
-            if (attributes[i].value.indexOf(marker) >= 0) {
+            if (endsWith(attributes[i].name, boundAttributeSuffix)) {
               count++;
             }
           }
@@ -106,9 +106,9 @@ export class Template {
                 name.toLowerCase() + boundAttributeSuffix;
             const attributeValue =
                 (node as Element).getAttribute(attributeLookupName)!;
+            (node as Element).removeAttribute(attributeLookupName);
             const strings = attributeValue.split(markerRegex);
             this.parts.push({type: 'attribute', index, name, strings});
-            (node as Element).removeAttribute(attributeLookupName);
             partIndex += strings.length - 1;
           }
         }
@@ -125,10 +125,19 @@ export class Template {
           // Generate a new text node for each literal section
           // These nodes are also used as the markers for node parts
           for (let i = 0; i < lastIndex; i++) {
-            parent.insertBefore(
-                (strings[i] === '') ? createMarker() :
-                                      document.createTextNode(strings[i]),
-                node);
+            let insert: Node;
+            let s = strings[i];
+            if (s === '') {
+              insert = createMarker();
+            } else {
+              const match = lastAttributeNameRegex.exec(s);
+              if (match !== null && endsWith(match[2], boundAttributeSuffix)) {
+                s = s.slice(0, match.index) + match[1] +
+                    match[2].slice(0, -boundAttributeSuffix.length) + match[3];
+              }
+              insert = document.createTextNode(s);
+            }
+            parent.insertBefore(insert, node);
             this.parts.push({type: 'node', index: ++index});
           }
           // If there's no text, we must insert a comment to mark our place.
@@ -183,6 +192,11 @@ export class Template {
     }
   }
 }
+
+const endsWith = (str: string, suffix: string): boolean => {
+  const index = str.length - suffix.length;
+  return index >= 0 && str.slice(index) === suffix;
+};
 
 /**
  * A placeholder for a dynamic expression in an HTML template.

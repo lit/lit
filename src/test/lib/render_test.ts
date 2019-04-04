@@ -120,6 +120,13 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML), '<div>foo </div>');
     });
 
+    test('renders parts that look like attributes', () => {
+      render(html`<div>foo bar=${'baz'}</div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>foo bar=baz</div>');
+    });
+
     test('renders multiple parts per element, preserving whitespace', () => {
       render(html`<div>${'foo'} ${'bar'}</div>`, container);
       assert.equal(
