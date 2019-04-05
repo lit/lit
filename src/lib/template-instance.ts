@@ -132,7 +132,7 @@ export class TemplateInstance {
           // We've exhausted the content inside a nested template element.
           // Because we still have parts (the outer for-loop), we know:
           // - There is a template in the stack
-          // - The walker will find a nextNode outside the temlpate
+          // - The walker will find a nextNode outside the template
           walker.currentNode = stack.pop()!;
           node = walker.nextNode();
         }
