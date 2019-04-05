@@ -147,7 +147,7 @@ export class NodePart implements Part {
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
-  _pendingValue: unknown = undefined;
+  private __pendingValue: unknown = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -181,8 +181,8 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   appendIntoPart(part: NodePart) {
-    part._insert(this.startNode = createMarker());
-    part._insert(this.endNode = createMarker());
+    part.__insert(this.startNode = createMarker());
+    part.__insert(this.endNode = createMarker());
   }
 
   /**
@@ -191,58 +191,58 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   insertAfterPart(ref: NodePart) {
-    ref._insert(this.startNode = createMarker());
+    ref.__insert(this.startNode = createMarker());
     this.endNode = ref.endNode;
     ref.endNode = this.startNode;
   }
 
   setValue(value: unknown): void {
-    this._pendingValue = value;
+    this.__pendingValue = value;
   }
 
   commit() {
-    while (isDirective(this._pendingValue)) {
-      const directive = this._pendingValue;
-      this._pendingValue = noChange;
+    while (isDirective(this.__pendingValue)) {
+      const directive = this.__pendingValue;
+      this.__pendingValue = noChange;
       directive(this);
     }
-    const value = this._pendingValue;
+    const value = this.__pendingValue;
     if (value === noChange) {
       return;
     }
     if (isPrimitive(value)) {
       if (value !== this.value) {
-        this._commitText(value);
+        this.__commitText(value);
       }
     } else if (value instanceof TemplateResult) {
-      this._commitTemplateResult(value);
+      this.__commitTemplateResult(value);
     } else if (value instanceof Node) {
-      this._commitNode(value);
+      this.__commitNode(value);
     } else if (isIterable(value)) {
-      this._commitIterable(value);
+      this.__commitIterable(value);
     } else if (value === nothing) {
       this.value = nothing;
       this.clear();
     } else {
       // Fallback, will render the string representation
-      this._commitText(value);
+      this.__commitText(value);
     }
   }
 
-  private _insert(node: Node) {
+  private __insert(node: Node) {
     this.endNode.parentNode!.insertBefore(node, this.endNode);
   }
 
-  private _commitNode(value: Node): void {
+  private __commitNode(value: Node): void {
     if (this.value === value) {
       return;
     }
     this.clear();
-    this._insert(value);
+    this.__insert(value);
     this.value = value;
   }
 
-  private _commitText(value: unknown): void {
+  private __commitText(value: unknown): void {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
     if (node === this.endNode.previousSibling &&
@@ -252,13 +252,13 @@ export class NodePart implements Part {
       // TODO(justinfagnani): Can we just check if this.value is primitive?
       (node as Text).data = value as string;
     } else {
-      this._commitNode(document.createTextNode(
+      this.__commitNode(document.createTextNode(
           typeof value === 'string' ? value : String(value)));
     }
     this.value = value;
   }
 
-  private _commitTemplateResult(value: TemplateResult): void {
+  private __commitTemplateResult(value: TemplateResult): void {
     const template = this.options.templateFactory(value);
     if (this.value instanceof TemplateInstance &&
         this.value.template === template) {
@@ -272,12 +272,12 @@ export class NodePart implements Part {
           new TemplateInstance(template, value.processor, this.options);
       const fragment = instance._clone();
       instance.update(value.values);
-      this._commitNode(fragment);
+      this.__commitNode(fragment);
       this.value = instance;
     }
   }
 
-  private _commitIterable(value: Iterable<unknown>): void {
+  private __commitIterable(value: Iterable<unknown>): void {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
@@ -343,7 +343,7 @@ export class BooleanAttributePart implements Part {
   readonly name: string;
   readonly strings: ReadonlyArray<string>;
   value: unknown = undefined;
-  _pendingValue: unknown = undefined;
+  private __pendingValue: unknown = undefined;
 
   constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
@@ -356,19 +356,19 @@ export class BooleanAttributePart implements Part {
   }
 
   setValue(value: unknown): void {
-    this._pendingValue = value;
+    this.__pendingValue = value;
   }
 
   commit() {
-    while (isDirective(this._pendingValue)) {
-      const directive = this._pendingValue;
-      this._pendingValue = noChange;
+    while (isDirective(this.__pendingValue)) {
+      const directive = this.__pendingValue;
+      this.__pendingValue = noChange;
       directive(this);
     }
-    if (this._pendingValue === noChange) {
+    if (this.__pendingValue === noChange) {
       return;
     }
-    const value = !!this._pendingValue;
+    const value = !!this.__pendingValue;
     if (this.value !== value) {
       if (value) {
         this.element.setAttribute(this.name, '');
@@ -377,7 +377,7 @@ export class BooleanAttributePart implements Part {
       }
       this.value = value;
     }
-    this._pendingValue = noChange;
+    this.__pendingValue = noChange;
   }
 }
 
@@ -403,7 +403,7 @@ export class PropertyCommitter extends AttributeCommitter {
     return new PropertyPart(this);
   }
 
-  _getValue() {
+  protected _getValue() {
     if (this.single) {
       return this.parts[0].value;
     }
@@ -449,32 +449,32 @@ export class EventPart implements Part {
   readonly eventName: string;
   readonly eventContext?: EventTarget;
   value: undefined|EventHandlerWithOptions = undefined;
-  _options?: AddEventListenerOptions;
-  _pendingValue: undefined|EventHandlerWithOptions = undefined;
-  readonly _boundHandleEvent: (event: Event) => void;
+  private __options?: AddEventListenerOptions;
+  private __pendingValue: undefined|EventHandlerWithOptions = undefined;
+  private readonly __boundHandleEvent: (event: Event) => void;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
     this.eventContext = eventContext;
-    this._boundHandleEvent = (e) => this.handleEvent(e);
+    this.__boundHandleEvent = (e) => this.handleEvent(e);
   }
 
   setValue(value: undefined|EventHandlerWithOptions): void {
-    this._pendingValue = value;
+    this.__pendingValue = value;
   }
 
   commit() {
-    while (isDirective(this._pendingValue)) {
-      const directive = this._pendingValue;
-      this._pendingValue = noChange as EventHandlerWithOptions;
+    while (isDirective(this.__pendingValue)) {
+      const directive = this.__pendingValue;
+      this.__pendingValue = noChange as EventHandlerWithOptions;
       directive(this);
     }
-    if (this._pendingValue === noChange) {
+    if (this.__pendingValue === noChange) {
       return;
     }
 
-    const newListener = this._pendingValue;
+    const newListener = this.__pendingValue;
     const oldListener = this.value;
     const shouldRemoveListener = newListener == null ||
         oldListener != null &&
@@ -486,15 +486,15 @@ export class EventPart implements Part {
 
     if (shouldRemoveListener) {
       this.element.removeEventListener(
-          this.eventName, this._boundHandleEvent, this._options);
+          this.eventName, this.__boundHandleEvent, this.__options);
     }
     if (shouldAddListener) {
-      this._options = getOptions(newListener);
+      this.__options = getOptions(newListener);
       this.element.addEventListener(
-          this.eventName, this._boundHandleEvent, this._options);
+          this.eventName, this.__boundHandleEvent, this.__options);
     }
     this.value = newListener;
-    this._pendingValue = noChange as EventHandlerWithOptions;
+    this.__pendingValue = noChange as EventHandlerWithOptions;
   }
 
   handleEvent(event: Event) {
