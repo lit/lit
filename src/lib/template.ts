@@ -69,12 +69,7 @@ export class Template {
         // Because we still have parts (the outer for-loop), we know:
         // - There is a template in the stack
         // - The walker will find a nextNode outside the template
-        const template = stack.pop();
-        if (!template) {
-          // Done traversing.
-          break;
-        }
-        walker.currentNode = template;
+        walker.currentNode = stack.pop()!;
         continue;
       }
       index++;
