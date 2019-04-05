@@ -181,6 +181,7 @@ export class Template {
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
             this.parts.push({type: 'node', index: -1});
+            partIndex++;
           }
         }
       }

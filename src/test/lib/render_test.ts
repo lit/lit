@@ -268,6 +268,14 @@ suite('render()', () => {
       assert.equal(container.querySelector('p')!.textContent, 'bar');
     });
 
+    test('renders comments with bindings followed by attr', () => {
+      const t = html`
+        <!-- ${'foo'} -->
+        <p bar=${'baz'}></p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.getAttribute('bar'), 'baz');
+    });
+
     test('renders comments with multiple bindings', () => {
       const t = html`
         <!-- <div class="${'foo'}">${'bar'}</div> -->
@@ -313,6 +321,14 @@ suite('render()', () => {
       // Use innerText instead of textContent because of a crazy bug in
       // Chrome 41 where textContent would include the textContent of comments!
       assert.equal(container.innerText, 'AC');
+    });
+
+    test('renders comments with multiple bindings followed by attr', () => {
+      const t = html`
+        <!-- ${'foo'} ${'bar'} -->
+        <p baz=${'qux'}></p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.getAttribute('baz'), 'qux');
     });
 
     test('does not break with an attempted dynamic start tag', () => {
