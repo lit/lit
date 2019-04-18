@@ -28,7 +28,6 @@
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
-    "bench": "tach --root=./node_modules/lit-html-benchmarks",
     "prepare": "npm run build",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
