@@ -14,7 +14,7 @@ before_script:
   Project is not formatted. Please run "npm run format".' && false)
 - npm run build
 script:
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then npx tach --root=./node_modules/lit-html-benchmarks --name=shack --browser=chrome-headless --horizon=0% --timeout=1 --package-version=lit-html/this=lit-html@github:${TRAVIS_REPO_SLUG}#${TRAVIS_COMMIT} --package-version=lit-html/published=lit-html@* --package-version=lit-html/parent=lit-html@github:${TRAVIS_REPO_SLUG}#${TRAVIS_COMMIT}^ --baseline=version=this --github-check="{\"appId\":29262,\"installationId\":851456,\"repo\":\"${TRAVIS_REPO_SLUG}\",\"commit\":\"${TRAVIS_COMMIT}\"}"; fi
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then npx tach --root=./node_modules/lit-html-benchmarks --name=shack --browser=chrome-headless --horizon=0%,1%,10% --timeout=5 --package-version=lit-html/this=lit-html@github:${TRAVIS_REPO_SLUG}#${TRAVIS_COMMIT} --package-version=lit-html/published=lit-html@* --package-version=lit-html/parent=lit-html@github:${TRAVIS_REPO_SLUG}#${TRAVIS_COMMIT}^ --baseline=version=this --github-check="{\"appId\":29262,\"installationId\":851456,\"repo\":\"${TRAVIS_REPO_SLUG}\",\"commit\":\"${TRAVIS_COMMIT}\"}"; fi
 - xvfb-run wct --npm
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'windows 10/microsoftedge@17' -s 'windows 10/microsoftedge@15' -s 'macos 10.13/safari@11' -s 'macos 10.12/safari@10' -s 'windows 8.1/internet explorer@11' -s 'Linux/chrome@41' --npm; fi
 env:
