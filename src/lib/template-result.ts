@@ -37,8 +37,6 @@ export class TemplateResult {
     this.values = values;
     this.type = type;
     this.processor = processor;
-    for (let i = 0; i < 10000; i++) {
-    }
   }
 
   /**
