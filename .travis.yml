@@ -16,6 +16,7 @@ before_script:
 script:
 - xvfb-run wct --npm
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'windows 10/microsoftedge@17' -s 'windows 10/microsoftedge@15' -s 'macos 10.13/safari@11' -s 'macos 10.12/safari@10' -s 'windows 8.1/internet explorer@11' -s 'Linux/chrome@41' --npm; fi
+- ./travis-bench.sh
 env:
   global:
   - secure: mNT4DpaOzcY+Z8JmXhVdbYBRt1gJG7kVMfe0Kd3HSRwQwAltW1JWhnRWQgW526xi/EFuYkIy1Ec4Hhc0pZ+t+ngXrHgtVPV6te7nQzBhBUNFZv72nDagk8YxQBTcSHMEVRa7c4NXlCW66hM0WWDVy7PACs7NuGj25qegFUulbjNEmYfwF8VMsfyB8/X6NJff8ZQTWEACwODJIBY2l0ogxI2jbUjTnrVNvtjd4IV1gnmi2AvY0RwRs/grigP4oMPcD/5tleUBjlojqq3U/DjMCoaoCge7fPnRZ2O1GHVHPOlAlFWa6DGvsXBiPNqlzchAQtkCKCnNJ1xM8UNlR0EYQCWBSsXO+wmAFoB1UexumHObsaCzLTL2yYXByCzKVNlGkCMppZUp+b+T3Vu039TEF1dCXf4XpQOouNb9pdlR0tkWUOF08hENzeAkHBFO1nw3kt+smm/b/6QXHe0H+X2GN3uKRX/TMYYgR3cckD4cQ9DeaXlJ/6tJtoVkOyNLL1LOHVtS7MTL2oUBJnj29cjOaUoCg/aVEt+g7brysj8Eb7itZctc/GwL/cWqIIKCuUUAuRJYgrBx3AQH9GjMtNAsrMtoVEmcOIK1lBLLmeduZXDogTevTMbGtyToATAQbLX/a2TxUBM5AZLE/dMiUnmZMVEMZ4anp2VhrmzflrbRcBI=
