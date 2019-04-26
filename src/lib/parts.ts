@@ -105,8 +105,8 @@ export class AttributePart implements Part {
   readonly committer: AttributeCommitter;
   value: unknown = undefined;
 
-  constructor(comitter: AttributeCommitter) {
-    this.committer = comitter;
+  constructor(committer: AttributeCommitter) {
+    this.committer = committer;
   }
 
   setValue(value: unknown): void {

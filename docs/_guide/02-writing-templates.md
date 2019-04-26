@@ -279,7 +279,7 @@ ${user.isAdmin
       : ''
   }
 ````
-The DOM in some cases inconsistent with its behavior towards `undefined` & `null`. Using an empty string (`''`) is the most consistent. 
+The DOM is inconsistent in some cases with its behavior towards `undefined` & `null`. Using an empty string (`''`) is the most consistent. 
 #### nothing and the slot fallback content
 `nothing` is a sentinel value provided by lit-html. It really does render nothing, because
 it clears the Part.
