@@ -55,5 +55,4 @@ npx tach \
   --package-version=lit-html/this=lit-html@github:${THIS} \
   --package-version=lit-html/parent=lit-html@github:${PARENT} \
   --package-version=lit-html/published=lit-html@* \
-  --baseline=version=this \
   --github-check=$GITHUB_CHECK
