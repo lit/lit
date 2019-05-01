@@ -44,15 +44,25 @@ export const reparentNodes =
       }
     };
 
+
+const range = document.createRange();
+
 /**
  * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
- * `container`.
+ * `container`. If `end` is null, nodes are removed until the end of the
+ * container.
  */
 export const removeNodes =
     (container: Node, start: Node|null, end: Node|null = null): void => {
-      while (start !== end) {
-        const n = start!.nextSibling;
-        container.removeChild(start!);
-        start = n;
+      if (start === null) {
+        return;
       }
+      range.setStartBefore(start);
+      if (end === null) {
+        range.setEndAfter(container.lastChild!);
+      } else {
+        range.setEndBefore(end);
+      }
+      range.deleteContents();
+      range.collapse();
     };
