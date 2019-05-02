@@ -146,8 +146,8 @@ export class NodePart implements Part {
   readonly options: RenderOptions;
   startNode!: Node;
   endNode!: Node;
-  value: unknown = undefined;
-  private __pendingValue: unknown = undefined;
+  value: unknown = nothing;
+  private __pendingValue: unknown = nothing;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -183,6 +183,10 @@ export class NodePart implements Part {
   appendIntoPart(part: NodePart) {
     part.__insert(this.startNode = createMarker());
     part.__insert(this.endNode = createMarker());
+    // Make sure the value isn't `nothing`, so it can be cleared later
+    if (part.value === nothing) {
+      part.value = undefined;
+    }
   }
 
   /**
@@ -221,8 +225,8 @@ export class NodePart implements Part {
     } else if (isIterable(value)) {
       this.__commitIterable(value);
     } else if (value === nothing) {
-      this.value = nothing;
       this.clear();
+      this.value = nothing;
     } else {
       // Fallback, will render the string representation
       this.__commitText(value);
@@ -289,8 +293,8 @@ export class NodePart implements Part {
     // render. If _value is not an array, clear this part and make a new
     // array for NodeParts.
     if (!Array.isArray(this.value)) {
-      this.value = [];
       this.clear();
+      this.value = [];
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
@@ -326,8 +330,10 @@ export class NodePart implements Part {
   }
 
   clear(startNode: Node = this.startNode) {
-    removeNodes(
-        this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
+    if (this.value !== nothing) {
+      removeNodes(
+          this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
+    }
   }
 }
 
