@@ -423,6 +423,7 @@ suite('Parts', () => {
               endNode,
             ]);
 
+            // Test that the parent part can then use another value
             const parentText = document.createTextNode('');
             part.setValue(parentText);
             part.commit();
@@ -464,7 +465,7 @@ suite('Parts', () => {
       });
 
       test('clears a range', () => {
-        container.insertBefore(document.createTextNode('foo'), endNode);
+        part.setValue(document.createTextNode('foo'));
         part.clear();
         assert.deepEqual(
             Array.from(container.childNodes), [startNode, endNode]);
