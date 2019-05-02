@@ -502,7 +502,8 @@ suite('render()', () => {
           container);
       assert.oneOf(stripExpressionMarkers(container.innerHTML), [
         '<div foo="Foo" bar="Bar" baz="Baz"></div>',
-        '<div foo="Foo" baz="Baz" bar="Bar"></div>'
+        '<div foo="Foo" baz="Baz" bar="Bar"></div>',
+        '<div bar="Bar" foo="Foo" baz="Baz"></div>'
       ]);
     });
 
