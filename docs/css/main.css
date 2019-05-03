@@ -212,6 +212,7 @@ section .wrapper {
   width: 240px;
   font-size: 14px;
   font-weight: 500;
+  z-index: 1;
 }
 
 .side-nav > #toggleNavButton {
