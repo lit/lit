@@ -363,15 +363,6 @@ html`<div class=${classMap(classes)}>Classy text</div>`;
 // renders as <div class="highlight enabled">Classy text</div>
 ```
 
-Note that you can only use `classMap` in an attribute binding for the `class` attribute, and it must be the entire value of the attribute.
-
-
-```js
-// DON'T DO THIS
-html`<div class="someClass ${classMap(moreClasses)}">Broken div</div>`;
-```
-
-
 ### ifDefined
 
 `ifDefined(value)`
