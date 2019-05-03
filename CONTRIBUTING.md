@@ -26,7 +26,7 @@ Pull requests are greatly appreciated! To ensure a smooth review process, please
  4. Try to create a set of descriptive commits that each do one focused change. Avoid commits like "oops", and prefer commits like "Added method foo to Bar".
  5. When addressing review comments, try to add new commits, rather than modifying previous commits. This makes it easier for reviewers to see what changed since the last review. `git commit --fixup {SHA}` is really useful for this. Obviously, requests like "Please rebase onto master" require changing commits.
  6. If you [allow changes to be committed to your PR branches](https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) we can fix some small things in the PR for you, speeding up the review process. This is especially useful if you're new to TypeScript and need help with type annotations.
- 7. Please run `npm run lint` and `npm run format` before submitting PRs. PRs that don't lint and aren't formatted will fail contiuous integration tests.
+ 7. Please run `npm run lint` and `npm run format` before submitting PRs. PRs that don't lint and aren't formatted will fail continuous integration tests.
 
 ## Code Style
 
@@ -35,7 +35,7 @@ We follow the [Google JavaScript Style Guide](https://google.github.io/styleguid
  1. Clear is better than clever. Optimize for simple, readable code first.
  2. Prefer longer, more descriptive names, over shorter names. For most variables, minification means we don't pay for extra characters in production.
  3. Always err on the side of too many comments. When commenting, "why" is more important than "what".
- 4. If you're tempted to add a "what" comment, see if you can't restructure the code and use more descritive names so that the comment is unneccessary.
+ 4. If you're tempted to add a "what" comment, see if you can't restructure the code and use more descriptive names so that the comment is unnecessary.
 
 ## TypeScript
 
