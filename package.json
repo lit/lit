@@ -1,8 +1,9 @@
 {
   "name": "lit-html",
-  "version": "0.13.0",
+  "version": "1.0.0",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
+  "homepage": "https://lit-html.polymer-project.org/",
   "repository": "Polymer/lit-html",
   "main": "lit-html.js",
   "module": "lit-html.js",
@@ -16,18 +17,19 @@
     "/lit-html.d.ts.map",
     "/lib/",
     "/directives/",
+    "/polyfills",
     "/src/",
     "!/src/test/"
   ],
   "scripts": {
     "build": "tsc",
     "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
-    "gen-docs": "typedoc --readme none --mode modules --excludeNotExported --excludePrivate --exclude **/*_test.ts --out ./docs/api ./src",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
@@ -37,13 +39,14 @@
     "@webcomponents/webcomponentsjs": "^2.0.4",
     "chai": "^4.1.2",
     "clang-format": "^1.2.4",
+    "lit-html-benchmarks": "^0.1.0",
     "mocha": "^5.2.0",
     "rollup": "^0.64.1",
     "rollup-plugin-filesize": "^4.0.1",
     "rollup-plugin-terser": "^1.0.1",
+    "tachometer": "^0.2.0",
     "tslint": "^5.11.0",
-    "typedoc": "^0.12.0",
-    "typescript": "^3.1.1",
+    "typescript": "^3.4.1",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"

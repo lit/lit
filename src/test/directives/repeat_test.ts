@@ -21,6 +21,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 function assertItemIdentity(
     oldChildren: HTMLElement[],
     newChildren: HTMLElement[],
@@ -451,8 +453,9 @@ suite('repeat', () => {
   suite('rendering other values', () => {
     test('render promises as values', async () => {
       const items = [0, 1, 2];
-      const t = () => html`${repeat(items, (i: number) => Promise.resolve(html`
-            <li>promised: ${i}</li>`))}`;
+      const t = () =>
+          html`${repeat(items, (i: number) => until(Promise.resolve(html`
+            <li>promised: ${i}</li>`)))}`;
       render(t(), container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '');
       await Promise.resolve();

@@ -24,8 +24,11 @@ export default {
   plugins: [
     terser({
       warnings: true,
+      module: true,
       mangle: {
-        module: true,
+        properties: {
+          regex: /^__/,
+        },
       },
     }),
     filesize({

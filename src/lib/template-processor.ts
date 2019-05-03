@@ -12,6 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {Part} from './part.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
@@ -27,8 +31,8 @@ export interface TemplateProcessor {
    *   event for fully-controlled bindings with a single expression.
    */
   handleAttributeExpressions(
-      element: Element, name: string, strings: string[],
-      options: RenderOptions): Part[];
+      element: Element, name: string, strings: ReadonlyArray<string>,
+      options: RenderOptions): ReadonlyArray<Part>;
 
   /**
    * Create parts for a text-position binding.

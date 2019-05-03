@@ -20,6 +20,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 // Set Symbol.asyncIterator on browsers without it
 if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
   Object.defineProperty(Symbol, 'Symbol.asyncIterator', {value: Symbol()});
@@ -53,7 +55,7 @@ suite('asyncAppend', () => {
     await iterable.push('foo');
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
-    await iterable.push(undefined);
+    await iterable.push(undefined as unknown as string);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
@@ -114,5 +116,22 @@ suite('asyncAppend', () => {
     await iterable.push('bar');
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div>hello</div>');
+  });
+
+  test('does not render the first value if it is replaced first', async () => {
+    async function* generator(delay: Promise<any>, value: any) {
+      await delay;
+      yield value;
+    }
+
+    const component = (value: any) => html`<p>${asyncAppend(value)}</p>`;
+    const delay = (delay: number) =>
+        new Promise((res) => setTimeout(res, delay));
+
+    render(component(generator(delay(20), 'slow')), container);
+    render(component(generator(delay(10), 'fast')), container);
+    await delay(30);
+
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });
 });

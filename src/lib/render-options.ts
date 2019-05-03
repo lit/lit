@@ -12,9 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {TemplateFactory} from './template-factory.js';
 
 export interface RenderOptions {
-  templateFactory: TemplateFactory;
-  eventContext?: EventTarget;
+  readonly templateFactory: TemplateFactory;
+  readonly eventContext?: EventTarget;
 }

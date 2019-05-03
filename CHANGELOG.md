@@ -11,10 +11,52 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ## Unreleased
-<!-- ### Added -->
+
 <!-- ### Changed -->
+<!-- ### Added -->
 <!-- ### Removed -->
-<!-- ### Fixed -->
+### Fixed
+* Prevent empty styles from causing exceptions or breaking rendering when using `shady-render` ([#760](https://github.com/Polymer/lit-html/issues/760)).
+* Primitive values in attributes are now always simply stringified, regardless of whether they are iterable. ([#830](https://github.com/Polymer/lit-html/pull/830))
+
+## [1.0.0] - 2019-02-05
+### Changed
+* Tons of docs updates ([#746](https://github.com/Polymer/lit-html/pull/746)), ([#675](https://github.com/Polymer/lit-html/pull/675)), ([#724](https://github.com/Polymer/lit-html/pull/724)), ([#753](https://github.com/Polymer/lit-html/pull/753)), ([#764](https://github.com/Polymer/lit-html/pull/764)), ([#763](https://github.com/Polymer/lit-html/pull/763)), ([#765](https://github.com/Polymer/lit-html/pull/765)), ([#767](https://github.com/Polymer/lit-html/pull/767)), ([#768](https://github.com/Polymer/lit-html/pull/768)), ([#734](https://github.com/Polymer/lit-html/pull/734)), ([#771](https://github.com/Polymer/lit-html/pull/771)), ([#766](https://github.com/Polymer/lit-html/pull/766)), ([#773](https://github.com/Polymer/lit-html/pull/773)), ([#770](https://github.com/Polymer/lit-html/pull/770)), ([#769](https://github.com/Polymer/lit-html/pull/769)), ([#777](https://github.com/Polymer/lit-html/pull/777)), ([#776](https://github.com/Polymer/lit-html/pull/776)), ([#754](https://github.com/Polymer/lit-html/pull/754)), ([#779](https://github.com/Polymer/lit-html/pull/779))
+### Added
+* Global version of `lit-html` on window ([#790](https://github.com/Polymer/lit-html/pull/790)).
+### Fixed
+* Removed use of `any` outside of test code ([#741](https://github.com/Polymer/lit-html/pull/741)).
+
+## [1.0.0-rc.2] - 2019-01-09
+### Changed
+* Performance improvements to template processing. ([#690](https://github.com/Polymer/lit-html/pull/690))
+### Added
+* Added the `nothing` sentinel value which can be used to clear a part. ([#673](https://github.com/Polymer/lit-html/pull/673))
+### Fixed
+* Fixed #702: a bug with the `unsafeHTML` directive when changing between unsafe and other values. ([#703](https://github.com/Polymer/lit-html/pull/703))
+* Fixed #708: a bug with the `until` directive where placeholders could overwrite resolved Promises. ([#721](https://github.com/Polymer/lit-html/pull/721))
+
+
+## [1.0.0-rc.1] - 2018-12-13
+### Fixed
+* Documentation updates.
+* Fixed typing for template_polyfill `createElement` call.
+
+## [0.14.0] - 2018-11-30
+### Changed
+* `until()` can now take any number of sync or async arguments. ([#555](https://github.com/Polymer/lit-html/pull/555))
+* [Breaking] `guard()` supports multiple dependencies. If the first argument to `guard()` is an array, the array items are checked for equality to previous values. ([#666](https://github.com/Polymer/lit-html/pull/666))
+* [Breaking] Renamed `classMap.js` and `styleMap.js` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
+### Added
+* Added `cache()` directive. ([#646](https://github.com/Polymer/lit-html/pull/646))
+* Removed Promise as a supposed node-position value type. ([#555](https://github.com/Polymer/lit-html/pull/555))
+* Added a minimal `<template>` polyfill.
+### Removed
+* [Breaking] Removed the `when()` directive.  Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
+### Fixed
+* Bound attribute names are rewritten to avoid IE/Edge removing SVG and style attributes. ([#640](https://github.com/Polymer/lit-html/pull/640))
+* Ensure shady-render prepares styling for a scope before attaching child elements. ([#664](https://github.com/Polymer/lit-html/pull/664))
+* Handle CSS Custom Variables in the styleMap directive. [#642](https://github.com/Polymer/lit-html/pull/642))
 
 ## [0.13.0] - 2018-11-08
 ### Changed
@@ -34,8 +76,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Event listeners are called with a configurable `this` reference, which is set via the `eventContext` option to `render()`. ([#523](https://github.com/Polymer/lit-html/pull/523))
 * Support for event listener options, by passing the listener itself as both the second and third arguments to add/removeEventListener().
 
-<!-- ### Removed -->
-<!-- ### Fixed -->
 
 ## [0.11.4] - 2018-09-17
 ### Fixed

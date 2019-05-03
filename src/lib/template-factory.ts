@@ -12,8 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * @module lit-html
+ */
+
 import {TemplateResult} from './template-result.js';
-import {Template} from './template.js';
+import {marker, Template} from './template.js';
 
 /**
  * A function type that creates a Template from a TemplateResult.
@@ -44,19 +48,49 @@ export type TemplateFactory = (result: TemplateResult) => Template;
 export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
   if (templateCache === undefined) {
-    templateCache = new Map<TemplateStringsArray, Template>();
+    templateCache = {
+      stringsArray: new WeakMap<TemplateStringsArray, Template>(),
+      keyString: new Map<string, Template>()
+    };
     templateCaches.set(result.type, templateCache);
   }
-  let template = templateCache.get(result.strings);
-  if (template === undefined) {
-    template = new Template(result, result.getTemplateElement());
-    templateCache.set(result.strings, template);
+
+  let template = templateCache.stringsArray.get(result.strings);
+  if (template !== undefined) {
+    return template;
   }
+
+  // If the TemplateStringsArray is new, generate a key from the strings
+  // This key is shared between all templates with identical content
+  const key = result.strings.join(marker);
+
+  // Check if we already have a Template for this key
+  template = templateCache.keyString.get(key);
+  if (template === undefined) {
+    // If we have not seen this key before, create a new Template
+    template = new Template(result, result.getTemplateElement());
+    // Cache the Template for this key
+    templateCache.keyString.set(key, template);
+  }
+
+  // Cache all future queries for this TemplateStringsArray
+  templateCache.stringsArray.set(result.strings, template);
   return template;
 }
 
-// The first argument to JS template tags retain identity across multiple
-// calls to a tag for the same literal, so we can cache work done per literal
-// in a Map.
-export const templateCaches =
-    new Map<string, Map<TemplateStringsArray, Template>>();
+/**
+ * The first argument to JS template tags retain identity across multiple
+ * calls to a tag for the same literal, so we can cache work done per literal
+ * in a Map.
+ *
+ * Safari currently has a bug which occasionally breaks this behaviour, so we
+ * need to cache the Template at two levels. We first cache the
+ * TemplateStringsArray, and if that fails, we cache a key constructed by
+ * joining the strings array.
+ */
+export type templateCache = {
+  readonly stringsArray: WeakMap<TemplateStringsArray, Template>; //
+  readonly keyString: Map<string, Template>;
+};
+
+export const templateCaches = new Map<string, templateCache>();

@@ -1,6 +1,3 @@
-> ## 🛠 Status: In Development
-> lit-html is currently in development. It's on the fast track to a 1.0 release, so we encourage you to use it and give us your feedback, but there are things that haven't been finalized yet and you can expect some changes.
-
 # lit-html
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
@@ -11,6 +8,8 @@ Efficient, Expressive, Extensible HTML templates in JavaScript
 ## Documentation
 
 Full documentation is available at [lit-html.polymer-project.org](https://lit-html.polymer-project.org).
+
+Docs source is in the `docs` folder. To build the site youself, see the instructions in [docs/README.md](docs/README.md).
 
 ## Overview
 
@@ -41,11 +40,6 @@ render(helloTemplate('Kevin'), document.body);
 ```bash
 $ npm install lit-html
 ```
-
-## Status
-
-`lit-html` is under active development and has not yet had a 1.0 release. The
-internal API may still change somewhat. The `html` and `render` API is stable.
 
 ## Contributing
 

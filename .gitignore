@@ -1,6 +1,7 @@
 /node_modules/
 /lib/
 /directives/
+/polyfills/
 
 /tools/node_modules/
 /tools/lib/
@@ -36,5 +37,8 @@ pids
 .npm
 
 # Docs
+.DS_Store
 /docs/_site/
+/docs/_api/tmp/
+/docs/node_modules/
 *.pyc

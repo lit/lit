@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Introduction
-url: /guide/
+permalink: /guide
 ---
 
 {::options toc_levels="1..2" /}
@@ -40,5 +40,8 @@ To render a `TemplateResult`, call the `render()` function with a result and DOM
 const result = myTemplate({title: 'Hello', body: 'lit-html is cool'});
 render(result, document.body);
 ```
+
+
+Ready to try it yourself? Head over to [Getting Started](/guide/getting-started).
 
 [template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals

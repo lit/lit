@@ -30,13 +30,13 @@ class MainPage(webapp2.RequestHandler):
     try:
       template = find_template(self.request.path)
       self.response.headers['Cache-Control'] = 'public, max-age=60'
-      self.response.write(template.render({}))
     except jinja2.exceptions.TemplateNotFound:
+      template = find_template('/404.html')
       self.response.set_status(404)
-      self.response.write('Not found')
     except Exception:
+      template = find_template('/500.html')
       self.response.set_status(500)
-      self.response.write('Server error')
+    self.response.write(template.render({}))
 
 app = webapp2.WSGIApplication([
   ('/.*', MainPage),

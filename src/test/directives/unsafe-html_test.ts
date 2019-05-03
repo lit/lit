@@ -19,6 +19,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 suite('unsafeHTML', () => {
   let container: HTMLElement;
 
@@ -28,7 +30,7 @@ suite('unsafeHTML', () => {
 
   test('renders HTML', () => {
     render(
-        html`<div>before${unsafeHTML('<span>inner</span>after</div>')}`,
+        html`<div>before${unsafeHTML('<span>inner</span>after')}</div>`,
         container);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
@@ -70,5 +72,27 @@ suite('unsafeHTML', () => {
     value[0] = 'bbb';
     render(t(), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+  });
+
+  test('renders after other values', () => {
+    const value = '<span></span>';
+    const primitive = 'aaa';
+    const t = (content: any) => html`<div>${content}</div>`;
+
+    // Initial unsafeHTML render
+    render(t(unsafeHTML(value)), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><span></span></div>');
+
+    // Re-render with a non-unsafeHTML value
+    render(t(primitive), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
+
+    // Re-render with unsafeHTML again
+    render(t(unsafeHTML(value)), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div><span></span></div>');
   });
 });

@@ -12,10 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, NodePart, Part, render, svg, templateFactory} from '../../lit-html.js';
+import {AttributePart, directive, html, noChange, NodePart, nothing, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
+
+// tslint:disable:no-any OK in test code.
 
 const isTemplatePolyfilled =
     ((HTMLTemplateElement as any).decorate != null ||
@@ -43,8 +45,7 @@ suite('render()', () => {
 
   suite('text', () => {
     test('renders plain text expression', () => {
-      const result = html`test`;
-      render(result, container);
+      render(html`test`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
     });
 
@@ -68,6 +69,23 @@ suite('render()', () => {
     test('renders null', () => {
       render(html`<div>${null}</div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    });
+
+    test('renders noChange', () => {
+      const template = (i: any) => html`<div>${i}</div>`;
+      render(template('foo'), container);
+      render(template(noChange), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
+    });
+
+    test('renders nothing', () => {
+      const template = (i: any) => html`<div>${i}</div>`;
+      render(template('foo'), container);
+      render(template(nothing), container);
+      const children = Array.from(container.querySelector('div')!.childNodes);
+      assert.isEmpty(
+          children.filter((node) => node.nodeType !== Node.COMMENT_NODE));
     });
 
     testIfHasSymbol('renders a Symbol', () => {
@@ -100,6 +118,13 @@ suite('render()', () => {
       render(html`<div>${'foo'} </div>`, container);
       assert.equal(
           stripExpressionMarkers(container.innerHTML), '<div>foo </div>');
+    });
+
+    test('renders parts that look like attributes', () => {
+      render(html`<div>foo bar=${'baz'}</div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>foo bar=baz</div>');
     });
 
     test('renders multiple parts per element, preserving whitespace', () => {
@@ -189,69 +214,6 @@ suite('render()', () => {
           '<form><input name="one"><input name="two"></form>');
     });
 
-
-    test('renders a Promise', () => {
-      let resolve: (v: any) => void;
-      const promise = new Promise((res, _) => {
-        resolve = res;
-      });
-      render(html`<div>${promise}</div>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-      resolve!('foo');
-      return promise.then(() => {
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
-      });
-    });
-
-    test('renders a sync thenable', () => {
-      const promise = {
-        then(cb: (foo: string) => void) {
-          cb('foo');
-        }
-      };
-      render(html`<div>${promise}</div>`, container);
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
-    });
-
-    test('renders racing Promises correctly', () => {
-      let resolve1: (v: any) => void;
-      const promise1 = new Promise((res, _) => {
-        resolve1 = res;
-      });
-      let resolve2: (v: any) => void;
-      const promise2 = new Promise((res, _) => {
-        resolve2 = res;
-      });
-
-      let promise = promise1;
-
-      const t = () => html`<div>${promise}</div>`;
-
-      // First render, first Promise, no value
-      render(t(), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-
-      promise = promise2;
-      // Second render, second Promise, still no value
-      render(t(), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-
-      // Resolve the first Promise, should not update the container
-      resolve1!('foo');
-      return promise1.then(() => {
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<div></div>');
-        // Resolve the second Promise, should update the container
-        resolve2!('bar');
-        return promise2.then(() => {
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
-        });
-      });
-    });
-
     test('renders SVG', () => {
       const container = document.createElement('svg');
       const t = svg`<line y1="1" y2="1"/>`;
@@ -259,6 +221,19 @@ suite('render()', () => {
       const line = container.firstElementChild!;
       assert.equal(line.tagName, 'line');
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
+    });
+
+    test('renders SVG with bindings', () => {
+      const container = document.createElement('svg');
+      const pathDefinition = 'M7 14l5-5 5 5z';
+      const t = svg`<path d="${pathDefinition}" />`;
+      render(t, container);
+      const path = container.firstElementChild as SVGPathElement;
+      // IE and Edge rewrite paths, so check a normalized value too
+      assert.include(
+          ['M7 14l5-5 5 5z', 'M 7 14 l 5 -5 l 5 5 Z'],
+          path.getAttribute('d'),
+          pathDefinition);
     });
 
     test('renders templates with comments', () => {
@@ -279,10 +254,26 @@ suite('render()', () => {
 
     test('renders comments with bindings', () => {
       const t = html`
+        <!-- ${'foo'} -->
+        <p>${'bar'}</p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.textContent, 'bar');
+    });
+
+    test('renders comments with attribute-like bindings', () => {
+      const t = html`
         <!-- <div class="${'foo'}"></div> -->
         <p>${'bar'}</p>`;
       render(t, container);
       assert.equal(container.querySelector('p')!.textContent, 'bar');
+    });
+
+    test('renders comments with bindings followed by attr', () => {
+      const t = html`
+        <!-- ${'foo'} -->
+        <p bar=${'baz'}></p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.getAttribute('bar'), 'baz');
     });
 
     test('renders comments with multiple bindings', () => {
@@ -291,6 +282,67 @@ suite('render()', () => {
         <p>${'baz'}</p>`;
       render(t, container);
       assert.equal(container.querySelector('p')!.textContent, 'baz');
+    });
+
+    test('handles comments with bindings', () => {
+      const t = html`<p>A<!-- ${'B'} ${'C'} -->D</p>`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of comments!
+      assert.equal(container.querySelector('p')!.innerText, 'AD');
+    });
+
+    test('handles elements in comments with attribute bindings', () => {
+      const t = html`A<!-- <div foo=${'bar'}>B</div>${'baz'} -->C`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of comments!
+      assert.equal(container.innerText, 'AC');
+    });
+
+    test('handles attribute bindings with comment-like values', () => {
+      const t = html`A<div foo="<!--${'bar'}">B</div>C`;
+      render(t, container);
+      assert.equal(container.textContent, 'ABC');
+    });
+
+    test('handles comments with attribute-like content', () => {
+      const t = html`A<!-- foo=${'bar'}-->B`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of
+      // comments!
+      assert.equal(container.innerText, 'AB');
+    });
+
+    test('handles elements in comments with node bindings', () => {
+      const t = html`A<!-- <div>${'B'}</div>${'baz'} -->C`;
+      render(t, container);
+      // Use innerText instead of textContent because of a crazy bug in
+      // Chrome 41 where textContent would include the textContent of comments!
+      assert.equal(container.innerText, 'AC');
+    });
+
+    test('renders comments with multiple bindings followed by attr', () => {
+      const t = html`
+        <!-- ${'foo'} ${'bar'} -->
+        <p baz=${'qux'}></p>`;
+      render(t, container);
+      assert.equal(container.querySelector('p')!.getAttribute('baz'), 'qux');
+    });
+
+    test('does not break with an attempted dynamic start tag', () => {
+      // this won't work, but we'd like it to not throw an exception or break
+      // other bindings
+      render(html`<${'div'}></div><p>${'foo'}</p>`, container);
+      assert.equal(container.querySelector('p')!.textContent, 'foo');
+    });
+
+    test('does not break with an attempted dynamic end tag', () => {
+      // this won't work, but we'd like it to not throw an exception or break
+      // other bindings
+      render(html`<div></${'div'}><p>${'foo'}</p>`, container);
+      assert.equal(container.querySelector('p')!.textContent, 'foo');
     });
 
     test('renders legacy marker sequences in text nodes', () => {
@@ -366,6 +418,20 @@ suite('render()', () => {
       }
     });
 
+    test('renders multiple bindings in a style attribute', () => {
+      const t = html`<div style="${'color'}: ${'red'}"></div>`;
+      render(t, container);
+      if (isIe) {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div style="color: red;"></div>');
+      } else {
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            '<div style="color: red"></div>');
+      }
+    });
+
     test('renders a binding in a class attribute', () => {
       render(html`<div class="${'red'}"></div>`, container);
       assert.equal(
@@ -397,18 +463,20 @@ suite('render()', () => {
     test(
         'renders to an attribute expression after an attribute literal', () => {
           render(html`<div a="b" foo="${'bar'}"></div>`, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<div a="b" foo="bar"></div>');
+          // IE and Edge can switch attribute order!
+          assert.include(
+              ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
+              stripExpressionMarkers(container.innerHTML));
         });
 
     test(
         'renders to an attribute expression before an attribute literal',
         () => {
           render(html`<div foo="${'bar'}" a="b"></div>`, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<div a="b" foo="bar"></div>');
+          // IE and Edge can switch attribute order!
+          assert.include(
+              ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
+              stripExpressionMarkers(container.innerHTML));
         });
 
     // Regression test for exception in template parsing caused by attributes
@@ -434,7 +502,8 @@ suite('render()', () => {
           container);
       assert.oneOf(stripExpressionMarkers(container.innerHTML), [
         '<div foo="Foo" bar="Bar" baz="Baz"></div>',
-        '<div foo="Foo" baz="Baz" bar="Bar"></div>'
+        '<div foo="Foo" baz="Baz" bar="Bar"></div>',
+        '<div bar="Bar" foo="Foo" baz="Baz"></div>'
       ]);
     });
 
@@ -543,7 +612,7 @@ suite('render()', () => {
 
     test('adds event listener functions, calls with right this value', () => {
       let thisValue;
-      let event: Event;
+      let event: Event|undefined = undefined;
       const listener = function(this: any, e: any) {
         event = e;
         thisValue = this;
@@ -552,14 +621,17 @@ suite('render()', () => {
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
+      if (event === undefined) {
+        throw new Error(`Event listener never fired!`);
+      }
       assert.equal(thisValue, eventContext);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
       if (typeof MouseEvent === 'function') {
-        assert.instanceOf(event!, MouseEvent);
+        assert.instanceOf(event, MouseEvent);
       } else {
-        assert.isDefined((event! as MouseEvent).initMouseEvent);
+        assert.isDefined((event as MouseEvent).initMouseEvent);
       }
     });
 
@@ -960,6 +1032,15 @@ suite('render()', () => {
     }
     customElements.define('property-tester', PropertySetterElement);
 
+    class MutatesInConstructorElement extends HTMLElement {
+      constructor() {
+        super();
+        this.appendChild(document.createElement('div'));
+      }
+    }
+    customElements.define(
+        'mutates-in-constructor', MutatesInConstructorElement);
+
     teardown(() => {
       if (container.parentElement === document.body) {
         document.body.removeChild(container);
@@ -1026,6 +1107,19 @@ suite('render()', () => {
           const instance = container.firstElementChild as PropertySetterElement;
           assert.equal(instance.value, 'foo');
           assert.isTrue(instance.calledSetter);
+        });
+
+    // We need Safari to implement customElements.upgrade before we can enable
+    // this.
+    test.skip(
+        'does not upgrade elements until after parts are established', () => {
+          render(
+              html`
+            <mutates-in-constructor></mutates-in-constructor>
+            <span>${'test'}</span>
+      `,
+              container);
+          assert.equal(container.querySelector('span')!.textContent, 'test');
         });
   });
 
@@ -1097,7 +1191,7 @@ suite('render()', () => {
       // Wait for mutation callback to be called
       await new Promise((resolve) => setTimeout(resolve));
 
-      const elementNodes: Array<Node> = [];
+      const elementNodes: Node[] = [];
       for (const record of mutationRecords) {
         elementNodes.push(...Array.from(record.addedNodes)
                               .filter((n) => n.nodeType === Node.ELEMENT_NODE));
@@ -1291,15 +1385,25 @@ suite('render()', () => {
   });
 
   suite('security', () => {
+    function importToContainer(content: DocumentFragment) {
+      const container = document.createElement('div');
+      container.appendChild(document.importNode(content, true));
+      return container;
+    }
+
     test('resists XSS attempt in node values', () => {
       const result = html`<div>${'<script>alert("boo");</script>'}</div>`;
-      assert(templateFactory(result).element.innerHTML, '<div></div>');
+      const container =
+          importToContainer(templateFactory(result).element.content);
+      assert(container.innerHTML, '<div></div>');
     });
 
     test('resists XSS attempt in attribute values', () => {
       const result = html
       `<div foo="${'"><script>alert("boo");</script><div foo="'}"></div>`;
-      assert(templateFactory(result).element.innerHTML, '<div></div>');
+      const container =
+          importToContainer(templateFactory(result).element.content);
+      assert(container.innerHTML, '<div></div>');
     });
   });
 });

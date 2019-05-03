@@ -12,16 +12,28 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * Module to add shady DOM/shady CSS polyfill support to lit-html template
+ * rendering. See the [[render]] method for details.
+ *
+ * @module shady-render
+ * @preferred
+ */
+
+/**
+ * Do not remove this comment; it keeps typedoc from misplacing the module
+ * docs.
+ */
+import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
 import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
-import {Template} from './template.js';
+import {marker, Template} from './template.js';
 
 export {html, svg, TemplateResult} from '../lit-html.js';
-
 
 // Get a key to lookup in `templateCaches`.
 const getTemplateCacheKey = (type: string, scopeName: string) =>
@@ -33,8 +45,8 @@ if (typeof window.ShadyCSS === 'undefined') {
   compatibleShadyCSSVersion = false;
 } else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
   console.warn(
-      `Incompatible ShadyCSS version detected.` +
-      `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and` +
+      `Incompatible ShadyCSS version detected. ` +
+      `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and ` +
       `@webcomponents/shadycss@1.3.1.`);
   compatibleShadyCSSVersion = false;
 }
@@ -48,21 +60,31 @@ const shadyTemplateFactory = (scopeName: string) =>
       const cacheKey = getTemplateCacheKey(result.type, scopeName);
       let templateCache = templateCaches.get(cacheKey);
       if (templateCache === undefined) {
-        templateCache = new Map<TemplateStringsArray, Template>();
+        templateCache = {
+          stringsArray: new WeakMap<TemplateStringsArray, Template>(),
+          keyString: new Map<string, Template>()
+        };
         templateCaches.set(cacheKey, templateCache);
       }
-      let template = templateCache.get(result.strings);
+
+      let template = templateCache.stringsArray.get(result.strings);
+      if (template !== undefined) {
+        return template;
+      }
+
+      const key = result.strings.join(marker);
+      template = templateCache.keyString.get(key);
       if (template === undefined) {
         const element = result.getTemplateElement();
         if (compatibleShadyCSSVersion) {
           window.ShadyCSS!.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
-        templateCache.set(result.strings, template);
+        templateCache.keyString.set(key, template);
       }
+      templateCache.stringsArray.set(result.strings, template);
       return template;
     };
-
 
 const TEMPLATE_TYPES = ['html', 'svg'];
 
@@ -73,7 +95,7 @@ const removeStylesFromLitTemplates = (scopeName: string) => {
   TEMPLATE_TYPES.forEach((type) => {
     const templates = templateCaches.get(getTemplateCacheKey(type, scopeName));
     if (templates !== undefined) {
-      templates.forEach((template) => {
+      templates.keyString.forEach((template) => {
         const {element: {content}} = template;
         // IE 11 doesn't support the iterable param Set constructor
         const styles = new Set<Element>();
@@ -107,8 +129,13 @@ const prepareTemplateStyles =
       shadyRenderSet.add(scopeName);
       // Move styles out of rendered DOM and store.
       const styles = renderedDOM.querySelectorAll('style');
-      // If there are no styles, there's no work to do.
-      if (styles.length === 0) {
+      const {length} = styles;
+      // If there are no styles, skip unnecessary work
+      if (length === 0) {
+        // Ensure prepareTemplateStyles is called to support adding
+        // styles via `prepareAdoptedCssText` since that requires that
+        // `prepareTemplateStyles` is called.
+        window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
         return;
       }
       const condensedStyle = document.createElement('style');
@@ -117,7 +144,7 @@ const prepareTemplateStyles =
       // part indices.
       // NOTE: collecting styles is inefficient for browsers but ShadyCSS
       // currently does this anyway. When it does not, this should be changed.
-      for (let i = 0; i < styles.length; i++) {
+      for (let i = 0; i < length; i++) {
         const style = styles[i];
         style.parentNode!.removeChild(style);
         condensedStyle.textContent! += style.textContent;
@@ -126,26 +153,27 @@ const prepareTemplateStyles =
       removeStylesFromLitTemplates(scopeName);
       // And then put the condensed style into the "root" template passed in as
       // `template`.
-      insertNodeIntoTemplate(
-          template, condensedStyle, template.element.content.firstChild);
+      const content = template.element.content;
+      insertNodeIntoTemplate(template, condensedStyle, content.firstChild);
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
       window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
-      if (window.ShadyCSS!.nativeShadow) {
-        // When in native Shadow DOM, re-add styling to rendered content using
-        // the style ShadyCSS produced.
-        const style = template.element.content.querySelector('style')!;
+      const style = content.querySelector('style');
+      if (window.ShadyCSS!.nativeShadow && style !== null) {
+        // When in native Shadow DOM, ensure the style created by ShadyCSS is
+        // included in initially rendered output (`renderedDOM`).
         renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
       } else {
-        // When not in native Shadow DOM, at this point ShadyCSS will have
-        // removed the style from the lit template and parts will be broken as a
+        // When no style is left in the template, parts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
         // and then tell lit to remove that node from the template.
+        // There can be no style in the template in 2 cases (1) when Shady DOM
+        // is in use, ShadyCSS removes all styles, (2) when native Shadow DOM
+        // is in use ShadyCSS removes the style if it contains no content.
         // NOTE, ShadyCSS creates its own style so we can safely add/remove
         // `condensedStyle` here.
-        template.element.content.insertBefore(
-            condensedStyle, template.element.content.firstChild);
+        content.insertBefore(condensedStyle, content.firstChild);
         const removes = new Set();
         removes.add(condensedStyle);
         removeNodesFromTemplate(template, removes);
@@ -156,29 +184,111 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
   scopeName: string;
 }
 
+/**
+ * Extension to the standard `render` method which supports rendering
+ * to ShadowRoots when the ShadyDOM (https://github.com/webcomponents/shadydom)
+ * and ShadyCSS (https://github.com/webcomponents/shadycss) polyfills are used
+ * or when the webcomponentsjs
+ * (https://github.com/webcomponents/webcomponentsjs) polyfill is used.
+ *
+ * Adds a `scopeName` option which is used to scope element DOM and stylesheets
+ * when native ShadowDOM is unavailable. The `scopeName` will be added to
+ * the class attribute of all rendered DOM. In addition, any style elements will
+ * be automatically re-written with this `scopeName` selector and moved out
+ * of the rendered DOM and into the document `<head>`.
+ *
+ * It is common to use this render method in conjunction with a custom element
+ * which renders a shadowRoot. When this is done, typically the element's
+ * `localName` should be used as the `scopeName`.
+ *
+ * In addition to DOM scoping, ShadyCSS also supports a basic shim for css
+ * custom properties (needed only on older browsers like IE11) and a shim for
+ * a deprecated feature called `@apply` that supports applying a set of css
+ * custom properties to a given location.
+ *
+ * Usage considerations:
+ *
+ * * Part values in `<style>` elements are only applied the first time a given
+ * `scopeName` renders. Subsequent changes to parts in style elements will have
+ * no effect. Because of this, parts in style elements should only be used for
+ * values that will never change, for example parts that set scope-wide theme
+ * values or parts which render shared style elements.
+ *
+ * * Note, due to a limitation of the ShadyDOM polyfill, rendering in a
+ * custom element's `constructor` is not supported. Instead rendering should
+ * either done asynchronously, for example at microtask timing (for example
+ * `Promise.resolve()`), or be deferred until the first time the element's
+ * `connectedCallback` runs.
+ *
+ * Usage considerations when using shimmed custom properties or `@apply`:
+ *
+ * * Whenever any dynamic changes are made which affect
+ * css custom properties, `ShadyCSS.styleElement(element)` must be called
+ * to update the element. There are two cases when this is needed:
+ * (1) the element is connected to a new parent, (2) a class is added to the
+ * element that causes it to match different custom properties.
+ * To address the first case when rendering a custom element, `styleElement`
+ * should be called in the element's `connectedCallback`.
+ *
+ * * Shimmed custom properties may only be defined either for an entire
+ * shadowRoot (for example, in a `:host` rule) or via a rule that directly
+ * matches an element with a shadowRoot. In other words, instead of flowing from
+ * parent to child as do native css custom properties, shimmed custom properties
+ * flow only from shadowRoots to nested shadowRoots.
+ *
+ * * When using `@apply` mixing css shorthand property names with
+ * non-shorthand names (for example `border` and `border-width`) is not
+ * supported.
+ */
 export const render =
     (result: TemplateResult,
-     container: Element|DocumentFragment,
+     container: Element|DocumentFragment|ShadowRoot,
      options: ShadyRenderOptions) => {
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
-      litRender(result, container, {
-        templateFactory: shadyTemplateFactory(scopeName),
-        ...options,
-      } as RenderOptions);
-      // When rendering a TemplateResult, scope the template with ShadyCSS
-      if (container instanceof ShadowRoot && compatibleShadyCSSVersion &&
-          result instanceof TemplateResult) {
-        // Scope the element template one time only for this scope.
-        if (!shadyRenderSet.has(scopeName)) {
-          const part = parts.get(container)!;
-          const instance = part.value as TemplateInstance;
+      const needsScoping = compatibleShadyCSSVersion &&
+          container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
+          !!(container as ShadowRoot).host && result instanceof TemplateResult;
+      // Handle first render to a scope specially...
+      const firstScopeRender = needsScoping && !shadyRenderSet.has(scopeName);
+      // On first scope render, render into a fragment; this cannot be a single
+      // fragment that is reused since nested renders can occur synchronously.
+      const renderContainer =
+          firstScopeRender ? document.createDocumentFragment() : container;
+      litRender(
+          result,
+          renderContainer,
+          {templateFactory: shadyTemplateFactory(scopeName), ...options} as
+              RenderOptions);
+      // When performing first scope render,
+      // (1) We've rendered into a fragment so that there's a chance to
+      // `prepareTemplateStyles` before sub-elements hit the DOM
+      // (which might cause them to render based on a common pattern of
+      // rendering in a custom element's `connectedCallback`);
+      // (2) Scope the template with ShadyCSS one time only for this scope.
+      // (3) Render the fragment into the container and make sure the
+      // container knows its `part` is the one we just rendered. This ensures
+      // DOM will be re-used on subsequent renders.
+      if (firstScopeRender) {
+        const part = parts.get(renderContainer)!;
+        parts.delete(renderContainer);
+        if (part.value instanceof TemplateInstance) {
           prepareTemplateStyles(
-              (container as ShadowRoot), instance.template, scopeName);
+              renderContainer as DocumentFragment,
+              part.value.template,
+              scopeName);
         }
-        // Update styling if this is the initial render to this container.
-        if (!hasRendered) {
-          window.ShadyCSS!.styleElement((container as ShadowRoot).host);
-        }
+        removeNodes(container, container.firstChild);
+        container.appendChild(renderContainer);
+        parts.set(container, part);
+      }
+      // After elements have hit the DOM, update styling if this is the
+      // initial render to this container.
+      // This is needed whenever dynamic changes are made so it would be
+      // safest to do every render; however, this would regress performance
+      // so we leave it up to the user to call `ShadyCSSS.styleElement`
+      // for dynamic changes.
+      if (!hasRendered && needsScoping) {
+        window.ShadyCSS!.styleElement((container as ShadowRoot).host);
       }
     };

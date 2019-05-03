@@ -17,6 +17,8 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
+// tslint:disable:no-any OK in test code.
+
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
@@ -87,6 +89,22 @@ suite('shady-render', () => {
     document.body.removeChild(container2);
   });
 
+  test('multiple renders re-use rendered DOM', () => {
+    const container = document.createElement('scope-re-use');
+    document.body.appendChild(container);
+    const renderTemplate = (a: string) => {
+      const result = html`
+            <div id="a">${a}</div>
+      `;
+      renderShadowRoot(result, container);
+    };
+    renderTemplate('a');
+    const renderedNode = container.shadowRoot!.querySelector('#a');
+    renderTemplate('b');
+    assert.equal(container.shadowRoot!.querySelector('#a'), renderedNode);
+    document.body.removeChild(container);
+  });
+
   test('styles with css custom properties render', () => {
     const container = document.createElement('scope-4');
     document.body.appendChild(container);
@@ -136,7 +154,7 @@ suite('shady-render', () => {
         const e = (container.shadowRoot!).querySelector('scope-4a-sub')!;
         renderShadowRoot(shadowContent, e);
         assert.equal(
-            getComputedStyle(e!).getPropertyValue('border-top-width').trim(),
+            getComputedStyle(e).getPropertyValue('border-top-width').trim(),
             '2px');
         document.body.removeChild(container);
       });
@@ -169,15 +187,15 @@ suite('shady-render', () => {
             container);
         const elements =
             (container.shadowRoot!).querySelectorAll('scope-4b-sub');
-        renderShadowRoot(nestedContent, elements[0]!);
-        renderShadowRoot(nestedContent, elements[1]!);
+        renderShadowRoot(nestedContent, elements[0]);
+        renderShadowRoot(nestedContent, elements[1]);
         assert.equal(
-            getComputedStyle(elements[0]!)
+            getComputedStyle(elements[0])
                 .getPropertyValue('border-top-width')
                 .trim(),
             '2px');
         assert.equal(
-            getComputedStyle(elements[1]!)
+            getComputedStyle(elements[1])
                 .getPropertyValue('border-top-width')
                 .trim(),
             '2px');
@@ -267,6 +285,30 @@ suite('shady-render', () => {
             '1px');
         document.body.removeChild(container);
       });
+
+  test('empty styles are ok', function() {
+    const container1 = document.createElement('scope-empty-style');
+    document.body.appendChild(container1);
+    const renderTemplate = (foo: string, container: Element) => {
+      const result =
+          html`<div id="a">${foo}</div><style></style><div id="b">${foo}</div>`;
+      renderShadowRoot(result, container);
+    };
+    renderTemplate('foo', container1);
+    assert.equal(
+        container1.shadowRoot!.querySelector('#a')!.textContent, `foo`);
+    assert.equal(
+        container1.shadowRoot!.querySelector('#b')!.textContent, `foo`);
+    const container2 = document.createElement('scope-empty-style');
+    document.body.appendChild(container2);
+    renderTemplate('bar', container2);
+    assert.equal(
+        container2.shadowRoot!.querySelector('#a')!.textContent, `bar`);
+    assert.equal(
+        container2.shadowRoot!.querySelector('#b')!.textContent, `bar`);
+    document.body.removeChild(container1);
+    document.body.removeChild(container2);
+  });
 
   test('part values render into styles once per scope', function() {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
