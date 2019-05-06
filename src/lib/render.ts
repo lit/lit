@@ -20,7 +20,6 @@ import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
-import {TemplateResult} from './template-result.js';
 
 export const parts = new WeakMap<Node, NodePart>();
 
@@ -40,7 +39,7 @@ export const parts = new WeakMap<Node, NodePart>();
  *     container, as those changes will not effect previously rendered DOM.
  */
 export const render =
-    (result: TemplateResult,
+    (result: unknown,
      container: Element|DocumentFragment,
      options?: Partial<RenderOptions>) => {
       let part = parts.get(container);
