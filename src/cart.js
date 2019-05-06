@@ -22,8 +22,12 @@ function getLocalCartData() {
 }
 
 export function installCart(store) {
-  function handleStorageEvent() {
-    store.dispatch(setCart(getLocalCartData()));
+  function handleStorageEvent(event) {
+    // Note: In IE11 the storage event fires even when the modification is in the same window.
+    // So here we check to make sure the window receving the event is inactive.
+    if (event == null || document.hidden) {
+      store.dispatch(setCart(getLocalCartData()));
+    }
   }
   window.addEventListener('storage', handleStorageEvent);
   handleStorageEvent();
