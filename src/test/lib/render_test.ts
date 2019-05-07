@@ -1424,17 +1424,25 @@ suite('render()', () => {
 
     test('accepts an object', () => {
       render({}, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '[object Object]');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '[object Object]');
     });
 
     test('accepts an object with `toString`', () => {
-      render({toString() { return 'toString!'; }}, container);
+      render(
+          {
+            toString() {
+              return 'toString!';
+            }
+          },
+          container);
       assert.equal(stripExpressionMarkers(container.innerHTML), 'toString!');
     });
 
     test('accepts an symbol', () => {
       render(Symbol('description!'), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
     });
   });
 });

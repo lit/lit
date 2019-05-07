@@ -133,7 +133,9 @@ suite('Parts', () => {
       test('accepts a symbol with a description', () => {
         part.setValue(Symbol('description!'));
         part.commit();
-        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            'Symbol(description!)');
       });
 
       test('accepts a symbol on subsequent renders', () => {
@@ -147,17 +149,24 @@ suite('Parts', () => {
         // explicitly converted with `String`, then this would throw.
         part.setValue(Symbol('description!'));
         part.commit();
-        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML),
+            'Symbol(description!)');
       });
 
       test('accepts an object', () => {
         part.setValue({});
         part.commit();
-        assert.equal(stripExpressionMarkers(container.innerHTML), '[object Object]');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '[object Object]');
       });
 
       test('accepts an object with a `toString` method', () => {
-        part.setValue({toString() { return 'toString!'; }});
+        part.setValue({
+          toString() {
+            return 'toString!';
+          }
+        });
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), 'toString!');
       });
