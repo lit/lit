@@ -135,9 +135,7 @@ suite('Parts', () => {
         const sym = Symbol('description!');
         part.setValue(sym);
         part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            String(sym));
+        assert.equal(stripExpressionMarkers(container.innerHTML), String(sym));
       });
 
       test('accepts a symbol on subsequent renders', () => {
@@ -153,9 +151,7 @@ suite('Parts', () => {
         const sym2 = Symbol('description!');
         part.setValue(sym2);
         part.commit();
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            String(sym2));
+        assert.equal(stripExpressionMarkers(container.innerHTML), String(sym2));
       });
 
       test('accepts an object', () => {

@@ -1442,8 +1442,7 @@ suite('render()', () => {
     test('accepts an symbol', () => {
       const sym = Symbol('description!');
       render(sym, container);
-      assert.equal(
-          stripExpressionMarkers(container.innerHTML), String(sym));
+      assert.equal(stripExpressionMarkers(container.innerHTML), String(sym));
     });
   });
 });
