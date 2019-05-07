@@ -124,6 +124,44 @@ suite('Parts', () => {
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
       });
 
+      test('accepts a symbol', () => {
+        part.setValue(Symbol());
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol()');
+      });
+
+      test('accepts a symbol with a description', () => {
+        part.setValue(Symbol('description!'));
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
+      });
+
+      test('accepts a symbol on subsequent renders', () => {
+        part.setValue(Symbol());
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol()');
+
+        // If the previously rendered value caused a single text node to be
+        // created, then subsequent renders will try to update the existing text
+        // node by setting `.data`. If the new value is a symbol and it isn't
+        // explicitly converted with `String`, then this would throw.
+        part.setValue(Symbol('description!'));
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
+      });
+
+      test('accepts an object', () => {
+        part.setValue({});
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), '[object Object]');
+      });
+
+      test('accepts an object with a `toString` method', () => {
+        part.setValue({toString() { return 'toString!'; }});
+        part.commit();
+        assert.equal(stripExpressionMarkers(container.innerHTML), 'toString!');
+      });
+
       test('accepts a function', () => {
         const f = () => {
           throw new Error();
