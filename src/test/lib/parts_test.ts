@@ -125,33 +125,37 @@ suite('Parts', () => {
       });
 
       test('accepts a symbol', () => {
-        part.setValue(Symbol());
+        const sym = Symbol();
+        part.setValue(sym);
         part.commit();
-        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol()');
+        assert.equal(stripExpressionMarkers(container.innerHTML), String(sym));
       });
 
       test('accepts a symbol with a description', () => {
-        part.setValue(Symbol('description!'));
+        const sym = Symbol('description!');
+        part.setValue(sym);
         part.commit();
         assert.equal(
             stripExpressionMarkers(container.innerHTML),
-            'Symbol(description!)');
+            String(sym));
       });
 
       test('accepts a symbol on subsequent renders', () => {
-        part.setValue(Symbol());
+        const sym1 = Symbol();
+        part.setValue(sym1);
         part.commit();
-        assert.equal(stripExpressionMarkers(container.innerHTML), 'Symbol()');
+        assert.equal(stripExpressionMarkers(container.innerHTML), String(sym1));
 
         // If the previously rendered value caused a single text node to be
         // created, then subsequent renders will try to update the existing text
         // node by setting `.data`. If the new value is a symbol and it isn't
         // explicitly converted with `String`, then this would throw.
-        part.setValue(Symbol('description!'));
+        const sym2 = Symbol('description!');
+        part.setValue(sym2);
         part.commit();
         assert.equal(
             stripExpressionMarkers(container.innerHTML),
-            'Symbol(description!)');
+            String(sym2));
       });
 
       test('accepts an object', () => {

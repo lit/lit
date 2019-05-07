@@ -1440,9 +1440,10 @@ suite('render()', () => {
     });
 
     test('accepts an symbol', () => {
-      render(Symbol('description!'), container);
+      const sym = Symbol('description!');
+      render(sym, container);
       assert.equal(
-          stripExpressionMarkers(container.innerHTML), 'Symbol(description!)');
+          stripExpressionMarkers(container.innerHTML), String(sym));
     });
   });
 });

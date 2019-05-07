@@ -24,7 +24,7 @@ import {templateFactory} from './template-factory.js';
 export const parts = new WeakMap<Node, NodePart>();
 
 /**
- * Renders a template or value to a container.
+ * Renders a template result or other value to a container.
  *
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
