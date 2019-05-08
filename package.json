@@ -22,14 +22,13 @@
     "@polymer/iron-overlay-behavior": "^3.0.0",
     "@polymer/paper-icon-button": "^3.0.0",
     "@polymer/paper-spinner": "^3.0.0",
-    "@polymer/polymer": "3.0.0",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "lit-element": "^2.0.0-rc.2",
-    "lit-html": "^1.0.0-rc.2",
+    "@polymer/polymer": "^3.1.0",
+    "@webcomponents/webcomponentsjs": "^2.2.4",
+    "lit-element": "^2.1.0",
     "pwa-helpers": "^0.9.0",
     "redux": "^4.0.0",
-    "redux-thunk": "^2.2.0",
-    "reselect": "^3.0.1"
+    "redux-thunk": "^2.3.0",
+    "reselect": "^4.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
