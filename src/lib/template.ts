@@ -85,7 +85,7 @@ export class Template {
           // assume a correspondence between part index and attribute index.
           let count = 0;
           for (let i = 0; i < length; i++) {
-            if (endsWith(attributes[i].name, boundAttributeSuffix)) {
+            if (attributes[i].name.endsWith(boundAttributeSuffix)) {
               count++;
             }
           }
@@ -129,7 +129,7 @@ export class Template {
               insert = createMarker();
             } else {
               const match = lastAttributeNameRegex.exec(s);
-              if (match !== null && endsWith(match[2], boundAttributeSuffix)) {
+              if (match !== null && match[2].endsWith(boundAttributeSuffix)) {
                 s = s.slice(0, match.index) + match[1] +
                     match[2].slice(0, -boundAttributeSuffix.length) + match[3];
               }
@@ -191,11 +191,6 @@ export class Template {
     }
   }
 }
-
-const endsWith = (str: string, suffix: string): boolean => {
-  const index = str.length - suffix.length;
-  return index >= 0 && str.slice(index) === suffix;
-};
 
 /**
  * A placeholder for a dynamic expression in an HTML template.
