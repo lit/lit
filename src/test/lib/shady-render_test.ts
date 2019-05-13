@@ -313,6 +313,7 @@ suite('shady-render', () => {
   test('part values render into styles once per scope', function() {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
       this.skip();
+      return;
     }
     const container = document.createElement('scope-3');
     document.body.appendChild(container);
