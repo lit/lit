@@ -24,6 +24,7 @@
  * Do not remove this comment; it keeps typedoc from misplacing the module
  * docs.
  */
+import {html} from '../lit-html.js';
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
@@ -248,7 +249,7 @@ export const render =
       const hasRendered = parts.has(container);
       const needsScoping = compatibleShadyCSSVersion &&
           container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
-          !!(container as ShadowRoot).host && result instanceof TemplateResult;
+          !!(container as ShadowRoot).host;
       // Handle first render to a scope specially...
       const firstScopeRender = needsScoping && !shadyRenderSet.has(scopeName);
       // On first scope render, render into a fragment; this cannot be a single
@@ -272,12 +273,11 @@ export const render =
       if (firstScopeRender) {
         const part = parts.get(renderContainer)!;
         parts.delete(renderContainer);
-        if (part.value instanceof TemplateInstance) {
-          prepareTemplateStyles(
-              renderContainer as DocumentFragment,
-              part.value.template,
-              scopeName);
-        }
+        const template = part.value instanceof TemplateInstance ?
+            part.value.template :
+            new Template(html``, document.createElement('template'));
+        prepareTemplateStyles(
+            renderContainer as DocumentFragment, template, scopeName);
         removeNodes(container, container.firstChild);
         container.appendChild(renderContainer);
         parts.set(container, part);
