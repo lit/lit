@@ -17,7 +17,7 @@
  */
 
 import {Part} from './part.js';
-import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
+import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter, SpreadPart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
 
@@ -37,6 +37,11 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
   handleAttributeExpressions(
       element: Element, name: string, strings: string[],
       options: RenderOptions): ReadonlyArray<Part> {
+    if (name === '...') {
+      const attributeHandler = (name: string): ReadonlyArray<Part> =>
+          this.handleAttributeExpressions(element, name, ['', ''], options);
+      return [new SpreadPart(element, attributeHandler)]
+    }
     const prefix = name[0];
     if (prefix === '.') {
       const committer = new PropertyCommitter(element, name.slice(1), strings);

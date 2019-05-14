@@ -43,6 +43,108 @@ suite('render()', () => {
     container = document.createElement('div');
   });
 
+  suite('spread', () => {
+    test('spreads attributes', () => {
+      const spreadable = {'foo': 'bar'};
+      render(html`<div ...=${spreadable}></div>`, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+    });
+
+    test('spreads properties', () => {
+      const spreadable = {'.foo': 123, '.bar': 456};
+      render(html`<div ...=${spreadable}></div>`, container);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).bar, 456);
+    });
+
+    test('spreads different types', () => {
+      const spreadable = {'.foo': 123, 'bar': 'baz'};
+      render(html`<div ...=${spreadable}></div>`, container);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 123);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div bar="baz"></div>');
+    });
+
+    suite('spreading events', () => {
+      setup(() => {
+        document.body.appendChild(container);
+      });
+
+      teardown(() => {
+        document.body.removeChild(container);
+      });
+
+      test('spreads event listener functions', () => {
+        let thisValue;
+        let event: Event|undefined = undefined;
+        const listener = function(this: any, e: any) {
+          event = e;
+          thisValue = this;
+        };
+        const eventContext = {} as EventTarget;
+        const spreadable = {"@click": listener}
+
+        render(html`<div ...=${spreadable}></div>`, container, {eventContext});
+
+        const div = container.querySelector('div')!;
+        div.click();
+        if (event === undefined) {
+          throw new Error(`Event listener never fired!`);
+        }
+        assert.equal(thisValue, eventContext);
+        // MouseEvent is not a function in IE, so the event cannot be an instance
+        // of it
+        if (typeof MouseEvent === 'function') {
+          assert.instanceOf(event, MouseEvent);
+        } else {
+          assert.isDefined((event as MouseEvent).initMouseEvent);
+        }
+      });
+    })
+
+    test('spreads boolean attribute as an empty string when truthy', () => {
+      const t = (value: any) => html`<div ...=${{'?foo': value}}></div>`;
+
+      render(t(true), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
+
+      render(t('a'), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
+
+      render(t(1), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
+    });
+
+    test('spreads updated attributes', () => {
+      let spreadable = {'bar': 'baz'};
+      render(html`<div ...=${spreadable}></div>`, container);
+      spreadable = {'bar': 'qux'}
+      render(html`<div ...=${spreadable}></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div bar="qux"></div>');
+    });
+
+    test('spreads new attributes', () => {
+      render(html`<div ...=${{'foo': 'bar'}}></div>`, container);
+      render(html`<div ...=${{'foo': 'bar', 'baz': 'qux'}}></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div foo="bar" baz="qux"></div>');
+    });
+
+    test('clears removed attributes', () => {
+      render(html`<div ...=${{'foo': 'bar', 'baz': 'qux'}}></div>`, container);
+      render(html`<div ...=${{'foo': 'bar'}}></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+    });
+  });
+
   suite('text', () => {
     test('renders plain text expression', () => {
       render(html`test`, container);

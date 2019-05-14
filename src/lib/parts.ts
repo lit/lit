@@ -38,6 +38,61 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
 };
 
 /**
+ * A Part that controls all or part of an attribute value.
+ */
+export class SpreadPart implements Part {
+  value: unknown = undefined;
+  subparts: Map<string, ReadonlyArray<Part>> = new Map();
+  element: Element;
+  handleAttribute: (name: string) =>  ReadonlyArray<Part>;
+  // Names of attributes that were spread in the last commit,
+  // but are not anymore.
+  private __removedNames: Array<string> = [];
+
+  constructor(element: Element, handleAttribute: (name: string) =>  ReadonlyArray<Part>) {
+    this.element = element;
+    this.handleAttribute = handleAttribute;
+  }
+
+  setValue(value: unknown): void {
+    let spreadable = value as {[key: string]: any};
+    for (var name in spreadable) {
+      this.subparts.set(name, this.handleAttribute(name))
+    }
+    for (var [name, parts] of this.subparts.entries()) {
+      if (parts) {
+        // Only one part per key is allowed via Spread
+        parts[0].setValue(spreadable[name]);
+        // Prepare to remove unused attributes
+        if (!(name in spreadable)) {
+          this.__removedNames.push(name)
+        }
+      }
+    }
+    this.value = value;
+  }
+
+  commit() {
+    for (var parts of this.subparts.values()) {
+      if (parts) {
+        // Only one part per key is allowed via Spread
+        parts[0].commit()
+      }
+    }
+    // Remove attributes that used to be spread, but aren't anymore.
+    // Removal of properties and events are already handled by committing
+    // the undefined value.
+    for (var name of this.__removedNames) {
+      let parts = this.subparts.get(name) || [];
+      if (parts && parts[0] instanceof AttributePart) {
+        this.element.removeAttribute(name)
+      }
+      this.subparts.delete(name)
+    }
+  }
+}
+
+/**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
  * single attibute. The value is only set once even if there are multiple parts
  * for an attribute.
