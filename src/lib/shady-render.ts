@@ -273,6 +273,13 @@ export const render =
       if (firstScopeRender) {
         const part = parts.get(renderContainer)!;
         parts.delete(renderContainer);
+        // ShadyCSS might have style sheets (e.g. from `prepareAdoptedCssText`)
+        // that should apply to `renderContainer` even if the rendered value is
+        // not a TemplateInstance. However, it will only insert scoped styles
+        // into the document if `prepareTemplateStyles` has already been called
+        // for the given scope name. `prepareTemplateStyles` requires a
+        // template element (and the local wrapper requires a Template), so we
+        // create an empty one here to satisfy it.
         const template = part.value instanceof TemplateInstance ?
             part.value.template :
             new Template(html``, document.createElement('template'));
@@ -286,7 +293,7 @@ export const render =
       // initial render to this container.
       // This is needed whenever dynamic changes are made so it would be
       // safest to do every render; however, this would regress performance
-      // so we leave it up to the user to call `ShadyCSSS.styleElement`
+      // so we leave it up to the user to call `ShadyCSS.styleElement`
       // for dynamic changes.
       if (!hasRendered && needsScoping) {
         window.ShadyCSS!.styleElement((container as ShadowRoot).host);
