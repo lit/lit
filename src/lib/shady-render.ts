@@ -24,7 +24,6 @@
  * Do not remove this comment; it keeps typedoc from misplacing the module
  * docs.
  */
-import {html} from '../lit-html.js';
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
@@ -126,8 +125,13 @@ const shadyRenderSet = new Set<string>();
  * output.
  */
 const prepareTemplateStyles =
-    (renderedDOM: DocumentFragment, template: Template, scopeName: string) => {
+    (scopeName: string, renderedDOM: DocumentFragment, template?: Template) => {
       shadyRenderSet.add(scopeName);
+      // If `renderedDOM` is stamped from a Template, then we need to edit that
+      // Template's underlying template element. Otherwise, we create one here
+      // to give to ShadyCSS, which still requires one while scoping.
+      const templateElement =
+          template ? template.element : document.createElement('template');
       // Move styles out of rendered DOM and store.
       const styles = renderedDOM.querySelectorAll('style');
       const {length} = styles;
@@ -136,7 +140,7 @@ const prepareTemplateStyles =
         // Ensure prepareTemplateStyles is called to support adding
         // styles via `prepareAdoptedCssText` since that requires that
         // `prepareTemplateStyles` is called.
-        window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
+        window.ShadyCSS!.prepareTemplateStyles(templateElement, scopeName);
         return;
       }
       const condensedStyle = document.createElement('style');
@@ -154,18 +158,22 @@ const prepareTemplateStyles =
       removeStylesFromLitTemplates(scopeName);
       // And then put the condensed style into the "root" template passed in as
       // `template`.
-      const content = template.element.content;
-      insertNodeIntoTemplate(template, condensedStyle, content.firstChild);
+      const content = templateElement.content;
+      if (template) {
+        insertNodeIntoTemplate(template, condensedStyle, content.firstChild);
+      } else {
+        content.insertBefore(condensedStyle, content.firstChild);
+      }
       // Note, it's important that ShadyCSS gets the template that `lit-html`
       // will actually render so that it can update the style inside when
       // needed (e.g. @apply native Shadow DOM case).
-      window.ShadyCSS!.prepareTemplateStyles(template.element, scopeName);
+      window.ShadyCSS!.prepareTemplateStyles(templateElement, scopeName);
       const style = content.querySelector('style');
       if (window.ShadyCSS!.nativeShadow && style !== null) {
         // When in native Shadow DOM, ensure the style created by ShadyCSS is
         // included in initially rendered output (`renderedDOM`).
         renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
-      } else {
+      } else if (template) {
         // When no style is left in the template, parts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
         // and then tell lit to remove that node from the template.
@@ -282,9 +290,9 @@ export const render =
         // create an empty one here to satisfy it.
         const template = part.value instanceof TemplateInstance ?
             part.value.template :
-            new Template(html``, document.createElement('template'));
+            undefined;
         prepareTemplateStyles(
-            renderContainer as DocumentFragment, template, scopeName);
+            scopeName, renderContainer as DocumentFragment, template);
         removeNodes(container, container.firstChild);
         container.appendChild(renderContainer);
         parts.set(container, part);
