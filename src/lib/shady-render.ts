@@ -241,7 +241,7 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  * supported.
  */
 export const render =
-    (result: unknown,
+    (result: TemplateResult,
      container: Element|DocumentFragment|ShadowRoot,
      options: ShadyRenderOptions) => {
       const scopeName = options.scopeName;
