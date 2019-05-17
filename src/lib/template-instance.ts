@@ -22,6 +22,14 @@ import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
 import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 
+
+// Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+const walker = document.createTreeWalker(
+  document.createDocumentFragment(),
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false);
+
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
  * with new values.
@@ -97,15 +105,9 @@ export class TemplateInstance {
     const fragment = isCEPolyfill ?
         this.template.element.content.cloneNode(true) as DocumentFragment :
         document.importNode(this.template.element.content, true);
-
+    walker.currentNode = fragment;
     const stack: Node[] = [];
     const parts = this.template.parts;
-    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-    const walker = document.createTreeWalker(
-        fragment,
-        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-        null,
-        false);
     let partIndex = 0;
     let nodeIndex = 0;
     let part: TemplatePart;

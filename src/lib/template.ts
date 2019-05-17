@@ -37,6 +37,13 @@ export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 export const boundAttributeSuffix = '$lit$';
 
+// Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+const walker = document.createTreeWalker(
+  document.createDocumentFragment(),
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false);
+
 /**
  * An updateable Template that tracks the location of dynamic parts.
  */
@@ -49,12 +56,7 @@ export class Template {
 
     const nodesToRemove: Node[] = [];
     const stack: Node[] = [];
-    // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-    const walker = document.createTreeWalker(
-        element.content,
-        133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-        null,
-        false);
+    walker.currentNode = element.content;
     // Keeps track of the last index associated with a part. We try to delete
     // unnecessary nodes, but we never want to associate two different parts
     // to the same index. They must have a constant node between.
