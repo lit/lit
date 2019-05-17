@@ -39,10 +39,10 @@ export const boundAttributeSuffix = '$lit$';
 
 // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
 const walker = document.createTreeWalker(
-  document.createDocumentFragment(),
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-  null,
-  false);
+    document.createDocumentFragment(),
+    133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+    null,
+    false);
 
 /**
  * An updateable Template that tracks the location of dynamic parts.

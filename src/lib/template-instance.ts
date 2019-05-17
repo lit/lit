@@ -25,10 +25,10 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 
 // Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
 const walker = document.createTreeWalker(
-  document.createDocumentFragment(),
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-  null,
-  false);
+    document.createDocumentFragment(),
+    133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+    null,
+    false);
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
