@@ -1,0 +1,13 @@
+{
+  "name": "root",
+  "private": true,
+  "devDependencies": {
+    "http-server": "latest",
+    "lerna": "^3.13.4"
+},
+  "scripts": {
+    "bootstrap": "lerna bootstrap --hoist",
+    "start": "http-server & (cd packages/uni-virtual-examples; npm run build-and-watch)"
+  },
+  "dependencies": {}
+}

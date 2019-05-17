@@ -1,0 +1,18 @@
+{
+    "name": "lit-virtual",
+    "version": "0.1.0",
+    "description": "Virtual scrolling for lit-html and LitElement",
+    "license": "BSD-3-Clause",
+    "repository": "PolymerLabs/uni-virtual",
+    "main": "lit-virtual.js",
+    "module": "lit-virtual.js",
+    "scripts": {
+    },
+    "author": "The Polymer Authors",
+    "devDependencies": {},
+    "dependencies": {
+        "uni-virtual": "^0.1.0",
+        "lit-html": "latest",
+        "lit-element": "latest"
+    }
+  }

@@ -1,0 +1,21 @@
+{
+    "name": "uni-virtual-examples",
+    "version": "0.1.0",
+    "description": "Examples demonstrating the functionality of the uni-virtual libraries",
+    "license": "BSD-3-Clause",
+    "repository": "PolymerLabs/uni-virtual",
+    "private": true,
+    "scripts": {
+        "build-and-watch": "rollup -c -w"
+    },
+    "author": "The Polymer Authors",
+    "devDependencies": {
+        "rollup": "^1.11.2",
+        "rollup-plugin-node-resolve": "^4.2.3",
+        "rollup-plugin-terser": "^4.0.4"
+    },
+    "dependencies": {
+        "lit-virtual": "^0.1.0",
+        "lit-element": "latest"
+    }
+}
