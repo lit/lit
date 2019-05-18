@@ -17,8 +17,7 @@
  */
 
 import {isTemplatePartActive, Template, TemplatePart} from './template.js';
-
-const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
+import {elementCommentTextWalker, resetElementCommentTextWalker} from './dom.js';
 
 /**
  * Removes the list of nodes from a Template safely. In addition to removing
@@ -39,8 +38,7 @@ const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
 export function removeNodesFromTemplate(
     template: Template, nodesToRemove: Set<Node>) {
   const {element: {content}, parts} = template;
-  const walker =
-      document.createTreeWalker(content, walkerNodeFilter, null, false);
+  const walker = elementCommentTextWalker(content);
   let partIndex = nextActiveIndexInTemplateParts(parts);
   let part = parts[partIndex];
   let nodeIndex = -1;
@@ -75,15 +73,17 @@ export function removeNodesFromTemplate(
       part = parts[partIndex];
     }
   }
+  resetElementCommentTextWalker();
   nodesToRemoveInTemplate.forEach((n) => n.parentNode!.removeChild(n));
 }
 
 const countNodes = (node: Node) => {
   let count = (node.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */) ? 0 : 1;
-  const walker = document.createTreeWalker(node, walkerNodeFilter, null, false);
+  const walker = elementCommentTextWalker(node);
   while (walker.nextNode()) {
     count++;
   }
+  resetElementCommentTextWalker();
   return count;
 };
 
@@ -112,8 +112,7 @@ export function insertNodeIntoTemplate(
     content.appendChild(node);
     return;
   }
-  const walker =
-      document.createTreeWalker(content, walkerNodeFilter, null, false);
+  const walker = elementCommentTextWalker(content);
   let partIndex = nextActiveIndexInTemplateParts(parts);
   let insertCount = 0;
   let walkerIndex = -1;
@@ -136,4 +135,5 @@ export function insertNodeIntoTemplate(
       partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
     }
   }
+  resetElementCommentTextWalker();
 }

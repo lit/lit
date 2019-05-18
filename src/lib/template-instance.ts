@@ -16,19 +16,12 @@
  * @module lit-html
  */
 
-import {isCEPolyfill} from './dom.js';
+import {isCEPolyfill, elementCommentTextWalker, resetElementCommentTextWalker} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
 import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 
-
-// Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-const walker = document.createTreeWalker(
-    document.createDocumentFragment(),
-    133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-    null,
-    false);
 
 /**
  * An instance of a `Template` that can be attached to the DOM and updated
@@ -105,7 +98,7 @@ export class TemplateInstance {
     const fragment = isCEPolyfill ?
         this.template.element.content.cloneNode(true) as DocumentFragment :
         document.importNode(this.template.element.content, true);
-    walker.currentNode = fragment;
+    const walker = elementCommentTextWalker(fragment);
     const stack: Node[] = [];
     const parts = this.template.parts;
     let partIndex = 0;
@@ -151,6 +144,7 @@ export class TemplateInstance {
       }
       partIndex++;
     }
+    resetElementCommentTextWalker();
 
     if (isCEPolyfill) {
       document.adoptNode(fragment);
