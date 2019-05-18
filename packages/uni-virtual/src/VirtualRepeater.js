@@ -247,7 +247,7 @@ export class VirtualRepeater {
       requestAnimationFrame(resolve);
     }));
     let pm = children.map(
-        (c, i) => this._indexToMeasure[indices[i]] || this._measureChild(c));
+        (c, i) => /*this._indexToMeasure[indices[i]] ||*/ this._measureChild(c));
     const mm = /** @type {{number: {width: number, height: number}}} */
         (pm.reduce((out, cur, i) => {
           out[indices[i]] = this._indexToMeasure[indices[i]] = cur;
@@ -344,7 +344,7 @@ export class VirtualRepeater {
       // Maintain dom order.
       this._insertBefore(child, this._firstChild);
       if (this.updateElement) {
-        this.updateElement(child, idx);
+        this.updateElement(child, this._items[idx], idx);
       }
       this._ordered.unshift(child);
     }
@@ -361,7 +361,7 @@ export class VirtualRepeater {
       // Maintain dom order.
       this._insertBefore(child, null);
       if (this.updateElement) {
-        this.updateElement(child, idx);
+        this.updateElement(child, this._items[idx], idx);
       }
       this._ordered.push(child);
     }
@@ -395,7 +395,7 @@ export class VirtualRepeater {
       }
 
       if (this.updateElement) {
-        this.updateElement(child, i);
+        this.updateElement(child, this._items[i], i);
       }
     }
   }
@@ -410,7 +410,7 @@ export class VirtualRepeater {
     if (child = this._keyToChild.get(key)) {
       this._prevActive.delete(child);
     } else {
-      child = this.createElement(idx);
+      child = this.createElement(this._items[idx], idx);
       this._keyToChild.set(key, child);
       this._childToKey.set(child, key);
     }

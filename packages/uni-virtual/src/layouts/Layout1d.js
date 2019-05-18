@@ -267,7 +267,7 @@ export class Layout1d extends Layout1dBase {
       return this._physicalMin;
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - (this._first * this._delta);
-    } else if (this._last === this._maxIdx) {
+    } else if (this._last === this._totalItems - 1) {
       return this._physicalMax - this._scrollSize;
     } else if (this._physicalMax >= this._scrollSize) {
       return (

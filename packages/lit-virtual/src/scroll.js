@@ -6,7 +6,7 @@ import { LitMixin } from './repeat.js';
 export const LitScroller = LitMixin(VirtualScroller);
 
 const partToScroller = new WeakMap();
-export const scroller = directive((config = {}) => async part => {
+export const scroll = directive((config = {}) => async part => {
   let scroller = partToScroller.get(part);
   if (!scroller) {
     if (!part.startNode.isConnected) {
@@ -16,8 +16,8 @@ export const scroller = directive((config = {}) => async part => {
     //   const { Layout1d } = await import('uni-virtual');
     //   config.layout = new Layout1d();
     // }
-    const {template, layout, container, scrollTarget} = config;
-    scroller = new LitScroller({part, template, layout, container, scrollTarget});
+    let {template, layout, scrollTarget} = config;
+    scroller = new LitScroller({part, template, layout, scrollTarget});
     partToScroller.set(part, scroller);
   }
   Object.assign(scroller, {

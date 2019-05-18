@@ -93,6 +93,7 @@ class Yo extends LitElement {
         return html`
             <lit-virtual-scroller
                 layout='vertical'
+                .scrollTarget=${window}
                 .items=${this.data}
                 .template=${contact => html`
                     <wrapped-contact .contact=${contact}></wrapped-contact>

@@ -1,11 +1,12 @@
 import { html, css, LitElement } from 'lit-element';
-import { scroller } from './scroll.js';
+import { scroll } from './scroll.js';
 
 class LitVirtualScroller extends LitElement {
     static get properties() {
         return {
             items: {},
-            template: {}    
+            template: {},
+            scrollTarget: {} 
         }
     }
 
@@ -38,30 +39,30 @@ class LitVirtualScroller extends LitElement {
         this.items = [1, 2, 3];
         this.template = (item, idx) => html`<div>${idx}: ${item}</div>`;
         this.renderRoot = this;
-        this.shadowRoot.appendChild(document.createElement('slot'));
-        const ss = document.createElement('style');
-        ss.textContent = `
-            :host {
-                display: block;
-                position: relative;
-                contain: strict;
-                height: 150px;
-                overflow: auto;
-            }
-            :host([hidden]) {
-                display: none;
-            }
-            ::slotted(*) {
-                box-sizing: border-box;
-            }
-            :host([layout=vertical]) ::slotted(*) {
-                width: 100%;
-            }
-            :host([layout=horizontal]) ::slotted(*) {
-                height: 100%;
-            }
-        `;
-        this.shadowRoot.appendChild(ss);
+        // this.shadowRoot.appendChild(document.createElement('slot'));
+        // const ss = document.createElement('style');
+        // ss.textContent = `
+        //     :host {
+        //         display: block;
+        //         position: relative;
+        //         contain: strict;
+        //         height: 150px;
+        //         overflow: auto;
+        //     }
+        //     :host([hidden]) {
+        //         display: none;
+        //     }
+        //     ::slotted(*) {
+        //         box-sizing: border-box;
+        //     }
+        //     :host([layout=vertical]) ::slotted(*) {
+        //         width: 100%;
+        //     }
+        //     :host([layout=horizontal]) ::slotted(*) {
+        //         height: 100%;
+        //     }
+        // `;
+        // this.shadowRoot.appendChild(ss);
     }
 
     get template() {
@@ -71,7 +72,7 @@ class LitVirtualScroller extends LitElement {
     set template(template) {
         if (template !== this.template) {
             this._template = template;
-            this._internalTemplate = idx => template(this.items[idx], idx);
+            // this._internalTemplate = idx => template(this.items[idx], idx);
             this.requestUpdate();
         }
     }
@@ -80,11 +81,12 @@ class LitVirtualScroller extends LitElement {
     }
 
     render() {
-        return html`${scroller({
-            container: this.renderRoot,
+        return html`${scroll({
+            // container: this.renderRoot,
             // scrollTarget: this,
             items: this.items,
-            template: this._internalTemplate
+            template: this._template,
+            scrollTarget: this.scrollTarget
         })}`;
     }
 }

@@ -41,6 +41,7 @@ export class VirtualScroller extends VirtualRepeater {
     // Keep track of original inline style of the container, so it can be
     // restored when container is changed.
     this._containerInlineStyle = null;
+    this._containerStylesheet = null;
     this._containerSize = null;
 
     this._containerRO = null;
@@ -102,6 +103,7 @@ export class VirtualScroller extends VirtualRepeater {
   
       if (newEl) {
         this._containerInlineStyle = newEl.getAttribute('style') || null;
+        this._applyContainerStyles();
         if (newEl === this._scrollTarget) {
           this._sizer = this._sizer || this._createContainerSizer();
           this._container.prepend(this._sizer);
@@ -276,6 +278,42 @@ export class VirtualScroller extends VirtualRepeater {
         break;
       default:
         console.warn('event not handled', event);
+    }
+  }
+
+  /**
+   * @private
+   */
+  _applyContainerStyles() {
+    if (this._containerStylesheet === null) {
+      const sheet = (this._containerStylesheet = document.createElement('style'));
+      sheet.textContent = `
+        :host {
+            display: block;
+            position: relative;
+            contain: strict;
+            height: 150px;
+            overflow: auto;
+        }
+        :host([hidden]) {
+            display: none;
+        }
+        ::slotted(*) {
+            box-sizing: border-box;
+        }
+        :host([layout=vertical]) ::slotted(*) {
+            width: 100%;
+        }
+        :host([layout=horizontal]) ::slotted(*) {
+            height: 100%;
+        }
+      `;
+      const root = this._containerElement.shadowRoot || this._containerElement.attachShadow({mode: 'open'});
+      const slot = root.querySelector('slot:not([name])');
+      root.appendChild(sheet);
+      if (!slot) {
+        root.appendChild(document.createElement('slot'));
+      }
     }
   }
 

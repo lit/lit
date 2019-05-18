@@ -4,7 +4,8 @@ import { VirtualRepeater } from 'uni-virtual/src/VirtualRepeater.js';
 export const LitMixin = Superclass => class extends Superclass {
   constructor(config) {
     const {part, template} = config;
-    config.container = config.container || part.startNode.parentNode;
+    config.container = /*config.container ||*/ part.startNode.parentNode;
+    config.scrollTarget = config.scrollTarget || config.container;
     super(config);
     this._pool = [];
     this._template = template;
@@ -15,8 +16,8 @@ export const LitMixin = Superclass => class extends Superclass {
     return this._pool.pop() || new NodePart(this._hostPart.options);
   }
 
-  updateElement(part, idx) {
-    part.setValue(this._template(idx));
+  updateElement(part, item, idx) {
+    part.setValue(this._template(item, idx));
     part.commit();
   }
 
