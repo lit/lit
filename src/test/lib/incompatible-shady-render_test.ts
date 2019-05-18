@@ -26,6 +26,7 @@ suite('shady-render', () => {
   test('warns if ShadyCSS version incorrect', function() {
     if (typeof window.ShadyCSS === 'undefined') {
       this.skip();
+      return;
     }
 
     const container = document.createElement('div');
