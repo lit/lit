@@ -422,24 +422,28 @@ export class PropertyCommitter extends AttributeCommitter {
 export class PropertyPart extends AttributePart {}
 
 // Detect event listener options support. If the `capture` property is read
-// from the options object, then options are supported. If not, then the thrid
+// from the options object, then options are supported. If not, then the third
 // argument to add/removeEventListener is interpreted as the boolean capture
 // value so we should only pass the `capture` property.
 let eventOptionsSupported = false;
 
-try {
-  const options = {
-    get capture() {
-      eventOptionsSupported = true;
-      return false;
-    }
-  };
-  // tslint:disable-next-line:no-any
-  window.addEventListener('test', options as any, options);
-  // tslint:disable-next-line:no-any
-  window.removeEventListener('test', options as any, options);
-} catch (_e) {
-}
+// Wrap into an IIFE because MS Edge <= v41 does not support having try/catch
+// blocks right into the body of a module
+(() => {
+  try {
+    const options = {
+      get capture() {
+        eventOptionsSupported = true;
+        return false;
+      }
+    };
+    // tslint:disable-next-line:no-any
+    window.addEventListener('test', options as any, options);
+    // tslint:disable-next-line:no-any
+    window.removeEventListener('test', options as any, options);
+  } catch (_e) {
+  }
+})();
 
 
 type EventHandlerWithOptions =
