@@ -10,8 +10,7 @@ fi
 
 set -o nounset
 
-BENCHMARK_DIR="./node_modules/lit-html-benchmarks"
-BENCHMARK_NAME="shack"
+BENCHMARK="shack=./node_modules/lit-html-benchmarks/shack"
 BROWSER="chrome-headless"
 
 # Keep sampling until we're confident that all differences lie squarely within
@@ -49,10 +48,10 @@ fi
 
 # See https://github.com/PolymerLabs/tachometer
 echo -e "\nBenchmarking ${THIS}\n  versus ${PARENT}\n  and NPM latest\n"
-npx tach \
-  --root=$BENCHMARK_DIR --name=$BENCHMARK_NAME --browser=$BROWSER \
+npx tach $BENCHMARK \
+  --browser=$BROWSER \
   --sample-size=$MIN_SAMPLE_SIZE --horizon=$HORIZON --timeout=$TIMEOUT_MINS \
-  --package-version=lit-html/this=lit-html@github:${THIS} \
-  --package-version=lit-html/parent=lit-html@github:${PARENT} \
-  --package-version=lit-html/published=lit-html@* \
+  --package-version=this=lit-html@github:${THIS} \
+  --package-version=parent=lit-html@github:${PARENT} \
+  --package-version=published=lit-html@* \
   --github-check=$GITHUB_CHECK
