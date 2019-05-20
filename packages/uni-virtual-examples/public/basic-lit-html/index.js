@@ -2,13 +2,14 @@ import { render, html } from 'lit-html';
 import { scroll } from 'lit-virtual/src/scroll.js';
 
 const example = (contacts) => html`
-    <div>
+    <section>
         ${scroll({
             items: contacts,
             template: ({ mediumText }) => html`<p>${mediumText}</p>`,
-            scrollTarget: window
+            scrollTarget: window,
+            useShadowDOM: false
         })}
-    </div>
+    </section>
 `;
 
 (async function go() {

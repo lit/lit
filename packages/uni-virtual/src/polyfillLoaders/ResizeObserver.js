@@ -12,6 +12,5 @@ async function init() {
     catch (e) {
         RO = (await import('resize-observer-polyfill')).default;
     }
-    console.log('RO', RO);
     return RO;
 }

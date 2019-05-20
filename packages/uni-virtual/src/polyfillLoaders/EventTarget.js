@@ -12,6 +12,5 @@ async function init() {
     catch {
         ET = (await import('event-target-shim')).EventTarget;
     }
-    console.log('ET', ET);
     return ET;
 }

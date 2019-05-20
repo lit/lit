@@ -16,8 +16,8 @@ export const scroll = directive((config = {}) => async part => {
     //   const { Layout1d } = await import('uni-virtual');
     //   config.layout = new Layout1d();
     // }
-    let {template, layout, scrollTarget} = config;
-    scroller = new LitScroller({part, template, layout, scrollTarget});
+    let {template, layout, scrollTarget, useShadowDOM} = config;
+    scroller = new LitScroller({part, template, layout, scrollTarget, useShadowDOM});
     partToScroller.set(part, scroller);
   }
   Object.assign(scroller, {

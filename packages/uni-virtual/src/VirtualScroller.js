@@ -1,6 +1,31 @@
 import {VirtualRepeater} from './VirtualRepeater.js';
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 
+const HOST_CLASSNAME = 'uni-virtual-host';
+let globalContainerStylesheet = null;
+
+function containerStyles(hostSel, childSel) {
+  return `
+    ${hostSel} {
+      display: block;
+      position: relative;
+      contain: strict;
+      height: 150px;
+      overflow: auto;
+    }
+    ${childSel} {
+      box-sizing: border-box;
+    }`;
+}
+
+function attachGlobalContainerStylesheet() {
+  if (!globalContainerStylesheet) {
+    globalContainerStylesheet = document.createElement('style');
+    globalContainerStylesheet.textContent = containerStyles(`.${HOST_CLASSNAME}`, `.${HOST_CLASSNAME} > *`);
+    document.head.appendChild(globalContainerStylesheet);
+  }
+}
+
 export class RangeChangeEvent extends Event {
   constructor(type, init) {
     super(type, init);
@@ -42,6 +67,7 @@ export class VirtualScroller extends VirtualRepeater {
     // restored when container is changed.
     this._containerInlineStyle = null;
     this._containerStylesheet = null;
+    this._useShadowDOM = true;
     this._containerSize = null;
 
     this._containerRO = null;
@@ -50,16 +76,6 @@ export class VirtualScroller extends VirtualRepeater {
 
     if (config) {
       Object.assign(this, config);
-    }
-  }
-
-  async _initResizeObservers() {
-    if (this._containerRO === null) {
-      const ResizeObserver = await getResizeObserver();
-      this._containerRO = new ResizeObserver(
-        (entries) => this._containerSizeChanged(entries[0].contentRect));
-      this._childrenRO =
-        new ResizeObserver((entries) => this._childrenSizeChanged(entries));
     }
   }
 
@@ -190,6 +206,21 @@ export class VirtualScroller extends VirtualRepeater {
     }
   }
 
+  get useShadowDOM() {
+    return this._useShadowDOM;
+  }
+
+  set useShadowDOM(newVal) {
+    if (this._useShadowDOM !== newVal) {
+      this._useShadowDOM = Boolean(newVal);
+      if (this._containerStylesheet) {
+        this._containerStylesheet.parentElement.removeChild(this._containerStylesheet);
+        this._containerStylesheet = null;
+      }
+      this._applyContainerStyles();
+    }
+  }
+
   /**
    * @protected
    */
@@ -284,35 +315,36 @@ export class VirtualScroller extends VirtualRepeater {
   /**
    * @private
    */
+  async _initResizeObservers() {
+    if (this._containerRO === null) {
+      const ResizeObserver = await getResizeObserver();
+      this._containerRO = new ResizeObserver(
+        (entries) => this._containerSizeChanged(entries[0].contentRect));
+      this._childrenRO =
+        new ResizeObserver((entries) => this._childrenSizeChanged(entries));
+    }
+  }
+
+  /**
+   * @private
+   */
   _applyContainerStyles() {
-    if (this._containerStylesheet === null) {
-      const sheet = (this._containerStylesheet = document.createElement('style'));
-      sheet.textContent = `
-        :host {
-            display: block;
-            position: relative;
-            contain: strict;
-            height: 150px;
-            overflow: auto;
-        }
-        :host([hidden]) {
-            display: none;
-        }
-        ::slotted(*) {
-            box-sizing: border-box;
-        }
-        :host([layout=vertical]) ::slotted(*) {
-            width: 100%;
-        }
-        :host([layout=horizontal]) ::slotted(*) {
-            height: 100%;
-        }
-      `;
+    if (this._useShadowDOM) {
+      if (this._containerStylesheet === null) {
+        const sheet = (this._containerStylesheet = document.createElement('style'));
+        sheet.textContent = containerStyles(':host', '::slotted(*)');
+      }
       const root = this._containerElement.shadowRoot || this._containerElement.attachShadow({mode: 'open'});
       const slot = root.querySelector('slot:not([name])');
-      root.appendChild(sheet);
+      root.appendChild(this._containerStylesheet);
       if (!slot) {
         root.appendChild(document.createElement('slot'));
+      }
+    }
+    else {
+      attachGlobalContainerStylesheet();
+      if (this._containerElement) {
+        this._containerElement.classList.add(HOST_CLASSNAME);
       }
     }
   }

@@ -86,7 +86,8 @@ class LitVirtualScroller extends LitElement {
             // scrollTarget: this,
             items: this.items,
             template: this._template,
-            scrollTarget: this.scrollTarget
+            scrollTarget: this.scrollTarget,
+            useShadowDOM: true
         })}`;
     }
 }

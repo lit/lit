@@ -52,6 +52,9 @@ export class Layout1dGrid extends Layout1dBase {
       this._spacing = (this._viewDim2 % (this._rolumns * this._itemDim2)) /
           (this._rolumns + 1);
     }
+    else {
+      this._spacing = 0;
+    }
     this._spacingChanged = !(_spacing === this._spacing);
     this._scheduleReflow();
   }
