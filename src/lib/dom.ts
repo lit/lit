@@ -56,3 +56,32 @@ export const removeNodes =
         start = n;
       }
     };
+
+/**
+ * A shared TreeWalker that iterates Elements, Comments, and Texts.
+ * We share the TreeWalker to avoid its slow construction.
+ * Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
+ */
+const walker = document.createTreeWalker(
+    document, 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */, null, false);
+
+/**
+ * Returns a "clean" tree walker. We guarantee that it is clean by requiring it
+ * to be reset after each use. This gives avoids any issues with the TreeWalker
+ * holding onto Nodes that could otherwise be GC'd. It also ensures we don't
+ * hit any reentrancy bugs.
+ */
+export const elementCommentTextWalker = (root: Node): TreeWalker => {
+  if (walker.currentNode !== document) {
+    throw new Error('walker was not reset');
+  }
+  walker.currentNode = root;
+  return walker;
+};
+
+/**
+ * Resets the TreeWalker so that it doesn't hold onto any GC'able Nodes.
+ */
+export const resetElementCommentTextWalker = () => {
+  walker.currentNode = document;
+};

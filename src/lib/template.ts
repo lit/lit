@@ -15,6 +15,7 @@
 /**
  * @module lit-html
  */
+import {elementCommentTextWalker, resetElementCommentTextWalker} from './dom.js';
 import {ValueSanitizer} from './parts.js';
 import {TemplateResult} from './template-result.js';
 
@@ -37,13 +38,6 @@ export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 export const boundAttributeSuffix = '$lit$';
 
-// Edge needs all 4 parameters present; IE11 needs 3rd parameter to be null
-const walker = document.createTreeWalker(
-  document.createDocumentFragment(),
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-  null,
-  false);
-
 /**
  * An updatable Template that tracks the location of dynamic parts.
  */
@@ -56,7 +50,7 @@ export class Template {
 
     const nodesToRemove: Node[] = [];
     const stack: Node[] = [];
-    walker.currentNode = element.content;
+    const walker = elementCommentTextWalker(element.content);
     // Keeps track of the last index associated with a part. We try to delete
     // unnecessary nodes, but we never want to associate two different parts
     // to the same index. They must have a constant node between.
@@ -192,6 +186,7 @@ export class Template {
         }
       }
     }
+    resetElementCommentTextWalker();
 
     // Remove text binding nodes after the walk to not disturb the TreeWalker
     for (const n of nodesToRemove) {
