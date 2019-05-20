@@ -120,7 +120,10 @@ export function insertNodeIntoTemplate(
     walkerIndex++;
     const walkerNode = walker.currentNode as Element;
     if (walkerNode === refNode) {
+      resetElementCommentTextWalker();
       insertCount = countNodes(node);
+      elementCommentTextWalker(content);
+      walker.currentNode = walkerNode;
       refNode.parentNode!.insertBefore(node, refNode);
     }
     while (partIndex !== -1 && parts[partIndex].index === walkerIndex) {
@@ -130,6 +133,7 @@ export function insertNodeIntoTemplate(
           parts[partIndex].index += insertCount;
           partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
         }
+        resetElementCommentTextWalker();
         return;
       }
       partIndex = nextActiveIndexInTemplateParts(parts, partIndex);
