@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {TemplateResult} from '../../lib/shady-render.js';
 import {marker} from '../../lib/template.js';
 import {html} from '../../lit-html.js';
 
@@ -34,9 +35,13 @@ suite('TemplateResult', () => {
   });
 
   test('invalid escape sequences always throw an error', () => {
-    assert.throw(() => html`<style> .foo:before { content: "\0025a0"; } </style>`.getHTML());
-    assert.throw(() => html`\0025a0${'bar'}\0025a0`.getHTML());
-    assert.throw(() => html`\0025a0${'bar'}foo`.getHTML());
-    assert.throw(() => html`foo${'foo'}\0025a0`.getHTML());
+    function throws(template: TemplateResult) {
+      assert.throw(() => template.getHTML());
+    }
+
+    throws(html`<style> .foo:before { content: "\0025a0"; } </style>`);
+    throws(html`\0025a0${'bar'}\0025a0`);
+    throws(html`\0025a0${'bar'}foo`);
+    throws(html`foo${'foo'}\0025a0`);
   });
 });
