@@ -32,4 +32,11 @@ suite('TemplateResult', () => {
     const templateHTML = html`<div style="color: ${'red'}"></div>`.getHTML();
     assert.equal(templateHTML, `<div style$lit$="color: ${marker}"></div>`);
   });
+
+  test('invalid escape sequences always throw an error', () => {
+    assert.throw(() => html`<style> .foo:before { content: "\0025a0"; } </style>`.getHTML());
+    assert.throw(() => html`\0025a0${'bar'}\0025a0`.getHTML());
+    assert.throw(() => html`\0025a0${'bar'}foo`.getHTML());
+    assert.throw(() => html`foo${'foo'}\0025a0`.getHTML());
+  });
 });
