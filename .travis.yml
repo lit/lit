@@ -3,7 +3,7 @@ sudo: required
 dist: trusty
 node_js: '10'
 addons:
-  firefox: latest
+  firefox: "66.0"
   chrome: stable
 cache:
   directories:
