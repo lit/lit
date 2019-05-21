@@ -19,11 +19,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.1] - 2019-05-20
 
 ### Changed
-* Many small performance enhancement.
+* Many small performance enhancements.
 * Private names are now named with a `__` prefix  ([#859](https://github.com/Polymer/lit-html/issues/859)).
 
 ### Added
-* Setup continuous benachmarking with Tachometer ([#887](https://github.com/Polymer/lit-html/issues/887)).
+* Setup continuous benchmarking with Tachometer ([#887](https://github.com/Polymer/lit-html/issues/887)).
 
 ### Fixed
 * Prevent empty styles from causing exceptions or breaking rendering when using `shady-render` ([#760](https://github.com/Polymer/lit-html/issues/760)).
