@@ -146,6 +146,15 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
+    test('clears removed boolean attributes', () => {
+      const t = (value: Object) => html`<div ...=${value}></div>`;
+      render(t({'?foo': true, '?bar': true}), container);
+      render(t({'?foo': true}), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div foo=""></div>');
+    });
+
+
     test('clears removed properties', () => {
       const t = (value: Object) => html`<div ...=${value}></div>`;
       render(t({'.foo': 123, '.bar': 456}), container);
