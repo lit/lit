@@ -65,7 +65,7 @@ suite('render()', () => {
       const div = container.querySelector('div')!;
       assert.strictEqual((div as any).foo, 123);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div bar="baz"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div bar="baz"></div>');
     });
 
     suite('spreading events', () => {
@@ -85,7 +85,7 @@ suite('render()', () => {
           thisValue = this;
         };
         const eventContext = {} as EventTarget;
-        const spreadable = {"@click": listener}
+        const spreadable = {'@click': listener};
 
         render(html`<div ...=${spreadable}></div>`, container, {eventContext});
 
@@ -95,15 +95,15 @@ suite('render()', () => {
           throw new Error(`Event listener never fired!`);
         }
         assert.equal(thisValue, eventContext);
-        // MouseEvent is not a function in IE, so the event cannot be an instance
-        // of it
+        // MouseEvent is not a function in IE, so the event cannot be an
+        // instance of it
         if (typeof MouseEvent === 'function') {
           assert.instanceOf(event, MouseEvent);
         } else {
           assert.isDefined((event as MouseEvent).initMouseEvent);
         }
       });
-    })
+    });
 
     test('spreads boolean attribute as an empty string when truthy', () => {
       const t = (value: any) => html`<div ...=${{'?foo': value}}></div>`;
@@ -122,26 +122,37 @@ suite('render()', () => {
     });
 
     test('spreads updated attributes', () => {
-      let spreadable = {'bar': 'baz'};
-      render(html`<div ...=${spreadable}></div>`, container);
-      spreadable = {'bar': 'qux'}
-      render(html`<div ...=${spreadable}></div>`, container);
+      const t = (value: Object) => html`<div ...=${value}></div>`;
+      render(t({'bar': 'baz'}), container);
+      render(t({'bar': 'qux'}), container);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div bar="qux"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div bar="qux"></div>');
     });
 
     test('spreads new attributes', () => {
-      render(html`<div ...=${{'foo': 'bar'}}></div>`, container);
-      render(html`<div ...=${{'foo': 'bar', 'baz': 'qux'}}></div>`, container);
+      const t = (value: Object) => html`<div ...=${value}></div>`;
+      render(t({'foo': 'bar'}), container);
+      render(t({'foo': 'bar', 'baz': 'qux'}), container);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div foo="bar" baz="qux"></div>');
+          stripExpressionMarkers(container.innerHTML),
+          '<div foo="bar" baz="qux"></div>');
     });
 
     test('clears removed attributes', () => {
-      render(html`<div ...=${{'foo': 'bar', 'baz': 'qux'}}></div>`, container);
-      render(html`<div ...=${{'foo': 'bar'}}></div>`, container);
+      const t = (value: Object) => html`<div ...=${value}></div>`;
+      render(t({'foo': 'bar', 'baz': 'qux'}), container);
+      render(t({'foo': 'bar'}), container);
       assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+          stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
+    });
+
+    test('clears removed properties', () => {
+      const t = (value: Object) => html`<div ...=${value}></div>`;
+      render(t({'.foo': 123, '.bar': 456}), container);
+      render(t({'.foo': 123}), container);
+      const div = container.querySelector('div')!;
+      assert.isTrue(div.hasOwnProperty('foo'));
+      assert.isFalse(div.hasOwnProperty('bar'));
     });
   });
 

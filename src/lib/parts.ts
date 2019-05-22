@@ -42,52 +42,51 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
  */
 export class SpreadPart implements Part {
   value: unknown = undefined;
-  subparts: Map<string, ReadonlyArray<Part>> = new Map();
+  subparts: Map<string, Part> = new Map();
   element: Element;
-  handleAttribute: (name: string) =>  ReadonlyArray<Part>;
+  handleAttribute: (name: string) => Part;
   // Names of attributes that were spread in the last commit,
   // but are not anymore.
   private __removedNames: Array<string> = [];
 
-  constructor(element: Element, handleAttribute: (name: string) =>  ReadonlyArray<Part>) {
+  constructor(element: Element, handleAttribute: (name: string) => Part) {
     this.element = element;
     this.handleAttribute = handleAttribute;
   }
 
   setValue(value: unknown): void {
-    let spreadable = value as {[key: string]: any};
-    for (var name in spreadable) {
-      this.subparts.set(name, this.handleAttribute(name))
+    const spreadable = value as {[key: string]: unknown};
+    for (const name in spreadable) {
+      this.subparts.set(name, this.handleAttribute(name));
     }
-    for (var [name, parts] of this.subparts.entries()) {
-      if (parts) {
-        // Only one part per key is allowed via Spread
-        parts[0].setValue(spreadable[name]);
+    for (const [name, part] of this.subparts.entries()) {
+      part.setValue(spreadable[name]);
+      if (!(name in spreadable)) {
         // Prepare to remove unused attributes
-        if (!(name in spreadable)) {
-          this.__removedNames.push(name)
-        }
+        this.__removedNames.push(name);
       }
     }
     this.value = value;
   }
 
   commit() {
-    for (var parts of this.subparts.values()) {
-      if (parts) {
-        // Only one part per key is allowed via Spread
-        parts[0].commit()
-      }
+    for (const part of this.subparts.values()) {
+      part.commit();
     }
     // Remove attributes that used to be spread, but aren't anymore.
     // Removal of properties and events are already handled by committing
     // the undefined value.
-    for (var name of this.__removedNames) {
-      let parts = this.subparts.get(name) || [];
-      if (parts && parts[0] instanceof AttributePart) {
-        this.element.removeAttribute(name)
+    for (const name of this.__removedNames) {
+      const part = this.subparts.get(name);
+      if (part instanceof PropertyPart) {
+        // Use name from committer because custom template processors
+        // can override prefixes for binding types
+        // tslint:disable-next-line:no-any
+        delete (this.element as any)[part.committer.name];
+      } else if (part instanceof AttributePart) {
+        this.element.removeAttribute(part.committer.name);
       }
-      this.subparts.delete(name)
+      this.subparts.delete(name);
     }
   }
 }

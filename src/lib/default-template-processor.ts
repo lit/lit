@@ -38,9 +38,10 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
       element: Element, name: string, strings: string[],
       options: RenderOptions): ReadonlyArray<Part> {
     if (name === '...') {
-      const attributeHandler = (name: string): ReadonlyArray<Part> =>
-          this.handleAttributeExpressions(element, name, ['', ''], options);
-      return [new SpreadPart(element, attributeHandler)]
+      // Only one part per key is allowed via Spread
+      const attributeHandler = (name: string): Part =>
+          this.handleAttributeExpressions(element, name, ['', ''], options)[0];
+      return [new SpreadPart(element, attributeHandler)];
     }
     const prefix = name[0];
     if (prefix === '.') {
