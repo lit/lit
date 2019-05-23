@@ -17,7 +17,7 @@
 
 import {ClassInfo, classMap} from '../../directives/class-map.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {html, svg} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -79,6 +79,14 @@ suite('classMap', () => {
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isFalse(el.classList.contains('foo'));
+  });
+
+  test('adds classes on SVG elements', () => {
+    render(svg`<div class="${classMap({foo: 0, bar: true, zonk: true})}"></div>`, container);
+    const el = container.firstElementChild!;
+    assert.isFalse(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('zonk'));
   });
 
   test('throws when used on non-class attribute', () => {
