@@ -46,12 +46,12 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   const {committer} = part;
   const {element} = committer;
 
+  const {classList} = element;
+
   // handle static classes
   if (!classMapCache.has(part)) {
-    element.classList.value = committer.strings.join(' ');
+    classList.value = committer.strings.join(' ');
   }
-
-  const {classList} = element;
 
   // remove old classes that no longer apply
   const oldInfo = classMapCache.get(part);
