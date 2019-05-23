@@ -82,7 +82,7 @@ suite('classMap', () => {
   });
 
   test('adds classes on SVG elements', () => {
-    render(svg`<div class="${classMap({foo: 0, bar: true, zonk: true})}"></div>`, container);
+    render(svg`<circle class="${classMap({foo: 0, bar: true, zonk: true})}"></circle>`, container);
     const el = container.firstElementChild!;
     assert.isFalse(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
