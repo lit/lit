@@ -1,5 +1,5 @@
 {
-  "name": "uni-virtual monorepo",
+  "name": "uni-virtual-monorepo",
   "private": true,
   "homepage": "https://github.com/PolymerLabs/uni-virtual",
   "repository": "https://github.com/PolymerLabs/uni-virtual",
@@ -9,7 +9,7 @@
   "devDependencies": {
     "http-server": "latest",
     "lerna": "^3.13.4"
-},
+  },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
     "start": "http-server & (cd packages/uni-virtual-examples; npm run build-and-watch)"
