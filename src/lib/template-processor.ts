@@ -22,13 +22,15 @@ import {RenderOptions} from './render-options.js';
 
 export interface TemplateProcessor {
   /**
-   * Create parts for an attribute-position binding, given the event, attribute
+   * Create parts for an attribute-position binding, given the element, attribute
    * name, and string literals.
    *
    * @param element The element containing the binding
-   * @param name  The attribute name
+   * @param name  The attribute name, including a possible prefix. The name may
+   *   be prefixed by `.` (for a property binding), `@` (for an event binding) or
+   *   `?` (for a boolean attribute binding).
    * @param strings The string literals. There are always at least two strings,
-   *   event for fully-controlled bindings with a single expression.
+   *   even for fully-controlled bindings with a single expression.
    */
   handleAttributeExpressions(
       element: Element, name: string, strings: ReadonlyArray<string>,
