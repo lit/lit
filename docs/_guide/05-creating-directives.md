@@ -145,7 +145,7 @@ If your directive needs to maintain state between renders, you can rely on the f
 If you need to store more complicated state, you can can use a [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap), using the `Part` as a key.
 
 ```js
-import {directive} from from 'lit-html';
+import {directive} from 'lit-html';
 
 // Define the map at module level
 const stateMap = new WeakMap();
