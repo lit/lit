@@ -42,6 +42,9 @@ export class VirtualRepeater {
 
   // API
 
+  /**
+   * The parent of all child nodes to be rendered.
+   */
   get container() {
     return this._container;
   }
@@ -68,6 +71,11 @@ export class VirtualRepeater {
     this.requestReset();
   }
 
+  /**
+   * Invoked to create a child.
+   * Override or set directly to control element creation.
+   * @return (item: any, index: number) => null
+   */
   get createElement() {
     return this._createElementFn;
   }
@@ -79,6 +87,11 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * Invoked to update a child.
+   * Override or set directly to control element updates.
+   * @return (child: any, item: any, index: number) => null
+   */
   get updateElement() {
     return this._updateElementFn;
   }
@@ -89,6 +102,11 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * Invoked in place of removing a child from the DOM, so that it can be reused.
+   * Override or set directly to prepare children for reuse.
+   * @return (child: any, index: number) => null
+   */
   get recycleElement() {
     return this._recycleElementFn;
   }
@@ -99,6 +117,11 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * Invoked to generate a key for an element.
+   * Override or set directly to control how keys are generated for children.
+   * @return (index: number) => any
+   */
   get elementKey() {
     return this._elementKeyFn;
   }
@@ -110,6 +133,9 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * The index of the first child in the range.
+   */
   get first() {
     return this._first;
   }
@@ -125,6 +151,9 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * The number of children in the range.
+   */
   get num() {
     return this._num;
   }
@@ -140,10 +169,12 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * An array of data to be used to render child nodes.
+   */
   get items() {
     return this._items;
   }
-
   set items(items) {
     if (items !== this._items && Array.isArray(items)) {
       this._items = items;
@@ -151,6 +182,10 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * The total number of items, regardless of the range, that can be rendered
+   * as child nodes.
+   */
   get totalItems() {
     return (this._totalItems === null ? this._items.length : this._totalItems);
   }
@@ -168,6 +203,9 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * TODO @straversi: Document this.
+   */
   get _incremental() {
     return this.__incremental;
   }
@@ -178,11 +216,17 @@ export class VirtualRepeater {
     }
   }
 
+  /**
+   * Invoke to request that all elements in the range be updated.
+   */
   requestReset() {
     this._needsReset = true;
     this._scheduleRender();
   }
 
+  /**
+   * Invoke to request that all elements in the range be measured.
+   */
   requestRemeasure() {
     this._needsRemeasure = true;
     this._scheduleRender();
@@ -257,6 +301,7 @@ export class VirtualRepeater {
   }
 
   /**
+   * Render items within the current range to the DOM.
    * @protected
    */
   async _render() {
@@ -270,6 +315,8 @@ export class VirtualRepeater {
         if (this._needsReset) {
           this._reset(this._first, this._last);
         } else {
+          // Remove old children and insert new children without touching
+          // shared children.
           this._discardHead();
           this._discardTail();
           this._addHead();
@@ -314,6 +361,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Unassigns any children at indices lower than the start of the current
+   * range.
    * @private
    */
   _discardHead() {
@@ -324,6 +373,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Unassigns any children at indices higher than the end of the current
+   * range.
    * @private
    */
   _discardTail() {
@@ -334,6 +385,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Assigns and inserts non-existent children from the current range with
+   * indices lower than the start of the previous range.
    * @private
    */
   _addHead() {
@@ -351,6 +404,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Assigns and appends non-existent children from the current range with
+   * indices higher than the end of the previous range.
    * @private
    */
   _addTail() {
@@ -368,12 +423,15 @@ export class VirtualRepeater {
   }
 
   /**
+   * Re-insert and update children in the given range.
    * @param {number} first
    * @param {number} last
    * @private
    */
   _reset(first, last) {
-    // Explain why swap prevActive with active - affects _assignChild.
+    // Swapping prevActive with active - affects _assignChild.
+    // Upon resetting, the current active children become potentially inactive.
+    // _assignChild will remove a child from _prevActive if it is still active.
     const prevActive = this._active;
     this._active = this._prevActive;
     this._prevActive = prevActive;
@@ -401,6 +459,9 @@ export class VirtualRepeater {
   }
 
   /**
+   * Instantiates, tracks, and returns the child at idx.
+   * Prevents cleanup of children that already exist.
+   * Returns the new child at idx.
    * @param {number} idx
    * @private
    */
@@ -420,6 +481,7 @@ export class VirtualRepeater {
   }
 
   /**
+   * Removes the child at idx, recycling it if possible.
    * @param {*} child
    * @param {number} idx
    * @private
@@ -444,6 +506,8 @@ export class VirtualRepeater {
 
   // TODO: Is this the right name?
   /**
+   * Returns the node for the first child in the current range, if the node is
+   * in the DOM.
    * @private
    */
   get _firstChild() {
@@ -455,6 +519,8 @@ export class VirtualRepeater {
   // Overridable abstractions for child manipulation
 
   /**
+   * Return the node for child.
+   * Override if child !== child's node.
    * @protected
    */
   _node(child) {
@@ -462,6 +528,7 @@ export class VirtualRepeater {
   }
 
   /**
+   * Returns the next node sibling of a child node.
    * @protected
    */
   _nextSibling(child) {
@@ -469,6 +536,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Inserts child before referenceNode in the container.
+   * Override to control child insertion.
    * @protected
    */
   _insertBefore(child, referenceNode) {
@@ -477,9 +546,7 @@ export class VirtualRepeater {
   }
 
   /**
-   * Remove child.
-   * Override to control child removal.
-   *
+   * Removes child from the DOM.
    * @param {*} child
    * @protected
    */
@@ -488,6 +555,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Returns whether the child's node is a child of the container
+   * element.
    * @protected
    */
   _childIsAttached(child) {
@@ -496,6 +565,7 @@ export class VirtualRepeater {
   }
 
   /**
+   * Sets the display style of the given node to 'none'.
    * @protected
    */
   _hideChild(child) {
@@ -505,6 +575,7 @@ export class VirtualRepeater {
   }
 
   /**
+   * Sets the display style of the given node to null.
    * @protected
    */
   _showChild(child) {
@@ -514,6 +585,8 @@ export class VirtualRepeater {
   }
 
   /**
+   * Returns the width, height, and margins of the given child.
+   * Override if child !== child's node.
    * @param {!Element} child
    * @return {{
    *   width: number,
