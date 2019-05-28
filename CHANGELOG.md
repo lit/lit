@@ -10,14 +10,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
-
+<!-- ## Unreleased -->
 <!-- ### Changed -->
 <!-- ### Added -->
 <!-- ### Removed -->
+<!-- ### Fixed -->
+
+## [1.1.0] - 2019-05-20
+
+### Changed
+* Many small performance enhancements.
+* Private names are now named with a `__` prefix  ([#859](https://github.com/Polymer/lit-html/issues/859)).
+
+### Added
+* Setup continuous benchmarking with Tachometer ([#887](https://github.com/Polymer/lit-html/issues/887)).
+
 ### Fixed
 * Prevent empty styles from causing exceptions or breaking rendering when using `shady-render` ([#760](https://github.com/Polymer/lit-html/issues/760)).
 * Primitive values in attributes are now always simply stringified, regardless of whether they are iterable. ([#830](https://github.com/Polymer/lit-html/pull/830))
+* Adopt and upgrade template fragments after processing for parts ([#831](https://github.com/Polymer/lit-html/issues/831)).
+* Fixed bindings with attribute-like expressions preceeding them ([#855](https://github.com/Polymer/lit-html/issues/855)).
+* Fixed errors with bindings in HTML comments ([#882](https://github.com/Polymer/lit-html/issues/882)).
 
 ## [1.0.0] - 2019-02-05
 ### Changed
