@@ -33,4 +33,19 @@ export default [
         // terser()
       ]        
   },
+  {
+    input: [
+        'lit-element',
+        'lit-virtual/src/lit-virtual-scroller.js',
+        'public/basic-lit-element/index.js'
+      ],
+      output: {
+        dir: 'public/basic-lit-element/build',
+        format: 'esm'
+      },
+      plugins: [
+        resolve(),
+        // terser()
+      ]
+  },
 ];
