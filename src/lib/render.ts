@@ -24,6 +24,11 @@ import {TemplateResult} from './template-result.js';
 
 export const parts = new WeakMap<Node, NodePart>();
 
+export interface Render {
+  (result: TemplateResult, container: Element|DocumentFragment,
+   options?: Partial<RenderOptions>): void;
+}
+
 /**
  * Renders a template to a container.
  *
@@ -39,7 +44,7 @@ export const parts = new WeakMap<Node, NodePart>();
  *     container. Render options must *not* change between renders to the same
  *     container, as those changes will not effect previously rendered DOM.
  */
-export const render =
+export const render: Render =
     (result: TemplateResult,
      container: Element|DocumentFragment,
      options?: Partial<RenderOptions>) => {

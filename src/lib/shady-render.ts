@@ -27,7 +27,7 @@
 import {removeNodes} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
-import {parts, render as litRender} from './render.js';
+import {parts, render as litRender, Render} from './render.js';
 import {templateCaches} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
@@ -180,8 +180,13 @@ const prepareTemplateStyles =
       }
     };
 
-export interface ShadyRenderOptions extends Partial<RenderOptions> {
+export interface ShadyRenderOptions extends RenderOptions {
   scopeName: string;
+}
+
+export interface ShadyRender extends Render {
+  (result: TemplateResult, container: Element|DocumentFragment|ShadowRoot,
+   options?: Partial<ShadyRenderOptions>): void;
 }
 
 /**
@@ -240,10 +245,14 @@ export interface ShadyRenderOptions extends Partial<RenderOptions> {
  * non-shorthand names (for example `border` and `border-width`) is not
  * supported.
  */
-export const render =
+export const render: ShadyRender =
     (result: TemplateResult,
      container: Element|DocumentFragment|ShadowRoot,
-     options: ShadyRenderOptions) => {
+     options?: Partial<ShadyRenderOptions>) => {
+      if (!options || !options.scopeName) {
+        litRender(result, container, options);
+        return;
+      }
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
       const needsScoping = compatibleShadyCSSVersion &&
