@@ -26,11 +26,11 @@ const testSkipForTemplatePolyfill = (test: any) =>
     isTemplatePolyfilled ? test.skip : test;
 
 const isSafari10_0 =
-    (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1);
-const testSkipSafari10_0 = (test: any) => isSafari10_0 ? test : test.skip;
+    (window.navigator.userAgent.indexOf('AppleWebKit/602') !== -1);
+const testSkipSafari10_0 = (test: any) => isSafari10_0 ? test.skip : test;
 
-const isChrome41 = (window.navigator.userAgent.indexOf('Chrome/41') === -1);
-const testSkipChrome41 = (test: any) => isChrome41 ? test : test.skip;
+const isChrome41 = (window.navigator.userAgent.indexOf('Chrome/41') !== -1);
+const testSkipChrome41 = (test: any) => isChrome41 ? test.skip : test;
 
 const testIfHasSymbol = (test: any) =>
     (window as any).Symbol === undefined ? test.skip : test;
