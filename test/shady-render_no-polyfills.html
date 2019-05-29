@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
+  </head>
+  <body>
+    <script type="module">
+      import {render} from "../lib/shady-render.js";
+      import {renderTests} from "./lib/render_test.js";
+      renderTests(render);
+    </script>
+  </body>
+</html>

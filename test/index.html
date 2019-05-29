@@ -11,7 +11,11 @@
     <script type="module" src="./lib/template-result_test.js"></script>
     <script type="module" src="./lib/template_test.js"></script>
     <script type="module" src="./lib/template-factory_test.js"></script>
-    <script type="module" src="./lib/render_test.js"></script>
+    <script type="module">
+      import {render} from "../lit-html.js";
+      import {renderTests} from "./lib/render_test.js";
+      renderTests(render);
+    </script>
     <script type="module" src="./lib/parts_test.js"></script>
     <script type="module" src="./lib/modify-template_test.js"></script>
     <script type="module" src="./directives/async-append_test.js"></script>
@@ -26,6 +30,7 @@
     <script type="module" src="./directives/style-map_test.js"></script>
     <script>
       WCT.loadSuites([
+        'shady-render_no-polyfills.html',
         'shady.html',
         'shady.html?shadydom=true',
         'shady.html?shadydom=true&shimcssproperties=true',
