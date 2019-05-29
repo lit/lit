@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Render} from '../../lib/render.js';
 import {AttributePart, directive, html, noChange, NodePart, nothing, Part, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
@@ -38,7 +39,7 @@ const testIfHasSymbol = (test: any) =>
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
 
-export const renderTests = (render: any) => {
+export const renderTests = (render: Render) => {
   suite('render()', () => {
     let container: HTMLElement;
 
