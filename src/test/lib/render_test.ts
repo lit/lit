@@ -1057,7 +1057,9 @@ export const renderTests = (render: Render) => {
           this._value = value;
         }
       }
-      customElements.define('property-tester', PropertySetterElement);
+      suiteSetup(() => {
+        customElements.define('property-tester', PropertySetterElement);
+      });
 
       class MutatesInConstructorElement extends HTMLElement {
         constructor() {
@@ -1065,8 +1067,10 @@ export const renderTests = (render: Render) => {
           this.appendChild(document.createElement('div'));
         }
       }
-      customElements.define(
-          'mutates-in-constructor', MutatesInConstructorElement);
+      suiteSetup(() => {
+        customElements.define(
+            'mutates-in-constructor', MutatesInConstructorElement);
+      });
 
       teardown(() => {
         if (container.parentElement === document.body) {
