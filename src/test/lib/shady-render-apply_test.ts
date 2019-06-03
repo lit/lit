@@ -19,6 +19,9 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
+const testIfUsingNativeCSSVariables = (test: any) =>
+    (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);
+
 suite('shady-render @apply', () => {
   test('styles with css custom properties using @apply render', function() {
     const container = document.createElement('scope-5');
@@ -152,9 +155,7 @@ suite('shady-render @apply', () => {
 
   // TODO(sorvell): remove skip when this ShadyCSS PR is merged:
   // https://github.com/webcomponents/shadycss/pull/227.
-  const testOrSkip =
-      (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);
-  testOrSkip(
+  testIfUsingNativeCSSVariables(test)(
       '@apply styles flow to custom elements that render in connectedCallback',
       () => {
         class E extends HTMLElement {
