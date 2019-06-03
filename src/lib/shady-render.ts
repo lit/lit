@@ -253,6 +253,9 @@ export const render =
     (result: unknown,
      container: Element|DocumentFragment|ShadowRoot,
      options: ShadyRenderOptions) => {
+      if (!options || typeof options !== 'object' || !options.scopeName) {
+        throw new Error('The `scopeName` option is required.');
+      }
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
       const needsScoping = compatibleShadyCSSVersion &&
