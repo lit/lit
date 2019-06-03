@@ -1,3 +1,7 @@
+This is a monorepo. The following documentation is for `lit-virtual`, the main package.
+
+`lit-virtual` is found at `packages/lit-virtual/`.
+
 # lit-virtual\*
 
 \* all naming TBD
