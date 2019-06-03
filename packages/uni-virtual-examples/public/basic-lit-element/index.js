@@ -15,7 +15,7 @@ class ContactCard extends LitElement {
                 width: 100%;
                 margin: 0.25em 0;
             }
-            div {
+            div, details {
                 padding: 1em;
                 color: white;
             }
@@ -24,8 +24,14 @@ class ContactCard extends LitElement {
 
     render() {
         const { mediumText, color, name } = this.contact;
+        // return html`
+        //     <div style="background: ${color}">${name}: ${mediumText}</div>
+        // `;
         return html`
-            <div style="background: ${color}">${name}: ${mediumText}</div>
+            <details style="background: ${color}">
+                <summary>${name}</summary>
+                <p>${mediumText}</p>
+            </details>
         `;
     }
 }
@@ -37,6 +43,14 @@ class ContactList extends LitElement {
         return {
             data: {type: Array}
         };
+    }
+
+    static get styles() {
+        return css`
+        lit-virtual-scroller {
+            height: 100%;
+        }
+        `
     }
 
     constructor() {
@@ -56,10 +70,10 @@ class ContactList extends LitElement {
     }
 
     render() {
+        // .scrollTarget=${window}
         return html`
             <lit-virtual-scroller
                 layout='vertical'
-                .scrollTarget=${window}
                 .items=${this.data}
                 .template=${this._contactTemplate}>
             </lit-virtual-scroller>

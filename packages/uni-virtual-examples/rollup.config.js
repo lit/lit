@@ -1,5 +1,4 @@
 import resolve from 'rollup-plugin-node-resolve';
-// import { terser } from 'rollup-plugin-terser';
 
 export default [
   {
@@ -15,7 +14,6 @@ export default [
       },
       plugins: [
         resolve(),
-        // terser()
       ]        
   },
   {
@@ -30,13 +28,12 @@ export default [
       },
       plugins: [
         resolve(),
-        // terser()
       ]        
   },
   {
     input: [
-        'lit-element',
-        'lit-virtual/src/lit-virtual-scroller.js',
+        // 'lit-element',
+        // 'lit-virtual/src/lit-virtual-scroller.js',
         'public/basic-lit-element/index.js'
       ],
       output: {
@@ -45,7 +42,6 @@ export default [
       },
       plugins: [
         resolve(),
-        // terser()
       ]
   },
 ];
