@@ -26,6 +26,10 @@ export class Layout1dBase {
 
     this._scrollSize = 1;
 
+    /**
+     * Number of pixels beyond the visible size of the container to still include in the
+     * active range of items.
+     */
     this._overhang = 150;
 
     this._pendingReflow = false;
@@ -81,6 +85,9 @@ export class Layout1dBase {
     }
   }
 
+  /**
+   * The amount of space in between items.
+   */
   get spacing() {
     return this._spacing;
   }
@@ -119,26 +126,50 @@ export class Layout1dBase {
 
   // private properties
 
+  /**
+   * The size of an item in the scrolling direction + space between items.
+   * @private
+   */
   get _delta() {
     return this._itemDim1 + this._spacing;
   }
 
+  /**
+   * The height or width of an item, whichever corresponds to the scrolling direction.
+   * @private
+   */
   get _itemDim1() {
     return this._itemSize[this._sizeDim];
   }
 
+  /**
+   * The height or width of an item, whichever does NOT correspond to the scrolling direction.
+   * @private
+   */
   get _itemDim2() {
     return this._itemSize[this._secondarySizeDim];
   }
 
+  /**
+   * The height or width of the viewport, whichever corresponds to the scrolling direction.
+   * @private
+   */
   get _viewDim1() {
     return this._viewportSize[this._sizeDim];
   }
 
+  /**
+   * The height or width of the viewport, whichever does NOT correspond to the scrolling direction.
+   * @private
+   */
   get _viewDim2() {
     return this._viewportSize[this._secondarySizeDim];
   }
 
+  /**
+   * Number of items to display.
+   * @private
+   */
   get _num() {
     if (this._first === -1 || this._last === -1) {
       return 0;
@@ -226,6 +257,9 @@ export class Layout1dBase {
     this._emitScrollError();
   }
 
+  /**
+   * Estimates the total length of all items in the scrolling direction, including spacing.
+   */
   _updateScrollSize() {
     // Ensure we have at least 1px - this allows getting at least 1 item to be
     // rendered.
@@ -295,6 +329,10 @@ export class Layout1dBase {
     }
   }
 
+  /**
+   * Get or estimate the top and left positions of items in the current range.
+   * Emit an itempositionchange event with these positions.
+   */
   _emitChildPositions() {
     const detail = {};
     for (let idx = this._first; idx <= this._last; idx++) {
@@ -324,6 +362,14 @@ export class Layout1dBase {
     // Override
   }
 
+  /**
+   * Returns the top and left positioning of the item at idx.
+   * @param {number} idx 
+   * @return {{
+    *  top: number,
+    *  left: number
+    * }}
+    */
   _getItemPosition(idx) {
     // Override.
   }

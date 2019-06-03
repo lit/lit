@@ -242,6 +242,7 @@ export class VirtualRepeater {
   }
 
   /**
+   * Render at the next opportunity.
    * @private
    */
   async _scheduleRender() {

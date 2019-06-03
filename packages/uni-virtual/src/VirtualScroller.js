@@ -55,11 +55,14 @@ export class VirtualScroller extends VirtualRepeater {
     this._lazyLoadDefaultLayout = true;
     this._scrollTarget = null;
     // A sentinel element that sizes the container when it is a scrolling
-    // element.
+    // element. This ensures the scroll bar accurately reflects the total
+    // size of the list.
     this._sizer = null;
     // Layout provides these values, we set them on _render().
     this._scrollSize = null;
     this._scrollErr = null;
+    // A list of the positions (top, left) of the children in the current
+    // range.
     this._childrenPos = null;
 
     this._containerElement = null;
@@ -222,6 +225,8 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
+   * Display the items in the current range.
+   * Continue relayout of child positions until they have stabilized.
    * @protected
    */
   async _render() {
@@ -377,6 +382,7 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
+   * Render and update the view at the next opportunity.
    * @private
    */
   _scheduleUpdateView() {
@@ -429,6 +435,8 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
+   * Styles the _sizer element or the container so that its size reflects the
+   * total size of all items.
    * @private
    */
   _sizeContainer(size) {
@@ -444,7 +452,10 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
+   * Sets the top and left transform style of the children from the values in
+   * pos.
    * @private
+   * @param {Array<{top: number, left: number}>}
    */
   _positionChildren(pos) {
     const kids = this._kids;
@@ -503,6 +514,7 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
+   * Emits a rangechange event with the current first and last.
    * @protected
    */
   _notifyStable() {
@@ -513,6 +525,8 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
+   * Render and update the view at the next opportunity with the given
+   * container size.
    * @private
    */
   _containerSizeChanged(size) {

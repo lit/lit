@@ -76,6 +76,11 @@ export class Layout1d extends Layout1dBase {
     return item && item.size;
   }
 
+  /**
+   * Returns the position in the scrolling direction of the item at idx.
+   * Estimates it if the item at idx is not in the DOM.
+   * @param {*} idx 
+   */
   _getPosition(idx) {
     const item = this._physicalItems.get(idx);
     return item ? item.pos : (idx * (this._delta)) + this._spacing;
@@ -161,6 +166,9 @@ export class Layout1d extends Layout1dBase {
     }
   }
 
+  /**
+   * Sets the range to empty.
+   */
   _clearItems() {
     this._first = -1;
     this._last = -1;
@@ -173,6 +181,10 @@ export class Layout1d extends Layout1dBase {
     this._stable = true;
   }
 
+  /*
+   * Updates _first and _last based on items that should be in the current
+   * viewed range.
+   */
   _getItems(lower, upper) {
     const items = this._newPhysicalItems;
 
@@ -317,6 +329,14 @@ export class Layout1d extends Layout1dBase {
     this._stable = true;
   }
 
+  /**
+   * Returns the top and left positioning of the item at idx.
+   * @param {number} idx 
+   * @return {{
+   *  top: number,
+   *  left: number
+   * }}
+   */
   _getItemPosition(idx) {
     return {
       [this._positionDim]: this._getPosition(idx),
@@ -324,6 +344,14 @@ export class Layout1d extends Layout1dBase {
     };
   }
 
+  /**
+   * Returns the height and width of the item at idx.
+   * @param {number} idx 
+   * @return {{
+   *  width: number,
+   *  height: number
+   * }}
+   */
   _getItemSize(idx) {
     return {
       [this._sizeDim]: this._getSize(idx) || this._itemDim1,
