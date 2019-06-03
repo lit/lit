@@ -59,7 +59,7 @@ type: `Element|Window`
 
 The element that generates scroll events and defines the container viewport.
 
-Defaults to `window`.
+Defaults to the `lit-virtual-scroller` element itself.
 
 ### Complete example
 
