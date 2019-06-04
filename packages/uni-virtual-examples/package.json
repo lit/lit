@@ -15,7 +15,7 @@
         "rollup-plugin-terser": "^4.0.4"
     },
     "dependencies": {
-        "lit-virtual": "^0.1.0",
+        "lit-virtualizer": "^0.1.0",
         "lit-element": "latest"
     }
 }

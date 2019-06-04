@@ -1,15 +1,15 @@
 {
-    "name": "lit-virtual",
+    "name": "lit-virtualizer",
     "version": "0.1.0",
     "description": "Virtual scrolling for lit-html and LitElement",
     "license": "BSD-3-Clause",
     "repository": "PolymerLabs/uni-virtual",
-    "main": "lit-virtual.js",
+    "main": "lit-virtualizer.js",
     "files": [
-        "/lit-virtual.js",
+        "/lit-virtualizer.js",
         "/lib/"
     ],
-    "module": "lit-virtual.js",
+    "module": "lit-virtualizer.js",
     "scripts": {
         "build": "npm run build:uni-virtual && cp -r src/ .",
         "build:uni-virtual": "cp -r ../uni-virtual/src/. ./src/lib/uni-virtual",

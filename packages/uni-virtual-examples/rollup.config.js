@@ -5,7 +5,7 @@ export default [
     input: [
         'lit-html',
         'lit-element',
-        'lit-virtual/lib/lit-virtual-scroller.js',
+        'lit-virtualizer/lib/lit-virtualizer.js',
         'public/temp/index.js'
       ],
       output: {
@@ -19,7 +19,7 @@ export default [
   {
     input: [
         'lit-html',
-        'lit-virtual/lib/scroll.js',
+        'lit-virtualizer/lib/scroll.js',
         'public/basic-lit-html/index.js'
       ],
       output: {
@@ -33,7 +33,7 @@ export default [
   {
     input: [
         // 'lit-element',
-        // 'lit-virtual/src/lit-virtual-scroller.js',
+        // 'lit-virtualizer/src/lit-virtualizer.js',
         'public/basic-lit-element/index.js'
       ],
       output: {

@@ -1,5 +1,5 @@
 import {html, css, LitElement} from 'lit-element';
-import 'lit-virtual/lib/lit-virtual-scroller.js';
+import 'lit-virtualizer/lib/lit-virtualizer.js';
 
 class ContactCard extends LitElement {
     static get properties() {
@@ -79,7 +79,7 @@ class Yo extends LitElement {
 
     render() {
         // return html`
-        //         <lit-virtual-scroller
+        //         <lit-virtualizer
         //             .items=${this.data}
         //             .template=${({ mediumText, color }) => html`
         //                 <div
@@ -88,17 +88,17 @@ class Yo extends LitElement {
         //                     ${mediumText}
         //                 </div>
         //             `}>
-        //         </lit-virtual-scroller>
+        //         </lit-virtualizer>
         // `;
         return html`
-            <lit-virtual-scroller
+            <lit-virtualizer
                 layout='vertical'
                 .scrollTarget=${window}
                 .items=${this.data}
                 .template=${contact => html`
                     <wrapped-contact .contact=${contact}></wrapped-contact>
                 `}>
-            </lit-virtual-scroller>
+            </lit-virtualizer>
         `;
 }
 }

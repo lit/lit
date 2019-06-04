@@ -1,23 +1,23 @@
-This is a monorepo. The following documentation is for `lit-virtual`, the main package.
+This is a monorepo. The following documentation is for `lit-virtualizer`, the main package.
 
-`lit-virtual` is found at `packages/lit-virtual/`.
+`lit-virtualizer` is found at `packages/lit-virtualizer/`.
 
-# lit-virtual\*
+# lit-virtualizer\*
 
 \* all naming TBD
 
-`lit-virtual` provides tools for implementing virtual scrolling with web components.
+`lit-virtualizer` provides tools for implementing virtual scrolling with web components.
 
 This package provides two exports to be used alongside [LitElement](https://github.com/Polymer/lit-element/) and [lit-html](https://github.com/Polymer/lit-html/):
 
-* `lit-virtual-scroller`
+* `lit-virtualizer`
 * `scroll`
 
-`lit-virtual-scroller` is a web component built with LitElement. When writing your own LitElement component, the `lit-virtual-scroller` element can be easily incorporated when virtual scrolling is needed.
+`lit-virtualizer` is a web component built with LitElement. When writing your own LitElement component, the `lit-virtualizer` element can be easily incorporated when virtual scrolling is needed.
 
-`scroll` is a [directive](https://lit-html.polymer-project.org/guide/creating-directives) for use with lit-html templates. `lit-virtual-scroller` uses this so you don't have to, but if you want to harness the power of virtual scrolling without LitElement, `scroll` is also exposed.
+`scroll` is a [directive](https://lit-html.polymer-project.org/guide/creating-directives) for use with lit-html templates. `lit-virtualizer` uses this so you don't have to, but if you want to harness the power of virtual scrolling without LitElement, `scroll` is also exposed.
 
-## lit-virtual-scroller
+## lit-virtualizer
 
 A custom element that provides virtual scrolling.
 
@@ -51,10 +51,10 @@ const contacts = [
 
 const contactCard = (contact) => html`<div><b>${contact.name}</b>: ${contact.phone}</div>`
 
-const scroller = html`<lit-virtual-scroller
-                        .items=${contacts}
-                        .template=${contactCard}>
-                      </lit-virtual-scroller>`
+const virtualizer = html`<lit-virtualizer
+                           .items=${contacts}
+                           .template=${contactCard}>
+                         </lit-virtualizer>`
 ```
 
 #### .scrollTarget (optional)
@@ -63,7 +63,7 @@ type: `Element|Window`
 
 The element that generates scroll events and defines the container viewport.
 
-Defaults to the `lit-virtual-scroller` element itself.
+Defaults to the `lit-virtualizer` element itself.
 
 ### Complete example
 
@@ -91,13 +91,13 @@ class ContactList extends LitElement {
 
     render() {
         return html`
-            <lit-virtual-scroller
+            <lit-virtualizer
               .scrollTarget=${window}
               .items=${this.data}
               .template=${(contact) => html`
                 <div><b>${contact.name}</b>: ${contact.phone}</div>
               `}>
-            </lit-virtual-scroller>
+            </lit-virtualizer>
         `;
     }
 }
