@@ -6,16 +6,10 @@
     "repository": "PolymerLabs/uni-virtual",
     "main": "uni-virtual.js",
     "module": "uni-virtual.js",
-    "scripts": {
-    },
+    "scripts": {},
     "author": "The Polymer Authors",
-    "devDependencies": {
-        "rollup": "^1.11.2",
-        "rollup-plugin-node-resolve": "^4.2.3",
-        "rollup-plugin-terser": "^4.0.4"
-    },
     "dependencies": {
         "event-target-shim": "^5.0.1",
         "resize-observer-polyfill": "^1.5.1"
     }
-  }
+}
