@@ -14,7 +14,7 @@
         "build": "npm run build:uni-virtual && cp -r src/ .",
         "build:uni-virtual": "cp -r ../uni-virtual/src/. ./src/lib/uni-virtual",
         "prepare": "npm run build",
-        "test": "rollup -c && karma start karma.conf.js --single-run; rm lit-virtual.bundled.js"
+        "test": "karma start karma.conf.js --single-run"
     },
     "author": "The Polymer Authors",
     "devDependencies": {
@@ -23,14 +23,15 @@
         "karma-chai": "^0.1.0",
         "karma-chrome-launcher": "^2.2.0",
         "karma-mocha": "^1.3.0",
+        "karma-rollup-preprocessor": "^7.0.0",
         "mocha": "^6.1.4",
         "rollup": "^1.11.2",
         "rollup-plugin-node-resolve": "^4.2.3"
     },
     "dependencies": {
+        "event-target-shim": "^5.0.1",
         "lit-element": "latest",
         "lit-html": "latest",
-        "event-target-shim": "^5.0.1",
         "resize-observer-polyfill": "^1.5.1"
     }
 }

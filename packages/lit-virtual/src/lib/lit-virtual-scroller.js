@@ -1,7 +1,7 @@
 import { html, css, LitElement } from 'lit-element';
 import { scroll } from './scroll.js';
 
-class LitVirtualScroller extends LitElement {
+export class LitVirtualScroller extends LitElement {
     static get properties() {
         return {
             items: {},

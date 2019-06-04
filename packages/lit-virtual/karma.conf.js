@@ -1,6 +1,8 @@
 // Karma configuration
 // Generated on Fri May 31 2019 14:44:34 GMT-0700 (Pacific Daylight Time)
 
+const resolve = require('rollup-plugin-node-resolve');
+
 module.exports = function(config) {
   config.set({
 
@@ -15,7 +17,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'lit-virtual.bundled.js',
       'test/*.js'
     ],
 
@@ -28,6 +29,19 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      "test/*.js": ["rollup"]
+    },
+
+    rollupPreprocessor: {
+      plugins: [
+        // resolves node module references to full paths, so we can `import lit-html`.
+        resolve(),
+      ],
+      output: {
+        format: 'iife'
+      },
+      // rollup does not allow code splitting with IIFE.
+      inlineDynamicImports: true,
     },
 
 
