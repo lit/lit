@@ -1,5 +1,5 @@
 import { directive } from 'lit-html';
-import { VirtualScroller } from 'uni-virtual/src/VirtualScroller.js';
+import { VirtualScroller } from './uni-virtual/lib/VirtualScroller.js';
 
 import { LitMixin } from './repeat.js';
 

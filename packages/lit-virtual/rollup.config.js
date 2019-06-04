@@ -6,10 +6,11 @@ import resolve from 'rollup-plugin-node-resolve';
 export default [
   {
     input: [
-      'src/lit-virtual-scroller.js'
+      'lit-virtual.js'
     ],
     output: {
-      file: 'lit-virtual-scroller.bundled.js',
+      name: 'why',
+      file: 'lit-virtual.bundled.js',
       format: 'iife'
     },
     plugins: [
@@ -17,31 +18,4 @@ export default [
     ],
     inlineDynamicImports: true,
   },
-  // Testing a prod build
-  {
-    input: [
-      'src/lit-virtual-scroller.js',
-      'src/repeat.js',
-      'src/scroll.js',
-      'uni-virtual/uni-virtual.js',
-      'uni-virtual/src/layouts/Layout1d.js',
-      'uni-virtual/src/layouts/Layout1dBase.js',
-      'uni-virtual/src/layouts/Layout1dGrid.js',
-      'uni-virtual/src/polyfillLoaders/EventTarget.js',
-      'uni-virtual/src/polyfillLoaders/ResizeObserver.js',
-      'uni-virtual/src/VirtualRepeater.js',
-      'uni-virtual/src/VirtualScroller.js',
-      'lit-element',
-      'lit-html',
-      'event-target-shim',
-      'resize-observer-polyfill',
-    ],
-    output: {
-      dir: 'build',
-      format: 'esm'
-    },
-    plugins: [
-      resolve(),
-    ]
-  }
 ];

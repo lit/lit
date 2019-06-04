@@ -5,9 +5,16 @@
     "license": "BSD-3-Clause",
     "repository": "PolymerLabs/uni-virtual",
     "main": "lit-virtual.js",
+    "files": [
+        "/lit-virtual.js",
+        "/lib/"
+    ],
     "module": "lit-virtual.js",
     "scripts": {
-        "test": "rollup -c && karma start karma.conf.js --single-run"
+        "build": "npm run build:uni-virtual && cp -r src/ .",
+        "build:uni-virtual": "cp -r ../uni-virtual/src/. ./src/lib/uni-virtual",
+        "prepare": "npm run build",
+        "test": "rollup -c && karma start karma.conf.js --single-run; rm lit-virtual.bundled.js"
     },
     "author": "The Polymer Authors",
     "devDependencies": {
@@ -23,6 +30,7 @@
     "dependencies": {
         "lit-element": "latest",
         "lit-html": "latest",
-        "uni-virtual": "^0.1.0"
+        "event-target-shim": "^5.0.1",
+        "resize-observer-polyfill": "^1.5.1"
     }
 }

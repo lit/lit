@@ -15,7 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'lit-virtual-scroller.bundled.js',
+      'lit-virtual.bundled.js',
       'test/*.js'
     ],
 
