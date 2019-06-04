@@ -12,10 +12,6 @@ export const scroll = directive((config = {}) => async part => {
     if (!part.startNode.isConnected) {
       await Promise.resolve();
     }
-    // if (!config.layout /*&& config.direction*/) {
-    //   const { Layout1d } = await import('uni-virtual');
-    //   config.layout = new Layout1d();
-    // }
     let {template, layout, scrollTarget, useShadowDOM} = config;
     scroller = new LitScroller({part, template, layout, scrollTarget, useShadowDOM});
     partToScroller.set(part, scroller);
@@ -24,8 +20,4 @@ export const scroll = directive((config = {}) => async part => {
     items: config.items,
     totalItems: config.totalItems === undefined ? null : config.totalItems
   });
-  // scroller.totalItems = config.totalItems;
 });
-
-// export const virtualScroller = (totalItems, template, direction = 'vertical') =>
-//     scroller({totalItems, template, direction});
