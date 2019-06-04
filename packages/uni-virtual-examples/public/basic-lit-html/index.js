@@ -1,5 +1,5 @@
 import { render, html } from 'lit-html';
-import { scroll } from 'lit-virtual/src/scroll.js';
+import { scroll } from 'lit-virtual/lib/scroll.js';
 
 const example = (contacts) => html`
     <section>

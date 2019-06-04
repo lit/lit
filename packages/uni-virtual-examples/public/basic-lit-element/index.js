@@ -1,5 +1,5 @@
 import {html, css, LitElement} from 'lit-element';
-import 'lit-virtual/src/lit-virtual-scroller.js';
+import 'lit-virtual/lib/lit-virtual-scroller.js';
 
 class ContactCard extends LitElement {
     static get properties() {
