@@ -1,4 +1,4 @@
-# uni-virtual
+# uni-virtualizer
 
 This package contains the renderer-agnostic portions of a virtual scroller.
 

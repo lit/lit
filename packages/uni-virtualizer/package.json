@@ -1,11 +1,11 @@
 {
-    "name": "uni-virtual",
+    "name": "uni-virtualizer",
     "version": "0.1.0",
     "description": "Framework-agnostic library for web virtual scrolling",
     "license": "BSD-3-Clause",
     "repository": "PolymerLabs/uni-virtual",
-    "main": "uni-virtual.js",
-    "module": "uni-virtual.js",
+    "main": "uni-virtualizer.js",
+    "module": "uni-virtualizer.js",
     "scripts": {},
     "author": "The Polymer Authors",
     "dependencies": {

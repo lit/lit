@@ -1,7 +1,7 @@
 import {VirtualRepeater} from './VirtualRepeater.js';
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 
-const HOST_CLASSNAME = 'uni-virtual-host';
+const HOST_CLASSNAME = 'uni-virtualizer-host';
 let globalContainerStylesheet = null;
 
 function containerStyles(hostSel, childSel) {

@@ -5,8 +5,8 @@
         "lit-html/": "../../../../node_modules/lit-html/",
         "lit-virtualizer": "../../node_modules/lit-virtualizer/lit-virtualizer.js",
         "lit-virtualizer/": "../../node_modules/lit-virtualizer/",
-        "uni-virtual": "../../node_modules/lit-virtualizer/node_modules/uni-virtual/uni-virtual.js",
-        "uni-virtual/": "../../node_modules/lit-virtualizer/node_modules/uni-virtual/",
+        "uni-virtualizer": "../../node_modules/lit-virtualizer/node_modules/uni-virtualizer/uni-virtualizer.js",
+        "uni-virtualizer/": "../../node_modules/lit-virtualizer/node_modules/uni-virtualizer/",
         "resize-observer-polyfill": "../../node_modules/resize-observer-polyfill/dist/ResizeObserver.es.js",
         "event-target-shim": "../../node_modules/event-target-shim/dist/event-target-shim.mjs"
     }

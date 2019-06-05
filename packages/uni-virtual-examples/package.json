@@ -1,7 +1,7 @@
 {
     "name": "uni-virtual-examples",
     "version": "0.1.0",
-    "description": "Examples demonstrating the functionality of the uni-virtual libraries",
+    "description": "Examples demonstrating the functionality of the uni-virtualizer libraries",
     "license": "BSD-3-Clause",
     "repository": "PolymerLabs/uni-virtual",
     "private": true,

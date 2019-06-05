@@ -1,5 +1,5 @@
 import { directive, NodePart, createMarker } from 'lit-html';
-import { VirtualRepeater } from './uni-virtual/lib/VirtualRepeater.js';
+import { VirtualRepeater } from './uni-virtualizer/lib/VirtualRepeater.js';
 
 export const LitMixin = Superclass => class extends Superclass {
   constructor(config) {
