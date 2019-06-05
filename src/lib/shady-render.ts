@@ -288,9 +288,7 @@ export const render =
         // that should apply to `renderContainer` even if the rendered value is
         // not a TemplateInstance. However, it will only insert scoped styles
         // into the document if `prepareTemplateStyles` has already been called
-        // for the given scope name. `prepareTemplateStyles` requires a
-        // template element (and the local wrapper requires a Template), so we
-        // create an empty one here to satisfy it.
+        // for the given scope name.
         const template = part.value instanceof TemplateInstance ?
             part.value.template :
             undefined;

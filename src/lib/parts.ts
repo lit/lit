@@ -245,6 +245,8 @@ export class NodePart implements Part {
   private __commitText(value: unknown): void {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
+    // If `value` isn't already a string, we explicitly convert it here in case
+    // it can't be implicitly converted - i.e. it's a symbol.
     const valueAsString: string =
         typeof value === 'string' ? value : String(value);
     if (node === this.endNode.previousSibling &&
