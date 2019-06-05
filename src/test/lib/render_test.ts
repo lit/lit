@@ -1447,5 +1447,14 @@ suite('render()', () => {
       render(sym, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), String(sym));
     });
+
+    test('accepts a node', () => {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode('text in the div'));
+      render(div, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>text in the div</div>');
+    });
   });
 });
