@@ -1,29 +1,85 @@
 # lit-virtualizer
 
-`lit-virtualizer` provides tools for implementing virtual scrolling with lit-html and LitElement.
+Lit-virtualizer provides tools for implementing virtual scrolling with lit-html and LitElement.
 
 This package provides two main exports to be used alongside [LitElement](https://github.com/Polymer/lit-element/) and [lit-html](https://github.com/Polymer/lit-html/):
 
-* `LitVirtualizer`
-* `scroll`
+* `LitVirtualizer`: a subclass of LitElement that defines `<lit-virtualizer>`. When writing your own LitElement component, the `<lit-virtualizer>` element can be easily incorporated when virtual scrolling is needed.
+* `scroll`: a [directive](https://lit-html.polymer-project.org/guide/creating-directives) for use with lit-html templates. It does the same thing, but can be used without LitElement.
 
-`LitVirtualizer` is a subclass of LitElement that defines `<lit-virtualizer>`. When writing your own LitElement component, the `<lit-virtualizer>` element can be easily incorporated when virtual scrolling is needed.
+## Getting Started
 
-`scroll` is a [directive](https://lit-html.polymer-project.org/guide/creating-directives) for use with lit-html templates. It does the same thing, but can be used without LitElement.
+Get this package:
 
-## <lit-virtualizer>
+```
+npm i lit-virtualizer
+```
 
-A custom element that provides virtual scrolling.
+The package is shipped using [ES modules](https://developers.google.com/web/fundamentals/primers/modules). It also uses [bare specifiers](https://github.com/WICG/import-maps#bare-specifiers) to refer to other node modules such as lit-html. Shipping the package this way affords you control as a developer over your bundle delivery. For example, you could do code splitting. You will, however, have to *resolve* these module names when bundling your code.
+
+As an example, here's how you can do module resolution with [rollup](https://rollupjs.org).
+
+*index.html*
+```html
+...
+<script type="module" src="build/main.js">
+...
+```
+
+*src/main.js*
+```js
+import { LitVirtualizer } from 'lit-virtualizer';
+
+// use <lit-virtualizer> element or LitVirtualizer class
+```
+
+Install rollup and the rollup-plugin-node-resolve plugin.
+```
+npm i rollup rollup-plugin-node-resolve
+```
+
+*rollup.config.js*
+```js
+import resolve from 'rollup-plugin-node-resolve';
+
+export default [
+  {
+    input: 'src/main.js',
+    output: {
+      dir: 'build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]        
+  }
+];
+```
+
+Roll it up.
+```
+npx rollup --config
+```
+
+Rollup will output build/main.js, with properly resolved module names.
+
+Other small chunks will also be present. Lit-virtualizer utilizes [dynamic imports](https://developers.google.com/web/updates/2017/11/dynamic-import) in a few places to avoid loading code unnecessarily. This allowed rollup to split the code and emit several chunks.
+
+## Documentation
+
+### \<lit-virtualizer\>
+
+`<lit-virtualizer>` is a custom element that provides virtual scrolling.
 
 ### Attributes and Properties
 
-#### .items
+#### property: `.items`
 
 type: `Array<T>`
 
 An array of data for populating templates.
 
-#### .template
+#### property: `.template`
 
 type: `(item: <T>) => lit-html.TemplateResult`
 
