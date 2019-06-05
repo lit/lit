@@ -1,9 +1,9 @@
 {
-  "name": "uni-virtual-monorepo",
+  "name": "uni-virtualizer-monorepo",
   "private": true,
-  "homepage": "https://github.com/PolymerLabs/uni-virtual",
-  "repository": "https://github.com/PolymerLabs/uni-virtual",
-  "bugs": "https://github.com/PolymerLabs/uni-virtual/issues",
+  "homepage": "https://github.com/PolymerLabs/uni-virtualizer",
+  "repository": "https://github.com/PolymerLabs/uni-virtualizer",
+  "bugs": "https://github.com/PolymerLabs/uni-virtualizer/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
   "devDependencies": {

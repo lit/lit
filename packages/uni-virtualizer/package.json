@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "Framework-agnostic library for web virtual scrolling",
     "license": "BSD-3-Clause",
-    "repository": "PolymerLabs/uni-virtual",
+    "repository": "PolymerLabs/uni-virtualizer",
     "main": "uni-virtualizer.js",
     "module": "uni-virtualizer.js",
     "scripts": {},

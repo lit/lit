@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "Virtual scrolling for vanilla (frameworkless) web pages",
     "license": "BSD-3-Clause",
-    "repository": "PolymerLabs/uni-virtual",
+    "repository": "PolymerLabs/uni-virtualizer",
     "main": "vanilla-virtual.js",
     "module": "vanilla-virtual.js",
     "scripts": {

@@ -1,9 +1,9 @@
 {
-    "name": "uni-virtual-examples",
+    "name": "uni-virtualizer-examples",
     "version": "0.1.0",
     "description": "Examples demonstrating the functionality of the uni-virtualizer libraries",
     "license": "BSD-3-Clause",
-    "repository": "PolymerLabs/uni-virtual",
+    "repository": "PolymerLabs/uni-virtualizer",
     "private": true,
     "scripts": {
         "build-and-watch": "rollup -c -w"
