@@ -12,7 +12,7 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
-    "start": "http-server & (cd packages/uni-virtual-examples; npm run build-and-watch)"
+    "start": "http-server & (cd packages/uni-virtualizer-examples; npm run build-and-watch)"
   },
   "dependencies": {}
 }
