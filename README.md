@@ -65,7 +65,7 @@ The element that generates scroll events and defines the container viewport.
 
 Defaults to the `lit-virtualizer` element itself.
 
-### Complete example
+## Complete example
 
 Definition:
 
