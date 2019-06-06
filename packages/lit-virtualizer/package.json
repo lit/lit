@@ -13,7 +13,7 @@
         "build": "npm run build:uni-virtualizer && cp -r src/ .",
         "build:uni-virtualizer": "cp -r ../uni-virtualizer/src/. ./src/lib/uni-virtualizer",
         "prepare": "npm run build",
-        "test": "karma start karma.conf.js --single-run"
+        "test": "karma start karma.conf.js"
     },
     "author": "The Polymer Authors",
     "devDependencies": {
