@@ -13,11 +13,14 @@
         "build": "npm run build:uni-virtualizer && cp -r src/ .",
         "build:uni-virtualizer": "cp -r ../uni-virtualizer/src/. ./src/lib/uni-virtualizer",
         "prepare": "npm run build",
-        "test": "karma start karma.conf.js"
+        "test": "karma start karma.conf.js",
+        "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
+        "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
     },
     "author": "The Polymer Authors",
     "devDependencies": {
         "chai": "^4.2.0",
+        "http-server": "^0.11.1",
         "karma": "^4.1.0",
         "karma-chai": "^0.1.0",
         "karma-chrome-launcher": "^2.2.0",
@@ -25,6 +28,9 @@
         "karma-mocha-reporter": "^2.2.5",
         "karma-rollup-preprocessor": "^7.0.0",
         "mocha": "^6.1.4",
+        "pixelmatch": "^4.0.2",
+        "pngjs": "^3.4.0",
+        "puppeteer": "^1.17.0",
         "rollup": "^1.11.2",
         "rollup-plugin-node-resolve": "^4.2.3"
     },
