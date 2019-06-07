@@ -131,7 +131,7 @@ const prepareTemplateStyles =
       // Template's underlying template element. Otherwise, we create one here
       // to give to ShadyCSS, which still requires one while scoping.
       const templateElement =
-          template ? template.element : document.createElement('template');
+          !!template ? template.element : document.createElement('template');
       // Move styles out of rendered DOM and store.
       const styles = renderedDOM.querySelectorAll('style');
       const {length} = styles;
@@ -166,7 +166,7 @@ const prepareTemplateStyles =
       // And then put the condensed style into the "root" template passed in as
       // `template`.
       const content = templateElement.content;
-      if (template) {
+      if (!!template) {
         insertNodeIntoTemplate(template, condensedStyle, content.firstChild);
       } else {
         content.insertBefore(condensedStyle, content.firstChild);
@@ -180,7 +180,7 @@ const prepareTemplateStyles =
         // When in native Shadow DOM, ensure the style created by ShadyCSS is
         // included in initially rendered output (`renderedDOM`).
         renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
-      } else if (template) {
+      } else if (!!template) {
         // When no style is left in the template, parts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
         // and then tell lit to remove that node from the template.
