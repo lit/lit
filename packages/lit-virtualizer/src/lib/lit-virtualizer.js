@@ -12,23 +12,20 @@ export class LitVirtualizer extends LitElement {
 
     constructor() {
         super();
-        this.items = [1, 2, 3];
-        this.template = (item, idx) => html`<div>${idx}: ${item}</div>`;
         this.renderRoot = this;
     }
 
+    /**
+     * The template used for rendering each item.
+     */
     get template() {
         return this._template;
     }
-
     set template(template) {
         if (template !== this.template) {
             this._template = template;
             this.requestUpdate();
         }
-    }
-
-    firstUpdated() {
     }
 
     render() {
