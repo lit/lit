@@ -6,4 +6,4 @@ This is a monorepo, the main product of which is the package [lit-virtualizer](.
 
 ### [lit-virtualizer](./packages/lit-virtualizer/)
  
-### [uni-virtualizer](./packages/lit-virtualizer/)
+### [uni-virtualizer](./packages/uni-virtualizer/)
