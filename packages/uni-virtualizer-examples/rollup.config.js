@@ -17,31 +17,23 @@ export default [
       ]        
   },
   {
-    input: [
-        'lit-html',
-        'lit-virtualizer/lib/scroll.js',
-        'public/basic-lit-html/index.js'
-      ],
-      output: {
-        dir: 'public/basic-lit-html/build',
-        format: 'esm'
-      },
-      plugins: [
-        resolve(),
-      ]        
+    input: 'public/basic-lit-html/index.js',
+    output: {
+      dir: 'public/basic-lit-html/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]        
   },
   {
-    input: [
-        // 'lit-element',
-        // 'lit-virtualizer/src/lit-virtualizer.js',
-        'public/basic-lit-element/index.js'
-      ],
-      output: {
-        dir: 'public/basic-lit-element/build',
-        format: 'esm'
-      },
-      plugins: [
-        resolve(),
-      ]
+    input: 'public/basic-lit-element/index.js',
+    output: {
+      dir: 'public/basic-lit-element/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]
   },
 ];

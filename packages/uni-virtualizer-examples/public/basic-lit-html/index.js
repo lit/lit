@@ -13,6 +13,6 @@ const example = (contacts) => html`
 `;
 
 (async function go() {
-    const contacts = await(await fetch('../../shared/contacts.json')).json();
+    const contacts = await(await fetch('../shared/contacts.json')).json();
     render(example(contacts), document.body);
 })();

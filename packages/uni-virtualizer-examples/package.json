@@ -6,6 +6,7 @@
     "repository": "PolymerLabs/uni-virtualizer",
     "private": true,
     "scripts": {
+        "build": "rollup -c",
         "build-and-watch": "rollup -c -w"
     },
     "author": "The Polymer Authors",

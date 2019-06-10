@@ -59,7 +59,7 @@ class ContactList extends LitElement {
     }
 
     async firstUpdated() {
-        const resp = await fetch('../../shared/contacts.json');
+        const resp = await fetch('../shared/contacts.json');
         this.data = await resp.json();
     }
 

@@ -5,7 +5,7 @@ async function boot() {
     if (unbundled) {
         const importmap = document.createElement('script');
         importmap.setAttribute('type', 'importmap');
-        importmap.textContent = await (await fetch('../../shared/importmap.json')).text();
+        importmap.textContent = await (await fetch('../shared/importmap.json')).text();
         document.head.appendChild(importmap);
     }
     const example = document.createElement('script');
