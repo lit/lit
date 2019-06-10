@@ -174,7 +174,7 @@ const prepareTemplateStyles =
         // NOTE, ShadyCSS creates its own style so we can safely add/remove
         // `condensedStyle` here.
         content.insertBefore(condensedStyle, content.firstChild);
-        const removes = new Set();
+        const removes = new Set<Node>();
         removes.add(condensedStyle);
         removeNodesFromTemplate(template, removes);
       }
