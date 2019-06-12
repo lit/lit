@@ -1409,4 +1409,52 @@ suite('render()', () => {
       assert(container.innerHTML, '<div></div>');
     });
   });
+
+  // `render` directly passes the given value to `NodePart#setValue`, so these
+  // tests are really just a sanity check that they are accepted by `render`.
+  // Tests about rendering behavior for specific values should generally be
+  // grouped with those of `NodePart#setValue` and `#commit`.
+  suite('accepts types other than TemplateResult', () => {
+    test('accepts undefined', () => {
+      render(undefined, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '');
+    });
+
+    test('accepts a string', () => {
+      render('test', container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
+    });
+
+    test('accepts an object', () => {
+      render({}, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '[object Object]');
+    });
+
+    test('accepts an object with `toString`', () => {
+      render(
+          {
+            toString() {
+              return 'toString!';
+            }
+          },
+          container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'toString!');
+    });
+
+    test('accepts an symbol', () => {
+      const sym = Symbol('description!');
+      render(sym, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), String(sym));
+    });
+
+    test('accepts a node', () => {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode('text in the div'));
+      render(div, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>text in the div</div>');
+    });
+  });
 });

@@ -49,6 +49,31 @@ suite('shady-render @apply', () => {
     document.body.removeChild(container);
   });
 
+  test('styles with mixins that are not in a TemplateInstance', function() {
+    const container = document.createElement('scope-6');
+    document.body.appendChild(container);
+    const style = document.createElement('style');
+    style.innerHTML = `
+      :host {
+        --batch: {
+          border: 3px solid orange;
+          padding: 4px;
+        };
+      }
+      div {
+        @apply --batch;
+      }
+    `;
+    const result = [style, htmlWithApply`<div>Testing...</div>`];
+    renderShadowRoot(result, container);
+    const div = (container.shadowRoot!).querySelector('div');
+    const computedStyle = getComputedStyle(div!);
+    assert.equal(
+        computedStyle.getPropertyValue('border-top-width').trim(), '3px');
+    assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
+    document.body.removeChild(container);
+  });
+
   test(
       'styles with css custom properties using @apply render in different contexts',
       async () => {
