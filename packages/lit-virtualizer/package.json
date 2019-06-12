@@ -10,8 +10,7 @@
     ],
     "module": "lit-virtualizer.js",
     "scripts": {
-        "build": "npm run build:uni-virtualizer && cp -r src/ .",
-        "build:uni-virtualizer": "cp -r ../uni-virtualizer/src/. ./src/lib/uni-virtualizer",
+        "build": "cp -r src/ .",
         "prepare": "npm run build",
         "test": "karma start karma.conf.js",
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
