@@ -16,15 +16,15 @@ import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
+const assert = chai.assert;
+
+// tslint:disable:no-any OK in test code.
+
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;
 const testIfSupportsCSSVariables = (test: any) =>
     isIE || isChrome41 ? test.skip : test;
-
-const assert = chai.assert;
-
-// tslint:disable:no-any OK in test code.
 
 suite('styleMap', () => {
   let container: HTMLDivElement;
