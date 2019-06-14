@@ -48,7 +48,7 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
 
   // handle static classes
   if (!classMapCache.has(part)) {
-    element.className = committer.strings.join(' ');
+    element.setAttribute('class', committer.strings.join(' '));
   }
 
   const {classList} = element;
