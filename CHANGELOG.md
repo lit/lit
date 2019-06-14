@@ -10,9 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- ### Changed -->
-<!-- ### Added -->
+
+### Added
+* `render` and `shady-render` now both accept any value that is renderable by `NodePart`. ([#910](https://github.com/Polymer/lit-html/issues/910))
+
 <!-- ### Removed -->
 <!-- ### Fixed -->
 

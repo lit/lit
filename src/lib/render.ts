@@ -20,18 +20,17 @@ import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
-import {TemplateResult} from './template-result.js';
 
 export const parts = new WeakMap<Node, NodePart>();
 
 /**
- * Renders a template to a container.
+ * Renders a template result or other value to a container.
  *
  * To update a container with new values, reevaluate the template literal and
  * call `render` with the new result.
  *
- * @param result a TemplateResult created by evaluating a template tag like
- *     `html` or `svg`.
+ * @param result Any value renderable by NodePart - typically a TemplateResult
+ *     created by evaluating a template tag like `html` or `svg`.
  * @param container A DOM parent to render to. The entire contents are either
  *     replaced, or efficiently updated if the same result type was previous
  *     rendered there.
@@ -40,7 +39,7 @@ export const parts = new WeakMap<Node, NodePart>();
  *     container, as those changes will not effect previously rendered DOM.
  */
 export const render =
-    (result: TemplateResult,
+    (result: unknown,
      container: Element|DocumentFragment,
      options?: Partial<RenderOptions>) => {
       let part = parts.get(container);
