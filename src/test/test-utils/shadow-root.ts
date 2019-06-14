@@ -12,12 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {render} from '../../lib/shady-render.js';
-import {TemplateResult} from '../../lit-html.js';
 
 /**
  * A helper for creating a shadowRoot on an element.
  */
-export const renderShadowRoot = (result: TemplateResult, element: Element) => {
+export const renderShadowRoot = (result: unknown, element: Element) => {
   if (!element.shadowRoot) {
     element.attachShadow({mode: 'open'});
   }
