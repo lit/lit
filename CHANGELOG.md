@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Adopt and upgrade template fragments after processing for parts ([#831](https://github.com/Polymer/lit-html/issues/831)).
 * Fixed bindings with attribute-like expressions preceeding them ([#855](https://github.com/Polymer/lit-html/issues/855)).
 * Fixed errors with bindings in HTML comments ([#882](https://github.com/Polymer/lit-html/issues/882)).
+* Change `classMap` directive to set classes correctly on SVGs ([#930](https://github.com/Polymer/lit-html/issues/930)).
 
 ## [1.0.0] - 2019-02-05
 ### Changed
