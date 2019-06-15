@@ -40,7 +40,7 @@ export {removeNodes, reparentNodes} from './lib/dom.js';
 export {noChange, nothing, Part} from './lib/part.js';
 export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyCommitter, PropertyPart} from './lib/parts.js';
 export {RenderOptions} from './lib/render-options.js';
-export {parts, render} from './lib/render.js';
+export {hydrate, parts, render} from './lib/render.js';
 export {templateCaches, templateFactory} from './lib/template-factory.js';
 export {TemplateInstance} from './lib/template-instance.js';
 export {TemplateProcessor} from './lib/template-processor.js';
