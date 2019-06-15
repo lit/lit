@@ -101,6 +101,22 @@ export class TemplateResult {
     template.innerHTML = this.getHTML();
     return template;
   }
+
+  get hash() {
+    // TODO: start seed based on type
+    let hash = 5381;
+
+    for (const s of this.strings) {
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash * 33) ^ s.charCodeAt(i);
+      }
+    }
+
+    /* JavaScript does bitwise operations (like XOR, above) on 32-bit signed
+     * integers. Since we want the results to be always positive, convert the
+     * signed int to an unsigned by doing an unsigned bitshift. */
+    return String(hash >>> 0);
+  }
 }
 
 /**

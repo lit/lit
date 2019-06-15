@@ -37,6 +37,8 @@ export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 export const boundAttributeSuffix = '$lit$';
 
+const ssr = true;
+
 /**
  * An updateable Template that tracks the location of dynamic parts.
  */
@@ -151,12 +153,13 @@ export class Template {
         }
       } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
         if ((node as Comment).data === marker) {
+          console.log('marker');
           const parent = node.parentNode!;
           // Add a new marker node to be the startNode of the Part if any of
           // the following are true:
           //  * We don't have a previousSibling
           //  * The previousSibling is already the start of a previous part
-          if (node.previousSibling === null || index === lastPartIndex) {
+          if (ssr || node.previousSibling === null || index === lastPartIndex) {
             index++;
             parent.insertBefore(createMarker(), node);
           }
@@ -164,8 +167,8 @@ export class Template {
           this.parts.push({type: 'node', index});
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
-          if (node.nextSibling === null) {
-            (node as Comment).data = '';
+          if (ssr || node.nextSibling === null) {
+            (node as Comment).data = '/lit-part';
           } else {
             nodesToRemove.push(node);
             index--;
@@ -222,7 +225,7 @@ export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
-export const createMarker = () => document.createComment('');
+export const createMarker = () => document.createComment('lit-part');
 
 /**
  * This regex extracts the attribute name preceding an attribute-position

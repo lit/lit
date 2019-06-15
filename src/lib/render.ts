@@ -54,3 +54,36 @@ export const render =
       part.setValue(result);
       part.commit();
     };
+
+export const hydrate =
+    (result: unknown,
+     container: Element|DocumentFragment,
+     options?: Partial<RenderOptions>) => {
+      console.log('hydrate', container.childNodes[0].textContent);
+
+      let part = parts.get(container);
+
+      if (part === undefined) {
+        if (container.firstChild !== null &&
+            container.firstChild.nodeType === Node.COMMENT_NODE &&
+            (container.firstChild as Comment).textContent!.startsWith('lit-')) {
+          console.log('prerendered!');
+          part = new NodePart({
+            templateFactory,
+            ...options,
+          });
+          part.startNode = container.firstChild;
+          part.endNode = container.lastChild!;
+          parts.set(container, part);
+        } else {
+          part = new NodePart({
+            templateFactory,
+            ...options,
+          });
+          parts.set(container, part);
+          part.appendInto(container);
+        }
+      }
+      part.setValue(result);
+      part.commit();
+    };

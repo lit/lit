@@ -27,7 +27,7 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
  * with new values.
  */
 export class TemplateInstance {
-  private readonly __parts: Array<Part|undefined> = [];
+  readonly __parts: Array<Part|undefined> = [];
   readonly processor: TemplateProcessor;
   readonly options: RenderOptions;
   readonly template: Template;
