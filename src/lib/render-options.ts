@@ -21,4 +21,11 @@ import {TemplateFactory} from './template-factory.js';
 export interface RenderOptions {
   readonly templateFactory: TemplateFactory;
   readonly eventContext?: EventTarget;
+  readonly prerenderedParts?: PartInfo[];
 }
+
+export type PartInfo = {
+  startNode: Node,
+  endNode: Node,
+  children?: PartInfo[],
+};

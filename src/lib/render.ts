@@ -18,7 +18,7 @@
 
 import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
-import {RenderOptions} from './render-options.js';
+import {PartInfo, RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
 
 export const parts = new WeakMap<Node, NodePart>();
@@ -50,6 +50,7 @@ export const render =
                                ...options,
                              }));
         part.appendInto(container);
+        console.log('render container', (container as HTMLElement).innerHTML);
       }
       part.setValue(result);
       part.commit();
@@ -64,25 +65,58 @@ export const hydrate =
       let part = parts.get(container);
 
       if (part === undefined) {
-        if (container.firstChild !== null &&
-            container.firstChild.nodeType === Node.COMMENT_NODE &&
-            (container.firstChild as Comment).textContent!.startsWith('lit-')) {
-          console.log('prerendered!');
-          part = new NodePart({
-            templateFactory,
-            ...options,
-          });
-          part.startNode = container.firstChild;
-          part.endNode = container.lastChild!;
-          parts.set(container, part);
-        } else {
-          part = new NodePart({
-            templateFactory,
-            ...options,
-          });
-          parts.set(container, part);
-          part.appendInto(container);
+        let rootPart: PartInfo|undefined = undefined;
+        const partStack: PartInfo[] = [];
+        const walker = document.createTreeWalker(
+            container, NodeFilter.SHOW_COMMENT, null, false);
+        let node: Comment|null;
+        while ((node = walker.nextNode() as Comment | null) !== null) {
+          if (node.nodeType === Node.COMMENT_NODE) {
+            if (node.textContent!.startsWith('lit-part')) {
+              // This is an NodePart opening marker
+              const partInfo = {
+                startNode: node,
+                endNode: undefined as unknown as Node,
+              };
+              if (partStack.length > 0) {
+                const parentInfo = partStack[partStack.length - 1];
+                if (parentInfo.children === undefined) {
+                  parentInfo.children = [];
+                }
+                parentInfo.children.push(partInfo);
+              } else {
+                console.assert(
+                    rootPart === undefined,
+                    'there should be exactly one root part in a render container');
+                rootPart = partInfo;
+              }
+              partStack.push(partInfo);
+            } else if (node.textContent!.startsWith('/lit-part')) {
+              // This is an NodePart closing marker
+              const partInfo = partStack.pop()!;
+              partInfo.endNode = node;
+            }
+          }
         }
+        console.assert(
+            rootPart !== undefined,
+            'there should be exactly one root part in a render container');
+
+        part = new NodePart({
+          templateFactory,
+          ...options,
+          prerenderedParts: rootPart!.children
+        });
+        part.startNode = rootPart!.startNode;
+        part.endNode = rootPart!.endNode;
+        parts.set(container, part);
+      } else {
+        part = new NodePart({
+          templateFactory,
+          ...options,
+        });
+        parts.set(container, part);
+        part.appendInto(container);
       }
       part.setValue(result);
       part.commit();

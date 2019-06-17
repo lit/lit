@@ -37,6 +37,10 @@ export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 export const boundAttributeSuffix = '$lit$';
 
+/**
+ * This flag causes lit-html to simulate running in an SSR environment, which
+ * includes adding extra marker nodes, and changing the marker text.
+ */
 const ssr = true;
 
 /**
@@ -128,7 +132,7 @@ export class Template {
             let insert: Node;
             let s = strings[i];
             if (s === '') {
-              insert = createMarker();
+              insert = createEndMarker();
             } else {
               const match = lastAttributeNameRegex.exec(s);
               if (match !== null && endsWith(match[2], boundAttributeSuffix)) {
@@ -143,7 +147,7 @@ export class Template {
           // If there's no text, we must insert a comment to mark our place.
           // Else, we can trust it will stick around after cloning.
           if (strings[lastIndex] === '') {
-            parent.insertBefore(createMarker(), node);
+            parent.insertBefore(createEndMarker(), node);
             nodesToRemove.push(node);
           } else {
             (node as Text).data = strings[lastIndex];
@@ -161,13 +165,18 @@ export class Template {
           //  * The previousSibling is already the start of a previous part
           if (ssr || node.previousSibling === null || index === lastPartIndex) {
             index++;
-            parent.insertBefore(createMarker(), node);
+            parent.insertBefore(createStartMarker(), node);
           }
           lastPartIndex = index;
           this.parts.push({type: 'node', index});
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
           if (ssr || node.nextSibling === null) {
+            // Change the static marker text injected in
+            // TemplateResult.getHtml() into the end marker text. This is a hack
+            // for testing hydration, unlikely to be actually useful. It would
+            // only be useful if we use this code path for SSR. We might want
+            // to move it to text code.
             (node as Comment).data = '/lit-part';
           } else {
             nodesToRemove.push(node);
@@ -225,7 +234,8 @@ export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
-export const createMarker = () => document.createComment('lit-part');
+export const createStartMarker = () => document.createComment('lit-part');
+export const createEndMarker = () => document.createComment('/lit-part');
 
 /**
  * This regex extracts the attribute name preceding an attribute-position

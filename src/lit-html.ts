@@ -45,7 +45,7 @@ export {templateCaches, templateFactory} from './lib/template-factory.js';
 export {TemplateInstance} from './lib/template-instance.js';
 export {TemplateProcessor} from './lib/template-processor.js';
 export {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
-export {createMarker, isTemplatePartActive, Template} from './lib/template.js';
+export {createEndMarker, createStartMarker, isTemplatePartActive, Template} from './lib/template.js';
 
 declare global {
   interface Window {
