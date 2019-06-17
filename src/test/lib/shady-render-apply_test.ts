@@ -19,6 +19,9 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
+const testIfUsingNativeCSSVariables = (test: any) =>
+    (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);
+
 suite('shady-render @apply', () => {
   test('styles with css custom properties using @apply render', function() {
     const container = document.createElement('scope-5');
@@ -37,6 +40,31 @@ suite('shady-render @apply', () => {
       </style>
       <div>Testing...</div>
     `;
+    renderShadowRoot(result, container);
+    const div = (container.shadowRoot!).querySelector('div');
+    const computedStyle = getComputedStyle(div!);
+    assert.equal(
+        computedStyle.getPropertyValue('border-top-width').trim(), '3px');
+    assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
+    document.body.removeChild(container);
+  });
+
+  test('styles with mixins that are not in a TemplateInstance', function() {
+    const container = document.createElement('scope-6');
+    document.body.appendChild(container);
+    const style = document.createElement('style');
+    style.innerHTML = `
+      :host {
+        --batch: {
+          border: 3px solid orange;
+          padding: 4px;
+        };
+      }
+      div {
+        @apply --batch;
+      }
+    `;
+    const result = [style, htmlWithApply`<div>Testing...</div>`];
     renderShadowRoot(result, container);
     const div = (container.shadowRoot!).querySelector('div');
     const computedStyle = getComputedStyle(div!);
@@ -127,9 +155,7 @@ suite('shady-render @apply', () => {
 
   // TODO(sorvell): remove skip when this ShadyCSS PR is merged:
   // https://github.com/webcomponents/shadycss/pull/227.
-  const testOrSkip =
-      (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);
-  testOrSkip(
+  testIfUsingNativeCSSVariables(test)(
       '@apply styles flow to custom elements that render in connectedCallback',
       () => {
         class E extends HTMLElement {

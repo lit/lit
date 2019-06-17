@@ -38,7 +38,20 @@ if [[ "${TRAVIS_SECURE_ENV_VARS}" == "true" ]]; then
   # https://github.com/organizations/Polymer/settings/installations
   # by clicking "Configure" and looking at the URL.
   INSTALLATION_ID=851456
-  GITHUB_CHECK="{\"appId\":${APP_ID},\"installationId\":${INSTALLATION_ID},\"repo\":\"${TRAVIS_REPO_SLUG}\",\"commit\":\"${TRAVIS_COMMIT}\"}"
+
+  if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
+    CHECK_LABEL="Tachometer - Branch"
+    CHECK_COMMIT="${TRAVIS_COMMIT}"
+  else
+    CHECK_LABEL="Tachometer - Pull Request"
+    # Note that for a PR, $TRAVIS_COMMIT will be the SHA of the generated merge
+    # commit, but in order to show up in the GitHub UI we need to instead attach
+    # the check to the feature branch SHA.
+    CHECK_COMMIT="${TRAVIS_PULL_REQUEST_SHA}"
+  fi
+
+  GITHUB_CHECK="{\"label\":\"${CHECK_LABEL}\",\"appId\":${APP_ID},\"installationId\":${INSTALLATION_ID},\"repo\":\"${TRAVIS_REPO_SLUG}\",\"commit\":\"${CHECK_COMMIT}\"}"
+
 else
   # We can't report a GitHub Check unless this is a trusted build with access to
   # our GitHub App's private key. Note that benchmark results can still be seen
@@ -54,4 +67,4 @@ npx tach $BENCHMARK \
   --package-version=this=lit-html@github:${THIS} \
   --package-version=parent=lit-html@github:${PARENT} \
   --package-version=published=lit-html@* \
-  --github-check=$GITHUB_CHECK
+  --github-check="${GITHUB_CHECK}"

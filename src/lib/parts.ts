@@ -245,15 +245,18 @@ export class NodePart implements Part {
   private __commitText(value: unknown): void {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
+    // If `value` isn't already a string, we explicitly convert it here in case
+    // it can't be implicitly converted - i.e. it's a symbol.
+    const valueAsString: string =
+        typeof value === 'string' ? value : String(value);
     if (node === this.endNode.previousSibling &&
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       // TODO(justinfagnani): Can we just check if this.value is primitive?
-      (node as Text).data = value as string;
+      (node as Text).data = valueAsString;
     } else {
-      this.__commitNode(document.createTextNode(
-          typeof value === 'string' ? value : String(value)));
+      this.__commitNode(document.createTextNode(valueAsString));
     }
     this.value = value;
   }
