@@ -21,6 +21,8 @@ import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
 
 const commentMarker = ` ${marker} `;
+// Number of 32 bit elements to use to create template digests
+const digestSize = 2;
 
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -104,20 +106,28 @@ export class TemplateResult {
     return template;
   }
 
-  get hash() {
-    // TODO: start seed based on type
-    let hash = 5381;
+  // We need to specify a digest to use across rendering environments. This is a
+  // simple digest build from a DJB2-ish hash modified from:
+  // https://github.com/darkskyapp/string-hash/blob/master/index.js
+  // It has been changed to an array of hashes to add additional bits.
+  // Goals:
+  //  - Extremely low collision rate. We may not be able to detect collisions.
+  //  - Extremely fast.
+  //  - Extremely small code size.
+  //  - Safe to include in HTML comment text or attribute value.
+  //  - Easily specifiable and implementable in multiple languages.
+  // We don't care about cryptographic suitability.
+  get digest() {
+    const hashes = new Uint32Array(digestSize);
+    hashes.fill(5381);
 
     for (const s of this.strings) {
       for (let i = 0; i < s.length; i++) {
-        hash = (hash * 33) ^ s.charCodeAt(i);
+        hashes[i % digestSize] =
+            (hashes[i % digestSize] * 33) ^ s.charCodeAt(i);
       }
     }
-
-    /* JavaScript does bitwise operations (like XOR, above) on 32-bit signed
-     * integers. Since we want the results to be always positive, convert the
-     * signed int to an unsigned by doing an unsigned bitshift. */
-    return String(hash >>> 0);
+    return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)));
   }
 }
 
