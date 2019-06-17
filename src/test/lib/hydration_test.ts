@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {TemplateResult} from '../../lib/shady-render.js';
 import {html, hydrate, render} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
@@ -24,42 +25,82 @@ suite('hydration', () => {
     container = document.createElement('div');
   });
 
-  test('hydrates a text binding', () => {
+  test('hydrates a text binding with a new post-render value', () => {
     const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
 
-    // 1) Render to a separate container to simulate SSR
-    const prerenderContainer = document.createElement('div');
-    render(hello('Pre-rendering'), prerenderContainer);
-    console.log('prerenderContainer', prerenderContainer.innerHTML);
-    assert.equal(
-        stripExpressionMarkers(prerenderContainer.innerHTML),
-        '<h1>Hello Pre-rendering</h1>');
+    prerender(hello('Pre-rendering'), container);
+    console.log('container.innerHTML', container.innerHTML);
 
-    // 2) Clone contents into a new container to dissacociate from any state
-    container.innerHTML = prerenderContainer.innerHTML;
-    console.log('container', container.innerHTML);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<h1>Hello Pre-rendering</h1>');
+    // Remember some nodes so we can check that they're not overwritten
+    const prerenderedHeader = container.querySelector('h1')!;
+    const prerenderedDynamicText = prerenderedHeader.childNodes[2];
+    assert.equal(prerenderedDynamicText.nodeType, Node.TEXT_NODE);
 
-    // 3) Remember some nodes so we can check that they're not overwritten
-    const prerenderHeader = container.querySelector('h1')!;
-    const prerenderStaticText = prerenderHeader.childNodes[2];
-    assert.equal(prerenderStaticText.nodeType, Node.TEXT_NODE);
-
-    // 4) Re-render in hydration mode
     hydrate(hello('Hydration'), container);
     console.log('container postrender', container.innerHTML);
     assert.equal(
-      stripExpressionMarkers(container.innerHTML),
-      '<h1>Hello Hydration</h1>');
+        stripExpressionMarkers(container.innerHTML),
+        '<h1>Hello Hydration</h1>');
 
-    // 5) Get new references to the nodes
+    // Get new references to the nodes
     const postrenderHeader = container.querySelector('h1')!;
-    const postrenderStaticText = postrenderHeader.childNodes[2];
+    const postrenderDynamicText = postrenderHeader.childNodes[2];
 
-    // 6) Check that they're the same
-    assert.strictEqual(prerenderHeader, postrenderHeader);
-    assert.strictEqual(prerenderStaticText, postrenderStaticText);
+    // Check that they're the same
+    assert.strictEqual(prerenderedHeader, postrenderHeader);
+    assert.strictEqual(prerenderedDynamicText, postrenderDynamicText);
+  });
+
+  // We need to measure if it matters if we performs essentially no-op
+  // textContent and attribute sets. To avoid we either need to infer previous
+  // values from DOM (only posisble in some cases), or ship previous values to
+  // the client. Seems like the browser should be able avoid work when setting
+  // text/attribute to the same value just as well as we can.
+  test.skip('hydrates a text binding with the same post-render value', () => {
+    const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
+
+    prerender(hello('Pre-rendering'), container);
+    const observer = new MutationObserver(() => {});
+    observer.observe(container, {
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
+    hydrate(hello('Pre-rendering'), container);
+    assert.isEmpty(observer.takeRecords());
+  });
+
+  test('hydrates nested templates', () => {
+    const parent = (name: string, message: string) =>
+        html`${hello(name)}<p>${message}</p>`;
+    const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
+
+    prerender(parent('Pre-rendering', 'is cool'), container);
+
+    // Remember some nodes so we can check that they're not overwritten
+    const prerenderedHeader = container.querySelector('h1')!;
+    const prerenderedDynamicText = prerenderedHeader.childNodes[2];
+    assert.equal(prerenderedDynamicText.nodeType, Node.TEXT_NODE);
+
+    hydrate(parent('Hydration', 'is cooler'), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1>Hello Hydration</h1><p>is cooler</p>');
+
+    // Get new references to the nodes
+    const postrenderHeader = container.querySelector('h1')!;
+    const postrenderDynamicText = postrenderHeader.childNodes[2];
+
+    // Check that they're the same
+    assert.strictEqual(prerenderedHeader, postrenderHeader);
+    assert.strictEqual(prerenderedDynamicText, postrenderDynamicText);
   });
 });
+
+const prerender = (r: TemplateResult, container: HTMLElement) => {
+  const prerenderContainer = document.createElement('div');
+  render(r, prerenderContainer);
+  container.innerHTML = prerenderContainer.innerHTML;
+};
