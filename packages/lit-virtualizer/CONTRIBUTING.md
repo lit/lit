@@ -29,6 +29,22 @@ Puppeteer with Mocha and Chai is used for screenshot testing. Run `npm run test:
 4. Add your test cases to `/test/screenshot/screenshot.js`.
 5. Generate screenshots for your new page and test cases. You can easily generate new screenshots for *only your new page* by adding `.only` to your `describe` block. For example: `describe.only('lit-virtual', function() { ... }`. Then run `npm run generate-screenshots`. Don't forget to remove the `.only` after.
 
+## Benchmarking
+
+Run
+```
+npm run bench
+```
+to run the basic scroll directive benchmark. Benchmarks are found in `/test/benchmarks`, and are performed with [Tachometer](https://github.com/Polymer/tachometer).
+
+Choose which benchmark to run by specifying the BENCH variable:
+```
+BENCH=useShadowDOM npm run bench
+```
+
+Right now we use First Contentful Paint (FCP) to measure time to render. This is not ideal, as it includes irrelevant preparation costs, such as the time to generate a list of items to render.
+
+We'd like to figure out a point in the lit-virtualizer lifecycle at which we can determine that the asynchronous render/layout loop will complete. Then, we can utilize Tachometer's `start` and `stop` callbacks for more faithful benchmarks.
 
 ## Publishing
 

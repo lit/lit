@@ -10,6 +10,8 @@
     ],
     "module": "lit-virtualizer.js",
     "scripts": {
+        "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/${BENCH:-basic}.html --measure=fcp",
+        "bench:debug": "tach --root=../.. test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "build": "tsc",
         "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
         "prepare": "npm run build",
@@ -33,6 +35,7 @@
         "puppeteer": "^1.17.0",
         "rollup": "^1.11.2",
         "rollup-plugin-node-resolve": "^4.2.3",
+        "tachometer": "^0.4.7",
         "typescript": "^3.5.1"
     },
     "dependencies": {

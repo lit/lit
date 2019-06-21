@@ -1,0 +1,25 @@
+<html>
+<body>
+<div></div>
+<script type="module">
+  import {scroll} from '../../lit-virtualizer';
+  import {render, html} from 'lit-html';
+
+  let arr = [];
+  for (let i = 0; i < 1000; i++) { arr.push(i) }
+
+  const example = html`
+      <section>
+          ${scroll({
+              items: arr,
+              template: (num) => html`<p>${num}</p>`,
+              scrollTarget: window,
+              useShadowDOM: true
+          })}
+      </section>
+  `;
+
+  render(example, document.querySelector('div'));
+</script>
+</body>
+</html>
