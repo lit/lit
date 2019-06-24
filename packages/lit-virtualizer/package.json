@@ -11,6 +11,7 @@
     "module": "lit-virtualizer.js",
     "scripts": {
         "build": "tsc",
+        "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
         "prepare": "npm run build",
         "test": "karma start karma.conf.js",
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
@@ -38,6 +39,8 @@
         "event-target-shim": "^5.0.1",
         "lit-element": "latest",
         "lit-html": "latest",
-        "resize-observer-polyfill": "^1.5.1"
+        "resize-observer-polyfill": "^1.5.1",
+        "rollup-plugin-filesize": "^6.1.1",
+        "rollup-plugin-terser": "^5.0.0"
     }
 }
