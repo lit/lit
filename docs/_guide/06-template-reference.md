@@ -264,8 +264,6 @@ lit-html includes a few built-in directives.
 *   [`unsafeHTML`](#unsafehtml)
 *   [`until`](#until)
 
-**Directives may change.** The exact list of directives included with lit-html, and the API of the directives may be subject to change before lit-html 1.0 is released.
-
 ### asyncAppend and asyncReplace
 
 `asyncAppend(asyncIterable)`<br>
