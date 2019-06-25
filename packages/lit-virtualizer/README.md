@@ -117,7 +117,7 @@ const templateResult = html`${
 render(templateResult, document.querySelector("#post-list"));
 ```
 
-In this example, just `items` and `template` were configured. You can also specify the scroll target and whether or not to use shadowDOM.
+In this example, just `items` and `template` were configured. You can also specify the scroll target and whether or not to use shadow DOM.
 
 ### `scroll` config options
 
