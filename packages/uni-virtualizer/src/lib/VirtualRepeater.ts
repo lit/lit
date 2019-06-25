@@ -1,40 +1,85 @@
+import {ItemBox, Margins} from './layouts/Layout'
+
+// The implementer decides the type of children.
+export type Child = any;
+
 export class VirtualRepeater {
+  // Invoked when a new (not recycled) child needs to be displayed.
+  // Set by createElement.
+  private _createElementFn: (item: any, index: number) => Child = null;
+
+  // Invoked on new (including recycled) children after the range changes.
+  // Set by updateElement.
+  private _updateElementFn: (child: Child, item: any, index: number) => void = null;
+
+  // Invoked on outgoing children after the range changes.
+  // Set by recycleElement.
+  private _recycleElementFn: (child: Child, index: number) => void = null;
+
+  // Used for generating a key for storing references to children.
+  // Set by elementKey.
+  private _elementKeyFn: (index: number) => any = null;
+
+  // Set by items.
+  private _items: Array<any> = [];
+
+  // Set by totalItems.
+  private _totalItems: number = null;
+
+  // Flag for asynchnronous reset requests. Resetting clears and reinserts children
+  // in the range.
+  private _needsReset: boolean = false;
+
+  // Flag for asynchnronous remeasure requests. Signals that all children should
+  // be remeasured.
+  private _needsRemeasure: boolean = false;
+
+  // Used to keep track of children that can be cleaned up after a range
+  // update.
+  private _active: Map<Child, number> = new Map();
+  private _prevActive: Map<Child, number> = new Map();
+
+  // Both used for recycling purposes.
+  private _keyToChild: Map<any, Child> = new Map();
+  private _childToKey: WeakMap<Child, any> = new WeakMap();
+
+  // Used to keep track of measures by index.
+  private _indexToMeasure = {}
+  private __incremental: boolean = false;
+
+  // Used for tracking range changes.
+  private _prevNum: number;
+
+  // Invoked at the end of each render cycle: children in the range are measured, and
+  // their dimensions passed to this callback. Use it to layout children as needed.
+  protected _measureCallback: (sizes: {[key: number]: ItemBox}) => void = null;
+
+  // TODO @straversi: Consider renaming this. count? visibleElements?
+  // Set by num.
+  protected _num: number = Infinity;
+
+  // TODO @straversi: Consider renaming these.
+  // Index of the first child in the range, not necessarily the first visible child.
+  protected _first: number = 0;
+
+  // Index of the last child in the range.
+  protected _last: number = 0;
+
+  // Previous state management. Used to avoid unnecessary updates.
+  protected _prevFirst: number = 0;
+  protected _prevLast: number = 0;
+
+  // Flag for asynchnronous render requests. Renders can be requested several times
+  // before a render actually happens.
+  protected _pendingRender = null;
+
+  // Set by container.
+  protected _container: Element | ShadowRoot = null;
+  
+  // Children in the rendered order.
+  protected _ordered: Array<Child> = [];
+  
   constructor(config) {
-    this._createElementFn = null;
-    this._updateElementFn = null;
-    this._recycleElementFn = null;
-    this._elementKeyFn = null;
-
-    this._measureCallback = null;
-
-    this._items = [];
-    this._totalItems = null;
-    // Consider renaming this. count? visibleElements?
-    this._num = Infinity;
-    // Consider renaming this. firstVisibleIndex?
-    this._first = 0;
-    this._last = 0;
-    this._prevFirst = 0;
-    this._prevLast = 0;
-
-    this._needsReset = false;
-    this._needsRemeasure = false;
-    this._pendingRender = null;
-
-    this._container = null;
-
-    // Contains child nodes in the rendered order.
-    this._ordered = [];
-    this._active = new Map();
-    this._prevActive = new Map();
-    // Both used for recycling purposes.
-    this._keyToChild = new Map();
-    this._childToKey = new WeakMap();
-    // Used to keep track of measures by index.
-    this._indexToMeasure = {};
-
-    this.__incremental = false;
-
     if (config) {
       Object.assign(this, config);
     }
@@ -45,10 +90,10 @@ export class VirtualRepeater {
   /**
    * The parent of all child nodes to be rendered.
    */
-  get container() {
+  get container(): Element | ShadowRoot {
     return this._container;
   }
-  set container(container) {
+  set container(container: Element | ShadowRoot) {
     if (container === this._container) {
       return;
     }
@@ -74,9 +119,8 @@ export class VirtualRepeater {
   /**
    * Invoked to create a child.
    * Override or set directly to control element creation.
-   * @return (item: any, index: number) => null
    */
-  get createElement() {
+  get createElement(): (item: any, index: number) => Child {
     return this._createElementFn;
   }
   set createElement(fn) {
@@ -90,9 +134,8 @@ export class VirtualRepeater {
   /**
    * Invoked to update a child.
    * Override or set directly to control element updates.
-   * @return (child: any, item: any, index: number) => null
    */
-  get updateElement() {
+  get updateElement(): (child: Child, item: any, index: number) => void {
     return this._updateElementFn;
   }
   set updateElement(fn) {
@@ -105,9 +148,8 @@ export class VirtualRepeater {
   /**
    * Invoked in place of removing a child from the DOM, so that it can be reused.
    * Override or set directly to prepare children for reuse.
-   * @return (child: any, index: number) => null
    */
-  get recycleElement() {
+  get recycleElement(): (child: any, index: number) => void {
     return this._recycleElementFn;
   }
   set recycleElement(fn) {
@@ -120,9 +162,8 @@ export class VirtualRepeater {
   /**
    * Invoked to generate a key for an element.
    * Override or set directly to control how keys are generated for children.
-   * @return (index: number) => any
    */
-  get elementKey() {
+  get elementKey(): (index: number) => any {
     return this._elementKeyFn;
   }
   set elementKey(fn) {
@@ -136,10 +177,10 @@ export class VirtualRepeater {
   /**
    * The index of the first child in the range.
    */
-  get first() {
+  get first(): number {
     return this._first;
   }
-  set first(idx) {
+  set first(idx: number) {
     if (typeof idx !== 'number') {
       throw new Error('New value must be a number.');
     }
@@ -154,7 +195,7 @@ export class VirtualRepeater {
   /**
    * The number of children in the range.
    */
-  get num() {
+  get num(): number {
     return this._num;
   }
   set num(n) {
@@ -172,7 +213,7 @@ export class VirtualRepeater {
   /**
    * An array of data to be used to render child nodes.
    */
-  get items() {
+  get items(): Array<any> {
     return this._items;
   }
   set items(items) {
@@ -186,10 +227,10 @@ export class VirtualRepeater {
    * The total number of items, regardless of the range, that can be rendered
    * as child nodes.
    */
-  get totalItems() {
+  get totalItems(): number {
     return (this._totalItems === null ? this._items.length : this._totalItems);
   }
-  set totalItems(num) {
+  set totalItems(num: number) {
     if (typeof num !== 'number' && num !== null) {
       throw new Error('New value must be a number.');
     }
@@ -206,22 +247,14 @@ export class VirtualRepeater {
   /**
    * TODO @straversi: Document this.
    */
-  get _incremental() {
+  get _incremental(): boolean {
     return this.__incremental;
   }
-  set _incremental(inc) {
+  set _incremental(inc: boolean) {
     if (inc !== this.__incremental) {
       this.__incremental = inc;
       this._scheduleRender();
     }
-  }
-
-  /**
-   * Invoke to request that all elements in the range be updated.
-   */
-  requestReset() {
-    this._needsReset = true;
-    this._scheduleRender();
   }
 
   /**
@@ -234,18 +267,14 @@ export class VirtualRepeater {
 
   // Core functionality
 
-  /**
-   * @protected
-   */
-  _shouldRender() {
+  protected _shouldRender(): boolean {
     return Boolean(this.container && this.createElement);
   }
 
   /**
    * Render at the next opportunity.
-   * @private
    */
-  async _scheduleRender() {
+  protected async _scheduleRender(): Promise<void> {
     if (!this._pendingRender) {
       this._pendingRender = true;
       await Promise.resolve();
@@ -263,13 +292,19 @@ export class VirtualRepeater {
   }
 
   /**
+   * Invoke to request that all elements in the range be updated.
+   */
+  private requestReset() {
+    this._needsReset = true;
+    this._scheduleRender();
+  }
+
+  /**
    * Returns those children that are about to be displayed and that require to
    * be positioned. If reset or remeasure has been triggered, all children are
    * returned.
-   * @return {{indices: Array<number>, children: Array<Element>}}
-   * @private
    */
-  get _toMeasure() {
+  private get _toMeasure(): {indices: Array<number>, children: Array<Child>} {
     return this._ordered.reduce((toMeasure, c, i) => {
       const idx = this._first + i;
       if (this._needsReset || this._needsRemeasure || idx < this._prevFirst ||
@@ -284,9 +319,8 @@ export class VirtualRepeater {
   /**
    * Measures each child bounds and builds a map of index/bounds to be passed
    * to the `_measureCallback`
-   * @private
    */
-  async _measureChildren({indices, children}) {
+  private async _measureChildren({indices, children}): Promise<void> {
     // await Promise.resolve();
     await (new Promise(resolve => {
       requestAnimationFrame(resolve);
@@ -303,9 +337,8 @@ export class VirtualRepeater {
 
   /**
    * Render items within the current range to the DOM.
-   * @protected
    */
-  async _render() {
+  protected async _render(): Promise<void> {
     const rangeChanged =
         this._first !== this._prevFirst || this._num !== this._prevNum;
     // Create/update/recycle DOM.
@@ -356,17 +389,15 @@ export class VirtualRepeater {
 
   /**
    * Invoked after DOM is updated, and before it gets measured.
-   * @protected
    */
-  _didRender() {
+  protected _didRender() {
   }
 
   /**
    * Unassigns any children at indices lower than the start of the current
    * range.
-   * @private
    */
-  _discardHead() {
+  private _discardHead() {
     const o = this._ordered;
     for (let idx = this._prevFirst; o.length && idx < this._first; idx++) {
       this._unassignChild(o.shift(), idx);
@@ -376,9 +407,8 @@ export class VirtualRepeater {
   /**
    * Unassigns any children at indices higher than the end of the current
    * range.
-   * @private
    */
-  _discardTail() {
+  private _discardTail() {
     const o = this._ordered;
     for (let idx = this._prevLast; o.length && idx > this._last; idx--) {
       this._unassignChild(o.pop(), idx);
@@ -388,9 +418,8 @@ export class VirtualRepeater {
   /**
    * Assigns and inserts non-existent children from the current range with
    * indices lower than the start of the previous range.
-   * @private
    */
-  _addHead() {
+  private _addHead() {
     const start = this._first;
     const end = Math.min(this._last, this._prevFirst - 1);
     for (let idx = end; idx >= start; idx--) {
@@ -407,9 +436,8 @@ export class VirtualRepeater {
   /**
    * Assigns and appends non-existent children from the current range with
    * indices higher than the end of the previous range.
-   * @private
    */
-  _addTail() {
+  private _addTail() {
     const start = Math.max(this._first, this._prevLast + 1);
     const end = this._last;
     for (let idx = start; idx <= end; idx++) {
@@ -425,12 +453,9 @@ export class VirtualRepeater {
 
   /**
    * Re-insert and update children in the given range.
-   * @param {number} first
-   * @param {number} last
-   * @private
    */
-  _reset(first, last) {
-    // Swapping prevActive with active - affects _assignChild.
+  private _reset(first: number, last: number) {
+    // Swapping prevActive with active affects _assignChild.
     // Upon resetting, the current active children become potentially inactive.
     // _assignChild will remove a child from _prevActive if it is still active.
     const prevActive = this._active;
@@ -463,10 +488,8 @@ export class VirtualRepeater {
    * Instantiates, tracks, and returns the child at idx.
    * Prevents cleanup of children that already exist.
    * Returns the new child at idx.
-   * @param {number} idx
-   * @private
    */
-  _assignChild(idx) {
+  private _assignChild(idx: number): Child {
     const key = this.elementKey ? this.elementKey(idx) : idx;
     let child;
     if (child = this._keyToChild.get(key)) {
@@ -483,11 +506,8 @@ export class VirtualRepeater {
 
   /**
    * Removes the child at idx, recycling it if possible.
-   * @param {*} child
-   * @param {number} idx
-   * @private
    */
-  _unassignChild(child, idx) {
+  private _unassignChild(child: Child, idx: number) {
     this._hideChild(child);
     if (this._incremental) {
       this._active.delete(child);
@@ -505,13 +525,12 @@ export class VirtualRepeater {
     }
   }
 
-  // TODO: Is this the right name?
   /**
    * Returns the node for the first child in the current range, if the node is
    * in the DOM.
-   * @private
+   * TODO: Is this the right name?
    */
-  get _firstChild() {
+  get _firstChild(): Node {
     return this._ordered.length && this._childIsAttached(this._ordered[0]) ?
         this._node(this._ordered[0]) :
         null;
@@ -519,57 +538,57 @@ export class VirtualRepeater {
 
   // Overridable abstractions for child manipulation
 
+  // TODO @straversi:
+  // All of these except _node should deal in type Child. Anwhere
+  // else in this class that needs the actual NODE should be
+  // responsible for calling this._node
+
   /**
    * Return the node for child.
    * Override if child !== child's node.
-   * @protected
    */
-  _node(child) {
+  _node(child: Child): Node {
     return child;
   }
 
   /**
    * Returns the next node sibling of a child node.
-   * @protected
    */
-  _nextSibling(child) {
+  _nextSibling(child: Child): Node {
     return child.nextSibling;
   }
 
   /**
    * Inserts child before referenceNode in the container.
    * Override to control child insertion.
-   * @protected
    */
-  _insertBefore(child, referenceNode) {
+  _insertBefore(child: Child, referenceNode: Node) {
     // referenceNode.parentNode.insertBefore(child, referenceNode);
     this._container.insertBefore(child, referenceNode);
   }
 
   /**
    * Removes child from the DOM.
-   * @param {*} child
-   * @protected
+   * TODO @straversi: this will not work (_node should be called on child), but
+   * is not currently being used or tested.
    */
-  _removeChild(child) {
+  _removeChild(child: Child) {
     child.parentNode.removeChild(child);
   }
 
   /**
    * Returns whether the child's node is a child of the container
    * element.
-   * @protected
    */
-  _childIsAttached(child) {
+  _childIsAttached(child: Child): boolean {
     const node = this._node(child);
     return node && node.parentNode === this._container;
   }
 
   /**
    * Sets the display style of the given node to 'none'.
-   * @protected
    */
-  _hideChild(child) {
+  _hideChild(child: Child) {
     if (child.style) {
       child.style.display = 'none';
     }
@@ -577,9 +596,8 @@ export class VirtualRepeater {
 
   /**
    * Sets the display style of the given node to null.
-   * @protected
    */
-  _showChild(child) {
+  _showChild(child: Child) {
     if (child.style) {
       child.style.display = null;
     }
@@ -588,18 +606,8 @@ export class VirtualRepeater {
   /**
    * Returns the width, height, and margins of the given child.
    * Override if child !== child's node.
-   * @param {!Element} child
-   * @return {{
-   *   width: number,
-   *   height: number,
-   *   marginTop: number,
-   *   marginRight: number,
-   *   marginBottom: number,
-   *   marginLeft: number,
-   * }} childMeasures
-   * @protected
    */
-  _measureChild(child) {
+  _measureChild(child: Child): ItemBox {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = child.getBoundingClientRect();
@@ -607,7 +615,7 @@ export class VirtualRepeater {
   }
 }
 
-function getMargins(el) {
+function getMargins(el): Margins {
   const style = window.getComputedStyle(el);
   return {
     marginTop: getMarginValue(style.marginTop),
@@ -617,7 +625,7 @@ function getMargins(el) {
   };
 }
 
-function getMarginValue(value) {
-  value = value ? parseFloat(value) : NaN;
-  return Number.isNaN(value) ? 0 : value;
+function getMarginValue(value: string): number {
+  let float = value ? parseFloat(value) : NaN;
+  return Number.isNaN(float) ? 0 : float;
 }

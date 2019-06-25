@@ -11,5 +11,8 @@
     "dependencies": {
         "event-target-shim": "^5.0.1",
         "resize-observer-polyfill": "^1.5.1"
+    },
+    "devDependencies": {
+        "typescript": "^3.5.1"
     }
 }

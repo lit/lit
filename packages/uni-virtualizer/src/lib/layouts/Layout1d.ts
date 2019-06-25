@@ -1,28 +1,58 @@
-import {Layout1dBase} from './Layout1dBase.js';
+import {Layout1dBase} from './Layout1dBase';
+import {ItemBox, Positions, Size} from './Layout';
+
+type ItemBounds = {
+  pos: number,
+  size: number
+}
 
 export class Layout1d extends Layout1dBase {
+  // Indices of children mapped to their (position and length) in the scrolling
+  // direction. Used to keep track of children that are in range.
+  _physicalItems: Map<number, ItemBounds> = new Map();
+
+  // Used in tandem with _physicalItems to track children in range across
+  // reflows.
+  _newPhysicalItems: Map<number, ItemBounds> = new Map();
+
+  // Width and height of children by their index.
+  _metrics: Map<number, Size> = new Map();
+
+  // anchorIdx is the anchor around which we reflow. It is designed to allow
+  // jumping to any point of the scroll size. We choose it once and stick with
+  // it until stable. _first and _last are deduced around it.
+  _anchorIdx: number = null;
+
+  // Position in the scrolling direction of the anchor child.
+  _anchorPos: number = null;
+
+  // Whether all children in range were in range during the previous reflow.
+  _stable: boolean = true;
+
+  // Whether to remeasure children during the next reflow.
+  // TODO @straversi: Currently only set by viewDim2Changed.
+  _needsRemeasure: boolean = false;
+
+  // Number of children to lay out.
+  // TODO @straversi: These shouldn't be properties?
+  private _nMeasured: number = 0;
+  // Total length in the scrolling direction of the layed out children.
+  private _tMeasured: number = 0;
+  
+  // TODO @straversi: This value never changes.
+  _estimate: boolean = true;
+
   constructor(config) {
     super(config);
-    this._physicalItems = new Map();
-    this._newPhysicalItems = new Map();
-
-    this._metrics = new Map();
-
-    this._anchorIdx = null;
-    this._anchorPos = null;
-    this._stable = true;
-
-    this._needsRemeasure = false;
-
-    this._nMeasured = 0;
-    this._tMeasured = 0;
-
-    this._estimate = true;
   }
 
-  updateItemSizes(sizes) {
+  /**
+   * Determine the average size of all children represented in the sizes
+   * argument.
+   */
+  updateItemSizes(sizes: {[key: number]: ItemBox}) {
     Object.keys(sizes).forEach((key) => {
-      const metrics = sizes[key], mi = this._getMetrics(key),
+      const metrics = sizes[key], mi = this._getMetrics(Number(key)),
             prevSize = mi[this._sizeDim];
 
       // TODO(valdrin) Handle margin collapsing.
@@ -57,21 +87,25 @@ export class Layout1d extends Layout1dBase {
     }
   }
 
+  /**
+   * Set the average item size based on the total length and number of children
+   * in range.
+   */
   _updateItemSize() {
     // Keep integer values.
     this._itemSize[this._sizeDim] =
         Math.round(this._tMeasured / this._nMeasured);
   }
 
-  _getMetrics(idx) {
+  _getMetrics(idx: number): ItemBox {
     return (this._metrics[idx] = this._metrics[idx] || {});
   }
 
-  _getPhysicalItem(idx) {
+  _getPhysicalItem(idx: number): ItemBounds {
     return this._newPhysicalItems.get(idx) || this._physicalItems.get(idx);
   }
 
-  _getSize(idx) {
+  _getSize(idx: number): number | undefined {
     const item = this._getPhysicalItem(idx);
     return item && item.size;
   }
@@ -79,14 +113,13 @@ export class Layout1d extends Layout1dBase {
   /**
    * Returns the position in the scrolling direction of the item at idx.
    * Estimates it if the item at idx is not in the DOM.
-   * @param {*} idx 
    */
-  _getPosition(idx) {
+  _getPosition(idx): number {
     const item = this._physicalItems.get(idx);
     return item ? item.pos : (idx * (this._delta)) + this._spacing;
   }
 
-  _calculateAnchor(lower, upper) {
+  _calculateAnchor(lower: number, upper: number): number {
     if (lower === 0) {
       return 0;
     }
@@ -100,7 +133,7 @@ export class Layout1d extends Layout1dBase {
             Math.floor(((lower + upper) / 2) / this._delta)));
   }
 
-  _getAnchor(lower, upper) {
+  _getAnchor(lower: number, upper: number): number {
     if (this._physicalItems.size === 0) {
       return this._calculateAnchor(lower, upper);
     }
@@ -153,6 +186,10 @@ export class Layout1d extends Layout1dBase {
     }
   }
 
+  /**
+   * Updates _first and _last based on items that should be in the current
+   * viewed range.
+   */
   _getActiveItems() {
     if (this._viewDim1 === 0 || this._totalItems === 0) {
       this._clearItems();
@@ -182,10 +219,9 @@ export class Layout1d extends Layout1dBase {
   }
 
   /*
-   * Updates _first and _last based on items that should be in the current
-   * viewed range.
+   * Updates _first and _last based on items that should be in the given range.
    */
-  _getItems(lower, upper) {
+  _getItems(lower: number, upper: number) {
     const items = this._newPhysicalItems;
 
     // The anchorIdx is the anchor around which we reflow. It is designed to
@@ -220,6 +256,7 @@ export class Layout1d extends Layout1dBase {
       this._scrollError += anchorErr;
     }
 
+    // TODO @straversi: If size is always itemDim1, then why keep track of it?
     items.set(this._anchorIdx, {pos: this._anchorPos, size: anchorSize});
 
     this._first = (this._last = this._anchorIdx);
@@ -274,7 +311,7 @@ export class Layout1d extends Layout1dBase {
     }
   }
 
-  _calculateError() {
+  _calculateError(): number {
     if (this._first === 0) {
       return this._physicalMin;
     } else if (this._physicalMin <= 0) {
@@ -331,32 +368,22 @@ export class Layout1d extends Layout1dBase {
 
   /**
    * Returns the top and left positioning of the item at idx.
-   * @param {number} idx 
-   * @return {{
-   *  top: number,
-   *  left: number
-   * }}
    */
-  _getItemPosition(idx) {
+  _getItemPosition(idx: number): Positions {
     return {
       [this._positionDim]: this._getPosition(idx),
       [this._secondaryPositionDim]: 0,
-    };
+    } as unknown as Positions;
   }
 
   /**
    * Returns the height and width of the item at idx.
-   * @param {number} idx 
-   * @return {{
-   *  width: number,
-   *  height: number
-   * }}
    */
-  _getItemSize(idx) {
+  _getItemSize(idx: number): Size {
     return {
       [this._sizeDim]: this._getSize(idx) || this._itemDim1,
       [this._secondarySizeDim]: this._itemDim2,
-    };
+    } as unknown as Size;
   }
 
   _viewDim2Changed() {

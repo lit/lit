@@ -1,10 +1,18 @@
-import {VirtualRepeater} from './VirtualRepeater.js';
+import {VirtualRepeater, Child} from './VirtualRepeater';
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
+import {Layout} from './layouts/Layout'
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';
-let globalContainerStylesheet = null;
+let globalContainerStylesheet: HTMLStyleElement = null;
 
-function containerStyles(hostSel, childSel) {
+interface Range {
+  first: number,
+  num: number,
+  remeasure: boolean,
+  stable: boolean
+}
+
+function containerStyles(hostSel: string, childSel: string): string {
   return `
     ${hostSel} {
       display: block;
@@ -27,22 +35,102 @@ function attachGlobalContainerStylesheet() {
 }
 
 export class RangeChangeEvent extends Event {
+  _first: number;
+  _last: number;
+
   constructor(type, init) {
     super(type, init);
     this._first = Math.floor(init.first || 0);
     this._last = Math.floor(init.last || 0);
   }
-  get first() {
+  get first(): number {
     return this._first;
   }
-  get last() {
+  get last(): number {
     return this._last;
   }
 }
 
+interface VirtualScrollerConfig {
+  layout: Layout,
+
+  // An element that receives scroll events for the virtual scroller.
+  scrollTarget: Element | Window,
+
+  // Whether to build the virtual scroller within a shadow DOM.
+  useShadowDOM: boolean,
+
+  // The parent of all child nodes to be rendered.
+  container: Element | ShadowRoot
+}
+
+/**
+ * Provides virtual scrolling boilerplate.
+ * 
+ * Extensions of this class must set container, layout, scrollTarget, and
+ * useShadowDOM.
+ * 
+ * Extensions of this class must also override VirtualRepeater's DOM
+ * manipulation methods.
+ */
 export class VirtualScroller extends VirtualRepeater {
-  constructor(config) {
-    super();
+  // Whether the layout should receive an updated viewport size on the next
+  // render.
+  private _needsUpdateView: boolean = false;
+
+  private _layout: Layout = null;
+
+  // Whether to import the default (1d) layout on first render.
+  private _lazyLoadDefaultLayout: boolean = true;
+
+  // The element that generates scroll events and defines the container
+  // viewport. Set by scrollTarget.
+  private _scrollTarget: Element | null = null;
+
+  // A sentinel element that sizes the container when it is a scrolling
+  // element. This ensures the scroll bar accurately reflects the total
+  // size of the list.
+  private _sizer: HTMLElement = null;
+
+  // Layout provides these values, we set them on _render().
+  // TODO @straversi: Can we find an XOR type, usable for the key here?
+  private _scrollSize: {height: number} | {width: number} = null;
+
+  // Difference between scroll target's current and required scroll offsets.
+  // Provided by layout.
+  private _scrollErr: {left: number, top: number} = null;
+
+  // A list of the positions (top, left) of the children in the current
+  // range.
+  private _childrenPos: Array<{top: number, left: number}> = null;
+  
+  // The parent of all child nodes to be rendered. Set by container.
+  private _containerElement: Element = null;
+
+  // Keep track of original inline style of the container, so it can be
+  // restored when container is changed.
+  private _containerInlineStyle = null;
+  private _containerStylesheet = null;
+
+  // Whether to build the virtual scroller within a shadow DOM.
+  private _useShadowDOM: boolean = true;
+
+  // Size of the container.
+  private _containerSize: {width: number, height: number} = null;
+  
+  // Resize observer attached to container.
+  private _containerRO: ResizeObserver = null;
+
+  // Resize observer attached to children.
+  private _childrenRO: ResizeObserver = null;
+
+  // Flag for skipping a children measurement if that computation was just
+  // completed.
+  private _skipNextChildrenSizeChanged: boolean = false;
+
+  constructor(config: VirtualScrollerConfig) {
+    // TODO: Shouldn't we just pass config. Why do Object.assign after?
+    super({});
 
     this._num = 0;
     this._first = -1;
@@ -50,42 +138,15 @@ export class VirtualScroller extends VirtualRepeater {
     this._prevFirst = -1;
     this._prevLast = -1;
 
-    this._needsUpdateView = false;
-    this._layout = null;
-    this._lazyLoadDefaultLayout = true;
-    this._scrollTarget = null;
-    // A sentinel element that sizes the container when it is a scrolling
-    // element. This ensures the scroll bar accurately reflects the total
-    // size of the list.
-    this._sizer = null;
-    // Layout provides these values, we set them on _render().
-    this._scrollSize = null;
-    this._scrollErr = null;
-    // A list of the positions (top, left) of the children in the current
-    // range.
-    this._childrenPos = null;
-
-    this._containerElement = null;
-    // Keep track of original inline style of the container, so it can be
-    // restored when container is changed.
-    this._containerInlineStyle = null;
-    this._containerStylesheet = null;
-    this._useShadowDOM = true;
-    this._containerSize = null;
-
-    this._containerRO = null;
-    this._childrenRO = null;
-    this._skipNextChildrenSizeChanged = false;
-
     if (config) {
       Object.assign(this, config);
     }
   }
 
-  get container() {
+  get container(): Element | ShadowRoot {
     return super.container;
   }
-  set container(container) {
+  set container(container: Element | ShadowRoot) {
     super.container = container;
 
     this._initResizeObservers().then(() => {
@@ -93,15 +154,15 @@ export class VirtualScroller extends VirtualRepeater {
       // Consider document fragments as shadowRoots.
       const newEl =
           (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
-          container.host :
-          container;
+          (container as ShadowRoot).host :
+          container as Element;
       if (oldEl === newEl) {
         return;
       }
-  
+
       this._containerRO.disconnect();
       this._containerSize = null;
-  
+
       if (oldEl) {
         if (this._containerInlineStyle) {
           oldEl.setAttribute('style', this._containerInlineStyle);
@@ -110,16 +171,16 @@ export class VirtualScroller extends VirtualRepeater {
         }
         this._containerInlineStyle = null;
         if (oldEl === this._scrollTarget) {
-          oldEl.removeEventListener('scroll', this, {passive: true});
+          oldEl.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
           this._sizer && this._sizer.remove();
         }
       } else {
         // First time container was setup, add listeners only now.
         addEventListener('scroll', this, {passive: true});
       }
-  
+
       this._containerElement = newEl;
-  
+
       if (newEl) {
         this._containerInlineStyle = newEl.getAttribute('style') || null;
         this._applyContainerStyles();
@@ -133,10 +194,10 @@ export class VirtualScroller extends VirtualRepeater {
     })
   }
 
-  get layout() {
+  get layout(): Layout {
     return this._layout;
   }
-  set layout(layout) {
+  set layout(layout: Layout) {
     if (layout === this._layout) {
       return;
     }
@@ -149,7 +210,7 @@ export class VirtualScroller extends VirtualRepeater {
       this._layout.removeEventListener('rangechange', this);
       // Reset container size so layout can get correct viewport size.
       if (this._containerElement) {
-        this._sizeContainer();
+        this._sizeContainer(undefined);
       }
     }
 
@@ -175,15 +236,11 @@ export class VirtualScroller extends VirtualRepeater {
    * The element that generates scroll events and defines the container
    * viewport. The value `null` (default) corresponds to `window` as scroll
    * target.
-   * @type {Element|null}
    */
-  get scrollTarget() {
+  get scrollTarget(): Element | Window | null {
     return this._scrollTarget;
   }
-  /**
-   * @param {Element|null} target
-   */
-  set scrollTarget(target) {
+  set scrollTarget(target: Element | Window | null) {
     // Consider window as null.
     if (target === window) {
       target = null;
@@ -192,13 +249,13 @@ export class VirtualScroller extends VirtualRepeater {
       return;
     }
     if (this._scrollTarget) {
-      this._scrollTarget.removeEventListener('scroll', this, {passive: true});
+      this._scrollTarget.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
       if (this._sizer && this._scrollTarget === this._containerElement) {
         this._sizer.remove();
       }
     }
 
-    this._scrollTarget = target;
+    this._scrollTarget = target as (Element | null);
 
     if (target) {
       target.addEventListener('scroll', this, {passive: true});
@@ -209,11 +266,11 @@ export class VirtualScroller extends VirtualRepeater {
     }
   }
 
-  get useShadowDOM() {
+  get useShadowDOM(): boolean {
     return this._useShadowDOM;
   }
 
-  set useShadowDOM(newVal) {
+  set useShadowDOM(newVal: boolean) {
     if (this._useShadowDOM !== newVal) {
       this._useShadowDOM = Boolean(newVal);
       if (this._containerStylesheet) {
@@ -227,12 +284,11 @@ export class VirtualScroller extends VirtualRepeater {
   /**
    * Display the items in the current range.
    * Continue relayout of child positions until they have stabilized.
-   * @protected
    */
-  async _render() {
+  protected async _render(): Promise<void> {
     if (this._lazyLoadDefaultLayout && !this._layout) {
-      const { Layout1d } = await import('./layouts/Layout1d.js');
-      this.layout = new Layout1d();
+      const { Layout1d } = await import('./layouts/Layout1d');
+      this.layout = new Layout1d({});
       return;
     }
 
@@ -277,7 +333,6 @@ export class VirtualScroller extends VirtualRepeater {
   /**
    * Position children before they get measured. Measuring will force relayout,
    * so by positioning them first, we reduce computations.
-   * @protected
    */
   _didRender() {
     if (this._childrenPos) {
@@ -286,10 +341,6 @@ export class VirtualScroller extends VirtualRepeater {
     }
   }
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
   handleEvent(event) {
     switch (event.type) {
       case 'scroll':
@@ -317,23 +368,17 @@ export class VirtualScroller extends VirtualRepeater {
     }
   }
 
-  /**
-   * @private
-   */
-  async _initResizeObservers() {
+  private async _initResizeObservers() {
     if (this._containerRO === null) {
       const ResizeObserver = await getResizeObserver();
       this._containerRO = new ResizeObserver(
         (entries) => this._containerSizeChanged(entries[0].contentRect));
       this._childrenRO =
-        new ResizeObserver((entries) => this._childrenSizeChanged(entries));
+        new ResizeObserver((entries) => this._childrenSizeChanged());
     }
   }
 
-  /**
-   * @private
-   */
-  _applyContainerStyles() {
+  private _applyContainerStyles() {
     if (this._useShadowDOM) {
       if (this._containerStylesheet === null) {
         const sheet = (this._containerStylesheet = document.createElement('style'));
@@ -354,11 +399,7 @@ export class VirtualScroller extends VirtualRepeater {
     }
   }
 
-  /**
-   * @return {!Element}
-   * @private
-   */
-  _createContainerSizer() {
+  private _createContainerSizer(): HTMLDivElement {
     const sizer = document.createElement('div');
     // When the scrollHeight is large, the height of this element might be
     // ignored. Setting content and font-size ensures the element has a size.
@@ -373,27 +414,22 @@ export class VirtualScroller extends VirtualRepeater {
     return sizer;
   }
 
-  // TODO: Rename _ordered to _kids?
   /**
-   * @protected
+   * TODO: Rename _ordered to _kids?
    */
-  get _kids() {
+  get _kids(): Array<Child> {
     return this._ordered;
   }
 
   /**
    * Render and update the view at the next opportunity.
-   * @private
    */
-  _scheduleUpdateView() {
+  private _scheduleUpdateView() {
     this._needsUpdateView = true;
     this._scheduleRender();
   }
 
-  /**
-   * @private
-   */
-  _updateView() {
+  private _updateView() {
     let width, height, top, left;
     if (this._scrollTarget === this._containerElement) {
       width = this._containerSize.width;
@@ -427,8 +463,8 @@ export class VirtualScroller extends VirtualRepeater {
                   scrollerHeight, containerBounds.bottom - scrollBounds.top));
       width = xMax - xMin;
       height = yMax - yMin;
-      left = Math.max(0, -(containerBounds.x - scrollBounds.left));
-      top = Math.max(0, -(containerBounds.y - scrollBounds.top));
+      left = Math.max(0, -(containerBounds.left - scrollBounds.left));
+      top = Math.max(0, -(containerBounds.top - scrollBounds.top));
     }
     this._layout.viewportSize = {width, height};
     this._layout.viewportScroll = {top, left};
@@ -437,15 +473,14 @@ export class VirtualScroller extends VirtualRepeater {
   /**
    * Styles the _sizer element or the container so that its size reflects the
    * total size of all items.
-   * @private
    */
-  _sizeContainer(size) {
+  private _sizeContainer(size) {
     if (this._scrollTarget === this._containerElement) {
       const left = size && size.width ? size.width - 1 : 0;
       const top = size && size.height ? size.height - 1 : 0;
       this._sizer.style.transform = `translate(${left}px, ${top}px)`;
     } else {
-      const style = this._containerElement.style;
+      const style = (this._containerElement as HTMLElement).style;
       style.minWidth = size && size.width ? size.width + 'px' : null;
       style.minHeight = size && size.height ? size.height + 'px' : null;
     }
@@ -454,13 +489,11 @@ export class VirtualScroller extends VirtualRepeater {
   /**
    * Sets the top and left transform style of the children from the values in
    * pos.
-   * @private
-   * @param {Array<{top: number, left: number}>}
    */
-  _positionChildren(pos) {
+  private _positionChildren(pos: Array<{top: number, left: number}>) {
     const kids = this._kids;
     Object.keys(pos).forEach(key => {
-      const idx = key - this._first;
+      const idx = (key as unknown as number) - this._first;
       const child = kids[idx];
       if (child) {
         const {top, left} = pos[key];
@@ -470,10 +503,7 @@ export class VirtualScroller extends VirtualRepeater {
     });
   }
 
-  /**
-   * @private
-   */
-  _adjustRange(range) {
+  private _adjustRange(range: Range) {
     this.num = range.num;
     this.first = range.first;
     this._incremental = !(range.stable);
@@ -484,10 +514,7 @@ export class VirtualScroller extends VirtualRepeater {
     }
   }
 
-  /**
-   * @protected
-   */
-  _shouldRender() {
+  protected _shouldRender() {
     if (!super._shouldRender() || !this._containerElement || (!this._layout && !this._lazyLoadDefaultLayout)) {
       return false;
     }
@@ -501,10 +528,7 @@ export class VirtualScroller extends VirtualRepeater {
     return this._containerSize.width > 0 || this._containerSize.height > 0;
   }
 
-  /**
-   * @private
-   */
-  _correctScrollError(err) {
+  private _correctScrollError(err: {top: number, left: number}) {
     if (this._scrollTarget) {
       this._scrollTarget.scrollTop -= err.top;
       this._scrollTarget.scrollLeft -= err.left;
@@ -515,9 +539,8 @@ export class VirtualScroller extends VirtualRepeater {
 
   /**
    * Emits a rangechange event with the current first and last.
-   * @protected
    */
-  _notifyStable() {
+  private _notifyStable() {
     const {first, num} = this;
     const last = first + num - 1;
     this._container.dispatchEvent(
@@ -527,18 +550,14 @@ export class VirtualScroller extends VirtualRepeater {
   /**
    * Render and update the view at the next opportunity with the given
    * container size.
-   * @private
    */
-  _containerSizeChanged(size) {
+  private _containerSizeChanged(size: {width: number, height: number}) {
     const {width, height} = size;
     this._containerSize = {width, height};
     this._scheduleUpdateView();
   }
 
-  /**
-   * @private
-   */
-  _childrenSizeChanged() {
+  private _childrenSizeChanged() {
     if (this._skipNextChildrenSizeChanged) {
       this._skipNextChildrenSizeChanged = false;
     } else {

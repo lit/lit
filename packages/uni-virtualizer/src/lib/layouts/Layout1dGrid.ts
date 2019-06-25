@@ -1,12 +1,18 @@
-import {Layout1dBase} from './Layout1dBase.js';
+import {Layout1dBase} from './Layout1dBase';
+import {ItemBox} from './Layout';
 
+/**
+ * TODO @straversi: document and test this Layout.
+ */
 export class Layout1dGrid extends Layout1dBase {
+  _rolumns;
+
   constructor(config) {
     super(config);
     this._rolumns = 1;
   }
 
-  updateItemSizes(sizes) {
+  updateItemSizes(sizes: {[key: number]: ItemBox}) {
     // Assume all items have the same size.
     const size = Object.values(sizes)[0];
     if (size) {
@@ -37,12 +43,12 @@ export class Layout1dGrid extends Layout1dBase {
     this._physicalMax = this._delta * (lastCow + 1);
   }
 
-  _getItemPosition(idx) {
+  _getItemPosition(idx: number): {top: number, left: number} {
     return {
       [this._positionDim]: Math.floor(idx / this._rolumns) * this._delta,
           [this._secondaryPositionDim]: this._spacing +
           ((idx % this._rolumns) * (this._spacing + this._itemDim2))
-    }
+    } as unknown as {top: number, left: number};
   }
 
   _defineGrid() {

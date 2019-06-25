@@ -10,7 +10,7 @@
     ],
     "module": "lit-virtualizer.js",
     "scripts": {
-        "build": "cp -r src/ .",
+        "build": "tsc",
         "prepare": "npm run build",
         "test": "karma start karma.conf.js",
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
@@ -31,7 +31,8 @@
         "pngjs": "^3.4.0",
         "puppeteer": "^1.17.0",
         "rollup": "^1.11.2",
-        "rollup-plugin-node-resolve": "^4.2.3"
+        "rollup-plugin-node-resolve": "^4.2.3",
+        "typescript": "^3.5.1"
     },
     "dependencies": {
         "event-target-shim": "^5.0.1",
