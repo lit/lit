@@ -9,6 +9,8 @@ This package provides two main exports to be used alongside [lit-html](https://g
 
 You can find [documentation](#documentation) below.
 
+⚠️ lit-virtualizer is in prerelease. All changes may be breaking until 1.0.
+
 ## Getting Started
 
 Get this package:
