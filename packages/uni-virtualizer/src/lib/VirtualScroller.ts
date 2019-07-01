@@ -217,9 +217,6 @@ export class VirtualScroller extends VirtualRepeater {
     this._layout = layout;
 
     if (this._layout) {
-      // We want to lazy-load the default layout on render, but only
-      // if none has ever been explicitly set
-      this._lazyLoadDefaultLayout = false;
       if (typeof this._layout.updateItemSizes === 'function') {
         this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
         this.requestRemeasure();
@@ -287,6 +284,7 @@ export class VirtualScroller extends VirtualRepeater {
    */
   protected async _render(): Promise<void> {
     if (this._lazyLoadDefaultLayout && !this._layout) {
+      this._lazyLoadDefaultLayout = false;
       const { Layout1d } = await import('./layouts/Layout1d');
       this.layout = new Layout1d({});
       return;
