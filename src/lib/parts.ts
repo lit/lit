@@ -122,7 +122,7 @@ export class AttributeCommitter {
     // String(value)
     // The exception is if v is an array, in which case we do want to smash
     // it together into a string without calling String() on the array.
-    if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0]) {
+    if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0] !== undefined) {
       const v = parts[0].value;
       if (!Array.isArray(v)) {
         return v;
