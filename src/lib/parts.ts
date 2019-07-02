@@ -74,6 +74,16 @@ export type DOMSanitizer =
  */
 let sanitizeDOMValue: DOMSanitizer|undefined;
 
+/** Sets the global DOM sanitization callback. */
+export const __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning = (newSanitizer: DOMSanitizer) => {
+  if (sanitizeDOMValue !== undefined) {
+    throw new Error(
+        `Attempted to overwrite existing lit-html security policy.` +
+        ` setSanitizeDOMValue should be called at most once.`);
+  }
+  sanitizeDOMValue = newSanitizer;
+};
+
 export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
   sanitizeDOMValue = undefined;
 };

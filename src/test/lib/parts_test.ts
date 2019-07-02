@@ -13,7 +13,8 @@
  */
 
 import {__testOnlyClearSanitizerDoNotCallOrElse} from '../../lib/parts.js';
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, setSanitizeDOMValue, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {__testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning} from '../../lib/parts';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -666,7 +667,7 @@ suite('setSanitizeDOMValue', () => {
 
 
   setup(() => {
-    setSanitizeDOMValue(
+    __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning(
         (value: unknown,
          name: string,
          type: 'property'|'attribute'|'text',
