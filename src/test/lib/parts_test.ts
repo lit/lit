@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult, directive, Part} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -533,15 +533,13 @@ suite('Parts', () => {
           part = p;
         });
 
-        const t = (bool: boolean) => html`<div>${
-          bool
-          ? html`${fooDirective()}`
-          : 'detached'
-        }</div>`;
+        const t = (bool: boolean) =>
+            html`<div>${bool ? html`${fooDirective()}` : 'detached'}</div>`;
 
         // First render with unresolved Promise
         render(t(true), container);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
 
         // Simulate an async part settting.
         part!.setValue('foo');
@@ -549,12 +547,14 @@ suite('Parts', () => {
 
         // Now detach the part's wrapping TemplateResult
         render(t(false), container);
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<div>detached</div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>detached</div>');
 
         // Simulate an async part settting.
         part!.setValue('bar');
         part!.commit();
-        assert.equal(stripExpressionMarkers(container.innerHTML), '<div>detached</div>');
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>detached</div>');
       });
     });
   });
