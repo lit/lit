@@ -59,7 +59,7 @@ suite('index.js', () => {
 
   test('exports everything from lib/parts.js', () => {
     Object.keys(LibParts)
-        .filter((k) => !k.startsWith('__testOnly'))
+        .filter((k) => !/^__testOnly/.test(k))
         .forEach((key) => {
           assert.property(LitHtml, key);
         });
