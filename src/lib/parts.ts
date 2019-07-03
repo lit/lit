@@ -75,14 +75,15 @@ export type DOMSanitizer =
 let sanitizeDOMValue: DOMSanitizer|undefined;
 
 /** Sets the global DOM sanitization callback. */
-export const __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning = (newSanitizer: DOMSanitizer) => {
-  if (sanitizeDOMValue !== undefined) {
-    throw new Error(
-        `Attempted to overwrite existing lit-html security policy.` +
-        ` setSanitizeDOMValue should be called at most once.`);
-  }
-  sanitizeDOMValue = newSanitizer;
-};
+export const __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning =
+    (newSanitizer: DOMSanitizer) => {
+      if (sanitizeDOMValue !== undefined) {
+        throw new Error(
+            `Attempted to overwrite existing lit-html security policy.` +
+            ` setSanitizeDOMValue should be called at most once.`);
+      }
+      sanitizeDOMValue = newSanitizer;
+    };
 
 export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
   sanitizeDOMValue = undefined;
@@ -132,7 +133,8 @@ export class AttributeCommitter {
     // String(value)
     // The exception is if v is an array, in which case we do want to smash
     // it together into a string without calling String() on the array.
-    if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0] !== undefined) {
+    if (l === 1 && strings[0] === '' && strings[1] === '' &&
+        parts[0] !== undefined) {
       const v = parts[0].value;
       if (!isIterable(v)) {
         return v;
