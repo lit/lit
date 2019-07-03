@@ -134,7 +134,7 @@ export class AttributeCommitter {
     // it together into a string without calling String() on the array.
     if (l === 1 && strings[0] === '' && strings[1] === '' && parts[0] !== undefined) {
       const v = parts[0].value;
-      if (!Array.isArray(v)) {
+      if (!isIterable(v)) {
         return v;
       }
     }
