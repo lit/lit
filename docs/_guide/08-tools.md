@@ -52,11 +52,11 @@ There are a number of IDE plugins that may be useful when developing with lit-ht
 
 VSCode plugin
 
-* https://marketplace.visualstudio.com/items?itemName=bierner.lit-html
+* [https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin](https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin)
 
 TypeScript plugin (works with Sublime and Atom)
 
-* https://github.com/Microsoft/typescript-lit-html-plugin
+* [https://github.com/Microsoft/typescript-lit-html-plugin](https://github.com/Microsoft/typescript-lit-html-plugin)
 
 More plugins
 
