@@ -121,31 +121,53 @@ render(templateResult, document.querySelector("#post-list"));
 
 In this example, just `items` and `template` were configured. You can also specify the scroll target and whether or not to use shadow DOM.
 
+
+
 ### `scroll` config options
 
-`items: Array<T>`
+#### `items`
 
-> A list of items to display via the template function. The type of the items should match the first argument of the template function.
+Type: `Array<T>`
 
-`template: (item: T, index?: number) => lit-html.TemplateResult`
+A list of items to display via the template function. The type of the items should match the first argument of the template function.
 
-> A function that returns a lit-html TemplateResult. It will be used to generate the DOM for each item in the virtual list.
+#### `template`
 
-`scrollTarget: Element | Window`
+Type: `(item: T, index?: number) => lit-html.TemplateResult`
 
-> Optional. An element that receives scroll events for the virtual scroller. If not specified, the directive's parent element will be the target.
+A function that returns a lit-html TemplateResult. It will be used to generate the DOM for each item in the virtual list.
 
-`useShadowDOM: boolean`
+#### `scrollTarget`
 
-> Optional. Whether to build the virtual scroller within a shadow DOM.
+Type: `Element | Window`
 
-`totalItems: number`
+Optional. An element that receives scroll events for the virtual scroller. If not specified, the directive's parent element will be the target.
 
-> Optional. Limit for the number of items to display. Defaults to the length of the items array.
+#### `useShadowDOM`
+
+Type: `boolean`
+
+Optional. Whether to build the virtual scroller within a shadow DOM.
+
+#### `totalItems`
+
+Type: `number`
+
+Optional. Limit for the number of items to display. Defaults to the length of the items array.
+
+#### `scrollToIndex`
+
+Type: `{index: number, position?: string}`
+
+where position is: `'start'|'center'|'end'|'nearest'`
+
+Optional. Scroll to the item at the give index. Place the item at the given position within the scroll view. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the scroll view. Position defaults to `start`.
+
+Note: Rendering with `scrollToIndex` will cause the scroll view to fix at the given position until the user manually scrolls. If a template using the `scroll` directive is re-rendered, note that the view will be re-scrolled to respect the given `scrollToIndex` option. Take care to set or unset the `scrollToIndex` option upon subsequent re-renders for the desired behavior.
 
 ---
 
-### \<lit-virtualizer\>
+### `<lit-virtualizer>` element
 
 `<lit-virtualizer>` is a LitElement wrapper for the scroll directive. It simply provides different usage ergonomics. It doesn't add extra functionality. If your project does not otherwise use LitElement, using the scroll directive with tree-shaking will save you bytes by not unnecessarily importing LitElement.
 
@@ -163,20 +185,43 @@ render(templateResult, document.querySelector("#post-list"));
 
 With `<lit-virtualizer>`, you pass configuration as properties to the HTML Element.
 
-### `<lit-virtualizer>` properties
+### `<lit-virtualizer>` API
 
-`.items = Array<T>`
+#### `items` property
 
-> A list of items to display via the template function. The type of the items should match the first argument of the template function.
+Type: `Array<T>`
 
-`.template = (item: T, index?: number) => lit-html.TemplateResult`
+A list of items to display via the template function. The type of the items should match the first argument of the template function.
 
-> A function that returns a lit-html TemplateResult. It will be used to generate the DOM for each item in the virtual list.
+#### `template` property
 
-`.scrollTarget = Element | Window`
+Type: `(item: T, index?: number) => lit-html.TemplateResult`
 
-> Optional. An element that receives scroll events for the virtual scroller. If not specified, the directive's parent element will be the target.
+A function that returns a lit-html TemplateResult. It will be used to generate the DOM for each item in the virtual list.
 
+#### `scrollTarget` property
+
+Type: `Element | Window`
+
+Optional. An element that receives scroll events for the virtual scroller. If not specified, the `<lit-virtualizer>` element itself will be the scroll target.
+
+### `scrollToIndex` method
+
+Type: `(index: number, position?: string) => void`
+
+where position is: `'start'|'center'|'end'|'nearest'`
+
+Scroll to the item at the give index. Place the item at the given position within the scroll view. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the scroll view. Position defaults to `start`.
+
+Example usage:
+
+```ts
+const virtualizer = document.createElement('lit-virtualizer');
+virtualizer.items = contacts;
+virtualizer.template = contactTemplate;
+// Scroll to the 100th item and put it in the center of the scroll view.
+virtualizer.scrollToIndex(100, 'center');
+```
 
 ## Complete example
 

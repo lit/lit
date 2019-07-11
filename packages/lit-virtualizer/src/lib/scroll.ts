@@ -30,7 +30,10 @@ interface ScrollConfig {
 
   // Limit for the number of items to display. Defaults to the length
   // of the items array.
-  totalItems?: number
+  totalItems?: number,
+
+  // Index and position of the item to scroll to.
+  scrollToIndex?: {index: number, position?: string},
 }
 
 /**
@@ -52,6 +55,7 @@ export const scroll = directive((config: ScrollConfig = {}) => async (part: Node
   }
   Object.assign(scroller, {
     items: config.items,
-    totalItems: config.totalItems === undefined ? null : config.totalItems
+    totalItems: config.totalItems === undefined ? null : config.totalItems,
+    scrollToIndex: config.scrollToIndex === undefined ? null : config.scrollToIndex,
   });
 });

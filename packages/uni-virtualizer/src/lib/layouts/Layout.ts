@@ -39,6 +39,8 @@ export interface Layout {
 
   removeEventListener;
 
+  scrollToIndex: (index: number, position: string) => void;
+
   /**
    * Called by a VirtualRepeater or VirtualScroller when an update that
    * potentially affects layout has occurred. For example, a viewport size

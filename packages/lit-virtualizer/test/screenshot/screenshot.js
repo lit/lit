@@ -49,20 +49,31 @@ describe(generating ? 'Generating screenshots' : 'Screenshots', function() {
   });
 
   describe('scroll', function() {
-    beforeEach(async function() {
+    it('displays items', async function() {
       await page.goto(`http://127.0.0.1:8080/cases/scroll/`);
       await page.waitForSelector('#main');
-    });
-
-    it('displays items', async function() {
       return takeAndCompareScreenshot(page, 'scroll', 'displays-items')
     });
 
     it('scrolls', async function() {
+      await page.goto(`http://127.0.0.1:8080/cases/scroll/`);
+      await page.waitForSelector('#main');
       await page.evaluate(() => {
         document.querySelector('#main').scrollBy(0, 200);
       });
       return takeAndCompareScreenshot(page, 'scroll', 'scrolls')
+    });
+
+    it('scrolls to the specified index', async function() {
+      await page.goto(`http://127.0.0.1:8080/cases/scroll/?index=100`);
+      await page.waitForSelector('#main');
+      return takeAndCompareScreenshot(page, 'scroll', 'scrolls-to-the-specified-index')
+    });
+
+    it('scrolls to the specified position', async function() {
+      await page.goto(`http://127.0.0.1:8080/cases/scroll/?index=100&position=end`);
+      await page.waitForSelector('#main');
+      return takeAndCompareScreenshot(page, 'scroll', 'scrolls-to-the-specified-position')
     });
   });
 });

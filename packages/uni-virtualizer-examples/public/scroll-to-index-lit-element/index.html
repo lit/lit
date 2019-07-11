@@ -1,0 +1,48 @@
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!doctype html>
+<html>
+  <head>
+    <script src="../shared/boot.js"></script>
+    <style>
+      body, html {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        padding-left: 8px;
+        box-sizing: border-box;
+      }
+      #controls {
+        margin: 10px 0;
+      }
+      lit-virtualizer {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <label>
+        Scroll to:
+        <input id="index" type="number" placeholder="index" onchange="scrollToIndex(this.valueAsNumber, position.value)">
+        <select id="position" onchange="scrollToIndex(index.valueAsNumber, this.value)">
+          <option value="start">start</option>
+          <option value="end">end</option>
+          <option value="center">center</option>
+          <option value="nearest">nearest</option>
+        </select>
+      </label>
+    </div>
+  </body>
+</html>

@@ -19,6 +19,8 @@ export class LitVirtualizer extends LitElement {
     @property()
     scrollTarget: Element | Window;
 
+    private _scrollToIndex: {index: number, position: string};
+
     constructor() {
         super();
         (this as {renderRoot: Element | DocumentFragment}).renderRoot = this;
@@ -37,11 +39,23 @@ export class LitVirtualizer extends LitElement {
         }
     }
 
+    /**
+     * Scroll to the specified index, placing that item at the given position
+     * in the scroll view.
+     */
+    async scrollToIndex(index: number, position: string = 'start') {
+        this._scrollToIndex = {index, position}
+        this.requestUpdate()
+        await this.updateComplete
+        this._scrollToIndex = null
+    }
+
     render(): TemplateResult {
         return html`${scroll({
             items: this.items,
             template: this._template,
             scrollTarget: this.scrollTarget,
+            scrollToIndex: this._scrollToIndex,
             // TODO: enable this flag.
             useShadowDOM: true
             // TODO: allow configuration of a layout.
