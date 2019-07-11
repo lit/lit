@@ -438,7 +438,12 @@ export class VirtualScroller extends VirtualRepeater {
       const containerBounds = this._containerElement.getBoundingClientRect();
       const scrollBounds = this._scrollTarget ?
           this._scrollTarget.getBoundingClientRect() :
-          {top: 0, left: 0, width: innerWidth, height: innerHeight};
+          {
+            top: containerBounds.top + scrollY,
+            left: containerBounds.left + scrollX,
+            width: innerWidth,
+            height: innerHeight
+          };
       const scrollerWidth = scrollBounds.width;
       const scrollerHeight = scrollBounds.height;
       const xMin = Math.max(
