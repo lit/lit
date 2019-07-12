@@ -6,7 +6,7 @@ import { html } from 'lit-html';
 
   const virtualizer = document.createElement('lit-virtualizer');
   virtualizer.items = contacts;
-  virtualizer.template = ({ mediumText }) => html`<p>${mediumText}</p>`;
+  virtualizer.renderItem = ({ mediumText }) => html`<p>${mediumText}</p>`;
 
   document.body.appendChild(virtualizer);
 })();

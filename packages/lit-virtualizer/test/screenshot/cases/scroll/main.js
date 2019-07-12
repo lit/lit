@@ -11,7 +11,7 @@ import { html, render } from 'lit-html';
   const virtualized = html`<div id="main">
     ${scroll({
       items: contacts,
-      template: ({ mediumText }, i) => html`<p>${i}) ${mediumText}</p>`,
+      renderItem: ({ mediumText }, i) => html`<p>${i}) ${mediumText}</p>`,
       scrollToIndex: { index, position },
     })}
   </div>`;

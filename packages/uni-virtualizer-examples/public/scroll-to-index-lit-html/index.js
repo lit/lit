@@ -5,7 +5,7 @@ const example = (contacts, scrollToIndex = null) => html`
     <section style="height: 100%;">
         ${scroll({
             items: contacts,
-            template: ({ longText }, i) => html`<p>${i}) ${longText}</p>`,
+            renderItem: ({ longText }, i) => html`<p>${i}) ${longText}</p>`,
             scrollToIndex: scrollToIndex,
         })}
     </section>

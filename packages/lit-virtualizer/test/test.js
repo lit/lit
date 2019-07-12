@@ -24,10 +24,10 @@ describe('scroll', function () {
     document.body.removeChild(container);
   })
 
-  it('uses the template to render the items', async function () {
+  it('uses the provided method to render items', async function () {
     const dir = scroll({
       items: ['foo', 'bar', 'baz'],
-      template: (item) => html`<p>${item}</p>`,
+      renderItem: (item) => html`<p>${item}</p>`,
       useShadowDOM: false
     });
     const templateResult = html`<div>
@@ -49,7 +49,7 @@ describe('scroll', function () {
     it('renders to shadow DOM when useShadowDOM is true', async function() {
       const dir = scroll({
         items: ['foo', 'bar', 'baz'],
-        template: (item) => html`<p>${item}</p>`,
+        renderItem: (item) => html`<p>${item}</p>`,
         useShadowDOM: true,
       });
       const templateResult = html`${dir}`
@@ -64,7 +64,7 @@ describe('scroll', function () {
     it('does not render to shadow DOM when useShadowDOM is false', async function() {
       const dir = scroll({
         items: ['foo', 'bar', 'baz'],
-        template: (item) => html`<p>${item}</p>`,
+        renderItem: (item) => html`<p>${item}</p>`,
         useShadowDOM: false,
       });
       const templateResult = html`${dir}`

@@ -95,7 +95,7 @@ class Yo extends LitElement {
                 layout='vertical'
                 .scrollTarget=${window}
                 .items=${this.data}
-                .template=${contact => html`
+                .renderItem=${contact => html`
                     <wrapped-contact .contact=${contact}></wrapped-contact>
                 `}>
             </lit-virtualizer>

@@ -15,7 +15,7 @@ const partToScroller: WeakMap<NodePart, any> = new WeakMap();
 interface ScrollConfig {
   // A function that returns a lit-html TemplateResult. It will be used
   // to generate the DOM for each item in the virtual list.
-  template?: (item: any, index?: number) => TemplateResult,
+  renderItem?: (item: any, index?: number) => TemplateResult,
 
   layout?: Layout,
 
@@ -25,7 +25,7 @@ interface ScrollConfig {
   // Whether to build the virtual scroller within a shadow DOM.
   useShadowDOM?: boolean,
 
-  // The list of items to display via the template function.
+  // The list of items to display via the renderItem function.
   items?: Array<any>,
 
   // Limit for the number of items to display. Defaults to the length
@@ -49,8 +49,8 @@ export const scroll = directive((config: ScrollConfig = {}) => async (part: Node
     if (!part.startNode.isConnected) {
       await Promise.resolve();
     }
-    let {template, layout, scrollTarget, useShadowDOM} = config;
-    scroller = new LitScroller({part, template, layout, scrollTarget, useShadowDOM});
+    let {renderItem, layout, scrollTarget, useShadowDOM} = config;
+    scroller = new LitScroller({part, renderItem, layout, scrollTarget, useShadowDOM});
     partToScroller.set(part, scroller);
   }
   Object.assign(scroller, {

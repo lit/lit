@@ -5,7 +5,7 @@ const example = (contacts) => html`
     <section>
         ${scroll({
             items: contacts,
-            template: ({ mediumText }) => html`<p>${mediumText}</p>`,
+            renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
             scrollTarget: window,
             useShadowDOM: false
         })}

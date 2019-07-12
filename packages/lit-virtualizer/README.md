@@ -73,7 +73,7 @@ Other small chunks will also be present. Lit-virtualizer utilizes [dynamic impor
 
 ### `scroll` directive
 
-`scroll` is a lit-html directive that turns its parent element into a virtual scrolling area. It requires a template for rendering virtual children, and an array of items for populating the template.
+`scroll` is a lit-html directive that turns its parent element into a virtual scrolling area. It requires a `renderItem` function for rendering virtual children, and an array of items to render.
 
 Say we are building an index page for a blog, and need a list of link to all blog posts. The blog has thousands of posts, so we want the list to have virtual scrolling. Here's our index.html...
 ```html
@@ -98,20 +98,20 @@ const posts = [
 ];
 
 // Building our post link template.
-// A template is a function that takes an item (our metadata)
+// renderPostLink is a function that takes an item (our metadata)
 // and uses the `html` tag to build DOM structure with it.
-const postLinkTemplate = post => html`
+const renderPostLink = post => html`
   <div>
     <h2><a href="${post.link}">${post.title}</a></h2>
     <p>${post.date}</p>
   </div>
 `;
 
-// Pass the post metadata and the template to the scroll directive...
+// Pass the post metadata and the render to the scroll directive...
 const templateResult = html`${
   scroll({
     items: posts,
-    template: postLinkTemplate
+    renderItem: renderPostLink
   })
 }`
 
@@ -119,7 +119,7 @@ const templateResult = html`${
 render(templateResult, document.querySelector("#post-list"));
 ```
 
-In this example, just `items` and `template` were configured. You can also specify the scroll target and whether or not to use shadow DOM.
+In this example, just `items` and `renderItem` were configured. You can also specify the scroll target and whether or not to use shadow DOM.
 
 
 
@@ -129,9 +129,9 @@ In this example, just `items` and `template` were configured. You can also speci
 
 Type: `Array<T>`
 
-A list of items to display via the template function. The type of the items should match the first argument of the template function.
+A list of items to display via the renderItem function. The type of the items should match the first argument of the renderItem function.
 
-#### `template`
+#### `renderItem`
 
 Type: `(item: T, index?: number) => lit-html.TemplateResult`
 
@@ -163,7 +163,7 @@ where position is: `'start'|'center'|'end'|'nearest'`
 
 Optional. Scroll to the item at the give index. Place the item at the given position within the scroll view. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the scroll view. Position defaults to `start`.
 
-Note: Rendering with `scrollToIndex` will cause the scroll view to fix at the given position until the user manually scrolls. If a template using the `scroll` directive is re-rendered, note that the view will be re-scrolled to respect the given `scrollToIndex` option. Take care to set or unset the `scrollToIndex` option upon subsequent re-renders for the desired behavior.
+Note: Rendering with `scrollToIndex` will cause the scroll view to fix at the given position until the user manually scrolls. If a lit-html template using the `scroll` directive is re-rendered, note that the view will be re-scrolled to respect the given `scrollToIndex` option. Take care to set or unset the `scrollToIndex` option upon subsequent re-renders for the desired behavior.
 
 ---
 
@@ -177,7 +177,7 @@ Here's how to redo the blog post example, using `<lit-virtualizer>` instead. Con
 const templateResult = html`
   <lit-virtualizer
     .items=${posts}
-    .template=${postLinkTemplate}
+    .renderItem=${renderPostLink}
   ></lit-virtualizer>
 `
 render(templateResult, document.querySelector("#post-list"));
@@ -191,9 +191,9 @@ With `<lit-virtualizer>`, you pass configuration as properties to the HTML Eleme
 
 Type: `Array<T>`
 
-A list of items to display via the template function. The type of the items should match the first argument of the template function.
+A list of items to display via the renderItem function. The type of the items should match the first argument of the renderItem function.
 
-#### `template` property
+#### `renderItem` property
 
 Type: `(item: T, index?: number) => lit-html.TemplateResult`
 
@@ -218,7 +218,7 @@ Example usage:
 ```ts
 const virtualizer = document.createElement('lit-virtualizer');
 virtualizer.items = contacts;
-virtualizer.template = contactTemplate;
+virtualizer.renderItem = renderContactItem;
 // Scroll to the 100th item and put it in the center of the scroll view.
 virtualizer.scrollToIndex(100, 'center');
 ```
@@ -262,7 +262,7 @@ class ContactList extends LitElement {
             <lit-virtualizer
               .scrollTarget=${window}
               .items=${this.data}
-              .template=${(contact) => html`
+              .renderItem=${(contact) => html`
                 <div><b>${contact.name}</b>: ${contact.phone}</div>
               `}>
             </lit-virtualizer>

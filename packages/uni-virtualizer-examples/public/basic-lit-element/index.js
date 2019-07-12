@@ -63,7 +63,7 @@ class ContactList extends LitElement {
         this.data = await resp.json();
     }
 
-    _contactTemplate(contact) {
+    _renderContact(contact) {
         return html`
             <contact-card .contact=${contact}></contact-card>
         `;
@@ -75,7 +75,7 @@ class ContactList extends LitElement {
             <lit-virtualizer
                 layout='vertical'
                 .items=${this.data}
-                .template=${this._contactTemplate}>
+                .renderItem=${this._renderContact}>
             </lit-virtualizer>
         `;
     }

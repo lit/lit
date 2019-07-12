@@ -15,7 +15,7 @@ export const LitMixin = Superclass => class extends Superclass {
   _pool: Array<NodePart>;
 
   // Method for generating each item's DOM.
-  _template: (item: any, index?: number) => TemplateResult;
+  _renderItem: (item: any, index?: number) => TemplateResult;
 
   // Children are rendered into this part.
   // The host of the directive that constructs the scroller.
@@ -29,18 +29,18 @@ export const LitMixin = Superclass => class extends Superclass {
    */
   constructor(config: {
     part: NodePart,
-    template: (item: any, index?: number) => TemplateResult,
+    renderItem: (item: any, index?: number) => TemplateResult,
     useShadowDOM?: boolean,
     scrollTarget?: Element | Window,
     layout?: Layout
   }) {
-    const {part, template, useShadowDOM, layout} = config;
+    const {part, renderItem, useShadowDOM, layout} = config;
     let container = part.startNode.parentNode;
     let scrollTarget = config.scrollTarget || container;
     super({container, scrollTarget, useShadowDOM, layout});
 
     this._pool = [];
-    this._template = template;
+    this._renderItem = renderItem;
     this._hostPart = part;
   }
 
@@ -49,7 +49,7 @@ export const LitMixin = Superclass => class extends Superclass {
   }
 
   updateElement(part: NodePart, item, idx: number) {
-    part.setValue(this._template(item, idx));
+    part.setValue(this._renderItem(item, idx));
     part.commit();
   }
 
@@ -123,7 +123,7 @@ export const LitMixin = Superclass => class extends Superclass {
 export const LitRepeater = LitMixin(VirtualRepeater);
 
 interface RepeatConfig {
-  template: (item: any, index?: number) => TemplateResult,
+  renderItem: (item: any, index?: number) => TemplateResult,
   part: NodePart,
   first?: number,
   num?: number,
@@ -139,7 +139,7 @@ export const repeat = directive((config: RepeatConfig) => async (part: NodePart)
     if (!part.startNode.isConnected) {
       await Promise.resolve();
     }
-    repeater = new LitRepeater({part, template: config.template});
+    repeater = new LitRepeater({part, renderItem: config.renderItem});
     partToRepeater.set(part, repeater);
   }
   const {first, num, totalItems} = config;

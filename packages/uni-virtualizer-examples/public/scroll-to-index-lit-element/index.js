@@ -7,7 +7,7 @@ let virtualizer;
     virtualizer = document.createElement('lit-virtualizer');
     const contacts = await(await fetch('../shared/contacts.json')).json();
     virtualizer.items = contacts;
-    virtualizer.template = ({ longText }, i) => html`<p>${i}) ${longText}</p>`;
+    virtualizer.renderItem = ({ longText }, i) => html`<p>${i}) ${longText}</p>`;
     document.body.appendChild(virtualizer);
 
     window.virtualizer = virtualizer;

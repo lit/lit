@@ -12,7 +12,7 @@
       <section>
           ${scroll({
               items: arr,
-              template: (num) => html`<p>${num}</p>`,
+              renderItem: (num) => html`<p>${num}</p>`,
               scrollTarget: window,
               useShadowDOM: true
           })}
