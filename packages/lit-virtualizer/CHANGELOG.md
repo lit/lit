@@ -1,4 +1,6 @@
 ## [Unreleased]
+
+## [0.2.0] - 2019-07-15
 ### Added
 - `scrollToIndex` method on `<lit-virtualizer>`.
 - `scrollToIndex` configuration option on `scroll` directive.
