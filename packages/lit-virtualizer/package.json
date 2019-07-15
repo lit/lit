@@ -15,6 +15,7 @@
         "build": "tsc",
         "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
         "clean": "rm -r node_modules/",
+        "lint": "tslint --project ./",
         "prepare": "npm run build",
         "test": "karma start karma.conf.js",
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
@@ -37,6 +38,7 @@
         "rollup": "^1.11.2",
         "rollup-plugin-node-resolve": "^4.2.3",
         "tachometer": "^0.4.7",
+        "tslint": "^5.18.0",
         "typescript": "^3.5.1"
     },
     "dependencies": {

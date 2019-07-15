@@ -1,16 +1,13 @@
-import {ItemBox, Margins} from './layouts/Layout'
+import {ItemBox, Margins} from './layouts/Layout';
 
-// The implementer decides the type of children.
-export type Child = any;
-
-export class VirtualRepeater {
+export class VirtualRepeater<Item, Child extends Element, Key> {
   // Invoked when a new (not recycled) child needs to be displayed.
   // Set by createElement.
-  private _createElementFn: (item: any, index: number) => Child = null;
+  private _createElementFn: (item: Item, index: number) => Child = null;
 
   // Invoked on new (including recycled) children after the range changes.
   // Set by updateElement.
-  private _updateElementFn: (child: Child, item: any, index: number) => void = null;
+  private _updateElementFn: (child: Child, item: Item, index: number) => void = null;
 
   // Invoked on outgoing children after the range changes.
   // Set by recycleElement.
@@ -18,10 +15,10 @@ export class VirtualRepeater {
 
   // Used for generating a key for storing references to children.
   // Set by elementKey.
-  private _elementKeyFn: (index: number) => any = null;
+  private _elementKeyFn: (index: number) => Key = null;
 
   // Set by items.
-  private _items: Array<any> = [];
+  private _items: Array<Item> = [];
 
   // Set by totalItems.
   private _totalItems: number = null;
@@ -40,11 +37,11 @@ export class VirtualRepeater {
   private _prevActive: Map<Child, number> = new Map();
 
   // Both used for recycling purposes.
-  private _keyToChild: Map<any, Child> = new Map();
-  private _childToKey: WeakMap<Child, any> = new WeakMap();
+  private _keyToChild: Map<Key|number, Child> = new Map();
+  private _childToKey: WeakMap<Child, Key|number> = new WeakMap();
 
   // Used to keep track of measures by index.
-  private _indexToMeasure = {}
+  private _indexToMeasure = {};
   private __incremental: boolean = false;
 
   // Used for tracking range changes.
@@ -75,10 +72,10 @@ export class VirtualRepeater {
 
   // Set by container.
   protected _container: Element | ShadowRoot = null;
-  
+
   // Children in the rendered order.
   protected _ordered: Array<Child> = [];
-  
+
   constructor(config) {
     if (config) {
       Object.assign(this, config);
@@ -120,7 +117,7 @@ export class VirtualRepeater {
    * Invoked to create a child.
    * Override or set directly to control element creation.
    */
-  get createElement(): (item: any, index: number) => Child {
+  get createElement(): (item: Item, index: number) => Child {
     return this._createElementFn;
   }
   set createElement(fn) {
@@ -135,7 +132,7 @@ export class VirtualRepeater {
    * Invoked to update a child.
    * Override or set directly to control element updates.
    */
-  get updateElement(): (child: Child, item: any, index: number) => void {
+  get updateElement(): (child: Child, item: Item, index: number) => void {
     return this._updateElementFn;
   }
   set updateElement(fn) {
@@ -149,7 +146,7 @@ export class VirtualRepeater {
    * Invoked in place of removing a child from the DOM, so that it can be reused.
    * Override or set directly to prepare children for reuse.
    */
-  get recycleElement(): (child: any, index: number) => void {
+  get recycleElement(): (child: Child, index: number) => void {
     return this._recycleElementFn;
   }
   set recycleElement(fn) {
@@ -163,7 +160,7 @@ export class VirtualRepeater {
    * Invoked to generate a key for an element.
    * Override or set directly to control how keys are generated for children.
    */
-  get elementKey(): (index: number) => any {
+  get elementKey(): (index: number) => Key {
     return this._elementKeyFn;
   }
   set elementKey(fn) {
@@ -213,7 +210,7 @@ export class VirtualRepeater {
   /**
    * An array of data to be used to render child nodes.
    */
-  get items(): Array<any> {
+  get items(): Array<Item> {
     return this._items;
   }
   set items(items) {
@@ -322,10 +319,10 @@ export class VirtualRepeater {
    */
   private async _measureChildren({indices, children}): Promise<void> {
     // await Promise.resolve();
-    await (new Promise(resolve => {
+    await (new Promise((resolve) => {
       requestAnimationFrame(resolve);
     }));
-    let pm = children.map(
+    const pm = children.map(
         (c, i) => /*this._indexToMeasure[indices[i]] ||*/ this._measureChild(c));
     const mm = /** @type {{number: {width: number, height: number}}} */
         (pm.reduce((out, cur, i) => {
@@ -589,7 +586,7 @@ export class VirtualRepeater {
    * Sets the display style of the given node to 'none'.
    */
   _hideChild(child: Child) {
-    if (child.style) {
+    if (child instanceof HTMLElement) {
       child.style.display = 'none';
     }
   }
@@ -598,7 +595,7 @@ export class VirtualRepeater {
    * Sets the display style of the given node to null.
    */
   _showChild(child: Child) {
-    if (child.style) {
+    if (child instanceof HTMLElement) {
       child.style.display = null;
     }
   }
@@ -626,6 +623,6 @@ function getMargins(el): Margins {
 }
 
 function getMarginValue(value: string): number {
-  let float = value ? parseFloat(value) : NaN;
+  const float = value ? parseFloat(value) : NaN;
   return Number.isNaN(float) ? 0 : float;
 }

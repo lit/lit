@@ -4,7 +4,7 @@ import {ItemBox, Positions, Size} from './Layout';
 type ItemBounds = {
   pos: number,
   size: number
-}
+};
 
 export class Layout1d extends Layout1dBase {
   // Indices of children mapped to their (position and length) in the scrolling
@@ -38,7 +38,7 @@ export class Layout1d extends Layout1dBase {
   private _nMeasured: number = 0;
   // Total length in the scrolling direction of the layed out children.
   private _tMeasured: number = 0;
-  
+
   // TODO @straversi: This value never changes.
   _estimate: boolean = true;
 
@@ -171,9 +171,9 @@ export class Layout1d extends Layout1dBase {
     let maxIdx = this._last, minIdx = this._first;
 
     while (true) {
-      let candidateIdx = Math.round((maxIdx + minIdx) / 2),
-          candidate = this._physicalItems.get(candidateIdx),
-          cMin = candidate.pos, cMax = cMin + candidate.size;
+      const candidateIdx = Math.round((maxIdx + minIdx) / 2),
+            candidate = this._physicalItems.get(candidateIdx),
+            cMin = candidate.pos, cMax = cMin + candidate.size;
 
       if ((cMin >= lower && cMin <= upper) ||
           (cMax >= lower && cMax <= upper)) {
@@ -300,7 +300,7 @@ export class Layout1d extends Layout1dBase {
       this._physicalMax -= extentErr;
       this._anchorPos -= extentErr;
       this._scrollPosition -= extentErr;
-      items.forEach(item => item.pos -= extentErr);
+      items.forEach((item) => item.pos -= extentErr);
       this._scrollError += extentErr;
     }
 

@@ -5,9 +5,9 @@ export default async function ResizeObserver() {
 }
 
 async function init() {
-    RO = window.ResizeObserver;
+    RO = (window as {ResizeObserver?: ResizeObserver}).ResizeObserver;
     try {
-        new RO(function(){});
+        new RO(function() {});
     }
     catch (e) {
         RO = (await import('resize-observer-polyfill')).default;

@@ -5,7 +5,7 @@ export default async function EventTarget() {
 }
 
 async function init() {
-    ET = window.EventTarget;
+    ET = (window as {EventTarget?: EventTarget}).EventTarget;
     try {
         new ET();
     }

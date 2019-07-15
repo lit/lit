@@ -3,18 +3,18 @@ import { scroll } from './scroll';
 
 /**
  * A LitElement wrapper of the scroll directive.
- * 
+ *
  * Import this module to declare the lit-virtualizer custom element.
  * Pass an items array, renderItem method, and scroll target as properties
  * to the <lit-virtualizer> element.
  */
 @customElement('lit-virtualizer')
-export class LitVirtualizer extends LitElement {
+export class LitVirtualizer<T> extends LitElement {
     @property()
-    private _renderItem: (item: any, index?: number) => TemplateResult;
+    private _renderItem: (item: T, index?: number) => TemplateResult;
 
     @property()
-    items: Array<any>;
+    items: Array<T>;
 
     @property()
     scrollTarget: Element | Window;
@@ -44,10 +44,10 @@ export class LitVirtualizer extends LitElement {
      * in the scroll view.
      */
     async scrollToIndex(index: number, position: string = 'start') {
-        this._scrollToIndex = {index, position}
-        this.requestUpdate()
-        await this.updateComplete
-        this._scrollToIndex = null
+        this._scrollToIndex = {index, position};
+        this.requestUpdate();
+        await this.updateComplete;
+        this._scrollToIndex = null;
     }
 
     render(): TemplateResult {

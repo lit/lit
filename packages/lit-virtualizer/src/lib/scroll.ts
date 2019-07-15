@@ -1,47 +1,50 @@
-import { directive, NodePart, TemplateResult } from 'lit-html';
+import { directive, NodePart, TemplateResult, html } from 'lit-html';
 import { VirtualScroller } from './uni-virtualizer/lib/VirtualScroller';
 import { Layout } from './uni-virtualizer/lib/layouts/Layout';
 import { LitMixin } from './repeat';
 
-export const LitScroller = LitMixin(VirtualScroller);
+export class LitScroller<Item> extends LitMixin(VirtualScroller)<Item> {}
 
-// scrollers are type: any because of the Mixin problem, described at LitMixin
-// in repeat.ts.
-const partToScroller: WeakMap<NodePart, any> = new WeakMap();
+// export const LitScroller = LitMixin(VirtualScroller);
+
+// scrollers are type: unknown because of the "mixin" problem, described at LitMixin
+// in repeat.ts. LitMixin is not a true mixin because it uses methods from VirtualScroller
+// and VirtualRepeater. Removing these will involve a larger refactor.
+const partToScroller: WeakMap<NodePart, LitScroller<unknown>> = new WeakMap();
 
 /**
  * Configuration options for the scroll directive.
  */
-interface ScrollConfig {
+interface ScrollConfig<Item> {
   // A function that returns a lit-html TemplateResult. It will be used
   // to generate the DOM for each item in the virtual list.
-  renderItem?: (item: any, index?: number) => TemplateResult,
+  renderItem?: (item: Item, index?: number) => TemplateResult;
 
-  layout?: Layout,
+  layout?: Layout;
 
   // An element that receives scroll events for the virtual scroller.
-  scrollTarget?: Element | Window,
+  scrollTarget?: Element | Window;
 
   // Whether to build the virtual scroller within a shadow DOM.
-  useShadowDOM?: boolean,
+  useShadowDOM?: boolean;
 
   // The list of items to display via the renderItem function.
-  items?: Array<any>,
+  items?: Array<Item>;
 
   // Limit for the number of items to display. Defaults to the length
   // of the items array.
-  totalItems?: number,
+  totalItems?: number;
 
   // Index and position of the item to scroll to.
-  scrollToIndex?: {index: number, position?: string},
+  scrollToIndex?: {index: number, position?: string};
 }
 
 /**
  * A lit-html directive that turns its parent node into a virtual scroller.
- * 
+ *
  * See ScrollConfig interface for configuration options.
  */
-export const scroll = directive((config: ScrollConfig = {}) => async (part: NodePart) => {
+export const scroll: <T>(config: ScrollConfig<T>) => (part: NodePart) => Promise<void> = directive(<T>(config: ScrollConfig<T>) => async (part: NodePart) => {
   // Retain the scroller so that re-rendering the directive's parent won't
   // create another one.
   let scroller = partToScroller.get(part);
@@ -49,8 +52,8 @@ export const scroll = directive((config: ScrollConfig = {}) => async (part: Node
     if (!part.startNode.isConnected) {
       await Promise.resolve();
     }
-    let {renderItem, layout, scrollTarget, useShadowDOM} = config;
-    scroller = new LitScroller({part, renderItem, layout, scrollTarget, useShadowDOM});
+    const {renderItem, layout, scrollTarget, useShadowDOM} = config;
+    scroller = new LitScroller<T>({part, renderItem, layout, scrollTarget, useShadowDOM});
     partToScroller.set(part, scroller);
   }
   Object.assign(scroller, {

@@ -6,21 +6,21 @@ import { Layout } from './uni-virtualizer/lib/layouts/Layout';
  * Mixin for VirtualRepeater and VirtualScroller. This mixin overrides the generic
  * methods in those classes to provide lit-specific implementations of element
  * creation and manipulation.
- * 
+ *
  * This mixin implements child recycling, so children can be reused after removal
  * from the DOM.
  */
-export const LitMixin = Superclass => class extends Superclass {
+export const LitMixin = (Superclass) => class<Item> extends Superclass {
   // NodeParts that are available for reuse.
   _pool: Array<NodePart>;
 
   // Method for generating each item's DOM.
-  _renderItem: (item: any, index?: number) => TemplateResult;
+  _renderItem: (item: Item, index?: number) => TemplateResult;
 
   // Children are rendered into this part.
   // The host of the directive that constructs the scroller.
   _hostPart: NodePart;
-  
+
   /**
    * TODO @straversi: This is not a true mixin. Mixins do have information
    * about potential superclasses. This class appears to know the constructor
@@ -29,14 +29,14 @@ export const LitMixin = Superclass => class extends Superclass {
    */
   constructor(config: {
     part: NodePart,
-    renderItem: (item: any, index?: number) => TemplateResult,
+    renderItem: (item: Item, index?: number) => TemplateResult,
     useShadowDOM?: boolean,
     scrollTarget?: Element | Window,
     layout?: Layout
   }) {
     const {part, renderItem, useShadowDOM, layout} = config;
-    let container = part.startNode.parentNode;
-    let scrollTarget = config.scrollTarget || container;
+    const container = part.startNode.parentNode;
+    const scrollTarget = config.scrollTarget || container;
     super({container, scrollTarget, useShadowDOM, layout});
 
     this._pool = [];
@@ -62,7 +62,7 @@ export const LitMixin = Superclass => class extends Superclass {
    */
 
   get _kids(): Array<Node> {
-    return this._ordered.map(p => p.startNode.nextElementSibling);
+    return this._ordered.map((p) => p.startNode.nextElementSibling);
   }
 
   _node(part: NodePart): Node {
@@ -120,18 +120,18 @@ export const LitMixin = Superclass => class extends Superclass {
   }
 };
 
-export const LitRepeater = LitMixin(VirtualRepeater);
+export class LitRepeater<Item> extends LitMixin(VirtualRepeater)<Item> {};
 
-interface RepeatConfig {
-  renderItem: (item: any, index?: number) => TemplateResult,
-  part: NodePart,
-  first?: number,
-  num?: number,
-  totalItems?: number,
+interface RepeatConfig<Item> {
+  renderItem: (item: Item, index?: number) => TemplateResult;
+  part: NodePart;
+  first?: number;
+  num?: number;
+  totalItems?: number;
 }
 
 const partToRepeater = new WeakMap();
-export const repeat = directive((config: RepeatConfig) => async (part: NodePart) => {
+export const repeat: <T>(config: RepeatConfig<T>) => (part: NodePart) => Promise<void> = directive(<T>(config: RepeatConfig<T>) => async (part: NodePart) => {
   // Retain the repeater so that re-rendering the directive's parent won't
   // create another one.
   let repeater = partToRepeater.get(part);
@@ -139,7 +139,7 @@ export const repeat = directive((config: RepeatConfig) => async (part: NodePart)
     if (!part.startNode.isConnected) {
       await Promise.resolve();
     }
-    repeater = new LitRepeater({part, renderItem: config.renderItem});
+    repeater = new LitRepeater<T>({part, renderItem: config.renderItem});
     partToRepeater.set(part, repeater);
   }
   const {first, num, totalItems} = config;

@@ -1,5 +1,5 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './layout'
+import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './layout';
 
 export abstract class Layout1dBase implements Layout {
   // The last set viewport scroll position.
@@ -28,7 +28,7 @@ export abstract class Layout1dBase implements Layout {
   // The index of the last item intersecting the viewport.
   private _lastVisible: number;
 
-  private _eventTargetPromise: Promise<any> = (EventTarget().then(Ctor => this._eventTarget = new Ctor()));
+  private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => this._eventTarget = new Ctor()));
 
   // Pixel offset in the scroll direction of the first child.
   protected _physicalMin: number = 0;

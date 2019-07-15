@@ -1,17 +1,17 @@
-import {VirtualRepeater, Child} from './VirtualRepeater';
+import {VirtualRepeater} from './VirtualRepeater';
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import {Layout} from './layouts/Layout'
+import {Layout} from './layouts/Layout';
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';
 let globalContainerStylesheet: HTMLStyleElement = null;
 
 interface Range {
-  first: number,
-  num: number,
-  remeasure: boolean,
-  stable: boolean,
-  firstVisible: number,
-  lastVisible: number,
+  first: number;
+  num: number;
+  remeasure: boolean;
+  stable: boolean;
+  firstVisible: number;
+  lastVisible: number;
 }
 
 function containerStyles(hostSel: string, childSel: string): string {
@@ -64,28 +64,28 @@ export class RangeChangeEvent extends Event {
 }
 
 interface VirtualScrollerConfig {
-  layout: Layout,
+  layout: Layout;
 
   // An element that receives scroll events for the virtual scroller.
-  scrollTarget: Element | Window,
+  scrollTarget: Element | Window;
 
   // Whether to build the virtual scroller within a shadow DOM.
-  useShadowDOM: boolean,
+  useShadowDOM: boolean;
 
   // The parent of all child nodes to be rendered.
-  container: Element | ShadowRoot
+  container: Element | ShadowRoot;
 }
 
 /**
  * Provides virtual scrolling boilerplate.
- * 
+ *
  * Extensions of this class must set container, layout, scrollTarget, and
  * useShadowDOM.
- * 
+ *
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
  */
-export class VirtualScroller extends VirtualRepeater {
+export class VirtualScroller<Item, Child extends HTMLElement, Key> extends VirtualRepeater<Item, Child, Key> {
   // Whether the layout should receive an updated viewport size on the next
   // render.
   private _needsUpdateView: boolean = false;
@@ -115,7 +115,7 @@ export class VirtualScroller extends VirtualRepeater {
   // A list of the positions (top, left) of the children in the current
   // range.
   private _childrenPos: Array<{top: number, left: number}> = null;
-  
+
   // The parent of all child nodes to be rendered. Set by container.
   private _containerElement: Element = null;
 
@@ -129,7 +129,7 @@ export class VirtualScroller extends VirtualRepeater {
 
   // Size of the container.
   private _containerSize: {width: number, height: number} = null;
-  
+
   // Resize observer attached to container.
   private _containerRO: ResizeObserver = null;
 
@@ -212,7 +212,7 @@ export class VirtualScroller extends VirtualRepeater {
         this._scheduleUpdateView();
         this._containerRO.observe(newEl);
       }
-    })
+    });
   }
 
   get layout(): Layout {
@@ -362,7 +362,7 @@ export class VirtualScroller extends VirtualRepeater {
     // We want to skip the first ResizeObserver callback call as we already
     // measured the children.
     this._skipNextChildrenSizeChanged = true;
-    this._kids.forEach(child => this._childrenRO.observe(child));
+    this._kids.forEach((child) => this._childrenRO.observe(child));
   }
 
   /**
@@ -532,7 +532,7 @@ export class VirtualScroller extends VirtualRepeater {
    */
   private _positionChildren(pos: Array<{top: number, left: number}>) {
     const kids = this._kids;
-    Object.keys(pos).forEach(key => {
+    Object.keys(pos).forEach((key) => {
       const idx = (key as unknown as number) - this._first;
       const child = kids[idx];
       if (child) {
