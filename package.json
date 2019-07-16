@@ -11,8 +11,9 @@
     "lerna": "^3.13.4"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
-    "start": "http-server & (cd packages/uni-virtualizer-examples; npm run build-and-watch)",
+    "link-uni-virtual-examples": "npm link packages/lit-virtualizer --prefix packages/uni-virtualizer-examples",
+    "bootstrap": "npm run link-uni-virtual-examples && lerna bootstrap --hoist",
+    "start": "http-server & npm run build-and-watch --prefix packages/uni-virtualizer-examples",
     "deploy-examples": "./scripts/deploy-examples.sh"
   },
   "dependencies": {}

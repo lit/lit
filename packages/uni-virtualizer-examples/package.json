@@ -6,8 +6,9 @@
     "repository": "PolymerLabs/uni-virtualizer",
     "private": true,
     "scripts": {
-        "build": "rollup -c",
-        "build-and-watch": "rollup -c -w"
+        "build:virtualizer": "npm run build --prefix ../lit-virtualizer",
+        "build": "npm run build:virtualizer && rollup -c",
+        "build-and-watch": "npm run build:virtualizer && rollup -c -w"
     },
     "author": "The Polymer Authors",
     "devDependencies": {
@@ -16,7 +17,6 @@
         "rollup-plugin-terser": "^4.0.4"
     },
     "dependencies": {
-        "lit-virtualizer": "^0.1.0",
         "lit-element": "latest"
     }
 }
