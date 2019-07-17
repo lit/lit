@@ -248,7 +248,7 @@ export abstract class Layout1dBase implements Layout {
    */
   abstract _getActiveItems();
 
-  updateItemSizes(sizes: {[key: number]: ItemBox}) {
+  updateItemSizes(_sizes: {[key: number]: ItemBox}) {
     // Override
   }
 
@@ -260,7 +260,7 @@ export abstract class Layout1dBase implements Layout {
     // Override
   }
 
-  protected _getItemSize(idx: number): Size {
+  protected _getItemSize(_idx: number): Size {
     return {
       [this._sizeDim]: this._itemDim1,
       [this._secondarySizeDim]: this._itemDim2,

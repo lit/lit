@@ -1,4 +1,4 @@
-import { directive, NodePart, TemplateResult, html } from 'lit-html';
+import { directive, NodePart, TemplateResult } from 'lit-html';
 import { VirtualScroller } from './uni-virtualizer/lib/VirtualScroller';
 import { Layout } from './uni-virtualizer/lib/layouts/Layout';
 import { LitMixin } from './repeat';

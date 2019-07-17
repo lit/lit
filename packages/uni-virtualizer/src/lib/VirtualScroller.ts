@@ -409,7 +409,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
       this._containerRO = new ResizeObserver(
         (entries) => this._containerSizeChanged(entries[0].contentRect));
       this._childrenRO =
-        new ResizeObserver((entries) => this._childrenSizeChanged());
+        new ResizeObserver(() => this._childrenSizeChanged());
     }
   }
 

@@ -322,8 +322,7 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
     await (new Promise((resolve) => {
       requestAnimationFrame(resolve);
     }));
-    const pm = children.map(
-        (c, i) => /*this._indexToMeasure[indices[i]] ||*/ this._measureChild(c));
+    const pm = children.map((c) => this._measureChild(c));
     const mm = /** @type {{number: {width: number, height: number}}} */
         (pm.reduce((out, cur, i) => {
           out[indices[i]] = this._indexToMeasure[indices[i]] = cur;
