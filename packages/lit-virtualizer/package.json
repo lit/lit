@@ -14,6 +14,7 @@
         "bench:debug": "tach --root=../.. test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "build": "tsc",
         "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
+        "clean": "rm -r node_modules/",
         "prepare": "npm run build",
         "test": "karma start karma.conf.js",
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",

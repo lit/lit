@@ -6,7 +6,9 @@
     "repository": "PolymerLabs/uni-virtualizer",
     "main": "uni-virtualizer.js",
     "module": "uni-virtualizer.js",
-    "scripts": {},
+    "scripts": {
+        "clean": "rm -r node_modules/"
+    },
     "author": "The Polymer Authors",
     "dependencies": {
         "event-target-shim": "^5.0.1",
