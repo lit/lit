@@ -78,4 +78,35 @@ describe('scroll', function () {
       document.body.removeChild(container);
     });
   })
+
+  describe('visible indices', function() {
+    it('emits visibleindiceschanged events with the proper indices', async function() {
+      const directive = scroll({
+        items: ['foo', 'bar', 'baz', 'qux'],
+        renderItem: (item) => html`<div style='height: 50px'>${item}</div>`,
+        useShadowDOM: false,
+      });
+      container.style.height = '100px';
+      let firstVisible;
+      let lastVisible;
+      container.addEventListener('rangechange', e => {
+        firstVisible = e.firstVisible;
+        lastVisible = e.lastVisible;
+      });
+  
+      render(directive, container);
+  
+      await (new Promise(resolve => requestAnimationFrame(resolve)));
+      container.scrollTop = 50;
+      await (new Promise(resolve => requestAnimationFrame(resolve)));
+      assert.equal(firstVisible, 1);
+      assert.equal(lastVisible, 2);
+      container.scrollTop += 1;
+      await (new Promise(resolve => requestAnimationFrame(resolve)));
+      assert.equal(firstVisible, 1);
+      assert.equal(lastVisible, 3);
+
+      document.body.removeChild(container);
+    })
+  })
 });

@@ -165,6 +165,37 @@ Optional. Scroll to the item at the give index. Place the item at the given posi
 
 Note: Rendering with `scrollToIndex` will cause the scroll view to fix at the given position until the user manually scrolls. If a lit-html template using the `scroll` directive is re-rendered, note that the view will be re-scrolled to respect the given `scrollToIndex` option. Take care to set or unset the `scrollToIndex` option upon subsequent re-renders for the desired behavior.
 
+### Events
+
+#### `rangechange` event
+
+Thi event is an instance of `RangeChangeEvent`, which has the following properties regarding the currently rendered range of items:
+
+* `first`: the index of the first item currently rendered. This may not be the first visible item.
+* `last`: the index of the last item currently rendered. This may not be the first visible item.
+* `firstVisible`: the index of the first item visible. That is, the first item to intersect the scroll view.
+* `lastVisible`: the index of the last item visible. That is, the last item to intersect the scroll view.
+
+This event is fired when any of these values change, e.g. because the user scrolled. To listen for this event, attach a listener to the host of the `scroll` directive. You can do this inline with lit-html.
+
+Example usage:
+
+```ts
+const handleEvent = (e) => {
+  console.log("The first visible index is", e.firstVisible);
+  console.log("The last visible index is", e.lastVisible);
+}
+
+const example = (contacts) => html`
+  <section @rangechange=${handleEvent}>
+    ${scroll({
+      items: contacts,
+      renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
+    })}
+  </section>
+`;
+```
+
 ---
 
 ### `<lit-virtualizer>` element

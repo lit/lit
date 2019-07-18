@@ -1,4 +1,6 @@
 ## [Unreleased]
+### Added
+- `firstVisible` and `lastVisible` on `RangeChangeEvent`.
 
 ## [0.2.0] - 2019-07-15
 ### Added

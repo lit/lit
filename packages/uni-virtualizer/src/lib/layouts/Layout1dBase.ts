@@ -22,6 +22,12 @@ export abstract class Layout1dBase implements Layout {
   // top of the viewport. Value is a proportion of the item size.
   private _scrollToAnchor: number = 0;
 
+  // The index of the first item intersecting the viewport.
+  private _firstVisible: number;
+
+  // The index of the last item intersecting the viewport.
+  private _lastVisible: number;
+
   private _eventTargetPromise: Promise<any> = (EventTarget().then(Ctor => this._eventTarget = new Ctor()));
 
   // Pixel offset in the scroll direction of the first child.
@@ -171,6 +177,7 @@ export abstract class Layout1dBase implements Layout {
     this._scrollPosition = this._latestCoords[this._positionDim];
     if (oldPos !== this._scrollPosition) {
       this._scrollPositionChanged(oldPos, this._scrollPosition);
+      this._updateVisibleIndices();
     }
     this._checkThresholds();
   }
@@ -358,6 +365,8 @@ export abstract class Layout1dBase implements Layout {
           last: this._last,
           num: this._num,
           stable: true,
+          firstVisible: this._firstVisible,
+          lastVisible: this._lastVisible,
         },
         inProps);
     this.dispatchEvent(new CustomEvent('rangechange', {detail}));
@@ -414,6 +423,34 @@ export abstract class Layout1dBase implements Layout {
       if (this._physicalMin > min || this._physicalMax < max) {
         this._scheduleReflow();
       }
+    }
+  }
+
+  /**
+   * Find the indices of the first and last items to intersect the viewport.
+   * Emit a visibleindiceschange event when either index changes.
+   */
+  protected _updateVisibleIndices() {
+    let firstVisible = this._firstVisible;
+    let lastVisible = this._lastVisible;
+    for (let i = this._first; i <= this._last; i++) {
+      const itemY = this._getItemPosition(i)[this._positionDim];
+      if (itemY <= this._scrollPosition) {
+        firstVisible = i;
+      }
+      if (itemY < this._scrollPosition + this._viewDim1) {
+        lastVisible = i;
+      }
+    }
+    // If scrolling is occurring very quickly, item positions may change
+    // during this calculation. Ignore the results when that happens.
+    if (firstVisible > lastVisible) {
+      return;
+    }
+    if (firstVisible !== this._firstVisible || lastVisible !== this._lastVisible) {
+      this._firstVisible = firstVisible;
+      this._lastVisible = lastVisible;
+      this._emitRange();
     }
   }
 

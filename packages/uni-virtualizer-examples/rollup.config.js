@@ -56,4 +56,24 @@ export default [
       resolve(),
     ]
   },
+  {
+    input: 'public/visible-indices-lit-html/index.js',
+    output: {
+      dir: 'public/visible-indices-lit-html/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]
+  },
+  {
+    input: 'public/visible-indices-lit-element/index.js',
+    output: {
+      dir: 'public/visible-indices-lit-element/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]
+  },
 ];

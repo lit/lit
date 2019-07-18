@@ -345,6 +345,7 @@ export class Layout1d extends Layout1dBase {
       this._emitScrollSize();
     }
 
+    this._updateVisibleIndices();
     this._emitRange();
     if (this._first === -1 && this._last === -1) {
       this._resetReflowState();

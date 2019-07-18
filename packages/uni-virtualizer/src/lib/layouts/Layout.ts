@@ -59,14 +59,17 @@ export interface Layout {
    *       'height' | 'width': number
    *     }
    * - rangechange
-   *     Dispatch when the range of children that should be displayed changes,
-   *     based on layout calculations and the size of the container.
+   *     Dispatch when the range of children that should be displayed changes
+   *     (based on layout calculations and the size of the container) or when
+   *     the first or last item to intersect the container changes.
    *     detail: {
    *       first: number,
    *       last: number,
    *       num: number,
    *       stable: boolean,
-   *       remeasure: boolean
+   *       remeasure: boolean,
+   *       firstVisible: number,
+   *       lastVisible: number,
    *     }
    * - itempositionchange
    *     Dispatch when the child positions change, for example due to a range

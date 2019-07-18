@@ -9,7 +9,9 @@ interface Range {
   first: number,
   num: number,
   remeasure: boolean,
-  stable: boolean
+  stable: boolean,
+  firstVisible: number,
+  lastVisible: number,
 }
 
 function containerStyles(hostSel: string, childSel: string): string {
@@ -35,19 +37,29 @@ function attachGlobalContainerStylesheet() {
 }
 
 export class RangeChangeEvent extends Event {
-  _first: number;
-  _last: number;
+  private _first: number;
+  private _last: number;
+  private _firstVisible: number;
+  private _lastVisible: number;
 
   constructor(type, init) {
     super(type, init);
     this._first = Math.floor(init.first || 0);
     this._last = Math.floor(init.last || 0);
+    this._firstVisible = Math.floor(init.firstVisible || 0);
+    this._lastVisible = Math.floor(init.lastVisible || 0);
   }
   get first(): number {
     return this._first;
   }
   get last(): number {
     return this._last;
+  }
+  get firstVisible(): number {
+    return this._firstVisible;
+  }
+  get lastVisible(): number {
+    return this._lastVisible;
   }
 }
 
@@ -130,6 +142,12 @@ export class VirtualScroller extends VirtualRepeater {
 
   // Index and position of item to scroll to.
   private _scrollToIndex: {index: number, position?: string} = null;
+
+  // Index of the first item intersecting the container element.
+  private _firstVisible: number;
+
+  // Index of the last item intersecting the container element.
+  private _lastVisible: number;
 
   constructor(config: VirtualScrollerConfig) {
     // TODO: Shouldn't we just pass config. Why do Object.assign after?
@@ -528,11 +546,14 @@ export class VirtualScroller extends VirtualRepeater {
   private _adjustRange(range: Range) {
     this.num = range.num;
     this.first = range.first;
+    const visiblityChanged = this._firstVisible !== range.firstVisible || this._lastVisible !== range.lastVisible;
+    this._firstVisible = range.firstVisible;
+    this._lastVisible = range.lastVisible;
     this._incremental = !(range.stable);
     if (range.remeasure) {
       this.requestRemeasure();
-    } else if (range.stable) {
-      this._notifyStable();
+    } else if (range.stable || visiblityChanged) {
+      this._notifyRange();
     }
   }
 
@@ -560,13 +581,20 @@ export class VirtualScroller extends VirtualRepeater {
   }
 
   /**
-   * Emits a rangechange event with the current first and last.
+   * Emits a rangechange event with the current first, last, firstVisible, and
+   * lastVisible.
    */
-  private _notifyStable() {
+  private _notifyRange() {
     const {first, num} = this;
     const last = first + num - 1;
     this._container.dispatchEvent(
-        new RangeChangeEvent('rangechange', {first, last}));
+        new RangeChangeEvent('rangechange', {
+          first,
+          last,
+          firstVisible: this._firstVisible,
+          lastVisible: this._lastVisible,
+        })
+    );
   }
 
   /**
