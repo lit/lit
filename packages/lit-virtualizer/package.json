@@ -1,6 +1,6 @@
 {
     "name": "lit-virtualizer",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Virtual scrolling for lit-html and LitElement",
     "license": "BSD-3-Clause",
     "main": "lit-virtualizer.js",
