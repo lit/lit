@@ -7,39 +7,55 @@ type ItemBounds = {
 };
 
 export class Layout1d extends Layout1dBase {
-  // Indices of children mapped to their (position and length) in the scrolling
-  // direction. Used to keep track of children that are in range.
+  /**
+   * Indices of children mapped to their (position and length) in the scrolling
+   * direction. Used to keep track of children that are in range.
+   */
   _physicalItems: Map<number, ItemBounds> = new Map();
 
-  // Used in tandem with _physicalItems to track children in range across
-  // reflows.
+  /**
+   * Used in tandem with _physicalItems to track children in range across
+   * reflows.
+   */
   _newPhysicalItems: Map<number, ItemBounds> = new Map();
 
-  // Width and height of children by their index.
+  /**
+   * Width and height of children by their index.
+   */
   _metrics: Map<number, Size> = new Map();
 
-  // anchorIdx is the anchor around which we reflow. It is designed to allow
-  // jumping to any point of the scroll size. We choose it once and stick with
-  // it until stable. _first and _last are deduced around it.
+  /**
+   * anchorIdx is the anchor around which we reflow. It is designed to allow
+   * jumping to any point of the scroll size. We choose it once and stick with
+   * it until stable. _first and _last are deduced around it.
+   */
   _anchorIdx: number = null;
 
-  // Position in the scrolling direction of the anchor child.
+  /**
+   * Position in the scrolling direction of the anchor child.
+   */
   _anchorPos: number = null;
 
-  // Whether all children in range were in range during the previous reflow.
+  /**
+   * Whether all children in range were in range during the previous reflow.
+   */
   _stable: boolean = true;
 
-  // Whether to remeasure children during the next reflow.
-  // TODO @straversi: Currently only set by viewDim2Changed.
+  /**
+   * Whether to remeasure children during the next reflow.
+   */
   _needsRemeasure: boolean = false;
 
-  // Number of children to lay out.
-  // TODO @straversi: These shouldn't be properties?
+  /**
+   * Number of children to lay out.
+   */
   private _nMeasured: number = 0;
-  // Total length in the scrolling direction of the layed out children.
+
+  /**
+   * Total length in the scrolling direction of the laid out children.
+   */
   private _tMeasured: number = 0;
 
-  // TODO @straversi: This value never changes.
   _estimate: boolean = true;
 
   constructor(config) {

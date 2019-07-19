@@ -66,13 +66,19 @@ export class RangeChangeEvent extends Event {
 interface VirtualScrollerConfig {
   layout: Layout;
 
-  // An element that receives scroll events for the virtual scroller.
+  /**
+   * An element that receives scroll events for the virtual scroller.
+   */
   scrollTarget: Element | Window;
 
-  // Whether to build the virtual scroller within a shadow DOM.
+  /**
+   * Whether to build the virtual scroller within a shadow DOM.
+   */
   useShadowDOM: boolean;
 
-  // The parent of all child nodes to be rendered.
+  /**
+   * The parent of all child nodes to be rendered.
+   */
   container: Element | ShadowRoot;
 }
 
@@ -86,71 +92,108 @@ interface VirtualScrollerConfig {
  * manipulation methods.
  */
 export class VirtualScroller<Item, Child extends HTMLElement, Key> extends VirtualRepeater<Item, Child, Key> {
-  // Whether the layout should receive an updated viewport size on the next
-  // render.
+  /**
+   * Whether the layout should receive an updated viewport size on the next
+   * render.
+   */
   private _needsUpdateView: boolean = false;
 
   private _layout: Layout = null;
 
-  // Whether to import the default (1d) layout on first render.
+  /**
+   * Whether to import the default (1d) layout on first render.
+   */
   private _lazyLoadDefaultLayout: boolean = true;
 
-  // The element that generates scroll events and defines the container
-  // viewport. Set by scrollTarget.
+  /**
+   * The element that generates scroll events and defines the container
+   * viewport. Set by scrollTarget.
+   */
   private _scrollTarget: Element | null = null;
 
-  // A sentinel element that sizes the container when it is a scrolling
-  // element. This ensures the scroll bar accurately reflects the total
-  // size of the list.
+  /**
+   * A sentinel element that sizes the container when it is a scrolling
+   * element. This ensures the scroll bar accurately reflects the total
+   * size of the list.
+   */
   private _sizer: HTMLElement = null;
 
-  // Layout provides these values, we set them on _render().
-  // TODO @straversi: Can we find an XOR type, usable for the key here?
+  /**
+   * Layout provides these values, we set them on _render().
+   * TODO @straversi: Can we find an XOR type, usable for the key here?
+   */
   private _scrollSize: {height: number} | {width: number} = null;
 
-  // Difference between scroll target's current and required scroll offsets.
-  // Provided by layout.
+  /**
+   * Difference between scroll target's current and required scroll offsets.
+   * Provided by layout.
+   */
   private _scrollErr: {left: number, top: number} = null;
 
-  // A list of the positions (top, left) of the children in the current
-  // range.
+  /**
+   * A list of the positions (top, left) of the children in the current range.
+   */
   private _childrenPos: Array<{top: number, left: number}> = null;
 
-  // The parent of all child nodes to be rendered. Set by container.
+  /**
+   * The parent of all child nodes to be rendered. Set by container.
+   */
   private _containerElement: Element = null;
 
-  // Keep track of original inline style of the container, so it can be
-  // restored when container is changed.
+  /**
+   * Keep track of original inline style of the container, so it can be
+   * restored when container is changed.
+   */
   private _containerInlineStyle = null;
+
+  /**
+   * Keep track of original container stylesheet, so it can be restored
+   * when container is changed.
+   */
   private _containerStylesheet = null;
 
-  // Whether to build the virtual scroller within a shadow DOM.
+  /**
+   * Whether to build the virtual scroller within a shadow DOM.
+   */
   private _useShadowDOM: boolean = true;
 
-  // Size of the container.
+  /**
+   * Size of the container.
+   */
   private _containerSize: {width: number, height: number} = null;
 
-  // Resize observer attached to container.
+  /**
+   * Resize observer attached to container.
+   */
   private _containerRO: ResizeObserver = null;
 
-  // Resize observer attached to children.
+  /**
+   * Resize observer attached to children.
+   */
   private _childrenRO: ResizeObserver = null;
 
-  // Flag for skipping a children measurement if that computation was just
-  // completed.
+  /**
+   * Flag for skipping a children measurement if that computation was just
+   * completed.
+   */
   private _skipNextChildrenSizeChanged: boolean = false;
 
-  // Index and position of item to scroll to.
+  /**
+   * Index and position of item to scroll to.
+   */
   private _scrollToIndex: {index: number, position?: string} = null;
 
-  // Index of the first item intersecting the container element.
+  /**
+   * Index of the first item intersecting the container element.
+   */
   private _firstVisible: number;
 
-  // Index of the last item intersecting the container element.
+  /**
+   * Index of the last item intersecting the container element.
+   */
   private _lastVisible: number;
 
   constructor(config: VirtualScrollerConfig) {
-    // TODO: Shouldn't we just pass config. Why do Object.assign after?
     super({});
 
     this._num = 0;

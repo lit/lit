@@ -1,79 +1,121 @@
 import {ItemBox, Margins} from './layouts/Layout';
 
 export class VirtualRepeater<Item, Child extends Element, Key> {
-  // Invoked when a new (not recycled) child needs to be displayed.
-  // Set by createElement.
+  /**
+   * Invoked when a new (not recycled) child needs to be displayed.
+   * Set by createElement.
+   */
   private _createElementFn: (item: Item, index: number) => Child = null;
 
-  // Invoked on new (including recycled) children after the range changes.
-  // Set by updateElement.
+  /**
+   * Invoked on new (including recycled) children after the range changes.
+   * Set by updateElement.
+   */
   private _updateElementFn: (child: Child, item: Item, index: number) => void = null;
 
-  // Invoked on outgoing children after the range changes.
-  // Set by recycleElement.
+  /**
+   * Invoked on outgoing children after the range changes. Set by recycleElement.
+   */
   private _recycleElementFn: (child: Child, index: number) => void = null;
 
-  // Used for generating a key for storing references to children.
-  // Set by elementKey.
+  /**
+   * Used for generating a key for storing references to children. Set by elementKey.
+   */
   private _elementKeyFn: (index: number) => Key = null;
 
-  // Set by items.
+  /**
+   * Items to render. Set by items.
+   */
   private _items: Array<Item> = [];
 
-  // Set by totalItems.
+  /**
+   * Total number of items to render. Set by totalItems.
+   */
   private _totalItems: number = null;
 
-  // Flag for asynchnronous reset requests. Resetting clears and reinserts children
-  // in the range.
+  /**
+   * Flag for asynchnronous reset requests. Resetting clears and reinserts
+   * children in the range.
+   */
   private _needsReset: boolean = false;
 
-  // Flag for asynchnronous remeasure requests. Signals that all children should
-  // be remeasured.
+  /**
+   * Flag for asynchnronous remeasure requests. Signals that all children
+   * should be remeasured.
+   */
   private _needsRemeasure: boolean = false;
 
-  // Used to keep track of children that can be cleaned up after a range
-  // update.
+  /**
+   * Used to keep track of children that can be cleaned up after a range update.
+   */
   private _active: Map<Child, number> = new Map();
   private _prevActive: Map<Child, number> = new Map();
 
-  // Both used for recycling purposes.
+  /**
+   * Used for recycling purposes.
+   */
   private _keyToChild: Map<Key|number, Child> = new Map();
   private _childToKey: WeakMap<Child, Key|number> = new WeakMap();
 
-  // Used to keep track of measures by index.
+  /**
+   * Used to keep track of measures by index.
+   */
   private _indexToMeasure = {};
   private __incremental: boolean = false;
 
-  // Used for tracking range changes.
+  /**
+   * Used for tracking range changes.
+   */
   private _prevNum: number;
 
-  // Invoked at the end of each render cycle: children in the range are measured, and
-  // their dimensions passed to this callback. Use it to layout children as needed.
+  /**
+   * Invoked at the end of each render cycle: children in the range are
+   * measured, and their dimensions passed to this callback. Use it to layout
+   * children as needed.
+   */
   protected _measureCallback: (sizes: {[key: number]: ItemBox}) => void = null;
 
-  // TODO @straversi: Consider renaming this. count? visibleElements?
-  // Set by num.
+  /** 
+   * Number of children in the range. Set by num.
+   * TODO @straversi: Consider renaming this. count? visibleElements?
+   */
   protected _num: number = Infinity;
 
-  // TODO @straversi: Consider renaming these.
-  // Index of the first child in the range, not necessarily the first visible child.
+  /**
+   * Index of the first child in the range, not necessarily the first visible child.
+   * TODO @straversi: Consider renaming these.
+   */
   protected _first: number = 0;
 
-  // Index of the last child in the range.
+  /**
+   * Index of the last child in the range.
+   */
   protected _last: number = 0;
 
-  // Previous state management. Used to avoid unnecessary updates.
+  /**
+   * Previous first rendered index. Used to avoid unnecessary updates.
+   */
   protected _prevFirst: number = 0;
+
+  /**
+   * Previous last rendered index. Used to avoid unnecessary updates.
+   */
   protected _prevLast: number = 0;
 
-  // Flag for asynchnronous render requests. Renders can be requested several times
-  // before a render actually happens.
+  /**
+   * Flag for asynchnronous render requests. Renders can be requested several
+   * times before a render actually happens.
+   */
   protected _pendingRender = null;
 
-  // Set by container.
+  /**
+   * Containing element. Set by container.
+   */
   protected _container: Element | ShadowRoot = null;
 
-  // Children in the rendered order.
+  /**
+   * Children in the rendered order.
+   */
   protected _ordered: Array<Child> = [];
 
   constructor(config) {
@@ -533,11 +575,6 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
   }
 
   // Overridable abstractions for child manipulation
-
-  // TODO @straversi:
-  // All of these except _node should deal in type Child. Anwhere
-  // else in this class that needs the actual NODE should be
-  // responsible for calling this._node
 
   /**
    * Return the node for child.

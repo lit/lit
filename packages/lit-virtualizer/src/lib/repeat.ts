@@ -11,22 +11,22 @@ import { Layout } from './uni-virtualizer/lib/layouts/Layout';
  * from the DOM.
  */
 export const LitMixin = (Superclass) => class<Item> extends Superclass {
-  // NodeParts that are available for reuse.
+  /**
+   * NodeParts that are available for reuse.
+   */
   _pool: Array<NodePart>;
 
-  // Method for generating each item's DOM.
+  /**
+   * Method for generating each item's DOM.
+   */
   _renderItem: (item: Item, index?: number) => TemplateResult;
 
-  // Children are rendered into this part.
-  // The host of the directive that constructs the scroller.
+  /**
+   * The host of the directive that constructs the scroller. Children are
+   * rendered into this part.
+   */
   _hostPart: NodePart;
 
-  /**
-   * TODO @straversi: This is not a true mixin. Mixins do have information
-   * about potential superclasses. This class appears to know the constructor
-   * arguments of an unknown superclass. It also overrides methods on an
-   * unknown superclass.
-   */
   constructor(config: {
     part: NodePart,
     renderItem: (item: Item, index?: number) => TemplateResult,

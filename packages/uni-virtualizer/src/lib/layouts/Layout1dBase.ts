@@ -2,80 +2,126 @@ import EventTarget from '../polyfillLoaders/EventTarget.js';
 import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './layout';
 
 export abstract class Layout1dBase implements Layout {
-  // The last set viewport scroll position.
+  /**
+   * The last set viewport scroll position.
+   */
   private _latestCoords: Positions = {left: 0, top: 0};
 
-  // Scrolling direction
+  /**
+   * Scrolling direction.
+   */
   private _direction: ScrollDirection = 'vertical';
 
-  // Dimensions of the viewport.
+  /**
+   * Dimensions of the viewport.
+   */
   private _viewportSize: Size = {width: 0, height: 0};
 
-  // Flag for debouncing asynchnronous reflow requests.
+  /**
+   * Flag for debouncing asynchnronous reflow requests.
+   */
   private _pendingReflow: boolean = false;
 
-  // Index of the item that has been scrolled to via the public API. When the
-  // container is otherwise scrolled, this value is set back to -1.
+  /**
+   * Index of the item that has been scrolled to via the public API. When the
+   * container is otherwise scrolled, this value is set back to -1.
+   */
   private _scrollToIndex: number = -1;
 
-  // When a child is scrolled to, the offset from the top of the child and the
-  // top of the viewport. Value is a proportion of the item size.
+  /**
+   * When a child is scrolled to, the offset from the top of the child and the
+   * top of the viewport. Value is a proportion of the item size.
+   */
   private _scrollToAnchor: number = 0;
 
-  // The index of the first item intersecting the viewport.
+  /**
+   * The index of the first item intersecting the viewport.
+   */
   private _firstVisible: number;
 
-  // The index of the last item intersecting the viewport.
+  /**
+   * The index of the last item intersecting the viewport.
+   */
   private _lastVisible: number;
 
   private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => this._eventTarget = new Ctor()));
 
-  // Pixel offset in the scroll direction of the first child.
+  /**
+   * Pixel offset in the scroll direction of the first child.
+   */
   protected _physicalMin: number = 0;
 
-  // Pixel offset in the scroll direction of the last child.
+  /**
+   * Pixel offset in the scroll direction of the last child.
+   */
   protected _physicalMax: number = 0;
 
-  // Index of the first child.
+  /**
+   * Index of the first child.
+   */
   protected _first: number = -1;
 
-  // Index of the last child.
+  /**
+   * Index of the last child.
+   */
   protected _last: number = -1;
 
-  // The _estimated_ size of a child.
+  /**
+   * The _estimated_ size of a child.
+   */
   protected _itemSize: Size = {width: 100, height: 100};
 
-  // Space in pixels between children.
+  /**
+   * Space in pixels between children.
+   */
   protected _spacing: number = 0;
 
-  // Length in the scrolling direction.
+  /**
+   * Length in the scrolling direction.
+   */
   protected _sizeDim: dimension = 'height';
 
-  // Length in the non-scrolling direction.
+  /**
+   * Length in the non-scrolling direction.
+   */
   protected _secondarySizeDim: dimension = 'width';
 
-  // Position in the scrolling direction.
+  /**
+   * Position in the scrolling direction.
+   */
   protected _positionDim: position = 'top';
 
-  // Position in the non-scrolling direction.
+  /**
+   * Position in the non-scrolling direction.
+   */
   protected _secondaryPositionDim: position = 'left';
 
-  // Current scroll offset in pixels.
+  /**
+   * Current scroll offset in pixels.
+   */
   protected _scrollPosition: number = 0;
 
-  // Difference between current scroll offset and scroll offset calculated
-  // due to a reflow.
+  /**
+   * Difference between current scroll offset and scroll offset calculated due
+   * to a reflow.
+   */
   protected _scrollError: number = 0;
 
-  // Total number of items that could possibly be displayed. Used to help
-  // calculate the scroll size.
+  /**
+   * Total number of items that could possibly be displayed. Used to help
+   * calculate the scroll size.
+   */
   protected _totalItems: number = 0;
 
-  // The total (estimated) length of all items in the scrolling direction.
+  /**
+   * The total (estimated) length of all items in the scrolling direction.
+   */
   protected _scrollSize: number = 1;
 
-  // Number of pixels beyond the visible size of the container to still include
-  // in the active range of items.
+  /**
+   * Number of pixels beyond the visible size of the container to still include
+   * in the active range of items.
+   */
   protected _overhang: number = 150;
 
   private _eventTarget;
