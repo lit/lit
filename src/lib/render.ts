@@ -18,7 +18,7 @@
 
 import {removeNodes} from './dom.js';
 import {NodePart} from './parts.js';
-import {PartInfo, RenderOptions} from './render-options.js';
+import {NodeInfo, AttributeInfo, RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
 
 export const parts = new WeakMap<Node, NodePart>();
@@ -63,10 +63,10 @@ export const hydrate =
       console.log('hydrate', container.childNodes[0].textContent);
 
       let part = parts.get(container);
-
+      
       if (part === undefined) {
-        let rootPart: PartInfo|undefined = undefined;
-        const partStack: PartInfo[] = [];
+        let rootPart: NodeInfo|undefined = undefined;
+        const nodeStack: NodeInfo[] = [];
         const walker = document.createTreeWalker(
             container, NodeFilter.SHOW_COMMENT, null, false);
         let node: Comment|null;
@@ -74,26 +74,44 @@ export const hydrate =
           if (node.nodeType === Node.COMMENT_NODE) {
             if (node.textContent!.startsWith('lit-part')) {
               // This is an NodePart opening marker
-              const partInfo = {
+              const nodeInfo = {
+                type: "node",
                 startNode: node,
-                endNode: undefined as unknown as Node,
-              };
-              if (partStack.length > 0) {
-                const parentInfo = partStack[partStack.length - 1];
+                endNode: undefined as unknown as Node
+              } as NodeInfo;
+              if (nodeStack.length > 0) {
+                const parentInfo = nodeStack[nodeStack.length - 1];
                 if (parentInfo.children === undefined) {
                   parentInfo.children = [];
                 }
-                parentInfo.children.push(partInfo);
+                parentInfo.children.push(nodeInfo);
               } else {
                 console.assert(
                     rootPart === undefined,
                     'there should be exactly one root part in a render container');
-                rootPart = partInfo;
+                rootPart = nodeInfo;
               }
-              partStack.push(partInfo);
+              nodeStack.push(nodeInfo);
+            } else if (node.textContent!.startsWith('lit-attr')) {
+              // This is an AttributePart marker. It corresponds to its direct parent
+              // element. Capture that element here while we are walking the tree.
+              const ancestorInfo = nodeStack[nodeStack.length - 1];
+              if (ancestorInfo.children === undefined) {
+                ancestorInfo.children = [];
+              }
+              const attributeInfo = {
+                type: "attribute",
+                element: node.parentElement!
+              } as AttributeInfo;
+              // Push attribute info into the last node's "children" array
+              // to preserve pre-order ordering of parts. This is important
+              // so that we can retrieve the remaining attribute part info
+              // (attribute name and strings) from the Template.
+              ancestorInfo.children.push(attributeInfo);
+              // Do not add attribute info to the nodeStack.
             } else if (node.textContent!.startsWith('/lit-part')) {
               // This is an NodePart closing marker
-              const partInfo = partStack.pop()!;
+              const partInfo = nodeStack.pop()!;
               partInfo.endNode = node;
             }
           }
@@ -102,6 +120,8 @@ export const hydrate =
             rootPart !== undefined,
             'there should be exactly one root part in a render container');
 
+        console.log("done walking comments, prerendered parts will be:", rootPart!.children);
+            
         part = new NodePart({
           templateFactory,
           ...options,

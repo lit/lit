@@ -24,8 +24,16 @@ export interface RenderOptions {
   readonly prerenderedParts?: PartInfo[];
 }
 
-export type PartInfo = {
+export type PartInfo = NodeInfo | AttributeInfo;
+
+export type NodeInfo = {
+  type: "node",
   startNode: Node,
   endNode: Node,
   children?: PartInfo[],
+};
+
+export type AttributeInfo = {
+  type: "attribute",
+  element: Element,
 };

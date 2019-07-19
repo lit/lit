@@ -25,7 +25,7 @@ suite('hydration', () => {
     container = document.createElement('div');
   });
 
-  test('hydrates a text binding with a new post-render value', () => {
+  test.skip('hydrates a text binding with a new post-render value', () => {
     const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
 
     prerender(hello('Pre-rendering'), container);
@@ -71,7 +71,7 @@ suite('hydration', () => {
     assert.isEmpty(observer.takeRecords());
   });
 
-  test('hydrates nested templates', () => {
+  test.skip('hydrates nested templates', () => {
     const parent = (name: string, message: string) =>
         html`${hello(name)}<p>${message}</p>`;
     const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
@@ -96,6 +96,32 @@ suite('hydration', () => {
     // Check that they're the same
     assert.strictEqual(prerenderedHeader, postrenderHeader);
     assert.strictEqual(prerenderedDynamicText, postrenderDynamicText);
+  });
+
+  test('hydrates an attribute binding with a new post-render value', () => {
+    const hello = (cls: string, id: string) => html`<h1 class="${cls}">Hello <span id="${id}" class="${cls}">there</span></h1>`;
+
+    prerender(hello('pre', 'rendering'), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    hydrate(hello('hy', 'dration'), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1 class="hy">Hello <span id="dration" class="hy">there</span></h1>');
+  });
+
+  test('hydrates a multiple-binding attribute with a new post-render value', () => {
+    const hello = (a: string, b: string) => html`<h1 class="${a}-${b}">Hello</h1>`;
+
+    prerender(hello('pre', 'rendering'), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    hydrate(hello('hy', 'dration'), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1 class="hy-dration">Hello</h1>');
   });
 });
 

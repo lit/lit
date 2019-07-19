@@ -94,6 +94,9 @@ export class AttributeCommitter {
     if (this.dirty) {
       this.dirty = false;
       this.element.setAttribute(this.name, this._getValue() as string);
+      // if (ssr) {
+      this.element.prepend(document.createComment('lit-attr'));
+      // }
     }
   }
 }
@@ -263,6 +266,7 @@ export class NodePart implements Part {
   }
 
   private __commitTemplateResult(value: TemplateResult): void {
+    // Attributes are located when building a Template.
     const template = this.options.templateFactory(value);
     if (this.value instanceof TemplateInstance &&
         this.value.template === template) {
@@ -278,14 +282,35 @@ export class NodePart implements Part {
         // We got a match, so we're rehydrating DOM pre-rendered with this
         // TemplateResult's Template.
 
-        // we need to give the instance the parts
+        // We need to give the instance the parts
+        console.log("prerendered parts:", this.options.prerenderedParts);
+        // Does template already have attribute stuff?
+        console.log("parsed these parts:", JSON.stringify(template.parts));
+
+        // Get the attributes already parsed when building the template.
+        // Their order corresponds to an pre-order DOM traversal from this
+        // template result's root.
+        const attributeTemplateParts = (template.parts.filter((tp) => tp.type === "attribute") as
+          Array<{readonly name: string, readonly strings: ReadonlyArray<string>}>);
+        
         if (this.options.prerenderedParts !== undefined) {
           for (const partInfo of this.options.prerenderedParts) {
-            const part = new NodePart(
+            if (partInfo.type === "node") {
+              // Create a node part
+              const part = new NodePart(
                 {...this.options, prerenderedParts: partInfo.children});
-            part.startNode = partInfo.startNode;
-            part.endNode = partInfo.endNode;
-            instance.__parts.push(part);
+              part.startNode = partInfo.startNode;
+              part.endNode = partInfo.endNode;
+              instance.__parts.push(part);
+            } else {
+              // Create attribute parts
+              const element = partInfo.element;
+              const templatePart = attributeTemplateParts.shift()!;
+              const parts = (new AttributeCommitter(element, templatePart.name, templatePart.strings)).parts;
+              for (let attributePart of parts) {
+                instance.__parts.push(attributePart);
+              }
+            }
           }
         }
 
