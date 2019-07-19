@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {createMarker, directive, NodePart, Part} from '../lit-html.js';
+import {createStartMarker, directive, NodePart, Part} from '../lit-html.js';
 
 /**
  * A directive that renders the items of an async iterable[1], appending new
@@ -84,7 +84,7 @@ export const asyncAppend = directive(
         // Check to see if we have a previous item and Part
         if (itemPart !== undefined) {
           // Create a new node to separate the previous and next Parts
-          itemStartNode = createMarker();
+          itemStartNode = createStartMarker();
           // itemPart is currently the Part for the previous item. Set
           // it's endNode to the node we'll use for the next Part's
           // startNode.
