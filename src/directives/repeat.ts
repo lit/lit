@@ -13,7 +13,7 @@
  */
 
 import {DirectiveFn} from '../lib/directive.js';
-import {createMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
+import {createStartMarker, createEndMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
 export type ItemTemplate<T> = (item: T, index: number) => unknown;
@@ -25,8 +25,8 @@ const createAndInsertPart =
       const container = containerPart.startNode.parentNode as Node;
       const beforeNode = beforePart === undefined ? containerPart.endNode :
                                                     beforePart.startNode;
-      const startNode = container.insertBefore(createMarker(), beforeNode);
-      container.insertBefore(createMarker(), beforeNode);
+      const startNode = container.insertBefore(createStartMarker(), beforeNode);
+      container.insertBefore(createEndMarker(), beforeNode);
       const newPart = new NodePart(containerPart.options);
       newPart.insertAfterNode(startNode);
       return newPart;
