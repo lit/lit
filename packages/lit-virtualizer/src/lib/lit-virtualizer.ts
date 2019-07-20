@@ -56,7 +56,6 @@ export class LitVirtualizer<T> extends LitElement {
             renderItem: this._renderItem,
             scrollTarget: this.scrollTarget,
             scrollToIndex: this._scrollToIndex,
-            // TODO: enable this flag.
             useShadowDOM: true
             // TODO: allow configuration of a layout.
         })}`;

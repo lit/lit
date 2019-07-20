@@ -236,7 +236,7 @@ Type: `Element | Window`
 
 Optional. An element that receives scroll events for the virtual scroller. If not specified, the `<lit-virtualizer>` element itself will be the scroll target.
 
-### `scrollToIndex` method
+#### `scrollToIndex` method
 
 Type: `(index: number, position?: string) => void`
 

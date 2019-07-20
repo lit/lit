@@ -360,7 +360,6 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
    * to the `_measureCallback`
    */
   private async _measureChildren({indices, children}): Promise<void> {
-    // await Promise.resolve();
     await (new Promise((resolve) => {
       requestAnimationFrame(resolve);
     }));
@@ -574,7 +573,9 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
         null;
   }
 
-  // Overridable abstractions for child manipulation
+  /**
+   * Overridable abstractions for child manipulation
+   */
 
   /**
    * Return the node for child.
@@ -596,7 +597,6 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
    * Override to control child insertion.
    */
   _insertBefore(child: Child, referenceNode: Node) {
-    // referenceNode.parentNode.insertBefore(child, referenceNode);
     this._container.insertBefore(child, referenceNode);
   }
 
