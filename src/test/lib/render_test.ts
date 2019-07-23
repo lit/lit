@@ -263,6 +263,13 @@ suite('render()', () => {
         <p>${'bar'}</p>`;
       render(t, container);
       assert.equal(container.querySelector('p')!.textContent, 'bar');
+      assert.equal(container.textContent!.trim(), 'bar');
+    });
+
+    test('renders comments with bindings', () => {
+      const t = html`<!--${'foo'}-->`;
+      render(t, container);
+      assert.equal(container.textContent, '');
     });
 
     test('renders comments with attribute-like bindings', () => {
