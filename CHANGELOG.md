@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- ### Changed -->
 <!-- ### Added -->
 <!-- ### Removed -->
-<!-- ### Fixed -->
+
+### Fixed
+* Fixed a bug where bindings in comments could be written as text in some cases. ([#926](https://github.com/Polymer/lit-html/issues/926))
 
 ## [1.1.1] - 2019-07-09
 
