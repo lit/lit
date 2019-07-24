@@ -631,7 +631,7 @@ suite('render()', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget;
+      const eventContext = {} as EventTarget;  // eslint-disable-line
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -656,7 +656,7 @@ suite('render()', () => {
           thisValue = this;
         }
       };
-      const eventContext = {} as EventTarget;
+      const eventContext = {} as EventTarget;  // eslint-disable-line
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
