@@ -12,5 +12,26 @@
   "plugins": ["@typescript-eslint"],
   "env": {
     "browser": true
+  },
+  "rules": {
+    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/member-delimiter-style": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-object-literal-type-assertion": "off",
+    "@typescript-eslint/no-triple-slash-reference": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/prefer-interface": "off",
+    "no-cond-assign": "off",
+    "no-control-regex": "off",
+    "no-empty": "off",
+    "no-extra-boolean-cast": "off",
+    "no-unexpected-multiline": "off"
   }
 }
