@@ -165,6 +165,7 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
         let node;
+        // eslint-disable-next-line no-cond-assign
         while (node =
                    template.element.content.querySelector('[name="remove"]')) {
           const nodeSet = new Set<Node>();

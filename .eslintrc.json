@@ -13,13 +13,13 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "no-unexpected-multiline": "off",
+
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
     "@typescript-eslint/indent": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-triple-slash-reference": "off",
-    "@typescript-eslint/no-use-before-define": "off",
-    "no-cond-assign": "off",
-    "no-unexpected-multiline": "off"
+    "@typescript-eslint/no-use-before-define": "off"
   }
 }
