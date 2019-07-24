@@ -1,0 +1,12 @@
+/lib/
+/directives/
+/polyfills/
+/test/**/*.d.ts
+/test/**/*.d.ts.map
+/test/**/*.js
+/test/**/*.js.map
+/tools/lib/
+/lit-html.d.ts
+/lit-html.d.ts.map
+/lit-html.js
+/lit-html.js.map

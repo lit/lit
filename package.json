@@ -28,6 +28,7 @@
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
     "lint": "tslint --project ./",
+    "lint:eslint": "eslint 'src/**/*.ts'",
     "prepublishOnly": "node check-version-tracker.js && npm run lint && npm test",
     "prepare": "npm run build",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
@@ -36,10 +37,15 @@
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.0",
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.0.4",
     "chai": "^4.1.2",
     "clang-format": "^1.2.4",
+    "eslint": "^6.1.0",
+    "husky": "^3.0.0",
+    "lint-staged": "^9.2.0",
     "lit-html-benchmarks": "^0.2.1",
     "mocha": "^5.2.0",
     "rollup": "^1.19.0",
