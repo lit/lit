@@ -28,13 +28,13 @@ const commentMarker = ` ${marker} `;
  */
 export class TemplateResult {
   readonly strings: TemplateStringsArray;
-  readonly values: ReadonlyArray<unknown>;
+  readonly values: readonly unknown[];
   readonly type: string;
   readonly processor: TemplateProcessor;
 
   constructor(
-      strings: TemplateStringsArray, values: ReadonlyArray<unknown>,
-      type: string, processor: TemplateProcessor) {
+      strings: TemplateStringsArray, values: readonly unknown[], type: string,
+      processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;
     this.type = type;

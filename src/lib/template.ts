@@ -216,7 +216,7 @@ const endsWith = (str: string, suffix: string): boolean => {
 export type TemplatePart = {
   readonly type: 'node',
   index: number
-}|{readonly type: 'attribute', index: number, readonly name: string, readonly strings: ReadonlyArray<string>};
+}|{readonly type: 'attribute', index: number, readonly name: string, readonly strings: readonly string[]};
 
 export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 

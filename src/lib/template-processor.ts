@@ -31,8 +31,8 @@ export interface TemplateProcessor {
    *   event for fully-controlled bindings with a single expression.
    */
   handleAttributeExpressions(
-      element: Element, name: string, strings: ReadonlyArray<string>,
-      options: RenderOptions): ReadonlyArray<Part>;
+      element: Element, name: string, strings: readonly string[],
+      options: RenderOptions): readonly Part[];
 
   /**
    * Create parts for a text-position binding.
