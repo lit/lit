@@ -568,7 +568,7 @@ suite('Parts', () => {
       let passiveCalled = false;
       let onceCalled = false;
 
-      const listener = (_e: Event) => {
+      const listener = () => {
         listenerCalled = true;
       };
       Object.defineProperties(listener, {
@@ -610,7 +610,7 @@ suite('Parts', () => {
       let onceCalled = false;
 
       const listener = {
-        handleEvent(_e: Event) {
+        handleEvent() {
           listenerCalled = true;
         },
         get capture() {

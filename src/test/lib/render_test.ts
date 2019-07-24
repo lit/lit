@@ -652,7 +652,7 @@ suite('render()', () => {
     test('adds event listener objects, calls with right this value', () => {
       let thisValue;
       const listener = {
-        handleEvent(_e: Event) {
+        handleEvent() {
           thisValue = this;
         }
       };
