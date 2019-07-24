@@ -25,6 +25,7 @@ const isTemplatePolyfilled =
 const testSkipForTemplatePolyfill = (test: any) =>
     isTemplatePolyfilled ? test.skip : test;
 
+/* eslint @typescript-eslint/camelcase: ["error", { allow: ["Safari10_0"] }] */
 const isSafari10_0 =
     (window.navigator.userAgent.indexOf('AppleWebKit/602') !== -1);
 const testSkipSafari10_0 = (test: any) => isSafari10_0 ? test.skip : test;
