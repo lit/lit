@@ -22,7 +22,6 @@
     "@typescript-eslint/no-object-literal-type-assertion": "off",
     "@typescript-eslint/no-triple-slash-reference": "off",
     "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/prefer-interface": "off",
     "no-cond-assign": "off",
     "no-control-regex": "off",
     "no-empty": "off",
