@@ -62,7 +62,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   for (const name in oldInfo) {
     if (!(name in styleInfo)) {
       if (name.indexOf('-') === -1) {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (style as any)[name] = null;
       } else {
         style.removeProperty(name);
@@ -73,7 +73,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   // Add or update properties
   for (const name in styleInfo) {
     if (name.indexOf('-') === -1) {
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (style as any)[name] = styleInfo[name];
     } else {
       style.setProperty(name, styleInfo[name]);

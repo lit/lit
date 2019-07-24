@@ -20,7 +20,7 @@ import {Part} from './part.js';
 
 const directives = new WeakMap<object, true>();
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DirectiveFactory = (...args: any[]) => object;
 
 export type DirectiveFn = (part: Part) => void;

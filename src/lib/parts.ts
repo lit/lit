@@ -33,7 +33,7 @@ export const isPrimitive = (value: unknown): value is Primitive => {
 };
 export const isIterable = (value: unknown): value is Iterable<unknown> => {
   return Array.isArray(value) ||
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       !!(value && (value as any)[Symbol.iterator]);
 };
 
@@ -416,7 +416,7 @@ export class PropertyCommitter extends AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = this._getValue();
     }
   }
@@ -437,9 +437,9 @@ try {
       return false;
     }
   };
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.addEventListener('test', options as any, options);
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.removeEventListener('test', options as any, options);
 } catch (_e) {  // eslint-disable-line no-empty
 }
