@@ -24,7 +24,6 @@
     "@typescript-eslint/no-use-before-define": "off",
     "no-cond-assign": "off",
     "no-control-regex": "off",
-    "no-empty": "off",
     "no-extra-boolean-cast": "off",
     "no-unexpected-multiline": "off"
   }

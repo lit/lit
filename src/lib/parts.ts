@@ -441,7 +441,7 @@ try {
   window.addEventListener('test', options as any, options);
   // tslint:disable-next-line:no-any
   window.removeEventListener('test', options as any, options);
-} catch (_e) {
+} catch (_e) {  // eslint-disable-line no-empty
 }
 
 

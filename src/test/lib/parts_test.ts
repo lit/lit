@@ -549,7 +549,7 @@ suite('Parts', () => {
       };
       window.addEventListener('test', options as any, options);
       window.removeEventListener('test', options as any, options);
-    } catch (_e) {
+    } catch (_e) {  // eslint-disable-line no-empty
     }
 
     setup(() => {
