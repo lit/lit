@@ -25,7 +25,7 @@ import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
-export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
+export type Primitive = null|undefined|boolean|number|string|symbol|bigint;
 export const isPrimitive = (value: unknown): value is Primitive => {
   return (
       value === null ||
