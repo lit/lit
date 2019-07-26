@@ -23,6 +23,7 @@ import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
+import {isTrustedValue} from './trusted-types';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
@@ -69,25 +70,32 @@ export class AttributeCommitter {
   protected _getValue(): unknown {
     const strings = this.strings;
     const l = strings.length - 1;
-    let text = '';
 
-    for (let i = 0; i < l; i++) {
-      text += strings[i];
-      const part = this.parts[i];
-      if (part !== undefined) {
-        const v = part.value;
-        if (isPrimitive(v) || !isIterable(v)) {
-          text += typeof v === 'string' ? v : String(v);
-        } else {
-          for (const t of v) {
-            text += typeof t === 'string' ? t : String(t);
+    if (l === 1 && strings[0] === '' && strings[1] === '' &&
+        isTrustedValue(this.parts[0].value)) {
+      // this means that attribute value is an interpolated trusted type and we
+      // don't want to stringify it
+      return this.parts[0].value;
+    } else {
+      let text = '';
+      for (let i = 0; i < l; i++) {
+        text += strings[i];
+        const part = this.parts[i];
+        if (part !== undefined) {
+          const v = part.value;
+          if (isPrimitive(v) || !isIterable(v)) {
+            text += typeof v === 'string' ? v : String(v);
+          } else {
+            for (const t of v) {
+              text += typeof t === 'string' ? t : String(t);
+            }
           }
         }
       }
-    }
 
-    text += strings[l];
-    return text;
+      text += strings[l];
+      return text;
+    }
   }
 
   commit(): void {

@@ -19,6 +19,7 @@
 import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
+import {dangerouslyTurnToTrustedHTML} from './trusted-types';
 
 const commentMarker = ` ${marker} `;
 
@@ -100,7 +101,7 @@ export class TemplateResult {
 
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
-    template.innerHTML = this.getHTML();
+    template.innerHTML = dangerouslyTurnToTrustedHTML(this.getHTML());
     return template;
   }
 }
