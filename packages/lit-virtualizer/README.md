@@ -7,7 +7,7 @@ This package provides two main exports to be used alongside [lit-html](https://g
 * `scroll`: a [lit-html directive](https://lit-html.polymer-project.org/guide/creating-directives) that turns its parent element into a virtually scrolling container.
 * `<lit-virtualizer>`: a subclass of LitElement that wraps the `scroll` directive.
 
-You can find [documentation](#documentation) below.
+You can find [documentation](#documentation) below, or view live [examples](https://polymerlabs.github.io/uni-virtualizer/). The examples are deployed from the [uni-virtualizer-examples](../uni-virtualizer-examples/) directory in this monorepo.
 
 ⚠️ lit-virtualizer is in prerelease. All changes may be breaking until 1.0.
 
