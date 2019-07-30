@@ -25,7 +25,7 @@ suite('hydration', () => {
     container = document.createElement('div');
   });
 
-  test.skip('hydrates a text binding with a new post-render value', () => {
+  test('hydrates a text binding with a new post-render value', () => {
     const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
 
     prerender(hello('Pre-rendering'), container);
@@ -71,7 +71,7 @@ suite('hydration', () => {
     assert.isEmpty(observer.takeRecords());
   });
 
-  test.skip('hydrates nested templates', () => {
+  test('hydrates nested templates', () => {
     const parent = (name: string, message: string) =>
         html`${hello(name)}<p>${message}</p>`;
     const hello = (name: string) => html`<h1>Hello ${name}</h1>`;
@@ -122,6 +122,88 @@ suite('hydration', () => {
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
         '<h1 class="hy-dration">Hello</h1>');
+  });
+
+  test('hydrates a boolean attribute binding from falsey to truthy post-render', () => {
+    const hello = (test: boolean) => html`<h1 ?test=${test}>Hello</h1>`;
+
+    prerender(hello(false), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    hydrate(hello(true), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1 test="">Hello</h1>');
+  });
+
+  test('hydrates a boolean attribute binding from truthy to falsey post-render', () => {
+    const hello = (test: boolean) => html`<h1 ?test=${test}>Hello</h1>`;
+
+    prerender(hello(true), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    hydrate(hello(false), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1>Hello</h1>');
+  });
+
+  test('hydrates a property binding', () => {
+    const hello = (prop: string[]) => html`<h1 .prop=${prop}>Hello</h1>`;
+
+    prerender(hello(['dont', 'prerender', 'these']), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    const propertyValue = ['do', 'hydrate', 'these'];
+    hydrate(hello(propertyValue), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1>Hello</h1>');
+    const h1 = container.firstElementChild as unknown as {prop: string[]};
+    assert.strictEqual(h1.prop, propertyValue);
+  });
+
+  test.only('hydrates an event listener binding', () => {
+    const hello = (listener: () => void) => html`<h1 @test=${listener}>Hello</h1>`;
+
+    prerender(hello(() => {}), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    let sentinel = false;
+    let listener = () => { sentinel = true; };
+    hydrate(hello(listener), container);
+    console.log('container postrender', container.innerHTML);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<h1>Hello</h1>');
+        
+    const h1 = container.firstElementChild;
+    (h1 as EventTarget).dispatchEvent(new CustomEvent("test"));
+
+    assert.isTrue(sentinel);
+  });
+
+  test('appends one attribute marker per binding', () => {
+    const hello = (id: string) => html`<h1 id="${id}">Hello</h1>`;
+
+    // Correctly inserts a lit-attr marker
+    prerender(hello('pre-rendering'), container);
+    console.log('container.innerHTML', container.innerHTML);
+
+    // Incorrectly inserts a lit-attr marker
+    hydrate(hello('hydration'), container);
+    console.log('container postrender', container.innerHTML);
+
+    // Incorrectly inserts a lit-attr marker
+    render(hello('post-hydration-render'), container);
+    console.log('container postrender', container.innerHTML);
+
+    // Fix by only adding lit-attr marker during SSR.
+    // Currently, every commit for an attribute adds another marker.
+    assert.equal([...container.innerHTML.match(/<!--lit-attr-->/g) || []].length, 1);
   });
 });
 

@@ -23,6 +23,7 @@ import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
 import {createEndMarker, createStartMarker} from './template.js';
+import {defaultTemplateProcessor} from './default-template-processor.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
@@ -282,10 +283,8 @@ export class NodePart implements Part {
         // We got a match, so we're rehydrating DOM pre-rendered with this
         // TemplateResult's Template.
 
-        // We need to give the instance the parts
-        console.log("prerendered parts:", this.options.prerenderedParts);
-        // Does template already have attribute stuff?
-        console.log("parsed these parts:", JSON.stringify(template.parts));
+        // We need to give this.options.prerenderedParts to the template instance.
+        // The template already has the remaining part information! template.parts
 
         // Get the attributes already parsed when building the template.
         // Their order corresponds to an pre-order DOM traversal from this
@@ -306,7 +305,7 @@ export class NodePart implements Part {
               // Create attribute parts
               const element = partInfo.element;
               const templatePart = attributeTemplateParts.shift()!;
-              const parts = (new AttributeCommitter(element, templatePart.name, templatePart.strings)).parts;
+              const parts = defaultTemplateProcessor.handleAttributeExpressions(element, templatePart.name, templatePart.strings, this.options);
               for (let attributePart of parts) {
                 instance.__parts.push(attributePart);
               }
@@ -428,6 +427,9 @@ export class BooleanAttributePart implements Part {
       this.value = value;
     }
     this.__pendingValue = noChange;
+    // if (ssr) {
+      this.element.prepend(document.createComment('lit-attr'));
+    // }
   }
 }
 
@@ -465,6 +467,9 @@ export class PropertyCommitter extends AttributeCommitter {
       this.dirty = false;
       // tslint:disable-next-line:no-any
       (this.element as any)[this.name] = this._getValue();
+      // if (ssr) {
+        this.element.prepend(document.createComment('lit-attr'));
+      // }
     }
   }
 }
@@ -545,6 +550,10 @@ export class EventPart implements Part {
     }
     this.value = newListener;
     this.__pendingValue = noChange as EventHandlerWithOptions;
+
+    // if (ssr) {
+      this.element.prepend(document.createComment('lit-attr'));
+    // }
   }
 
   handleEvent(event: Event) {

@@ -35,7 +35,7 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
    *   event for fully-controlled bindings with a single expression.
    */
   handleAttributeExpressions(
-      element: Element, name: string, strings: string[],
+      element: Element, name: string, strings: ReadonlyArray<string>,
       options: RenderOptions): ReadonlyArray<Part> {
     const prefix = name[0];
     if (prefix === '.') {
