@@ -2,19 +2,14 @@ import resolve from 'rollup-plugin-node-resolve';
 
 export default [
   {
-    input: [
-        'lit-html',
-        'lit-element',
-        'lit-virtualizer/lib/lit-virtualizer.js',
-        'public/temp/index.js'
-      ],
-      output: {
-        dir: 'public/temp/build',
-        format: 'esm'
-      },
-      plugins: [
-        resolve(),
-      ]        
+    input: 'public/temp/index.js',
+    output: {
+      dir: 'public/temp/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]
   },
   {
     input: 'public/basic-lit-html/index.js',

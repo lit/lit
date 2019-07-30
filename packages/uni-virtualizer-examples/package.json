@@ -9,10 +9,12 @@
         "build:virtualizer": "npm run build --prefix ../lit-virtualizer",
         "build": "npm run build:virtualizer && rollup -c",
         "build-and-watch": "npm run build:virtualizer && rollup -c -w",
-        "clean": "rm -r node_modules/"
+        "clean": "rm -r node_modules/",
+        "start": "npm run build && http-server"
     },
     "author": "The Polymer Authors",
     "devDependencies": {
+        "http-server": "^0.11.1",
         "rollup": "^1.11.2",
         "rollup-plugin-node-resolve": "^4.2.3",
         "rollup-plugin-terser": "^4.0.4"
