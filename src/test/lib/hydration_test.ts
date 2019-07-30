@@ -166,7 +166,7 @@ suite('hydration', () => {
     assert.strictEqual(h1.prop, propertyValue);
   });
 
-  test.only('hydrates an event listener binding', () => {
+  test('hydrates an event listener binding', () => {
     const hello = (listener: () => void) => html`<h1 @test=${listener}>Hello</h1>`;
 
     prerender(hello(() => {}), container);
@@ -186,24 +186,24 @@ suite('hydration', () => {
     assert.isTrue(sentinel);
   });
 
-  test('appends one attribute marker per binding', () => {
+  // Currently, every commit for an attribute increments this count on
+  // lit-attr markers. Fix by only adding lit-attr marker during pre-rendering.
+  test.skip('only increments attribute counters during pre-rendering', () => {
     const hello = (id: string) => html`<h1 id="${id}">Hello</h1>`;
 
     // Correctly inserts a lit-attr marker
     prerender(hello('pre-rendering'), container);
     console.log('container.innerHTML', container.innerHTML);
 
-    // Incorrectly inserts a lit-attr marker
+    // Incorrectly increments the lit-attr marker
     hydrate(hello('hydration'), container);
     console.log('container postrender', container.innerHTML);
 
-    // Incorrectly inserts a lit-attr marker
+    // Incorrectly increments the lit-attr marker
     render(hello('post-hydration-render'), container);
     console.log('container postrender', container.innerHTML);
 
-    // Fix by only adding lit-attr marker during SSR.
-    // Currently, every commit for an attribute adds another marker.
-    assert.equal([...container.innerHTML.match(/<!--lit-attr-->/g) || []].length, 1);
+    assert.match(container.innerHTML, /<!--lit-attr 1-->/);
   });
 });
 

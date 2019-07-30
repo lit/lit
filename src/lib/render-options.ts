@@ -36,4 +36,5 @@ export type NodeInfo = {
 export type AttributeInfo = {
   type: "attribute",
   element: Element,
+  count: number,
 };

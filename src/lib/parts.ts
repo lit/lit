@@ -39,6 +39,28 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
 };
 
 /**
+ * Increments the number on the lit-attr marker for the given element.
+ * Adds a marker if it doesn't already exist.
+ */
+const incrementAttributeMarker = (element: Element) => {
+  // This method should noop if not prerendering.
+
+  // The element already has a lit-attr marker.
+  const node = element.firstChild;
+  if (node !== null &&
+      node.nodeType === Node.COMMENT_NODE &&
+      node!.textContent!.startsWith('lit-attr')) {
+    // Increment the value on that marker.
+    node!.textContent = node!.textContent!.replace(/\d+/, (count: string) => {
+      return String(Number(count) + 1);
+    });
+  } else {
+    // Add a new marker with count initialized to 1.
+    element.prepend(document.createComment('lit-attr 1'));
+  }
+}
+
+/**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
  * single attibute. The value is only set once even if there are multiple parts
  * for an attribute.
@@ -95,9 +117,7 @@ export class AttributeCommitter {
     if (this.dirty) {
       this.dirty = false;
       this.element.setAttribute(this.name, this._getValue() as string);
-      // if (ssr) {
-      this.element.prepend(document.createComment('lit-attr'));
-      // }
+      incrementAttributeMarker(this.element);
     }
   }
 }
@@ -304,10 +324,12 @@ export class NodePart implements Part {
             } else {
               // Create attribute parts
               const element = partInfo.element;
-              const templatePart = attributeTemplateParts.shift()!;
-              const parts = defaultTemplateProcessor.handleAttributeExpressions(element, templatePart.name, templatePart.strings, this.options);
-              for (let attributePart of parts) {
-                instance.__parts.push(attributePart);
+              for (let _ = 0; _ < partInfo.count; _++) {
+                const templatePart = attributeTemplateParts.shift()!;
+                const parts = defaultTemplateProcessor.handleAttributeExpressions(element, templatePart.name, templatePart.strings, this.options);
+                for (let attributePart of parts) {
+                  instance.__parts.push(attributePart);
+                }
               }
             }
           }
@@ -427,9 +449,7 @@ export class BooleanAttributePart implements Part {
       this.value = value;
     }
     this.__pendingValue = noChange;
-    // if (ssr) {
-      this.element.prepend(document.createComment('lit-attr'));
-    // }
+    incrementAttributeMarker(this.element);
   }
 }
 
@@ -467,9 +487,7 @@ export class PropertyCommitter extends AttributeCommitter {
       this.dirty = false;
       // tslint:disable-next-line:no-any
       (this.element as any)[this.name] = this._getValue();
-      // if (ssr) {
-        this.element.prepend(document.createComment('lit-attr'));
-      // }
+      incrementAttributeMarker(this.element);
     }
   }
 }
@@ -551,9 +569,7 @@ export class EventPart implements Part {
     this.value = newListener;
     this.__pendingValue = noChange as EventHandlerWithOptions;
 
-    // if (ssr) {
-      this.element.prepend(document.createComment('lit-attr'));
-    // }
+    incrementAttributeMarker(this.element);
   }
 
   handleEvent(event: Event) {

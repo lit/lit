@@ -99,10 +99,11 @@ export const hydrate =
               if (ancestorInfo.children === undefined) {
                 ancestorInfo.children = [];
               }
-              const attributeInfo = {
+              const attributeInfo: AttributeInfo = {
                 type: "attribute",
-                element: node.parentElement!
-              } as AttributeInfo;
+                element: node.parentElement!,
+                count: Number(node.textContent!.match(/\d+/)![0]),
+              };
               // Push attribute info into the last node's "children" array
               // to preserve pre-order ordering of parts. This is important
               // so that we can retrieve the remaining attribute part info
