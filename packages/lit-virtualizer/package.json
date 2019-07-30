@@ -47,6 +47,7 @@
         "lit-html": "latest",
         "resize-observer-polyfill": "^1.5.1",
         "rollup-plugin-filesize": "^6.1.1",
-        "rollup-plugin-terser": "^5.0.0"
+        "rollup-plugin-terser": "^5.0.0",
+        "tslib": "^1.10.0"
     }
 }

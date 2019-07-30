@@ -12,7 +12,8 @@
     "author": "The Polymer Authors",
     "dependencies": {
         "event-target-shim": "^5.0.1",
-        "resize-observer-polyfill": "^1.5.1"
+        "resize-observer-polyfill": "^1.5.1",
+        "tslib": "^1.10.0"
     },
     "devDependencies": {
         "typescript": "^3.5.1"
