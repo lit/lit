@@ -46,18 +46,13 @@ const incrementAttributeMarker = (element: Element) => {
   // This method should noop if not prerendering.
 
   // The element already has a lit-attr marker.
-  const node = element.nextSibling;
-  if (node !== null &&
-      node.nodeType === Node.COMMENT_NODE &&
-      node!.textContent!.startsWith('lit-attr')) {
-    // Increment the value on that marker.
-    node!.textContent = node!.textContent!.replace(/\d+/, (count: string) => {
-      return String(Number(count) + 1);
-    });
+  if (element.hasAttribute('__lit-attr')) {
+    // Increment the value on the marker attribute.
+    const count = Number(element.getAttribute('__lit-attr'));
+    element.setAttribute('__lit-attr', String(count + 1));
   } else {
     // Add a new marker with count initialized to 1.
-    element.parentNode!.insertBefore(document.createComment('lit-attr 1'), element.nextSibling);
-    // element.prepend(document.createComment('lit-attr 1'));
+    element.setAttribute('__lit-attr', '1');
   }
 }
 

@@ -68,9 +68,9 @@ export const hydrate =
         let rootPart: NodeInfo|undefined = undefined;
         const nodeStack: NodeInfo[] = [];
         const walker = document.createTreeWalker(
-            container, NodeFilter.SHOW_COMMENT, null, false);
-        let node: Comment|null;
-        while ((node = walker.nextNode() as Comment | null) !== null) {
+            container, NodeFilter.SHOW_COMMENT + NodeFilter.SHOW_ELEMENT, null, false);
+        let node: Comment|Element|null;
+        while ((node = walker.nextNode() as Comment | Element | null) !== null) {
           if (node.nodeType === Node.COMMENT_NODE) {
             if (node.textContent!.startsWith('lit-part')) {
               // This is an NodePart opening marker
@@ -92,7 +92,14 @@ export const hydrate =
                 rootPart = nodeInfo;
               }
               nodeStack.push(nodeInfo);
-            } else if (node.textContent!.startsWith('lit-attr')) {
+            } else if (node.textContent!.startsWith('/lit-part')) {
+              // This is an NodePart closing marker
+              const partInfo = nodeStack.pop()!;
+              partInfo.endNode = node;
+            }
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            node = node as Element;
+            if (node.hasAttribute('__lit-attr')) {
               // This is an AttributePart marker. It corresponds to its direct parent
               // element. Capture that element here while we are walking the tree.
               const ancestorInfo = nodeStack[nodeStack.length - 1];
@@ -101,8 +108,8 @@ export const hydrate =
               }
               const attributeInfo: AttributeInfo = {
                 type: "attribute",
-                element: node.previousElementSibling!,
-                count: Number(node.textContent!.match(/\d+/)![0]),
+                element: node,
+                count: Number(node.getAttribute('__lit-attr')),
               };
               // Push attribute info into the last node's "children" array
               // to preserve pre-order ordering of parts. This is important
@@ -110,10 +117,6 @@ export const hydrate =
               // (attribute name and strings) from the Template.
               ancestorInfo.children.push(attributeInfo);
               // Do not add attribute info to the nodeStack.
-            } else if (node.textContent!.startsWith('/lit-part')) {
-              // This is an NodePart closing marker
-              const partInfo = nodeStack.pop()!;
-              partInfo.endNode = node;
             }
           }
         }

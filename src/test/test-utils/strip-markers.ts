@@ -13,4 +13,5 @@
  */
 
 export const stripExpressionMarkers = (html: string) =>
-    html.replace(/<!--\/?lit-(part|attr)( [A-Za-z0-9+/=]*)?-->/g, '');
+    html.replace(/<!--\/?lit-part( [A-Za-z0-9+/=]*)?-->/g, '')
+        .replace(/ __lit-attr="\d+"/g, '');
