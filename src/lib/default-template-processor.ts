@@ -34,7 +34,7 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
    * @param strings The string literals. There are always at least two strings,
    *   event for fully-controlled bindings with a single expression.
    */
-  handleAttributeExpressions(
+  public handleAttributeExpressions(
       element: Element, name: string, strings: string[],
       options: RenderOptions): readonly Part[] {
     const prefix = name[0];
@@ -55,7 +55,7 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
    * Create parts for a text-position binding.
    * @param templateFactory
    */
-  handleTextExpression(options: RenderOptions) {
+  public handleTextExpression(options: RenderOptions) {
     return new NodePart(options);
   }
 }

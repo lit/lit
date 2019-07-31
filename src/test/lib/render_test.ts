@@ -1044,7 +1044,7 @@ suite('render()', () => {
     customElements.define('property-tester', PropertySetterElement);
 
     class MutatesInConstructorElement extends HTMLElement {
-      constructor() {
+      public constructor() {
         super();
         this.appendChild(document.createElement('div'));
       }

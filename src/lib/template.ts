@@ -41,10 +41,10 @@ export const boundAttributeSuffix = '$lit$';
  * An updatable Template that tracks the location of dynamic parts.
  */
 export class Template {
-  readonly parts: TemplatePart[] = [];
-  readonly element: HTMLTemplateElement;
+  public readonly parts: TemplatePart[] = [];
+  public readonly element: HTMLTemplateElement;
 
-  constructor(result: TemplateResult, element: HTMLTemplateElement) {
+  public constructor(result: TemplateResult, element: HTMLTemplateElement) {
     this.element = element;
 
     const nodesToRemove: Node[] = [];

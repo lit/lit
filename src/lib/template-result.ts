@@ -27,12 +27,12 @@ const commentMarker = ` ${marker} `;
  * interpolated expressions.
  */
 export class TemplateResult {
-  readonly strings: TemplateStringsArray;
-  readonly values: readonly unknown[];
-  readonly type: string;
-  readonly processor: TemplateProcessor;
+  public readonly strings: TemplateStringsArray;
+  public readonly values: readonly unknown[];
+  public readonly type: string;
+  public readonly processor: TemplateProcessor;
 
-  constructor(
+  public constructor(
       strings: TemplateStringsArray, values: readonly unknown[], type: string,
       processor: TemplateProcessor) {
     this.strings = strings;
@@ -44,7 +44,7 @@ export class TemplateResult {
   /**
    * Returns a string of HTML used to create a `<template>` element.
    */
-  getHTML(): string {
+  public getHTML(): string {
     const l = this.strings.length - 1;
     let html = '';
     let isCommentBinding = false;
@@ -98,7 +98,7 @@ export class TemplateResult {
     return html;
   }
 
-  getTemplateElement(): HTMLTemplateElement {
+  public getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
     template.innerHTML = this.getHTML();
     return template;
@@ -113,11 +113,11 @@ export class TemplateResult {
  * clones only container the original fragment.
  */
 export class SVGTemplateResult extends TemplateResult {
-  getHTML(): string {
+  public getHTML(): string {
     return `<svg>${super.getHTML()}</svg>`;
   }
 
-  getTemplateElement(): HTMLTemplateElement {
+  public getTemplateElement(): HTMLTemplateElement {
     const template = super.getTemplateElement();
     const content = template.content;
     const svgElement = content.firstChild!;

@@ -43,13 +43,14 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
  * for an attribute.
  */
 export class AttributeCommitter {
-  readonly element: Element;
-  readonly name: string;
-  readonly strings: readonly string[];
-  readonly parts: readonly AttributePart[];
-  dirty = true;
+  public readonly element: Element;
+  public readonly name: string;
+  public readonly strings: readonly string[];
+  public readonly parts: readonly AttributePart[];
+  public dirty = true;
 
-  constructor(element: Element, name: string, strings: readonly string[]) {
+  public constructor(
+      element: Element, name: string, strings: readonly string[]) {
     this.element = element;
     this.name = name;
     this.strings = strings;
@@ -90,7 +91,7 @@ export class AttributeCommitter {
     return text;
   }
 
-  commit(): void {
+  public commit(): void {
     if (this.dirty) {
       this.dirty = false;
       this.element.setAttribute(this.name, this._getValue() as string);
@@ -102,14 +103,14 @@ export class AttributeCommitter {
  * A Part that controls all or part of an attribute value.
  */
 export class AttributePart implements Part {
-  readonly committer: AttributeCommitter;
-  value: unknown = undefined;
+  public readonly committer: AttributeCommitter;
+  public value: unknown = undefined;
 
-  constructor(committer: AttributeCommitter) {
+  public constructor(committer: AttributeCommitter) {
     this.committer = committer;
   }
 
-  setValue(value: unknown): void {
+  public setValue(value: unknown): void {
     if (value !== noChange && (!isPrimitive(value) || value !== this.value)) {
       this.value = value;
       // If the value is a not a directive, dirty the committer so that it'll
@@ -121,7 +122,7 @@ export class AttributePart implements Part {
     }
   }
 
-  commit() {
+  public commit() {
     while (isDirective(this.value)) {
       const directive = this.value;
       this.value = noChange;
@@ -143,13 +144,13 @@ export class AttributePart implements Part {
  * as well as arrays and iterables of those types.
  */
 export class NodePart implements Part {
-  readonly options: RenderOptions;
-  startNode!: Node;
-  endNode!: Node;
-  value: unknown = undefined;
+  public readonly options: RenderOptions;
+  public startNode!: Node;
+  public endNode!: Node;
+  public value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(options: RenderOptions) {
+  public constructor(options: RenderOptions) {
     this.options = options;
   }
 
@@ -158,7 +159,7 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  appendInto(container: Node) {
+  public appendInto(container: Node) {
     this.startNode = container.appendChild(createMarker());
     this.endNode = container.appendChild(createMarker());
   }
@@ -170,7 +171,7 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  insertAfterNode(ref: Node) {
+  public insertAfterNode(ref: Node) {
     this.startNode = ref;
     this.endNode = ref.nextSibling!;
   }
@@ -180,7 +181,7 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  appendIntoPart(part: NodePart) {
+  public appendIntoPart(part: NodePart) {
     part.__insert(this.startNode = createMarker());
     part.__insert(this.endNode = createMarker());
   }
@@ -190,17 +191,17 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  insertAfterPart(ref: NodePart) {
+  public insertAfterPart(ref: NodePart) {
     ref.__insert(this.startNode = createMarker());
     this.endNode = ref.endNode;
     ref.endNode = this.startNode;
   }
 
-  setValue(value: unknown): void {
+  public setValue(value: unknown): void {
     this.__pendingValue = value;
   }
 
-  commit() {
+  public commit() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
@@ -328,7 +329,7 @@ export class NodePart implements Part {
     }
   }
 
-  clear(startNode: Node = this.startNode) {
+  public clear(startNode: Node = this.startNode) {
     removeNodes(
         this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
@@ -342,13 +343,14 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
-  readonly element: Element;
-  readonly name: string;
-  readonly strings: readonly string[];
-  value: unknown = undefined;
+  public readonly element: Element;
+  public readonly name: string;
+  public readonly strings: readonly string[];
+  public value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: readonly string[]) {
+  public constructor(
+      element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -358,11 +360,11 @@ export class BooleanAttributePart implements Part {
     this.strings = strings;
   }
 
-  setValue(value: unknown): void {
+  public setValue(value: unknown): void {
     this.__pendingValue = value;
   }
 
-  commit() {
+  public commit() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
@@ -394,9 +396,10 @@ export class BooleanAttributePart implements Part {
  * a string first.
  */
 export class PropertyCommitter extends AttributeCommitter {
-  readonly single: boolean;
+  public readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: readonly string[]) {
+  public constructor(
+      element: Element, name: string, strings: readonly string[]) {
     super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
@@ -413,7 +416,7 @@ export class PropertyCommitter extends AttributeCommitter {
     return super._getValue();
   }
 
-  commit(): void {
+  public commit(): void {
     if (this.dirty) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -448,26 +451,27 @@ try {
 type EventHandlerWithOptions =
     EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
-  readonly element: Element;
-  readonly eventName: string;
-  readonly eventContext?: EventTarget;
-  value: undefined|EventHandlerWithOptions = undefined;
+  public readonly element: Element;
+  public readonly eventName: string;
+  public readonly eventContext?: EventTarget;
+  public value: undefined|EventHandlerWithOptions = undefined;
   private __options?: AddEventListenerOptions;
   private __pendingValue: undefined|EventHandlerWithOptions = undefined;
   private readonly __boundHandleEvent: (event: Event) => void;
 
-  constructor(element: Element, eventName: string, eventContext?: EventTarget) {
+  public constructor(
+      element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
     this.eventContext = eventContext;
     this.__boundHandleEvent = (e) => this.handleEvent(e);
   }
 
-  setValue(value: undefined|EventHandlerWithOptions): void {
+  public setValue(value: undefined|EventHandlerWithOptions): void {
     this.__pendingValue = value;
   }
 
-  commit() {
+  public commit() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange as EventHandlerWithOptions;
@@ -500,7 +504,7 @@ export class EventPart implements Part {
     this.__pendingValue = noChange as EventHandlerWithOptions;
   }
 
-  handleEvent(event: Event) {
+  public handleEvent(event: Event) {
     if (typeof this.value === 'function') {
       this.value.call(this.eventContext || this.element, event);
     } else {
