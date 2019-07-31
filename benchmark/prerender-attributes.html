@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <!-- Benchmark -->
+  <script type="module">
+    import * as bench from '/bench.js';
+    import {html, render} from '../lit-html.js';
+
+    const hello = (x) => html`
+      <div a=${x} b=${x} c=${x} d=${x} e=${x}>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}>
+          <div a=${x} b=${x} c=${x} d=${x} e=${x}>
+            <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+          </div>
+        </div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+      </div>
+    `;
+    const container = document.createElement('div');
+    const templateResult = hello('pre-rendering');
+
+    bench.start();
+    render(templateResult, container);
+    bench.stop();
+  </script>
+</body>
+</html>

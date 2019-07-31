@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <!-- Container for benchmark -->
+  <div id="container"></div>
+
+  <!-- Benchmark -->
+  <script type="module">
+    import * as bench from '/bench.js';
+    import {html, render, hydrate} from '../lit-html.js';
+
+    const hello = (x) => html`
+      <div a=${x} b=${x} c=${x} d=${x} e=${x}>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}>
+          <div a=${x} b=${x} c=${x} d=${x} e=${x}>
+            <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+          </div>
+        </div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+        <div a=${x} b=${x} c=${x} d=${x} e=${x}></div>
+      </div>
+    `;
+
+    const prerenderContainer = document.createElement('div');
+    render(hello('pre-rendering'), prerenderContainer);
+    const container = document.querySelector('#container');
+    container.innerHTML = prerenderContainer.innerHTML;
+    
+    const templateResult = hello('hydration');
+
+    bench.start();
+    hydrate(templateResult, container);
+    bench.stop();
+  </script>
+</body>
+</html>
