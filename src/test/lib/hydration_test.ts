@@ -219,11 +219,30 @@ suite('hydration', () => {
       const el = container.firstElementChild as unknown as {prop: string};
       assert.equal(el.prop, 'hydrate');
     });
+
+    test('pre-renders the HTMLInputElement value property as an attribute', () => {
+      const hello = (val: string) => html`<input type='text' .value=${val}>`;
+
+      prerender(hello('pre-rendered'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<input type="text" value="pre-rendered">');
+
+      hydrate(hello('hydrated'), container);
+      const input = container.firstElementChild as HTMLInputElement;
+
+      assert.equal(input.getAttribute('value'), 'pre-rendered');
+      assert.equal(input.value, 'hydrated');
+    });
   });
 });
 
 const prerender = (r: TemplateResult, container: HTMLElement) => {
   const prerenderContainer = document.createElement('div');
+  // tslint:disable-next-line:no-any
+  (window as any).__lit_ssr = true;
   render(r, prerenderContainer);
+  // tslint:disable-next-line:no-any
+  (window as any).__lit_ssr = false;
   container.innerHTML = prerenderContainer.innerHTML;
 };

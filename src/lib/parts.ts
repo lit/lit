@@ -484,6 +484,15 @@ export class PropertyCommitter extends AttributeCommitter {
       // tslint:disable-next-line:no-any
       (this.element as any)[this.name] = this._getValue();
       incrementAttributeMarker(this.element);
+
+      if ((window as any).__lit_ssr) {
+        // Consider actions for special-case properties.
+        // Should dynamically import these checks so they can be tree-shaken
+        // for the browser.
+        if (this.element instanceof HTMLInputElement && this.name === 'value') {
+          this.element.setAttribute(this.name, this._getValue() as string);
+        }
+      }
     }
   }
 }
