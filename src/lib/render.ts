@@ -101,7 +101,7 @@ export const hydrate =
               }
               const attributeInfo: AttributeInfo = {
                 type: "attribute",
-                element: node.parentElement!,
+                element: node.previousElementSibling!,
                 count: Number(node.textContent!.match(/\d+/)![0]),
               };
               // Push attribute info into the last node's "children" array

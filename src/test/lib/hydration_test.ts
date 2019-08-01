@@ -205,6 +205,21 @@ suite('hydration', () => {
 
     assert.match(container.innerHTML, /<!--lit-attr 1-->/);
   });
+
+  suite('special properties and attributes', () => {
+    test('hydrates a property binding on an empty element', () => {
+      // <input> and others like <script> are empty elements; our attribute
+      // hydration approach must work with these.
+      // https://developer.mozilla.org/en-US/docs/Glossary/empty_element
+      const hello = (prop: string) => html`<input type='text' .prop=${prop}>`;
+
+      prerender(hello('pre-render'), container);
+      hydrate(hello('hydrate'), container);
+
+      const el = container.firstElementChild as unknown as {prop: string};
+      assert.equal(el.prop, 'hydrate');
+    });
+  });
 });
 
 const prerender = (r: TemplateResult, container: HTMLElement) => {
