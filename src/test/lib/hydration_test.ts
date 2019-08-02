@@ -234,6 +234,17 @@ suite('hydration', () => {
       assert.equal(input.getAttribute('value'), 'pre-rendered');
       assert.equal(input.value, 'hydrated');
     });
+
+    // Don't have to implement a special case for id, or any other reflecting
+    // attribute.
+    test('pre-renders reflecting properties as attributes', () => {
+      const hello = (id: string, classes: string) => html`<div .id=${id} .className=${classes}></div>`;
+
+      prerender(hello('pre-rendered', 'a b c'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div id="pre-rendered" class="a b c"></div>');
+    });
   });
 });
 
