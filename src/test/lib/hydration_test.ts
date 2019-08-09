@@ -15,6 +15,7 @@
 import {TemplateResult} from '../../lib/shady-render.js';
 import {html, hydrate, render} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {repeat} from '../../directives/repeat.js';
 
 const assert = chai.assert;
 
@@ -96,6 +97,28 @@ suite('hydration', () => {
     // Check that they're the same
     assert.strictEqual(prerenderedHeader, postrenderHeader);
     assert.strictEqual(prerenderedDynamicText, postrenderDynamicText);
+  });
+
+  test('hydrates repeat directive with strings', () => {
+    const words = (words: string[]) => html`${repeat(words, (word, i) => `(${i} ${word})`)}`;
+
+    prerender(words(['foo', 'bar', 'qux']), container);
+
+    hydrate(words(['A', 'B', 'C']), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '(0 A)(1 B)(2 C)');
+  });
+
+  test('hydrates repeat directive with TemplateResults', () => {
+    const words = (words: string[]) => html`${repeat(words, (word, i) => html`<p>${i}) ${word}</p>`)}`;
+
+    prerender(words(['foo', 'bar', 'qux']), container);
+
+    hydrate(words(['A', 'B', 'C']), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>0) A</p><p>1) B</p><p>2) C</p>');
   });
 });
 
