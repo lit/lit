@@ -104,6 +104,21 @@ export const repeat =
                 if (!(containerPart instanceof NodePart)) {
                   throw new Error('repeat can only be used in text bindings');
                 }
+
+                // Performing client-side hydration.
+                if (containerPart.options.prerenderedParts !== undefined) {
+                  partListCache.set(containerPart, []);
+                  for (const partInfo of containerPart.options.prerenderedParts!) {
+                    // Remove prerenderedParts from options, as they only apply to
+                    // the container part.
+                    const {prerenderedParts, ...options} = containerPart.options;
+                    const nodePart = new NodePart(options);
+                    nodePart.startNode = partInfo.startNode;
+                    nodePart.endNode = partInfo.endNode;
+                    partListCache.get(containerPart)!.push(nodePart);
+                  }
+                }
+
                 // Old part & key lists are retrieved from the last update
                 // (associated with the part for this instance of the directive)
                 const oldParts = partListCache.get(containerPart) || [];
