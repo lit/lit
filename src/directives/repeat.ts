@@ -78,7 +78,7 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
  * needed, and DOM will never be reused with values for different keys (new DOM
  * will always be created for new keys). This is generally the most efficient
  * way to use `repeat` since it performs minimum unnecessary work for insertions
- * amd removals.
+ * and removals.
  *
  * IMPORTANT: If providing a `keyFn`, keys *must* be unique for all items in a
  * given call to `repeat`. The behavior when two or more items have the same key
