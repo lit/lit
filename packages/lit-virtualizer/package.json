@@ -43,8 +43,8 @@
     },
     "dependencies": {
         "event-target-shim": "^5.0.1",
-        "lit-element": "latest",
-        "lit-html": "latest",
+        "lit-element": "^1.0.0",
+        "lit-html": "^2.0.0",
         "resize-observer-polyfill": "^1.5.1",
         "rollup-plugin-filesize": "^6.1.1",
         "rollup-plugin-terser": "^5.0.0",
