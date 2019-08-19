@@ -120,6 +120,23 @@ suite('hydration', () => {
         stripExpressionMarkers(container.innerHTML),
         '<p>0) A</p><p>1) B</p><p>2) C</p>');
   });
+
+  test('hydrates repeat directive without tearing down pre-rendered DOM', () => {
+    const words = (words: string[]) => html`${repeat(words, (word, i) => html`<p>${i}) ${word}</p>`)}`;
+
+    prerender(words(['foo', 'bar', 'qux']), container);
+    const p0 = container.children[0];
+    const p1 = container.children[1];
+    const p2 = container.children[2];
+
+    hydrate(words(['foo', 'bar', 'qux']), container, { dataChanged: false });
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>0) foo</p><p>1) bar</p><p>2) qux</p>');
+    assert.strictEqual(container.children[0], p0);
+    assert.strictEqual(container.children[1], p1);
+    assert.strictEqual(container.children[2], p2);
+  });
 });
 
 const prerender = (r: TemplateResult, container: HTMLElement) => {

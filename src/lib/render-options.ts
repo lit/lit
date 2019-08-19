@@ -22,6 +22,7 @@ export interface RenderOptions {
   readonly templateFactory: TemplateFactory;
   readonly eventContext?: EventTarget;
   readonly prerenderedParts?: PartInfo[];
+  dataChanged?: Boolean;
 }
 
 export type PartInfo = {
