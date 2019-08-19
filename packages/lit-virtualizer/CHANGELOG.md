@@ -1,3 +1,10 @@
+## [0.4.0] - 2019-08-19
+### Added
+- Type declarations.
+
+### Fixed
+- lit-html and LitElement versions.
+
 ## [0.3.0] - 2019-07-18
 ### Added
 - `firstVisible` and `lastVisible` on `RangeChangeEvent`.
