@@ -264,8 +264,6 @@ lit-html includes a few built-in directives.
 *   [`unsafeHTML`](#unsafehtml)
 *   [`until`](#until)
 
-**Directives may change.** The exact list of directives included with lit-html, and the API of the directives may be subject to change before lit-html 1.0 is released.
-
 ### asyncAppend and asyncReplace
 
 `asyncAppend(asyncIterable)`<br>
@@ -350,7 +348,7 @@ The `cache` directive caches the generated DOM for a given binding and input tem
 
 `class=${classMap(classObj)}`
 
-Location: attribute bindings (must be the entire value of the `class` attribute)
+Location: attribute bindings (must be the only binding in the `class` attribute)
 
 Sets a list of classes based on an object. Each key in the object is treated as a class name, and if the value associated with the key is truthy, that class is added to the element.
 
@@ -361,6 +359,13 @@ let classes = { highlight: true, enabled: true, hidden: false };
 
 html`<div class=${classMap(classes)}>Classy text</div>`;
 // renders as <div class="highlight enabled">Classy text</div>
+```
+
+The `classMap` must be the only binding in the `class` attribute, but it can 
+be combined with static values:
+
+```js
+html`<div class="my-widget ${classMap(dynamicClasses)}">Static and dynamic</div>`;
 ```
 
 ### ifDefined
@@ -451,7 +456,7 @@ of when to use `repeat` and when to use standard JavaScript flow control.
 
 `style=${styleMap(styles)}`
 
-Location: attribute bindings (must be the entire value of the `style` attribute)
+Location: attribute bindings (must be the only binding in the `style` attribute)
 
 The `styleMap` directive sets styles on an element based on an object, where each key in the object is treated as a style property, and the value is treated as the value for that property. For example:
 
@@ -469,7 +474,13 @@ For CSS properties that contain dashes, you can either use the camel-case equiva
 { 'font-family': 'roboto' }
 ```
 
-The `styleMap` directive can only be used as a value for the `style` attribute, and it must be the entire value of the attribute.
+The `styleMap` must be the only binding in the `style` attribute, but it can 
+be combined with static values:
+
+```js
+html`<p style="color: white; ${styleMap(moreStyles)}">More styles!</p>`;
+```
+
 
 ### unsafeHTML
 
