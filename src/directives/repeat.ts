@@ -107,7 +107,7 @@ export const repeat =
 
                 // Performing client-side hydration.
                 if (containerPart.options.prerenderedParts !== undefined) {
-                  partListCache.set(containerPart, []);
+                  const nodeParts: NodePart[] = [];
                   for (const partInfo of containerPart.options.prerenderedParts!) {
                     // Remove prerenderedParts from options, as they only apply to
                     // the container part.
@@ -115,8 +115,9 @@ export const repeat =
                     const nodePart = new NodePart(options);
                     nodePart.startNode = partInfo.startNode;
                     nodePart.endNode = partInfo.endNode;
-                    partListCache.get(containerPart)!.push(nodePart);
+                    nodeParts.push(nodePart);
                   }
+                  partListCache.set(containerPart, nodeParts);
                 }
 
                 // Old part & key lists are retrieved from the last update
