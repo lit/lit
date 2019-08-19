@@ -102,6 +102,15 @@ export const hydrate =
             rootPart !== undefined,
             'there should be exactly one root part in a render container');
 
+        // If not specified, assume template data has changed since pre-rendering.
+        // Assuming data has changed may cause unnecessary DOM reconstruction;
+        // however, this is better than displaying the wrong data.
+        if (options === undefined) {
+          options = { dataChanged: true };
+        } else if (options.dataChanged === undefined) {
+          options.dataChanged = true;
+        }
+
         part = new NodePart({
           templateFactory,
           ...options,

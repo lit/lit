@@ -118,6 +118,18 @@ export const repeat =
                     nodeParts.push(nodePart);
                   }
                   partListCache.set(containerPart, nodeParts);
+
+                  // Hydrate the template keys only if the data is unchanged since
+                  // pre-rendering.
+                  if (!containerPart.options.dataChanged) {
+                    const keys = [];
+                    let index = 0;
+                    for (const item of items) {
+                      keys.push(keyFn ? keyFn(item, index) : index);
+                      index++;
+                    }
+                    keyListCache.set(containerPart, keys);
+                  }
                 }
 
                 // Old part & key lists are retrieved from the last update
