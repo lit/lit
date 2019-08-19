@@ -6,6 +6,8 @@
     "main": "lit-virtualizer.js",
     "files": [
         "/lit-virtualizer.js",
+        "/lit-virtualizer.d.ts",
+        "/lit-virtualizer.d.js.map",
         "/lib/"
     ],
     "module": "lit-virtualizer.js",
