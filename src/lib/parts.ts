@@ -25,7 +25,7 @@ import {TemplateResult} from './template-result.js';
 import {createMarker} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
-export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
+export type Primitive = null|undefined|boolean|number|string|symbol|bigint;
 export const isPrimitive = (value: unknown): value is Primitive => {
   return (
       value === null ||
@@ -45,11 +45,11 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
 export class AttributeCommitter {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
-  readonly parts: ReadonlyArray<AttributePart>;
+  readonly strings: readonly string[];
+  readonly parts: readonly AttributePart[];
   dirty = true;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     this.element = element;
     this.name = name;
     this.strings = strings;
@@ -344,11 +344,11 @@ export class NodePart implements Part {
 export class BooleanAttributePart implements Part {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+  readonly strings: readonly string[];
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -396,7 +396,7 @@ export class BooleanAttributePart implements Part {
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');

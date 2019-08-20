@@ -64,7 +64,7 @@ suite('Template', () => {
         <div aThing="${10}"></div>
       </div>`;
     const template = new Template(result, result.getTemplateElement());
-    const parts = template.parts as Array<{name: string}>;
+    const parts = template.parts as {name: string}[];
     const names = parts.map((p) => p.name);
     const expectedAttributeNames = [
       'someProp',

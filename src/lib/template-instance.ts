@@ -27,7 +27,7 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
  * with new values.
  */
 export class TemplateInstance {
-  private readonly __parts: Array<Part|undefined> = [];
+  private readonly __parts: (Part|undefined)[] = [];
   readonly processor: TemplateProcessor;
   readonly options: RenderOptions;
   readonly template: Template;
@@ -40,7 +40,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  update(values: ReadonlyArray<unknown>) {
+  update(values: readonly unknown[]) {
     let i = 0;
     for (const part of this.__parts) {
       if (part !== undefined) {
