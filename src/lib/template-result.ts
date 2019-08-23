@@ -19,7 +19,27 @@
 import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
-import {dangerouslyTurnToTrustedHTML} from './trusted-types';
+
+let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
+
+/**
+ * Turns the value to trusted HTML. If the application uses Trusted Types the
+ * value is transformed into TrustedHTML, which can be assigned to execution
+ * sink. If the application doesn't use Trusted Types, the return value is the
+ * same as the argument.
+ */
+function dangerouslyTurnToTrustedHTML(value: string): string|TrustedHTML {
+  // tslint:disable-next-line
+  const TrustedTypes = (window as any).TrustedTypes as TrustedTypePolicyFactory;
+  if (TrustedTypes && !policy) {
+    policy = TrustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
+  }
+  if (!policy) {
+    return value;
+  } else {
+    return policy.createHTML(value);
+  }
+}
 
 const commentMarker = ` ${marker} `;
 
@@ -101,7 +121,7 @@ export class TemplateResult {
 
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
-    template.innerHTML = dangerouslyTurnToTrustedHTML(this.getHTML());
+    template.innerHTML = dangerouslyTurnToTrustedHTML(this.getHTML()) as string;
     return template;
   }
 }
