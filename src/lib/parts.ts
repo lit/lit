@@ -168,7 +168,11 @@ export class AttributeCommitter {
       if (sanitizeDOMValue) {
         value = sanitizeDOMValue(value, this.name, 'attribute', this.element);
       }
-      this.element.setAttribute(this.name, String(value));
+      if (typeof value === 'symbol') {
+        // Native Symbols throw if they're coerced to string.
+        value = String(value);
+      }
+      this.element.setAttribute(this.name, value as string);
     }
   }
 }
@@ -324,10 +328,11 @@ export class NodePart implements Part {
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
+      let renderedValue = value;
       if (sanitizeDOMValue) {
-        value = sanitizeDOMValue(value, 'data', 'property', node);
+        renderedValue = sanitizeDOMValue(renderedValue, 'data', 'property', node);
       }
-      (node as Text).data = typeof value === 'string' ? value : String(value);
+      (node as Text).data = typeof renderedValue === 'string' ? renderedValue : String(renderedValue);
     } else {
       // When setting text content, for security purposes it matters a lot what
       // the parent is. For example, <style> and <script> need to be handled
@@ -335,11 +340,11 @@ export class NodePart implements Part {
       // into the document, then we can sanitize its contentx.
       const textNode = document.createTextNode('');
       this.__commitNode(textNode);
+      let renderedValue = value;
       if (sanitizeDOMValue) {
-        value = String(
-            sanitizeDOMValue(value, 'textContent', 'property', textNode));
+        renderedValue = sanitizeDOMValue(renderedValue, 'textContent', 'property', textNode) as string;
       }
-      textNode.data = typeof value === 'string' ? value : String(value);
+      textNode.data = typeof renderedValue === 'string' ? renderedValue : String(renderedValue);
     }
     this.value = value;
   }
