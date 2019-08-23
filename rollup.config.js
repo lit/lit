@@ -24,7 +24,6 @@ export default {
   plugins: [
     terser({
       warnings: true,
-      module: true,
       mangle: {
         properties: {
           regex: /^__/,
