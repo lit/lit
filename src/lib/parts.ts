@@ -330,9 +330,12 @@ export class NodePart implements Part {
       // set its value, rather than replacing it.
       let renderedValue = value;
       if (sanitizeDOMValue) {
-        renderedValue = sanitizeDOMValue(renderedValue, 'data', 'property', node);
+        renderedValue =
+            sanitizeDOMValue(renderedValue, 'data', 'property', node);
       }
-      (node as Text).data = typeof renderedValue === 'string' ? renderedValue : String(renderedValue);
+      (node as Text).data = typeof renderedValue === 'string' ?
+          renderedValue :
+          String(renderedValue);
     } else {
       // When setting text content, for security purposes it matters a lot what
       // the parent is. For example, <style> and <script> need to be handled
@@ -342,9 +345,12 @@ export class NodePart implements Part {
       this.__commitNode(textNode);
       let renderedValue = value;
       if (sanitizeDOMValue) {
-        renderedValue = sanitizeDOMValue(renderedValue, 'textContent', 'property', textNode) as string;
+        renderedValue =
+            sanitizeDOMValue(
+                renderedValue, 'textContent', 'property', textNode) as string;
       }
-      textNode.data = typeof renderedValue === 'string' ? renderedValue : String(renderedValue);
+      textNode.data = typeof renderedValue === 'string' ? renderedValue :
+                                                          String(renderedValue);
     }
     this.value = value;
   }
