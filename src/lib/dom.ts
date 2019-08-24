@@ -23,9 +23,8 @@ interface MaybePolyfilledCe extends CustomElementRegistry {
 /**
  * True if the custom elements polyfill is in use.
  */
-export const isCEPolyfill = window.customElements !== undefined &&
-    (window.customElements as MaybePolyfilledCe).polyfillWrapFlushCallback !==
-        undefined;
+export const isCEPolyfill = window.customElements &&
+    (window.customElements as MaybePolyfilledCe).polyfillWrapFlushCallback;
 
 /**
  * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),

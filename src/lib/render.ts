@@ -43,7 +43,7 @@ export const render =
      container: Element|DocumentFragment,
      options?: Partial<RenderOptions>) => {
       let part = parts.get(container);
-      if (part === undefined) {
+      if (!part) {
         removeNodes(container, container.firstChild);
         parts.set(container, part = new NodePart({
                                templateFactory,

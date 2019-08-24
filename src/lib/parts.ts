@@ -28,8 +28,7 @@ import {createMarker} from './template.js';
 export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
 export const isPrimitive = (value: unknown): value is Primitive => {
   return (
-      value === null ||
-      !(typeof value === 'object' || typeof value === 'function'));
+      !value || !(typeof value === 'object' || typeof value === 'function'));
 };
 export const isIterable = (value: unknown): value is Iterable<unknown> => {
   return Array.isArray(value) ||
@@ -74,7 +73,7 @@ export class AttributeCommitter {
     for (let i = 0; i < l; i++) {
       text += strings[i];
       const part = this.parts[i];
-      if (part !== undefined) {
+      if (part) {
         const v = part.value;
         if (isPrimitive(v) || !isIterable(v)) {
           text += typeof v === 'string' ? v : String(v);
@@ -307,10 +306,10 @@ export class NodePart implements Part {
       itemPart = itemParts[partIndex];
 
       // If no existing part, create a new one
-      if (itemPart === undefined) {
+      if (itemPart) {
         itemPart = new NodePart(this.options);
         itemParts.push(itemPart);
-        if (partIndex === 0) {
+        if (!partIndex) {
           itemPart.appendIntoPart(this);
         } else {
           itemPart.insertAfterPart(itemParts[partIndex - 1]);
@@ -349,7 +348,7 @@ export class BooleanAttributePart implements Part {
   private __pendingValue: unknown = undefined;
 
   constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
-    if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
+    if (strings.length !== 2 || strings[0] || strings[1]) {
       throw new Error(
           'Boolean attributes can only contain a single expression');
     }
@@ -398,8 +397,7 @@ export class PropertyCommitter extends AttributeCommitter {
 
   constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     super(element, name, strings);
-    this.single =
-        (strings.length === 2 && strings[0] === '' && strings[1] === '');
+    this.single = (strings.length === 2 && !strings[0] && !strings[1]);
   }
 
   protected _createPart(): PropertyPart {
@@ -479,13 +477,13 @@ export class EventPart implements Part {
 
     const newListener = this.__pendingValue;
     const oldListener = this.value;
-    const shouldRemoveListener = newListener == null ||
-        oldListener != null &&
+    const shouldRemoveListener = !newListener ||
+        oldListener &&
             (newListener.capture !== oldListener.capture ||
              newListener.once !== oldListener.once ||
              newListener.passive !== oldListener.passive);
     const shouldAddListener =
-        newListener != null && (oldListener == null || shouldRemoveListener);
+        newListener && (!oldListener || shouldRemoveListener);
 
     if (shouldRemoveListener) {
       this.element.removeEventListener(

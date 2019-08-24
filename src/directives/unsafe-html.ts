@@ -34,15 +34,15 @@ const previousValues = new WeakMap<NodePart, PreviousValue>();
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeHTML = directive((value: unknown) => (part: Part): void => {
+export const unsafeHTML = directive((value: unknown) => (part: Part) => {
   if (!(part instanceof NodePart)) {
     throw new Error('unsafeHTML can only be used in text bindings');
   }
 
   const previousValue = previousValues.get(part);
 
-  if (previousValue !== undefined && isPrimitive(value) &&
-      value === previousValue.value && part.value === previousValue.fragment) {
+  if (previousValue && isPrimitive(value) && value === previousValue.value &&
+      part.value === previousValue.fragment) {
     return;
   }
 

@@ -60,7 +60,7 @@ export const asyncReplace = directive(
 
             // When we get the first value, clear the part. This let's the
             // previous value display until we can replace it.
-            if (i === 0) {
+            if (!i) {
               part.clear();
               itemPart.appendIntoPart(part);
             }
@@ -69,7 +69,7 @@ export const asyncReplace = directive(
             // transforms of iterables and async iterables requires a library,
             // we accept a mapper function. This is especially convenient for
             // rendering a template for each item.
-            if (mapper !== undefined) {
+            if (mapper) {
               // This is safe because T must otherwise be treated as unknown by
               // the rest of the system.
               v = mapper(v, i) as T;

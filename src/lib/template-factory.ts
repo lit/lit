@@ -47,7 +47,7 @@ export type TemplateFactory = (result: TemplateResult) => Template;
  */
 export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
-  if (templateCache === undefined) {
+  if (!templateCache) {
     templateCache = {
       stringsArray: new WeakMap<TemplateStringsArray, Template>(),
       keyString: new Map<string, Template>()
@@ -56,7 +56,7 @@ export function templateFactory(result: TemplateResult) {
   }
 
   let template = templateCache.stringsArray.get(result.strings);
-  if (template !== undefined) {
+  if (template) {
     return template;
   }
 
@@ -66,7 +66,7 @@ export function templateFactory(result: TemplateResult) {
 
   // Check if we already have a Template for this key
   template = templateCache.keyString.get(key);
-  if (template === undefined) {
+  if (!template) {
     // If we have not seen this key before, create a new Template
     template = new Template(result, result.getTemplateElement());
     // Cache the Template for this key
