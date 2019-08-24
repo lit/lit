@@ -25,9 +25,9 @@ interface AsyncState {
   values: unknown[];
 }
 
-const _state = new WeakMap<Part, AsyncState>();
+const states = new WeakMap<Part, AsyncState>();
 // Effectively infinity, but a SMI.
-const _infinity = 0x7fffffff;
+const infinity = 0x7fffffff;
 
 /**
  * Renders one of a series of values, including Promises, to a Part.
@@ -49,13 +49,13 @@ const _infinity = 0x7fffffff;
  *     html`${until(content, html`<span>Loading...</span>`)}`
  */
 export const until = directive((...args: unknown[]) => (part: Part) => {
-  let state = _state.get(part)!;
-  if (state === undefined) {
+  let state = states.get(part)!;
+  if (!state) {
     state = {
-      lastRenderedIndex: _infinity,
+      lastRenderedIndex: infinity,
       values: [],
     };
-    _state.set(part, state);
+    states.set(part, state);
   }
   const previousValues = state.values;
   let previousLength = previousValues.length;
@@ -86,7 +86,7 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
 
     // We have a Promise that we haven't seen before, so priorities may have
     // changed. Forget what we rendered before.
-    state.lastRenderedIndex = _infinity;
+    state.lastRenderedIndex = infinity;
     previousLength = 0;
 
     Promise.resolve(value).then((resolvedValue: unknown) => {

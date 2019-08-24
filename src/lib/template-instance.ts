@@ -43,13 +43,13 @@ export class TemplateInstance {
   update(values: ReadonlyArray<unknown>) {
     let i = 0;
     for (const part of this.__parts) {
-      if (part !== undefined) {
+      if (part) {
         part.setValue(values[i]);
       }
       i++;
     }
     for (const part of this.__parts) {
-      if (part !== undefined) {
+      if (part) {
         part.commit();
       }
     }
@@ -128,7 +128,7 @@ export class TemplateInstance {
           stack.push(node!);
           walker.currentNode = (node as HTMLTemplateElement).content;
         }
-        if ((node = walker.nextNode()) === null) {
+        if (!(node = walker.nextNode())) {
           // We've exhausted the content inside a nested template element.
           // Because we still have parts (the outer for-loop), we know:
           // - There is a template in the stack

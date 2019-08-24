@@ -58,7 +58,7 @@ export const asyncAppend = directive(
 
         // When we get the first value, clear the part. This lets the
         // previous value display until we can replace it.
-        if (i === 0) {
+        if (!i) {
           part.clear();
         }
 
@@ -66,7 +66,7 @@ export const asyncAppend = directive(
         // transforms of iterables and async iterables requires a library,
         // we accept a mapper function. This is especially convenient for
         // rendering a template for each item.
-        if (mapper !== undefined) {
+        if (mapper) {
           // This is safe because T must otherwise be treated as unknown by
           // the rest of the system.
           v = mapper(v, i) as T;
@@ -82,7 +82,7 @@ export const asyncAppend = directive(
         let itemStartNode = part.startNode;
 
         // Check to see if we have a previous item and Part
-        if (itemPart !== undefined) {
+        if (itemPart) {
           // Create a new node to separate the previous and next Parts
           itemStartNode = createMarker();
           // itemPart is currently the Part for the previous item. Set

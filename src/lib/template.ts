@@ -64,7 +64,7 @@ export class Template {
     const {strings, values: {length}} = result;
     while (partIndex < length) {
       const node = walker.nextNode() as Element | Comment | Text | null;
-      if (node === null) {
+      if (!node) {
         // We've exhausted the content inside a nested template element.
         // Because we still have parts (the outer for-loop), we know:
         // - There is a template in the stack
@@ -125,11 +125,11 @@ export class Template {
           for (let i = 0; i < lastIndex; i++) {
             let insert: Node;
             let s = strings[i];
-            if (s === '') {
+            if (!s) {
               insert = createMarker();
             } else {
               const match = lastAttributeNameRegex.exec(s);
-              if (match !== null && endsWith(match[2], boundAttributeSuffix)) {
+              if (match && endsWith(match[2], boundAttributeSuffix)) {
                 s = s.slice(0, match.index) + match[1] +
                     match[2].slice(0, -boundAttributeSuffix.length) + match[3];
               }
@@ -140,7 +140,7 @@ export class Template {
           }
           // If there's no text, we must insert a comment to mark our place.
           // Else, we can trust it will stick around after cloning.
-          if (strings[lastIndex] === '') {
+          if (!strings[lastIndex]) {
             parent.insertBefore(createMarker(), node);
             nodesToRemove.push(node);
           } else {
@@ -156,7 +156,7 @@ export class Template {
           // the following are true:
           //  * We don't have a previousSibling
           //  * The previousSibling is already the start of a previous part
-          if (node.previousSibling === null || index === lastPartIndex) {
+          if (!node.previousSibling || index === lastPartIndex) {
             index++;
             parent.insertBefore(createMarker(), node);
           }
@@ -164,7 +164,7 @@ export class Template {
           this.parts.push({type: 'node', index});
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
-          if (node.nextSibling === null) {
+          if (!node.nextSibling) {
             (node as Comment).data = '';
           } else {
             nodesToRemove.push(node);

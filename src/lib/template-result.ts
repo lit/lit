@@ -78,7 +78,7 @@ export class TemplateResult {
       // expression. This can match "name=value" like structures in text,
       // comments, and attribute values, so there can be false-positives.
       const attributeMatch = lastAttributeNameRegex.exec(s);
-      if (attributeMatch === null) {
+      if (!attributeMatch) {
         // We're only in this branch if we don't have a attribute-like
         // preceding sequence. For comments, this guards against unusual
         // attribute values like <div foo="<!--${'bar'}">. Cases like

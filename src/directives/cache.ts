@@ -44,7 +44,7 @@ export const cache = directive((value: unknown) => (part: Part) => {
 
   let templateCache = templateCaches.get(part);
 
-  if (templateCache === undefined) {
+  if (!templateCache) {
     templateCache = new WeakMap();
     templateCaches.set(part, templateCache);
   }
@@ -62,7 +62,7 @@ export const cache = directive((value: unknown) => (part: Part) => {
     } else {
       // Not the same Template, move the nodes from the DOM into the cache.
       let cachedTemplate = templateCache.get(previousValue.template);
-      if (cachedTemplate === undefined) {
+      if (!cachedTemplate) {
         cachedTemplate = {
           instance: previousValue,
           nodes: document.createDocumentFragment(),
@@ -78,7 +78,7 @@ export const cache = directive((value: unknown) => (part: Part) => {
   if (value instanceof TemplateResult) {
     const template = part.options.templateFactory(value);
     const cachedTemplate = templateCache.get(template);
-    if (cachedTemplate !== undefined) {
+    if (cachedTemplate) {
       // Move nodes out of cache
       part.setValue(cachedTemplate.nodes);
       part.commit();

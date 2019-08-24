@@ -50,7 +50,7 @@ const previousValues = new WeakMap<Part, unknown>();
  * @param f the template function
  */
 export const guard =
-    directive((value: unknown, f: () => unknown) => (part: Part): void => {
+    directive((value: unknown, f: () => unknown) => (part: Part) => {
       const previousValue = previousValues.get(part);
       if (Array.isArray(value)) {
         // Dirty-check arrays by item
@@ -59,6 +59,7 @@ export const guard =
             value.every((v, i) => v === previousValue[i])) {
           return;
         }
+        value = Array.from(value);
       } else if (
           previousValue === value &&
           (value !== undefined || previousValues.has(part))) {
@@ -69,6 +70,5 @@ export const guard =
       part.setValue(f());
       // Copy the value if it's an array so that if it's mutated we don't forget
       // what the previous values were.
-      previousValues.set(
-          part, Array.isArray(value) ? Array.from(value) : value);
+      previousValues.set(part, value);
     });
