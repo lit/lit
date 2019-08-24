@@ -54,7 +54,7 @@ export class TemplateResult {
       // For each binding we want to determine the kind of marker to insert
       // into the template source before it's parsed by the browser's HTML
       // parser. The marker type is based on whether the expression is in an
-      // attribute, text, or comment poisition.
+      // attribute, text, or comment position.
       //   * For node-position bindings we insert a comment with the marker
       //     sentinel as its text content, like <!--{{lit-guid}}-->.
       //   * For attribute bindings we insert just the marker sentinel for the
@@ -74,13 +74,13 @@ export class TemplateResult {
       // be false positives.
       isCommentBinding = (commentOpen > -1 || isCommentBinding) &&
           s.indexOf('-->', commentOpen + 1) === -1;
-      // Check to see if we have an attribute-like sequence preceeding the
+      // Check to see if we have an attribute-like sequence preceding the
       // expression. This can match "name=value" like structures in text,
       // comments, and attribute values, so there can be false-positives.
       const attributeMatch = lastAttributeNameRegex.exec(s);
       if (attributeMatch === null) {
         // We're only in this branch if we don't have a attribute-like
-        // preceeding sequence. For comments, this guards against unusual
+        // preceding sequence. For comments, this guards against unusual
         // attribute values like <div foo="<!--${'bar'}">. Cases like
         // <!-- foo=${'bar'}--> are handled correctly in the attribute branch
         // below.
