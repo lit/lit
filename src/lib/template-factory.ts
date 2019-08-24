@@ -83,7 +83,7 @@ export function templateFactory(result: TemplateResult) {
  * calls to a tag for the same literal, so we can cache work done per literal
  * in a Map.
  *
- * Safari currently has a bug which occasionally breaks this behaviour, so we
+ * Safari currently has a bug which occasionally breaks this behavior, so we
  * need to cache the Template at two levels. We first cache the
  * TemplateStringsArray, and if that fails, we cache a key constructed by
  * joining the strings array.
