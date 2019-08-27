@@ -306,7 +306,7 @@ export class NodePart implements Part {
       itemPart = itemParts[partIndex];
 
       // If no existing part, create a new one
-      if (itemPart) {
+      if (!itemPart) {
         itemPart = new NodePart(this.options);
         itemParts.push(itemPart);
         if (!partIndex) {
