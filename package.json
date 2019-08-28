@@ -54,5 +54,7 @@
     "web-component-tester": "^6.9.0"
   },
   "typings": "lit-html.d.ts",
-  "dependencies": {}
+  "dependencies": {
+    "trusted-types": "^1.0.6"
+  }
 }
