@@ -14,7 +14,7 @@
 
 import {unsafeHTML} from '../../directives/unsafe-html';
 import {html, render} from '../../lit-html.js';
-import { stripExpressionMarkers } from '../test-utils/strip-markers';
+import {stripExpressionMarkers} from '../test-utils/strip-markers';
 
 const assert = chai.assert;
 
@@ -26,14 +26,17 @@ const unwrapTrustedValue = (value: string) => value.substr('TRUSTED'.length);
 suite('rendering with trusted types enforced', () => {
   let container: HTMLDivElement;
   // tslint:disable-next-line
-  let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] = [];
+  let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] =
+      [];
   let setAttributeDescriptor: PropertyDescriptor;
 
   function emulateSetAttributeOnProperties() {
     // this is a bit cheaty as
     // 1) we emulate on properties
-    // 2) only on those use trusted types (e.g. emulateTrustedTypesOnProperty was called on them)
-    setAttributeDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'setAttribute')!;
+    // 2) only on those use trusted types (e.g. emulateTrustedTypesOnProperty
+    // was called on them)
+    setAttributeDescriptor =
+        Object.getOwnPropertyDescriptor(Element.prototype, 'setAttribute')!;
     Object.defineProperty(Element.prototype, 'setAttribute', {
       value: function(name: string, value: string) {
         let args = [name, value];
@@ -51,7 +54,8 @@ suite('rendering with trusted types enforced', () => {
     });
   }
 
-  function emulateTrustedTypesOnProperty<Obj, K extends keyof Obj>(object: Obj, prop: K) {
+  function emulateTrustedTypesOnProperty<Obj, K extends keyof Obj>(
+      object: Obj, prop: K) {
     const desc = Object.getOwnPropertyDescriptor(object, prop)!;
     descriptorEntries.push({object, prop, desc});
     Object.defineProperty(object, prop, {
@@ -71,7 +75,8 @@ suite('rendering with trusted types enforced', () => {
     });
     descriptorEntries = [];
 
-    Object.defineProperty(Element.prototype, 'setAttribute', setAttributeDescriptor!);
+    Object.defineProperty(
+        Element.prototype, 'setAttribute', setAttributeDescriptor!);
   }
 
   suiteSetup(() => {
@@ -99,7 +104,7 @@ suite('rendering with trusted types enforced', () => {
     removeAllTrustedTypesEmulation();
   });
 
-  test('TT emulation works', () => {
+  test('Trusted types emulation works', () => {
     const el = document.createElement('div');
     assert.equal(el.innerHTML, '');
     el.innerHTML = createTrustedValue('<span>val</span>');
@@ -128,15 +133,20 @@ suite('rendering with trusted types enforced', () => {
 
   suite('runs without error on trusted values', () => {
     test('unsafe html', () => {
-      const template = html`${unsafeHTML(createTrustedValue('<b>unsafe bold</b>'))}`;
+      const template =
+          html`${unsafeHTML(createTrustedValue('<b>unsafe bold</b>'))}`;
       render(template, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<b>unsafe bold</b>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<b>unsafe bold</b>');
     });
 
     test('unsafe attribute', () => {
-      const template = html`<iframe srcdoc=${createTrustedValue('www.evil_url.com')}>`;
+      const template =
+          html`<iframe srcdoc=${createTrustedValue('www.evil_url.com')}>`;
       render(template, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<iframe srcdoc="www.evil_url.com"></iframe>');
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<iframe srcdoc="www.evil_url.com"></iframe>');
     });
   });
 });

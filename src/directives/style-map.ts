@@ -29,7 +29,7 @@ const styleMapCache = new WeakMap<AttributePart, StyleInfo>();
  *
  * `styleMap` can only be used in the `style` attribute and must be the only
  * expression in the attribute. It takes the property names in the `styleInfo`
- * object and adds the property values as CSS propertes. Property names with
+ * object and adds the property values as CSS properties. Property names with
  * dashes (`-`) are assumed to be valid CSS property names and set on the
  * element's style object using `setProperty()`. Names without dashes are
  * assumed to be camelCased JavaScript property names and set on the element's

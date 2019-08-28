@@ -75,7 +75,7 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
       part.setValue(value);
       state.lastRenderedIndex = i;
       // Since a lower-priority value will never overwrite a higher-priority
-      // synchronous value, we can stop processsing now.
+      // synchronous value, we can stop processing now.
       break;
     }
 

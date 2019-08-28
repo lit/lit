@@ -40,7 +40,7 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
 
 /**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
- * single attibute. The value is only set once even if there are multiple parts
+ * single attribute. The value is only set once even if there are multiple parts
  * for an attribute.
  */
 export class AttributeCommitter {
@@ -433,7 +433,7 @@ export class PropertyCommitter extends AttributeCommitter {
 export class PropertyPart extends AttributePart {}
 
 // Detect event listener options support. If the `capture` property is read
-// from the options object, then options are supported. If not, then the thrid
+// from the options object, then options are supported. If not, then the third
 // argument to add/removeEventListener is interpreted as the boolean capture
 // value so we should only pass the `capture` property.
 let eventOptionsSupported = false;
