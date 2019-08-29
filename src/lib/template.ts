@@ -38,7 +38,7 @@ export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 export const boundAttributeSuffix = '$lit$';
 
 /**
- * An updateable Template that tracks the location of dynamic parts.
+ * An updatable Template that tracks the location of dynamic parts.
  */
 export class Template {
   readonly parts: TemplatePart[] = [];

@@ -76,7 +76,7 @@ export class TemplateInstance {
     // Given these constraints, with full custom elements support we would
     // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
     //
-    // But Safari dooes not implement CustomElementRegistry#upgrade, so we
+    // But Safari does not implement CustomElementRegistry#upgrade, so we
     // can not implement that order and still have upgrade-before-update and
     // upgrade disconnected fragments. So we instead sacrifice the
     // process-before-upgrade constraint, since in Custom Elements v1 elements
