@@ -72,21 +72,32 @@ export type DOMSanitizer =
  * A global callback used to sanitize any value before inserting it into the
  * DOM.
  */
-let sanitizeDOMValue: DOMSanitizer|undefined;
+let sanitizeDOMValueImpl: DOMSanitizer|undefined;
 
 /** Sets the global DOM sanitization callback. */
 export const __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning =
     (newSanitizer: DOMSanitizer) => {
-      if (sanitizeDOMValue !== undefined) {
+      if (sanitizeDOMValueImpl !== undefined) {
         throw new Error(
             `Attempted to overwrite existing lit-html security policy.` +
             ` setSanitizeDOMValue should be called at most once.`);
       }
-      sanitizeDOMValue = newSanitizer;
+      sanitizeDOMValueImpl = newSanitizer;
+    };
+
+const sanitizeDOMValue: DOMSanitizer =
+    (value: unknown,
+     name: string,
+     type: ('property'|'attribute'),
+     node: Node) => {
+      if (sanitizeDOMValueImpl !== undefined) {
+        return sanitizeDOMValueImpl(value, name, type, node);
+      }
+      return value;
     };
 
 export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
-  sanitizeDOMValue = undefined;
+  sanitizeDOMValueImpl = undefined;
 };
 
 /**
@@ -165,9 +176,7 @@ export class AttributeCommitter {
     if (this.dirty) {
       this.dirty = false;
       let value = this._getValue();
-      if (sanitizeDOMValue) {
-        value = sanitizeDOMValue(value, this.name, 'attribute', this.element);
-      }
+      value = sanitizeDOMValue(value, this.name, 'attribute', this.element);
       if (typeof value === 'symbol') {
         // Native Symbols throw if they're coerced to string.
         value = String(value);
@@ -328,11 +337,7 @@ export class NodePart implements Part {
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
-      let renderedValue = value;
-      if (sanitizeDOMValue) {
-        renderedValue =
-            sanitizeDOMValue(renderedValue, 'data', 'property', node);
-      }
+      const renderedValue = sanitizeDOMValue(value, 'data', 'property', node);
       (node as Text).data = typeof renderedValue === 'string' ?
           renderedValue :
           String(renderedValue);
@@ -343,12 +348,9 @@ export class NodePart implements Part {
       // into the document, then we can sanitize its contentx.
       const textNode = document.createTextNode('');
       this.__commitNode(textNode);
-      let renderedValue = value;
-      if (sanitizeDOMValue) {
-        renderedValue =
-            sanitizeDOMValue(
-                renderedValue, 'textContent', 'property', textNode) as string;
-      }
+      const renderedValue =
+          sanitizeDOMValue(value, 'textContent', 'property', textNode) as
+          string;
       textNode.data = typeof renderedValue === 'string' ? renderedValue :
                                                           String(renderedValue);
     }
@@ -370,7 +372,7 @@ export class NodePart implements Part {
       // We check for sanitizeDOMValue is to prevent this from
       // being a breaking change to the library.
       const parent = this.endNode.parentNode!;
-      if (sanitizeDOMValue !== undefined && parent.nodeName === 'STYLE' ||
+      if (sanitizeDOMValueImpl !== undefined && parent.nodeName === 'STYLE' ||
           parent.nodeName === 'SCRIPT') {
         this.__commitText(
             '/* lit-html will not write ' +
@@ -527,9 +529,7 @@ export class PropertyCommitter extends AttributeCommitter {
     if (this.dirty) {
       this.dirty = false;
       let value = this._getValue();
-      if (sanitizeDOMValue) {
-        value = sanitizeDOMValue(value, this.name, 'property', this.element);
-      }
+      value = sanitizeDOMValue(value, this.name, 'property', this.element);
       // tslint:disable-next-line:no-any
       (this.element as any)[this.name] = value;
     }
