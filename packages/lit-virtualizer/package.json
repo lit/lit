@@ -38,7 +38,9 @@
         "pngjs": "^3.4.0",
         "puppeteer": "^1.17.0",
         "rollup": "^1.11.2",
+        "rollup-plugin-filesize": "^6.1.1",
         "rollup-plugin-node-resolve": "^4.2.3",
+        "rollup-plugin-terser": "^5.0.0",
         "tachometer": "^0.4.7",
         "tslint": "^5.18.0",
         "typescript": "^3.5.1"
@@ -48,8 +50,6 @@
         "lit-element": "^2.0.0",
         "lit-html": "^1.0.0",
         "resize-observer-polyfill": "^1.5.1",
-        "rollup-plugin-filesize": "^6.1.1",
-        "rollup-plugin-terser": "^5.0.0",
         "tslib": "^1.10.0"
     }
 }
