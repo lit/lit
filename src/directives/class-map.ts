@@ -23,7 +23,7 @@ export interface ClassInfo {
  * Stores the ClassInfo object applied to a given AttributePart.
  * Used to unset existing values when a new ClassInfo object is applied.
  */
-const classMapCache = new WeakMap();
+const previousClassesCache = new WeakMap<Part, Set<string>>();
 
 /**
  * A directive that applies CSS classes. This must be used in the `class`
@@ -46,31 +46,37 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   const {committer} = part;
   const {element} = committer;
 
-  // handle static classes
-  if (!classMapCache.has(part)) {
+  let previousClasses = previousClassesCache.get(part);
+  if (previousClasses === undefined) {
+    // Write static classes once
     element.className = committer.strings.join(' ');
+    previousClassesCache.set(part, previousClasses = new Set());
   }
 
   const {classList} = element;
 
-  // remove old classes that no longer apply
-  const oldInfo = classMapCache.get(part);
-  for (const name in oldInfo) {
+  // Remove old classes that no longer apply
+  for (const name of previousClasses) {
     if (!(name in classInfo)) {
       classList.remove(name);
+      previousClasses.delete(name);
     }
   }
 
-  // add new classes
+  // Add or remove classes based on their classMap value
   for (const name in classInfo) {
     const value = classInfo[name];
-    if (!oldInfo || value !== oldInfo[name]) {
-      // We explicitly want a loose truthy check here because
-      // it seems more convenient that '' and 0 are skipped.
-      const method = value ? 'add' : 'remove';
-      classList[method](name);
+    // We explicitly want a loose truthy check of `value` because it seems more
+    // convenient that '' and 0 are skipped.
+    // tslint:disable-next-line: triple-equals
+    if (value != previousClasses.has(name)) {
+      if (value) {
+        classList.add(name);
+        previousClasses.add(name);
+      } else {
+        classList.remove(name);
+        previousClasses.delete(name);
+      }
     }
   }
-  // Clone the info before storing so we can see updates to the same object
-  classMapCache.set(part, {...classInfo});
 });
