@@ -61,9 +61,11 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   }
 
   // Remove old properties that no longer exist in styleInfo
-  for (const name of previousStyleProperties) {
+  // We use forEach() instead of for-of so that re don't require down-level
+  // iteration.
+  previousStyleProperties.forEach((name) => {
     if (!(name in styleInfo)) {
-      previousStyleProperties.delete(name);
+      previousStyleProperties!.delete(name);
       if (name.indexOf('-') === -1) {
         // tslint:disable-next-line:no-any
         (style as any)[name] = null;
@@ -71,7 +73,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
         style.removeProperty(name);
       }
     }
-  }
+  });
 
   // Add or update properties
   for (const name in styleInfo) {
