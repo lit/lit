@@ -56,12 +56,14 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   const {classList} = element;
 
   // Remove old classes that no longer apply
-  for (const name of previousClasses) {
+  // We use forEach() instead of for-of so that re don't require down-level
+  // iteration.
+  previousClasses.forEach((name) => {
     if (!(name in classInfo)) {
       classList.remove(name);
-      previousClasses.delete(name);
+      previousClasses!.delete(name);
     }
-  }
+  });
 
   // Add or remove classes based on their classMap value
   for (const name in classInfo) {
