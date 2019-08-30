@@ -71,5 +71,6 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
       classList[method](name);
     }
   }
-  classMapCache.set(part, classInfo);
+  // Clone the info before storing so we can see updates to the same object
+  classMapCache.set(part, {...classInfo});
 });
