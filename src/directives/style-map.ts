@@ -79,5 +79,6 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
       style.setProperty(name, styleInfo[name]);
     }
   }
-  styleMapCache.set(part, styleInfo);
+  // Clone the info before storing so we can see updates to the same object
+  styleMapCache.set(part, {...styleInfo});
 });
