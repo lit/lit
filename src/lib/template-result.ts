@@ -28,17 +28,15 @@ let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
  * sink. If the application doesn't use Trusted Types, the return value is the
  * same as the argument.
  */
-function dangerouslyTurnToTrustedHTML(value: string): string|TrustedHTML {
+function convertConstantTemplateStringToTrustedHTML(value: string): string|TrustedHTML {
   // tslint:disable-next-line
-  const TrustedTypes = (window as any).TrustedTypes as TrustedTypePolicyFactory;
+  const w = window as any
+  // TrustedTypes have been renamed to trustedTypes (https://github.com/WICG/trusted-types/issues/177)
+  const TrustedTypes = (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
   if (TrustedTypes && !policy) {
     policy = TrustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
   }
-  if (!policy) {
-    return value;
-  } else {
-    return policy.createHTML(value);
-  }
+  return policy ? policy.createHTML(value) : value;
 }
 
 const commentMarker = ` ${marker} `;
@@ -121,7 +119,10 @@ export class TemplateResult {
 
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
-    template.innerHTML = dangerouslyTurnToTrustedHTML(this.getHTML()) as string;
+    // this is secure because `this.strings` is a TemplateStringsArray.
+    // TODO: validate this when https://github.com/tc39/proposal-array-is-template-object
+    // is implemented.
+    template.innerHTML = convertConstantTemplateStringToTrustedHTML(this.getHTML()) as string;
     return template;
   }
 }
