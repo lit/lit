@@ -12,8 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- ### Changed -->
-<!-- ### Added -->
 <!-- ### Removed -->
+### Added
+* Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
+
 ### Fixed
 * Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
 
