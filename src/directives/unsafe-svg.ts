@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {reparentNodes} from '../lib/dom.js';
 import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
-import {reparentNodes} from '../lib/dom.js';
 
 interface PreviousValue {
   readonly value: unknown;

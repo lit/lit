@@ -29,7 +29,7 @@ suite('unsafeSVG', () => {
   });
 
   test('renders SVG with single child', () => {
-    render(svg `<svg>${unsafeSVG('<g>inner</g>')}</svg>`, container);
+    render(svg`<svg>${unsafeSVG('<g>inner</g>')}</svg>`, container);
     const produced = stripExpressionMarkers(container.innerHTML);
     assert.equal(produced, '<svg><g>inner</g></svg>');
     const svgElement = container.firstElementChild!;
@@ -41,7 +41,9 @@ suite('unsafeSVG', () => {
   });
 
   test('renders SVG with multiple children', () => {
-    render(svg `<svg>before${unsafeSVG('<image>inner</image><g>after</g>')}</svg>`, container);
+    render(
+        svg`<svg>before${unsafeSVG('<image>inner</image><g>after</g>')}</svg>`,
+        container);
     const produced = stripExpressionMarkers(container.innerHTML);
     assert.equal(produced, '<svg>before<image>inner</image><g>after</g></svg>');
     const svgElement = container.firstElementChild!;
@@ -97,8 +99,7 @@ suite('unsafeSVG', () => {
     // Initial unsafeSVG render
     render(t(unsafeSVG(value)), container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<svg><g></g></svg>');
+        stripExpressionMarkers(container.innerHTML), '<svg><g></g></svg>');
 
     // Re-render with a non-unsafeSVG value
     render(t(primitive), container);
@@ -107,7 +108,6 @@ suite('unsafeSVG', () => {
     // Re-render with unsafeSVG again
     render(t(unsafeSVG(value)), container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<svg><g></g></svg>');
+        stripExpressionMarkers(container.innerHTML), '<svg><g></g></svg>');
   });
 });
