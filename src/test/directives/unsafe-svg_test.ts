@@ -38,8 +38,9 @@ suite('unsafeSVG', () => {
     const gElement = svgElement.firstElementChild!;
     assert.equal(gElement.tagName, 'g');
     assert.equal(gElement.namespaceURI, 'http://www.w3.org/2000/svg');
-});
-test('renders SVG with multiple children', () => {
+  });
+
+  test('renders SVG with multiple children', () => {
     render(svg `<svg>before${unsafeSVG('<image>inner</image><g>after</g>')}</svg>`, container);
     const produced = stripExpressionMarkers(container.innerHTML);
     assert.equal(produced, '<svg>before<image>inner</image><g>after</g></svg>');

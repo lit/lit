@@ -14,6 +14,7 @@
 
 import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
+import {reparentNodes} from '../lib/dom.js';
 
 interface PreviousValue {
   readonly value: unknown;
@@ -47,13 +48,12 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
   }
 
   const template = document.createElement('template');
-  template.innerHTML = `<svg>${value as string}</svg>`;  // innerHTML casts to string internally
-  const svgElement = template.content.firstElementChild!;
-  template.content.removeChild(svgElement);
-  while (svgElement.hasChildNodes()) {
-    template.content.appendChild(svgElement.firstChild!);
-  }
-  const fragment = document.importNode(template.content, true);
+  template.innerHTML = `<svg>${value}</svg>`;
+  const content = template.content;
+  const svgElement = content.firstElementChild!;
+  content.removeChild(svgElement);
+  reparentNodes(content, svgElement.firstChild);
+  const fragment = document.importNode(content, true);
   part.setValue(fragment);
   previousValues.set(part, {value, fragment});
 });
