@@ -79,5 +79,5 @@ export const directive =
 
 export const isDirective =
     <P extends Part, T>(o: unknown): o is PartialDirective<P, T> => {
-      return typeof o === 'object' && directives.has(o as object);
+      return typeof o === 'object' && o !== null && directives.has(o);
     };
