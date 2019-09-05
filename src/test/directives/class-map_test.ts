@@ -81,6 +81,20 @@ suite('classMap', () => {
     assert.isFalse(el.classList.contains('foo'));
   });
 
+  test('changes classes when used with the same object', () => {
+    const classInfo = {foo: true};
+    renderClassMapStatic(classInfo);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('foo'));
+    classInfo.foo = false;
+    renderClassMapStatic(classInfo);
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isFalse(el.classList.contains('foo'));
+  });
+
   test('throws when used on non-class attribute', () => {
     assert.throws(() => {
       render(html`<div id="${classMap({})}"></div>`, container);
