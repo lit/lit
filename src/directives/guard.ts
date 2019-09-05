@@ -49,8 +49,9 @@ const previousValues = new WeakMap<Part, unknown>();
  * @param value the value to check before re-rendering
  * @param f the template function
  */
-export const guard =
-    directive((value: unknown, f: () => unknown) => (part: Part): void => {
+export const guard = directive(
+    (value: unknown, f: () => unknown) => ({value, f}),
+    (part: Part, {value, f}: {value: unknown, f: () => unknown}) => {
       const previousValue = previousValues.get(part);
       if (Array.isArray(value)) {
         // Dirty-check arrays by item

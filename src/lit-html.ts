@@ -34,7 +34,7 @@ import {defaultTemplateProcessor} from './lib/default-template-processor.js';
 import {SVGTemplateResult, TemplateResult} from './lib/template-result.js';
 
 export {DefaultTemplateProcessor, defaultTemplateProcessor} from './lib/default-template-processor.js';
-export {directive, DirectiveFn, isDirective} from './lib/directive.js';
+export {directive, isDirective} from './lib/directive.js';
 // TODO(justinfagnani): remove line when we get NodePart moving methods
 export {removeNodes, reparentNodes} from './lib/dom.js';
 export {noChange, nothing, Part} from './lib/part.js';

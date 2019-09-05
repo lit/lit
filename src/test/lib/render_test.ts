@@ -777,7 +777,7 @@ suite('render()', () => {
 
   suite('directives', () => {
     test('renders directives on NodeParts', () => {
-      const fooDirective = directive(() => (part: Part) => {
+      const fooDirective = directive(() => undefined, (part: Part) => {
         part.setValue('foo');
       });
 
@@ -787,7 +787,7 @@ suite('render()', () => {
     });
 
     test('renders directives on AttributeParts', () => {
-      const fooDirective = directive(() => (part: AttributePart) => {
+      const fooDirective = directive(() => undefined, (part: AttributePart) => {
         part.setValue('foo');
       });
 
@@ -797,7 +797,7 @@ suite('render()', () => {
     });
 
     test('renders directives on PropertyParts', () => {
-      const fooDirective = directive(() => (part: AttributePart) => {
+      const fooDirective = directive(() => undefined, (part: AttributePart) => {
         part.setValue(1234);
       });
 
@@ -817,13 +817,17 @@ suite('render()', () => {
         <div @test-event=${(e: Event) => {
                 event = e;
               }}>
-          ${directive(() => (part: NodePart) => {
-                // This emulates a custom element that fires an event in its
-                // connectedCallback
-                part.startNode.dispatchEvent(new CustomEvent('test-event', {
-                  bubbles: true,
-                }));
-              })()}
+          ${
+                  directive(
+                      () => undefined,
+                      (part: NodePart) => {
+                        // This emulates a custom element that fires an event in
+                        // its connectedCallback
+                        part.startNode.dispatchEvent(
+                            new CustomEvent('test-event', {
+                              bubbles: true,
+                            }));
+                      })()}
         </div>`,
               container);
           document.body.removeChild(container);
@@ -836,7 +840,7 @@ suite('render()', () => {
           // This tests that attribute directives are called in the commit
           // phase, not the setValue phase
           let event = undefined;
-          const fire = directive(() => (part: AttributePart) => {
+          const fire = directive(() => undefined, (part: AttributePart) => {
             part.committer.element.dispatchEvent(new CustomEvent('test-event', {
               bubbles: true,
             }));

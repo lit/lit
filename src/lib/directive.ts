@@ -21,9 +21,9 @@ import {Part} from './part.js';
 const directives = new WeakMap<object, true>();
 
 // tslint:disable-next-line:no-any
-export type DirectiveFactory = (...args: any[]) => object;
-
-export type DirectiveFn = (part: Part) => void;
+type AnyFunc = (...args: any[]) => any;
+type DirectiveFn<P extends Part, T> = (part: P, value: T) => void;
+type PartialDirective<P extends Part, T> = [DirectiveFn<P, T>, T];
 
 /**
  * Brands a function as a directive factory function so that lit-html will call
@@ -65,13 +65,19 @@ export type DirectiveFn = (part: Part) => void;
  *   }
  * });
  */
-export const directive = <F extends DirectiveFactory>(f: F): F =>
-    ((...args: unknown[]) => {
-      const d = f(...args);
-      directives.set(d, true);
-      return d;
-    }) as F;
+export const directive =
+    <F extends AnyFunc, P extends Parameters<F>, R extends ReturnType<F>,
+                                                           Q extends Part>(
+        f: F, inner: DirectiveFn<Q, R>): (...args: P) =>
+        PartialDirective<Q, R> => {
+          return (...args: P): PartialDirective<Q, R> => {
+            const d: PartialDirective<Q, R> = [inner, f(...args)];
+            directives.set(d, true);
+            return d;
+          };
+        };
 
-export const isDirective = (o: unknown): o is DirectiveFn => {
-  return typeof o === 'function' && directives.has(o);
-};
+export const isDirective =
+    <P extends Part, T>(o: unknown): o is PartialDirective<P, T> => {
+      return typeof o === 'object' && directives.has(o as object);
+    };

@@ -211,9 +211,10 @@ export class AttributePart implements Part {
 
   commit() {
     while (isDirective(this.value)) {
-      const directive = this.value;
+      const partial = this.value;
+      const directive = partial[0];
       this.value = noChange;
-      directive(this);
+      directive(this, partial[1]);
     }
     if (this.value === noChange) {
       return;
@@ -290,9 +291,10 @@ export class NodePart implements Part {
 
   commit() {
     while (isDirective(this.__pendingValue)) {
-      const directive = this.__pendingValue;
+      const partial = this.__pendingValue;
+      const directive = partial[0];
       this.__pendingValue = noChange;
-      directive(this);
+      directive(this, partial[1]);
     }
     const value = this.__pendingValue;
     if (value === noChange) {
@@ -476,9 +478,10 @@ export class BooleanAttributePart implements Part {
 
   commit() {
     while (isDirective(this.__pendingValue)) {
-      const directive = this.__pendingValue;
+      const partial = this.__pendingValue;
+      const directive = partial[0];
       this.__pendingValue = noChange;
-      directive(this);
+      directive(this, partial[1]);
     }
     if (this.__pendingValue === noChange) {
       return;
@@ -583,9 +586,10 @@ export class EventPart implements Part {
 
   commit() {
     while (isDirective(this.__pendingValue)) {
-      const directive = this.__pendingValue;
+      const partial = this.__pendingValue;
+      const directive = partial[0];
       this.__pendingValue = noChange as EventHandlerWithOptions;
-      directive(this);
+      directive(this, partial[1]);
     }
     if (this.__pendingValue === noChange) {
       return;
