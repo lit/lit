@@ -28,11 +28,14 @@ let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
  * sink. If the application doesn't use Trusted Types, the return value is the
  * same as the argument.
  */
-function convertConstantTemplateStringToTrustedHTML(value: string): string|TrustedHTML {
+function convertConstantTemplateStringToTrustedHTML(value: string): string|
+    TrustedHTML {
   // tslint:disable-next-line
   const w = window as any
-  // TrustedTypes have been renamed to trustedTypes (https://github.com/WICG/trusted-types/issues/177)
-  const TrustedTypes = (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
+  // TrustedTypes have been renamed to trustedTypes
+  // (https://github.com/WICG/trusted-types/issues/177)
+  const TrustedTypes =
+      (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
   if (TrustedTypes && !policy) {
     policy = TrustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
   }
@@ -120,9 +123,10 @@ export class TemplateResult {
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
     // this is secure because `this.strings` is a TemplateStringsArray.
-    // TODO: validate this when https://github.com/tc39/proposal-array-is-template-object
-    // is implemented.
-    template.innerHTML = convertConstantTemplateStringToTrustedHTML(this.getHTML()) as string;
+    // TODO: validate this when
+    // https://github.com/tc39/proposal-array-is-template-object is implemented.
+    template.innerHTML =
+        convertConstantTemplateStringToTrustedHTML(this.getHTML()) as string;
     return template;
   }
 }
