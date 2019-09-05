@@ -32,52 +32,55 @@ import {directive, NodePart, Part} from '../lit-html.js';
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncReplace = directive(
+export const asyncReplace =
+    directive(
+        <T>(value: AsyncIterable<T>,
+            mapper?: (v: T, index?: number) => unknown) => ({value, mapper}),
+        async (part: Part, {value, mapper}) => {
+          if (!(part instanceof NodePart)) {
+            throw new Error('asyncReplace can only be used in text bindings');
+          }
+          // If we've already set up this particular iterable, we don't need
+          // to do anything.
+          if (value === part.value) {
+            return;
+          }
+
+          // We nest a new part to keep track of previous item values separately
+          // of the iterable as a value itself.
+          const itemPart = new NodePart(part.options);
+          part.value = value;
+
+          let i = 0;
+
+          for await (let v of value) {
+            // Check to make sure that value is the still the current value of
+            // the part, and if not bail because a new value owns this part
+            if (part.value !== value) {
+              break;
+            }
+
+            // When we get the first value, clear the part. This let's the
+            // previous value display until we can replace it.
+            if (i === 0) {
+              part.clear();
+              itemPart.appendIntoPart(part);
+            }
+
+            // As a convenience, because functional-programming-style
+            // transforms of iterables and async iterables requires a library,
+            // we accept a mapper function. This is especially convenient for
+            // rendering a template for each item.
+            if (mapper !== undefined) {
+              // This is safe because T must otherwise be treated as unknown by
+              // the rest of the system.
+              v = mapper(v, i);
+            }
+
+            itemPart.setValue(v);
+            itemPart.commit();
+            i++;
+          }
+        }) as
     <T>(value: AsyncIterable<T>, mapper?: (v: T, index?: number) => unknown) =>
-        ({value, mapper}),
-    async (part: Part, {value, mapper}) => {
-      if (!(part instanceof NodePart)) {
-        throw new Error('asyncReplace can only be used in text bindings');
-      }
-      // If we've already set up this particular iterable, we don't need
-      // to do anything.
-      if (value === part.value) {
-        return;
-      }
-
-      // We nest a new part to keep track of previous item values separately
-      // of the iterable as a value itself.
-      const itemPart = new NodePart(part.options);
-      part.value = value;
-
-      let i = 0;
-
-      for await (let v of value) {
-        // Check to make sure that value is the still the current value of
-        // the part, and if not bail because a new value owns this part
-        if (part.value !== value) {
-          break;
-        }
-
-        // When we get the first value, clear the part. This let's the
-        // previous value display until we can replace it.
-        if (i === 0) {
-          part.clear();
-          itemPart.appendIntoPart(part);
-        }
-
-        // As a convenience, because functional-programming-style
-        // transforms of iterables and async iterables requires a library,
-        // we accept a mapper function. This is especially convenient for
-        // rendering a template for each item.
-        if (mapper !== undefined) {
-          // This is safe because T must otherwise be treated as unknown by
-          // the rest of the system.
-          v = mapper(v, i);
-        }
-
-        itemPart.setValue(v);
-        itemPart.commit();
-        i++;
-      }
-    });
+        unknown;
