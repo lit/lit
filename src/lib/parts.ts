@@ -154,8 +154,8 @@ export class AttributeCommitter {
         return v;
       }
     }
-
     let text = '';
+
     for (let i = 0; i < l; i++) {
       text += strings[i];
       const part = parts[i];

@@ -34,10 +34,10 @@ function convertConstantTemplateStringToTrustedHTML(value: string): string|
   const w = window as any
   // TrustedTypes have been renamed to trustedTypes
   // (https://github.com/WICG/trusted-types/issues/177)
-  const TrustedTypes =
-      (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
-  if (TrustedTypes && !policy) {
-    policy = TrustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
+  const trustedTypes =
+      (w.trustedTypes || w.trustedTypes) as TrustedTypePolicyFactory;
+  if (trustedTypes && !policy) {
+    policy = trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
   }
   return policy ? policy.createHTML(value) : value;
 }
