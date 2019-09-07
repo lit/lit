@@ -49,7 +49,7 @@ export function templateFactory(result: TemplateResult) {
   let templateCache = templateCaches.get(result.type);
   if (templateCache === undefined) {
     templateCache = {
-      stringsArray: new WeakMap<TemplateStringsArray, Template>(),
+      stringsArray: new WeakMap<readonly string[], Template>(),
       keyString: new Map<string, Template>()
     };
     templateCaches.set(result.type, templateCache);
@@ -89,7 +89,7 @@ export function templateFactory(result: TemplateResult) {
  * joining the strings array.
  */
 export type templateCache = {
-  readonly stringsArray: WeakMap<TemplateStringsArray, Template>; //
+  readonly stringsArray: WeakMap<readonly string[], Template>; //
   readonly keyString: Map<string, Template>;
 };
 

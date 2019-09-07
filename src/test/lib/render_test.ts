@@ -54,6 +54,11 @@ suite('render()', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), 'test');
     });
 
+    test('renders js escapes as text', () => {
+      render(html`te\nst`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'te\\nst');
+    });
+
     test('renders a string', () => {
       render(html`<div>${'foo'}</div>`, container);
       assert.equal(
@@ -903,6 +908,14 @@ suite('render()', () => {
     test('renders no comments inside textContent', () => {
       render(html`<style>${''}</style>`, container);
       assert.equal(container.firstElementChild!.textContent, '');
+    });
+
+    test('renders escaped unicode characters', () => {
+      render(
+          html`<style>li:before { content: "\0025a0  " }</style>`, container);
+      assert.equal(
+          container.firstElementChild!.textContent,
+          'li:before { content: "\\0025a0  " }');
     });
 
     test('renders style tags with expressions correctly', () => {

@@ -27,7 +27,7 @@ const commentMarker = ` ${marker} `;
  * interpolated expressions.
  */
 export class TemplateResult {
-  readonly strings: TemplateStringsArray;
+  readonly strings: readonly string[];
   readonly values: ReadonlyArray<unknown>;
   readonly type: string;
   readonly processor: TemplateProcessor;
@@ -35,7 +35,7 @@ export class TemplateResult {
   constructor(
       strings: TemplateStringsArray, values: ReadonlyArray<unknown>,
       type: string, processor: TemplateProcessor) {
-    this.strings = strings;
+    this.strings = strings.raw;
     this.values = values;
     this.type = type;
     this.processor = processor;
