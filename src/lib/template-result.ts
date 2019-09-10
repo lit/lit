@@ -35,7 +35,7 @@ function convertConstantTemplateStringToTrustedHTML(value: string): string|
   // TrustedTypes have been renamed to trustedTypes
   // (https://github.com/WICG/trusted-types/issues/177)
   const trustedTypes =
-      (w.trustedTypes || w.trustedTypes) as TrustedTypePolicyFactory;
+      (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
   if (trustedTypes && !policy) {
     policy = trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
   }
