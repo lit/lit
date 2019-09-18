@@ -22,7 +22,7 @@ export interface StyleInfo {
  * Stores the StyleInfo object applied to a given AttributePart.
  * Used to unset existing values when a new StyleInfo object is applied.
  */
-const styleMapCache = new WeakMap<AttributePart, StyleInfo>();
+const previousStylePropertyCache = new WeakMap<AttributePart, Set<string>>();
 
 /**
  * A directive that applies CSS properties to an element.
@@ -52,15 +52,20 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   const {committer} = part;
   const {style} = committer.element as HTMLElement;
 
-  // Handle static styles the first time we see a Part
-  if (!styleMapCache.has(part)) {
+  let previousStyleProperties = previousStylePropertyCache.get(part);
+
+  if (previousStyleProperties === undefined) {
+    // Write static styles once
     style.cssText = committer.strings.join(' ');
+    previousStylePropertyCache.set(part, previousStyleProperties = new Set());
   }
 
   // Remove old properties that no longer exist in styleInfo
-  const oldInfo = styleMapCache.get(part);
-  for (const name in oldInfo) {
+  // We use forEach() instead of for-of so that re don't require down-level
+  // iteration.
+  previousStyleProperties.forEach((name) => {
     if (!(name in styleInfo)) {
+      previousStyleProperties!.delete(name);
       if (name.indexOf('-') === -1) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (style as any)[name] = null;
@@ -68,10 +73,11 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
         style.removeProperty(name);
       }
     }
-  }
+  });
 
   // Add or update properties
   for (const name in styleInfo) {
+    previousStyleProperties.add(name);
     if (name.indexOf('-') === -1) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (style as any)[name] = styleInfo[name];
@@ -79,5 +85,4 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
       style.setProperty(name, styleInfo[name]);
     }
   }
-  styleMapCache.set(part, styleInfo);
 });

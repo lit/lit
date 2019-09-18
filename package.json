@@ -41,6 +41,7 @@
     "@types/mocha": "^5.2.0",
     "@typescript-eslint/eslint-plugin": "^2.3.0",
     "@typescript-eslint/parser": "^2.3.0",
+    "@types/trusted-types": "^1.0.1",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.0.4",
     "chai": "^4.1.2",
