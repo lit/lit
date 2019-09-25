@@ -1,7 +1,7 @@
 import { directive, NodePart, TemplateResult } from 'lit-html';
-import { VirtualScroller } from './uni-virtualizer/lib/VirtualScroller';
-import { Layout } from './uni-virtualizer/lib/layouts/Layout';
-import { LitMixin } from './repeat';
+import { VirtualScroller } from './uni-virtualizer/lib/VirtualScroller.js';
+import { Layout } from './uni-virtualizer/lib/layouts/Layout.js';
+import { LitMixin } from './repeat.js';
 
 export class LitScroller<Item> extends LitMixin(VirtualScroller)<Item> {}
 

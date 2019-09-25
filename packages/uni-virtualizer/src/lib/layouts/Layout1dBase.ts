@@ -1,5 +1,5 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './layout';
+import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
 
 export abstract class Layout1dBase implements Layout {
   /**

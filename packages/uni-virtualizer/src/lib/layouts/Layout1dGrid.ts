@@ -1,5 +1,5 @@
-import {Layout1dBase} from './Layout1dBase';
-import {ItemBox} from './Layout';
+import {Layout1dBase} from './Layout1dBase.js';
+import {ItemBox} from './Layout.js';
 
 /**
  * TODO @straversi: document and test this Layout.

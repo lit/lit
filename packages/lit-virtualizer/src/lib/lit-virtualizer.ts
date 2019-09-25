@@ -1,5 +1,5 @@
 import { html, LitElement, customElement, property, TemplateResult } from 'lit-element';
-import { scroll } from './scroll';
+import { scroll } from './scroll.js';
 
 /**
  * A LitElement wrapper of the scroll directive.
