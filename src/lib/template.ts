@@ -22,8 +22,8 @@ function isElementNode(node: Node): node is Element {
   return node.nodeType === 1;
 }
 
-function isTemplateElement(node: Element): node is HTMLTemplateElement {
-  return node.tagName === 'TEMPLATE';
+function isTemplateElement(element: Element): element is HTMLTemplateElement {
+  return element.tagName === 'TEMPLATE';
 }
 
 function isTextNode(node: Node): node is Text {
