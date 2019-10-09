@@ -18,6 +18,22 @@
 
 import {TemplateResult} from './template-result.js';
 
+function isElementNode(node: Node): node is Element {
+  return node.nodeType === 1;
+}
+
+function isTemplateElement(node: Element): node is HTMLTemplateElement {
+  return node.tagName === 'TEMPLATE';
+}
+
+function isTextNode(node: Node): node is Text {
+  return node.nodeType === 3;
+}
+
+function isCommentNode(node: Node): node is Comment {
+  return node.nodeType === 8;
+}
+
 /**
  * An expression marker with embedded unique key to avoid collision with
  * possible text in templates.
@@ -63,7 +79,7 @@ export class Template {
     let partIndex = 0;
     const {strings, values: {length}} = result;
     while (partIndex < length) {
-      const node = walker.nextNode() as Element | Comment | Text | null;
+      const node = walker.nextNode();
       if (node === null) {
         // We've exhausted the content inside a nested template element.
         // Because we still have parts (the outer for-loop), we know:
@@ -74,9 +90,9 @@ export class Template {
       }
       index++;
 
-      if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-        if ((node as Element).hasAttributes()) {
-          const attributes = (node as Element).attributes;
+      if (isElementNode(node)) {
+        if (node.hasAttributes()) {
+          const attributes = node.attributes;
           const {length} = attributes;
           // Per
           // https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap,
@@ -102,20 +118,19 @@ export class Template {
             // the suffix.
             const attributeLookupName =
                 name.toLowerCase() + boundAttributeSuffix;
-            const attributeValue =
-                (node as Element).getAttribute(attributeLookupName)!;
-            (node as Element).removeAttribute(attributeLookupName);
+            const attributeValue = node.getAttribute(attributeLookupName)!;
+            node.removeAttribute(attributeLookupName);
             const statics = attributeValue.split(markerRegex);
             this.parts.push({type: 'attribute', index, name, strings: statics});
             partIndex += statics.length - 1;
           }
         }
-        if ((node as Element).tagName === 'TEMPLATE') {
+        if (isTemplateElement(node)) {
           stack.push(node);
-          walker.currentNode = (node as HTMLTemplateElement).content;
+          walker.currentNode = node.content;
         }
-      } else if (node.nodeType === 3 /* Node.TEXT_NODE */) {
-        const data = (node as Text).data;
+      } else if (isTextNode(node)) {
+        const data = node.data;
         if (data.indexOf(marker) >= 0) {
           const parent = node.parentNode!;
           const strings = data.split(markerRegex);
@@ -144,13 +159,13 @@ export class Template {
             parent.insertBefore(createMarker(), node);
             nodesToRemove.push(node);
           } else {
-            (node as Text).data = strings[lastIndex];
+            node.data = strings[lastIndex];
           }
           // We have a part for each match found
           partIndex += lastIndex;
         }
-      } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
-        if ((node as Comment).data === marker) {
+      } else if (isCommentNode(node)) {
+        if (node.data === marker) {
           const parent = node.parentNode!;
           // Add a new marker node to be the startNode of the Part if any of
           // the following are true:
@@ -165,7 +180,7 @@ export class Template {
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
           if (node.nextSibling === null) {
-            (node as Comment).data = '';
+            node.data = '';
           } else {
             nodesToRemove.push(node);
             index--;
@@ -173,7 +188,7 @@ export class Template {
           partIndex++;
         } else {
           let i = -1;
-          while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
+          while ((i = node.data.indexOf(marker, i + 1)) !== -1) {
             // Comment node has a binding marker inside, make an inactive part
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
