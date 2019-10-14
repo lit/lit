@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Changed -->
 <!-- ### Removed -->
 ### Added
-* Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types
+* Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types ([#970](https://github.com/Polymer/lit-html/pull/970))
 
 ### Fixed
 * Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
