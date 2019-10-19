@@ -1,0 +1,69 @@
+<!--
+@license
+Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!doctype html>
+<html>
+
+<head>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+
+    .search-bar {
+      width: 100px;
+      transition: width 600ms ease-in-out;
+    }
+
+    .search-bar[expanded] {
+      width: 600px;
+    }
+
+    .search-bar[expanded][animating] {
+      border: 1px solid blue;
+    }
+
+    .search-bar:not([expanded])[animating] {
+      border: 1px solid red;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="demo"></div>
+
+  <script type="module">
+    import { html, render } from '../../lit-html.js';
+    import { trackTransition } from '../../directives/track-transition.js';
+
+    function renderDemo(searchExpanded) {
+      render(html`
+        <div>
+          <input
+            class="search-bar"
+            placeholder="Search"
+            ?expanded=${searchExpanded}
+            ?animating=${trackTransition('width')}
+          >
+
+          <button @click=${() => renderDemo(!searchExpanded)}>
+            Toggle search
+          </button>
+        </div>
+      `, document.getElementById('demo'));
+    }
+
+    renderDemo(false);
+  </script>
+</body>
+
+</html>

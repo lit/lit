@@ -1,0 +1,133 @@
+<!--
+@license
+Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!doctype html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    #demo {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .buttons {
+      padding: 36px 0;
+    }
+
+    .page {
+      padding: 16px;
+      background-color: white;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      border-radius: 4px;
+      max-width: 800px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    @keyframes page-entry {
+      from {
+        transform: translateX(100vw)
+      }
+    }
+
+    @keyframes page-exit {
+      to {
+        transform: translateX(-100vw)
+      }
+    }
+
+    .page-entry {
+      animation: page-entry 600ms;
+      position: absolute;
+    }
+
+    .page-exit {
+      animation: page-exit 600ms;
+      position: absolute;
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 48px;
+      right: 48px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      background-color: blue;
+      transform-origin: center;
+    }
+
+    @keyframes fab-entry {
+      from { transform: scale(0) }
+    }
+
+    @keyframes fab-exit {
+      to { transform: scale(0) }
+    }
+
+    .fab.fab-entry {
+      animation: fab-entry 300ms;
+    }
+
+    .fab.fab-exit {
+      animation: fab-exit 300ms;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="demo">
+
+  </div>
+
+  <script type="module">
+    import { html, render, nothing } from '../../lit-html.js';
+    import { animate } from '../../directives/animate.js';
+    import pages from './pages.js';
+
+    function renderDemo(showFab, currentPage) {
+      render(html`
+        <div class="buttons">
+          <button @click=${() => {
+            const i = pages.indexOf(currentPage);
+            renderDemo(showFab, pages[i + 1 < pages.length ? i + 1 : 0]);
+          }}>Next page</button>
+
+          <button @click=${() => renderDemo(!showFab, currentPage)}>Toggle fab</button>
+
+          ${animate(showFab ? html`<div class="fab"></div>` : nothing, { prefix: 'fab' })}
+        </div>
+
+        ${animate(currentPage, { prefix: 'page' })}
+
+      `, document.getElementById('demo'));
+    }
+
+    renderDemo(false, pages[0]);
+  </script>
+</body>
+
+</html>
