@@ -118,10 +118,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           <button @click=${() => renderDemo(!showFab, currentPage)}>Toggle fab</button>
 
-          ${animate(showFab ? html`<div class="fab"></div>` : nothing, { prefix: 'fab' })}
+          ${animate(showFab ? html`<div class="fab"></div>` : nothing, { entry: 'fab-entry', exit: 'fab-exit' })}
         </div>
 
-        ${animate(currentPage, { prefix: 'page' })}
+        ${animate(currentPage, { entry: 'page-entry', exit: 'page-exit' })}
 
       `, document.getElementById('demo'));
     }
