@@ -24,6 +24,7 @@ interface MaybePolyfilledCe extends CustomElementRegistry {
  * True if the custom elements polyfill is in use.
  */
 export const isCEPolyfill = window.customElements !== undefined &&
+    window.customElements !== null &&
     (window.customElements as MaybePolyfilledCe).polyfillWrapFlushCallback !==
         undefined;
 
