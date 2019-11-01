@@ -59,13 +59,14 @@ export const scroll: <T>(config: ScrollConfig<T>) => (part: NodePart) => Promise
     if (!part.startNode.isConnected) {
       await Promise.resolve();
     }
-    const {renderItem, layout, scrollTarget, useShadowDOM} = config;
-    scroller = new LitScroller<T>({part, renderItem, layout, scrollTarget, useShadowDOM});
+    const {renderItem, scrollTarget, useShadowDOM} = config;
+    scroller = new LitScroller<T>({part, renderItem, scrollTarget, useShadowDOM});
     partToScroller.set(part, scroller);
   }
   Object.assign(scroller, {
     items: config.items,
     totalItems: config.totalItems === undefined ? null : config.totalItems,
     scrollToIndex: config.scrollToIndex === undefined ? null : config.scrollToIndex,
+    layout: config.layout
   });
 });

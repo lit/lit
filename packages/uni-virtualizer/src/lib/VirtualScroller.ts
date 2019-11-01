@@ -281,7 +281,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
     this._layout = layout;
 
     if (this._layout) {
-      if (typeof this._layout.updateItemSizes === 'function') {
+      if (this.layout.measureChildren && typeof this._layout.updateItemSizes === 'function') {
         this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
         this.requestRemeasure();
       }
@@ -573,15 +573,21 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
    * Sets the top and left transform style of the children from the values in
    * pos.
    */
-  private _positionChildren(pos: Array<{top: number, left: number}>) {
+  private _positionChildren(pos: Array<{top: number, left: number, width?: number, height?: number}>) {
     const kids = this._kids;
     Object.keys(pos).forEach((key) => {
       const idx = (key as unknown as number) - this._first;
       const child = kids[idx];
       if (child) {
-        const {top, left} = pos[key];
+        const {top, left, width, height} = pos[key];
         child.style.position = 'absolute';
         child.style.transform = `translate(${left}px, ${top}px)`;
+        if (width !== undefined) {
+          child.style.width = width + 'px';
+        }
+        if (height !== undefined) {
+          child.style.height = height + 'px';
+        }
       }
     });
   }

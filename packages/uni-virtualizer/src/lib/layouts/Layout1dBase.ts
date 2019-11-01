@@ -1,5 +1,5 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './layout';
+import {Layout, Positions, ScrollDirection, Size, dimension, position} from './layout';
 
 export abstract class Layout1dBase implements Layout {
   /**
@@ -139,8 +139,9 @@ export abstract class Layout1dBase implements Layout {
     return this._totalItems;
   }
   set totalItems(num) {
-    if (num !== this._totalItems) {
-      this._totalItems = num;
+    const _num = Number(num);
+    if (_num !== this._totalItems) {
+      this._totalItems = _num;
       this._scheduleReflow();
     }
   }
@@ -189,8 +190,9 @@ export abstract class Layout1dBase implements Layout {
     return this._spacing;
   }
   set spacing(px) {
-    if (px !== this._spacing) {
-      this._spacing = px;
+    const _px = Number(px);
+    if (_px !== this._spacing) {
+      this._spacing = _px;
       this._scheduleReflow();
     }
   }
@@ -293,10 +295,6 @@ export abstract class Layout1dBase implements Layout {
    * range.
    */
   abstract _getActiveItems();
-
-  updateItemSizes(_sizes: {[key: number]: ItemBox}) {
-    // Override
-  }
 
   protected _itemDim2Changed() {
     // Override

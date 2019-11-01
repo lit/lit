@@ -20,6 +20,14 @@
         "rollup-plugin-terser": "^4.0.4"
     },
     "dependencies": {
-        "lit-element": "latest"
+        "@material/mwc-drawer": "^0.10.0",
+        "@material/mwc-formfield": "^0.10.0",
+        "@material/mwc-icon-button": "^0.10.0",
+        "@material/mwc-radio": "^0.10.0",
+        "@material/mwc-slider": "^0.10.0",
+        "@material/mwc-textfield": "^0.10.0",
+        "@material/mwc-top-app-bar": "^0.10.0",
+        "lit-element": "^2.2.1",
+        "lit-html": "^1.1.2"
     }
 }

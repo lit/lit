@@ -71,4 +71,14 @@ export default [
       resolve(),
     ]
   },
+  {
+    input: 'public/photo-grid-lit-element/index.js',
+    output: {
+      dir: 'public/photo-grid-lit-element/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]
+  },
 ];

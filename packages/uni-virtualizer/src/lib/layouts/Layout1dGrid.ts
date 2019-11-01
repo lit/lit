@@ -1,31 +1,30 @@
 import {Layout1dBase} from './Layout1dBase';
-import {ItemBox} from './Layout';
 
 /**
  * TODO @straversi: document and test this Layout.
  */
-export class Layout1dGrid extends Layout1dBase {
-  _rolumns;
+export abstract class Layout1dGrid extends Layout1dBase {
+  protected _rolumns;
 
   constructor(config) {
     super(config);
     this._rolumns = 1;
   }
 
-  updateItemSizes(sizes: {[key: number]: ItemBox}) {
-    // Assume all items have the same size.
-    const size = Object.values(sizes)[0];
-    if (size) {
-      this.itemSize = size;
-    }
+  set spacing(px) {
+    super.spacing = px;
+    this._defineGrid();
+    this._scheduleReflow();
   }
 
   _viewDim2Changed() {
     this._defineGrid();
+    this._scheduleReflow();
   }
 
   _itemDim2Changed() {
     this._defineGrid();
+    this._scheduleReflow();
   }
 
   _getActiveItems() {
@@ -45,28 +44,16 @@ export class Layout1dGrid extends Layout1dBase {
 
   _getItemPosition(idx: number): {top: number, left: number} {
     return {
-      [this._positionDim]: Math.floor(idx / this._rolumns) * this._delta,
+      [this._positionDim]: this._spacing + Math.floor(idx / this._rolumns) * this._delta,
           [this._secondaryPositionDim]: this._spacing +
           ((idx % this._rolumns) * (this._spacing + this._itemDim2))
     } as unknown as {top: number, left: number};
   }
 
-  _defineGrid() {
-    const {_spacing} = this;
-    this._rolumns = Math.max(1, Math.floor(this._viewDim2 / this._itemDim2));
-    if (this._rolumns > 1) {
-      this._spacing = (this._viewDim2 % (this._rolumns * this._itemDim2)) /
-          (this._rolumns + 1);
-    }
-    else {
-      this._spacing = 0;
-    }
-    this._spacingChanged = !(_spacing === this._spacing);
-    this._scheduleReflow();
-  }
+  abstract _defineGrid(): void;
 
   _updateScrollSize() {
     this._scrollSize =
-        Math.max(1, Math.ceil(this._totalItems / this._rolumns) * this._delta);
+        Math.max(1, Math.ceil(this._totalItems / this._rolumns) * this._delta + this._spacing);
   }
 }

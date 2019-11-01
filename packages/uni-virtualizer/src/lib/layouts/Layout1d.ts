@@ -56,10 +56,16 @@ export class Layout1d extends Layout1dBase {
    */
   private _tMeasured: number = 0;
 
+  private _measureChildren = true;
+
   _estimate: boolean = true;
 
   constructor(config) {
     super(config);
+  }
+
+  get measureChildren() {
+    return this._measureChildren;
   }
 
   /**
