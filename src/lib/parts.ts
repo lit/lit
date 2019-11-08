@@ -38,8 +38,71 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
 };
 
 /**
+ * A global callback used to sanitize any value before it is written into the
+ * DOM. This can be used to implement a security policy of allowed and
+ * disallowed values.
+ *
+ * One way of using this callback would be to check attributes and properties
+ * against a list of high risk fields, and require that values written to such
+ * fields be instances of a class which is safe by construction. Closure's Safe
+ * HTML Types is one implementation of this technique (
+ * https://github.com/google/safe-html-types/blob/master/doc/safehtml-types.md).
+ * The TrustedTypes polyfill in API-only mode could also be used as a basis
+ * for this technique (https://github.com/WICG/trusted-types).
+ *
+ * @param value The value to sanitize. Will be the actual value passed into the
+ *   lit-html template literal, so this could be of any type.
+ * @param name The name of an attribute or property (for example, 'href').
+ * @param type Indicates whether the write that's about to be performed will
+ *   be to a property or a node.
+ * @param node The HTML node (usually either a #text node or an Element) that
+ *   is being written to.
+ * @returns The value to write. Typically this is `value`, unless
+ *   `value` is determined to be unsafe, in which case a harmless sentinel value
+ *   should be returned instead.
+ */
+export type DOMSanitizer =
+    (value: unknown,
+     name: string,
+     type: ('property'|'attribute'),
+     node: Node) => unknown;
+
+
+/**
+ * A global callback used to sanitize any value before inserting it into the
+ * DOM.
+ */
+let sanitizeDOMValueImpl: DOMSanitizer|undefined;
+
+/** Sets the global DOM sanitization callback. */
+export const __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning =
+    (newSanitizer: DOMSanitizer) => {
+      if (sanitizeDOMValueImpl !== undefined) {
+        throw new Error(
+            `Attempted to overwrite existing lit-html security policy.` +
+            ` setSanitizeDOMValue should be called at most once.`);
+      }
+      sanitizeDOMValueImpl = newSanitizer;
+    };
+
+const sanitizeDOMValue: DOMSanitizer =
+    (value: unknown,
+     name: string,
+     type: ('property'|'attribute'),
+     node: Node) => {
+      if (sanitizeDOMValueImpl !== undefined) {
+        return sanitizeDOMValueImpl(value, name, type, node);
+      }
+      return value;
+    };
+
+export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
+  sanitizeDOMValueImpl = undefined;
+};
+
+/**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
- * single attibute. The value is only set once even if there are multiple parts
+ * single attribute. The value is only set once even if there are multiple parts
  * for an attribute.
  */
 export class AttributeCommitter {
@@ -68,12 +131,34 @@ export class AttributeCommitter {
 
   protected _getValue(): unknown {
     const strings = this.strings;
+    const parts = this.parts;
     const l = strings.length - 1;
+
+    // If we're assigning an attribute via syntax like:
+    //    attr="${foo}"  or  attr=${foo}
+    // but not
+    //    attr="${foo} ${bar}" or attr="${foo} baz"
+    // then we don't want to coerce the attribute value into one long
+    // string. Instead we want to just return the value itself directly,
+    // so that sanitizeDOMValue can get the actual value rather than
+    // String(value)
+    // The exception is if v is an array, in which case we do want to smash
+    // it together into a string without calling String() on the array.
+    //
+    // This also allows trusted values (when using TrustedTypes) being
+    // assigned to DOM sinks without being stringified in the process.
+    if (l === 1 && strings[0] === '' && strings[1] === '' &&
+        parts[0] !== undefined) {
+      const v = parts[0].value;
+      if (!isIterable(v)) {
+        return v;
+      }
+    }
     let text = '';
 
     for (let i = 0; i < l; i++) {
       text += strings[i];
-      const part = this.parts[i];
+      const part = parts[i];
       if (part !== undefined) {
         const v = part.value;
         if (isPrimitive(v) || !isIterable(v)) {
@@ -93,7 +178,13 @@ export class AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      this.element.setAttribute(this.name, this._getValue() as string);
+      let value = this._getValue();
+      value = sanitizeDOMValue(value, this.name, 'attribute', this.element);
+      if (typeof value === 'symbol') {
+        // Native Symbols throw if they're coerced to string.
+        value = String(value);
+      }
+      this.element.setAttribute(this.name, value as string);
     }
   }
 }
@@ -245,18 +336,26 @@ export class NodePart implements Part {
   private __commitText(value: unknown): void {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
-    // If `value` isn't already a string, we explicitly convert it here in case
-    // it can't be implicitly converted - i.e. it's a symbol.
-    const valueAsString: string =
-        typeof value === 'string' ? value : String(value);
     if (node === this.endNode.previousSibling &&
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
-      // TODO(justinfagnani): Can we just check if this.value is primitive?
-      (node as Text).data = valueAsString;
+      const renderedValue = sanitizeDOMValue(value, 'data', 'property', node);
+      (node as Text).data = typeof renderedValue === 'string' ?
+          renderedValue :
+          String(renderedValue);
     } else {
-      this.__commitNode(document.createTextNode(valueAsString));
+      // When setting text content, for security purposes it matters a lot what
+      // the parent is. For example, <style> and <script> need to be handled
+      // with care, while <span> does not. So first we need to put a text node
+      // into the document, then we can sanitize its contentx.
+      const textNode = document.createTextNode('');
+      this.__commitNode(textNode);
+      const renderedValue =
+          sanitizeDOMValue(value, 'textContent', 'property', textNode) as
+          string;
+      textNode.data = typeof renderedValue === 'string' ? renderedValue :
+                                                          String(renderedValue);
     }
     this.value = value;
   }
@@ -267,6 +366,22 @@ export class NodePart implements Part {
         this.value.template === template) {
       this.value.update(value.values);
     } else {
+      // `value` is a template result that was constructed without knowledge of
+      // the parent we're about to write it into. sanitizeDOMValue hasn't been
+      // made aware of this relationship, and for scripts and style specifically
+      // this is known to be unsafe. So in the case where the user is in
+      // "secure mode" (i.e. when there's a sanitizeDOMValue set), we just want
+      // to forbid this because it's not a use case we want to support.
+      // We check for sanitizeDOMValue is to prevent this from
+      // being a breaking change to the library.
+      const parent = this.endNode.parentNode!;
+      if (sanitizeDOMValueImpl !== undefined && parent.nodeName === 'STYLE' ||
+          parent.nodeName === 'SCRIPT') {
+        this.__commitText(
+            '/* lit-html will not write ' +
+            'TemplateResults to scripts and styles */');
+        return;
+      }
       // Make sure we propagate the template processor from the TemplateResult
       // so that we use its syntax extension, etc. The template factory comes
       // from the render function options so that it can control template
@@ -416,8 +531,10 @@ export class PropertyCommitter extends AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
+      let value = this._getValue();
+      value = sanitizeDOMValue(value, this.name, 'property', this.element);
       // tslint:disable-next-line:no-any
-      (this.element as any)[this.name] = this._getValue();
+      (this.element as any)[this.name] = value;
     }
   }
 }
