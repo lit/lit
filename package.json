@@ -15,7 +15,8 @@
     "bootstrap": "npm run link-uni-virtual-examples && lerna bootstrap --hoist",
     "clean": "lerna run clean; rm -r node_modules/",
     "start": "http-server & npm run build-and-watch --prefix packages/uni-virtualizer-examples",
-    "deploy-examples": "./scripts/deploy-examples.sh"
+    "deploy-examples": "./scripts/deploy-examples.sh",
+    "build-for-netlify": "npm run bootstrap; npm run build --prefix packages/lit-virtualizer; npm run build --prefix packages/uni-virtualizer-examples;"
   },
   "dependencies": {}
 }
