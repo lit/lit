@@ -79,8 +79,12 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   for (const name in styleInfo) {
     previousStyleProperties.add(name);
     if (name.indexOf('-') === -1) {
-      // tslint:disable-next-line:no-any
-      (style as any)[name] = styleInfo[name];
+      try{
+        // tslint:disable-next-line:no-any
+        (style as any)[name] = styleInfo[name];
+      }catch(e){
+        style.setProperty(name, styleInfo[name]);
+      }
     } else {
       style.setProperty(name, styleInfo[name]);
     }
