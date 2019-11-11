@@ -72,9 +72,9 @@ export default [
     ]
   },
   {
-    input: 'public/photo-grid-lit-element/index.js',
+    input: 'public/photo-grid-lit-html/index.js',
     output: {
-      dir: 'public/photo-grid-lit-element/build',
+      dir: 'public/photo-grid-lit-html/build',
       format: 'esm'
     },
     plugins: [

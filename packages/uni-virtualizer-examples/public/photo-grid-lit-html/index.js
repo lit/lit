@@ -79,7 +79,7 @@ function renderExample() {
         <mwc-icon-button slot="navigationIcon" @click=${() => setState({open: !open})}>
             <svg slot="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><use xlink:href="#settings"></use></svg>
         </mwc-icon-button>
-        <div slot="title">Flex Wrap layout</div>
+        <div slot="title">lit-virtualizer grid layouts</div>
     </mwc-top-app-bar>
     <div class="appBody">
         <div class="sheet">
