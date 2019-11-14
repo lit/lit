@@ -220,9 +220,15 @@ export type TemplatePart = {
 
 export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
+/**
+ * Used to clone existing node instead of each time creating new one which is
+ * slower
+ */
+const markerNode = document.createComment('');
+
 // Allows `document.createComment('')` to be renamed for a
 // small manual size-savings.
-export const createMarker = () => document.createComment('');
+export const createMarker = () => markerNode.cloneNode() as Comment;
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
