@@ -28,6 +28,11 @@ interface PreviousValue {
 const previousValues = new WeakMap<NodePart, PreviousValue>();
 
 /**
+ * Used to clone existing node instead of each time creating new one which is slower
+ */
+const emptyTemplateNode = document.createElement('template');
+
+/**
  * Renders the result as HTML, rather than text.
  *
  * Note, this is unsafe to use with any user-provided input that hasn't been
@@ -46,7 +51,7 @@ export const unsafeHTML = directive((value: unknown) => (part: Part): void => {
     return;
   }
 
-  const template = document.createElement('template');
+  const template = emptyTemplateNode.cloneNode() as HTMLTemplateElement;
   template.innerHTML = value as string;  // innerHTML casts to string internally
   const fragment = document.importNode(template.content, true);
   part.setValue(fragment);

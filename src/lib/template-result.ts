@@ -45,6 +45,11 @@ function convertConstantTemplateStringToTrustedHTML(value: string): string|
 const commentMarker = ` ${marker} `;
 
 /**
+ * Used to clone existing node instead of each time creating new one which is slower
+ */
+const emptyTemplateNode = document.createElement('template');
+
+/**
  * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
  */
@@ -121,7 +126,7 @@ export class TemplateResult {
   }
 
   getTemplateElement(): HTMLTemplateElement {
-    const template = document.createElement('template');
+    const template = emptyTemplateNode.cloneNode() as HTMLTemplateElement;
     // this is secure because `this.strings` is a TemplateStringsArray.
     // TODO: validate this when
     // https://github.com/tc39/proposal-array-is-template-object is implemented.

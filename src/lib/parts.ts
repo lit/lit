@@ -101,6 +101,11 @@ export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
 };
 
 /**
+ * Used to clone text node instead of each time creating new one which is slower
+ */
+const emptyTextNode = document.createTextNode('');
+
+/**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
  * single attribute. The value is only set once even if there are multiple parts
  * for an attribute.
@@ -349,7 +354,7 @@ export class NodePart implements Part {
       // the parent is. For example, <style> and <script> need to be handled
       // with care, while <span> does not. So first we need to put a text node
       // into the document, then we can sanitize its contentx.
-      const textNode = document.createTextNode('');
+      const textNode = emptyTextNode.cloneNode() as Text;
       this.__commitNode(textNode);
       const renderedValue =
           sanitizeDOMValue(value, 'textContent', 'property', textNode) as
