@@ -1,3 +1,8 @@
+## [0.4.2] - 2019-11-15
+### Changed
+- Appended `.js` to all local imports.
+- Capitalized `Layout` import in Layout1dBase.
+
 ## [0.4.1] - 2019-09-24
 ### Changed
 - Rollup plugins moved to dev dependencies.
