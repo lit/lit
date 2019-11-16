@@ -66,7 +66,9 @@ export const scroll: <T>(config: ScrollConfig<T>) => (part: NodePart) => Promise
   Object.assign(scroller, {
     items: config.items,
     totalItems: config.totalItems === undefined ? null : config.totalItems,
-    scrollToIndex: config.scrollToIndex === undefined ? null : config.scrollToIndex,
-    layout: config.layout
+    scrollToIndex: config.scrollToIndex === undefined ? null : config.scrollToIndex
   });
+  if (config.layout !== undefined) {
+    scroller.layout = config.layout;
+  }
 });
