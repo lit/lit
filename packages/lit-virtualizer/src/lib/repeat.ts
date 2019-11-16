@@ -1,6 +1,6 @@
 import { directive, NodePart, createMarker, TemplateResult } from 'lit-html';
-import { VirtualRepeater } from './uni-virtualizer/lib/VirtualRepeater';
-import { Layout } from './uni-virtualizer/lib/layouts/Layout';
+import { VirtualRepeater } from './uni-virtualizer/lib/VirtualRepeater.js';
+import { Layout } from './uni-virtualizer/lib/layouts/Layout.js';
 
 /**
  * Mixin for VirtualRepeater and VirtualScroller. This mixin overrides the generic

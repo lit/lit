@@ -1,6 +1,6 @@
-import {VirtualRepeater} from './VirtualRepeater';
+import {VirtualRepeater} from './VirtualRepeater.js';
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import {Layout} from './layouts/Layout';
+import {Layout} from './layouts/Layout.js';
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';
 let globalContainerStylesheet: HTMLStyleElement = null;

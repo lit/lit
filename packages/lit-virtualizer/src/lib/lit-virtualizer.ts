@@ -1,5 +1,5 @@
 import { html, LitElement, customElement, property, TemplateResult } from 'lit-element';
-import { scroll } from './scroll';
+import { scroll } from './scroll.js';
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -59,5 +59,11 @@ export class LitVirtualizer<T> extends LitElement {
             useShadowDOM: true
             // TODO: allow configuration of a layout.
         })}`;
+    }
+}
+
+declare global {
+    interface HTMLElementTagNameMap {
+        'lit-virtualizer': LitVirtualizer<unknown>;
     }
 }

@@ -1,4 +1,4 @@
-import {ItemBox, Margins} from './layouts/Layout';
+import {ItemBox, Margins} from './layouts/Layout.js';
 
 export class VirtualRepeater<Item, Child extends Element, Key> {
   /**
@@ -75,7 +75,7 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
    */
   protected _measureCallback: (sizes: {[key: number]: ItemBox}) => void = null;
 
-  /** 
+  /**
    * Number of children in the range. Set by num.
    * TODO @straversi: Consider renaming this. count? visibleElements?
    */

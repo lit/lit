@@ -1,4 +1,4 @@
-import {Layout1dBase} from './Layout1dBase';
+import {Layout1dBase} from './Layout1dBase.js';
 
 /**
  * TODO @straversi: document and test this Layout.

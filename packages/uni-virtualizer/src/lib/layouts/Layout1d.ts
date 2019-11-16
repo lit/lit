@@ -1,5 +1,5 @@
-import {Layout1dBase} from './Layout1dBase';
-import {ItemBox, Positions, Size} from './Layout';
+import {Layout1dBase} from './Layout1dBase.js';
+import {ItemBox, Positions, Size} from './Layout.js';
 
 type ItemBounds = {
   pos: number,
