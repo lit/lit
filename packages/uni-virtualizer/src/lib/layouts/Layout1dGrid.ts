@@ -37,7 +37,7 @@ export abstract class Layout1dGrid extends Layout1dBase {
 
     this._first = firstCow * this._rolumns;
     this._last =
-        Math.min(((lastCow + 1) * this._rolumns) - 1, this._totalItems);
+        Math.min(((lastCow + 1) * this._rolumns) - 1, this._totalItems - 1);
     this._physicalMin = this._delta * firstCow;
     this._physicalMax = this._delta * (lastCow + 1);
   }

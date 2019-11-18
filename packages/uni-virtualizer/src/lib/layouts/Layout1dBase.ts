@@ -225,7 +225,7 @@ export abstract class Layout1dBase implements Layout {
     this._scrollPosition = this._latestCoords[this._positionDim];
     if (oldPos !== this._scrollPosition) {
       this._scrollPositionChanged(oldPos, this._scrollPosition);
-      this._updateVisibleIndices();
+      this._updateVisibleIndices({emit: true});
     }
     this._checkThresholds();
   }
@@ -356,6 +356,7 @@ export abstract class Layout1dBase implements Layout {
     this._updateScrollSize();
     this._getActiveItems();
     this._scrollIfNeeded();
+    this._updateVisibleIndices();
 
     if (this._scrollSize !== _scrollSize) {
       this._emitScrollSize();
@@ -474,27 +475,25 @@ export abstract class Layout1dBase implements Layout {
    * Find the indices of the first and last items to intersect the viewport.
    * Emit a visibleindiceschange event when either index changes.
    */
-  protected _updateVisibleIndices() {
-    let firstVisible = this._firstVisible;
-    let lastVisible = this._lastVisible;
-    for (let i = this._first; i <= this._last; i++) {
-      const itemY = this._getItemPosition(i)[this._positionDim];
-      if (itemY <= this._scrollPosition) {
-        firstVisible = i;
-      }
-      if (itemY < this._scrollPosition + this._viewDim1) {
-        lastVisible = i;
-      }
+  protected _updateVisibleIndices(options?) {
+    if (this._first === -1 || this._last === -1) return;
+
+    let firstVisible = this._first;
+    while (this._getItemPosition(firstVisible)[this._positionDim] + this._getItemSize(firstVisible)[this._sizeDim] < this._scrollPosition) {
+      firstVisible++;
     }
-    // If scrolling is occurring very quickly, item positions may change
-    // during this calculation. Ignore the results when that happens.
-    if (firstVisible > lastVisible) {
-      return;
+
+    let lastVisible = this._last;
+    while (this._getItemPosition(lastVisible)[this._positionDim] > this._scrollPosition + this._viewDim1) {
+      lastVisible--;
     }
+
     if (firstVisible !== this._firstVisible || lastVisible !== this._lastVisible) {
       this._firstVisible = firstVisible;
       this._lastVisible = lastVisible;
-      this._emitRange();
+      if (options && options.emit) {
+        this._emitRange();
+      }
     }
   }
 

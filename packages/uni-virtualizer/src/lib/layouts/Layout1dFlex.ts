@@ -89,6 +89,11 @@ export class Layout1dFlex extends Layout1dBase {
       return this._itemPositions[idx];
   }
 
+  _getItemSize(idx: number): Size {
+    const {width, height} = this._itemPositions[idx];
+    return {width, height};
+  }
+
 
   /**
    * Render at the next opportunity.

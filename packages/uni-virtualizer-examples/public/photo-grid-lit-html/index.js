@@ -35,22 +35,36 @@ const renderBox = (item, idx) => {
 
 const state = {
     open: false,
+    showRange: false,
     items: [],
     direction: 'vertical',
     idealSize: 300,
     spacing: 8,
     query: 'fog',
     Layout: Layout1dSquareGrid,
-    layout: null
+    layout: null,
+    first: 0,
+    last: 0,
+    firstVisible: 0,
+    lastVisible: 0
 }
 
 function setState(changes) {
-    Object.assign(state, changes);
-    render(renderExample(), document.body);
+    let changed;
+    for (let prop in changes) {
+        if (changes[prop] !== state[prop]) {
+            changed = true;
+            break;
+        }
+    }
+    if (changed) {
+        Object.assign(state, changes);
+        render(renderExample(), document.body);    
+    }
 }
 
 function renderExample() {
-    let {open, items, direction, idealSize, spacing, query, Layout, layout} = state;
+    let {open, showRange, items, direction, idealSize, spacing, query, Layout, layout, first, last, firstVisible, lastVisible} = state;
     if (!(layout instanceof Layout)) {
         layout = (state.layout = new Layout({idealSize, spacing, direction}));
         updateItemSizes(items);
@@ -71,7 +85,7 @@ function renderExample() {
     .open .sheet {width: 256px;}
     .scroller > * {transition: all 0.25s;}
     .box {background: #DDD;}
-    legend {font-family: Roboto, sans-serif; font-size: 0.75rem; font-weight: 400; color: rgba(0, 0, 0, 0.6);}
+    .sheet {font-family: Roboto, sans-serif; font-size: 0.75rem; font-weight: 400; color: rgba(0, 0, 0, 0.6);}
     mwc-formfield {display: block;}
 </style>
 <div class="appLayout${open ? ' open' : ''}">
@@ -105,9 +119,19 @@ function renderExample() {
                         <mwc-radio name="layout" .value=${Layout1dFlex} ?checked=${Layout === Layout1dFlex}></mwc-radio>
                     </mwc-formfield>
                 </fieldset>
+                <details ?open=${showRange} @toggle=${e => setState({showRange: e.target.open})}>
+                    <summary>Range</summary>
+                    ${showRange ? html`
+                        <p>Physical: ${first} to ${last}</p>
+                        <p>Visible: ${firstVisible} to ${lastVisible}</p>` : ''
+                    }
+                </details>
             </div>
         </div>
-        <div class="scroller">
+        <div class="scroller" @rangechange=${(e) => {
+            const {first, last, firstVisible, lastVisible} = e;
+            setState({first, last, firstVisible, lastVisible});
+        }}>
             ${scroll({items, renderItem, layout: layout})}
         </div>
     </div>
