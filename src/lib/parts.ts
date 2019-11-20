@@ -405,8 +405,8 @@ export class NodePart implements Part {
       // this is known to be unsafe. So in the case where the user is in
       // "secure mode" (i.e. when there's a sanitizeDOMValue set), we just want
       // to forbid this because it's not a use case we want to support.
-      // We only apply this policy when sanitizerFactoryInternal has not been
-      // disabled to prevent this from being a breaking change to the library.
+      // We only apply this policy when sanitizerFactory has been set to
+      // prevent this from being a breaking change to the library.
       const parent = this.endNode.parentNode!;
       if (sanitizerFactory !== noopSanitizer && parent.nodeName === 'STYLE' ||
           parent.nodeName === 'SCRIPT') {
