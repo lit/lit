@@ -667,7 +667,7 @@ suite('setSanitizeDOMValue', () => {
 
   setup(() => {
     setSanitizerFactory(
-        (node: Node, name: string, type: 'property'|'attribute'|'text') => {
+        (node: Node, name: string, type: 'property'|'attribute') => {
           return (value: unknown) => {
             sanitizerCalls.push({value, name, type, nodeName: node.nodeName});
             if (value instanceof FakeSanitizedWrapper) {
