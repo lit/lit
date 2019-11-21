@@ -29,11 +29,11 @@ const unsafeScriptString = 'alert(0)';
 const isIE = /Trident\/\d/.test(navigator.userAgent);
 const isChrome41 = /Chrome\/41/.test(navigator.userAgent);
 
-const suiteFn = (isIE || isChrome41) ? suite.skip : suite;
+const testOnRecentishBrowsers = (isIE || isChrome41) ? test.skip : test;
 
 // TODO: replace trusted types emulation with trusted types polyfill,
 //   then re-enable these tests in IE and old Chrome.
-suiteFn('rendering with trusted types enforced', () => {
+suite('rendering with trusted types enforced', () => {
   let container: HTMLDivElement;
   // tslint:disable-next-line
   let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] =
@@ -122,7 +122,7 @@ suiteFn('rendering with trusted types enforced', () => {
     document.body.removeChild(container);
   });
 
-  test('Trusted types emulation works', () => {
+  testOnRecentishBrowsers('Trusted types emulation works', () => {
     const el = document.createElement('div');
     assert.equal(el.innerHTML, '');
     el.innerHTML = policy.createHTML('<span>val</span>') as unknown as string;
@@ -134,14 +134,14 @@ suiteFn('rendering with trusted types enforced', () => {
   });
 
   suite('throws on untrusted values', () => {
-    test('unsafe html', () => {
+    testOnRecentishBrowsers('unsafe html', () => {
       const template = html`${unsafeHTML('<b>unsafe bold</b>')}`;
       assert.throws(() => {
         render(template, container);
       });
     });
 
-    test('unsafe attribute', () => {
+    testOnRecentishBrowsers('unsafe attribute', () => {
       const template = html`<iframe srcdoc=${unsafeScriptString}></iframe>`;
       assert.throws(() => {
         render(template, container);
@@ -150,7 +150,7 @@ suiteFn('rendering with trusted types enforced', () => {
   });
 
   suite('runs without error on trusted values', () => {
-    test('unsafe html', () => {
+    testOnRecentishBrowsers('unsafe html', () => {
       const template =
           html`${unsafeHTML(policy.createHTML('<b>safe bold</b>'))}`;
       render(template, container);
@@ -158,7 +158,7 @@ suiteFn('rendering with trusted types enforced', () => {
           stripExpressionMarkers(container.innerHTML), '<b>safe bold</b>');
     });
 
-    test('unsafe attribute', () => {
+    testOnRecentishBrowsers('unsafe attribute', () => {
       const template =
           html`<iframe srcdoc=${policy.createHTML('<b>safe bold</b>')}>`;
       render(template, container);
