@@ -29,11 +29,11 @@ const unsafeScriptString = 'alert(0)';
 const isIE = /Trident\/\d/.test(navigator.userAgent);
 const isChrome41 = /Chrome\/41/.test(navigator.userAgent);
 
-const testOnRecentishBrowsers = (isIE || isChrome41) ? test.skip : test;
+const suiteFn = (isIE || isChrome41) ? suite.skip : suite;
 
 // TODO: replace trusted types emulation with trusted types polyfill,
 //   then re-enable these tests in IE and old Chrome.
-suite('rendering with trusted types enforced', () => {
+suiteFn('rendering with trusted types enforced', () => {
   let container: HTMLDivElement;
   // tslint:disable-next-line
   let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] =
@@ -122,7 +122,7 @@ suite('rendering with trusted types enforced', () => {
     document.body.removeChild(container);
   });
 
-  testOnRecentishBrowsers('Trusted types emulation works', () => {
+  test('Trusted types emulation works', () => {
     const el = document.createElement('div');
     assert.equal(el.innerHTML, '');
     el.innerHTML = policy.createHTML('<span>val</span>') as unknown as string;
@@ -134,14 +134,14 @@ suite('rendering with trusted types enforced', () => {
   });
 
   suite('throws on untrusted values', () => {
-    testOnRecentishBrowsers('unsafe html', () => {
+    test('unsafe html', () => {
       const template = html`${unsafeHTML('<b>unsafe bold</b>')}`;
       assert.throws(() => {
         render(template, container);
       });
     });
 
-    testOnRecentishBrowsers('unsafe attribute', () => {
+    test('unsafe attribute', () => {
       const template = html`<iframe srcdoc=${unsafeScriptString}></iframe>`;
       assert.throws(() => {
         render(template, container);
@@ -150,7 +150,7 @@ suite('rendering with trusted types enforced', () => {
   });
 
   suite('runs without error on trusted values', () => {
-    testOnRecentishBrowsers('unsafe html', () => {
+    test('unsafe html', () => {
       const template =
           html`${unsafeHTML(policy.createHTML('<b>safe bold</b>'))}`;
       render(template, container);
@@ -158,7 +158,7 @@ suite('rendering with trusted types enforced', () => {
           stripExpressionMarkers(container.innerHTML), '<b>safe bold</b>');
     });
 
-    testOnRecentishBrowsers('unsafe attribute', () => {
+    test('unsafe attribute', () => {
       const template =
           html`<iframe srcdoc=${policy.createHTML('<b>safe bold</b>')}>`;
       render(template, container);
@@ -168,3 +168,11 @@ suite('rendering with trusted types enforced', () => {
     });
   });
 });
+
+if (isIE || isChrome41) {
+  suite('a suite that makes IE and Chrome41 not time out', () => {
+    test('has a test', () => {
+      assert.equal(1 + 1, 2);
+    });
+  });
+}
