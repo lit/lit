@@ -25,8 +25,15 @@ const unwrapTrustedValue = (value: string) => value.substr('TRUSTED'.length);
 const unsafeHTMLString = '<img src=x onerror="alert(0)">';
 const unsafeScriptString = 'alert(0)';
 
-// TODO: replace trusted types emulation with trusted types polyfill
-suite('rendering with trusted types enforced', () => {
+// Trusted types emulation does not work in IE11 or Chrome 41.
+const isIE = /Trident\/\d/.test(navigator.userAgent);
+const isChrome41 = /Chrome\/41/.test(navigator.userAgent);
+
+const suiteFn = (isIE || isChrome41) ? suite.skip : suite;
+
+// TODO: replace trusted types emulation with trusted types polyfill,
+//   then re-enable these tests in IE and old Chrome.
+suiteFn('rendering with trusted types enforced', () => {
   let container: HTMLDivElement;
   // tslint:disable-next-line
   let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] =
