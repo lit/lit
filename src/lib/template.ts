@@ -157,7 +157,6 @@ export class Template {
         }
       } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
         if ((node as Comment).data === marker) {
-          console.log('marker');
           const parent = node.parentNode!;
           // Add a new marker node to be the startNode of the Part if any of
           // the following are true:
