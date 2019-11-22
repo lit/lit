@@ -159,7 +159,6 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   appendInto(container: Node) {
-    console.log('appendInto');
     this.startNode = container.appendChild(createStartMarker());
     this.endNode = container.appendChild(createEndMarker());
   }
@@ -290,6 +289,7 @@ export class NodePart implements Part {
             part.endNode = partInfo.endNode;
             instance.__parts.push(part);
           }
+          this.options.prerenderedParts = undefined;
         }
 
         instance.update(value.values);
