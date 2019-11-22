@@ -35,8 +35,8 @@ if (!(isIE || isChrome41)) {
   suite('rendering with trusted types enforced', () => {
     let container: HTMLDivElement;
     // tslint:disable-next-line
-    let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] =
-        [];
+    let descriptorEntries:
+        {object: any, prop: any, desc: PropertyDescriptor}[] = [];
     let setAttributeDescriptor: PropertyDescriptor;
     let policy: TrustedTypePolicy;
 
