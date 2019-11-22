@@ -85,7 +85,7 @@ suiteFn('rendering with trusted types enforced', () => {
     descriptorEntries = [];
 
     Object.defineProperty(
-        Element.prototype, 'setAttribute', setAttributeDescriptor!);
+        Element.prototype, 'setAttribute', setAttributeDescriptor);
   }
 
   suiteSetup(() => {
