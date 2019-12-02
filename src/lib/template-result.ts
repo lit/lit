@@ -20,6 +20,30 @@ import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
 
+let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
+
+/**
+ * Turns the value to trusted HTML. If the application uses Trusted Types the
+ * value is transformed into TrustedHTML, which can be assigned to execution
+ * sink. If the application doesn't use Trusted Types, the return value is the
+ * same as the argument.
+ */
+function convertConstantTemplateStringToTrustedHTML(value: string): string|
+    TrustedHTML {
+  // tslint:disable-next-line
+  const w = window as any
+  // TrustedTypes have been renamed to trustedTypes
+  // (https://github.com/WICG/trusted-types/issues/177)
+  const trustedTypes =
+      (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
+  if (trustedTypes && !policy) {
+    policy = trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
+  }
+  return policy ? policy.createHTML(value) : value;
+}
+
+const commentMarker = ` ${marker} `;
+
 /**
  * The return type of `html`, which holds a Template and the values from
  * interpolated expressions.
@@ -52,7 +76,7 @@ export class TemplateResult {
       // For each binding we want to determine the kind of marker to insert
       // into the template source before it's parsed by the browser's HTML
       // parser. The marker type is based on whether the expression is in an
-      // attribute, text, or comment poisition.
+      // attribute, text, or comment position.
       //   * For node-position bindings we insert a comment with the marker
       //     sentinel as its text content, like <!--{{lit-guid}}-->.
       //   * For attribute bindings we insert just the marker sentinel for the
@@ -72,17 +96,17 @@ export class TemplateResult {
       // be false positives.
       isCommentBinding = (commentOpen > -1 || isCommentBinding) &&
           s.indexOf('-->', commentOpen + 1) === -1;
-      // Check to see if we have an attribute-like sequence preceeding the
+      // Check to see if we have an attribute-like sequence preceding the
       // expression. This can match "name=value" like structures in text,
       // comments, and attribute values, so there can be false-positives.
       const attributeMatch = lastAttributeNameRegex.exec(s);
       if (attributeMatch === null) {
         // We're only in this branch if we don't have a attribute-like
-        // preceeding sequence. For comments, this guards against unusual
+        // preceding sequence. For comments, this guards against unusual
         // attribute values like <div foo="<!--${'bar'}">. Cases like
         // <!-- foo=${'bar'}--> are handled correctly in the attribute branch
         // below.
-        html += s + (isCommentBinding ? marker : nodeMarker);
+        html += s + (isCommentBinding ? commentMarker : nodeMarker);
       } else {
         // For attributes we use just a marker sentinel, and also append a
         // $lit$ suffix to the name to opt-out of attribute-specific parsing
@@ -98,7 +122,11 @@ export class TemplateResult {
 
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
-    template.innerHTML = this.getHTML();
+    // this is secure because `this.strings` is a TemplateStringsArray.
+    // TODO: validate this when
+    // https://github.com/tc39/proposal-array-is-template-object is implemented.
+    template.innerHTML =
+        convertConstantTemplateStringToTrustedHTML(this.getHTML()) as string;
     return template;
   }
 }

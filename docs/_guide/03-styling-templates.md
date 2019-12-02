@@ -100,8 +100,8 @@ The [ShadyCSS README](https://github.com/webcomponents/shadycss#usage) provides 
     ```js
     connectedCallback() {
       super.connectedCallback();
-      if (window.shadyCSS !== undefined) {
-          window.shadyCSS.styleElement(this);
+      if (window.ShadyCSS !== undefined) {
+          window.ShadyCSS.styleElement(this);
       }
     }
     ```

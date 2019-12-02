@@ -100,7 +100,7 @@ suite('add/remove nodes from template', () => {
         </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
         const result = getResult('bar', 'baz', 'qux');
         const template = templateFactory(result);
-        const nodeSet = new Set();
+        const nodeSet = new Set<Node>();
         const nodesToRemove =
             template.element.content.querySelectorAll('[name="remove"]');
         for (const node of Array.from(nodesToRemove)) {
@@ -132,7 +132,7 @@ suite('add/remove nodes from template', () => {
         </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
-        const nodeSet = new Set();
+        const nodeSet = new Set<Node>();
         const nodesToRemove =
             template.element.content.querySelectorAll('[name="remove"]');
         for (const node of Array.from(nodesToRemove)) {
@@ -167,7 +167,7 @@ suite('add/remove nodes from template', () => {
         let node;
         while (node =
                    template.element.content.querySelector('[name="remove"]')) {
-          const nodeSet = new Set();
+          const nodeSet = new Set<Node>();
           nodeSet.add(node);
           removeNodesFromTemplate(template, nodeSet);
         }

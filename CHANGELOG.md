@@ -10,11 +10,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- ### Changed -->
-<!-- ### Added -->
 <!-- ### Removed -->
-<!-- ### Fixed -->
+### Added
+* Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types ([#970](https://github.com/Polymer/lit-html/pull/970))
+
+### Fixed
+* Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
+
+
+
+## [1.1.2] - 2019-08-12
+
+### Fixed
+* Fixed a bug where bindings in comments could be written as text in some cases. ([#926](https://github.com/Polymer/lit-html/issues/926))
+
+## [1.1.1] - 2019-07-09
+
+### Changed
+* `render` and `shady-render` now both accept any value that is renderable by `NodePart`. ([#910](https://github.com/Polymer/lit-html/issues/910))
 
 ## [1.1.0] - 2019-05-20
 
