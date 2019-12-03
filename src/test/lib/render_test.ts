@@ -14,6 +14,7 @@
 
 import {AttributePart, directive, html, noChange, NodePart, nothing, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {ifDefined} from '../../directives/if-defined.js';
 
 const assert = chai.assert;
 
@@ -772,6 +773,49 @@ suite('render()', () => {
       inner.dispatchEvent(new Event('test'));
       assert.isOk(event);
       assert.equal(eventPhase, Event.CAPTURING_PHASE);
+    });
+  });
+
+  suite('binding', () => {
+    setup(() => {
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      document.body.removeChild(container);
+    });
+
+    test('resolves directives for binding event listener', () => {
+      let target;
+      const t = (listener : any) => html`<div !bind=${listener}></div>`;
+      let listener: any = (element: Element) => target = element;
+      render(t(ifDefined(listener)), container);
+      const div = container.querySelector('div')!;
+      assert.equal(target, div);
+    });
+
+    test('allows updating binding listener', () => {
+      let listener1Called, listener2Called;
+      const t = (listener : (element : Element) => void) => html`<div !bind=${listener}></div>`;
+      let listener1: any = () => listener1Called = true;
+      render(t(listener1), container);
+      assert.equal(listener1Called, true);
+      let listener2 = () => listener2Called = true;
+      render(t(listener2), container);
+      assert.equal(listener2Called, true);
+    });
+
+    test('removes binding listeners', () => {
+      let target;
+      let listener: any = (element: Element) => target = element;
+      const t = () => html`<div !bind=${listener}></div>`;
+      render(t(), container);
+      const div = container.querySelector('div')!;
+      assert.equal(target, div);
+      listener = null;
+      target = undefined;
+      render(t(), container);
+      assert.equal(target, undefined);
     });
   });
 

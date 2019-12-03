@@ -17,7 +17,7 @@
  */
 
 import {Part} from './part.js';
-import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
+import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter, BindingPart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
 
@@ -41,6 +41,9 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
     if (prefix === '.') {
       const committer = new PropertyCommitter(element, name.slice(1), strings);
       return committer.parts;
+    }
+    if (name === '!bind') {
+      return [new BindingPart(element)];
     }
     if (prefix === '@') {
       return [new EventPart(element, name.slice(1), options.eventContext)];

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {__testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning} from '../../lib/parts';
+import {__testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning, BindingPart} from '../../lib/parts';
 import {__testOnlyClearSanitizerDoNotCallOrElse} from '../../lib/parts.js';
 import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
@@ -522,6 +522,32 @@ suite('Parts', () => {
     });
   });
 
+  suite('BindingPart', () => {
+    let part: BindingPart;
+    let element: HTMLElement;
+
+    setup(() => {
+      element = document.createElement('div');
+      document.body.appendChild(element);
+    });
+    test('supports passing element parameter to listener', () => {
+      part = new BindingPart(element);
+      let listenerCalled = false;
+      let rightElementPassed = false;
+
+      const listener = (_el: Element) => {
+        listenerCalled = true;
+        if (_el === element) {
+          rightElementPassed = true;
+        }
+      };
+      part.setValue(listener);
+      part.commit();
+      assert.isTrue(listenerCalled, 'listenerCalled');
+      assert.isTrue(rightElementPassed, 'rightElementPassed');
+    });
+  });
+                                                                          
   suite('EventPart', () => {
     let part: EventPart;
     let element: HTMLElement;

@@ -541,6 +541,51 @@ export class PropertyCommitter extends AttributeCommitter {
 
 export class PropertyPart extends AttributePart {}
 
+/**
+ * Type definition for the binding event handler.
+ */
+type BindingHandler = (element: Element) => void;
+
+/**
+ * This part calls the "@bind" handler function on commit.
+ * This binding handler will then have the element as a parameter, which can be used to register
+ * a set of event handlers, to call functions etc.
+ */
+export class BindingPart implements Part {
+  readonly element: Element;
+  value: undefined|BindingHandler;
+  private __pendingValue: undefined|BindingHandler = undefined;
+
+  constructor(element: Element) {
+    this.element = element;
+  }
+
+  setValue(value: undefined|BindingHandler): void {
+    this.__pendingValue = value;
+  }
+  commit(): void {
+    while (isDirective(this.__pendingValue)) {
+      const directive = this.__pendingValue;
+      this.__pendingValue = noChange as BindingHandler;
+      directive(this);
+    }
+    if (this.__pendingValue === noChange) {
+      return;
+    }
+
+    const newHandler = this.__pendingValue;
+    const oldValue = this.value;
+    const shouldCallBindingHandler = oldValue == null || oldValue !== newHandler;
+
+    if (shouldCallBindingHandler && typeof newHandler === 'function') {
+      newHandler.call(this.element, this.element);
+    }
+
+    this.value = newHandler;
+    this.__pendingValue = noChange as BindingHandler;
+  }
+}
+
 // Detect event listener options support. If the `capture` property is read
 // from the options object, then options are supported. If not, then the third
 // argument to add/removeEventListener is interpreted as the boolean capture
