@@ -1,0 +1,19 @@
+{
+  "name": "lit-element-starter-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "es-dev-server --app-index demo.html --node-resolve --watch --open"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "es-dev-server": "^1.23.1"
+  },
+  "dependencies": {
+    "lit-element": "^2.2.1"
+  }
+}
