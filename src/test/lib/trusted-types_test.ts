@@ -34,9 +34,13 @@ const isChrome41 = /Chrome\/41/.test(navigator.userAgent);
 if (!(isIE || isChrome41)) {
   suite('rendering with trusted types enforced', () => {
     let container: HTMLDivElement;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let descriptorEntries:
-        {object: any; prop: any; desc: PropertyDescriptor}[] = [];
+    let descriptorEntries: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      object: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prop: any;
+      desc: PropertyDescriptor;
+    }[] = [];
     let setAttributeDescriptor: PropertyDescriptor;
     let policy: TrustedTypePolicy;
 
@@ -88,7 +92,7 @@ if (!(isIE || isChrome41)) {
     }
 
     suiteSetup(() => {
-      // tslint:disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).trustedTypes = {
         isHTML: (v: string) => isTrustedValue(v),
         createPolicy: () => {
@@ -110,13 +114,13 @@ if (!(isIE || isChrome41)) {
       document.body.appendChild(container);
 
       // TODO: signature will change once we use trusted types polyfill
-      // tslint:disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       policy = (window as any).trustedTypes.createPolicy()
     });
 
     suiteTeardown(() => {
       removeAllTrustedTypesEmulation();
-      // tslint:disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any).trustedTypes;
       document.body.removeChild(container);
     });

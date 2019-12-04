@@ -708,11 +708,13 @@ suite('render()', () => {
           div.addEventListener = () => addCount++;
           div.removeEventListener = () => removeCount++;
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 0);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
@@ -723,11 +725,13 @@ suite('render()', () => {
           assert.equal(addCount, 1);
           assert.equal(removeCount, 1);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
           assert.equal(removeCount, 1);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);

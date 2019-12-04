@@ -648,9 +648,7 @@ suite('Parts', () => {
 
 suite('setSanitizeDOMValue', () => {
   const sanitizerCalls: Array<{
-    value: unknown;
-    name: string;
-    type: 'property' | 'attribute' | 'text';
+    value: unknown; name: string; type: 'property' | 'attribute' | 'text';
     nodeName: string;
   }> = [];
   let container: HTMLDivElement;
