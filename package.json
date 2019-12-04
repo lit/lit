@@ -54,7 +54,7 @@
     "rollup": "^1.19.0",
     "rollup-plugin-filesize": "^6.2.0",
     "rollup-plugin-terser": "^5.1.0",
-    "tachometer": "^0.4.1",
+    "tachometer": "^0.4.15",
     "typescript": "^3.4.1",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
