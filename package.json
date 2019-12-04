@@ -1,0 +1,23 @@
+{
+  "name": "lit-element-starter-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "lit-analyzer my-element.ts && tsc",
+    "build:watch": "lit-analyzer my-element.ts && tsc --watch",
+    "start": "es-dev-server --app-index demo.html --node-resolve --watch --open"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "es-dev-server": "^1.23.1",
+    "lit-analyzer": "^1.1.9",
+    "typescript": "^3.7.2"
+  },
+  "dependencies": {
+    "lit-element": "^2.2.1"
+  }
+}

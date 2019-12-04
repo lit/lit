@@ -1,0 +1,55 @@
+
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "lib": ["esnext.array", "esnext", "es2017", "dom"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "outDir": "./build",
+    // Only necessary because @types/uglify-js can't find types for source-map
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "plugins": [
+      {
+        "name": "ts-lit-plugin",
+        "rules": {
+          "no-complex-attribute-binding": "error",
+          "no-expressionless-property-binding": "error",
+          "no-incompatible-property-type": "error",
+          "no-incompatible-type-binding": "error",
+          "no-invalid-attribute-name": "error",
+          "no-invalid-boolean-binding": "error",
+          "no-invalid-css": "off",
+          "no-invalid-directive-binding": "error",
+          "no-invalid-tag-name": "error",
+          "no-missing-import": "off",
+          "no-noncallable-event-binding": "error",
+          "no-nullable-attribute-binding": "off",
+          "no-unclosed-tag": "error",
+          "no-unknown-attribute": "off",
+          "no-unknown-event": "off",
+          "no-unknown-property": "error",
+          "no-unknown-property-converter": "error",
+          "no-unknown-slot": "off",
+          "no-unknown-tag-name": "error"
+        }
+      }
+    ]
+  },
+  "include": [
+    "my-element.ts"
+  ],
+  "exclude": []
+}
+

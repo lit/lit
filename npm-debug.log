@@ -1,0 +1,48 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/arthure/.nvm/versions/node/v6.11.3/bin/node',
+1 verbose cli   '/Users/arthure/.nvm/versions/node/v6.11.3/bin/npm',
+1 verbose cli   'run',
+1 verbose cli   'build' ]
+2 info using npm@3.10.10
+3 info using node@v6.11.3
+4 verbose run-script [ 'prebuild', 'build', 'postbuild' ]
+5 info lifecycle dev-server-only@1.0.0~prebuild: dev-server-only@1.0.0
+6 silly lifecycle dev-server-only@1.0.0~prebuild: no script for prebuild, continuing
+7 info lifecycle dev-server-only@1.0.0~build: dev-server-only@1.0.0
+8 verbose lifecycle dev-server-only@1.0.0~build: unsafe-perm in lifecycle true
+9 verbose lifecycle dev-server-only@1.0.0~build: PATH: /Users/arthure/.nvm/versions/node/v6.11.3/lib/node_modules/npm/bin/node-gyp-bin:/Users/arthure/work/polymer/lit-starter-projects/lit-element-starter-ts/node_modules/.bin:/Users/arthure/google-cloud-sdk/bin:/Users/arthure/.nvm/versions/node/v6.11.3/bin:/usr/local/git/current/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
+10 verbose lifecycle dev-server-only@1.0.0~build: CWD: /Users/arthure/work/polymer/lit-starter-projects/lit-element-starter-ts
+11 silly lifecycle dev-server-only@1.0.0~build: Args: [ '-c', 'lit-analyzer my-element.ts && tsc' ]
+12 silly lifecycle dev-server-only@1.0.0~build: Returned: code: 1  signal: null
+13 info lifecycle dev-server-only@1.0.0~build: Failed to exec build script
+14 verbose stack Error: dev-server-only@1.0.0 build: `lit-analyzer my-element.ts && tsc`
+14 verbose stack Exit status 1
+14 verbose stack     at EventEmitter.<anonymous> (/Users/arthure/.nvm/versions/node/v6.11.3/lib/node_modules/npm/lib/utils/lifecycle.js:255:16)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at EventEmitter.emit (events.js:191:7)
+14 verbose stack     at ChildProcess.<anonymous> (/Users/arthure/.nvm/versions/node/v6.11.3/lib/node_modules/npm/lib/utils/spawn.js:40:14)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at ChildProcess.emit (events.js:191:7)
+14 verbose stack     at maybeClose (internal/child_process.js:920:16)
+14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:230:5)
+15 verbose pkgid dev-server-only@1.0.0
+16 verbose cwd /Users/arthure/work/polymer/lit-starter-projects/lit-element-starter-ts
+17 error Darwin 18.7.0
+18 error argv "/Users/arthure/.nvm/versions/node/v6.11.3/bin/node" "/Users/arthure/.nvm/versions/node/v6.11.3/bin/npm" "run" "build"
+19 error node v6.11.3
+20 error npm  v3.10.10
+21 error code ELIFECYCLE
+22 error dev-server-only@1.0.0 build: `lit-analyzer my-element.ts && tsc`
+22 error Exit status 1
+23 error Failed at the dev-server-only@1.0.0 build script 'lit-analyzer my-element.ts && tsc'.
+23 error Make sure you have the latest version of node.js and npm installed.
+23 error If you do, this is most likely a problem with the dev-server-only package,
+23 error not with npm itself.
+23 error Tell the author that this fails on your system:
+23 error     lit-analyzer my-element.ts && tsc
+23 error You can get information on how to open an issue for this project with:
+23 error     npm bugs dev-server-only
+23 error Or if that isn't available, you can get their info via:
+23 error     npm owner ls dev-server-only
+23 error There is likely additional logging output above.
+24 verbose exit [ 1, true ]
