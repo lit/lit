@@ -112,8 +112,7 @@ export class AttributeCommitter {
   readonly parts: readonly AttributePart[];
   dirty = true;
 
-  constructor(
-      element: Element, name: string, strings: readonly string[]) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     this.element = element;
     this.name = name;
     this.strings = strings;
@@ -464,8 +463,7 @@ export class BooleanAttributePart implements Part {
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(
-      element: Element, name: string, strings: readonly string[]) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -513,8 +511,7 @@ export class BooleanAttributePart implements Part {
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
-  constructor(
-      element: Element, name: string, strings: readonly string[]) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
@@ -576,8 +573,7 @@ export class EventPart implements Part {
   private __pendingValue: undefined|EventHandlerWithOptions = undefined;
   private readonly __boundHandleEvent: (event: Event) => void;
 
-  constructor(
-      element: Element, eventName: string, eventContext?: EventTarget) {
+  constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
     this.eventContext = eventContext;
