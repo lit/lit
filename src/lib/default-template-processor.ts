@@ -37,7 +37,7 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
    */
   handleAttributeExpressions(
       element: Element, name: string, strings: string[], options: RenderOptions,
-      templatePart?: AttributeTemplatePart): ReadonlyArray<Part> {
+      templatePart?: AttributeTemplatePart): readonly Part[] {
     const prefix = name[0];
     if (prefix === '.') {
       const committer =

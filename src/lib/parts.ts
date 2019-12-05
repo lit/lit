@@ -25,7 +25,7 @@ import {TemplateResult} from './template-result.js';
 import {AttributeTemplatePart, createMarker, NodeTemplatePart} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
-export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
+export type Primitive = null|undefined|boolean|number|string|symbol|bigint;
 export const isPrimitive = (value: unknown): value is Primitive => {
   return (
       value === null ||
@@ -33,7 +33,7 @@ export const isPrimitive = (value: unknown): value is Primitive => {
 };
 export const isIterable = (value: unknown): value is Iterable<unknown> => {
   return Array.isArray(value) ||
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       !!(value && (value as any)[Symbol.iterator]);
 };
 
@@ -110,13 +110,13 @@ export const __testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
 export class AttributeCommitter {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
-  readonly parts: ReadonlyArray<AttributePart>;
+  readonly strings: readonly string[];
+  readonly parts: readonly AttributePart[];
   readonly sanitizer: ValueSanitizer;
   dirty = true;
 
   constructor(
-      element: Element, name: string, strings: ReadonlyArray<string>,
+      element: Element, name: string, strings: readonly string[],
       // Next breaking change, consider making this param required.
       templatePart?: AttributeTemplatePart,
       kind: 'property'|'attribute' = 'attribute') {
@@ -367,11 +367,10 @@ export class NodePart implements Part {
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
-      let renderedValue;
       if (this.textSanitizer === undefined) {
         this.textSanitizer = sanitizerFactory(node, 'data', 'property');
       }
-      renderedValue = this.textSanitizer(value);
+      const renderedValue = this.textSanitizer(value);
       (node as Text).data = typeof renderedValue === 'string' ?
           renderedValue :
           String(renderedValue);
@@ -382,11 +381,10 @@ export class NodePart implements Part {
       // into the document, then we can sanitize its contentx.
       const textNode = document.createTextNode('');
       this.__commitNode(textNode);
-      let renderedValue;
       if (this.textSanitizer === undefined) {
         this.textSanitizer = sanitizerFactory(textNode, 'data', 'property');
       }
-      renderedValue = this.textSanitizer(value) as string;
+      const renderedValue = this.textSanitizer(value) as string;
       textNode.data = typeof renderedValue === 'string' ? renderedValue :
                                                           String(renderedValue);
     }
@@ -492,11 +490,11 @@ export class NodePart implements Part {
 export class BooleanAttributePart implements Part {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+  readonly strings: readonly string[];
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -545,7 +543,7 @@ export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
   constructor(
-      element: Element, name: string, strings: ReadonlyArray<string>,
+      element: Element, name: string, strings: readonly string[],
       // Next breaking change, consider making this param required.
       templatePart?: AttributeTemplatePart) {
     super(element, name, strings, templatePart, 'property');
@@ -569,7 +567,7 @@ export class PropertyCommitter extends AttributeCommitter {
       this.dirty = false;
       let value = this._getValue();
       value = this.sanitizer(value);
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = value;
     }
   }
@@ -590,11 +588,11 @@ try {
       return false;
     }
   };
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.addEventListener('test', options as any, options);
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.removeEventListener('test', options as any, options);
-} catch (_e) {
+} catch (_e) {  // eslint-disable-line no-empty
 }
 
 

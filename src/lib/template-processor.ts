@@ -35,10 +35,10 @@ export interface TemplateProcessor {
    *     that should be computed once per template literal in the source code.
    */
   handleAttributeExpressions(
-      element: Element, name: string, strings: ReadonlyArray<string>,
+      element: Element, name: string, strings: readonly string[],
       options: RenderOptions,
       // TODO: next breaking change, consider making this required
-      templatePart?: AttributeTemplatePart): ReadonlyArray<Part>;
+      templatePart?: AttributeTemplatePart): readonly Part[];
 
   /**
    * Create parts for a text-position binding.

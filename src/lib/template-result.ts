@@ -30,7 +30,7 @@ let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
  */
 function convertConstantTemplateStringToTrustedHTML(value: string): string|
     TrustedHTML {
-  // tslint:disable-next-line
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any
   // TrustedTypes have been renamed to trustedTypes
   // (https://github.com/WICG/trusted-types/issues/177)
@@ -50,13 +50,13 @@ const commentMarker = ` ${marker} `;
  */
 export class TemplateResult {
   readonly strings: TemplateStringsArray;
-  readonly values: ReadonlyArray<unknown>;
+  readonly values: readonly unknown[];
   readonly type: string;
   readonly processor: TemplateProcessor;
 
   constructor(
-      strings: TemplateStringsArray, values: ReadonlyArray<unknown>,
-      type: string, processor: TemplateProcessor) {
+      strings: TemplateStringsArray, values: readonly unknown[], type: string,
+      processor: TemplateProcessor) {
     this.strings = strings;
     this.values = values;
     this.type = type;

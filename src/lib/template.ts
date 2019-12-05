@@ -229,7 +229,7 @@ export interface AttributeTemplatePart {
   readonly type: 'attribute';
   index: number;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+  readonly strings: readonly string[];
   // Lazily initialized in the default-template-processor.
   sanitizer?: ValueSanitizer;
 }
@@ -266,4 +266,5 @@ export const createMarker = () => document.createComment('');
  *    * (') then any non-(')
  */
 export const lastAttributeNameRegex =
+    // eslint-disable-next-line no-control-regex
     /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;

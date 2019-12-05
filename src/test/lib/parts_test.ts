@@ -19,7 +19,7 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 const assert = chai.assert;
 chai.config.truncateThreshold = 0;  // ask chai to produce diffs
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('Parts', () => {
   suite('AttributePart', () => {
@@ -551,7 +551,7 @@ suite('Parts', () => {
       };
       window.addEventListener('test', options as any, options);
       window.removeEventListener('test', options as any, options);
-    } catch (_e) {
+    } catch (_e) {  // eslint-disable-line no-empty
     }
 
     setup(() => {
@@ -647,10 +647,8 @@ suite('Parts', () => {
 
 suite('setSanitizeDOMValue', () => {
   const sanitizerCalls: Array<{
-    value: unknown,
-    name: string,
-    type: 'property' | 'attribute' | 'text',
-    nodeName: string
+    value: unknown; name: string; type: 'property' | 'attribute' | 'text';
+    nodeName: string;
   }> = [];
   let container: HTMLDivElement;
   class FakeSanitizedWrapper {

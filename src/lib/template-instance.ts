@@ -40,7 +40,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  update(values: ReadonlyArray<unknown>) {
+  update(values: readonly unknown[]) {
     let i = 0;
     for (const part of this.__parts) {
       if (part !== undefined) {
