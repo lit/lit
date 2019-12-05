@@ -245,7 +245,7 @@ suite('Parts', () => {
         // TODO (justinfagnani): rewrite to not use render(), but use NodePart
         // directly like the other tests here
         class TestTemplateProcessor extends DefaultTemplateProcessor {
-          public handleAttributeExpressions(
+          handleAttributeExpressions(
               element: Element, name: string, strings: string[]) {
             if (name[0] === '&') {
               return super.handleAttributeExpressions(

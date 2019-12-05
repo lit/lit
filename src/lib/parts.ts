@@ -106,13 +106,13 @@ export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
  * for an attribute.
  */
 export class AttributeCommitter {
-  public readonly element: Element;
-  public readonly name: string;
-  public readonly strings: readonly string[];
-  public readonly parts: readonly AttributePart[];
-  public dirty = true;
+  readonly element: Element;
+  readonly name: string;
+  readonly strings: readonly string[];
+  readonly parts: readonly AttributePart[];
+  dirty = true;
 
-  public constructor(
+  constructor(
       element: Element, name: string, strings: readonly string[]) {
     this.element = element;
     this.name = name;
@@ -176,7 +176,7 @@ export class AttributeCommitter {
     return text;
   }
 
-  public commit(): void {
+  commit(): void {
     if (this.dirty) {
       this.dirty = false;
       let value = this._getValue();
@@ -194,14 +194,14 @@ export class AttributeCommitter {
  * A Part that controls all or part of an attribute value.
  */
 export class AttributePart implements Part {
-  public readonly committer: AttributeCommitter;
-  public value: unknown = undefined;
+  readonly committer: AttributeCommitter;
+  value: unknown = undefined;
 
-  public constructor(committer: AttributeCommitter) {
+  constructor(committer: AttributeCommitter) {
     this.committer = committer;
   }
 
-  public setValue(value: unknown): void {
+  setValue(value: unknown): void {
     if (value !== noChange && (!isPrimitive(value) || value !== this.value)) {
       this.value = value;
       // If the value is a not a directive, dirty the committer so that it'll
@@ -213,7 +213,7 @@ export class AttributePart implements Part {
     }
   }
 
-  public commit() {
+  commit() {
     while (isDirective(this.value)) {
       const directive = this.value;
       this.value = noChange;
@@ -235,13 +235,13 @@ export class AttributePart implements Part {
  * as well as arrays and iterables of those types.
  */
 export class NodePart implements Part {
-  public readonly options: RenderOptions;
-  public startNode!: Node;
-  public endNode!: Node;
-  public value: unknown = undefined;
+  readonly options: RenderOptions;
+  startNode!: Node;
+  endNode!: Node;
+  value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  public constructor(options: RenderOptions) {
+  constructor(options: RenderOptions) {
     this.options = options;
   }
 
@@ -250,7 +250,7 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  public appendInto(container: Node) {
+  appendInto(container: Node) {
     this.startNode = container.appendChild(createMarker());
     this.endNode = container.appendChild(createMarker());
   }
@@ -262,7 +262,7 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  public insertAfterNode(ref: Node) {
+  insertAfterNode(ref: Node) {
     this.startNode = ref;
     this.endNode = ref.nextSibling!;
   }
@@ -272,7 +272,7 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  public appendIntoPart(part: NodePart) {
+  appendIntoPart(part: NodePart) {
     part.__insert(this.startNode = createMarker());
     part.__insert(this.endNode = createMarker());
   }
@@ -282,17 +282,17 @@ export class NodePart implements Part {
    *
    * This part must be empty, as its contents are not automatically moved.
    */
-  public insertAfterPart(ref: NodePart) {
+  insertAfterPart(ref: NodePart) {
     ref.__insert(this.startNode = createMarker());
     this.endNode = ref.endNode;
     ref.endNode = this.startNode;
   }
 
-  public setValue(value: unknown): void {
+  setValue(value: unknown): void {
     this.__pendingValue = value;
   }
 
-  public commit() {
+  commit() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
@@ -444,7 +444,7 @@ export class NodePart implements Part {
     }
   }
 
-  public clear(startNode: Node = this.startNode) {
+  clear(startNode: Node = this.startNode) {
     removeNodes(
         this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
   }
@@ -458,13 +458,13 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
-  public readonly element: Element;
-  public readonly name: string;
-  public readonly strings: readonly string[];
-  public value: unknown = undefined;
+  readonly element: Element;
+  readonly name: string;
+  readonly strings: readonly string[];
+  value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  public constructor(
+  constructor(
       element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
@@ -475,11 +475,11 @@ export class BooleanAttributePart implements Part {
     this.strings = strings;
   }
 
-  public setValue(value: unknown): void {
+  setValue(value: unknown): void {
     this.__pendingValue = value;
   }
 
-  public commit() {
+  commit() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
@@ -511,9 +511,9 @@ export class BooleanAttributePart implements Part {
  * a string first.
  */
 export class PropertyCommitter extends AttributeCommitter {
-  public readonly single: boolean;
+  readonly single: boolean;
 
-  public constructor(
+  constructor(
       element: Element, name: string, strings: readonly string[]) {
     super(element, name, strings);
     this.single =
@@ -531,7 +531,7 @@ export class PropertyCommitter extends AttributeCommitter {
     return super._getValue();
   }
 
-  public commit(): void {
+  commit(): void {
     if (this.dirty) {
       this.dirty = false;
       let value = this._getValue();
@@ -568,15 +568,15 @@ try {
 type EventHandlerWithOptions =
     EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
 export class EventPart implements Part {
-  public readonly element: Element;
-  public readonly eventName: string;
-  public readonly eventContext?: EventTarget;
-  public value: undefined|EventHandlerWithOptions = undefined;
+  readonly element: Element;
+  readonly eventName: string;
+  readonly eventContext?: EventTarget;
+  value: undefined|EventHandlerWithOptions = undefined;
   private __options?: AddEventListenerOptions;
   private __pendingValue: undefined|EventHandlerWithOptions = undefined;
   private readonly __boundHandleEvent: (event: Event) => void;
 
-  public constructor(
+  constructor(
       element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
     this.eventName = eventName;
@@ -584,11 +584,11 @@ export class EventPart implements Part {
     this.__boundHandleEvent = (e) => this.handleEvent(e);
   }
 
-  public setValue(value: undefined|EventHandlerWithOptions): void {
+  setValue(value: undefined|EventHandlerWithOptions): void {
     this.__pendingValue = value;
   }
 
-  public commit() {
+  commit() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange as EventHandlerWithOptions;
@@ -621,7 +621,7 @@ export class EventPart implements Part {
     this.__pendingValue = noChange as EventHandlerWithOptions;
   }
 
-  public handleEvent(event: Event) {
+  handleEvent(event: Event) {
     if (typeof this.value === 'function') {
       this.value.call(this.eventContext || this.element, event);
     } else {

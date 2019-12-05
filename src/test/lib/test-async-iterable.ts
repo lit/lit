@@ -31,7 +31,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
       new Promise((resolve) => this._resolveNextValue = resolve);
   private _resolveNextValue!: (value: T) => void;
 
-  public async * [Symbol.asyncIterator]() {
+  async * [Symbol.asyncIterator]() {
     while (true) {
       yield await this._nextValue;
     }
@@ -42,7 +42,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
    * has been emitted by the iterator. push() must not be called before
    * a previous call has completed, so always await a push() call.
    */
-  public async push(value: T): Promise<void> {
+  async push(value: T): Promise<void> {
     const currentValue = this._nextValue;
     const currentResolveValue = this._resolveNextValue;
     this._nextValue =

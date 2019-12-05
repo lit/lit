@@ -28,11 +28,11 @@ import {isTemplatePartActive, Template, TemplatePart} from './template.js';
  */
 export class TemplateInstance {
   private readonly __parts: (Part|undefined)[] = [];
-  public readonly processor: TemplateProcessor;
-  public readonly options: RenderOptions;
-  public readonly template: Template;
+  readonly processor: TemplateProcessor;
+  readonly options: RenderOptions;
+  readonly template: Template;
 
-  public constructor(
+  constructor(
       template: Template, processor: TemplateProcessor,
       options: RenderOptions) {
     this.template = template;
@@ -40,7 +40,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  public update(values: readonly unknown[]) {
+  update(values: readonly unknown[]) {
     let i = 0;
     for (const part of this.__parts) {
       if (part !== undefined) {
@@ -55,7 +55,7 @@ export class TemplateInstance {
     }
   }
 
-  public _clone(): DocumentFragment {
+  _clone(): DocumentFragment {
     // There are a number of steps in the lifecycle of a template instance's
     // DOM fragment:
     //  1. Clone - create the instance fragment

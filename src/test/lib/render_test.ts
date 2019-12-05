@@ -1033,14 +1033,14 @@ suite('render()', () => {
 
   suiteIfCustomElementsAreSupported(suite)('custom elements', () => {
     class PropertySetterElement extends HTMLElement {
-      public readonly calledSetter = false;
+      readonly calledSetter = false;
       private _value?: string = undefined;
 
-      public get value(): string|undefined {
+      get value(): string|undefined {
         return this._value;
       }
 
-      public set value(value: string|undefined) {
+      set value(value: string|undefined) {
         (this as {calledSetter: boolean}).calledSetter = true;
         this._value = value;
       }
@@ -1048,7 +1048,7 @@ suite('render()', () => {
     customElements.define('property-tester', PropertySetterElement);
 
     class MutatesInConstructorElement extends HTMLElement {
-      public constructor() {
+      constructor() {
         super();
         this.appendChild(document.createElement('div'));
       }
