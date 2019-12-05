@@ -277,7 +277,6 @@ export const render =
       litRender(
           result,
           renderContainer,
-          // eslint-disable-next-line
           {templateFactory: shadyTemplateFactory(scopeName), ...options} as
               RenderOptions);
       // When performing first scope render,
