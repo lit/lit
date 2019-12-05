@@ -161,7 +161,7 @@ suite('shady-render @apply', () => {
       '@apply styles flow to custom elements that render in connectedCallback',
       () => {
         class E extends HTMLElement {
-          protected connectedCallback() {
+          connectedCallback() {
             const result = htmlWithApply`<style>
               div {
                 border-top: 6px solid black;
