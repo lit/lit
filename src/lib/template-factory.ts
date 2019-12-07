@@ -88,9 +88,9 @@ export function templateFactory(result: TemplateResult) {
  * TemplateStringsArray, and if that fails, we cache a key constructed by
  * joining the strings array.
  */
-export type templateCache = {
-  readonly stringsArray: WeakMap<TemplateStringsArray, Template>; //
+export interface TemplateCache {
+  readonly stringsArray: WeakMap<TemplateStringsArray, Template>;
   readonly keyString: Map<string, Template>;
-};
+}
 
-export const templateCaches = new Map<string, templateCache>();
+export const templateCaches = new Map<string, TemplateCache>();

@@ -6,8 +6,7 @@ interface ShadyCSS {
   prepareTemplateStyles(
       template: Element, elementName: string, typeExtension?: string): void;
   ScopingShim: undefined|{
-    prepareAdoptedCssText(
-        cssTextArray: Array<string>, elementName: string): void;
+    prepareAdoptedCssText(cssTextArray: string[], elementName: string): void;
   };
 }
 

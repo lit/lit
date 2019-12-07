@@ -19,7 +19,7 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('add/remove nodes from template', () => {
   let container: HTMLElement;
@@ -165,6 +165,7 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
         let node;
+        // eslint-disable-next-line no-cond-assign
         while (node =
                    template.element.content.querySelector('[name="remove"]')) {
           const nodeSet = new Set<Node>();

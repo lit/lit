@@ -45,10 +45,14 @@ export const render =
       let part = parts.get(container);
       if (part === undefined) {
         removeNodes(container, container.firstChild);
-        parts.set(container, part = new NodePart({
-                               templateFactory,
-                               ...options,
-                             }));
+        parts.set(
+            container,
+            part = new NodePart(
+                {
+                  templateFactory,
+                  ...options,
+                },
+                undefined));
         part.appendInto(container);
       }
       part.setValue(result);
