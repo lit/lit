@@ -18,7 +18,7 @@ import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;

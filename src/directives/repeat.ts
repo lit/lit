@@ -21,13 +21,13 @@ export type ItemTemplate<T> = (item: T, index: number) => unknown;
 // Helper functions for manipulating parts
 // TODO(kschaaf): Refactor into Part API?
 const createAndInsertPart =
-    (containerPart: NodePart, beforePart?: NodePart): NodePart => {
+    (containerPart: NodePart, beforePart?: NodePart|null): NodePart => {
       const container = containerPart.startNode.parentNode as Node;
-      const beforeNode = beforePart === undefined ? containerPart.endNode :
-                                                    beforePart.startNode;
+      const beforeNode =
+          beforePart == null ? containerPart.endNode : beforePart.startNode;
       const startNode = container.insertBefore(createMarker(), beforeNode);
       container.insertBefore(createMarker(), beforeNode);
-      const newPart = new NodePart(containerPart.options);
+      const newPart = new NodePart(containerPart.options, undefined);
       newPart.insertAfterNode(startNode);
       return newPart;
     };
@@ -399,7 +399,7 @@ export const repeat =
                         // No old part for this value; create a new one and
                         // insert it
                         const newPart = createAndInsertPart(
-                            containerPart, oldParts[oldHead]!);
+                            containerPart, oldParts[oldHead]);
                         updatePart(newPart, newValues[newHead]);
                         newParts[newHead] = newPart;
                       } else {

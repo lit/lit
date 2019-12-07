@@ -28,7 +28,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
    * async iterable returned from iterable()
    */
   private _nextValue: Promise<T> =
-      new Promise((resolve, _) => this._resolveNextValue = resolve);
+      new Promise((resolve) => this._resolveNextValue = resolve);
   private _resolveNextValue!: (value: T) => void;
 
   async * [Symbol.asyncIterator]() {
@@ -46,7 +46,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
     const currentValue = this._nextValue;
     const currentResolveValue = this._resolveNextValue;
     this._nextValue =
-        new Promise((resolve, _) => this._resolveNextValue = resolve);
+        new Promise((resolve) => this._resolveNextValue = resolve);
     // Resolves the previous value of _nextValue (now currentValue in this
     // scope), making `yield await this._nextValue` go.
     currentResolveValue(value);

@@ -19,7 +19,7 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const testIfUsingNativeCSSVariables = (test: any) =>
     (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);

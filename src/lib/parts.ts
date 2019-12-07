@@ -22,10 +22,10 @@ import {noChange, nothing, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
-import {createMarker} from './template.js';
+import {AttributeTemplatePart, createMarker, NodeTemplatePart} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
-export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
+export type Primitive = null|undefined|boolean|number|string|symbol|bigint;
 export const isPrimitive = (value: unknown): value is Primitive => {
   return (
       value === null ||
@@ -33,14 +33,14 @@ export const isPrimitive = (value: unknown): value is Primitive => {
 };
 export const isIterable = (value: unknown): value is Iterable<unknown> => {
   return Array.isArray(value) ||
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       !!(value && (value as any)[Symbol.iterator]);
 };
 
 /**
- * A global callback used to sanitize any value before it is written into the
- * DOM. This can be used to implement a security policy of allowed and
- * disallowed values.
+ * Used to sanitize any value before it is written into the DOM. This can be
+ * used to implement a security policy of allowed and disallowed values in
+ * order to prevent XSS attacks.
  *
  * One way of using this callback would be to check attributes and properties
  * against a list of high risk fields, and require that values written to such
@@ -50,54 +50,56 @@ export const isIterable = (value: unknown): value is Iterable<unknown> => {
  * The TrustedTypes polyfill in API-only mode could also be used as a basis
  * for this technique (https://github.com/WICG/trusted-types).
  *
- * @param value The value to sanitize. Will be the actual value passed into the
- *   lit-html template literal, so this could be of any type.
+ * @param node The HTML node (usually either a #text node or an Element) that
+ *   is being written to. Note that this is just an exemplar node, the write
+ *   may take place against another instance of the same class of node.
  * @param name The name of an attribute or property (for example, 'href').
  * @param type Indicates whether the write that's about to be performed will
  *   be to a property or a node.
- * @param node The HTML node (usually either a #text node or an Element) that
- *   is being written to.
- * @returns The value to write. Typically this is `value`, unless
- *   `value` is determined to be unsafe, in which case a harmless sentinel value
- *   should be returned instead.
+ * @returns A function that will sanitize this class of writes.
  */
-export type DOMSanitizer =
-    (value: unknown,
-     name: string,
-     type: ('property'|'attribute'),
-     node: Node) => unknown;
-
+export type SanitizerFactory =
+    (node: Node, name: string, type: 'property'|'attribute') => ValueSanitizer;
 
 /**
- * A global callback used to sanitize any value before inserting it into the
- * DOM.
+ * A function which can sanitize values that will be written to a specific kind
+ * of DOM sink.
+ *
+ * See SanitizerFactory.
+ *
+ * @param value The value to sanitize. Will be the actual value passed into
+ *   the lit-html template literal, so this could be of any type.
+ * @returns The value to write to the DOM. Usually the same as the input value,
+ *   unless sanitization is needed.
  */
-let sanitizeDOMValueImpl: DOMSanitizer|undefined;
+export type ValueSanitizer = (value: unknown) => unknown;
 
-/** Sets the global DOM sanitization callback. */
-export const __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning =
-    (newSanitizer: DOMSanitizer) => {
-      if (sanitizeDOMValueImpl !== undefined) {
-        throw new Error(
-            `Attempted to overwrite existing lit-html security policy.` +
-            ` setSanitizeDOMValue should be called at most once.`);
-      }
-      sanitizeDOMValueImpl = newSanitizer;
-    };
+const identityFunction: ValueSanitizer = (value: unknown) => value;
+const noopSanitizer: SanitizerFactory =
+    (_node: Node, _name: string, _type: 'property'|'attribute') =>
+        identityFunction;
 
-const sanitizeDOMValue: DOMSanitizer =
-    (value: unknown,
-     name: string,
-     type: ('property'|'attribute'),
-     node: Node) => {
-      if (sanitizeDOMValueImpl !== undefined) {
-        return sanitizeDOMValueImpl(value, name, type, node);
-      }
-      return value;
-    };
+/**
+ * A global callback used to get a sanitizer for a given field.
+ */
+export let sanitizerFactory: SanitizerFactory = noopSanitizer;
 
-export const __testOnlyClearSanitizerDoNotCallOrElse = () => {
-  sanitizeDOMValueImpl = undefined;
+/** Sets the global sanitizer factory. */
+export const setSanitizerFactory = (newSanitizer: SanitizerFactory) => {
+  if (sanitizerFactory !== noopSanitizer) {
+    throw new Error(
+        `Attempted to overwrite existing lit-html security policy.` +
+        ` setSanitizeDOMValueFactory should be called at most once.`);
+  }
+  sanitizerFactory = newSanitizer;
+};
+
+/**
+ * Only used in internal tests, not a part of the public API.
+ * The name and implementation may change at any time.
+ */
+export const __testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
+  sanitizerFactory = noopSanitizer;
 };
 
 /**
@@ -113,15 +115,28 @@ const emptyTextNode = document.createTextNode('');
 export class AttributeCommitter {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
-  readonly parts: ReadonlyArray<AttributePart>;
+  readonly strings: readonly string[];
+  readonly parts: readonly AttributePart[];
+  readonly sanitizer: ValueSanitizer;
   dirty = true;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(
+      element: Element, name: string, strings: readonly string[],
+      // Next breaking change, consider making this param required.
+      templatePart?: AttributeTemplatePart,
+      kind: 'property'|'attribute' = 'attribute') {
     this.element = element;
     this.name = name;
     this.strings = strings;
     this.parts = [];
+    let sanitizer = templatePart && templatePart.sanitizer;
+    if (sanitizer === undefined) {
+      sanitizer = sanitizerFactory(element, name, kind);
+      if (templatePart !== undefined) {
+        templatePart.sanitizer = sanitizer;
+      }
+    }
+    this.sanitizer = sanitizer;
     for (let i = 0; i < strings.length - 1; i++) {
       (this.parts as AttributePart[])[i] = this._createPart();
     }
@@ -184,7 +199,7 @@ export class AttributeCommitter {
     if (this.dirty) {
       this.dirty = false;
       let value = this._getValue();
-      value = sanitizeDOMValue(value, this.name, 'attribute', this.element);
+      value = this.sanitizer(value);
       if (typeof value === 'symbol') {
         // Native Symbols throw if they're coerced to string.
         value = String(value);
@@ -243,10 +258,22 @@ export class NodePart implements Part {
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
+  readonly templatePart: NodeTemplatePart|undefined;
   private __pendingValue: unknown = undefined;
+  /**
+   * The sanitizer to use when writing text contents into this NodePart.
+   *
+   * We have to initialize this here rather than at the template literal level
+   * because the security of text content depends on the context into which
+   * it's written. e.g. the same text has different security requirements
+   * when a child of a <script> vs a <style> vs a <div>.
+   */
+  private textSanitizer: ValueSanitizer|undefined = undefined;
 
-  constructor(options: RenderOptions) {
+  constructor(
+      options: RenderOptions, templatePart?: NodeTemplatePart|undefined) {
     this.options = options;
+    this.templatePart = templatePart;
   }
 
   /**
@@ -345,7 +372,10 @@ export class NodePart implements Part {
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
-      const renderedValue = sanitizeDOMValue(value, 'data', 'property', node);
+      if (this.textSanitizer === undefined) {
+        this.textSanitizer = sanitizerFactory(node, 'data', 'property');
+      }
+      const renderedValue = this.textSanitizer(value);
       (node as Text).data = typeof renderedValue === 'string' ?
           renderedValue :
           String(renderedValue);
@@ -356,9 +386,10 @@ export class NodePart implements Part {
       // into the document, then we can sanitize its contentx.
       const textNode = emptyTextNode.cloneNode() as Text;
       this.__commitNode(textNode);
-      const renderedValue =
-          sanitizeDOMValue(value, 'textContent', 'property', textNode) as
-          string;
+      if (this.textSanitizer === undefined) {
+        this.textSanitizer = sanitizerFactory(textNode, 'data', 'property');
+      }
+      const renderedValue = this.textSanitizer(value) as string;
       textNode.data = typeof renderedValue === 'string' ? renderedValue :
                                                           String(renderedValue);
     }
@@ -377,10 +408,10 @@ export class NodePart implements Part {
       // this is known to be unsafe. So in the case where the user is in
       // "secure mode" (i.e. when there's a sanitizeDOMValue set), we just want
       // to forbid this because it's not a use case we want to support.
-      // We check for sanitizeDOMValue is to prevent this from
-      // being a breaking change to the library.
+      // We only apply this policy when sanitizerFactory has been set to
+      // prevent this from being a breaking change to the library.
       const parent = this.endNode.parentNode!;
-      if (sanitizeDOMValueImpl !== undefined && parent.nodeName === 'STYLE' ||
+      if (sanitizerFactory !== noopSanitizer && parent.nodeName === 'STYLE' ||
           parent.nodeName === 'SCRIPT') {
         this.__commitText(
             '/* lit-html will not write ' +
@@ -428,7 +459,7 @@ export class NodePart implements Part {
 
       // If no existing part, create a new one
       if (itemPart === undefined) {
-        itemPart = new NodePart(this.options);
+        itemPart = new NodePart(this.options, this.templatePart);
         itemParts.push(itemPart);
         if (partIndex === 0) {
           itemPart.appendIntoPart(this);
@@ -464,11 +495,11 @@ export class NodePart implements Part {
 export class BooleanAttributePart implements Part {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+  readonly strings: readonly string[];
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -516,8 +547,11 @@ export class BooleanAttributePart implements Part {
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
-    super(element, name, strings);
+  constructor(
+      element: Element, name: string, strings: readonly string[],
+      // Next breaking change, consider making this param required.
+      templatePart?: AttributeTemplatePart) {
+    super(element, name, strings, templatePart, 'property');
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
   }
@@ -537,8 +571,8 @@ export class PropertyCommitter extends AttributeCommitter {
     if (this.dirty) {
       this.dirty = false;
       let value = this._getValue();
-      value = sanitizeDOMValue(value, this.name, 'property', this.element);
-      // tslint:disable-next-line:no-any
+      value = this.sanitizer(value);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = value;
     }
   }
@@ -559,11 +593,11 @@ try {
       return false;
     }
   };
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.addEventListener('test', options as any, options);
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.removeEventListener('test', options as any, options);
-} catch (_e) {
+} catch (_e) {  // eslint-disable-line no-empty
 }
 
 

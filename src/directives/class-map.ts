@@ -70,7 +70,6 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
     const value = classInfo[name];
     // We explicitly want a loose truthy check of `value` because it seems more
     // convenient that '' and 0 are skipped.
-    // tslint:disable-next-line: triple-equals
     if (value != previousClasses.has(name)) {
       if (value) {
         classList.add(name);
