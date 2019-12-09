@@ -15,7 +15,7 @@
 /**
  * @module lit-html
  */
-
+import {ValueSanitizer} from './parts.js';
 import {TemplateResult} from './template-result.js';
 
 /**
@@ -106,7 +106,13 @@ export class Template {
                 (node as Element).getAttribute(attributeLookupName)!;
             (node as Element).removeAttribute(attributeLookupName);
             const statics = attributeValue.split(markerRegex);
-            this.parts.push({type: 'attribute', index, name, strings: statics});
+            this.parts.push({
+              type: 'attribute',
+              index,
+              name,
+              strings: statics,
+              sanitizer: undefined
+            });
             partIndex += statics.length - 1;
           }
         }
@@ -213,11 +219,20 @@ const endsWith = (str: string, suffix: string): boolean => {
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
  */
-export type TemplatePart = {
-  readonly type: 'node',
-  index: number
-}|{readonly type: 'attribute', index: number, readonly name: string, readonly strings: ReadonlyArray<string>};
+export type TemplatePart = NodeTemplatePart|AttributeTemplatePart;
+export interface NodeTemplatePart {
+  readonly type: 'node';
+  index: number;
+}
 
+export interface AttributeTemplatePart {
+  readonly type: 'attribute';
+  index: number;
+  readonly name: string;
+  readonly strings: readonly string[];
+  // Lazily initialized in the default-template-processor.
+  sanitizer?: ValueSanitizer;
+}
 export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
 // Allows `document.createComment('')` to be renamed for a
@@ -251,4 +266,5 @@ export const createMarker = () => document.createComment('');
  *    * (') then any non-(')
  */
 export const lastAttributeNameRegex =
+    // eslint-disable-next-line no-control-regex
     /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;

@@ -88,7 +88,7 @@ const countNodes = (node: Node) => {
 };
 
 const nextActiveIndexInTemplateParts =
-    (parts: TemplatePart[], startIndex: number = -1) => {
+    (parts: TemplatePart[], startIndex = -1) => {
       for (let i = startIndex + 1; i < parts.length; i++) {
         const part = parts[i];
         if (isTemplatePartActive(part)) {
