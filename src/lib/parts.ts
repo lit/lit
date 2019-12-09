@@ -581,20 +581,23 @@ export class PropertyPart extends AttributePart {}
 // value so we should only pass the `capture` property.
 let eventOptionsSupported = false;
 
-try {
-  const options = {
-    get capture() {
-      eventOptionsSupported = true;
-      return false;
-    }
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  window.addEventListener('test', options as any, options);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  window.removeEventListener('test', options as any, options);
-} catch (_e) {  // eslint-disable-line no-empty
-}
-
+// Wrap into an IIFE because MS Edge <= v41 does not support having try/catch
+// blocks right into the body of a module
+(() => {
+  try {
+    const options = {
+      get capture() {
+        eventOptionsSupported = true;
+        return false;
+      }
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.addEventListener('test', options as any, options);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.removeEventListener('test', options as any, options);
+  } catch (_e) {
+  }
+})();
 
 type EventHandlerWithOptions =
     EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;
