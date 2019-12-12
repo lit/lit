@@ -1,7 +1,15 @@
 node_modules/
-dist/
-build/
+lib/
+test/
 
-*.js.map
-*.d.ts
-*.d.ts.map
+# generated test source
+/test/**/*.js
+/test/**/*.js.map
+/test/**/*.d.ts
+/test/**/*.d.ts.map
+
+# top level source
+my-element.js
+my-element.js.map
+my-element.d.ts
+my-element.d.ts.map
