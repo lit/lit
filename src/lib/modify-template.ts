@@ -16,8 +16,8 @@
  * @module shady-render
  */
 
-import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 import {elementCommentTextWalker, resetElementCommentTextWalker} from './dom.js';
+import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 
 /**
  * Removes the list of nodes from a Template safely. In addition to removing
