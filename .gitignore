@@ -1,12 +1,5 @@
-node_modules/
-lib/
-test/
-
-# generated test source
-/test/**/*.js
-/test/**/*.js.map
-/test/**/*.d.ts
-/test/**/*.d.ts.map
+/node_modules/
+/lib/
 
 # top level source
 my-element.js

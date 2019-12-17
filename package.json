@@ -12,10 +12,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "web component"
+    "web component", "lit-element", "typescript"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "The Polymer Authors",
+  "license": "BSD-3-Clause",
   "dependencies": {
     "lit-element": "^2.2.1"
   },
