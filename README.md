@@ -72,6 +72,12 @@ To lint the project run:
 npm run lint
 ```
 
+## Formatting
+
+[Prettier](https://prettier.io/) is used for code formatting. It has been pre-configured according to the Polymer Project's style. You can change this in `.prettierrc.json`.
+
+Prettier has not been configured to run when commiting files, but this can be added with Husky and and `pretty-quick`. See the [prettier.io](https://prettier.io/) site for instructions.
+
 ## More information
 
 See [Get started](https://lit-element.polymer-project.org/guide/start) on the LitElement site for more information.

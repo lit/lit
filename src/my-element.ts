@@ -12,11 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html, customElement, property, css } from 'lit-element';
+import {LitElement, html, customElement, property, css} from 'lit-element';
 
 @customElement('my-element')
 export class MyElement extends LitElement {
-
   static styles = css`
     :host {
       display: block;
