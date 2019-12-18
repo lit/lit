@@ -32,7 +32,7 @@ export class MyElement extends LitElement {
   @property({type: Number})
   count = 0;
 
-  render(){
+  render() {
     return html`
       <h1>Hello, ${this.name}!</h1>
       <button @click=${this._onClick}>Click Count: ${this.count}</button>
