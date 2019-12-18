@@ -9,10 +9,15 @@
     "build": "lit-analyzer && tsc",
     "build:watch": "tsc --watch",
     "serve": "es-dev-server --app-index demo/index.html --node-resolve --watch --open",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start karma.conf.cjs",
+    "test:watch": "karma start karma.conf.cjs --auto-watch=true --single-run=false",
+    "test:update-snapshots": "karma start karma.conf.cjs --update-snapshots",
+    "test:prune-snapshots": "karma start karma.conf.cjs --prune-snapshots"
   },
   "keywords": [
-    "web component", "lit-element", "typescript"
+    "web component",
+    "lit-element",
+    "typescript"
   ],
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
@@ -20,8 +25,18 @@
     "lit-element": "^2.2.1"
   },
   "devDependencies": {
+    "@open-wc/testing": "^2.4.2",
+    "@open-wc/testing-karma": "^3.2.19",
+    "@types/chai": "^4.2.7",
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
+    "deepmerge": "^4.2.2",
     "es-dev-server": "^1.23.1",
+    "karma": "^4.4.1",
+    "karma-chai": "^0.1.0",
+    "karma-mocha": "^1.3.0",
     "lit-analyzer": "^1.1.9",
+    "mocha": "^6.2.2",
     "typescript": "^3.7.2"
   }
 }
