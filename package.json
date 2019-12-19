@@ -10,6 +10,7 @@
     "build:watch": "tsc --watch",
     "lint": "lit-analyzer && eslint 'src/**/*.ts'",
     "format": "prettier src/* --write",
+    "analyze": "wca analyze \"src/**/*.ts\" --outFile custom-elements.json",
     "serve": "es-dev-server --app-index demo/index.html --node-resolve --watch --open",
     "test": "karma start karma.conf.cjs",
     "test:watch": "karma start karma.conf.cjs --auto-watch=true --single-run=false",
@@ -43,6 +44,7 @@
     "lit-analyzer": "^1.1.9",
     "mocha": "^6.2.2",
     "prettier": "^1.19.1",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.2",
+    "web-component-analyzer": "^1.0.0"
   }
 }
