@@ -10,8 +10,10 @@
     "build:watch": "tsc --watch",
     "lint": "lit-analyzer && eslint 'src/**/*.ts'",
     "format": "prettier src/* --write",
+    "docs": "npm run analyze & eleventy --config=.eleventy.cjs",
+    "docs:watch": "eleventy --config=.eleventy.cjs --watch",
     "analyze": "wca analyze \"src/**/*.ts\" --outFile custom-elements.json",
-    "serve": "es-dev-server --app-index demo/index.html --node-resolve --watch --open",
+    "serve": "es-dev-server --node-resolve --watch",
     "test": "karma start karma.conf.cjs",
     "test:watch": "karma start karma.conf.cjs --auto-watch=true --single-run=false",
     "test:update-snapshots": "karma start karma.conf.cjs --update-snapshots",
@@ -28,6 +30,8 @@
     "lit-element": "^2.2.1"
   },
   "devDependencies": {
+    "@11ty/eleventy": "^0.9.0",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^2.0.3",
     "@open-wc/testing": "^2.4.2",
     "@open-wc/testing-karma": "^3.2.19",
     "@types/chai": "^4.2.7",

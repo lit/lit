@@ -14,6 +14,12 @@
 
 import {LitElement, html, customElement, property, css} from 'lit-element';
 
+/**
+ * An example element.
+ *
+ * @slot - This element has a slot
+ * @csspart button - The button
+ */
 @customElement('my-element')
 export class MyElement extends LitElement {
   static styles = css`
@@ -25,22 +31,34 @@ export class MyElement extends LitElement {
     }
   `;
 
+  /**
+   * The name to say "Hello" to.
+   */
   @property()
   name = 'World';
 
+  /**
+   * The number of times the button has been clicked.
+   */
   @property({type: Number})
   count = 0;
 
   render() {
     return html`
       <h1>Hello, ${this.name}!</h1>
-      <button @click=${this._onClick}>Click Count: ${this.count}</button>
+      <button @click=${this._onClick} part="button">
+        Click Count: ${this.count}
+      </button>
       <slot></slot>
     `;
   }
 
   private _onClick() {
     this.count++;
+  }
+
+  foo(): string {
+    return 'foo';
   }
 }
 
