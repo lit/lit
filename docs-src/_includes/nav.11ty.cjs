@@ -1,9 +1,9 @@
 module.exports = function(data) {
   return `
 <nav>
-  <a href="/docs/">Home</a>
-  <a href="/docs/examples/">Examples</a>
-  <a href="/docs/api/">API</a>
-  <a href="/docs/install/">Install</a>
+  <a href="/">Home</a>
+  <a href="/examples/">Examples</a>
+  <a href="/api/">API</a>
+  <a href="/install/">Install</a>
 </nav>`;
 };
