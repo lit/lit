@@ -1,4 +1,5 @@
 const page = require('./page.11ty.cjs');
+const relative = require('./relative-path.cjs');
 
 /**
  * This template extends the page template and adds an examples list.
@@ -21,7 +22,7 @@ const renderExample = ({name, content, collections, page}) => {
               ? ''
               : collections.example.map((post) => `
                   <li class=${post.url === page.url ? 'selected' : ''}>
-                    <a href="${post.url}">${ post.data.description.replace('<', '&lt;') }</a>
+                    <a href="${relative(page.url, post.url)}">${post.data.description.replace('<', '&lt;')}</a>
                   </li>
                 `).join('')}
         </ul>

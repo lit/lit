@@ -1,9 +1,11 @@
-module.exports = function(data) {
+const relative = require('./relative-path.cjs');
+
+module.exports = function({page}) {
   return `
 <nav>
-  <a href="../">Home</a>
-  <a href="../examples/">Examples</a>
-  <a href="../api/">API</a>
-  <a href="../install/">Install</a>
+  <a href="${relative(page.url, '/')}">Home</a>
+  <a href="${relative(page.url, '/examples/')}">Examples</a>
+  <a href="${relative(page.url, '/api/')}">API</a>
+  <a href="${relative(page.url, '/install/')}">Install</a>
 </nav>`;
 };
