@@ -17,6 +17,7 @@
     "docs:assets": "cp node_modules/prismjs/themes/prism-okaidia.css docs/",
     "docs:serve": "es-dev-server --root-dir=docs --node-resolve --watch",
     "analyze": "wca analyze \"src/**/*.ts\" --outFile custom-elements.json",
+    "serve": "es-dev-server --node-resolve --watch",
     "test": "karma start karma.conf.cjs",
     "test:watch": "karma start karma.conf.cjs --auto-watch=true --single-run=false",
     "test:update-snapshots": "karma start karma.conf.cjs --update-snapshots",
