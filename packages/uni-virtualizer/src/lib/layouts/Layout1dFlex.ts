@@ -1,5 +1,12 @@
 import {Layout1dBase} from './Layout1dBase';
-import {ItemBox, Positions, Size} from './Layout';
+import {ItemBox, Positions, Size, LayoutConfig, Type} from './Layout';
+
+export interface Layout1dFlexConfig extends LayoutConfig {
+  type?: Type<Layout1dFlex>,
+  direction?: "horizontal" | "vertical",
+  spacing?: number,
+  idealSize?: number
+}
 
 /**
  * TODO @straversi: document and test this Layout.
@@ -9,54 +16,35 @@ export class Layout1dFlex extends Layout1dBase {
   private _itemPositions: Array<Positions> = [];
   private _rolumnStartIdx: Array<number> = [];
   private _rolumnStartPos: Array<number> = [];
-//   private _meanRolumnSize: Number = 100;
   protected _idealSize: number;
-  private _pendingLayout: boolean = false;
-
-  constructor(config) {
-    super(config);
-    if (config.idealSize === undefined) {
-        this._idealSize = 200;
-    }
+  protected _config: Layout1dFlexConfig = {};
+  protected static _defaultConfig: Layout1dFlexConfig = {
+    direction: 'vertical',
+    spacing: 0,
+    idealSize: 200
   }
-
-  set direction(dir) {
-    super.direction = dir;
-    this._scheduleLayout();
-  }
-
-  set spacing(px) {
-    super.spacing = px;
-    this._scheduleLayout();
-  }
-
-  // set spacing(px) {
-  //   if (px !== this._spacing) {
-  //     this._spacing = Number(px);
-  //     this._scheduleLayout();
-  //   //   this._scheduleReflow();
-  //   }
-  // }
 
   set idealSize(px) {
-    if (px !== this._idealSize) {
-      this._idealSize = Number(px);
-      this._scheduleLayout();
-    //   this._scheduleReflow();
+    const _px = Number(px);
+    if (_px !== this._idealSize) {
+      this._idealSize = _px;
+      this._scheduleLayoutUpdate();
     }
+  }
+
+  get idealSize() {
+    return this._idealSize;
   }
 
   updateItemSizes(sizes: {[key: number]: ItemBox}) {
     Object.keys(sizes).forEach((key) => {
         this._itemSizes[Number(key)] = sizes[key];
       });
-      this._defineLayout();
-    //   this._scheduleReflow();
+      this._scheduleLayoutUpdate();
 }
 
   _viewDim2Changed() {
-    this._scheduleLayout();
-    // this._scheduleReflow();
+    this._scheduleLayoutUpdate();
   }
 
   _getActiveItems() {
@@ -98,17 +86,8 @@ export class Layout1dFlex extends Layout1dBase {
   /**
    * Render at the next opportunity.
    */
-  protected async _scheduleLayout(): Promise<void> {
-    if (!this._pendingLayout) {
-      this._pendingLayout = true;
-      await Promise.resolve();
-      this._pendingLayout = false;
-      this._defineLayout();
-    }
-  }
 
-
-  _defineLayout(): void {
+  _updateLayout(): void {
     if (this._rolumnStartIdx === undefined || this._viewDim2 === 0) return;
     // TODO: An odd place to do this, need to think through the logistics of getting size info to the layout
     // in all cases
@@ -169,9 +148,8 @@ export class Layout1dFlex extends Layout1dBase {
         }
         idx++;
     }
-    // TODO: This is a hack to force reflow
+    // TODO (graynorton): This is a hack to force reflow
     this._spacingChanged = true;
-    this._scheduleReflow();
 }
 
   _updateScrollSize() {

@@ -1,5 +1,5 @@
 import {html, render} from 'lit-html';
-import {scroll} from 'lit-virtualizer/lib/scroll.js';
+import {scroll, layoutRef} from 'lit-virtualizer';
 import {Layout1dSquareGrid} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dSquareGrid.js';
 import {Layout1dFlex} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dFlex.js';
 import {getDims, getUrl, searchFlickr} from './flickr.js';
@@ -40,8 +40,8 @@ const state = {
     direction: 'vertical',
     idealSize: 300,
     spacing: 8,
-    query: 'fog',
-    Layout: Layout1dSquareGrid,
+    query: 'sunset',
+    Layout: Layout1dFlex,
     layout: null,
     first: 0,
     last: 0,
@@ -61,17 +61,22 @@ function setState(changes) {
         Object.assign(state, changes);
         render(renderExample(), document.body);    
     }
+    // especially hacky
+    if (changes.Layout) {
+        updateItemSizes(state.items);
+    }
+    
 }
 
 function renderExample() {
     let {open, showRange, items, direction, idealSize, spacing, query, Layout, layout, first, last, firstVisible, lastVisible} = state;
-    if (!(layout instanceof Layout)) {
-        layout = (state.layout = new Layout({idealSize, spacing, direction}));
-        updateItemSizes(items);
-    }
-    else {
-        Object.assign(layout, {idealSize, spacing, direction, totalItems: items.length});
-    }
+    // if (!(layout instanceof Layout)) {
+    //     layout = (state.layout = new Layout({idealSize, spacing, direction}));
+    //     updateItemSizes(items);
+    // }
+    // else {
+    //     Object.assign(layout, {idealSize, spacing, direction, totalItems: items.length});
+    // }
     return html`
 <style>
     body {margin: 0; height: 100vh;}
@@ -129,10 +134,17 @@ function renderExample() {
             </div>
         </div>
         <div class="scroller" @rangechange=${(e) => {
-            const {first, last, firstVisible, lastVisible} = e;
-            setState({first, last, firstVisible, lastVisible});
+            if (showRange) {
+                const {first, last, firstVisible, lastVisible} = e;
+                setState({first, last, firstVisible, lastVisible});
+            }
         }}>
-            ${scroll({items, renderItem, layout: layout})}
+            ${scroll({items, renderItem, layout: {
+                type: Layout,
+                idealSize,
+                spacing,
+                direction
+            }})}
         </div>
     </div>
 </div>
@@ -158,8 +170,9 @@ function itemSizes(items) {
 }
 
 function updateItemSizes(items) {
-    if (typeof state.layout.updateItemSizes === 'function') {
-        state.layout.updateItemSizes(itemSizes(items));
+    const layout = document.querySelector('.scroller')[layoutRef];
+    if (layout && typeof layout.updateItemSizes === 'function') {
+       layout.updateItemSizes(itemSizes(items));
     }
 }
 

@@ -13,7 +13,8 @@
     "dependencies": {
         "event-target-shim": "^5.0.1",
         "resize-observer-polyfill": "^1.5.1",
-        "tslib": "^1.10.0"
+        "tslib": "^1.10.0",
+        "d2l-resize-aware": "BrightspaceUI/resize-aware#semver:^1"
     },
     "devDependencies": {
         "typescript": "^3.5.1"

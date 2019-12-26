@@ -11,17 +11,10 @@ export class Layout1dSquareGrid extends Layout1dGrid {
     }
   }
 
-  set direction(direction) {
-    super.direction = direction;
-    this._defineGrid();
-    this._scheduleReflow();
-  }
-
   set idealSize(px) {
     if (px !== this._idealSize) {
       this._idealSize = px;
-      this._defineGrid();
-      this._scheduleReflow();
+      this._scheduleLayoutUpdate();
     }
   }
 
@@ -29,7 +22,7 @@ export class Layout1dSquareGrid extends Layout1dGrid {
     return Object.assign(super._getItemPosition(idx), this._itemSize);
   }
 
-  _defineGrid() {
+  _updateLayout() {
     const frolumns = this._viewDim2 / this._idealSize;
     this._rolumns = frolumns % 1 < 0.5 ? Math.floor(frolumns) : Math.ceil(frolumns);
     const adjSize = (this._viewDim2 - ((this._rolumns + 1) * this._spacing)) / this._rolumns;

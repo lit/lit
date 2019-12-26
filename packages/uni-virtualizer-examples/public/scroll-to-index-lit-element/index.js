@@ -1,5 +1,6 @@
 import { html } from 'lit-html';
-import 'lit-virtualizer/lib/lit-virtualizer.js';
+import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
+import 'lit-virtualizer/lit-virtualizer.js';
 
 let virtualizer;
 
@@ -7,6 +8,7 @@ let virtualizer;
     virtualizer = document.createElement('lit-virtualizer');
     const contacts = await(await fetch('../shared/contacts.json')).json();
     virtualizer.items = contacts;
+    virtualizer.layout = Layout1d;
     virtualizer.renderItem = ({ longText }, i) => html`<p>${i}) ${longText}</p>`;
     document.body.appendChild(virtualizer);
 

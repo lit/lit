@@ -1,16 +1,16 @@
-let ET;
+let _ET, ET;
 
 export default async function EventTarget() {
     return ET || init();
 }
 
 async function init() {
-    ET = (window as {EventTarget?: EventTarget}).EventTarget;
+    _ET = (window as {EventTarget?: EventTarget}).EventTarget;
     try {
-        new ET();
+        new _ET();
     }
     catch {
-        ET = (await import('event-target-shim')).EventTarget;
+        _ET = (await import('event-target-shim')).EventTarget;
     }
-    return ET;
+    return (ET = _ET);
 }

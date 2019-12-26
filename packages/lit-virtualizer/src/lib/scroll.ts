@@ -1,6 +1,6 @@
 import { directive, NodePart, TemplateResult } from 'lit-html';
 import { VirtualScroller } from './uni-virtualizer/lib/VirtualScroller.js';
-import { Layout } from './uni-virtualizer/lib/layouts/Layout.js';
+import { Type, Layout } from './uni-virtualizer/lib/layouts/Layout.js';
 import { LitMixin } from './repeat.js';
 
 export class LitScroller<Item> extends LitMixin(VirtualScroller)<Item> {}
@@ -17,7 +17,8 @@ interface ScrollConfig<Item> {
    */
   renderItem?: (item: Item, index?: number) => TemplateResult;
 
-  layout?: Layout;
+  // TODO (graynorton): Document...
+  layout?: Layout | Type<Layout>;
 
   /**
    * An element that receives scroll events for the virtual scroller.

@@ -11,20 +11,12 @@ export abstract class Layout1dGrid extends Layout1dBase {
     this._rolumns = 1;
   }
 
-  set spacing(px) {
-    super.spacing = px;
-    this._defineGrid();
-    this._scheduleReflow();
-  }
-
   _viewDim2Changed() {
-    this._defineGrid();
-    this._scheduleReflow();
+    this._scheduleLayoutUpdate();
   }
 
   _itemDim2Changed() {
-    this._defineGrid();
-    this._scheduleReflow();
+    this._scheduleLayoutUpdate();
   }
 
   _getActiveItems() {
@@ -49,8 +41,6 @@ export abstract class Layout1dGrid extends Layout1dBase {
           ((idx % this._rolumns) * (this._spacing + this._itemDim2))
     } as unknown as {top: number, left: number};
   }
-
-  abstract _defineGrid(): void;
 
   _updateScrollSize() {
     this._scrollSize =

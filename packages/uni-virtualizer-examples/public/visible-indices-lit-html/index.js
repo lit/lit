@@ -1,6 +1,6 @@
 import { render, html } from 'lit-html';
 import { scroll } from 'lit-virtualizer/lib/scroll.js';
-
+import { Layout1d } from 'lit-virtualizer';
 
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");
@@ -13,6 +13,7 @@ const example = (contacts) => html`
     <section @rangechange=${handleRangeChange} style="height: 100%;">
         ${scroll({
             items: contacts,
+            layout: Layout1d,
             renderItem: ({ mediumText }, i) =>
                 html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${i}) ${mediumText}</div>`,
             useShadowDOM: true

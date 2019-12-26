@@ -2,6 +2,15 @@ import { directive, NodePart, createMarker, TemplateResult } from 'lit-html';
 import { VirtualRepeater } from './uni-virtualizer/lib/VirtualRepeater.js';
 import { Layout } from './uni-virtualizer/lib/layouts/Layout.js';
 
+// TODO (graynorton): ShadyDOM polyfill doesn't support nextElementSibling (or prepend). Why not?
+function nextElementSibling(node: Node) {
+  let n = node.nextSibling;
+  while(n && n.nodeType !== 1) {
+    n = n.nextSibling;
+  }
+  return n;
+}
+
 /**
  * Mixin for VirtualRepeater and VirtualScroller. This mixin overrides the generic
  * methods in those classes to provide lit-specific implementations of element
@@ -62,7 +71,7 @@ export const LitMixin = (Superclass) => class<Item> extends Superclass {
    */
 
   get _kids(): Array<Node> {
-    return this._ordered.map((p) => p.startNode.nextElementSibling);
+    return this._ordered.map((p) => nextElementSibling(p.startNode));
   }
 
   _node(part: NodePart): Node {
@@ -116,7 +125,7 @@ export const LitMixin = (Superclass) => class<Item> extends Superclass {
   _measureChild(part: NodePart) {
     // Currently, we assume there's only one node in the part (between start and
     // end nodes)
-    return super._measureChild((part.startNode as Element).nextElementSibling);
+    return super._measureChild(nextElementSibling((part.startNode as Element)));
   }
 };
 

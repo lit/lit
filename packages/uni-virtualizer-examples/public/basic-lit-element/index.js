@@ -1,5 +1,14 @@
 import {html, css, LitElement} from 'lit-element';
 import 'lit-virtualizer/lib/lit-virtualizer.js';
+import {Layout1d} from 'lit-virtualizer/lit-virtualizer.js';
+
+// import ResizeObserver from 'lit-virtualizer/lib/uni-virtualizer/lib/polyfillLoaders/ResizeObserver.js';
+
+// requestAnimationFrame(async () => {
+//     const RO = await ResizeObserver();
+//     const ro = new RO((entries) => console.log(entries));
+//     ro.observe(document.querySelector('p'));
+// });
 
 class ContactCard extends LitElement {
     static get properties() {
@@ -73,7 +82,7 @@ class ContactList extends LitElement {
         // .scrollTarget=${window}
         return html`
             <lit-virtualizer
-                layout='vertical'
+                .layout=${Layout1d}
                 .items=${this.data}
                 .renderItem=${this._renderContact}>
             </lit-virtualizer>

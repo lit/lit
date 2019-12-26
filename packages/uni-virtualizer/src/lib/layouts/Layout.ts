@@ -20,12 +20,22 @@ export type Positions = {
   height?: number
 };
 
+export interface Type<T> extends Function {
+  new (...args: any[]): T;
+}
+
+export interface LayoutConfig {
+  type?: Type<Layout>
+}
+
 export type ScrollDirection = 'vertical' | 'horizontal';
 
 /**
  * Interface for layouts consumed by VirtualScroller or VirtualRepeater.
  */
 export interface Layout {
+  config: LayoutConfig;
+  
   totalItems: number;
 
   direction: ScrollDirection;

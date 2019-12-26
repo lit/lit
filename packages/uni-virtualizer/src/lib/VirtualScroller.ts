@@ -1,6 +1,11 @@
 import {VirtualRepeater} from './VirtualRepeater.js';
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import {Layout} from './layouts/Layout.js';
+import { Type, Layout, LayoutConfig } from './layouts/Layout.js';
+
+export const layoutRef = Symbol('layoutRef');
+
+// TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
+let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';
 let globalContainerStylesheet: HTMLStyleElement = null;
@@ -37,44 +42,27 @@ function attachGlobalContainerStylesheet() {
 }
 
 export class RangeChangeEvent extends Event {
-  private _first: number;
-  private _last: number;
-  private _firstVisible: number;
-  private _lastVisible: number;
+  first: number;
+  last: number;
+  firstVisible: number;
+  lastVisible: number;
 
   constructor(type, init) {
     super(type, init);
-    this._first = Math.floor(init.first || 0);
-    this._last = Math.floor(init.last || 0);
-    this._firstVisible = Math.floor(init.firstVisible || 0);
-    this._lastVisible = Math.floor(init.lastVisible || 0);
-  }
-  get first(): number {
-    return this._first;
-  }
-  get last(): number {
-    return this._last;
-  }
-  get firstVisible(): number {
-    return this._firstVisible;
-  }
-  get lastVisible(): number {
-    return this._lastVisible;
+    this.first = Math.floor(init.first || 0);
+    this.last = Math.floor(init.last || 0);
+    this.firstVisible = Math.floor(init.firstVisible || 0);
+    this.lastVisible = Math.floor(init.lastVisible || 0);
   }
 }
 
 interface VirtualScrollerConfig {
-  layout: Layout;
+  layout: Layout | Type<Layout> | LayoutConfig;
 
   /**
    * An element that receives scroll events for the virtual scroller.
    */
   scrollTarget: Element | Window;
-
-  /**
-   * Whether to build the virtual scroller within a shadow DOM.
-   */
-  useShadowDOM: boolean;
 
   /**
    * The parent of all child nodes to be rendered.
@@ -85,8 +73,7 @@ interface VirtualScrollerConfig {
 /**
  * Provides virtual scrolling boilerplate.
  *
- * Extensions of this class must set container, layout, scrollTarget, and
- * useShadowDOM.
+ * Extensions of this class must set container, layout, and scrollTarget.
  *
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
@@ -99,11 +86,6 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
   private _needsUpdateView: boolean = false;
 
   private _layout: Layout = null;
-
-  /**
-   * Whether to import the default (1d) layout on first render.
-   */
-  private _lazyLoadDefaultLayout: boolean = true;
 
   /**
    * The element that generates scroll events and defines the container
@@ -151,11 +133,6 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
    * when container is changed.
    */
   private _containerStylesheet = null;
-
-  /**
-   * Whether to build the virtual scroller within a shadow DOM.
-   */
-  private _useShadowDOM: boolean = true;
 
   /**
    * Size of the container.
@@ -250,7 +227,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
         this._applyContainerStyles();
         if (newEl === this._scrollTarget) {
           this._sizer = this._sizer || this._createContainerSizer();
-          this._container.prepend(this._sizer);
+          this._container.insertBefore(this._sizer, this._container.firstChild);
         }
         this._scheduleUpdateView();
         this._containerRO.observe(newEl);
@@ -258,12 +235,40 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
     });
   }
 
-  get layout(): Layout {
+  // This will always actually return a layout instance,
+  // but TypeScript wants the getter and setter types to be the same
+  get layout(): Layout | Type<Layout> | LayoutConfig {
     return this._layout;
   }
-  set layout(layout: Layout) {
-    if (layout === this._layout) {
+
+  set layout(layout: Layout | Type<Layout> | LayoutConfig) {
+    if (this._layout === layout) {
       return;
+    }
+
+    let _layout, _config;
+
+    if (typeof layout === 'object') {
+      if ((layout as LayoutConfig).type !== undefined) {
+        _layout = (layout as LayoutConfig).type;
+        delete (layout as LayoutConfig).type;
+      }
+      _config = layout;
+    }
+    else {
+      _layout = layout;
+    }
+
+    if (typeof _layout === 'function') {
+      if (this._layout instanceof _layout) {
+        if (_config) {
+          this._layout.config = _config;
+        }
+        return;
+      }
+      else {
+        _layout = new _layout(_config);
+      }
     }
 
     if (this._layout) {
@@ -272,16 +277,17 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
+      delete this.container[layoutRef];
       // Reset container size so layout can get correct viewport size.
       if (this._containerElement) {
         this._sizeContainer(undefined);
       }
     }
 
-    this._layout = layout;
+    this._layout = _layout;
 
     if (this._layout) {
-      if (this.layout.measureChildren && typeof this._layout.updateItemSizes === 'function') {
+      if (this._layout.measureChildren && typeof this._layout.updateItemSizes === 'function') {
         this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
         this.requestRemeasure();
       }
@@ -289,6 +295,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
+      this._container[layoutRef] = this._layout;
       this._scheduleUpdateView();
     }
   }
@@ -322,23 +329,8 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
       target.addEventListener('scroll', this, {passive: true});
       if (target === this._containerElement) {
         this._sizer = this._sizer || this._createContainerSizer();
-        this._container.prepend(this._sizer);
+        this._container.insertBefore(this._sizer, this._container.firstChild);
       }
-    }
-  }
-
-  get useShadowDOM(): boolean {
-    return this._useShadowDOM;
-  }
-
-  set useShadowDOM(newVal: boolean) {
-    if (this._useShadowDOM !== newVal) {
-      this._useShadowDOM = Boolean(newVal);
-      if (this._containerStylesheet) {
-        this._containerStylesheet.parentElement.removeChild(this._containerStylesheet);
-        this._containerStylesheet = null;
-      }
-      this._applyContainerStyles();
     }
   }
 
@@ -356,13 +348,6 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
    * Continue relayout of child positions until they have stabilized.
    */
   protected async _render(): Promise<void> {
-    if (this._lazyLoadDefaultLayout && !this._layout) {
-      this._lazyLoadDefaultLayout = false;
-      const { Layout1d } = await import('./layouts/Layout1d');
-      this.layout = new Layout1d({});
-      return;
-    }
-
     this._childrenRO.disconnect();
 
     // Update layout properties before rendering to have correct first, num,
@@ -457,7 +442,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
   }
 
   private _applyContainerStyles() {
-    if (this._useShadowDOM) {
+    if (nativeShadowDOM) {
       if (this._containerStylesheet === null) {
         const sheet = (this._containerStylesheet = document.createElement('style'));
         sheet.textContent = containerStyles(':host', '::slotted(*)');
@@ -607,7 +592,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
   }
 
   protected _shouldRender() {
-    if (!super._shouldRender() || !this._containerElement || (!this._layout && !this._lazyLoadDefaultLayout)) {
+    if (!super._shouldRender() || !this._containerElement || !this._layout) {
       return false;
     }
     // NOTE: we're about to render, but the ResizeObserver didn't execute yet.

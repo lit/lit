@@ -1,5 +1,6 @@
 import { html, LitElement, customElement, property, TemplateResult } from 'lit-element';
 import { scroll } from './scroll.js';
+import { Type, Layout } from './uni-virtualizer/lib/layouts/Layout.js';
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -19,11 +20,13 @@ export class LitVirtualizer<T> extends LitElement {
     @property()
     scrollTarget: Element | Window;
 
+    @property()
+    layout: Type<Layout>
+
     private _scrollToIndex: {index: number, position: string};
 
-    constructor() {
-        super();
-        (this as {renderRoot: Element | DocumentFragment}).renderRoot = this;
+    createRenderRoot() {
+        return this;
     }
 
     /**
@@ -54,9 +57,9 @@ export class LitVirtualizer<T> extends LitElement {
         return html`${scroll({
             items: this.items,
             renderItem: this._renderItem,
+            layout: this.layout,
             scrollTarget: this.scrollTarget,
-            scrollToIndex: this._scrollToIndex,
-            useShadowDOM: true
+            scrollToIndex: this._scrollToIndex
             // TODO: allow configuration of a layout.
         })}`;
     }

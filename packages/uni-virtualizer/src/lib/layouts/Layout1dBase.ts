@@ -1,5 +1,5 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
+import {Layout, Positions, ScrollDirection, Size, dimension, position, LayoutConfig} from './Layout.js';
 
 export abstract class Layout1dBase implements Layout {
   /**
@@ -21,6 +21,8 @@ export abstract class Layout1dBase implements Layout {
    * Flag for debouncing asynchnronous reflow requests.
    */
   private _pendingReflow: boolean = false;
+
+  private _pendingLayoutUpdate: boolean = false;
 
   /**
    * Index of the item that has been scrolled to via the public API. When the
@@ -44,7 +46,9 @@ export abstract class Layout1dBase implements Layout {
    */
   private _lastVisible: number;
 
-  private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => this._eventTarget = new Ctor()));
+  private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => {
+    this._eventTarget = new Ctor();
+  }));
 
   /**
    * Pixel offset in the scroll direction of the first child.
@@ -127,8 +131,24 @@ export abstract class Layout1dBase implements Layout {
   private _eventTarget;
   protected _spacingChanged;
 
+  protected static _defaultConfig: LayoutConfig = {};
+
   constructor(config) {
-    Object.assign(this, config);
+    if (config) {
+      this.config = config;
+    }
+  }
+
+  set config(config: LayoutConfig) {
+    Object.assign(this, Object.assign({}, (<typeof Layout1dBase>this.constructor)._defaultConfig, config));
+  }
+
+  get config(): LayoutConfig {
+    const config = {};
+    for (let key in (<typeof Layout1dBase>this.constructor)._defaultConfig) {
+      config[key] = this[key];
+    }
+    return config;
   }
 
   /**
@@ -161,7 +181,7 @@ export abstract class Layout1dBase implements Layout {
       this._secondarySizeDim = (dir === 'horizontal') ? 'height' : 'width';
       this._positionDim = (dir === 'horizontal') ? 'left' : 'top';
       this._secondaryPositionDim = (dir === 'horizontal') ? 'top' : 'left';
-      this._scheduleReflow();
+      this._scheduleLayoutUpdate();
     }
   }
 
@@ -178,7 +198,7 @@ export abstract class Layout1dBase implements Layout {
       if (_itemDim2 !== this._itemDim2) {
         this._itemDim2Changed();
       } else {
-        this._scheduleReflow();
+        this._scheduleLayoutUpdate();
       }
     }
   }
@@ -193,7 +213,7 @@ export abstract class Layout1dBase implements Layout {
     const _px = Number(px);
     if (_px !== this._spacing) {
       this._spacing = _px;
-      this._scheduleReflow();
+      this._scheduleLayoutUpdate();
     }
   }
 
@@ -304,6 +324,10 @@ export abstract class Layout1dBase implements Layout {
     // Override
   }
 
+  protected _updateLayout() {
+    // Override
+  }
+
   protected _getItemSize(_idx: number): Size {
     return {
       [this._sizeDim]: this._itemDim1,
@@ -350,9 +374,18 @@ export abstract class Layout1dBase implements Layout {
     this._pendingReflow = true;
   }
 
+  protected _scheduleLayoutUpdate() {
+    this._pendingLayoutUpdate = true;
+    this._scheduleReflow();
+  }
+
   protected _reflow() {
     const {_first, _last, _scrollSize} = this;
 
+    if (this._pendingLayoutUpdate) {
+      this._updateLayout();
+      this._pendingLayoutUpdate = false;
+    }
     this._updateScrollSize();
     this._getActiveItems();
     this._scrollIfNeeded();
