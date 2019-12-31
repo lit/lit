@@ -4,6 +4,8 @@ import {Layout1dSquareGrid} from 'lit-virtualizer/lib/uni-virtualizer/lib/layout
 import {Layout1dFlex} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dFlex.js';
 import {getDims, getUrl, searchFlickr} from './flickr.js';
 
+import {VirtualArray} from './VirtualArray.js';
+
 import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 import '@material/mwc-slider';
@@ -14,15 +16,36 @@ import '@material/mwc-radio';
 ///
 
 const renderPhoto = photo => {
-    const {width, height} = getDims(photo);
+    // const {width, height} = getDims(photo);
     // return html`<div style="--ratio: ${width / height}"><img src=${getUrl(photo)} /></div>`;
     // return html`<img src=${getUrl(photo)} />`;
-    return html`<img src=${getUrl(photo)} style="width: 200px; height: 200px;" />`;
+    const url = photo.id === 'TEMP' ? '' : getUrl(photo);
+    // if (photo.id === 'TEMP') {
+    //     return html`<div class="box"></div>`;
+    // }
+    return html`<img src=${url} style="width: 200px; height: 200px;" />`;
 }
 
 async function getPhotos(query, mock=false) {
-    const resp = await searchFlickr(query, mock);
-    return resp.photo.filter(p => p.width_o);
+    return new VirtualArray({
+        pageSize: 5,
+        fetchPage: async (pageSize, pageNum) => {
+            const resp = await searchFlickr(query, pageSize, pageNum, mock);
+            return {
+                items: resp.photo.map(p => Object.assign({}, {width_o: 1920, height_o: 1080}, p)),
+                totalItems: resp.total
+            };
+            // return resp.photo.filter(p => p.width_o);
+        },
+        placeholder: () => {
+            return {"id":"TEMP","height_o":769,"width_o":1024};
+        },
+        callback: items => {
+            setState({ items });
+        }
+    });
+    // const resp = await searchFlickr(query, mock);
+    // return resp.photo.filter(p => p.width_o);
 }
 
 ///
@@ -41,7 +64,7 @@ const state = {
     idealSize: 300,
     spacing: 8,
     query: 'sunset',
-    Layout: Layout1dFlex,
+    Layout: Layout1dSquareGrid,
     layout: null,
     first: 0,
     last: 0,
@@ -178,6 +201,9 @@ function updateItemSizes(items) {
 
 async function search(query) {
     const items = await getPhotos(query, mock);
+    for (let i = 0; i < items.length; i++) {
+        console.log(items[i]);
+    }
     setState({items});
     updateItemSizes(items);
 }

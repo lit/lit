@@ -126,7 +126,9 @@ export abstract class Layout1dBase implements Layout {
    * Number of pixels beyond the visible size of the container to still include
    * in the active range of items.
    */
-  protected _overhang: number = 150;
+  // TODO (graynorton): Probably want to make this something we calculate based
+  // on viewport size, item size, other factors, possibly still with a dial of some kind
+  protected _overhang: number = 1000;
 
   private _eventTarget;
   protected _spacingChanged;
