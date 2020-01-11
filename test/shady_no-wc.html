@@ -2,59 +2,26 @@
 <html>
   <head>
     <script>
-      // Object.assign() polyfill from:
-      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-      if (typeof Object.assign !== 'function') {
-        // Must be writable: true, enumerable: false, configurable: true
-        Object.defineProperty(Object, "assign", {
-          value: function assign(target, varArgs) { // .length of function is 2
-            'use strict';
-            if (target === null || target === undefined) {
-              throw new TypeError('Cannot convert undefined or null to object');
-            }
-
-            var to = Object(target);
-
-            for (var index = 1; index < arguments.length; index++) {
-              var nextSource = arguments[index];
-
-              if (nextSource !== null && nextSource !== undefined) {
-                for (var nextKey in nextSource) {
-                  // Avoid bugs when hasOwnProperty is shadowed
-                  if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                    to[nextKey] = nextSource[nextKey];
-                  }
-                }
-              }
-            }
-            return to;
-          },
-          writable: true,
-          configurable: true
-        });
-      }
+      window.ShadyDOM = {
+        noPatch: true,
+      };
     </script>
-    <script src="../node_modules/@webcomponents/template/template.js"></script>
-    <script src="../node_modules/symbol-es6/dist/symbol-es6.min.js"></script>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
     <script src="../node_modules/mocha/mocha.js"></script>
     <script src="../node_modules/chai/chai.js"></script>
     <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
     <script>
-      if (window.ShadowRoot) {
-        // Remove Shadow DOM
-        delete window.Element.prototype.assignedSlot;
-        delete window.Element.prototype.attachShadow;
-        delete window.Element.prototype.shadowRoot;
-        delete window.HTMLSlotElement;
-        delete window.ShadowRoot;
-        delete window.Text.prototype.assignedSlot;
-      }
+      // Remove Shadow DOM
+      delete window.Element.prototype.assignedSlot;
+      delete window.Element.prototype.attachShadow;
+      delete window.Element.prototype.shadowRoot;
+      delete window.HTMLSlotElement;
+      delete window.ShadowRoot;
+      delete window.Text.prototype.assignedSlot;
 
-      if (window.customElements) {
-        // Remove Custom Elements
-        delete window.CustomElementRegistry;
-        delete window.customElements;
-      }
+      // Remove Custom Elements
+      delete window.CustomElementRegistry;
+      delete window.customElements;
     </script>
   </head>
   <body>
