@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {unsafeHTML} from '../../directives/unsafe-html.js';
+import {unsafeSVG} from '../../directives/unsafe-svg.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
@@ -21,78 +21,82 @@ const assert = chai.assert;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-suite('unsafeHTML', () => {
+suite('unsafeSVG', () => {
   let container: HTMLElement;
 
   setup(() => {
     container = document.createElement('div');
   });
 
-  test('renders HTML', () => {
+  test('renders SVG', () => {
     render(
-        html`<div>before${unsafeHTML('<span>inner</span>after')}</div>`,
+        html`<svg>before${
+            unsafeSVG(
+                '<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>')}</svg>`,
         container);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>before<span>inner</span>after</div>');
+        '<svg>before<line x1="0" y1="0" x2="10" y2="10" stroke="black"></line></svg>');
+    const lineElement = container.querySelector('line')!;
+    assert.equal(lineElement.namespaceURI, 'http://www.w3.org/2000/svg');
   });
 
   test('dirty checks primitive values', () => {
     const value = 'aaa';
-    const t = () => html`<div>${unsafeHTML(value)}</div>`;
+    const t = () => html`<svg>${unsafeSVG(value)}</svg>`;
 
     // Initial render
     render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>aaa</svg>');
 
     // Modify instance directly. Since lit-html doesn't dirty check against
     // actual DOM, but against previous part values, this modification should
     // persist through the next render if dirty checking works.
-    const text = container.querySelector('div')!.childNodes[1] as Text;
+    const text = container.querySelector('svg')!.childNodes[1] as Text;
     text.textContent = 'bbb';
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>bbb</svg>');
 
     // Re-render with the same value
     render(t(), container);
 
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-    const text2 = container.querySelector('div')!.childNodes[1] as Text;
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>bbb</svg>');
+    const text2 = container.querySelector('svg')!.childNodes[1] as Text;
     assert.strictEqual(text, text2);
   });
 
   test('does not dirty check complex values', () => {
     const value = ['aaa'];
-    const t = () => html`<div>${unsafeHTML(value)}</div>`;
+    const t = () => html`<svg>${unsafeSVG(value)}</svg>`;
 
     // Initial render
     render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>aaa</svg>');
 
     // Re-render with the same value, but a different deep property
     value[0] = 'bbb';
     render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>bbb</svg>');
   });
 
   test('renders after other values', () => {
-    const value = '<span></span>';
+    const value = '<text></text>';
     const primitive = 'aaa';
-    const t = (content: any) => html`<div>${content}</div>`;
+    const t = (content: any) => html`<svg>${content}</svg>`;
 
-    // Initial unsafeHTML render
-    render(t(unsafeHTML(value)), container);
+    // Initial unsafeSVG render
+    render(t(unsafeSVG(value)), container);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div><span></span></div>');
+        '<svg><text></text></svg>');
 
-    // Re-render with a non-unsafeHTML value
+    // Re-render with a non-unsafeSVG value
     render(t(primitive), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>aaa</svg>');
 
-    // Re-render with unsafeHTML again
-    render(t(unsafeHTML(value)), container);
+    // Re-render with unsafeSVG again
+    render(t(unsafeSVG(value)), container);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div><span></span></div>');
+        '<svg><text></text></svg>');
   });
 });
