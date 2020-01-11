@@ -596,6 +596,7 @@ let eventOptionsSupported = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.removeEventListener('test', options as any, options);
   } catch (_e) {
+    // event options not supported
   }
 })();
 
