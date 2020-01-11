@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types ([#970](https://github.com/Polymer/lit-html/pull/970))
 * Added a sanitization system, for integrating with DOM value sanitizers to prevent XSS attacks. See the docs on the SanitizerFactory type and the setSanitizerFactory function for details.
+* Added the `live()` directive. Fixes #877
 
 
 ### Fixed
