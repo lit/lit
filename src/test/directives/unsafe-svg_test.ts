@@ -34,9 +34,11 @@ suite('unsafeSVG', () => {
             unsafeSVG(
                 '<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>')}</svg>`,
         container);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<svg>before<line x1="0" y1="0" x2="10" y2="10" stroke="black"></line></svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>before<line x1="0" y1="0" x2="10" y2="10" stroke="black"></line></svg>',
+      '<svg>before<line stroke="black" x1="0" y1="0" x2="10" y2="10"></line></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">before<line stroke="black" x1="0" y1="0" x2="10" y2="10" /></svg>'
+    ]);
     const lineElement = container.querySelector('line')!;
     assert.equal(lineElement.namespaceURI, 'http://www.w3.org/2000/svg');
   });
@@ -47,19 +49,27 @@ suite('unsafeSVG', () => {
 
     // Initial render
     render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>aaa</svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>aaa</svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>',
+    ]);
 
     // Modify instance directly. Since lit-html doesn't dirty check against
     // actual DOM, but against previous part values, this modification should
     // persist through the next render if dirty checking works.
     const text = container.querySelector('svg')!.childNodes[1] as Text;
     text.textContent = 'bbb';
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>bbb</svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>bbb</svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
+    ]);
 
     // Re-render with the same value
     render(t(), container);
-
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>bbb</svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>bbb</svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
+    ]);
     const text2 = container.querySelector('svg')!.childNodes[1] as Text;
     assert.strictEqual(text, text2);
   });
@@ -70,12 +80,18 @@ suite('unsafeSVG', () => {
 
     // Initial render
     render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>aaa</svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>aaa</svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>',
+    ]);
 
     // Re-render with the same value, but a different deep property
     value[0] = 'bbb';
     render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>bbb</svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>bbb</svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
+    ]);
   });
 
   test('renders after other values', () => {
@@ -85,18 +101,23 @@ suite('unsafeSVG', () => {
 
     // Initial unsafeSVG render
     render(t(unsafeSVG(value)), container);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<svg><text></text></svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg><text></text></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg"><text /></svg>',
+    ]);
 
     // Re-render with a non-unsafeSVG value
     render(t(primitive), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<svg>aaa</svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg>aaa</svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>'
+    ]);
 
     // Re-render with unsafeSVG again
     render(t(unsafeSVG(value)), container);
-    assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<svg><text></text></svg>');
+    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+      '<svg><text></text></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg"><text /></svg>',
+    ]);
   });
 });
