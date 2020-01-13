@@ -94,12 +94,12 @@ suite('live', () => {
       observer.observe(el, {attributes: true});
 
       go('b');
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       assert.equal(el.getAttribute('x'), 'b');
       assert.equal(mutationCount, 1);
 
       go('b');
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       assert.equal(el.getAttribute('x'), 'b');
       assert.equal(mutationCount, 1);
     });
@@ -139,12 +139,12 @@ suite('live', () => {
       observer.observe(el, {attributes: true});
 
       go(false);
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       assert.equal(el.getAttribute('hidden'), null);
       assert.equal(mutationCount, 1);
 
       go(false);
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       assert.equal(el.getAttribute('hidden'), null);
       assert.equal(mutationCount, 1);
     });
