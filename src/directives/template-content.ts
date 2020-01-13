@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -36,7 +36,7 @@ const previousValues = new WeakMap<NodePart, PreviousValue>();
 export const templateContent =
     directive((template: HTMLTemplateElement) => (part: Part): void => {
       if (!(part instanceof NodePart)) {
-        throw new Error('unsafeHTML can only be used in text bindings');
+        throw new Error('templateContent can only be used in text bindings');
       }
 
       const previousValue = previousValues.get(part);
