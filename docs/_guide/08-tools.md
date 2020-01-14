@@ -72,31 +72,37 @@ ESLint is recommended for linting lit-html code. The following ESLint plugin can
 ### Dev server
 
 
-lit-html is packaged as JavaScript modules. Many developers prefer to import modules using node-style module identifiers, which aren't supported yet by browsers. To run in the browser, these module identifiers need to be transformed to browser-ready module identifiers. The Polymer dev server, which is part of the Polymer CLI, performs this transformation on the fly, so you can preview your project during development without a build step. Another alternative is the Open Web Components Dev Server (`owc-dev-server`).
+lit-html is packaged as JavaScript modules. Many developers prefer to import modules using node-style module identifiers, which aren't supported yet by browsers. To run in the browser, these module identifiers need to be transformed to browser-ready module identifiers. [ES dev server](https://open-wc.org/developing/es-dev-server.html) is an open-source dev server that handles this and other transforms.
 
-If you're using webpack for your build process, you can also use the webpack dev server.
+You can also use the Polymer dev server, which is part of the Polymer CLI, if you already have it installed. For new projects, we recommend the ES dev server.
 
-#### Polymer Dev Server
+If you already have a dev server that integrates with your build process, you can use that, instead.
 
-Install the Polymer CLI:
+#### ES Dev Server
+
+The ES dev server handles rewriting node-style modules to browser-style modules, and enables a build-free development process.
+
+Install ES dev server:
 
 ```bash
-npm i -g polymer-cli
+npm i -D es-dev-server
+```
+
+Add a command to your `package.json` file:
+
+```json
+"scripts": {
+  "start": "es-dev-server --app-index index.html --node-resolve --dedupe --watch --open"
+}
 ```
 
 Run the dev server:
 
 ```bash
-polymer serve
+npm run start
 ```
 
-The Polymer CLI was designed to help develop, test, and build projects using web components, JavaScript modules and other features of the modern web platform. It's not required for lit-html development, but it provides several handy utilities. 
-
-#### Open Web Components Dev Server
-
-The Open Web Components project produces a dev server that handles remapping node-style modules to browser-style modules.
-
-For full installation and usage instructions, see the [open-wc website](https://open-wc.org/developing/owc-dev-server.html). 
+For full installation and usage instructions, see the [Open Web Component website](https://open-wc.org/developing/es-dev-server.html). 
 
 ## Testing
 
