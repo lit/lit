@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -28,7 +28,7 @@ interface PreviousValue {
 const previousValues = new WeakMap<NodePart, PreviousValue>();
 
 /**
- * Renders the result as HTML, rather than text.
+ * Renders the result as SVG, rather than text.
  *
  * Note, this is unsafe to use with any user-provided input that hasn't been
  * sanitized or escaped, as it may lead to cross-site-scripting
