@@ -12,15 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {__testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning} from '../../lib/parts';
-import {__testOnlyClearSanitizerDoNotCallOrElse} from '../../lib/parts.js';
+import {__testOnlyClearSanitizerFactoryDoNotCallOrElse, setSanitizerFactory} from '../../lib/parts.js';
 import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 chai.config.truncateThreshold = 0;  // ask chai to produce diffs
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('Parts', () => {
   suite('AttributePart', () => {
@@ -552,7 +551,7 @@ suite('Parts', () => {
       };
       window.addEventListener('test', options as any, options);
       window.removeEventListener('test', options as any, options);
-    } catch (_e) {
+    } catch (_e) {  // eslint-disable-line no-empty
     }
 
     setup(() => {
@@ -648,10 +647,8 @@ suite('Parts', () => {
 
 suite('setSanitizeDOMValue', () => {
   const sanitizerCalls: Array<{
-    value: unknown,
-    name: string,
-    type: 'property' | 'attribute' | 'text',
-    nodeName: string
+    value: unknown; name: string; type: 'property' | 'attribute' | 'text';
+    nodeName: string;
   }> = [];
   let container: HTMLDivElement;
   class FakeSanitizedWrapper {
@@ -667,22 +664,21 @@ suite('setSanitizeDOMValue', () => {
 
 
   setup(() => {
-    __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning(
-        (value: unknown,
-         name: string,
-         type: 'property'|'attribute'|'text',
-         node: Node) => {
-          sanitizerCalls.push({value, name, type, nodeName: node.nodeName});
-          if (value instanceof FakeSanitizedWrapper) {
-            return value.sanitizeTo;
-          }
-          return `safeString`;
+    setSanitizerFactory(
+        (node: Node, name: string, type: 'property'|'attribute') => {
+          return (value: unknown) => {
+            sanitizerCalls.push({value, name, type, nodeName: node.nodeName});
+            if (value instanceof FakeSanitizedWrapper) {
+              return value.sanitizeTo;
+            }
+            return `safeString`;
+          };
         });
     container = document.createElement('div');
   });
 
   teardown(() => {
-    __testOnlyClearSanitizerDoNotCallOrElse();
+    __testOnlyClearSanitizerFactoryDoNotCallOrElse();
     sanitizerCalls.length = 0;
   });
 
@@ -697,7 +693,7 @@ suite('setSanitizeDOMValue', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
     assert.deepEqual(sanitizerCalls, [
-      {value: 'foo', name: 'textContent', type: 'property', nodeName: '#text'},
+      {value: 'foo', name: 'data', type: 'property', nodeName: '#text'},
       {value: safeFoo, name: 'data', type: 'property', nodeName: '#text'}
     ]);
   });
@@ -715,7 +711,7 @@ suite('setSanitizeDOMValue', () => {
         '<div>hello big world</div>');
 
     assert.deepEqual(sanitizerCalls, [
-      {value: 'big', name: 'textContent', type: 'property', nodeName: '#text'},
+      {value: 'big', name: 'data', type: 'property', nodeName: '#text'},
       {value: safeBig, name: 'data', type: 'property', nodeName: '#text'}
     ]);
   });
