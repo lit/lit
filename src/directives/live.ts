@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -56,10 +56,13 @@ export const live = directive(
         if (part instanceof PropertyPart) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           previousValue = (element as any)[name];
+          if (previousValue === value) {
+            return;
+          }
         } else if (part instanceof AttributePart) {
           previousValue = element.getAttribute(name);
         }
-        if (previousValue === value) {
+        if (previousValue === String(value)) {
           return;
         }
       }

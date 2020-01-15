@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -46,6 +46,15 @@ suite('live', () => {
   });
 
   suite('properties', () => {
+    test('live() is useful', () => {
+      const go = (x: string) => render(html`<input .value="${x}">}`, container);
+      go('a');
+      const el = container.firstElementChild as HTMLInputElement;
+      el.value = 'b';
+      go('a');
+      assert.equal(el.value, 'b');
+    });
+
     test('updates an externally set property', () => {
       const go = (x: string) =>
           render(html`<input .value="${live(x)}">}`, container);
@@ -104,6 +113,32 @@ suite('live', () => {
       assert.equal(mutationCount, 1);
     });
   });
+
+  test(
+      'does not set a non-changed attribute with a non-string value',
+      async () => {
+        let mutationCount = 0;
+        const observer = new MutationObserver((records) => {
+          mutationCount += records.length;
+        });
+        const go = (x: number) =>
+            render(html`<div x="${live(x)}"></div>}`, container);
+        go(1);
+        const el = container.firstElementChild as LiveTester;
+        assert.equal(el.getAttribute('x'), '1');
+
+        observer.observe(el, {attributes: true});
+
+        go(2);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        assert.equal(el.getAttribute('x'), '2');
+        assert.equal(mutationCount, 1);
+
+        go(2);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        assert.equal(el.getAttribute('x'), '2');
+        assert.equal(mutationCount, 1);
+      });
 
   suite('boolean attributes', () => {
     test('updates an externally set boolean attribute', () => {
