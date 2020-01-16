@@ -319,6 +319,9 @@ export class NodePart implements Part {
   }
 
   commit() {
+    if (this.startNode.parentNode === null) {
+      return;
+    }
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
