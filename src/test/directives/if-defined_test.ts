@@ -50,6 +50,13 @@ suite('ifDefined', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
 
+  test('removes an attribute with previous value set outside ifDefined', () => {
+    const go = (v: unknown) => render(html`<div foo="${v}"></div>`, container);
+    go('a');
+    go(ifDefined(undefined));
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+  });
+
   test('passes a defined value to a NodePart', () => {
     render(html`<div>${ifDefined('a')}</div>`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>a</div>');
@@ -114,6 +121,33 @@ suite('ifDefined', () => {
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div foo="1a"></div>');
     assert.equal(setCount, 0);
+  });
+
+  test('only removes the attribute when the value changed', async () => {
+    let removeCount = 0;
+    const go = (value: unknown) =>
+        render(html`<div foo="1${ifDefined(value)}"></div>`, container);
+
+    go('a');
+    const el = container.firstElementChild!;
+    const origRemoveAttribute = el.removeAttribute.bind(el);
+    el.removeAttribute = (name: string) => {
+      removeCount++;
+      origRemoveAttribute(name);
+    };
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div foo="1a"></div>');
+    assert.equal(removeCount, 0);
+
+    go(undefined);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    assert.equal(removeCount, 1);
+
+    go(undefined);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    assert.equal(removeCount, 1);
   });
 
   test('only sets node text value changed', async () => {

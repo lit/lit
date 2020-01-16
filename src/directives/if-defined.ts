@@ -28,7 +28,7 @@ export const ifDefined = directive((value: unknown) => (part: Part) => {
   if (value === undefined && part instanceof AttributePart) {
     // If the value is undefined, remove the attribute, but only if the value
     // was previously defined.
-    if (value !== previousValue || !previousValues.has(part)) {
+    if (previousValue !== undefined || !previousValues.has(part)) {
       const name = part.committer.name;
       part.committer.element.removeAttribute(name);
     }
