@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, Part} from '../lit-html.js';
+import {AttributePart, directive, noChange, Part} from '../lit-html.js';
 
 /**
  * For AttributeParts, sets the attribute if the value is defined and removes
@@ -27,6 +27,12 @@ export const ifDefined = directive((value: unknown) => (part: Part) => {
       part.committer.element.removeAttribute(name);
     }
   } else {
+    if (part instanceof AttributePart &&
+        part.committer.element.getAttribute(part.committer.name) === value) {
+      // If the value hasn't changed, we need to tell the part since parts
+      // treat any directive having dirtied the part.
+      value = noChange;
+    }
     part.setValue(value);
   }
 });

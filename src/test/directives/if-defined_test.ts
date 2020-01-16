@@ -80,4 +80,27 @@ suite('ifDefined', () => {
         container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
+
+  test('only sets the attribute when the value changed', async () => {
+    let setCount = 0;
+    const observer = new MutationObserver((records) => {
+      setCount += records.length;
+    });
+    const go = (value: string) =>
+        render(html`<div foo="${ifDefined(value)}"></div>`, container);
+
+    go('a');
+    const el = container.firstElementChild!;
+    observer.observe(el, {attributes: true});
+
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div foo="a"></div>');
+    assert.equal(setCount, 0);
+
+    go('a');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML), '<div foo="a"></div>');
+    assert.equal(setCount, 0);
+  });
 });
