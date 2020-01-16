@@ -16,10 +16,10 @@ import {TemplateInstance} from '../lib/template-instance.js';
 import {Template} from '../lib/template.js';
 import {directive, NodePart, Part, reparentNodes, TemplateResult} from '../lit-html.js';
 
-type CachedTemplate = {
-  readonly instance: TemplateInstance,
-  readonly nodes: DocumentFragment
-};
+interface CachedTemplate {
+  readonly instance: TemplateInstance;
+  readonly nodes: DocumentFragment;
+}
 const templateCaches =
     new WeakMap<NodePart, WeakMap<Template, CachedTemplate>>();
 

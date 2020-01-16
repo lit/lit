@@ -22,10 +22,10 @@ import {noChange, nothing, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
-import {createMarker} from './template.js';
+import {AttributeTemplatePart, createMarker, NodeTemplatePart} from './template.js';
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
-export type Primitive = null|undefined|boolean|number|string|Symbol|bigint;
+export type Primitive = null|undefined|boolean|number|string|symbol|bigint;
 export const isPrimitive = (value: unknown): value is Primitive => {
   return (
       value === null ||
@@ -33,27 +33,105 @@ export const isPrimitive = (value: unknown): value is Primitive => {
 };
 export const isIterable = (value: unknown): value is Iterable<unknown> => {
   return Array.isArray(value) ||
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       !!(value && (value as any)[Symbol.iterator]);
 };
 
 /**
+ * Used to sanitize any value before it is written into the DOM. This can be
+ * used to implement a security policy of allowed and disallowed values in
+ * order to prevent XSS attacks.
+ *
+ * One way of using this callback would be to check attributes and properties
+ * against a list of high risk fields, and require that values written to such
+ * fields be instances of a class which is safe by construction. Closure's Safe
+ * HTML Types is one implementation of this technique (
+ * https://github.com/google/safe-html-types/blob/master/doc/safehtml-types.md).
+ * The TrustedTypes polyfill in API-only mode could also be used as a basis
+ * for this technique (https://github.com/WICG/trusted-types).
+ *
+ * @param node The HTML node (usually either a #text node or an Element) that
+ *   is being written to. Note that this is just an exemplar node, the write
+ *   may take place against another instance of the same class of node.
+ * @param name The name of an attribute or property (for example, 'href').
+ * @param type Indicates whether the write that's about to be performed will
+ *   be to a property or a node.
+ * @returns A function that will sanitize this class of writes.
+ */
+export type SanitizerFactory =
+    (node: Node, name: string, type: 'property'|'attribute') => ValueSanitizer;
+
+/**
+ * A function which can sanitize values that will be written to a specific kind
+ * of DOM sink.
+ *
+ * See SanitizerFactory.
+ *
+ * @param value The value to sanitize. Will be the actual value passed into
+ *   the lit-html template literal, so this could be of any type.
+ * @returns The value to write to the DOM. Usually the same as the input value,
+ *   unless sanitization is needed.
+ */
+export type ValueSanitizer = (value: unknown) => unknown;
+
+const identityFunction: ValueSanitizer = (value: unknown) => value;
+const noopSanitizer: SanitizerFactory =
+    (_node: Node, _name: string, _type: 'property'|'attribute') =>
+        identityFunction;
+
+/**
+ * A global callback used to get a sanitizer for a given field.
+ */
+export let sanitizerFactory: SanitizerFactory = noopSanitizer;
+
+/** Sets the global sanitizer factory. */
+export const setSanitizerFactory = (newSanitizer: SanitizerFactory) => {
+  if (sanitizerFactory !== noopSanitizer) {
+    throw new Error(
+        `Attempted to overwrite existing lit-html security policy.` +
+        ` setSanitizeDOMValueFactory should be called at most once.`);
+  }
+  sanitizerFactory = newSanitizer;
+};
+
+/**
+ * Only used in internal tests, not a part of the public API.
+ * The name and implementation may change at any time.
+ */
+export const __testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
+  sanitizerFactory = noopSanitizer;
+};
+
+/**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
- * single attibute. The value is only set once even if there are multiple parts
+ * single attribute. The value is only set once even if there are multiple parts
  * for an attribute.
  */
 export class AttributeCommitter {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
-  readonly parts: ReadonlyArray<AttributePart>;
+  readonly strings: readonly string[];
+  readonly parts: readonly AttributePart[];
+  readonly sanitizer: ValueSanitizer;
   dirty = true;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(
+      element: Element, name: string, strings: readonly string[],
+      // Next breaking change, consider making this param required.
+      templatePart?: AttributeTemplatePart,
+      kind: 'property'|'attribute' = 'attribute') {
     this.element = element;
     this.name = name;
     this.strings = strings;
     this.parts = [];
+    let sanitizer = templatePart && templatePart.sanitizer;
+    if (sanitizer === undefined) {
+      sanitizer = sanitizerFactory(element, name, kind);
+      if (templatePart !== undefined) {
+        templatePart.sanitizer = sanitizer;
+      }
+    }
+    this.sanitizer = sanitizer;
     for (let i = 0; i < strings.length - 1; i++) {
       (this.parts as AttributePart[])[i] = this._createPart();
     }
@@ -68,12 +146,34 @@ export class AttributeCommitter {
 
   protected _getValue(): unknown {
     const strings = this.strings;
+    const parts = this.parts;
     const l = strings.length - 1;
+
+    // If we're assigning an attribute via syntax like:
+    //    attr="${foo}"  or  attr=${foo}
+    // but not
+    //    attr="${foo} ${bar}" or attr="${foo} baz"
+    // then we don't want to coerce the attribute value into one long
+    // string. Instead we want to just return the value itself directly,
+    // so that sanitizeDOMValue can get the actual value rather than
+    // String(value)
+    // The exception is if v is an array, in which case we do want to smash
+    // it together into a string without calling String() on the array.
+    //
+    // This also allows trusted values (when using TrustedTypes) being
+    // assigned to DOM sinks without being stringified in the process.
+    if (l === 1 && strings[0] === '' && strings[1] === '' &&
+        parts[0] !== undefined) {
+      const v = parts[0].value;
+      if (!isIterable(v)) {
+        return v;
+      }
+    }
     let text = '';
 
     for (let i = 0; i < l; i++) {
       text += strings[i];
-      const part = this.parts[i];
+      const part = parts[i];
       if (part !== undefined) {
         const v = part.value;
         if (isPrimitive(v) || !isIterable(v)) {
@@ -93,7 +193,13 @@ export class AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      this.element.setAttribute(this.name, this._getValue() as string);
+      let value = this._getValue();
+      value = this.sanitizer(value);
+      if (typeof value === 'symbol') {
+        // Native Symbols throw if they're coerced to string.
+        value = String(value);
+      }
+      this.element.setAttribute(this.name, value as string);
     }
   }
 }
@@ -147,10 +253,22 @@ export class NodePart implements Part {
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
+  readonly templatePart: NodeTemplatePart|undefined;
   private __pendingValue: unknown = undefined;
+  /**
+   * The sanitizer to use when writing text contents into this NodePart.
+   *
+   * We have to initialize this here rather than at the template literal level
+   * because the security of text content depends on the context into which
+   * it's written. e.g. the same text has different security requirements
+   * when a child of a <script> vs a <style> vs a <div>.
+   */
+  private textSanitizer: ValueSanitizer|undefined = undefined;
 
-  constructor(options: RenderOptions) {
+  constructor(
+      options: RenderOptions, templatePart?: NodeTemplatePart|undefined) {
     this.options = options;
+    this.templatePart = templatePart;
   }
 
   /**
@@ -201,6 +319,9 @@ export class NodePart implements Part {
   }
 
   commit() {
+    if (this.startNode.parentNode === null) {
+      return;
+    }
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
@@ -245,16 +366,30 @@ export class NodePart implements Part {
   private __commitText(value: unknown): void {
     const node = this.startNode.nextSibling!;
     value = value == null ? '' : value;
-    const valueAsString: string =
-        typeof value === 'string' ? value : String(value);
     if (node === this.endNode.previousSibling &&
         node.nodeType === 3 /* Node.TEXT_NODE */) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
-      // TODO(justinfagnani): Can we just check if this.value is primitive?
-      (node as Text).data = valueAsString;
+      if (this.textSanitizer === undefined) {
+        this.textSanitizer = sanitizerFactory(node, 'data', 'property');
+      }
+      const renderedValue = this.textSanitizer(value);
+      (node as Text).data = typeof renderedValue === 'string' ?
+          renderedValue :
+          String(renderedValue);
     } else {
-      this.__commitNode(document.createTextNode(valueAsString));
+      // When setting text content, for security purposes it matters a lot what
+      // the parent is. For example, <style> and <script> need to be handled
+      // with care, while <span> does not. So first we need to put a text node
+      // into the document, then we can sanitize its contentx.
+      const textNode = document.createTextNode('');
+      this.__commitNode(textNode);
+      if (this.textSanitizer === undefined) {
+        this.textSanitizer = sanitizerFactory(textNode, 'data', 'property');
+      }
+      const renderedValue = this.textSanitizer(value) as string;
+      textNode.data = typeof renderedValue === 'string' ? renderedValue :
+                                                          String(renderedValue);
     }
     this.value = value;
   }
@@ -265,6 +400,22 @@ export class NodePart implements Part {
         this.value.template === template) {
       this.value.update(value.values);
     } else {
+      // `value` is a template result that was constructed without knowledge of
+      // the parent we're about to write it into. sanitizeDOMValue hasn't been
+      // made aware of this relationship, and for scripts and style specifically
+      // this is known to be unsafe. So in the case where the user is in
+      // "secure mode" (i.e. when there's a sanitizeDOMValue set), we just want
+      // to forbid this because it's not a use case we want to support.
+      // We only apply this policy when sanitizerFactory has been set to
+      // prevent this from being a breaking change to the library.
+      const parent = this.endNode.parentNode!;
+      if (sanitizerFactory !== noopSanitizer && parent.nodeName === 'STYLE' ||
+          parent.nodeName === 'SCRIPT') {
+        this.__commitText(
+            '/* lit-html will not write ' +
+            'TemplateResults to scripts and styles */');
+        return;
+      }
       // Make sure we propagate the template processor from the TemplateResult
       // so that we use its syntax extension, etc. The template factory comes
       // from the render function options so that it can control template
@@ -306,7 +457,7 @@ export class NodePart implements Part {
 
       // If no existing part, create a new one
       if (itemPart === undefined) {
-        itemPart = new NodePart(this.options);
+        itemPart = new NodePart(this.options, this.templatePart);
         itemParts.push(itemPart);
         if (partIndex === 0) {
           itemPart.appendIntoPart(this);
@@ -342,11 +493,11 @@ export class NodePart implements Part {
 export class BooleanAttributePart implements Part {
   readonly element: Element;
   readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+  readonly strings: readonly string[];
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -394,8 +545,11 @@ export class BooleanAttributePart implements Part {
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
-    super(element, name, strings);
+  constructor(
+      element: Element, name: string, strings: readonly string[],
+      // Next breaking change, consider making this param required.
+      templatePart?: AttributeTemplatePart) {
+    super(element, name, strings, templatePart, 'property');
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
   }
@@ -414,8 +568,10 @@ export class PropertyCommitter extends AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      // tslint:disable-next-line:no-any
-      (this.element as any)[this.name] = this._getValue();
+      let value = this._getValue();
+      value = this.sanitizer(value);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.element as any)[this.name] = value;
     }
   }
 }
@@ -423,25 +579,29 @@ export class PropertyCommitter extends AttributeCommitter {
 export class PropertyPart extends AttributePart {}
 
 // Detect event listener options support. If the `capture` property is read
-// from the options object, then options are supported. If not, then the thrid
+// from the options object, then options are supported. If not, then the third
 // argument to add/removeEventListener is interpreted as the boolean capture
 // value so we should only pass the `capture` property.
 let eventOptionsSupported = false;
 
-try {
-  const options = {
-    get capture() {
-      eventOptionsSupported = true;
-      return false;
-    }
-  };
-  // tslint:disable-next-line:no-any
-  window.addEventListener('test', options as any, options);
-  // tslint:disable-next-line:no-any
-  window.removeEventListener('test', options as any, options);
-} catch (_e) {
-}
-
+// Wrap into an IIFE because MS Edge <= v41 does not support having try/catch
+// blocks right into the body of a module
+(() => {
+  try {
+    const options = {
+      get capture() {
+        eventOptionsSupported = true;
+        return false;
+      }
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.addEventListener('test', options as any, options);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.removeEventListener('test', options as any, options);
+  } catch (_e) {
+    // event options not supported
+  }
+})();
 
 type EventHandlerWithOptions =
     EventListenerOrEventListenerObject&Partial<AddEventListenerOptions>;

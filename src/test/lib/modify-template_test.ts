@@ -19,7 +19,7 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('add/remove nodes from template', () => {
   let container: HTMLElement;
@@ -100,7 +100,7 @@ suite('add/remove nodes from template', () => {
         </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
         const result = getResult('bar', 'baz', 'qux');
         const template = templateFactory(result);
-        const nodeSet = new Set();
+        const nodeSet = new Set<Node>();
         const nodesToRemove =
             template.element.content.querySelectorAll('[name="remove"]');
         for (const node of Array.from(nodesToRemove)) {
@@ -132,7 +132,7 @@ suite('add/remove nodes from template', () => {
         </div><div name="remove"><span name="remove"><span name="remove">remove</span></span></div>`;
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
-        const nodeSet = new Set();
+        const nodeSet = new Set<Node>();
         const nodesToRemove =
             template.element.content.querySelectorAll('[name="remove"]');
         for (const node of Array.from(nodesToRemove)) {
@@ -165,9 +165,10 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
         let node;
+        // eslint-disable-next-line no-cond-assign
         while (node =
                    template.element.content.querySelector('[name="remove"]')) {
-          const nodeSet = new Set();
+          const nodeSet = new Set<Node>();
           nodeSet.add(node);
           removeNodesFromTemplate(template, nodeSet);
         }

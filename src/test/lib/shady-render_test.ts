@@ -12,12 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {render as shadyRender} from '../../lib/shady-render.js';
 import {html} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {
@@ -313,6 +314,7 @@ suite('shady-render', () => {
   test('part values render into styles once per scope', function() {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
       this.skip();
+      return;
     }
     const container = document.createElement('scope-3');
     document.body.appendChild(container);
@@ -338,4 +340,39 @@ suite('shady-render', () => {
         '1px');
     document.body.removeChild(container);
   });
+
+  test(
+      'throws an error if the options argument is not an object with a `scopeName` property',
+      () => {
+        const container = document.createElement('some-element');
+        document.body.appendChild(container);
+        const shadowRoot = container.attachShadow({mode: 'open'});
+        let error1 = undefined;
+        try {
+          (shadyRender as any)(
+              html`some content`, shadowRoot /*, not provided */);
+        } catch (e) {
+          error1 = e;
+        }
+        assert.notEqual(error1, undefined);
+        assert.equal(error1.message, 'The `scopeName` option is required.');
+        let error2 = undefined;
+        try {
+          (shadyRender as any)(html`some content`, shadowRoot, 'not an object');
+        } catch (e) {
+          error2 = e;
+        }
+        assert.notEqual(error2, undefined);
+        assert.equal(error2.message, 'The `scopeName` option is required.');
+        let error3 = undefined;
+        try {
+          (shadyRender as any)(
+              html`some content`, shadowRoot, {'missing scopeName': true});
+        } catch (e) {
+          error3 = e;
+        }
+        assert.notEqual(error3, undefined);
+        assert.equal(error3.message, 'The `scopeName` option is required.');
+        document.body.removeChild(container);
+      });
 });

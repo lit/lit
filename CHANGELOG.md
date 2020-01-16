@@ -11,13 +11,45 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ## Unreleased
-
 <!-- ### Changed -->
-<!-- ### Added -->
 <!-- ### Removed -->
+### Added
+* Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
+* Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types ([#970](https://github.com/Polymer/lit-html/pull/970))
+* Added a sanitization system, for integrating with DOM value sanitizers to prevent XSS attacks. See the docs on the SanitizerFactory type and the setSanitizerFactory function for details.
+* Added `templateContent()` directive for stamping out the contents of an HTML template into a text binding. ([#1058](https://github.com/Polymer/lit-html/issues/1058))
+* Added the `live()` directive. Fixes #877
+
+### Fixed
+* Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
+
+
+
+## [1.1.2] - 2019-08-12
+
+### Fixed
+* Fixed a bug where bindings in comments could be written as text in some cases. ([#926](https://github.com/Polymer/lit-html/issues/926))
+
+## [1.1.1] - 2019-07-09
+
+### Changed
+* `render` and `shady-render` now both accept any value that is renderable by `NodePart`. ([#910](https://github.com/Polymer/lit-html/issues/910))
+
+## [1.1.0] - 2019-05-20
+
+### Changed
+* Many small performance enhancements.
+* Private names are now named with a `__` prefix  ([#859](https://github.com/Polymer/lit-html/issues/859)).
+
+### Added
+* Setup continuous benchmarking with Tachometer ([#887](https://github.com/Polymer/lit-html/issues/887)).
+
 ### Fixed
 * Prevent empty styles from causing exceptions or breaking rendering when using `shady-render` ([#760](https://github.com/Polymer/lit-html/issues/760)).
 * Primitive values in attributes are now always simply stringified, regardless of whether they are iterable. ([#830](https://github.com/Polymer/lit-html/pull/830))
+* Adopt and upgrade template fragments after processing for parts ([#831](https://github.com/Polymer/lit-html/issues/831)).
+* Fixed bindings with attribute-like expressions preceeding them ([#855](https://github.com/Polymer/lit-html/issues/855)).
+* Fixed errors with bindings in HTML comments ([#882](https://github.com/Polymer/lit-html/issues/882)).
 
 ## [1.0.0] - 2019-02-05
 ### Changed

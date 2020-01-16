@@ -16,14 +16,15 @@ import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
+const assert = chai.assert;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;
-const testIfSupportsCSSVariables = isIE || isChrome41 ? test.skip : test;
-
-const assert = chai.assert;
-
-// tslint:disable:no-any OK in test code.
+const testIfSupportsCSSVariables = (test: any) =>
+    isIE || isChrome41 ? test.skip : test;
 
 suite('styleMap', () => {
   let container: HTMLDivElement;
@@ -78,7 +79,7 @@ suite('styleMap', () => {
     assert.equal(el.style.paddingBottom, '');
   });
 
-  testIfSupportsCSSVariables('adds and removes CSS variables', () => {
+  testIfSupportsCSSVariables(test)('adds and removes CSS variables', () => {
     renderStyleMap({'--size': '2px'});
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.getPropertyValue('--size'), '2px');
@@ -86,6 +87,19 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '4px');
     renderStyleMap({});
     assert.equal(el.style.getPropertyValue('--size'), '');
+  });
+
+  test('works when used with the same object', () => {
+    const styleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
+    renderStyleMap(styleInfo);
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.marginTop, '2px');
+    assert.equal(el.style.paddingBottom, '4px');
+    styleInfo.marginTop = '6px';
+    styleInfo['padding-bottom'] = '8px';
+    renderStyleMap(styleInfo);
+    assert.equal(el.style.marginTop, '6px');
+    assert.equal(el.style.paddingBottom, '8px');
   });
 
   test('throws when used on non-style attribute', () => {

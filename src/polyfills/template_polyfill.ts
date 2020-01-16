@@ -20,7 +20,7 @@ import {removeNodes, reparentNodes} from '../lib/dom.js';
  * natively supported.
  * Please note that nested template, cloning template node and innerHTML getter
  * do NOT work with this polyfill.
- * If it can not fullfill your requirement, please consider using the full
+ * If it can not fulfill your requirement, please consider using the full
  * polyfill: https://github.com/webcomponents/template
  */
 export const initTemplatePolyfill = (forced = false) => {

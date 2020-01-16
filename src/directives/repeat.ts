@@ -21,13 +21,13 @@ export type ItemTemplate<T> = (item: T, index: number) => unknown;
 // Helper functions for manipulating parts
 // TODO(kschaaf): Refactor into Part API?
 const createAndInsertPart =
-    (containerPart: NodePart, beforePart?: NodePart): NodePart => {
+    (containerPart: NodePart, beforePart?: NodePart|null): NodePart => {
       const container = containerPart.startNode.parentNode as Node;
-      const beforeNode = beforePart === undefined ? containerPart.endNode :
-                                                    beforePart.startNode;
+      const beforeNode =
+          beforePart == null ? containerPart.endNode : beforePart.startNode;
       const startNode = container.insertBefore(createMarker(), beforeNode);
       container.insertBefore(createMarker(), beforeNode);
-      const newPart = new NodePart(containerPart.options);
+      const newPart = new NodePart(containerPart.options, undefined);
       newPart.insertAfterNode(startNode);
       return newPart;
     };
@@ -78,7 +78,7 @@ const keyListCache = new WeakMap<NodePart, unknown[]>();
  * needed, and DOM will never be reused with values for different keys (new DOM
  * will always be created for new keys). This is generally the most efficient
  * way to use `repeat` since it performs minimum unnecessary work for insertions
- * amd removals.
+ * and removals.
  *
  * IMPORTANT: If providing a `keyFn`, keys *must* be unique for all items in a
  * given call to `repeat`. The behavior when two or more items have the same key
@@ -399,7 +399,7 @@ export const repeat =
                         // No old part for this value; create a new one and
                         // insert it
                         const newPart = createAndInsertPart(
-                            containerPart, oldParts[oldHead]!);
+                            containerPart, oldParts[oldHead]);
                         updatePart(newPart, newValues[newHead]);
                         newParts[newHead] = newPart;
                       } else {

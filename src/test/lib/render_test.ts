@@ -17,24 +17,30 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const isTemplatePolyfilled =
     ((HTMLTemplateElement as any).decorate != null ||
      (window as any).ShadyDOM && (window as any).ShadyDOM.inUse);
-const testSkipForTemplatePolyfill = isTemplatePolyfilled ? test.skip : test;
+const testSkipForTemplatePolyfill = (test: any) =>
+    isTemplatePolyfilled ? test.skip : test;
 
+/* eslint @typescript-eslint/camelcase: ["error", { allow: ["Safari10_0"] }] */
 const isSafari10_0 =
-    (window.navigator.userAgent.indexOf('AppleWebKit/602') === -1);
-const testSkipSafari10_0 = isSafari10_0 ? test : test.skip;
+    (window.navigator.userAgent.indexOf('AppleWebKit/602') !== -1);
+const testSkipSafari10_0 = (test: any) => isSafari10_0 ? test.skip : test;
 
-const isChrome41 = (window.navigator.userAgent.indexOf('Chrome/41') === -1);
-const testSkipChrome41 = isChrome41 ? test : test.skip;
+const isChrome41 = (window.navigator.userAgent.indexOf('Chrome/41') !== -1);
+const testSkipChrome41 = (test: any) => isChrome41 ? test.skip : test;
 
-const testIfHasSymbol = (window as any).Symbol === undefined ? test.skip : test;
+const testIfHasSymbol = (test: any) =>
+    (window as any).Symbol === undefined ? test.skip : test;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
+
+const suiteIfCustomElementsAreSupported = (suite: any) =>
+    (window.customElements != null) ? suite : suite.skip;
 
 suite('render()', () => {
   let container: HTMLElement;
@@ -88,7 +94,7 @@ suite('render()', () => {
           children.filter((node) => node.nodeType !== Node.COMMENT_NODE));
     });
 
-    testIfHasSymbol('renders a Symbol', () => {
+    testIfHasSymbol(test)('renders a Symbol', () => {
       render(html`<div>${Symbol('A')}</div>`, container);
       assert.include(
           container.querySelector('div')!.textContent!.toLowerCase(), 'symbol');
@@ -258,6 +264,13 @@ suite('render()', () => {
         <p>${'bar'}</p>`;
       render(t, container);
       assert.equal(container.querySelector('p')!.textContent, 'bar');
+      assert.equal(container.textContent!.trim(), 'bar');
+    });
+
+    test('renders comments with bindings', () => {
+      const t = html`<!--${'foo'}-->`;
+      render(t, container);
+      assert.equal(container.textContent, '');
     });
 
     test('renders comments with attribute-like bindings', () => {
@@ -375,14 +388,15 @@ suite('render()', () => {
           stripExpressionMarkers(container.innerHTML), '<div foo="bar"></div>');
     });
 
-    testIfHasSymbol('renders a Symbol to an attribute', () => {
+    testIfHasSymbol(test)('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
       assert.include(
           container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
           'symbol');
     });
 
-    testIfHasSymbol('renders a Symbol in an array to an attribute', () => {
+    testIfHasSymbol(
+        test)('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')]}></div>`, container);
       assert.include(
           container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
@@ -617,7 +631,7 @@ suite('render()', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget;
+      const eventContext = {} as EventTarget;  // eslint-disable-line
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -642,7 +656,7 @@ suite('render()', () => {
           thisValue = this;
         }
       };
-      const eventContext = {} as EventTarget;
+      const eventContext = {} as EventTarget;  // eslint-disable-line
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -694,11 +708,13 @@ suite('render()', () => {
           div.addEventListener = () => addCount++;
           div.removeEventListener = () => removeCount++;
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 0);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
@@ -709,11 +725,13 @@ suite('render()', () => {
           assert.equal(addCount, 1);
           assert.equal(removeCount, 1);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
           assert.equal(removeCount, 1);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
@@ -793,7 +811,7 @@ suite('render()', () => {
       assert.strictEqual((container.firstElementChild as any).foo, 1234);
     });
 
-    testSkipChrome41(
+    testSkipChrome41(test)(
         'event listeners can see events fired by dynamic children', () => {
           // This tests that node directives are called in the commit phase, not
           // the setValue phase
@@ -840,43 +858,43 @@ suite('render()', () => {
 
   suite('<table>', () => {
     testSkipForTemplatePolyfill(
-        'renders nested templates within table content', () => {
-          let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
-          render(table, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<table><tr><td></td></tr></table>');
+        test)('renders nested templates within table content', () => {
+      let table = html`<table>${html`<tr>${html`<td></td>`}</tr>`}</table>`;
+      render(table, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<table><tr><td></td></tr></table>');
 
-          table = html`<tbody>${html`<tr></tr>`}</tbody>`;
-          render(table, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<tbody><tr></tr></tbody>');
+      table = html`<tbody>${html`<tr></tr>`}</tbody>`;
+      render(table, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<tbody><tr></tr></tbody>');
 
-          table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
-          render(table, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<table><tbody><tr></tr><tr></tr></tbody></table>');
+      table = html`<table><tr></tr>${html`<tr></tr>`}</table>`;
+      render(table, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<table><tbody><tr></tr><tr></tr></tbody></table>');
 
-          table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
-          render(table, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
+      table = html`<table><tr><td></td>${html`<td></td>`}</tr></table>`;
+      render(table, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<table><tbody><tr><td></td><td></td></tr></tbody></table>');
 
-          table = html`<table><tr><td></td>${html`<td></td>`}${
-              html`<td></td>`}</tr></table>`;
-          render(table, container);
-          assert.equal(
-              stripExpressionMarkers(container.innerHTML),
-              '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
-        });
+      table = html`<table><tr><td></td>${html`<td></td>`}${
+          html`<td></td>`}</tr></table>`;
+      render(table, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<table><tbody><tr><td></td><td></td><td></td></tr></tbody></table>');
+    });
 
     // On Safari 10.0 (but not 10.1), the attribute value "<table>" is
     // escaped to "&lt;table&gt;". That shouldn't cause this test to
     // fail, so we skip
-    testSkipSafari10_0(
+    testSkipSafari10_0(test)(
         'renders quoted attributes with "<table>" before an expression', () => {
           const template = html`<div a="<table>${'foo'}"></div>`;
           render(template, container);
@@ -1013,19 +1031,16 @@ suite('render()', () => {
     });
   });
 
-  const suiteIfCustomElementsAreSupported =
-      (window.customElements != null) ? suite : suite.skip;
-
-  suiteIfCustomElementsAreSupported('custom elements', () => {
+  suiteIfCustomElementsAreSupported(suite)('custom elements', () => {
     class PropertySetterElement extends HTMLElement {
-      public readonly calledSetter = false;
+      readonly calledSetter = false;
       private _value?: string = undefined;
 
-      public get value(): string|undefined {
+      get value(): string|undefined {
         return this._value;
       }
 
-      public set value(value: string|undefined) {
+      set value(value: string|undefined) {
         (this as {calledSetter: boolean}).calledSetter = true;
         this._value = value;
       }
@@ -1443,6 +1458,15 @@ suite('render()', () => {
       const sym = Symbol('description!');
       render(sym, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), String(sym));
+    });
+
+    test('accepts a node', () => {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode('text in the div'));
+      render(div, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>text in the div</div>');
     });
   });
 });

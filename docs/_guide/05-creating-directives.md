@@ -150,7 +150,7 @@ import {directive} from 'lit-html';
 // Define the map at module level
 const stateMap = new WeakMap();
 
-const statefulDirective = directive(() => {(part) => {
+const statefulDirective = directive(() => (part) => {
   let myState = stateMap.get(part);
   if (myState === undefined) {
     // Initialize state for this location

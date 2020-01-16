@@ -40,7 +40,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  update(values: ReadonlyArray<unknown>) {
+  update(values: readonly unknown[]) {
     let i = 0;
     for (const part of this.__parts) {
       if (part !== undefined) {
@@ -76,7 +76,7 @@ export class TemplateInstance {
     // Given these constraints, with full custom elements support we would
     // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
     //
-    // But Safari dooes not implement CustomElementRegistry#upgrade, so we
+    // But Safari does not implement CustomElementRegistry#upgrade, so we
     // can not implement that order and still have upgrade-before-update and
     // upgrade disconnected fragments. So we instead sacrifice the
     // process-before-upgrade constraint, since in Custom Elements v1 elements
@@ -140,12 +140,13 @@ export class TemplateInstance {
 
       // We've arrived at our part's node.
       if (part.type === 'node') {
-        const part = this.processor.handleTextExpression(this.options);
-        part.insertAfterNode(node!.previousSibling!);
-        this.__parts.push(part);
+        const textPart =
+            this.processor.handleTextExpression(this.options, part);
+        textPart.insertAfterNode(node!.previousSibling!);
+        this.__parts.push(textPart);
       } else {
         this.__parts.push(...this.processor.handleAttributeExpressions(
-            node as Element, part.name, part.strings, this.options));
+            node as Element, part.name, part.strings, this.options, part));
       }
       partIndex++;
     }

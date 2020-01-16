@@ -1,12 +1,13 @@
 {
   "name": "lit-html",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "homepage": "https://lit-html.polymer-project.org/",
   "repository": "Polymer/lit-html",
   "main": "lit-html.js",
   "module": "lit-html.js",
+  "typings": "lit-html.d.ts",
   "directories": {
     "test": "test"
   },
@@ -27,30 +28,47 @@
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
     "format": "clang-format --version; find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
-    "lint": "tslint --project ./",
+    "lint": "npm run lint:eslint",
+    "lint:eslint": "eslint 'src/**/*.{js,ts}'",
+    "prepublishOnly": "node check-version-tracker.js && npm run lint && npm test",
     "prepare": "npm run build",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
   "author": "The Polymer Authors",
+  "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.0",
-    "@webcomponents/shadycss": "^1.5.2",
-    "@webcomponents/webcomponentsjs": "^2.0.4",
+    "@types/trusted-types": "^1.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.10.0",
+    "@typescript-eslint/parser": "^2.10.0",
+    "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/webcomponentsjs": "^2.4.0",
     "chai": "^4.1.2",
-    "clang-format": "^1.2.4",
-    "lit-html-benchmarks": "^0.2.0",
+    "clang-format": "~1.2.4",
+    "eslint": "^6.7.0",
+    "husky": "^3.1.0",
+    "lint-staged": "^9.5.0",
+    "lit-html-benchmarks": "^0.2.1",
     "mocha": "^5.2.0",
-    "rollup": "^0.64.1",
-    "rollup-plugin-filesize": "^4.0.1",
-    "rollup-plugin-terser": "^1.0.1",
-    "tachometer": "^0.4.0",
-    "tslint": "^5.11.0",
+    "rollup": "^1.19.0",
+    "rollup-plugin-filesize": "^6.2.0",
+    "rollup-plugin-terser": "^5.1.0",
+    "tachometer": "^0.4.15",
     "typescript": "^3.4.1",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"
   },
-  "typings": "lit-html.d.ts",
-  "dependencies": {}
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.{js,ts}": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
 }
