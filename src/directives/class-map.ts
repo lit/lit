@@ -14,7 +14,6 @@
 
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
-
 export interface ClassInfo {
   readonly [name: string]: string|boolean|number;
 }
@@ -23,20 +22,21 @@ export interface ClassInfo {
  * Stores the ClassInfo object applied to a given AttributePart.
  * Used to unset existing values when a new ClassInfo object is applied.
  */
-const previousClassesCache = new WeakMap<Part, Set<string>>();
+const previousClassesCache = new WeakMap<Part, Map<string, unknown>>();
+
+const staticValue = {};
 
 /**
  * A directive that applies CSS classes. This must be used in the `class`
  * attribute and must be the only part used in the attribute. It takes each
  * property in the `classInfo` argument and adds the property name to the
- * element's `classList` if the property value is truthy; if the property value
- * is falsey, the property name is removed from the element's `classList`. For
- * example
+ * element's `class` if the property value is truthy; if the property value is
+ * falsey, the property name is removed from the element's `class`. For example
  * `{foo: bar}` applies the class `foo` if the value of `bar` is truthy.
  * @param classInfo {ClassInfo}
  */
 export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
-  if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
+  if (!(part instanceof AttributePart) || part instanceof PropertyPart ||
       part.committer.name !== 'class' || part.committer.parts.length > 1) {
     throw new Error(
         'The `classMap` directive must be used in the `class` attribute ' +
@@ -45,22 +45,24 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
 
   const {committer} = part;
   const {element} = committer;
+  let changed = false;
 
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
-    // Write static classes once
-    element.setAttribute('class', committer.strings.join(' '));
-    previousClassesCache.set(part, previousClasses = new Set());
+    previousClasses = new Map();
+    previousClassesCache.set(part, previousClasses);
+    // Ensure static classes are never removed
+    element.className = committer.strings.join(' ');
+    committer.strings.forEach(s => previousClasses!.set(s, staticValue));
+    changed = true;
   }
-
-  const {classList} = element;
 
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level
   // iteration.
-  previousClasses.forEach((name) => {
-    if (!(name in classInfo)) {
-      classList.remove(name);
+  previousClasses.forEach((value: unknown, key: string) => {
+    if (value !== staticValue && !(key in classInfo)) {
+      changed = true;
       previousClasses!.delete(name);
     }
   });
@@ -71,13 +73,18 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
     // We explicitly want a loose truthy check of `value` because it seems more
     // convenient that '' and 0 are skipped.
     if (value != previousClasses.has(name)) {
+      changed = true;
       if (value) {
-        classList.add(name);
-        previousClasses.add(name);
+        previousClasses.set(name, true);
       } else {
-        classList.remove(name);
         previousClasses.delete(name);
       }
     }
+  }
+
+  if (changed) {
+    const classes: string[] = [];
+    previousClasses.forEach((_: unknown, key: string) => classes.push(key));
+    element.setAttribute('class', classes.join(' '));
   }
 });

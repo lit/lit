@@ -81,6 +81,16 @@ suite('classMap', () => {
     assert.isFalse(el.classList.contains('foo'));
   });
 
+  test('can override static classes', () => {
+    renderClassMapStatic({aa: false, bb: true});
+    const el = container.firstElementChild!;
+    assert.isFalse(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    renderClassMapStatic({});
+    assert.isFalse(el.classList.contains('aa'));
+    assert.isFalse(el.classList.contains('bb'));
+  });
+
   test('changes classes when used with the same object', () => {
     const classInfo = {foo: true};
     renderClassMapStatic(classInfo);
