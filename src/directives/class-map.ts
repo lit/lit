@@ -49,7 +49,7 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
     // Write static classes once
-    element.className = committer.strings.join(' ');
+    element.setAttribute('class', committer.strings.join(' '));
     previousClassesCache.set(part, previousClasses = new Set());
   }
 
