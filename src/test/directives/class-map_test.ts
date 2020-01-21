@@ -109,9 +109,11 @@ suite('classMap', () => {
     const cssInfo = {foo: 0, bar: true, zonk: true};
     render(svg`<circle class="${classMap(cssInfo)}"></circle>`, container);
     const el = container.firstElementChild!;
-    assert.isFalse(el.classList.contains('foo'));
-    assert.isTrue(el.classList.contains('bar'));
-    assert.isTrue(el.classList.contains('zonk'));
+    const classes = el.getAttribute('class')!.split(' ');
+    // Sigh, IE.
+    assert.isFalse(classes.indexOf('foo') === -1);
+    assert.isTrue(classes.indexOf('bar') > -1);
+    assert.isTrue(classes.indexOf('zonk') > -1);
   });
 
   test('throws when used on non-class attribute', () => {
