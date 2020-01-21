@@ -21,10 +21,27 @@ export interface ClassInfo {
 /**
  * Stores the ClassInfo object applied to a given AttributePart.
  * Used to unset existing values when a new ClassInfo object is applied.
+ *
+ * The map contains two possible class values:
+ * 1. Static (given through the template literal), which are set to true
+ * 2. Dynamic (given through ClassInfo) which are set to false
+ *
+ * Only Dynamic classes can be removed by being omitted from the ClassInfo, but
+ * both Static and Dynamic classes can be removed by setting class to falsey in
+ * the ClassInfo.
  */
-const previousClassesCache = new WeakMap<Part, Map<string, unknown>>();
+const previousClassesCache = new WeakMap<Part, Map<string, boolean>>();
 
-const staticValue = {};
+/**
+ * Classes are parsed as a series of tokens separated by ASCII whitespace. This
+ * token splitter allows us to extract the tokens from the static classes given
+ * in th template literal.
+ *
+ * https://html.spec.whatwg.org/multipage/dom.html#classes
+ * https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#set-of-space-separated-tokens
+ * https://infra.spec.whatwg.org/#ascii-whitespace
+ */
+const tokenSplitter = /[\t\n\f\r ]+/;
 
 /**
  * A directive that applies CSS classes. This must be used in the `class`
@@ -51,9 +68,11 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   if (previousClasses === undefined) {
     previousClasses = new Map();
     previousClassesCache.set(part, previousClasses);
-    // Ensure static classes are never removed
-    element.className = committer.strings.join(' ');
-    committer.strings.forEach(s => previousClasses!.set(s, staticValue));
+    // Normalize all static classes into individual tokens. This is necessary
+    // since each individual string could contain multiple tokens.
+    const strings = committer.strings.join(' ').split(tokenSplitter);
+    // Ensure static classes are never removed, by setting them to true
+    strings.forEach(s => previousClasses!.set(s, true));
     changed = true;
   }
 
@@ -61,13 +80,15 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   // We use forEach() instead of for-of so that re don't require down-level
   // iteration.
   previousClasses.forEach((value: unknown, key: string) => {
-    if (value !== staticValue && !(key in classInfo)) {
+    // If the value is true, then it was a static class, which we do not remove
+    // unless the ClassInfo specifically overrides it.
+    if (value !== true && !(key in classInfo)) {
       changed = true;
       previousClasses!.delete(name);
     }
   });
 
-  // Add or remove classes based on their classMap value
+  // Add or remove classes based on their ClassInfo value
   for (const name in classInfo) {
     const value = classInfo[name];
     // We explicitly want a loose truthy check of `value` because it seems more
@@ -75,7 +96,9 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
     if (value != previousClasses.has(name)) {
       changed = true;
       if (value) {
-        previousClasses.set(name, true);
+        // Dynamic classes are set to false, so we know to remove them when
+        // omitted from the ClassInfo.
+        previousClasses.set(name, false);
       } else {
         previousClasses.delete(name);
       }
