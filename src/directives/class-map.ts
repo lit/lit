@@ -91,17 +91,21 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   // Add or remove classes based on their ClassInfo value
   for (const name in classInfo) {
     const value = classInfo[name];
+    const cached = previousClasses.get(name);
     // We explicitly want a loose truthy check of `value` because it seems more
     // convenient that '' and 0 are skipped.
-    if (value != previousClasses.has(name)) {
-      changed = true;
-      if (value) {
-        // Dynamic classes are set to false, so we know to remove them when
-        // omitted from the ClassInfo.
+    if (value) {
+      // Dynamic classes are set to false, so we know to remove them when
+      // omitted from the ClassInfo.
+      if (cached !== false) {
         previousClasses.set(name, false);
-      } else {
-        previousClasses.delete(name);
       }
+      if (cached === undefined) {
+        changed = true;
+      }
+    } else if (cached !== undefined) {
+      changed = true;
+      previousClasses.delete(name);
     }
   }
 
