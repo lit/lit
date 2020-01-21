@@ -79,10 +79,10 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level
   // iteration.
-  previousClasses.forEach((value: unknown, key: string) => {
+  previousClasses.forEach((value: unknown, name: string) => {
     // If the value is true, then it was a static class, which we do not remove
     // unless the ClassInfo specifically overrides it.
-    if (value !== true && !(key in classInfo)) {
+    if (value !== true && !(name in classInfo)) {
       changed = true;
       previousClasses!.delete(name);
     }
