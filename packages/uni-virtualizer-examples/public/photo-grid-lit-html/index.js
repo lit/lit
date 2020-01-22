@@ -32,19 +32,21 @@ async function getPhotos(query, mock=false) {
         fetchPage: async (pageSize, pageNum) => {
             const resp = await searchFlickr(query, pageSize, pageNum, mock);
             return {
-                items: resp.photo.map(p => Object.assign({}, {width_o: 1920, height_o: 1080}, p)),
+                // items: resp.photo.map(p => Object.assign({}, {width_o: 1920, height_o: 1080}, p)),
+                items: resp.photo,
                 totalItems: resp.total
             };
             // return resp.photo.filter(p => p.width_o);
         },
         placeholder: () => {
-            return {"id":"TEMP","height_o":769,"width_o":1024};
+            // return {"id":"TEMP","height_o":769,"width_o":1024};
+            return {id: "TEMP"};
         },
         callback: items => {
             setState({ items });
         }
     });
-    // const resp = await searchFlickr(query, mock);
+    // const resp = await searchFlickr(query, 500, 1, mock);
     // return resp.photo.filter(p => p.width_o);
 }
 
@@ -64,7 +66,7 @@ const state = {
     idealSize: 300,
     spacing: 8,
     query: 'sunset',
-    Layout: Layout1dSquareGrid,
+    Layout: Layout1dFlex,
     layout: null,
     first: 0,
     last: 0,
@@ -201,11 +203,11 @@ function updateItemSizes(items) {
 
 async function search(query) {
     const items = await getPhotos(query, mock);
-    for (let i = 0; i < items.length; i++) {
-        console.log(items[i]);
-    }
+    // for (let i = 0; i < items.length; i++) {
+    //     console.log(items[i]);
+    // }
     setState({items});
-    updateItemSizes(items);
+    // updateItemSizes(items);
 }
 
 render(renderExample(), document.body);

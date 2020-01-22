@@ -149,6 +149,10 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
    */
   private _childrenRO: ResizeObserver = null;
 
+  // TODO (graynorton): Rethink, per longer comment below
+
+  private _loadListener = this._childLoaded.bind(this);
+
   /**
    * Flag for skipping a children measurement if that computation was just
    * completed.
@@ -215,6 +219,7 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
           oldEl.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
           this._sizer && this._sizer.remove();
         }
+        oldEl.removeEventListener('load', this._loadListener, true);
       } else {
         // First time container was setup, add listeners only now.
         addEventListener('scroll', this, {passive: true});
@@ -231,6 +236,10 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
         }
         this._scheduleUpdateView();
         this._containerRO.observe(newEl);
+
+        if (this._layout && this._layout.listenForChildLoadEvents) {
+          newEl.addEventListener('load', this._loadListener, true);
+        }
       }
     });
   }
@@ -273,11 +282,13 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
 
     if (this._layout) {
       this._measureCallback = null;
+      this._measureChildOverride = null;
       this._layout.removeEventListener('scrollsizechange', this);
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
       delete this.container[layoutRef];
+      this.container.removeEventListener('load', this._loadListener, true);
       // Reset container size so layout can get correct viewport size.
       if (this._containerElement) {
         this._sizeContainer(undefined);
@@ -288,6 +299,9 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
 
     if (this._layout) {
       if (this._layout.measureChildren && typeof this._layout.updateItemSizes === 'function') {
+        if (typeof this._layout.measureChildren === 'function') {
+          this._measureChildOverride = this._layout.measureChildren;
+        }
         this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
         this.requestRemeasure();
       }
@@ -296,6 +310,9 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
       this._container[layoutRef] = this._layout;
+      if (this._layout.listenForChildLoadEvents) {
+        this._container.addEventListener('load', this._loadListener, true);
+      }
       this._scheduleUpdateView();
     }
   }
@@ -389,8 +406,10 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
     }
     // We want to skip the first ResizeObserver callback call as we already
     // measured the children.
-    this._skipNextChildrenSizeChanged = true;
-    this._kids.forEach((child) => this._childrenRO.observe(child));
+    if (this._layout.measureChildren === true) {
+      this._skipNextChildrenSizeChanged = true;
+      this._kids.forEach((child) => this._childrenRO.observe(child));
+    }
   }
 
   /**
@@ -639,6 +658,15 @@ export class VirtualScroller<Item, Child extends HTMLElement, Key> extends Virtu
     const {width, height} = size;
     this._containerSize = {width, height};
     this._scheduleUpdateView();
+  }
+
+  // TODO (graynorton): Rethink how this works. Probably child loading is too specific
+  // to have dedicated support for; might want some more generic lifecycle hooks for
+  // layouts to use. Possibly handle measurement this way, too, or maybe that remains
+  // a first-class feature?
+
+  private _childLoaded() {
+    this.requestRemeasure();
   }
 
   private _childrenSizeChanged() {

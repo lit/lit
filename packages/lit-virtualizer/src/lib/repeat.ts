@@ -78,6 +78,10 @@ export const LitMixin = (Superclass) => class<Item> extends Superclass {
     return part.startNode;
   }
 
+  _element(part: NodePart): Node {
+    return nextElementSibling((part.startNode as Element));
+  }
+
   _nextSibling(part: NodePart): Node {
     return part.endNode.nextSibling;
   }
@@ -120,12 +124,6 @@ export const LitMixin = (Superclass) => class<Item> extends Superclass {
       super._showChild(node);
       node = node.nextSibling;
     }
-  }
-
-  _measureChild(part: NodePart) {
-    // Currently, we assume there's only one node in the part (between start and
-    // end nodes)
-    return super._measureChild(nextElementSibling((part.startNode as Element)));
   }
 };
 

@@ -32,7 +32,7 @@ export function getDims(photo, constraint) {
 
 export function getUrl(photo) {
   const {farm, server, id, secret} = photo;
-  const size = 't';
+  const size = 'm';
   return true ? `https://farm${farm}.staticflickr.com/${server}/${id}_${
                     secret}_${size}.jpg` :
                 'http://via.placeholder.com/200x200&text=+';

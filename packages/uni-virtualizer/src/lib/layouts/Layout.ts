@@ -10,7 +10,7 @@ export type Margins = {
   marginLeft: number
 };
 
-export type ItemBox = Size & Margins;
+export type ItemBox = Size | Size & Margins;
 
 export type position = 'left' | 'top';
 export type Positions = {
@@ -44,7 +44,9 @@ export interface Layout {
 
   viewportScroll: Positions;
 
-  readonly measureChildren?: boolean;
+  readonly measureChildren?: boolean | ((e: Element, i: object) => object);
+
+  readonly listenForChildLoadEvents?: boolean;
 
   updateItemSizes?: (sizes: {
     [key: number]: ItemBox

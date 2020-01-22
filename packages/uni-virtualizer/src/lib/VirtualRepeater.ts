@@ -75,6 +75,8 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
    */
   protected _measureCallback: (sizes: {[key: number]: ItemBox}) => void = null;
 
+  protected _measureChildOverride: (element: Element, item: object) => object = null;
+
   /**
    * Number of children in the range. Set by num.
    * TODO @straversi: Consider renaming this. count? visibleElements?
@@ -363,7 +365,8 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
     await (new Promise((resolve) => {
       requestAnimationFrame(resolve);
     }));
-    const pm = children.map((c) => this._measureChild(c));
+    const fn = this._measureChildOverride || this._measureChild;
+    const pm = children.map((c: Child, i: number) => fn.call(this, this._element(c), this._items[indices[i]]));
     const mm = /** @type {{number: {width: number, height: number}}} */
         (pm.reduce((out, cur, i) => {
           out[indices[i]] = this._indexToMeasure[indices[i]] = cur;
@@ -574,6 +577,16 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
   }
 
   /**
+   * Returns the width, height, and margins of the given child.
+   */
+  _measureChild(element: Element): ItemBox {
+    // offsetWidth doesn't take transforms in consideration, so we use
+    // getBoundingClientRect which does.
+    const {width, height} = element.getBoundingClientRect();
+    return Object.assign({width, height}, getMargins(element));
+  }
+
+  /**
    * Overridable abstractions for child manipulation
    */
 
@@ -582,6 +595,10 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
    * Override if child !== child's node.
    */
   _node(child: Child): Node {
+    return child;
+  }
+
+  _element(child: Child): Node {
     return child;
   }
 
@@ -634,17 +651,6 @@ export class VirtualRepeater<Item, Child extends Element, Key> {
     if (child instanceof HTMLElement) {
       child.style.display = null;
     }
-  }
-
-  /**
-   * Returns the width, height, and margins of the given child.
-   * Override if child !== child's node.
-   */
-  _measureChild(child: Child): ItemBox {
-    // offsetWidth doesn't take transforms in consideration, so we use
-    // getBoundingClientRect which does.
-    const {width, height} = child.getBoundingClientRect();
-    return Object.assign({width, height}, getMargins(child));
   }
 }
 
