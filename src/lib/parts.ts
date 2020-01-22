@@ -121,16 +121,11 @@ export class AttributeCommitter {
       // Next breaking change, consider making this param required.
       templatePart?: AttributeTemplatePart,
       kind: 'property'|'attribute' = 'attribute') {
+    const fqn = getAttrName(name);
     this.element = element;
-    const colonIndex = name.indexOf(':');
-    if (colonIndex === -1) {
-      this.name = name;
-      this.namespace = null;
-    } else {
-      this.namespace = name.substring(0, colonIndex);
-      this.name = name.substring(colonIndex + 1);
-    }
     this.strings = strings;
+    this.namespace = fqn[0];
+    this.name = fqn[1];
     this.parts = [];
     let sanitizer = templatePart && templatePart.sanitizer;
     if (sanitizer === undefined) {
@@ -511,16 +506,11 @@ export class BooleanAttributePart implements Part {
       throw new Error(
           'Boolean attributes can only contain a single expression');
     }
+    const fqn = getAttrName(name);
     this.element = element;
     this.strings = strings;
-    const colonIndex = name.indexOf(':');
-    if (colonIndex === -1) {
-      this.name = name;
-      this.namespace = null;
-    } else {
-      this.namespace = name.substring(0, colonIndex);
-      this.name = name.substring(colonIndex + 1);
-    }
+    this.namespace = fqn[0];
+    this.name = fqn[1];
   }
 
   setValue(value: unknown): void {
@@ -547,6 +537,21 @@ export class BooleanAttributePart implements Part {
     }
     this.__pendingValue = noChange;
   }
+}
+
+const namespaces: {[name: string]: string | undefined} = {
+  'xlink': 'http://www.w3.org/1999/xlink',
+  'xml': 'http://www.w3.org/XML/1998/namespace',
+} as const;
+
+const getAttrName = (name: string): [string|null, string] => {
+    const colonIndex = name.indexOf(':');
+    if (colonIndex === -1) {
+      return [null, name];
+    }
+    const shorthand = name.slice(0, colonIndex);
+    const namespace = namespaces[shorthand] || null;
+    return [namespace, name.slice(colonIndex + 1)];
 }
 
 /**

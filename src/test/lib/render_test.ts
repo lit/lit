@@ -389,19 +389,14 @@ suite('render()', () => {
     });
 
     test('renders in a namespaced attribute', () => {
-      render(html`<svg><use xlink:href="${'bar.svg'}"></use></svg>`, container);
+      const template = (href: string) => html`<svg><use xlink:href="${href}"></use></svg>`;
+      render(template('bar.svg'), container);
       const svgElement = container.firstElementChild!;
       const useElement = svgElement.firstElementChild as SVGUseElement;
-      assert.equal(useElement.href.baseVal, 'bar.svg');
-    });
+      assert.equal(useElement.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'bar.svg');
 
-    test('renders in a namespaced boolean attribute', () => {
-      render(
-          html`<div xmlns:foo="http://foo.com/foo" foo:bar=${'baz'}></div>`,
-          container);
-      const div = container.firstElementChild!;
-      assert.equal(div.tagName, 'DIV');
-      assert.equal(div.getAttributeNS('http://foo.com/foo', 'bar'), 'baz');
+      render(template('baz.svg'), container);
+      assert.equal(useElement.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'baz.svg');
     });
 
     testIfHasSymbol(test)('renders a Symbol to an attribute', () => {
@@ -630,15 +625,16 @@ suite('render()', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     });
 
-    test('renders to a namespaced attribute', () => {
-      render(html`<svg><use ?xlink:href="${true}"></use></svg>`, container);
+    test('renders in a namespaced boolean attribute', () => {
+      const template = (href: boolean) => html`<svg><use ?xlink:href="${href}"></use></svg>`;
+      render(template(true), container);
       const svgElement = container.firstElementChild!;
-      const useElement = svgElement.firstElementChild!;
-      assert.equal(useElement.tagName, 'use');
-      const attr = useElement.attributes[0];
-      assert.equal(attr.name, 'href');
-      assert.equal(attr.namespaceURI, 'xlink');
-      assert.equal(attr.value, '');
+      const useElement = svgElement.firstElementChild as SVGUseElement;
+
+      assert.isTrue(useElement.hasAttributeNS('http://www.w3.org/1999/xlink', 'href'));
+
+      render(template(false), container);
+      assert.isFalse(useElement.hasAttributeNS('http://www.w3.org/1999/xlink', 'href'));
     });
   });
 
