@@ -121,9 +121,9 @@ export class AttributeCommitter {
       // Next breaking change, consider making this param required.
       templatePart?: AttributeTemplatePart,
       kind: 'property'|'attribute' = 'attribute') {
-    const fqn = getAttrName(name);
     this.element = element;
     this.strings = strings;
+    const fqn = getAttrName(name);
     this.namespace = fqn[0];
     this.name = fqn[1];
     this.parts = [];
@@ -506,9 +506,9 @@ export class BooleanAttributePart implements Part {
       throw new Error(
           'Boolean attributes can only contain a single expression');
     }
-    const fqn = getAttrName(name);
     this.element = element;
     this.strings = strings;
+    const fqn = getAttrName(name);
     this.namespace = fqn[0];
     this.name = fqn[1];
   }
