@@ -539,19 +539,19 @@ export class BooleanAttributePart implements Part {
   }
 }
 
-const namespaces: {[name: string]: string | undefined} = {
+const namespaces: {[name: string]: string|undefined} = {
   'xlink': 'http://www.w3.org/1999/xlink',
   'xml': 'http://www.w3.org/XML/1998/namespace',
-} as const;
+} as const ;
 
 const getAttrName = (name: string): [string|null, string] => {
-    const colonIndex = name.indexOf(':');
-    if (colonIndex === -1) {
-      return [null, name];
-    }
-    const shorthand = name.slice(0, colonIndex);
-    const namespace = namespaces[shorthand] || null;
-    return [namespace, name.slice(colonIndex + 1)];
+  const colonIndex = name.indexOf(':');
+  if (colonIndex === -1) {
+    return [null, name];
+  }
+  const shorthand = name.slice(0, colonIndex);
+  const namespace = namespaces[shorthand] || null;
+  return [namespace, name.slice(colonIndex + 1)];
 }
 
 /**
