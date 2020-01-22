@@ -12,6 +12,16 @@ export default [
     ]
   },
   {
+    input: 'public/experimental/index.js',
+    output: {
+      dir: 'public/experimental/build',
+      format: 'esm'
+    },
+    plugins: [
+      resolve(),
+    ]
+  },
+  {
     input: 'public/basic-lit-html/index.js',
     output: {
       dir: 'public/basic-lit-html/build',
