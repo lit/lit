@@ -391,20 +391,17 @@ suite('render()', () => {
     test('renders in a namespaced attribute', () => {
       render(html`<svg><use xlink:href="${'bar.svg'}"></use></svg>`, container);
       const svgElement = container.firstElementChild!;
-      const useElement = svgElement.firstElementChild!;
-      assert.equal(useElement.tagName, 'use');
-      const attr = useElement.attributes[0];
-      assert.equal(attr.name, 'href');
-      assert.equal(attr.namespaceURI, 'xlink');
-      assert.equal(attr.value, 'bar.svg');
+      const useElement = svgElement.firstElementChild as SVGUseElement;
+      assert.equal(useElement.href.baseVal, 'bar.svg');
     });
 
     test('renders in a namespaced boolean attribute', () => {
-      render(html`<svg><use ?xlink:href="${false}"></use></svg>`, container);
-      const svgElement = container.firstElementChild!;
-      const useElement = svgElement.firstElementChild!;
-      assert.equal(useElement.tagName, 'use');
-      assert.equal(useElement.attributes.length, 0);
+      render(
+          html`<div xmlns:foo="http://foo.com/foo" foo:bar=${'baz'}></div>`,
+          container);
+      const div = container.firstElementChild!;
+      assert.equal(div.tagName, 'DIV');
+      assert.equal(div.getAttributeNS('http://foo.com/foo', 'bar'), 'baz');
     });
 
     testIfHasSymbol(test)('renders a Symbol to an attribute', () => {

@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
 * Fixed a bug where ifDefined() would set an attribute even when the value didn't change. ([#890](https://github.com/Polymer/lit-html/issues/890))
-
+* Fixed a bug where attribute namespaces were not supported. ([#423](https://github.com/Polymer/lit-html/issues/423))
 
 ## [1.1.2] - 2019-08-12
 
