@@ -391,8 +391,7 @@ suite('render()', () => {
     test('renders in a xlink namespaced attribute', () => {
       const template = (href: string) => svg`<use xlink:href="${href}"></use>`;
       render(template('bar.svg'), container);
-      const svgElement = container.firstElementChild!;
-      const useElement = svgElement.firstElementChild as SVGUseElement;
+      const useElement = container.firstElementChild as SVGUseElement;
       assert.equal(
           useElement.getAttributeNS('http://www.w3.org/1999/xlink', 'href'),
           'bar.svg');
@@ -407,8 +406,7 @@ suite('render()', () => {
       const template = (lang: string) =>
           svg`<text xml:lang="${lang}">test</text>`;
       render(template('en-US'), container);
-      const svgElement = container.firstElementChild!;
-      const useElement = svgElement.firstElementChild as SVGUseElement;
+      const useElement = container.firstElementChild as SVGUseElement;
       assert.equal(
           useElement.getAttributeNS(
               'http://www.w3.org/XML/1998/namespace', 'lang'),
@@ -651,8 +649,7 @@ suite('render()', () => {
       const template = (href: boolean) =>
           svg`<use ?xlink:href="${href}"></use>`;
       render(template(true), container);
-      const svgElement = container.firstElementChild!;
-      const useElement = svgElement.firstElementChild as SVGUseElement;
+      const useElement = container.firstElementChild as SVGUseElement;
 
       assert.isTrue(
           useElement.hasAttributeNS('http://www.w3.org/1999/xlink', 'href'));

@@ -104,7 +104,6 @@ export class Template {
                 name.toLowerCase() + boundAttributeSuffix;
             const attributeValue =
                 (node as Element).getAttribute(attributeLookupName)!;
-            console.log(name, attributeLookupName, attributeValue);
             (node as Element).removeAttribute(attributeLookupName);
             const statics = attributeValue.split(markerRegex);
             this.parts.push({
