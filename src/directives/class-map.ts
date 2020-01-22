@@ -34,14 +34,14 @@ const previousClassesCache = new WeakMap<Part, Map<string, boolean>>();
 
 /**
  * Classes are parsed as a series of tokens separated by ASCII whitespace. This
- * token splitter allows us to extract the tokens from the static classes given
- * in th template literal.
+ * token parser allows us to extract the tokens from the static classes given
+ * in the template literal.
  *
  * https://html.spec.whatwg.org/multipage/dom.html#classes
  * https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#set-of-space-separated-tokens
  * https://infra.spec.whatwg.org/#ascii-whitespace
  */
-const tokenSplitter = /[\t\n\f\r ]+/;
+const tokens = /[^\t\n\f\r ]+/g;
 
 /**
  * A directive that applies CSS classes. This must be used in the `class`
@@ -70,9 +70,12 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
     previousClassesCache.set(part, previousClasses);
     // Normalize all static classes into individual tokens. This is necessary
     // since each individual string could contain multiple tokens.
-    const strings = committer.strings.join(' ').split(tokenSplitter);
-    // Ensure static classes are never removed, by setting them to true
-    strings.forEach(s => previousClasses!.set(s, true));
+    const strings = committer.strings.join(' ');
+    let match;
+    while ((match = tokens.exec(strings))) {
+      // Ensure static classes are never removed, by setting them to true
+      previousClasses!.set(match[0], true);
+    }
     changed = true;
   }
 

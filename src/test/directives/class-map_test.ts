@@ -111,7 +111,7 @@ suite('classMap', () => {
     const el = container.firstElementChild!;
     const classes = el.getAttribute('class')!.split(' ');
     // Sigh, IE.
-    assert.isFalse(classes.indexOf('foo') === -1);
+    assert.isTrue(classes.indexOf('foo') === -1);
     assert.isTrue(classes.indexOf('bar') > -1);
     assert.isTrue(classes.indexOf('zonk') > -1);
   });
