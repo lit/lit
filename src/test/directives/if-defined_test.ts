@@ -14,7 +14,7 @@
 
 import {ifDefined} from '../../directives/if-defined.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {html, svg} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -169,5 +169,22 @@ suite('ifDefined', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>a</div>');
     assert.equal(setCount, 0);
+  });
+
+  test('controls a namespaced attribute', () => {
+    const template = (href: string|undefined) =>
+        svg`<use xlink:href="${ifDefined(href)}"></use>`;
+    render(template('a'), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<use xlink:href="a"></use>');
+
+    render(template(undefined), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<use></use>');
+
+    render(template('b'), container);
+    assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<use xlink:href="b"></use>');
   });
 });

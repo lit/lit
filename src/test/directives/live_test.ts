@@ -17,7 +17,7 @@
 
 import {live} from '../../directives/live.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {html, svg} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -112,6 +112,20 @@ suite('live', () => {
       assert.equal(el.getAttribute('x'), 'b');
       assert.equal(mutationCount, 1);
     });
+
+    test('updates an externally set namespaced attribute', () => {
+      const go = (x: string) =>
+          render(svg`<use xlink:href="${live(x)}">}`, container);
+      go('a');
+      const el = container.firstElementChild as HTMLDivElement;
+      assert.equal(
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'a');
+
+      el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'b');
+      go('a');
+      assert.equal(
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'a');
+    });
   });
 
   test(
@@ -182,6 +196,28 @@ suite('live', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       assert.equal(el.getAttribute('hidden'), null);
       assert.equal(mutationCount, 1);
+    });
+
+    test('updates an externally set namespaced boolean attribute', () => {
+      const go = (x: boolean) =>
+          render(svg`<use ?xlink:href="${live(x)}" />}`, container);
+
+      go(true);
+      const el = container.firstElementChild as SVGUseElement;
+      assert.equal(
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
+
+      go(true);
+      assert.equal(
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
+
+      el.removeAttribute('hidden');
+      assert.equal(
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), null);
+
+      go(true);
+      assert.equal(
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
     });
   });
 });

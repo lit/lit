@@ -542,7 +542,7 @@ export class BooleanAttributePart implements Part {
 const namespaces: {[name: string]: string|undefined} = {
   'xlink': 'http://www.w3.org/1999/xlink',
   'xml': 'http://www.w3.org/XML/1998/namespace',
-} as const ;
+} as const;
 
 const getAttrName = (name: string): [string|null, string] => {
   const colonIndex = name.indexOf(':');
