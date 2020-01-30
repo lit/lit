@@ -2,11 +2,8 @@
 layout: post
 title: Getting Started
 slug: getting-started
+permalink: /guide/{{slug}}/index.html
 ---
-
-{::options toc_levels="1..2" /}
-* ToC
-{:toc}
 
 ## Installation
 

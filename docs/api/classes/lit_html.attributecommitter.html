@@ -99,15 +99,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Writes attribute values to the DOM for a group of AttributeParts bound to a
-							single attibute. The value is only set once even if there are multiple parts
-						for an attribute.</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -120,6 +111,10 @@
 						</ul>
 					</li>
 				</ul>
+			</section>
+			<section class="tsd-panel tsd-kind-class tsd-parent-kind-external-module tsd-is-external">
+				<h3 class="tsd-before-signature">Indexable</h3>
+				<div class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
@@ -134,10 +129,13 @@
 						<section class="tsd-index-section tsd-is-external">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#attributepart" class="tsd-kind-icon">Attribute<wbr>Part</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#dirty" class="tsd-kind-icon">dirty</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#element" class="tsd-kind-icon">element</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#name" class="tsd-kind-icon">name</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#parts" class="tsd-kind-icon">parts</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#sanitizer" class="tsd-kind-icon">sanitizer</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#string" class="tsd-kind-icon">string</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.attributecommitter.html#strings" class="tsd-kind-icon">strings</a></li>
 							</ul>
 						</section>
@@ -158,13 +156,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Attribute<wbr>Committer<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.attributecommitter.html" class="tsd-signature-type">AttributeCommitter</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Attribute<wbr>Committer<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">readonly</span>, string<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, __namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">[]</span>, templatePart<span class="tsd-signature-symbol">?: </span><a href="../interfaces/lit_html.attributetemplatepart.html" class="tsd-signature-type">AttributeTemplatePart</a>, kind<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">"property"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"attribute"</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.attributecommitter.html" class="tsd-signature-type">AttributeCommitter</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:37</li>
+									<li>Defined in lib/parts.ts:103</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -176,7 +174,19 @@
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
-									<h5>strings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>strings: <span class="tsd-signature-type">readonly</span></h5>
+								</li>
+								<li>
+									<h5>string: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-type">[]</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> templatePart: <a href="../interfaces/lit_html.attributetemplatepart.html" class="tsd-signature-type">AttributeTemplatePart</a></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> kind: <span class="tsd-signature-type">"property"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"attribute"</span><span class="tsd-signature-symbol"> =&nbsp;&quot;attribute&quot;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="lit_html.attributecommitter.html" class="tsd-signature-type">AttributeCommitter</a></h4>
@@ -187,12 +197,22 @@
 			<section class="tsd-panel-group tsd-member-group tsd-is-external">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<a name="attributepart" class="tsd-anchor"></a>
+					<h3>Attribute<wbr>Part</h3>
+					<div class="tsd-signature tsd-kind-icon">Attribute<wbr>Part<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in lib/parts.ts:101</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
 					<a name="dirty" class="tsd-anchor"></a>
 					<h3>dirty</h3>
 					<div class="tsd-signature tsd-kind-icon">dirty<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:37</li>
+							<li>Defined in lib/parts.ts:103</li>
 						</ul>
 					</aside>
 				</section>
@@ -202,7 +222,7 @@
 					<div class="tsd-signature tsd-kind-icon">element<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Element</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:33</li>
+							<li>Defined in lib/parts.ts:98</li>
 						</ul>
 					</aside>
 				</section>
@@ -212,27 +232,47 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:34</li>
+							<li>Defined in lib/parts.ts:99</li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
 					<a name="parts" class="tsd-anchor"></a>
 					<h3>parts</h3>
-					<div class="tsd-signature tsd-kind-icon">parts<span class="tsd-signature-symbol">:</span> <a href="lit_html.attributepart.html" class="tsd-signature-type">AttributePart</a><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">parts<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">readonly</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:36</li>
+							<li>Defined in lib/parts.ts:101</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<a name="sanitizer" class="tsd-anchor"></a>
+					<h3>sanitizer</h3>
+					<div class="tsd-signature tsd-kind-icon">sanitizer<span class="tsd-signature-symbol">:</span> <a href="../modules/lit_html.html#valuesanitizer" class="tsd-signature-type">ValueSanitizer</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in lib/parts.ts:102</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<a name="string" class="tsd-anchor"></a>
+					<h3>string</h3>
+					<div class="tsd-signature tsd-kind-icon">string<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in lib/parts.ts:100</li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
 					<a name="strings" class="tsd-anchor"></a>
 					<h3>strings</h3>
-					<div class="tsd-signature tsd-kind-icon">strings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">strings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">readonly</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:35</li>
+							<li>Defined in lib/parts.ts:100</li>
 						</ul>
 					</aside>
 				</section>
@@ -249,14 +289,9 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:52</li>
+									<li>Defined in lib/parts.ts:130</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Creates a single part. Override this to create a differnt type of part.</p>
-								</div>
-							</div>
 							<h4 class="tsd-returns-title">Returns <a href="lit_html.attributepart.html" class="tsd-signature-type">AttributePart</a></h4>
 						</li>
 					</ul>
@@ -271,7 +306,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:56</li>
+									<li>Defined in lib/parts.ts:134</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">unknown</span></h4>
@@ -288,7 +323,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:80</li>
+									<li>Defined in lib/parts.ts:180</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -325,6 +360,9 @@
 								<a href="lit_html.attributecommitter.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
+								<a href="lit_html.attributecommitter.html#attributepart" class="tsd-kind-icon">Attribute<wbr>Part</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.attributecommitter.html#dirty" class="tsd-kind-icon">dirty</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
@@ -335,6 +373,12 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.attributecommitter.html#parts" class="tsd-kind-icon">parts</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
+								<a href="lit_html.attributecommitter.html#sanitizer" class="tsd-kind-icon">sanitizer</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
+								<a href="lit_html.attributecommitter.html#string" class="tsd-kind-icon">string</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.attributecommitter.html#strings" class="tsd-kind-icon">strings</a>

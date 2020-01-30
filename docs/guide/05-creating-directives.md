@@ -2,11 +2,8 @@
 layout: post
 title: Creating directives
 slug: creating-directives
+permalink: /guide/{{slug}}/index.html
 ---
-
-{::options toc_levels="1..2" /}
-* ToC
-{:toc}
 
 Directives are functions that can customize how lit-html renders values. Template authors can use directives in their templates like other functions:
 

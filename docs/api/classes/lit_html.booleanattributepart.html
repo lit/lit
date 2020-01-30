@@ -99,16 +99,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Implements a boolean attribute, roughly as defined in the HTML
-						specification.</p>
-					</div>
-					<p>If the value is truthy, then the attribute is present with a value of
-					&#39;&#39;. If the value is falsey, the attribute is removed.</p>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -123,6 +113,10 @@
 					<li><a href="../interfaces/lit_html.part.html" class="tsd-signature-type">Part</a></li>
 				</ul>
 			</section>
+			<section class="tsd-panel tsd-kind-class tsd-parent-kind-external-module tsd-is-external">
+				<h3 class="tsd-before-signature">Indexable</h3>
+				<div class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -136,9 +130,9 @@
 						<section class="tsd-index-section tsd-is-external">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.booleanattributepart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.booleanattributepart.html#element" class="tsd-kind-icon">element</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.booleanattributepart.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.booleanattributepart.html#string" class="tsd-kind-icon">string</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.booleanattributepart.html#strings" class="tsd-kind-icon">strings</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.booleanattributepart.html#value" class="tsd-kind-icon">value</a></li>
 							</ul>
@@ -159,13 +153,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Boolean<wbr>Attribute<wbr>Part<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.booleanattributepart.html" class="tsd-signature-type">BooleanAttributePart</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Boolean<wbr>Attribute<wbr>Part<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">readonly</span>, string<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, __namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.booleanattributepart.html" class="tsd-signature-type">BooleanAttributePart</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:333</li>
+									<li>Defined in lib/parts.ts:485</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -177,7 +171,13 @@
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
-									<h5>strings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>strings: <span class="tsd-signature-type">readonly</span></h5>
+								</li>
+								<li>
+									<h5>string: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-type">[]</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="lit_html.booleanattributepart.html" class="tsd-signature-type">BooleanAttributePart</a></h4>
@@ -188,22 +188,12 @@
 			<section class="tsd-panel-group tsd-member-group tsd-is-external">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
-					<a name="_pendingvalue" class="tsd-anchor"></a>
-					<h3>_pending<wbr>Value</h3>
-					<div class="tsd-signature tsd-kind-icon">_pending<wbr>Value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol"> =&nbsp;undefined</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in lib/parts.ts:333</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
 					<a name="element" class="tsd-anchor"></a>
 					<h3>element</h3>
 					<div class="tsd-signature tsd-kind-icon">element<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Element</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:329</li>
+							<li>Defined in lib/parts.ts:481</li>
 						</ul>
 					</aside>
 				</section>
@@ -213,17 +203,27 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:330</li>
+							<li>Defined in lib/parts.ts:482</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<a name="string" class="tsd-anchor"></a>
+					<h3>string</h3>
+					<div class="tsd-signature tsd-kind-icon">string<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in lib/parts.ts:483</li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
 					<a name="strings" class="tsd-anchor"></a>
 					<h3>strings</h3>
-					<div class="tsd-signature tsd-kind-icon">strings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">strings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">readonly</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:331</li>
+							<li>Defined in lib/parts.ts:483</li>
 						</ul>
 					</aside>
 				</section>
@@ -234,7 +234,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/lit_html.part.html">Part</a>.<a href="../interfaces/lit_html.part.html#value">value</a></p>
 						<ul>
-							<li>Defined in lib/parts.ts:332</li>
+							<li>Defined in lib/parts.ts:484</li>
 						</ul>
 					</aside>
 				</section>
@@ -252,7 +252,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/lit_html.part.html">Part</a>.<a href="../interfaces/lit_html.part.html#commit">commit</a></p>
 								<ul>
-									<li>Defined in lib/parts.ts:349</li>
+									<li>Defined in lib/parts.ts:501</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -270,7 +270,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/lit_html.part.html">Part</a>.<a href="../interfaces/lit_html.part.html#setvalue">setValue</a></p>
 								<ul>
-									<li>Defined in lib/parts.ts:345</li>
+									<li>Defined in lib/parts.ts:497</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -313,13 +313,13 @@
 								<a href="lit_html.booleanattributepart.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
-								<a href="lit_html.booleanattributepart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.booleanattributepart.html#element" class="tsd-kind-icon">element</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.booleanattributepart.html#name" class="tsd-kind-icon">name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
+								<a href="lit_html.booleanattributepart.html#string" class="tsd-kind-icon">string</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.booleanattributepart.html#strings" class="tsd-kind-icon">strings</a>

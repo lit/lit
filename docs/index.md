@@ -18,9 +18,14 @@ Next-generation HTML Templates in JavaScript
 
 <div class="responsive-row">
 
-<h3 class="description" style="flex: 1; margin-bottom: 0; max-width: 600px;">lit-html lets you write HTML templates in JavaScript, then efficiently render and _re-render_ those templates together with data to create and update DOM:</h3>
+<h3 class="description" style="flex: 1; margin-bottom: 0; max-width: 600px;">
+
+lit-html lets you write HTML templates in JavaScript, then efficiently render and _re-render_ those templates together with data to create and update DOM:
+
+</h3>
 
 <div style="flex: 2">
+
 ```js
 import {html, render} from 'lit-html';
 

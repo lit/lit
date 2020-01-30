@@ -99,16 +99,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>A TemplateResult for SVG fragments.</p>
-					</div>
-					<p>This class wraps HTMl in an <code>&lt;svg&gt;</code> tag in order to parse its contents in the
-						SVG namespace, then modifies the template to remove the <code>&lt;svg&gt;</code> tag so that
-					clones only container the original fragment.</p>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -121,6 +111,10 @@
 						</ul>
 					</li>
 				</ul>
+			</section>
+			<section class="tsd-panel tsd-kind-class tsd-parent-kind-external-module tsd-is-external">
+				<h3 class="tsd-before-signature">Indexable</h3>
+				<div class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
@@ -138,6 +132,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="lit_html.svgtemplateresult.html#processor" class="tsd-kind-icon">processor</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="lit_html.svgtemplateresult.html#strings" class="tsd-kind-icon">strings</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="lit_html.svgtemplateresult.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="lit_html.svgtemplateresult.html#unknown" class="tsd-kind-icon">unknown</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="lit_html.svgtemplateresult.html#values" class="tsd-kind-icon">values</a></li>
 							</ul>
 						</section>
@@ -157,14 +152,14 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">new SVGTemplate<wbr>Result<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">[]</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></li>
+						<li class="tsd-signature tsd-kind-icon">new SVGTemplate<wbr>Result<span class="tsd-signature-symbol">(</span>strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TemplateStringsArray</span>, values<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">readonly</span>, unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, __namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">[]</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, processor<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.svgtemplateresult.html" class="tsd-signature-type">SVGTemplateResult</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in lib/template-result.ts:18</li>
+									<li>Defined in lib/template-result.ts:42</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -173,7 +168,13 @@
 									<h5>strings: <span class="tsd-signature-type">TemplateStringsArray</span></h5>
 								</li>
 								<li>
-									<h5>values: <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>values: <span class="tsd-signature-type">readonly</span></h5>
+								</li>
+								<li>
+									<h5>unknown: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-type">[]</span></h5>
 								</li>
 								<li>
 									<h5>type: <span class="tsd-signature-type">string</span></h5>
@@ -196,7 +197,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#processor">processor</a></p>
 						<ul>
-							<li>Defined in lib/template-result.ts:18</li>
+							<li>Defined in lib/template-result.ts:42</li>
 						</ul>
 					</aside>
 				</section>
@@ -207,7 +208,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#strings">strings</a></p>
 						<ul>
-							<li>Defined in lib/template-result.ts:15</li>
+							<li>Defined in lib/template-result.ts:39</li>
 						</ul>
 					</aside>
 				</section>
@@ -218,18 +219,29 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#type">type</a></p>
 						<ul>
-							<li>Defined in lib/template-result.ts:17</li>
+							<li>Defined in lib/template-result.ts:41</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
+					<a name="unknown" class="tsd-anchor"></a>
+					<h3>unknown</h3>
+					<div class="tsd-signature tsd-kind-icon">unknown<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#unknown">unknown</a></p>
+						<ul>
+							<li>Defined in lib/template-result.ts:40</li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 					<a name="values" class="tsd-anchor"></a>
 					<h3>values</h3>
-					<div class="tsd-signature tsd-kind-icon">values<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">values<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">readonly</span></div>
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#values">values</a></p>
 						<ul>
-							<li>Defined in lib/template-result.ts:16</li>
+							<li>Defined in lib/template-result.ts:40</li>
 						</ul>
 					</aside>
 				</section>
@@ -247,7 +259,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#gethtml">getHTML</a></p>
 								<ul>
-									<li>Defined in lib/template-result.ts:77</li>
+									<li>Defined in lib/template-result.ts:129</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -265,7 +277,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides <a href="lit_html.templateresult.html">TemplateResult</a>.<a href="lit_html.templateresult.html#gettemplateelement">getTemplateElement</a></p>
 								<ul>
-									<li>Defined in lib/template-result.ts:81</li>
+									<li>Defined in lib/template-result.ts:133</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">HTMLTemplateElement</span></h4>
@@ -309,6 +321,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 								<a href="lit_html.svgtemplateresult.html#type" class="tsd-kind-icon">type</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
+								<a href="lit_html.svgtemplateresult.html#unknown" class="tsd-kind-icon">unknown</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 								<a href="lit_html.svgtemplateresult.html#values" class="tsd-kind-icon">values</a>

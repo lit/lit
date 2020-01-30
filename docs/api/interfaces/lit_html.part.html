@@ -99,14 +99,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>The Part interface represents a dynamic part of a template instance rendered
-						by lit-html.</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -173,17 +165,6 @@
 									<li>Defined in lib/part.ts:29</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Commits the current part value, causing it to actually be written to the
-									DOM.</p>
-								</div>
-								<p>Directives are run at the start of <code>commit</code>, so that if they call
-									<code>part.setValue(...)</code> synchronously that value will be used in the current
-									commit, and there&#39;s no need to call <code>part.commit()</code> within the directive.
-									If directives set a part value asynchronously, then they must call
-								<code>part.commit()</code> manually.</p>
-							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
@@ -201,18 +182,10 @@
 									<li>Defined in lib/part.ts:17</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Sets the current part value, but does not write it to the DOM.</p>
-								</div>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>value: <span class="tsd-signature-type">unknown</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The value that will be committed.</p>
-									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>

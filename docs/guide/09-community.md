@@ -2,12 +2,8 @@
 layout: post
 title: Community
 slug: community
+permalink: /guide/{{slug}}/index.html
 ---
-
-{::options toc_levels="1..3" /}
-* ToC
-{:toc}
-
 
 There are many great resources and locations to learn about lit-html and LitElement,
 share what you've built, and more. All community participation is subject to the Polymer Project's

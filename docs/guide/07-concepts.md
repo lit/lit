@@ -2,11 +2,8 @@
 layout: post
 title: Concepts
 slug: concepts
+permalink: /guide/{{slug}}/index.html
 ---
-
-{::options toc_levels="1..2" /}
-* ToC
-{:toc}
 
 lit-html utilizes some unique properties of JavaScript template literals and HTML `<template>` elements to function and achieve fast performance. So it's helpful to understand them first.
 

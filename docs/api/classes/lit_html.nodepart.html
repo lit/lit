@@ -99,17 +99,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>A Part that controls a location within a Node tree. Like a Range, NodePart
-							has start and end locations and can set and update the Nodes between those
-						locations.</p>
-					</div>
-					<p>NodeParts support several value types: primitives, Nodes, TemplateResults,
-					as well as arrays and iterables of those types.</p>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -137,10 +126,10 @@
 						<section class="tsd-index-section tsd-is-external">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.nodepart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.nodepart.html#endnode" class="tsd-kind-icon">end<wbr>Node</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.nodepart.html#options" class="tsd-kind-icon">options</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.nodepart.html#startnode" class="tsd-kind-icon">start<wbr>Node</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.nodepart.html#templatepart" class="tsd-kind-icon">template<wbr>Part</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.nodepart.html#value" class="tsd-kind-icon">value</a></li>
 							</ul>
 						</section>
@@ -165,19 +154,22 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Node<wbr>Part<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.nodepart.html" class="tsd-signature-type">NodePart</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Node<wbr>Part<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a>, templatePart<span class="tsd-signature-symbol">?: </span><a href="../interfaces/lit_html.nodetemplatepart.html" class="tsd-signature-type">NodeTemplatePart</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.nodepart.html" class="tsd-signature-type">NodePart</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:137</li>
+									<li>Defined in lib/parts.ts:253</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>options: <a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> templatePart: <a href="../interfaces/lit_html.nodetemplatepart.html" class="tsd-signature-type">NodeTemplatePart</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="lit_html.nodepart.html" class="tsd-signature-type">NodePart</a></h4>
@@ -188,22 +180,12 @@
 			<section class="tsd-panel-group tsd-member-group tsd-is-external">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
-					<a name="_pendingvalue" class="tsd-anchor"></a>
-					<h3>_pending<wbr>Value</h3>
-					<div class="tsd-signature tsd-kind-icon">_pending<wbr>Value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol"> =&nbsp;undefined</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in lib/parts.ts:137</li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
 					<a name="endnode" class="tsd-anchor"></a>
 					<h3>end<wbr>Node</h3>
 					<div class="tsd-signature tsd-kind-icon">end<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Node</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:135</li>
+							<li>Defined in lib/parts.ts:241</li>
 						</ul>
 					</aside>
 				</section>
@@ -213,7 +195,7 @@
 					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:133</li>
+							<li>Defined in lib/parts.ts:239</li>
 						</ul>
 					</aside>
 				</section>
@@ -223,7 +205,17 @@
 					<div class="tsd-signature tsd-kind-icon">start<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Node</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in lib/parts.ts:134</li>
+							<li>Defined in lib/parts.ts:240</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<a name="templatepart" class="tsd-anchor"></a>
+					<h3>template<wbr>Part</h3>
+					<div class="tsd-signature tsd-kind-icon">template<wbr>Part<span class="tsd-signature-symbol">:</span> <a href="../interfaces/lit_html.nodetemplatepart.html" class="tsd-signature-type">NodeTemplatePart</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in lib/parts.ts:243</li>
 						</ul>
 					</aside>
 				</section>
@@ -234,7 +226,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/lit_html.part.html">Part</a>.<a href="../interfaces/lit_html.part.html#value">value</a></p>
 						<ul>
-							<li>Defined in lib/parts.ts:136</li>
+							<li>Defined in lib/parts.ts:242</li>
 						</ul>
 					</aside>
 				</section>
@@ -251,15 +243,9 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:148</li>
+									<li>Defined in lib/parts.ts:266</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Appends this part into a container.</p>
-								</div>
-								<p>This part must be empty, as its contents are not automatically moved.</p>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -280,15 +266,9 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:170</li>
+									<li>Defined in lib/parts.ts:288</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Appends this part into a parent part.</p>
-								</div>
-								<p>This part must be empty, as its contents are not automatically moved.</p>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -309,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:315</li>
+									<li>Defined in lib/parts.ts:467</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -333,7 +313,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/lit_html.part.html">Part</a>.<a href="../interfaces/lit_html.part.html#commit">commit</a></p>
 								<ul>
-									<li>Defined in lib/parts.ts:190</li>
+									<li>Defined in lib/parts.ts:308</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -350,17 +330,9 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:160</li>
+									<li>Defined in lib/parts.ts:278</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Inserts this part after the <code>ref</code> node (between <code>ref</code> and <code>ref</code>&#39;s next
-										sibling). Both <code>ref</code> and its next sibling must be static, unchanging nodes
-									such as those that appear in a literal section of a template.</p>
-								</div>
-								<p>This part must be empty, as its contents are not automatically moved.</p>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -381,15 +353,9 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in lib/parts.ts:180</li>
+									<li>Defined in lib/parts.ts:298</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Inserts this part after the <code>ref</code> part.</p>
-								</div>
-								<p>This part must be empty, as its contents are not automatically moved.</p>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -411,7 +377,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/lit_html.part.html">Part</a>.<a href="../interfaces/lit_html.part.html#setvalue">setValue</a></p>
 								<ul>
-									<li>Defined in lib/parts.ts:186</li>
+									<li>Defined in lib/parts.ts:304</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -454,9 +420,6 @@
 								<a href="lit_html.nodepart.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
-								<a href="lit_html.nodepart.html#_pendingvalue" class="tsd-kind-icon">_pending<wbr>Value</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.nodepart.html#endnode" class="tsd-kind-icon">end<wbr>Node</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
@@ -464,6 +427,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.nodepart.html#startnode" class="tsd-kind-icon">start<wbr>Node</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
+								<a href="lit_html.nodepart.html#templatepart" class="tsd-kind-icon">template<wbr>Part</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
 								<a href="lit_html.nodepart.html#value" class="tsd-kind-icon">value</a>

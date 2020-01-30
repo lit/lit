@@ -99,13 +99,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Creates Parts when a template is instantiated.</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -120,18 +113,40 @@
 					<li><a href="../interfaces/lit_html.templateprocessor.html" class="tsd-signature-type">TemplateProcessor</a></li>
 				</ul>
 			</section>
+			<section class="tsd-panel tsd-kind-class tsd-parent-kind-external-module tsd-is-external">
+				<h3 class="tsd-before-signature">Indexable</h3>
+				<div class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">[</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section tsd-is-external">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-external"><a href="lit_html.defaulttemplateprocessor.html#part" class="tsd-kind-icon">Part</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-external">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="lit_html.defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="lit_html.defaulttemplateprocessor.html#handletextexpression" class="tsd-kind-icon">handle<wbr>Text<wbr>Expression</a></li>
 							</ul>
 						</section>
 					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-external">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external">
+					<a name="part" class="tsd-anchor"></a>
+					<h3>Part</h3>
+					<div class="tsd-signature tsd-kind-icon">Part<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in lib/default-template-processor.ts:27</li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group tsd-is-external">
@@ -140,77 +155,34 @@
 					<a name="handleattributeexpressions" class="tsd-anchor"></a>
 					<h3>handle<wbr>Attribute<wbr>Expressions</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions<span class="tsd-signature-symbol">(</span>element<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Element</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, strings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a>, templatePart<span class="tsd-signature-symbol">?: </span><a href="../interfaces/lit_html.attributetemplatepart.html" class="tsd-signature-type">AttributeTemplatePart</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">readonly</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/lit_html.templateprocessor.html">TemplateProcessor</a>.<a href="../interfaces/lit_html.templateprocessor.html#handleattributeexpressions">handleAttributeExpressions</a></p>
 								<ul>
-									<li>Defined in lib/default-template-processor.ts:24</li>
+									<li>Defined in lib/default-template-processor.ts:25</li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Create parts for an attribute-position binding, given the event, attribute
-									name, and string literals.</p>
-								</div>
-							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>element: <span class="tsd-signature-type">Element</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The element containing the binding</p>
-									</div>
 								</li>
 								<li>
 									<h5>name: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The attribute name</p>
-									</div>
 								</li>
 								<li>
 									<h5>strings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>The string literals. There are always at least two strings,
-										event for fully-controlled bindings with a single expression.</p>
-									</div>
 								</li>
 								<li>
 									<h5>options: <a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
 								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/lit_html.part.html" class="tsd-signature-type">Part</a><span class="tsd-signature-symbol">[]</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external">
-					<a name="handletextexpression" class="tsd-anchor"></a>
-					<h3>handle<wbr>Text<wbr>Expression</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">handle<wbr>Text<wbr>Expression<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="lit_html.nodepart.html" class="tsd-signature-type">NodePart</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/lit_html.templateprocessor.html">TemplateProcessor</a>.<a href="../interfaces/lit_html.templateprocessor.html#handletextexpression">handleTextExpression</a></p>
-								<ul>
-									<li>Defined in lib/default-template-processor.ts:45</li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Create parts for a text-position binding.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
 								<li>
-									<h5>options: <a href="../interfaces/lit_html.renderoptions.html" class="tsd-signature-type">RenderOptions</a></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> templatePart: <a href="../interfaces/lit_html.attributetemplatepart.html" class="tsd-signature-type">AttributeTemplatePart</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="lit_html.nodepart.html" class="tsd-signature-type">NodePart</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">readonly</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -240,11 +212,11 @@
 					<li class="current tsd-kind-class tsd-parent-kind-external-module tsd-is-external">
 						<a href="lit_html.defaulttemplateprocessor.html" class="tsd-kind-icon">Default<wbr>Template<wbr>Processor</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-external">
-								<a href="lit_html.defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-external">
+								<a href="lit_html.defaulttemplateprocessor.html#part" class="tsd-kind-icon">Part</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-external">
-								<a href="lit_html.defaulttemplateprocessor.html#handletextexpression" class="tsd-kind-icon">handle<wbr>Text<wbr>Expression</a>
+								<a href="lit_html.defaulttemplateprocessor.html#handleattributeexpressions" class="tsd-kind-icon">handle<wbr>Attribute<wbr>Expressions</a>
 							</li>
 						</ul>
 					</li>

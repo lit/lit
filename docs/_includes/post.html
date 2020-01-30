@@ -7,21 +7,19 @@ layout: default
   <nav class="side-nav">
     <button id="toggleNavButton">Menu</button>
     <ul>
-      <li class="{% if page.url == '/guide' %}active{% endif %}">
-        <a href="{{site.baseurl}}/guide">Introduction</a>
-      </li>
-      {% for guide in site.guide %}
+      {% for guide in collections.guide %}
         <li class="{% if page.url == guide.url %}active{% endif %}">
-          <a href="{{site.baseurl}}{{guide.url}}">{{guide.title}}</a>
+          <a href="{{site.baseurl}}{{guide.url}}">{{guide.data.title}}</a>
         </li>
       {% endfor %}
     </ul>
   </nav>
 
   <article>
-    <h1>
-      {{ page.title }}
-    </h1>
+    <h1>{{ title }}</h1>
+
+    {{ content | toc }}
+
     {{ content }}
   </article>
 </main>

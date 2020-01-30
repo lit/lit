@@ -2,11 +2,8 @@
 layout: post
 title: Writing templates
 slug: writing-templates
+permalink: /guide/{{slug}}/index.html
 ---
-
-{::options toc_levels="1..3" /}
-* ToC
-{:toc}
 
 lit-html is a templating library that provides fast, efficient rendering and updating of HTML. It lets you express web UI as a function of data. 
 
