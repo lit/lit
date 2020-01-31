@@ -2,6 +2,7 @@ const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const markdownIt = require('markdown-it');
 const pluginTOC = require('eleventy-plugin-nesting-toc');
 const markdownItAnchor = require('markdown-it-anchor');
+const markdownItAttrs = require('markdown-it-attrs');
 const slugifyLib = require('slugify');
 
 const loadLanguages = require('prismjs/components/');
@@ -24,6 +25,7 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy('main.py');
 
   const md = markdownIt({html: true, breaks: true, linkify: true})
+                 .use(markdownItAttrs)
                  .use(markdownItAnchor, {slugify, permalink: false});
   eleventyConfig.setLibrary('md', md);
 
