@@ -13,7 +13,7 @@ loadLanguages(['js-templates']);
 const slugify = (s) => slugifyLib(s, {lower: true});
 
 module.exports = function(eleventyConfig) {
-  eleventyConfig.addPlugin(pluginTOC, {tags: ['h2']});
+  eleventyConfig.addPlugin(pluginTOC, {tags: ['h2', 'h3']});
   eleventyConfig.addPlugin(syntaxHighlight);
   eleventyConfig.addPassthroughCopy('css/*');
   eleventyConfig.addPassthroughCopy('images/**/*');
