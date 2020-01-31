@@ -1,8 +1,6 @@
 ---
-layout: post
 title: Styling templates
 slug: styling-templates
-permalink: /guide/{{slug}}/index.html
 ---
 
 lit-html focuses on one thing: rendering HTML. How you apply styles to the HTML lit-html creates depends on how you're using it—for example, if you're using lit-html inside a component system like LitElement, you can follow the patterns used by that component system.
@@ -47,7 +45,7 @@ html`
       background-color: ${themeColor};
     }
   </style>
-  ... 
+`;
 ```
 
 Alternatives to using bindings in a style sheet:

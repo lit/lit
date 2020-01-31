@@ -1,8 +1,6 @@
 ---
-layout: post
 title: Template syntax reference
 slug: template-reference
-permalink: /guide/{{slug}}/index.html
 ---
 
 lit-html templates are written using JavaScript template literals tagged with the `html` tag. The contents of the literal are mostly plain, declarative, HTML:

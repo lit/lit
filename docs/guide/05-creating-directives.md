@@ -1,8 +1,6 @@
 ---
-layout: post
 title: Creating directives
 slug: creating-directives
-permalink: /guide/{{slug}}/index.html
 ---
 
 Directives are functions that can customize how lit-html renders values. Template authors can use directives in their templates like other functions:

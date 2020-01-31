@@ -1,8 +1,6 @@
 ---
-layout: post
 title: Getting Started
 slug: getting-started
-permalink: /guide/{{slug}}/index.html
 ---
 
 ## Installation

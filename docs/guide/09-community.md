@@ -1,8 +1,6 @@
 ---
-layout: post
 title: Community
 slug: community
-permalink: /guide/{{slug}}/index.html
 ---
 
 There are many great resources and locations to learn about lit-html and LitElement,
