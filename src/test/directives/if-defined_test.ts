@@ -130,10 +130,10 @@ suite('ifDefined', () => {
 
     go('a');
     const el = container.firstElementChild!;
-    const origRemoveAttribute = el.removeAttribute.bind(el);
-    el.removeAttribute = (name: string) => {
+    const origRemoveAttributeNS = el.removeAttributeNS.bind(el);
+    el.removeAttributeNS = (namespace: string|null, name: string) => {
       removeCount++;
-      origRemoveAttribute(name);
+      origRemoveAttributeNS(namespace, name);
     };
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div foo="1a"></div>');

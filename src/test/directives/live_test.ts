@@ -211,7 +211,7 @@ suite('live', () => {
       assert.equal(
           el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
 
-      el.removeAttribute('hidden');
+      el.removeAttributeNS('http://www.w3.org/1999/xlink', 'href');
       assert.equal(
           el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), null);
 
