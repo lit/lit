@@ -4,7 +4,7 @@ dist: trusty
 node_js: '10'
 addons:
   firefox: "71.0"
-  chrome: stable
+  chrome: "79"
 cache:
   directories:
   - node_modules
