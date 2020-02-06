@@ -180,8 +180,9 @@ suite('ifDefined', () => {
         el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'a');
 
     render(template(undefined), container);
-    assert.equal(
-        el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), null);
+    // EdgeHTML returns '' when xlink:href is removed?
+    assert.include(
+        [null, ''], el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'));
 
     render(template('b'), container);
     assert.equal(
