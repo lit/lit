@@ -199,25 +199,27 @@ suite('live', () => {
     });
 
     test('updates an externally set namespaced boolean attribute', () => {
-      const go = (x: boolean) =>
+      const go = (x: string) =>
           render(svg`<use ?xlink:href="${live(x)}" />}`, container);
 
-      go(true);
+      go('a');
       const el = container.firstElementChild as SVGUseElement;
       assert.equal(
-          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'a');
 
-      go(true);
+      go('b');
       assert.equal(
-          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'b');
 
       el.removeAttributeNS('http://www.w3.org/1999/xlink', 'href');
-      assert.equal(
-          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), null);
+      // EdgeHTML returns '' when xlink:href is removed?
+      assert.include(
+          [null, ''],
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'));
 
-      go(true);
+      go('b');
       assert.equal(
-          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), '');
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'b');
     });
   });
 });
