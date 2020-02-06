@@ -175,16 +175,16 @@ suite('ifDefined', () => {
     const template = (href: string|undefined) =>
         svg`<use xlink:href="${ifDefined(href)}"></use>`;
     render(template('a'), container);
+    const el = container.firstElementChild!;
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<use xlink:href="a"></use>');
+        el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'a');
 
     render(template(undefined), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<use></use>');
+    assert.equal(
+        el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), null);
 
     render(template('b'), container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<use xlink:href="b"></use>');
+        el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'b');
   });
 });
