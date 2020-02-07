@@ -17,7 +17,7 @@
 
 import {ClassInfo, classMap} from '../../directives/class-map.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {html, svg} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -81,6 +81,16 @@ suite('classMap', () => {
     assert.isFalse(el.classList.contains('foo'));
   });
 
+  test('can override static classes', () => {
+    renderClassMapStatic({aa: false, bb: true});
+    const el = container.firstElementChild!;
+    assert.isFalse(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    renderClassMapStatic({});
+    assert.isFalse(el.classList.contains('aa'));
+    assert.isFalse(el.classList.contains('bb'));
+  });
+
   test('changes classes when used with the same object', () => {
     const classInfo = {foo: true};
     renderClassMapStatic(classInfo);
@@ -93,6 +103,17 @@ suite('classMap', () => {
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isFalse(el.classList.contains('foo'));
+  });
+
+  test('adds classes on SVG elements', () => {
+    const cssInfo = {foo: 0, bar: true, zonk: true};
+    render(svg`<circle class="${classMap(cssInfo)}"></circle>`, container);
+    const el = container.firstElementChild!;
+    const classes = el.getAttribute('class')!.split(' ');
+    // Sigh, IE.
+    assert.isTrue(classes.indexOf('foo') === -1);
+    assert.isTrue(classes.indexOf('bar') > -1);
+    assert.isTrue(classes.indexOf('zonk') > -1);
   });
 
   test('throws when used on non-class attribute', () => {
