@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Part, AttributePart, BooleanAttributePart, NodePart, EventPart} from '../lit-html.js';
+import {AttributePart, BooleanAttributePart, directive, EventPart, NodePart, Part} from '../lit-html.js';
 
 /**
  * For AttributeParts, NodeParts, sets the reference of parts on partRefs
@@ -21,7 +21,8 @@ import {directive, Part, AttributePart, BooleanAttributePart, NodePart, EventPar
  *
  * ```js
  * let tpl = html`
- * <div id="btn" class=${partRef('cls1', 'class')}>${partRef('contents', 'body')}</div>
+ * <div id="btn" class=${partRef('cls1', 'class')}>${partRef('contents',
+ 'body')}</div>
  * `
  * render(tpl, document.body);
 
@@ -34,24 +35,28 @@ import {directive, Part, AttributePart, BooleanAttributePart, NodePart, EventPar
  * ```
  *
  */
-export const partRef = directive((value: unknown, key: string, element?: Partial<object>) => (part: Part) =>{
-  part.setValue(value);
-  if(!element){
-    if((part instanceof BooleanAttributePart || part instanceof EventPart) && part.element) {
-      element = part.element
-    }else if(part instanceof AttributePart && part.committer){
-      element = part.committer.element
-    }else if(part instanceof NodePart && part.startNode){
-      element = part.startNode.parentNode as Element;
-    }
-  }
-  if(!element)
-    return
-  let parts = partRefs.get(element);
-  if(!parts){
-    partRefs.set(element, parts={});
-  }
-  parts[key] = part;
-});
+export const partRef = directive(
+    (value: unknown, key: string, element?: Partial<object>) =>
+        (part: Part) => {
+          part.setValue(value);
+          if (!element) {
+            if ((part instanceof BooleanAttributePart ||
+                 part instanceof EventPart) &&
+                part.element) {
+              element = part.element
+            } else if (part instanceof AttributePart && part.committer) {
+              element = part.committer.element
+            } else if (part instanceof NodePart && part.startNode) {
+              element = part.startNode.parentNode as Element;
+            }
+          }
+          if (!element)
+            return;
+          let parts = partRefs.get(element);
+          if (!parts) {
+            partRefs.set(element, parts = {});
+          }
+          parts[key] = part;
+        });
 
-export const partRefs =  new WeakMap<Partial<object>, {[k: string]: Part}>(); 
+export const partRefs = new WeakMap<Partial<object>, {[k: string]: Part}>();

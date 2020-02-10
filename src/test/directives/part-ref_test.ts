@@ -27,32 +27,40 @@ suite('partRef', () => {
   });
 
   test('normal behaviour', () => {
-    render(html`<div class="btn" foo=${partRef('old value', 'fooP')}></div>`, container);
+    render(
+        html`<div class="btn" foo=${partRef('old value', 'fooP')}></div>`,
+        container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div class="btn" foo="old value"></div>');
+        stripExpressionMarkers(container.innerHTML),
+        '<div class="btn" foo="old value"></div>');
   });
 
   test('updating part value', () => {
-    render(html`<div class="btn" foo=${partRef('old value', 'fooP')}></div>`, container);
-    const btnEl: HTMLDivElement | undefined = container.children[0] as HTMLDivElement;
-    if(btnEl && partRefs.has(btnEl)){
-      const parts: {[k: string]: Part} | undefined = partRefs.get(btnEl);
-      if(parts){
+    render(
+        html`<div class="btn" foo=${partRef('old value', 'fooP')}></div>`,
+        container);
+    const btnEl: HTMLDivElement|undefined =
+        container.children[0] as HTMLDivElement;
+    if (btnEl && partRefs.has(btnEl)) {
+      const parts: {[k: string]: Part}|undefined = partRefs.get(btnEl);
+      if (parts) {
         const part: Part = parts.fooP;
-        if(part){
+        if (part) {
           part.setValue('value-changed');
           part.commit();
         }
       }
     }
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div class="btn" foo="value-changed"></div>');
+        stripExpressionMarkers(container.innerHTML),
+        '<div class="btn" foo="value-changed"></div>');
   });
 });
 
 /*
 * let tpl = html`
-* <div id="btn" class=${partRef('cls1', 'class')}>${partRef('contents', 'body')}</div>
+* <div id="btn" class=${partRef('cls1', 'class')}>${partRef('contents',
+'body')}</div>
 * `
 * render(tpl, document.body);
 
