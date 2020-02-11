@@ -1,4 +1,4 @@
 {
   "layout": "post",
-  "permalink": "/guide/{{slug}}/index.html"
+  "permalink": "/guide/{{slug}}.html"
 }
