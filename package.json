@@ -38,7 +38,7 @@
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.0",
-    "@types/mocha": "^5.2.0",
+    "@types/mocha": "^7.0.1",
     "@types/trusted-types": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^2.10.0",
     "@typescript-eslint/parser": "^2.10.0",
@@ -51,7 +51,7 @@
     "lint-staged": "^9.5.0",
     "lit-html-benchmarks": "^0.2.1",
     "markdown-it-attrs": "^3.0.1",
-    "mocha": "^5.2.0",
+    "mocha": "^7.0.1",
     "rollup": "^1.19.0",
     "rollup-plugin-filesize": "^6.2.0",
     "rollup-plugin-terser": "^5.1.0",
