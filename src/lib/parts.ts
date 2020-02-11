@@ -113,6 +113,7 @@ export class AttributeCommitter {
   readonly strings: readonly string[];
   readonly parts: readonly AttributePart[];
   readonly sanitizer: ValueSanitizer;
+  readonly namespace: string|null;
   dirty = true;
 
   constructor(
@@ -121,8 +122,10 @@ export class AttributeCommitter {
       templatePart?: AttributeTemplatePart,
       kind: 'property'|'attribute' = 'attribute') {
     this.element = element;
-    this.name = name;
     this.strings = strings;
+    const fqn = getAttrName(name);
+    this.namespace = fqn[0];
+    this.name = fqn[1];
     this.parts = [];
     let sanitizer = templatePart && templatePart.sanitizer;
     if (sanitizer === undefined) {
@@ -199,7 +202,7 @@ export class AttributeCommitter {
         // Native Symbols throw if they're coerced to string.
         value = String(value);
       }
-      this.element.setAttribute(this.name, value as string);
+      this.element.setAttributeNS(this.namespace, this.name, value as string);
     }
   }
 }
@@ -494,6 +497,7 @@ export class BooleanAttributePart implements Part {
   readonly element: Element;
   readonly name: string;
   readonly strings: readonly string[];
+  readonly namespace: string|null;
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
 
@@ -503,8 +507,10 @@ export class BooleanAttributePart implements Part {
           'Boolean attributes can only contain a single expression');
     }
     this.element = element;
-    this.name = name;
     this.strings = strings;
+    const fqn = getAttrName(name);
+    this.namespace = fqn[0];
+    this.name = fqn[1];
   }
 
   setValue(value: unknown): void {
@@ -523,14 +529,29 @@ export class BooleanAttributePart implements Part {
     const value = !!this.__pendingValue;
     if (this.value !== value) {
       if (value) {
-        this.element.setAttribute(this.name, '');
+        this.element.setAttributeNS(this.namespace, this.name, '');
       } else {
-        this.element.removeAttribute(this.name);
+        this.element.removeAttributeNS(this.namespace, this.name);
       }
       this.value = value;
     }
     this.__pendingValue = noChange;
   }
+}
+
+const namespaces: {[name: string]: string|undefined} = {
+  'xlink': 'http://www.w3.org/1999/xlink',
+  'xml': 'http://www.w3.org/XML/1998/namespace',
+} as const ;
+
+const getAttrName = (name: string): [string|null, string] => {
+  const colonIndex = name.indexOf(':');
+  if (colonIndex === -1) {
+    return [null, name];
+  }
+  const shorthand = name.slice(0, colonIndex);
+  const namespace = namespaces[shorthand] || null;
+  return [namespace, name.slice(colonIndex + 1)];
 }
 
 /**

@@ -14,7 +14,7 @@
 
 import {ifDefined} from '../../directives/if-defined.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {html, svg} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -130,10 +130,10 @@ suite('ifDefined', () => {
 
     go('a');
     const el = container.firstElementChild!;
-    const origRemoveAttribute = el.removeAttribute.bind(el);
-    el.removeAttribute = (name: string) => {
+    const origRemoveAttributeNS = el.removeAttributeNS.bind(el);
+    el.removeAttributeNS = (namespace: string|null, name: string) => {
       removeCount++;
-      origRemoveAttribute(name);
+      origRemoveAttributeNS(namespace, name);
     };
     assert.equal(
         stripExpressionMarkers(container.innerHTML), '<div foo="1a"></div>');
@@ -169,5 +169,23 @@ suite('ifDefined', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>a</div>');
     assert.equal(setCount, 0);
+  });
+
+  test('controls a namespaced attribute', () => {
+    const template = (href: string|undefined) =>
+        svg`<use xlink:href="${ifDefined(href)}"></use>`;
+    render(template('a'), container);
+    const el = container.firstElementChild!;
+    assert.equal(
+        el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'a');
+
+    render(template(undefined), container);
+    // EdgeHTML returns '' when xlink:href is removed?
+    assert.include(
+        [null, ''], el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'));
+
+    render(template('b'), container);
+    assert.equal(
+        el.getAttributeNS('http://www.w3.org/1999/xlink', 'href'), 'b');
   });
 });

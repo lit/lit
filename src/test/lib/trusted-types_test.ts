@@ -44,18 +44,18 @@ if (!(isIE || isChrome41)) {
     let setAttributeDescriptor: PropertyDescriptor;
     let policy: TrustedTypePolicy;
 
-    function emulateSetAttribute() {
+    function emulateSetAttributeNS() {
       // enforce trusted values only on properties in this array
       const unsafeAttributeList = ['srcdoc'];
       setAttributeDescriptor =
-          Object.getOwnPropertyDescriptor(Element.prototype, 'setAttribute')!;
-      Object.defineProperty(Element.prototype, 'setAttribute', {
-        value: function(name: string, value: string) {
-          let args = [name, value];
+          Object.getOwnPropertyDescriptor(Element.prototype, 'setAttributeNS')!;
+      Object.defineProperty(Element.prototype, 'setAttributeNS', {
+        value: function(namespace: string, name: string, value: string) {
+          let args: [string, string, unknown] = [namespace, name, value];
           unsafeAttributeList.forEach((attr) => {
             if (attr === name) {
               if (isTrustedValue(value)) {
-                args = [name, unwrapTrustedValue(value)];
+                args = [namespace, name, unwrapTrustedValue(value)];
               } else {
                 throw new Error(value);
               }
@@ -88,7 +88,7 @@ if (!(isIE || isChrome41)) {
       descriptorEntries = [];
 
       Object.defineProperty(
-          Element.prototype, 'setAttribute', setAttributeDescriptor);
+          Element.prototype, 'setAttributeNS', setAttributeDescriptor);
     }
 
     suiteSetup(() => {
@@ -107,7 +107,7 @@ if (!(isIE || isChrome41)) {
       };
 
       emulateTrustedTypesOnProperty(Element.prototype, 'innerHTML');
-      emulateSetAttribute();
+      emulateSetAttributeNS();
 
       // create app root in the DOM
       container = document.createElement('div');
