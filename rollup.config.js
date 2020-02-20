@@ -13,7 +13,7 @@
  */
 
 import filesize from 'rollup-plugin-filesize';
-import {terser} from 'rollup-plugin-terser';
+import { terser } from 'rollup-plugin-terser';
 
 export default {
   input: 'lit-html.js',
@@ -24,6 +24,13 @@ export default {
   plugins: [
     terser({
       warnings: true,
+      ecma: 2017,
+      compress: {
+        unsafe: true,
+      },
+      output: {
+        comments: false,
+      },
       mangle: {
         properties: {
           regex: /^__/,
