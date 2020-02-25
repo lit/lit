@@ -29,149 +29,145 @@ const unsafeScriptString = 'alert(0)';
 const isIE = /Trident\/\d/.test(navigator.userAgent);
 const isChrome41 = /Chrome\/41/.test(navigator.userAgent);
 
+const suiteFn = (isIE || isChrome41) ? suite.skip : suite;
+
 // TODO: replace trusted types emulation with trusted types polyfill,
 //   then re-enable these tests in IE and old Chrome.
-if (!(isIE || isChrome41)) {
-  suite('rendering with trusted types enforced', () => {
-    let container: HTMLDivElement;
-    let descriptorEntries: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      object: any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      prop: any;
-      desc: PropertyDescriptor;
-    }[] = [];
-    let setAttributeDescriptor: PropertyDescriptor;
-    let policy: TrustedTypePolicy;
+suiteFn('rendering with trusted types enforced', () => {
+  let container: HTMLDivElement;
+  // eslint-disable-next-line
+  let descriptorEntries: {object: any, prop: any, desc: PropertyDescriptor}[] =
+      [];
+  let setAttributeDescriptor: PropertyDescriptor;
+  let policy: TrustedTypePolicy;
 
-    function emulateSetAttribute() {
-      // enforce trusted values only on properties in this array
-      const unsafeAttributeList = ['srcdoc'];
-      setAttributeDescriptor =
-          Object.getOwnPropertyDescriptor(Element.prototype, 'setAttribute')!;
-      Object.defineProperty(Element.prototype, 'setAttribute', {
-        value: function(name: string, value: string) {
-          let args = [name, value];
-          unsafeAttributeList.forEach((attr) => {
-            if (attr === name) {
-              if (isTrustedValue(value)) {
-                args = [name, unwrapTrustedValue(value)];
-              } else {
-                throw new Error(value);
-              }
+  function emulateSetAttribute() {
+    // enforce trusted values only on properties in this array
+    const unsafeAttributeList = ['srcdoc'];
+    setAttributeDescriptor =
+        Object.getOwnPropertyDescriptor(Element.prototype, 'setAttribute')!;
+    Object.defineProperty(Element.prototype, 'setAttribute', {
+      value: function(name: string, value: string) {
+        let args = [name, value];
+        unsafeAttributeList.forEach((attr) => {
+          if (attr === name) {
+            if (isTrustedValue(value)) {
+              args = [name, unwrapTrustedValue(value)];
+            } else {
+              throw new Error(value);
             }
-          });
-          setAttributeDescriptor.value.apply(this, args);
-        }
-      });
-    }
-
-    function emulateTrustedTypesOnProperty<Obj, K extends keyof Obj>(
-        object: Obj, prop: K) {
-      const desc = Object.getOwnPropertyDescriptor(object, prop)!;
-      descriptorEntries.push({object, prop, desc});
-      Object.defineProperty(object, prop, {
-        set: function(value: string) {
-          if (isTrustedValue(value)) {
-            desc.set!.apply(this, [unwrapTrustedValue(value)]);
-          } else {
-            throw new Error(value);
           }
-        },
-      });
-    }
-
-    function removeAllTrustedTypesEmulation() {
-      descriptorEntries.forEach(({object, prop, desc}) => {
-        Object.defineProperty(object, prop, desc);
-      });
-      descriptorEntries = [];
-
-      Object.defineProperty(
-          Element.prototype, 'setAttribute', setAttributeDescriptor);
-    }
-
-    suiteSetup(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).trustedTypes = {
-        isHTML: (v: string) => isTrustedValue(v),
-        createPolicy: () => {
-          return {
-            createHTML: createTrustedValue,
-            createScript: createTrustedValue,
-            createScriptURL: createTrustedValue,
-          };
-        },
-        isScript: (v: string) => isTrustedValue(v),
-        isScriptURL: (v: string) => isTrustedValue(v),
-      };
-
-      emulateTrustedTypesOnProperty(Element.prototype, 'innerHTML');
-      emulateSetAttribute();
-
-      // create app root in the DOM
-      container = document.createElement('div');
-      document.body.appendChild(container);
-
-      // TODO: signature will change once we use trusted types polyfill
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      policy = (window as any).trustedTypes.createPolicy()
+        });
+        setAttributeDescriptor.value.apply(this, args);
+      }
     });
+  }
 
-    suiteTeardown(() => {
-      removeAllTrustedTypesEmulation();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (window as any).trustedTypes;
-      document.body.removeChild(container);
+  function emulateTrustedTypesOnProperty<Obj, K extends keyof Obj>(
+      object: Obj, prop: K) {
+    const desc = Object.getOwnPropertyDescriptor(object, prop)!;
+    descriptorEntries.push({object, prop, desc});
+    Object.defineProperty(object, prop, {
+      set: function(value: string) {
+        if (isTrustedValue(value)) {
+          desc.set!.apply(this, [unwrapTrustedValue(value)]);
+        } else {
+          throw new Error(value);
+        }
+      },
     });
+  }
 
-    test('Trusted types emulation works', () => {
-      const el = document.createElement('div');
-      assert.equal(el.innerHTML, '');
-      el.innerHTML = policy.createHTML('<span>val</span>') as unknown as string;
-      assert.equal(el.innerHTML, '<span>val</span>');
+  function removeAllTrustedTypesEmulation() {
+    descriptorEntries.forEach(({object, prop, desc}) => {
+      Object.defineProperty(object, prop, desc);
+    });
+    descriptorEntries = [];
 
+    Object.defineProperty(
+        Element.prototype, 'setAttribute', setAttributeDescriptor);
+  }
+
+  suiteSetup(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).trustedTypes = {
+      isHTML: (v: string) => isTrustedValue(v),
+      createPolicy: () => {
+        return {
+          createHTML: createTrustedValue,
+          createScript: createTrustedValue,
+          createScriptURL: createTrustedValue,
+        };
+      },
+      isScript: (v: string) => isTrustedValue(v),
+      isScriptURL: (v: string) => isTrustedValue(v),
+    };
+
+    emulateTrustedTypesOnProperty(Element.prototype, 'innerHTML');
+    emulateSetAttribute();
+
+    // create app root in the DOM
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    // TODO: signature will change once we use trusted types polyfill
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    policy = (window as any).trustedTypes.createPolicy()
+  });
+
+  suiteTeardown(() => {
+    removeAllTrustedTypesEmulation();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (window as any).trustedTypes;
+    document.body.removeChild(container);
+  });
+
+  test('Trusted types emulation works', () => {
+    const el = document.createElement('div');
+    assert.equal(el.innerHTML, '');
+    el.innerHTML = policy.createHTML('<span>val</span>') as unknown as string;
+    assert.equal(el.innerHTML, '<span>val</span>');
+
+    assert.throws(() => {
+      el.innerHTML = unsafeHTMLString;
+    });
+  });
+
+  suite('throws on untrusted values', () => {
+    test('unsafe html', () => {
+      const template = html`${unsafeHTML('<b>unsafe bold</b>')}`;
       assert.throws(() => {
-        el.innerHTML = unsafeHTMLString;
+        render(template, container);
       });
     });
 
-    suite('throws on untrusted values', () => {
-      test('unsafe html', () => {
-        const template = html`${unsafeHTML('<b>unsafe bold</b>')}`;
-        assert.throws(() => {
-          render(template, container);
-        });
-      });
-
-      test('unsafe attribute', () => {
-        const template = html`<iframe srcdoc=${unsafeScriptString}></iframe>`;
-        assert.throws(() => {
-          render(template, container);
-        });
-      });
-    });
-
-    suite('runs without error on trusted values', () => {
-      test('unsafe html', () => {
-        const template =
-            html`${unsafeHTML(policy.createHTML('<b>safe bold</b>'))}`;
+    test('unsafe attribute', () => {
+      const template = html`<iframe srcdoc=${unsafeScriptString}></iframe>`;
+      assert.throws(() => {
         render(template, container);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML), '<b>safe bold</b>');
-      });
-
-      test('unsafe attribute', () => {
-        const template =
-            html`<iframe srcdoc=${policy.createHTML('<b>safe bold</b>')}>`;
-        render(template, container);
-        assert.equal(
-            stripExpressionMarkers(container.innerHTML),
-            '<iframe srcdoc="<b>safe bold</b>"></iframe>');
       });
     });
   });
-}
+
+  suite('runs without error on trusted values', () => {
+    test('unsafe html', () => {
+      const template =
+          html`${unsafeHTML(policy.createHTML('<b>safe bold</b>'))}`;
+      render(template, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<b>safe bold</b>');
+    });
+
+    test('unsafe attribute', () => {
+      const template =
+          html`<iframe srcdoc=${policy.createHTML('<b>safe bold</b>')}>`;
+      render(template, container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<iframe srcdoc="<b>safe bold</b>"></iframe>');
+    });
+  });
+});
 
 if (isIE || isChrome41) {
   suite('a suite that makes IE and Chrome41 not time out', () => {
