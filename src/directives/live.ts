@@ -60,8 +60,7 @@ export const live = directive(
             return;
           }
         } else if (part instanceof AttributePart) {
-          previousValue =
-              element.getAttributeNS(part.committer.namespace, name);
+          previousValue = element.getAttribute(name);
         }
         if (previousValue === String(value)) {
           return;
