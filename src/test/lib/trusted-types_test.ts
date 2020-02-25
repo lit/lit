@@ -161,11 +161,3 @@ suite('rendering with trusted types enforced', () => {
     });
   });
 });
-
-if (isIE || isChrome41) {
-  suite('a suite that makes IE and Chrome41 not time out', () => {
-    test('has a test', () => {
-      assert.equal(1 + 1, 2);
-    });
-  });
-}
