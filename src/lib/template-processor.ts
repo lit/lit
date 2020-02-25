@@ -19,7 +19,6 @@
 import {Part} from './part.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
-import {AttributeTemplatePart, NodeTemplatePart} from './template.js';
 
 export interface TemplateProcessor {
   /**
@@ -30,22 +29,14 @@ export interface TemplateProcessor {
    * @param name  The attribute name
    * @param strings The string literals. There are always at least two strings,
    *   event for fully-controlled bindings with a single expression.
-   * @param templatePart The AttributeTemplatePart for this expression
-   *     as extracted by the Template class. Can be used to cache information
-   *     that should be computed once per template literal in the source code.
    */
   handleAttributeExpressions(
-      element: Element, name: string, strings: readonly string[],
-      options: RenderOptions,
-      // TODO: next breaking change, consider making this required
-      templatePart?: AttributeTemplatePart): readonly Part[];
+      element: Element, name: string, strings: ReadonlyArray<string>,
+      options: RenderOptions): ReadonlyArray<Part>;
 
   /**
    * Create parts for a text-position binding.
    * @param partOptions
    */
-  handleTextExpression(
-      options: RenderOptions,
-      // TODO: next breaking change, consider making this required
-      templatePart?: NodeTemplatePart): NodePart;
+  handleTextExpression(options: RenderOptions): NodePart;
 }
