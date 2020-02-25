@@ -536,7 +536,7 @@ export class PropertyCommitter extends AttributeCommitter {
       this.dirty = false;
       let value = this._getValue();
       value = sanitizeDOMValue(value, this.name, 'property', this.element);
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = value;
     }
   }
