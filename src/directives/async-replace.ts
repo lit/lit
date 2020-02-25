@@ -46,7 +46,7 @@ export const asyncReplace = directive(
 
           // We nest a new part to keep track of previous item values separately
           // of the iterable as a value itself.
-          const itemPart = new NodePart(part.options, part.templatePart);
+          const itemPart = new NodePart(part.options);
           part.value = value;
 
           let i = 0;

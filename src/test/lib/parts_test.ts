@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {__testOnlyClearSanitizerFactoryDoNotCallOrElse, setSanitizerFactory} from '../../lib/parts.js';
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {__testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning} from '../../lib/parts';
+import {__testOnlyClearSanitizerDoNotCallOrElse} from '../../lib/parts.js';
+import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult, Part, directive} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -696,21 +697,22 @@ suite('setSanitizeDOMValue', () => {
 
 
   setup(() => {
-    setSanitizerFactory(
-        (node: Node, name: string, type: 'property'|'attribute') => {
-          return (value: unknown) => {
-            sanitizerCalls.push({value, name, type, nodeName: node.nodeName});
-            if (value instanceof FakeSanitizedWrapper) {
-              return value.sanitizeTo;
-            }
-            return `safeString`;
-          };
+    __testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning(
+        (value: unknown,
+         name: string,
+         type: 'property'|'attribute'|'text',
+         node: Node) => {
+          sanitizerCalls.push({value, name, type, nodeName: node.nodeName});
+          if (value instanceof FakeSanitizedWrapper) {
+            return value.sanitizeTo;
+          }
+          return `safeString`;
         });
     container = document.createElement('div');
   });
 
   teardown(() => {
-    __testOnlyClearSanitizerFactoryDoNotCallOrElse();
+    __testOnlyClearSanitizerDoNotCallOrElse();
     sanitizerCalls.length = 0;
   });
 
@@ -725,7 +727,7 @@ suite('setSanitizeDOMValue', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
     assert.deepEqual(sanitizerCalls, [
-      {value: 'foo', name: 'data', type: 'property', nodeName: '#text'},
+      {value: 'foo', name: 'textContent', type: 'property', nodeName: '#text'},
       {value: safeFoo, name: 'data', type: 'property', nodeName: '#text'}
     ]);
   });
@@ -743,7 +745,7 @@ suite('setSanitizeDOMValue', () => {
         '<div>hello big world</div>');
 
     assert.deepEqual(sanitizerCalls, [
-      {value: 'big', name: 'data', type: 'property', nodeName: '#text'},
+      {value: 'big', name: 'textContent', type: 'property', nodeName: '#text'},
       {value: safeBig, name: 'data', type: 'property', nodeName: '#text'}
     ]);
   });
