@@ -14,7 +14,7 @@
 
 import {__testOnlySetSanitizeDOMValueExperimentalMayChangeWithoutWarning} from '../../lib/parts';
 import {__testOnlyClearSanitizerDoNotCallOrElse} from '../../lib/parts.js';
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult, Part, directive} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
