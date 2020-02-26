@@ -254,9 +254,13 @@ lit-html includes a few built-in directives.
 *   [`classMap`](#classmap)
 *   [`ifDefined`](#ifdefined)
 *   [`guard`](#guard)
+*   [`live`](#live)
 *   [`repeat`](#repeat)
 *   [`styleMap`](#stylemap)
+*   [`templateContent`](#templatecontent)
 *   [`unsafeHTML`](#unsafehtml)
+*   [`unsafeSVG`](#unsafesvg)
+
 *   [`until`](#until)
 
 ### asyncAppend and asyncReplace
@@ -415,6 +419,38 @@ const template = html`
 
 In this case, the `immutableItems` array is mapped over only when the array reference changes.
 
+### live
+
+`attr=${live(value)}`
+
+Location: attribute or property bindings
+
+Checks binding value against the _live_ DOM value, instead of the previously
+bound value, when determining whether to update the value.
+
+This is useful for cases where the DOM value may change from outside of
+lit-html. For example, when binding to an `<input>` element's `value` property,
+a content editable element's text, or to a custom element that changes its
+own properties or attributes.
+
+In these cases if the DOM value changes, but the value set through lit-html
+bindings hasn't, lit-html won't know to update the DOM value and will leave
+it alone. If this is not what you want—if you want to overwrite the DOM
+value with the bound value no matter what—use the `live()` directive.
+
+Example:
+
+```js
+html`<input .value=${live(x)}>`
+```
+
+`live()` performs a strict equality check agains the live DOM value, and if
+the new value is equal to the live value, does nothing. This means that
+`live()` should not be used when the binding will cause a type conversion. If
+you use `live()` with an attribute binding, make sure that only strings are
+passed in, or the binding will update every render.
+
+
 ### repeat 
 
 `repeat(items, keyfn, template)`<br>
@@ -476,6 +512,31 @@ be combined with static values:
 html`<p style="color: white; ${styleMap(moreStyles)}">More styles!</p>`;
 ```
 
+### templateContent
+
+`templateContent(templateElement)`
+
+Location: text bindings
+
+ Renders the content of a `<template>` element as HTML.
+ 
+Note, the template contents should be developer controlled and not
+user controlled. User controlled templates rendered with this directive
+could lead to XSS vulnerabilities.
+
+Example:
+
+```js
+import {templateContent} from 'lit-html/directives/template-content';
+
+const templateEl = document.querySelector('template#myContent');
+
+const template = html`
+  Here's some content from a template element:
+
+  ${templateContent(templateEl)}`;
+```
+
 
 ### unsafeHTML
 
@@ -498,6 +559,33 @@ const template = html`
   Look out, potentially unsafe HTML ahead:
   ${unsafeHTML(markup)}
 `;
+```
+
+:
+### unsafeSVG
+
+`unsafeSVG(svg)`
+
+Location: text bindings
+
+Renders the argument as SVG, rather than text.
+
+Note, this is unsafe to use with any user-provided input that hasn't been
+sanitized or escaped, as it may lead to cross-site-scripting vulnerabilities.
+
+Example:
+
+```js
+import {unsafeSVG} from 'lit-html/directives/unsafe-svg';
+
+const svg = '<circle cx="50" cy="50" r="40" fill="red" />'
+
+const template = html`
+  Look out, potentially unsafe SVG ahead:
+  <svg width="40" height="40" viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg" version="1.1">
+    ${unsafeSVG(svg)}
+  </svg> `;
 ```
 
 ### until
