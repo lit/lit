@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { directive, NodePart, Part } from '../lit-html.js';
+import {directive, NodePart, Part} from '../lit-html.js';
 
 interface PreviousValue {
   readonly template: HTMLTemplateElement;
@@ -34,19 +34,19 @@ const previousValues = new WeakMap<NodePart, PreviousValue>();
  * could lead to cross-site-scripting vulnerabilities.
  */
 export const templateContent =
-  directive((template: HTMLTemplateElement) => (part: Part): void => {
-    if (!(part instanceof NodePart)) {
-      throw new Error('templateContent can only be used in text bindings');
-    }
+    directive((template: HTMLTemplateElement) => (part: Part): void => {
+      if (!(part instanceof NodePart)) {
+        throw new Error('templateContent can only be used in text bindings');
+      }
 
-    const previousValue = previousValues.get(part);
+      const previousValue = previousValues.get(part);
 
-    if (previousValue !== undefined && template === previousValue.template &&
-      part.value === previousValue.fragment) {
-      return;
-    }
+      if (previousValue !== undefined && template === previousValue.template &&
+        part.value === previousValue.fragment) {
+        return;
+      }
 
-    const fragment = document.importNode(template.content, true);
-    part.setValue(fragment);
-    previousValues.set(part, { template, fragment });
-  });
+      const fragment = document.importNode(template.content, true);
+      part.setValue(fragment);
+      previousValues.set(part, { template, fragment });
+    });
