@@ -42,11 +42,11 @@ export const templateContent =
       const previousValue = previousValues.get(part);
 
       if (previousValue !== undefined && template === previousValue.template &&
-        part.value === previousValue.fragment) {
+          part.value === previousValue.fragment) {
         return;
       }
 
       const fragment = document.importNode(template.content, true);
       part.setValue(fragment);
-      previousValues.set(part, { template, fragment });
+      previousValues.set(part, {template, fragment});
     });
