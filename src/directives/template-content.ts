@@ -27,11 +27,11 @@ interface PreviousValue {
 const previousValues = new WeakMap<NodePart, PreviousValue>();
 
 /**
- * Renders the content of a template as HTML.
+ * Renders the content of a template element as HTML.
  *
- * Note, this trusts the template contents to be developer controlled and not
- * user controlled. User controlled templates rendered with this directive
- * could lead to XSS vulnerabilities.
+ * Note, the template should be developer controlled and not user controlled.
+ * Rendering a user-controlled template with this directive
+ * could lead to cross-site-scripting vulnerabilities.
  */
 export const templateContent =
     directive((template: HTMLTemplateElement) => (part: Part): void => {

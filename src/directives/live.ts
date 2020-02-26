@@ -25,8 +25,8 @@ import {AttributePart, BooleanAttributePart, directive, EventPart, NodePart, Pro
  *
  * In these cases if the DOM value changes, but the value set through lit-html
  * bindings hasn't, lit-html won't know to update the DOM value and will leave
- * it alone. If this is not what you want - if you want to overwrite the DOM
- * value with the bound value no matter what, then use the `live()` directive:
+ * it alone. If this is not what you want—if you want to overwrite the DOM
+ * value with the bound value no matter what—use the `live()` directive:
  *
  *     html`<input .value=${live(x)}>`
  *
