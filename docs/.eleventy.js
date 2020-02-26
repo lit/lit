@@ -4,17 +4,17 @@ const pluginTOC = require('eleventy-plugin-nesting-toc');
 const markdownItAnchor = require('markdown-it-anchor');
 const markdownItAttrs = require('markdown-it-attrs');
 const slugifyLib = require('slugify');
-
+const path = require('path');
 const loadLanguages = require('prismjs/components/');
 // This Prism langauge supports HTML and CSS in tagged template literals
 loadLanguages(['js-templates']);
 
 // Use the same slugify as 11ty for markdownItAnchor. It's similar to Jekyll,
 // and preserves the existing URL fragments
-const slugify = (s) => slugifyLib(s, {lower: true});
+const slugify = (s) => slugifyLib(s, { lower: true });
 
-module.exports = function(eleventyConfig) {
-  eleventyConfig.addPlugin(pluginTOC, {tags: ['h2', 'h3']});
+module.exports = function (eleventyConfig) {
+  eleventyConfig.addPlugin(pluginTOC, { tags: ['h2', 'h3'] });
   eleventyConfig.addPlugin(syntaxHighlight);
   eleventyConfig.addPassthroughCopy('css/*');
   eleventyConfig.addPassthroughCopy('images/**/*');
@@ -24,15 +24,20 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy('app.yaml');
   eleventyConfig.addPassthroughCopy('main.py');
 
-  const md = markdownIt({html: true, breaks: true, linkify: true})
-                 .use(markdownItAttrs)
-                 .use(markdownItAnchor, {slugify, permalink: false});
+  const md = markdownIt({ html: true, breaks: true, linkify: true })
+    .use(markdownItAttrs)
+    .use(markdownItAnchor, { slugify, permalink: false });
   eleventyConfig.setLibrary('md', md);
 
-  eleventyConfig.addCollection('guide', function(collection) {
+  eleventyConfig.addFilter("removeExtension", function (url) {
+    const extension = path.extname(url);
+    return url.substring(0, url.length - extension.length);
+  });
+
+  eleventyConfig.addCollection('guide', function (collection) {
     // Order the 'guide' collection by filename, which includes a number prefix.
     // We could also order by a frontmatter property
-    return collection.getFilteredByGlob('guide/*').sort(function(a, b) {
+    return collection.getFilteredByGlob('guide/*').sort(function (a, b) {
       if (a.fileSlug == 'guide') {
         return -1;
       }
@@ -47,6 +52,6 @@ module.exports = function(eleventyConfig) {
   });
 
   return {
-    dir: {input: '.', output: '_site'},
+    dir: { input: '.', output: '_site' },
   };
 };

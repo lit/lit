@@ -9,7 +9,7 @@ layout: default
     <ul>
       {% for guide in collections.guide %}
         <li class="{% if page.url == guide.url %}active{% endif %}">
-          <a href="{{site.baseurl}}{{guide.url}}">{{guide.data.title}}</a>
+          <a href="{{site.baseurl}}{{ guide.url | removeExtension }}">{{guide.data.title}}</a>
         </li>
       {% endfor %}
     </ul>
