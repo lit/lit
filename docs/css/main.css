@@ -377,6 +377,14 @@ article {
   max-width: 720px;
 }
 
+article .toc ol {
+  list-style-type: disc;
+}
+
+article .toc ol ol {
+  list-style-type: circle;
+}
+
 article h1 {
   margin: 60px 0 16px 0;
 }
