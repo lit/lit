@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 ### Added
 * Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
-* Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types ([#970](https://github.com/Polymer/lit-html/pull/970))
 * Added `templateContent()` directive for stamping out the contents of an HTML template into a text binding. ([#1058](https://github.com/Polymer/lit-html/issues/1058))
 * Added the `live()` directive. Fixes #877
 
