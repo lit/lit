@@ -58,11 +58,9 @@ suite('index.js', () => {
   });
 
   test('exports everything from lib/parts.js', () => {
-    Object.keys(LibParts)
-        .filter((k) => !/^__testOnly/.test(k))
-        .forEach((key) => {
-          assert.property(LitHtml, key);
-        });
+    Object.keys(LibParts).forEach((key) => {
+      assert.property(LitHtml, key);
+    });
   });
 
   test('exports everything from lib/directive.js', () => {

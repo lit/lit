@@ -91,7 +91,7 @@ export const asyncAppend = directive(
           itemPart.endNode = itemStartNode;
           part.endNode.parentNode!.insertBefore(itemStartNode, part.endNode);
         }
-        itemPart = new NodePart(part.options, part.templatePart);
+        itemPart = new NodePart(part.options);
         itemPart.insertAfterNode(itemStartNode);
         itemPart.setValue(v);
         itemPart.commit();

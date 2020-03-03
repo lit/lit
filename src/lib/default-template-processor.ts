@@ -20,7 +20,6 @@ import {Part} from './part.js';
 import {AttributeCommitter, BooleanAttributePart, EventPart, NodePart, PropertyCommitter} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateProcessor} from './template-processor.js';
-import {AttributeTemplatePart, NodeTemplatePart} from './template.js';
 
 /**
  * Creates Parts when a template is instantiated.
@@ -36,12 +35,11 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
    *   event for fully-controlled bindings with a single expression.
    */
   handleAttributeExpressions(
-      element: Element, name: string, strings: string[], options: RenderOptions,
-      templatePart?: AttributeTemplatePart): readonly Part[] {
+      element: Element, name: string, strings: string[],
+      options: RenderOptions): ReadonlyArray<Part> {
     const prefix = name[0];
     if (prefix === '.') {
-      const committer =
-          new PropertyCommitter(element, name.slice(1), strings, templatePart);
+      const committer = new PropertyCommitter(element, name.slice(1), strings);
       return committer.parts;
     }
     if (prefix === '@') {
@@ -50,17 +48,15 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
     if (prefix === '?') {
       return [new BooleanAttributePart(element, name.slice(1), strings)];
     }
-    const committer =
-        new AttributeCommitter(element, name, strings, templatePart);
+    const committer = new AttributeCommitter(element, name, strings);
     return committer.parts;
   }
   /**
    * Create parts for a text-position binding.
    * @param templateFactory
    */
-  handleTextExpression(
-      options: RenderOptions, nodeTemplatePart: NodeTemplatePart) {
-    return new NodePart(options, nodeTemplatePart);
+  handleTextExpression(options: RenderOptions) {
+    return new NodePart(options);
   }
 }
 
