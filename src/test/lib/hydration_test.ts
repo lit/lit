@@ -13,7 +13,8 @@
  */
 
 import {TemplateResult} from '../../lib/shady-render.js';
-import {html, hydrate, render} from '../../lit-html.js';
+import {html, render} from '../../lit-html.js';
+import {hydrate} from '../../lib/hydrate.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {repeat} from '../../directives/repeat.js';
 
@@ -141,6 +142,6 @@ suite('hydration', () => {
 
 const prerender = (r: TemplateResult, container: HTMLElement) => {
   const prerenderContainer = document.createElement('div');
-  render(r, prerenderContainer);
+  render(r, prerenderContainer, {ssr: true});
   container.innerHTML = prerenderContainer.innerHTML;
 };

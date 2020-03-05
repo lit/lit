@@ -118,8 +118,7 @@ export class TemplateResult {
   //  - Easily specifiable and implementable in multiple languages.
   // We don't care about cryptographic suitability.
   get digest() {
-    const hashes = new Uint32Array(digestSize);
-    hashes.fill(5381);
+    const hashes = new Uint32Array(digestSize).fill(5381);
 
     for (const s of this.strings) {
       for (let i = 0; i < s.length; i++) {
