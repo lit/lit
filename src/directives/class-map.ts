@@ -90,6 +90,8 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   }
 
   if (changed) {
-    element.setAttribute('class', Array.from(classes).join(' '));
+    let classString = '';
+    classes.forEach((cls) => classString += cls + ' ');
+    element.setAttribute('class', classString);
   }
 });
