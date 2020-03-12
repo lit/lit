@@ -55,7 +55,11 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   }
 
   // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
-  const classes = new Set((element.getAttribute('class') || '').split(/\s+/));
+  const classList = (element.getAttribute('class') || '').split(/\s+/);
+  const classes = new Set();
+  for (const cls of classList) {
+    classes.add(cls);
+  }
 
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level
