@@ -75,9 +75,9 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   // Add or remove classes based on their classMap value
   for (const name in classInfo) {
     const value = classInfo[name];
-    // We explicitly want a loose truthy check of `value` because it seems more
-    // convenient that '' and 0 are skipped.
     if (value != previousClasses.has(name)) {
+      // We explicitly want a loose truthy check of `value` because it seems more
+      // convenient that '' and 0 are skipped.
       if (value) {
         classes.add(name);
         previousClasses.add(name);
