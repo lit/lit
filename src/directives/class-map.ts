@@ -14,6 +14,38 @@
 
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
+// IE11 doesn't support classList on SVG elements, so we emulate it with a Set
+class ClassList {
+  element: Element;
+  classes: Set<String> = new Set();
+  changed = false;
+
+  constructor(element: Element) {
+    this.element = element;
+    const classList = (element.getAttribute('class') || '').split(/\s+/);
+    for (const cls of classList) {
+      this.classes.add(cls);
+    }
+  }
+  add(cls: string) {
+    this.classes.add(cls);
+    this.changed = true;
+  }
+
+  remove(cls: string) {
+    this.classes.delete(cls);
+    this.changed = true;
+  }
+
+  commit() {
+    if (this.changed) {
+      let classString = '';
+      this.classes.forEach((cls) => classString += cls + ' ');
+      this.element.setAttribute('class', classString);
+    }
+  };
+}
+
 export interface ClassInfo {
   readonly [name: string]: string|boolean|number;
 }
@@ -21,27 +53,8 @@ export interface ClassInfo {
 /**
  * Stores the ClassInfo object applied to a given AttributePart.
  * Used to unset existing values when a new ClassInfo object is applied.
- *
- * The map contains two possible class values:
- * 1. Static (given through the template literal), which are set to true
- * 2. Dynamic (given through ClassInfo) which are set to false
- *
- * Only Dynamic classes can be removed by being omitted from the ClassInfo, but
- * both Static and Dynamic classes can be removed by setting class to falsey in
- * the ClassInfo.
  */
-const previousClassesCache = new WeakMap<Part, Map<string, boolean>>();
-
-/**
- * Classes are parsed as a series of tokens separated by ASCII whitespace. This
- * token parser allows us to extract the tokens from the static classes given
- * in the template literal.
- *
- * https://html.spec.whatwg.org/multipage/dom.html#classes
- * https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#set-of-space-separated-tokens
- * https://infra.spec.whatwg.org/#ascii-whitespace
- */
-const tokens = /[^\t\n\f\r ]+/g;
+const previousClassesCache = new WeakMap<Part, Set<string>>();
 
 /**
  * A directive that applies CSS classes. This must be used in the `class`
@@ -53,7 +66,7 @@ const tokens = /[^\t\n\f\r ]+/g;
  * @param classInfo {ClassInfo}
  */
 export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
-  if (!(part instanceof AttributePart) || part instanceof PropertyPart ||
+  if (!(part instanceof AttributePart) || (part instanceof PropertyPart) ||
       part.committer.name !== 'class' || part.committer.parts.length > 1) {
     throw new Error(
         'The `classMap` directive must be used in the `class` attribute ' +
@@ -62,59 +75,44 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
 
   const {committer} = part;
   const {element} = committer;
-  let changed = false;
 
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
-    previousClasses = new Map();
-    previousClassesCache.set(part, previousClasses);
-    // Normalize all static classes into individual tokens. This is necessary
-    // since each individual string could contain multiple tokens.
-    const strings = committer.strings.join(' ');
-    let match;
-    while ((match = tokens.exec(strings))) {
-      // Ensure static classes are never removed, by setting them to true
-      previousClasses!.set(match[0], true);
-    }
-    changed = true;
+    // Write static classes once
+    // Use setAttribute() because className isn't a string on SVG elements
+    element.setAttribute('class', committer.strings.join(' '));
+    previousClassesCache.set(part, previousClasses = new Set());
   }
+
+  const classList =
+      (element.classList || new ClassList(element)) as DOMTokenList | ClassList;
 
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level
   // iteration.
-  previousClasses.forEach((value: unknown, name: string) => {
-    // If the value is true, then it was a static class, which we do not remove
-    // unless the ClassInfo specifically overrides it.
-    if (value !== true && !(name in classInfo)) {
-      changed = true;
+  previousClasses.forEach((name) => {
+    if (!(name in classInfo)) {
+      classList.remove(name);
       previousClasses!.delete(name);
     }
   });
 
-  // Add or remove classes based on their ClassInfo value
+  // Add or remove classes based on their classMap value
   for (const name in classInfo) {
     const value = classInfo[name];
-    const cached = previousClasses.get(name);
-    // We explicitly want a loose truthy check of `value` because it seems more
-    // convenient that '' and 0 are skipped.
-    if (value) {
-      // Dynamic classes are set to false, so we know to remove them when
-      // omitted from the ClassInfo.
-      if (cached !== false) {
-        previousClasses.set(name, false);
+    if (value != previousClasses.has(name)) {
+      // We explicitly want a loose truthy check of `value` because it seems
+      // more convenient that '' and 0 are skipped.
+      if (value) {
+        classList.add(name);
+        previousClasses.add(name);
+      } else {
+        classList.remove(name);
+        previousClasses.delete(name);
       }
-      if (cached === undefined) {
-        changed = true;
-      }
-    } else if (cached !== undefined) {
-      changed = true;
-      previousClasses.delete(name);
     }
   }
-
-  if (changed) {
-    const classes: string[] = [];
-    previousClasses.forEach((_: unknown, key: string) => classes.push(key));
-    element.setAttribute('class', classes.join(' '));
+  if (typeof (classList as ClassList).commit === 'function') {
+    (classList as ClassList).commit();
   }
 });

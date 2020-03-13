@@ -81,14 +81,24 @@ suite('classMap', () => {
     assert.isFalse(el.classList.contains('foo'));
   });
 
-  test('can override static classes', () => {
+  test('works with imperatively added classes', () => {
+    renderClassMap({foo: true});
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('foo'));
+
+    el.classList.add('bar');
+    assert.isTrue(el.classList.contains('bar'));
+
+    renderClassMap({foo: false});
+    assert.isFalse(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+  });
+
+  test('can not override static classes', () => {
     renderClassMapStatic({aa: false, bb: true});
     const el = container.firstElementChild!;
-    assert.isFalse(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
-    renderClassMapStatic({});
-    assert.isFalse(el.classList.contains('aa'));
-    assert.isFalse(el.classList.contains('bb'));
   });
 
   test('changes classes when used with the same object', () => {
