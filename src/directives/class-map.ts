@@ -14,6 +14,37 @@
 
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
+// IE11 doesn't support classList on SVG elements, so we emulate it with a Set
+class ClassList {
+  element: Element;
+  classes: Set<String> = new Set();
+  changed = false;
+
+  constructor(element: Element) {
+    this.element = element;
+    const classList = (element.getAttribute('class') || '').split(/\s+/);
+    for (const cls of classList) {
+      this.classes.add(cls);
+    }
+  }
+  add(cls: string) {
+    this.classes.add(cls);
+    this.changed = true;
+  }
+
+  remove(cls: string) {
+    this.classes.delete(cls);
+    this.changed = true;
+  }
+
+  commit() {
+    if (this.changed) {
+      let classString = '';
+      this.classes.forEach((cls) => classString += cls + ' ');
+      this.element.setAttribute('class', classString);
+    }
+  };
+}
 
 export interface ClassInfo {
   readonly [name: string]: string|boolean|number;
@@ -44,7 +75,6 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
 
   const {committer} = part;
   const {element} = committer;
-  let changed = false;
 
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
@@ -54,21 +84,16 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
     previousClassesCache.set(part, previousClasses = new Set());
   }
 
-  // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
-  const classList = (element.getAttribute('class') || '').split(/\s+/);
-  const classes = new Set();
-  for (const cls of classList) {
-    classes.add(cls);
-  }
+  const classList =
+      (element.classList || new ClassList(element)) as DOMTokenList | ClassList;
 
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level
   // iteration.
   previousClasses.forEach((name) => {
     if (!(name in classInfo)) {
-      classes.delete(name);
+      classList.remove(name);
       previousClasses!.delete(name);
-      changed = true;
     }
   });
 
@@ -79,19 +104,15 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
       // We explicitly want a loose truthy check of `value` because it seems
       // more convenient that '' and 0 are skipped.
       if (value) {
-        classes.add(name);
+        classList.add(name);
         previousClasses.add(name);
       } else {
-        classes.delete(name);
+        classList.remove(name);
         previousClasses.delete(name);
       }
-      changed = true;
     }
   }
-
-  if (changed) {
-    let classString = '';
-    classes.forEach((cls) => classString += cls + ' ');
-    element.setAttribute('class', classString);
+  if (typeof (classList as ClassList).commit === 'function') {
+    (classList as ClassList).commit();
   }
 });
