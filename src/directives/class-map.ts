@@ -17,7 +17,7 @@ import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
 class ClassList {
   element: Element;
-  classes: Set<String> = new Set();
+  classes: Set<string> = new Set();
   changed = false;
 
   constructor(element: Element) {
@@ -43,7 +43,7 @@ class ClassList {
       this.classes.forEach((cls) => classString += cls + ' ');
       this.element.setAttribute('class', classString);
     }
-  };
+  }
 }
 
 export interface ClassInfo {
