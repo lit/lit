@@ -22,12 +22,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
 * Added `templateContent()` directive for stamping out the contents of an HTML template into a text binding. ([#1058](https://github.com/Polymer/lit-html/issues/1058))
-* Added the `live()` directive. Fixes #877
+* Added the `live()` directive. ([#877](https://github.com/Polymer/lit-html/issues/877))
 
 ### Fixed
 * Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
 * Fixed a bug where ifDefined() would set an attribute even when the value didn't change. ([#890](https://github.com/Polymer/lit-html/issues/890))
-* Change `classMap` directive to set classes correctly on SVGs ([1070#](https://github.com/Polymer/lit-html/issues/1070)).
+* Change `classMap` directive to set classes correctly on SVGs ([#1070](https://github.com/Polymer/lit-html/issues/1070)).
 
 ## [1.1.2] - 2019-08-12
 
