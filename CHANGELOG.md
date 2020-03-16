@@ -13,7 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 <!-- ### Changed -->
 <!-- ### Added -->
+<!-- ### Fixed -->
 <!-- ### Removed -->
+
+
+## [1.2.0-pre.1] - 2020-03-16
+
 ### Added
 * Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
 * Added `templateContent()` directive for stamping out the contents of an HTML template into a text binding. ([#1058](https://github.com/Polymer/lit-html/issues/1058))
