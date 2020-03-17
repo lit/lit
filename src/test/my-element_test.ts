@@ -14,7 +14,7 @@ suite('my-element', () => {
     const el = await fixture(html`<my-element></my-element>`);
     assert.shadowDom.equal(el, `
       <h1>Hello, World!</h1>
-      <button>Click Count: 0</button>
+      <button part="button">Click Count: 0</button>
       <slot></slot>
     `);
   });
@@ -23,7 +23,7 @@ suite('my-element', () => {
     const el = await fixture(html`<my-element name="Test"></my-element>`);
     assert.shadowDom.equal(el, `
       <h1>Hello, Test!</h1>
-      <button>Click Count: 0</button>
+      <button part="button">Click Count: 0</button>
       <slot></slot>
     `);
   });
@@ -35,7 +35,7 @@ suite('my-element', () => {
     await el.updateComplete;
     assert.shadowDom.equal(el, `
       <h1>Hello, World!</h1>
-      <button>Click Count: 1</button>
+      <button part="button">Click Count: 1</button>
       <slot></slot>
     `);
   });
