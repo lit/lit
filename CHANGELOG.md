@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 
 
-## [1.2.0-pre.1] - 2020-03-16
+## [1.2.0] - 2020-03-18
 
 ### Added
 * Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
