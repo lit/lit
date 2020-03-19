@@ -8,6 +8,13 @@
   "main": "lit-html.js",
   "module": "lit-html.js",
   "typings": "lit-html.d.ts",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
+  },
   "directories": {
     "test": "test"
   },
@@ -20,10 +27,11 @@
     "/directives/",
     "/polyfills",
     "/src/",
+    "/ts3.4/",
     "!/src/test/"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && downlevel-dts . ts3.4 && cp tsconfig.json ./ts3.4/",
     "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
@@ -45,6 +53,7 @@
     "@webcomponents/webcomponentsjs": "^2.4.2",
     "chai": "^4.1.2",
     "clang-format": "~1.2.4",
+    "downlevel-dts": "^0.4.0",
     "eslint": "^6.7.0",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
@@ -54,7 +63,7 @@
     "rollup-plugin-filesize": "^6.2.0",
     "rollup-plugin-terser": "^5.2.0",
     "tachometer": "^0.4.15",
-    "typescript": "^3.4.1",
+    "typescript": "~3.8.0",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"

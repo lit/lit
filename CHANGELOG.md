@@ -10,7 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
+<!-- ## [X.Y.Z] - YYYY-MM-DD -->
 ## Unreleased
+
+### Fixed
+* Add TypeScript type declarations for older versions of TypeScript. We're currently testing back to TS 3.4. We can't commit to never breaking TypeScript builds, but we'll be supporting older versions as best we can.
+
 <!-- ### Changed -->
 <!-- ### Added -->
 <!-- ### Fixed -->
