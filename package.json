@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "clean": "rm -rf lib test my-element.{d.ts,d.ts.map,js,js.map}",
     "lint": "lit-analyzer && eslint 'src/**/*.ts'",
     "format": "prettier src/* --write",
     "docs": "npm run build && npm run analyze && npm run docs:build && npm run docs:assets && npm run docs:gen",
