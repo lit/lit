@@ -5,6 +5,11 @@ import { Type, Layout, LayoutConfig } from './layouts/Layout.js';
 export const layoutRef = Symbol('layoutRef');
 
 // TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
+declare global {
+  interface Window {
+      ShadyDOM?: any;
+  }
+}
 let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';

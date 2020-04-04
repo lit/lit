@@ -1,12 +1,14 @@
-import { LitElement, html } from 'lit-element';
+import { LitElement, html, css } from 'lit-element';
 import { render } from 'lit-html';
+import { repeat } from 'lit-html/directives/repeat.js';
 import 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
-import { SmartObject } from 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
-// import { scroll } from 'lit-virtualizer/lib/scroll.js';
-// import { Layout1d } from 'lit-virtualizer';
+// import { SmartObject } from 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
 
-let smartObj = new SmartObject();
-setTimeout(() => smartObj.interact(), 1000);
+// import { scroll } from 'lit-virtualizer/lib/scroll.js';
+import { Layout1d } from 'lit-virtualizer';
+
+// let smartObj = new SmartObject();
+// setTimeout(() => smartObj.interact(), 1000);
 
 const items = [];
 const n = 100;
@@ -27,7 +29,7 @@ class MyExample extends LitElement {
     constructor() {
         super();
         this.first = 0;
-        this.last = 9;
+        this.last = -1;
         this.items = [];
     }
 
@@ -36,9 +38,20 @@ class MyExample extends LitElement {
     }
 
     render() {
+        const itemsToRender = this.items.slice(this.first, this.last + 1);
         return html`
-            <uni-virtualizer @rangeChanged=${e => this._updateRange(e)}>
-                ${this.items.slice(this.first, this.last + 1).map(item => renderItem(item))}
+            <style>
+                uni-virtualizer {
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    bottom: 8px;
+                    left: 8px;
+                    height: unset;
+                }
+            </style>
+            <uni-virtualizer .totalItems=${this.items.length} .layout=${Layout1d} @rangeChanged=${e => this._updateRange(e)}>
+                ${repeat(itemsToRender, item => item.index, renderItem)}
             </uni-virtualizer>
         `;
     }

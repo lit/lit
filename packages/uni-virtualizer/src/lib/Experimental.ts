@@ -1,9 +1,14 @@
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import { Type, Layout, LayoutConfig } from './layouts/Layout.js';
+import { ItemBox, Margins, Type, Layout, LayoutConfig } from './layouts/Layout.js';
 
 export const layoutRef = Symbol('layoutRef');
 
 // TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
+declare global {
+  interface Window {
+      ShadyDOM?: any;
+  }
+}
 let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';
@@ -11,6 +16,7 @@ let globalContainerStylesheet: HTMLStyleElement = null;
 
 interface Range {
   first: number;
+  last: number;
   num: number;
   remeasure: boolean;
   stable: boolean;
@@ -55,8 +61,9 @@ export class RangeChangeEvent extends Event {
   }
 }
 
+// TODO (graynorton): Import this from somewhere upstream
 interface VirtualScrollerConfig {
-  layout: Layout | Type<Layout> | LayoutConfig;
+  layout?: Layout | Type<Layout> | LayoutConfig;
 
   /**
    * An element that receives scroll events for the virtual scroller.
@@ -77,7 +84,7 @@ interface VirtualScrollerConfig {
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
  */
-export class VirtualScroller<Child extends HTMLElement> {
+export class VirtualScroller<Item, Child extends HTMLElement> {
   /**
    * Whether the layout should receive an updated viewport size on the next
    * render.
@@ -117,6 +124,11 @@ export class VirtualScroller<Child extends HTMLElement> {
   private _childrenPos: Array<{top: number, left: number}> = null;
 
   /**
+   * Containing element. Set by container.
+   */
+  protected _container: Element | ShadowRoot = null;
+
+  /**
    * The parent of all child nodes to be rendered. Set by container.
    */
   private _containerElement: Element = null;
@@ -148,6 +160,11 @@ export class VirtualScroller<Child extends HTMLElement> {
    */
   private _childrenRO: ResizeObserver = null;
 
+  private _mutationObserver: MutationObserver = null;
+  private _mutationPromise: Promise<void> = null;
+  private _mutationPromiseResolver: Function = null;
+  private _mutationsObserved: boolean = false;
+
   // TODO (graynorton): Rethink, per longer comment below
 
   private _loadListener = this._childLoaded.bind(this);
@@ -156,12 +173,43 @@ export class VirtualScroller<Child extends HTMLElement> {
    * Flag for skipping a children measurement if that computation was just
    * completed.
    */
-  private _skipNextChildrenSizeChanged: boolean = false;
+  // private _skipNextChildrenSizeChanged: boolean = false;
 
   /**
    * Index and position of item to scroll to.
    */
   private _scrollToIndex: {index: number, position?: string} = null;
+
+  /**
+   * Items to render. Set by items.
+   */
+  private _items: Array<Item> = [];
+
+  /**
+   * Total number of items to render. Set by totalItems.
+   */
+  private _totalItems: number = 0;
+
+  /**
+   * Index of the first child in the range, not necessarily the first visible child.
+   * TODO @straversi: Consider renaming these.
+   */
+  protected _first: number = 0;
+
+  /**
+   * Index of the last child in the range.
+   */
+  protected _last: number = 0;
+
+  /**
+   * Previous first rendered index. Used to avoid unnecessary updates.
+   */
+  protected _prevFirst: number = 0;
+
+  /**
+   * Previous last rendered index. Used to avoid unnecessary updates.
+   */
+  protected _prevLast: number = 0;
 
   /**
    * Index of the first item intersecting the container element.
@@ -173,74 +221,149 @@ export class VirtualScroller<Child extends HTMLElement> {
    */
   private _lastVisible: number;
 
-  constructor(config: VirtualScrollerConfig) {
-    super({});
+  /**
+   * Flag for asynchnronous render requests. Renders can be requested several
+   * times before a render actually happens.
+   */
+  protected _pendingRender = null;
 
-    this._num = 0;
+  /**
+   * Flag for asynchnronous remeasure requests. Signals that all children
+   * should be remeasured.
+   */
+  private _needsRemeasure: boolean = false;
+
+  /**
+   * Invoked at the end of each render cycle: children in the range are
+   * measured, and their dimensions passed to this callback. Use it to layout
+   * children as needed.
+   */
+  protected _measureCallback: (sizes: {[key: number]: ItemBox}) => void = null;
+
+  protected _measureChildOverride: (element: Element, item: object) => object = null;
+
+  constructor(config?: VirtualScrollerConfig) {
     this._first = -1;
     this._last = -1;
-    this._prevFirst = -1;
-    this._prevLast = -1;
+    // this._prevFirst = -1;
+    // this._prevLast = -1;
 
     if (config) {
       Object.assign(this, config);
     }
   }
 
-  get container(): Element | ShadowRoot {
-    return super.container;
+  /**
+   * The total number of items, regardless of the range, that can be rendered
+   * as child nodes.
+   */
+  get totalItems(): number {
+    return (this._totalItems === null ? this._items.length : this._totalItems);
   }
+
+  set totalItems(num: number) {
+    if (typeof num !== 'number' && num !== null) {
+      throw new Error('New value must be a number.');
+    }
+
+    // TODO(valdrin) should we check if it is a finite number?
+    // Technically, Infinity would break Layout, not VirtualRepeater.
+    if (num !== this._totalItems) {
+      this._totalItems = num;
+    //   this.first = this._first;
+      // this.requestReset();
+      this._scheduleRender();
+    }
+  }
+
+  /**
+   * The parent of all child nodes to be rendered.
+   */
+  get container(): Element | ShadowRoot {
+    return this._container;
+  }
+
   set container(container: Element | ShadowRoot) {
-    super.container = container;
+    if (container === this._container) {
+      return;
+    }
+
+    if (this._container) {
+      // Remove children from old container.
+      // this._ordered.forEach((child) => this._removeChild(child));
+
+      // TODO (graynorton): Decide whether we'd rather fire an event to clear
+      // the range and let the renderer take care of removing the DOM children
+      this._children.forEach(child => child.parentNode.removeChild(child));
+    }
+
+    this._container = container;
+
+    // if (container) {
+    //   // Insert children in new container.
+    //   this._ordered.forEach((child) => this._insertBefore(child, null));
+    // } else {
+    //   this._ordered.length = 0;
+    //   this._active.clear();
+    //   this._prevActive.clear();
+    // }
+    this._scheduleRender();
+    // this.requestReset();
+
+    /// Below from scroller, above from repeater
 
     this._initResizeObservers().then(() => {
-      const oldEl = this._containerElement;
-      // Consider document fragments as shadowRoots.
-      const newEl =
-          (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
-          (container as ShadowRoot).host :
-          container as Element;
-      if (oldEl === newEl) {
-        return;
-      }
+        const oldEl = this._containerElement;
+        // Consider document fragments as shadowRoots.
+        const newEl =
+            (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
+            (container as ShadowRoot).host :
+            container as Element;
+        if (oldEl === newEl) {
+          return;
+        }
+  
+        this._containerRO.disconnect();
+        this._containerSize = null;
+  
+        if (oldEl) {
+          if (this._containerInlineStyle) {
+            oldEl.setAttribute('style', this._containerInlineStyle);
+          } else {
+            oldEl.removeAttribute('style');
+          }
+          this._containerInlineStyle = null;
+          if (oldEl === this._scrollTarget) {
+            oldEl.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
+            this._sizer && this._sizer.remove();
+          }
+          oldEl.removeEventListener('load', this._loadListener, true);
 
-      this._containerRO.disconnect();
-      this._containerSize = null;
-
-      if (oldEl) {
-        if (this._containerInlineStyle) {
-          oldEl.setAttribute('style', this._containerInlineStyle);
+          this._mutationObserver.disconnect();
         } else {
-          oldEl.removeAttribute('style');
+          // First time container was setup, add listeners only now.
+          addEventListener('scroll', this, {passive: true});
         }
-        this._containerInlineStyle = null;
-        if (oldEl === this._scrollTarget) {
-          oldEl.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
-          this._sizer && this._sizer.remove();
+  
+        this._containerElement = newEl;
+  
+        if (newEl) {
+          this._containerInlineStyle = newEl.getAttribute('style') || null;
+          this._applyContainerStyles();
+          if (newEl === this._scrollTarget) {
+            this._sizer = this._sizer || this._createContainerSizer();
+            this._container.insertBefore(this._sizer, this._container.firstChild);
+          }
+          this._scheduleUpdateView();
+          this._containerRO.observe(newEl);
+          this._mutationObserver.observe(newEl, { childList: true });
+          this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
+  
+          if (this._layout && this._layout.listenForChildLoadEvents) {
+            newEl.addEventListener('load', this._loadListener, true);
+          }
         }
-        oldEl.removeEventListener('load', this._loadListener, true);
-      } else {
-        // First time container was setup, add listeners only now.
-        addEventListener('scroll', this, {passive: true});
-      }
-
-      this._containerElement = newEl;
-
-      if (newEl) {
-        this._containerInlineStyle = newEl.getAttribute('style') || null;
-        this._applyContainerStyles();
-        if (newEl === this._scrollTarget) {
-          this._sizer = this._sizer || this._createContainerSizer();
-          this._container.insertBefore(this._sizer, this._container.firstChild);
-        }
-        this._scheduleUpdateView();
-        this._containerRO.observe(newEl);
-
-        if (this._layout && this._layout.listenForChildLoadEvents) {
-          newEl.addEventListener('load', this._loadListener, true);
-        }
-      }
-    });
+      });  
   }
 
   // This will always actually return a layout instance,
@@ -317,6 +440,56 @@ export class VirtualScroller<Child extends HTMLElement> {
   }
 
   /**
+   * Returns those children that are about to be displayed and that require to
+   * be positioned. If reset or remeasure has been triggered, all children are
+   * returned.
+   */
+  private get _toMeasure(): {indices: Array<number>, children: Array<Child>} {
+    return this._children.reduce((toMeasure, c, i) => {
+      const idx = this._first + i;
+      if (this._needsRemeasure || idx < this._prevFirst ||
+          idx > this._prevLast) {
+        toMeasure.indices.push(idx);
+        toMeasure.children.push(c);
+      }
+      return toMeasure;
+    }, {indices: [], children: []});
+  }
+
+  /**
+   * Measures each child bounds and builds a map of index/bounds to be passed
+   * to the `_measureCallback`
+   */
+  private _measureChildren(): void {
+    const rangeChanged = this._first !== this._prevFirst || this._last !== this._prevLast;
+    const shouldMeasure = this._last >= this._first && this._measureCallback &&
+    (rangeChanged || this._needsRemeasure);
+    if (shouldMeasure) {
+      const {indices, children} = this._toMeasure;
+      const fn = this._measureChildOverride || this._measureChild;
+      const pm = children.map((c: Child, i: number) => fn.call(this, c, this._items[indices[i]]));
+      const mm = /** @type {{number: {width: number, height: number}}} */
+          (pm.reduce((out, cur, i) => {
+            out[indices[i]] = cur;
+            return out;
+          }, {}));
+      this._measureCallback(mm);  
+    }
+    this._needsRemeasure = false;
+  }
+
+  /**
+   * Returns the width, height, and margins of the given child.
+   */
+  _measureChild(element: Element): ItemBox {
+    // offsetWidth doesn't take transforms in consideration, so we use
+    // getBoundingClientRect which does.
+    const {width, height} = element.getBoundingClientRect();
+    return Object.assign({width, height}, getMargins(element));
+  }
+
+
+  /**
    * The element that generates scroll events and defines the container
    * viewport. The value `null` (default) corresponds to `window` as scroll
    * target.
@@ -359,12 +532,46 @@ export class VirtualScroller<Child extends HTMLElement> {
     this._scheduleUpdateView();
   }
 
+  protected _shouldRender() {
+    if (!this.container || !this._containerElement || !this._layout) {
+      return false;
+    }
+    // NOTE: we're about to render, but the ResizeObserver didn't execute yet.
+    // Since we want to keep rAF timing, we compute _containerSize now. Would
+    // be nice to have a way to flush ResizeObservers.
+    if (this._containerSize === null) {
+      const {width, height} = this._containerElement.getBoundingClientRect();
+      this._containerSize = {width, height};
+    }
+    return this._containerSize.width > 0 || this._containerSize.height > 0;
+  }
+
+  /**
+   * Render at the next opportunity.
+   */
+  protected async _scheduleRender(): Promise<void> {
+    if (!this._pendingRender) {
+      this._pendingRender = true;
+      await Promise.resolve();
+      this._pendingRender = false;
+      if (this._shouldRender()) {
+        this._render();
+      }
+      // this._pendingRender = requestAnimationFrame(() => {
+      //   this._pendingRender = null;
+      //   if (this._shouldRender()) {
+      //     this._render();
+      //   }
+      // });
+    }
+  }
+
   /**
    * Display the items in the current range.
    * Continue relayout of child positions until they have stabilized.
    */
   protected async _render(): Promise<void> {
-    this._childrenRO.disconnect();
+    // this._childrenRO.disconnect();
 
     // Update layout properties before rendering to have correct first, num,
     // scroll size, children positions.
@@ -380,45 +587,31 @@ export class VirtualScroller<Child extends HTMLElement> {
       this._scrollToIndex = null;
     }
 
-    this._layout.reflowIfNeeded();
-    // Keep rendering until there is no more scheduled renders.
-    while (true) {
-      if (this._pendingRender) {
-        // cancelAnimationFrame(this._pendingRender);
-        this._pendingRender = false;
-      }
-      // Update scroll size and correct scroll error before rendering.
-      this._sizeContainer(this._scrollSize);
-      if (this._scrollErr) {
-        // This triggers a 'scroll' event (async) which triggers another
-        // _updateView().
-        this._correctScrollError(this._scrollErr);
-        this._scrollErr = null;
-      }
-      // Position children (_didRender()), and provide their measures to layout.
-      await super._render();
-      this._layout.reflowIfNeeded();
-      // If layout reflow did not provoke another render, we're done.
-      if (!this._pendingRender) {
-        break;
-      }
+    // this._layout.reflowIfNeeded();
+
+    this._sizeContainer(this._scrollSize);
+    
+    if (this._scrollErr) {
+      // This triggers a 'scroll' event (async) which triggers another
+      // _updateView().
+      this._correctScrollError(this._scrollErr);
+      this._scrollErr = null;
     }
+    
+    this.container.dispatchEvent(new CustomEvent('rangeChanged', {
+      detail: { first: this._first, last: this._last }
+    }));
+    
+    await this._mutationPromise;
+    
+    this._positionChildren(this._childrenPos);
+    // this._measureChildren();
+
     // We want to skip the first ResizeObserver callback call as we already
     // measured the children.
     if (this._layout.measureChildren === true) {
-      this._skipNextChildrenSizeChanged = true;
-      this._kids.forEach((child) => this._childrenRO.observe(child));
-    }
-  }
-
-  /**
-   * Position children before they get measured. Measuring will force relayout,
-   * so by positioning them first, we reduce computations.
-   */
-  _didRender() {
-    if (this._childrenPos) {
-      this._positionChildren(this._childrenPos);
-      this._childrenPos = null;
+      // this._skipNextChildrenSizeChanged = true;
+      this._children.forEach((child) => this._childrenRO.observe(child));
     }
   }
 
@@ -442,6 +635,8 @@ export class VirtualScroller<Child extends HTMLElement> {
         this._scheduleRender();
         break;
       case 'rangechange':
+        // TODO (graynorton): Investigate why we aren't scheduling
+        // (and maybe don't need to schedule) a render here
         this._adjustRange(event.detail);
         break;
       default:
@@ -455,7 +650,8 @@ export class VirtualScroller<Child extends HTMLElement> {
       this._containerRO = new ResizeObserver(
         (entries) => this._containerSizeChanged(entries[0].contentRect));
       this._childrenRO =
-        new ResizeObserver(() => this._childrenSizeChanged());
+        new ResizeObserver(this._childrenSizeChanged.bind(this));
+      this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
     }
   }
 
@@ -496,10 +692,18 @@ export class VirtualScroller<Child extends HTMLElement> {
   }
 
   /**
-   * TODO: Rename _ordered to _kids?
+   * TODO: Rename _ordered to _children?
    */
-  get _kids(): Array<Child> {
-    return this._ordered;
+  get _children(): Array<Child> {
+    const arr = [];
+    let next = this.container.firstElementChild;
+    // TODO (graynorton): Hack: skip the first child, which is our spacer
+    next = next.nextElementSibling;
+    while (next) {
+      arr.push(next);
+      next = next.nextElementSibling;
+    }
+    return arr;
   }
 
   /**
@@ -577,10 +781,10 @@ export class VirtualScroller<Child extends HTMLElement> {
    * pos.
    */
   private _positionChildren(pos: Array<{top: number, left: number, width?: number, height?: number}>) {
-    const kids = this._kids;
+    const children = this._children;
     Object.keys(pos).forEach((key) => {
       const idx = (key as unknown as number) - this._first;
-      const child = kids[idx];
+      const child = children[idx];
       if (child) {
         const {top, left, width, height} = pos[key];
         child.style.position = 'absolute';
@@ -596,31 +800,20 @@ export class VirtualScroller<Child extends HTMLElement> {
   }
 
   private _adjustRange(range: Range) {
-    this.num = range.num;
-    this.first = range.first;
+    // this.num = range.num;
+    this._prevFirst = this._first;
+    this._prevLast = this._last;
+    this._first = range.first;
+    this._last = range.last;
     const visiblityChanged = this._firstVisible !== range.firstVisible || this._lastVisible !== range.lastVisible;
     this._firstVisible = range.firstVisible;
     this._lastVisible = range.lastVisible;
-    this._incremental = !(range.stable);
+    // this._incremental = !(range.stable);
     if (range.remeasure) {
       this.requestRemeasure();
     } else if (range.stable || visiblityChanged) {
       this._notifyRange();
     }
-  }
-
-  protected _shouldRender() {
-    if (!super._shouldRender() || !this._containerElement || !this._layout) {
-      return false;
-    }
-    // NOTE: we're about to render, but the ResizeObserver didn't execute yet.
-    // Since we want to keep rAF timing, we compute _containerSize now. Would
-    // be nice to have a way to flush ResizeObservers.
-    if (this._containerSize === null) {
-      const {width, height} = this._containerElement.getBoundingClientRect();
-      this._containerSize = {width, height};
-    }
-    return this._containerSize.width > 0 || this._containerSize.height > 0;
   }
 
   private _correctScrollError(err: {top: number, left: number}) {
@@ -633,16 +826,23 @@ export class VirtualScroller<Child extends HTMLElement> {
   }
 
   /**
+   * Invoke to request that all elements in the range be measured.
+   */
+  requestRemeasure() {
+    this._needsRemeasure = true;
+    this._scheduleRender();
+  }  
+
+  /**
    * Emits a rangechange event with the current first, last, firstVisible, and
    * lastVisible.
    */
   private _notifyRange() {
-    const {first, num} = this;
-    const last = first + num - 1;
+    const {_first, _last} = this;
     this._container.dispatchEvent(
         new RangeChangeEvent('rangechange', {
-          first,
-          last,
+          first: _first,
+          last: _last,
           firstVisible: this._firstVisible,
           lastVisible: this._lastVisible,
         })
@@ -659,6 +859,18 @@ export class VirtualScroller<Child extends HTMLElement> {
     this._scheduleUpdateView();
   }
 
+  private async _observeMutations() {
+    if (!this._mutationsObserved) {
+      this._mutationsObserved = true;
+      // await (new Promise((resolve) => {
+      //   requestAnimationFrame(resolve);
+      // }));
+      this._mutationPromiseResolver();
+      this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
+      this._mutationsObserved = false;
+    }
+  }
+
   // TODO (graynorton): Rethink how this works. Probably child loading is too specific
   // to have dedicated support for; might want some more generic lifecycle hooks for
   // layouts to use. Possibly handle measurement this way, too, or maybe that remains
@@ -669,52 +881,122 @@ export class VirtualScroller<Child extends HTMLElement> {
   }
 
   private _childrenSizeChanged() {
-    if (this._skipNextChildrenSizeChanged) {
-      this._skipNextChildrenSizeChanged = false;
-    } else {
-      this.requestRemeasure();
-    }
+    // if (this._skipNextChildrenSizeChanged) {
+    //   this._skipNextChildrenSizeChanged = false;
+    // } else {
+      // this.requestRemeasure();
+      this._measureChildren();
+      this._layout.reflowIfNeeded();
+    // }
   }
+}
+
+///
+
+export class Virtualizer<Item, Child extends HTMLElement> extends HTMLElement {
+  private _scroller: VirtualScroller<Item, Child> = null;
+
+  constructor() {
+      super();
+      this._scroller = new VirtualScroller();
+  }
+
+  connectedCallback() {
+    this._scroller.container = this;
+    this._scroller.scrollTarget = this;
+  }
+
+  disconnectedCallback() {
+      this._scroller.container = null;
+  }
+
+  set totalItems(n) {
+    this._scroller.totalItems = n;
+  }
+
+  set layout(layout: Layout | Type<Layout> | LayoutConfig) {
+    // TODO (graynorton): Shouldn't have to set this here
+    this._scroller.container = this;
+    this._scroller.scrollTarget = this;
+    this._scroller.layout = layout;
+  }
+
+  // async _observe() {
+  //     if (!this._dirty) {
+  //         this._dirty = true;
+  //         await (new Promise((resolve) => {
+  //             requestAnimationFrame(resolve);
+  //           }));
+  //         this._dirty = false;
+  //         console.log(this.children);
+  //     }
+  // }
+
+  // _fireRangeEvent() {
+  //     const n = 100;
+  //     const first = Math.round(Math.random() * n);
+  //     const last = Math.min(n, first + (Math.random() * n));
+  //     this.dispatchEvent(new CustomEvent('rangeChanged', {
+  //         detail: { first, last }
+  //     }));
+  // }
+}
+
+customElements.define('uni-virtualizer', Virtualizer);
+
+function getMargins(el): Margins {
+  const style = window.getComputedStyle(el);
+  return {
+    marginTop: getMarginValue(style.marginTop),
+    marginRight: getMarginValue(style.marginRight),
+    marginBottom: getMarginValue(style.marginBottom),
+    marginLeft: getMarginValue(style.marginLeft),
+  };
+}
+
+function getMarginValue(value: string): number {
+  const float = value ? parseFloat(value) : NaN;
+  return Number.isNaN(float) ? 0 : float;
 }
 
 
 ///
 
-export class Virtualizer extends HTMLElement {
-    _mo = new MutationObserver(this._observe.bind(this));
-    _dirty = false;
+// export class Virtualizer extends HTMLElement {
+//     _mo = new MutationObserver(this._observe.bind(this));
+//     _dirty = false;
 
-    constructor() {
-        super();
-        this._mo.observe(this, { childList: true });
-    }
+//     constructor() {
+//         super();
+//         this._mo.observe(this, { childList: true });
+//     }
 
-    disconnectedCallback() {
-        this._mo.disconnect();
-    }
+//     disconnectedCallback() {
+//         this._mo.disconnect();
+//     }
 
-    async _observe() {
-        if (!this._dirty) {
-            this._dirty = true;
-            await (new Promise((resolve) => {
-                requestAnimationFrame(resolve);
-              }));
-            this._dirty = false;
-            console.log(this.children);
-        }
-    }
+//     async _observe() {
+//         if (!this._dirty) {
+//             this._dirty = true;
+//             await (new Promise((resolve) => {
+//                 requestAnimationFrame(resolve);
+//               }));
+//             this._dirty = false;
+//             console.log(this.children);
+//         }
+//     }
 
-    _fireRangeEvent() {
-        const n = 100;
-        const first = Math.round(Math.random() * n);
-        const last = Math.min(n, first + (Math.random() * n));
-        this.dispatchEvent(new CustomEvent('rangeChanged', {
-            detail: { first, last }
-        }));
-    }
-}
+//     _fireRangeEvent() {
+//         const n = 100;
+//         const first = Math.round(Math.random() * n);
+//         const last = Math.min(n, first + (Math.random() * n));
+//         this.dispatchEvent(new CustomEvent('rangeChanged', {
+//             detail: { first, last }
+//         }));
+//     }
+// }
 
-customElements.define('uni-virtualizer', Virtualizer);
+// customElements.define('uni-virtualizer', Virtualizer);
 
 
 

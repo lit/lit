@@ -137,7 +137,7 @@ export class Layout1d extends Layout1dBase {
    * Estimates it if the item at idx is not in the DOM.
    */
   _getPosition(idx): number {
-    const item = this._physicalItems.get(idx);
+    const item = this._getPhysicalItem(idx);
     return item ? item.pos : (idx * (this._delta)) + this._spacing;
   }
 
