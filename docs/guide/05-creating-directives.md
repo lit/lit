@@ -13,7 +13,7 @@ html`<div>
 
 However, instead of _returning_ a value to render, the directive controls what gets rendered to its location in the DOM.
 
-Internally, lit-html uses the [`Part`](/api/classes/lit_html.part.html) interface to represent the dynamic DOM associated with a binding. A directive has access to the `Part` associated with its binding. For example, it can find the current value of the part and set a new value for the part.
+Internally, lit-html uses the [`Part`](/api/interfaces/lit_html.part.html) interface to represent the dynamic DOM associated with a binding. A directive has access to the `Part` associated with its binding. For example, it can find the current value of the part and set a new value for the part.
 
 To create a directive, pass a factory function to lit-html's `directive` function:
 
