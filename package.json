@@ -8,7 +8,9 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "lint": "lit-analyzer && eslint 'src/**/*.ts'",
+    "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
+    "lint:eslint": "eslint 'src/**/*.ts'",
+    "lint:lit-analyzer": "lit-analyzer",
     "format": "prettier src/* --write",
     "docs": "npm run build && npm run analyze && npm run docs:build && npm run docs:assets && npm run docs:gen",
     "docs:gen": "eleventy --config=.eleventy.cjs",
