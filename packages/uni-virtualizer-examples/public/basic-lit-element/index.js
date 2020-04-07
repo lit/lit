@@ -1,6 +1,8 @@
 import {html, css, LitElement} from 'lit-element';
-import 'lit-virtualizer/lib/lit-virtualizer.js';
-import {Layout1d} from 'lit-virtualizer/lit-virtualizer.js';
+// import 'lit-virtualizer/lib/lit-virtualizer.js';
+// import {Layout1d} from 'lit-virtualizer/lit-virtualizer.js';
+import 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
+import {Layout1d} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
 
 // import ResizeObserver from 'lit-virtualizer/lib/uni-virtualizer/lib/polyfillLoaders/ResizeObserver.js';
 
@@ -84,6 +86,7 @@ class ContactList extends LitElement {
             <lit-virtualizer
                 .layout=${Layout1d}
                 .items=${this.data}
+                .keyFunction=${item => item.index}
                 .renderItem=${this._renderContact}>
             </lit-virtualizer>
         `;

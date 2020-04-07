@@ -1,6 +1,8 @@
 import { html } from 'lit-html';
-import 'lit-virtualizer/lib/lit-virtualizer.js';
-import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
+// import 'lit-virtualizer/lib/lit-virtualizer.js';
+// import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
+import 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
+import {Layout1d} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
 
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");
@@ -16,9 +18,10 @@ let virtualizer;
     const contacts = await(await fetch('../shared/contacts.json')).json();
     virtualizer.items = contacts;
     virtualizer.layout = Layout1d;
-    virtualizer.renderItem = ({ mediumText }, i) =>
-        html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${i}) ${mediumText}</div>`;
+    virtualizer.keyFunction = (item) => item.index;
+    virtualizer.renderItem = ({ mediumText, index }) =>
+        html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`;
     document.body.appendChild(virtualizer);
 
-    virtualizer.addEventListener("rangechange", handleRangeChange);
+    virtualizer.addEventListener("rangeChanged", handleRangeChange);
 })();

@@ -65,8 +65,8 @@ export class LitVirtualizer<T> extends LitElement {
     }
 }
 
-declare global {
-    interface HTMLElementTagNameMap {
-        'lit-virtualizer': LitVirtualizer<unknown>;
-    }
-}
+// declare global {
+//     interface HTMLElementTagNameMap {
+//         'lit-virtualizer': LitVirtualizer<unknown>;
+//     }
+// }

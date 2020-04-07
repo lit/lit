@@ -1,61 +1,78 @@
 import { LitElement, html, css } from 'lit-element';
 import { render } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
-import 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
-// import { SmartObject } from 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
+// import 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
+import 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
 
 // import { scroll } from 'lit-virtualizer/lib/scroll.js';
-import { Layout1d } from 'lit-virtualizer';
+import { Layout1d } from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
 
-// let smartObj = new SmartObject();
-// setTimeout(() => smartObj.interact(), 1000);
 
-const items = [];
-const n = 100;
-for (let i = 0; i < n; i++) {
-    items[i] = i;
-}
 const renderItem = (item) => html`<p>${item.mediumText}</p>`;
 
 class MyExample extends LitElement {
     static get properties() {
         return {
-            first: Number,
-            last: Number,
-            items: Array    
+            items: Array
         }
     }
 
-    constructor() {
-        super();
-        this.first = 0;
-        this.last = -1;
-        this.items = [];
-    }
-
-    _updateRange(e) {
-        Object.assign(this, e.detail);
-    }
-
     render() {
-        const itemsToRender = this.items.slice(this.first, this.last + 1);
         return html`
-            <style>
-                uni-virtualizer {
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    bottom: 8px;
-                    left: 8px;
-                    height: unset;
-                }
-            </style>
-            <uni-virtualizer .totalItems=${this.items.length} .layout=${Layout1d} @rangeChanged=${e => this._updateRange(e)}>
-                ${repeat(itemsToRender, item => item.index, renderItem)}
-            </uni-virtualizer>
+            <lit-virtualizer
+                .items=${this.items}
+                .keyFunction=${item => item.index}
+                .renderItem=${renderItem}
+                .layout=${Layout1d}
+                .scrollTarget=${window}
+            ></lit-virtualizer>
         `;
     }
 }
+
+// class MyExample extends LitElement {
+//     static get properties() {
+//         return {
+//             first: Number,
+//             last: Number,
+//             items: Array,
+//             scrollTarget: Object
+//         }
+//     }
+
+//     constructor() {
+//         super();
+//         this.first = 0;
+//         this.last = -1;
+//         this.items = [];
+//         this.scrollTarget = window;
+//     }
+
+//     _updateRange(e) {
+//         this.first = e.first;
+//         this.last = e.last;
+//     }
+
+//     render() {
+//         const { items, first, last, scrollTarget } = this;
+//         const itemsToRender = items.slice(first, last + 1);
+//         return html`
+//             <style>
+//                 uni-virtualizer {
+//                     position: absolute;
+//                     top: 8px;
+//                     right: 8px;
+//                     bottom: 8px;
+//                     left: 8px;
+//                     height: unset;
+//                 }
+//             </style>
+//             <uni-virtualizer .scrollTarget=${scrollTarget} .totalItems=${items.length} .layout=${Layout1d} @rangeChanged=${e => this._updateRange(e)}>
+//                 ${repeat(itemsToRender, item => item.index, renderItem)}
+//             </uni-virtualizer>
+//         `;
+//     }
+// }
 
 customElements.define('my-example', MyExample);
 
@@ -65,25 +82,3 @@ customElements.define('my-example', MyExample);
         <my-example .items=${contacts}></my-example>
     `, document.body);
 })();
-
-// const urlParams = new URLSearchParams(window.location.search);
-// urlParams.set('useShadowDOM', urlParams.get('useShadowDOM') === 'true');
-// const useShadowDOM = urlParams.get('useShadowDOM') === 'true';
-// window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
-
-// const example = (contacts) => html`
-//     <section>
-//         ${scroll({
-//             items: contacts,
-//             renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
-//             layout: Layout1d,
-//             scrollTarget: window,
-//             useShadowDOM: useShadowDOM
-//         })}
-//     </section>
-// `;
-
-// (async function go() {
-//     const contacts = await(await fetch('../shared/contacts.json')).json();
-//     render(example(contacts), document.body);
-// })();

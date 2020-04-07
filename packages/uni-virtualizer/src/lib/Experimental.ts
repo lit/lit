@@ -123,6 +123,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    */
   private _childrenPos: Array<{top: number, left: number}> = null;
 
+  private _toBeMeasured: Map<HTMLElement, any> = new Map();
+
   /**
    * Containing element. Set by container.
    */
@@ -231,7 +233,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * Flag for asynchnronous remeasure requests. Signals that all children
    * should be remeasured.
    */
-  private _needsRemeasure: boolean = false;
+  // private _needsRemeasure: boolean = false;
 
   /**
    * Invoked at the end of each render cycle: children in the range are
@@ -425,7 +427,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           this._measureChildOverride = this._layout.measureChildren;
         }
         this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
-        this.requestRemeasure();
+        // this.requestRemeasure();
       }
       this._layout.addEventListener('scrollsizechange', this);
       this._layout.addEventListener('scrollerrorchange', this);
@@ -444,38 +446,54 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * be positioned. If reset or remeasure has been triggered, all children are
    * returned.
    */
-  private get _toMeasure(): {indices: Array<number>, children: Array<Child>} {
-    return this._children.reduce((toMeasure, c, i) => {
-      const idx = this._first + i;
-      if (this._needsRemeasure || idx < this._prevFirst ||
-          idx > this._prevLast) {
-        toMeasure.indices.push(idx);
-        toMeasure.children.push(c);
-      }
-      return toMeasure;
-    }, {indices: [], children: []});
-  }
+  // private get _toMeasure(): {indices: Array<number>, children: Array<Child>} {
+  //   return this._children.reduce((toMeasure, c, i) => {
+  //     const idx = this._first + i;
+  //     if (true || this._needsRemeasure || idx < this._prevFirst ||
+  //         idx > this._prevLast) {
+  //       toMeasure.indices.push(idx);
+  //       toMeasure.children.push(c);
+  //     }
+  //     return toMeasure;
+  //   }, {indices: [], children: []});
+  // }
 
   /**
    * Measures each child bounds and builds a map of index/bounds to be passed
    * to the `_measureCallback`
    */
+  // private _measureChildren(): void {
+  //   const rangeChanged = this._first !== this._prevFirst || this._last !== this._prevLast;
+  //   const shouldMeasure = this._last >= this._first && this._measureCallback &&
+  //   (rangeChanged || this._needsRemeasure);
+  //   if (true || shouldMeasure) {
+  //     const {indices, children} = this._toMeasure;
+  //     const fn = this._measureChildOverride || this._measureChild;
+  //     const pm = children.map((c: Child, i: number) => fn.call(this, c, this._items[indices[i]]));
+  //     const mm = /** @type {{number: {width: number, height: number}}} */
+  //         (pm.reduce((out, cur, i) => {
+  //           out[indices[i]] = cur;
+  //           return out;
+  //         }, {}));
+  //     this._measureCallback(mm);  
+  //   }
+  //   this._needsRemeasure = false;
+  // }
+
   private _measureChildren(): void {
-    const rangeChanged = this._first !== this._prevFirst || this._last !== this._prevLast;
-    const shouldMeasure = this._last >= this._first && this._measureCallback &&
-    (rangeChanged || this._needsRemeasure);
-    if (shouldMeasure) {
-      const {indices, children} = this._toMeasure;
-      const fn = this._measureChildOverride || this._measureChild;
-      const pm = children.map((c: Child, i: number) => fn.call(this, c, this._items[indices[i]]));
-      const mm = /** @type {{number: {width: number, height: number}}} */
-          (pm.reduce((out, cur, i) => {
-            out[indices[i]] = cur;
-            return out;
-          }, {}));
-      this._measureCallback(mm);  
+    const mm = {};
+    const children = this._children;
+    const fn = this._measureChildOverride || this._measureChild;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const idx = this._first + i;
+      if (this._toBeMeasured.has(child)) {
+        mm[idx] = fn.call(this, child, this._items[idx]);
+      }
     }
-    this._needsRemeasure = false;
+    this._measureCallback(mm);
+    // this._needsRemeasure = this._needsRemeasure && false;
+    this._toBeMeasured.clear();
   }
 
   /**
@@ -505,6 +523,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     if (this._scrollTarget === target) {
       return;
     }
+    this._sizeContainer(undefined);
     if (this._scrollTarget) {
       this._scrollTarget.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
       if (this._sizer && this._scrollTarget === this._containerElement) {
@@ -587,7 +606,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._scrollToIndex = null;
     }
 
-    // this._layout.reflowIfNeeded();
+    this._layout.reflowIfNeeded();
 
     this._sizeContainer(this._scrollSize);
     
@@ -598,11 +617,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._scrollErr = null;
     }
     
-    this.container.dispatchEvent(new CustomEvent('rangeChanged', {
-      detail: { first: this._first, last: this._last }
-    }));
+    // this.container.dispatchEvent(new RangeChangeEvent('rangeChanged', {
+    //   first: this._first,
+    //   last: this._last
+    // }));
     
-    await this._mutationPromise;
+    // await this._mutationPromise;
     
     this._positionChildren(this._childrenPos);
     // this._measureChildren();
@@ -688,6 +708,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       fontSize: '2px',
     });
     sizer.innerHTML = '&nbsp;';
+    sizer.id = 'uni-virtualizer-spacer';
     return sizer;
   }
 
@@ -697,11 +718,15 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   get _children(): Array<Child> {
     const arr = [];
     let next = this.container.firstElementChild;
-    // TODO (graynorton): Hack: skip the first child, which is our spacer
-    next = next.nextElementSibling;
-    while (next) {
-      arr.push(next);
-      next = next.nextElementSibling;
+    if (next) {
+      // TODO (graynorton): Hack: skip the first child, which is our spacer
+      if (next.id === 'uni-virtualizer-spacer') {
+        next = next.nextElementSibling;
+      }
+      while (next) {
+        arr.push(next);
+        next = next.nextElementSibling;
+      }
     }
     return arr;
   }
@@ -768,11 +793,15 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     if (this._scrollTarget === this._containerElement) {
       const left = size && size.width ? size.width - 1 : 0;
       const top = size && size.height ? size.height - 1 : 0;
-      this._sizer.style.transform = `translate(${left}px, ${top}px)`;
+      if (this._sizer) {
+        this._sizer.style.transform = `translate(${left}px, ${top}px)`;
+      }
     } else {
-      const style = (this._containerElement as HTMLElement).style;
-      style.minWidth = size && size.width ? size.width + 'px' : null;
-      style.minHeight = size && size.height ? size.height + 'px' : null;
+      if (this._containerElement) {
+        const style = (this._containerElement as HTMLElement).style;
+        style.minWidth = size && size.width ? size.width + 'px' : null;
+        style.minHeight = size && size.height ? size.height + 'px' : null;  
+      }
     }
   }
 
@@ -781,39 +810,49 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * pos.
    */
   private _positionChildren(pos: Array<{top: number, left: number, width?: number, height?: number}>) {
-    const children = this._children;
-    Object.keys(pos).forEach((key) => {
-      const idx = (key as unknown as number) - this._first;
-      const child = children[idx];
-      if (child) {
-        const {top, left, width, height} = pos[key];
-        child.style.position = 'absolute';
-        child.style.transform = `translate(${left}px, ${top}px)`;
-        if (width !== undefined) {
-          child.style.width = width + 'px';
+    if (pos) {
+      const children = this._children;
+      Object.keys(pos).forEach((key) => {
+        const idx = (key as unknown as number) - this._first;
+        const child = children[idx];
+        if (child) {
+          const {top, left, width, height} = pos[key];
+          child.style.position = 'absolute';
+          child.style.transform = `translate(${left}px, ${top}px)`;
+          if (width !== undefined) {
+            child.style.width = width + 'px';
+          }
+          if (height !== undefined) {
+            child.style.height = height + 'px';
+          }
         }
-        if (height !== undefined) {
-          child.style.height = height + 'px';
-        }
-      }
-    });
+      });  
+    }
   }
 
-  private _adjustRange(range: Range) {
+  private async _adjustRange(range: Range) {
     // this.num = range.num;
     this._prevFirst = this._first;
     this._prevLast = this._last;
     this._first = range.first;
     this._last = range.last;
-    const visiblityChanged = this._firstVisible !== range.firstVisible || this._lastVisible !== range.lastVisible;
+    // const visiblityChanged = this._firstVisible !== range.firstVisible || this._lastVisible !== range.lastVisible;
     this._firstVisible = range.firstVisible;
     this._lastVisible = range.lastVisible;
     // this._incremental = !(range.stable);
-    if (range.remeasure) {
-      this.requestRemeasure();
-    } else if (range.stable || visiblityChanged) {
-      this._notifyRange();
-    }
+    // if (range.remeasure) {
+    //   this.requestRemeasure();
+    // } else if (range.stable || visiblityChanged) {
+    //   this._notifyRange();
+    // }
+
+    // if (range.remeasure) {
+    //   this.requestRemeasure();
+    // }
+    this._notifyRange();
+    
+    await this._mutationPromise;
+    this._scheduleRender();
   }
 
   private _correctScrollError(err: {top: number, left: number}) {
@@ -823,15 +862,16 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     } else {
       window.scroll(window.scrollX - err.left, window.scrollY - err.top);
     }
+    this._positionChildren(this._childrenPos);
   }
 
   /**
    * Invoke to request that all elements in the range be measured.
    */
-  requestRemeasure() {
-    this._needsRemeasure = true;
-    this._scheduleRender();
-  }  
+  // requestRemeasure() {
+  //   this._needsRemeasure = true;
+  //   this._scheduleRender();
+  // }  
 
   /**
    * Emits a rangechange event with the current first, last, firstVisible, and
@@ -840,7 +880,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   private _notifyRange() {
     const {_first, _last} = this;
     this._container.dispatchEvent(
-        new RangeChangeEvent('rangechange', {
+        new RangeChangeEvent('rangeChanged', {
           first: _first,
           last: _last,
           firstVisible: this._firstVisible,
@@ -877,14 +917,17 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   // a first-class feature?
 
   private _childLoaded() {
-    this.requestRemeasure();
+    // this.requestRemeasure();
   }
 
-  private _childrenSizeChanged() {
+  private _childrenSizeChanged(changes) {
     // if (this._skipNextChildrenSizeChanged) {
     //   this._skipNextChildrenSizeChanged = false;
     // } else {
       // this.requestRemeasure();
+      for (let change of changes) {
+        this._toBeMeasured.set(change.target, change.contentRect);
+      }
       this._measureChildren();
       this._layout.reflowIfNeeded();
     // }
@@ -893,8 +936,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
 ///
 
-export class Virtualizer<Item, Child extends HTMLElement> extends HTMLElement {
+export class UniVirtualizer<Item, Child extends HTMLElement> extends HTMLElement {
   private _scroller: VirtualScroller<Item, Child> = null;
+  private _scrollTarget: Element | Window = this;
 
   constructor() {
       super();
@@ -903,7 +947,7 @@ export class Virtualizer<Item, Child extends HTMLElement> extends HTMLElement {
 
   connectedCallback() {
     this._scroller.container = this;
-    this._scroller.scrollTarget = this;
+    this._scroller.scrollTarget = this._scrollTarget;
   }
 
   disconnectedCallback() {
@@ -917,32 +961,16 @@ export class Virtualizer<Item, Child extends HTMLElement> extends HTMLElement {
   set layout(layout: Layout | Type<Layout> | LayoutConfig) {
     // TODO (graynorton): Shouldn't have to set this here
     this._scroller.container = this;
-    this._scroller.scrollTarget = this;
+    this._scroller.scrollTarget = this._scrollTarget;
     this._scroller.layout = layout;
   }
 
-  // async _observe() {
-  //     if (!this._dirty) {
-  //         this._dirty = true;
-  //         await (new Promise((resolve) => {
-  //             requestAnimationFrame(resolve);
-  //           }));
-  //         this._dirty = false;
-  //         console.log(this.children);
-  //     }
-  // }
-
-  // _fireRangeEvent() {
-  //     const n = 100;
-  //     const first = Math.round(Math.random() * n);
-  //     const last = Math.min(n, first + (Math.random() * n));
-  //     this.dispatchEvent(new CustomEvent('rangeChanged', {
-  //         detail: { first, last }
-  //     }));
-  // }
+  set scrollTarget(target: Element | Window) {
+    this._scrollTarget = target;
+  }
 }
 
-customElements.define('uni-virtualizer', Virtualizer);
+customElements.define('uni-virtualizer', UniVirtualizer);
 
 function getMargins(el): Margins {
   const style = window.getComputedStyle(el);
@@ -958,108 +986,3 @@ function getMarginValue(value: string): number {
   const float = value ? parseFloat(value) : NaN;
   return Number.isNaN(float) ? 0 : float;
 }
-
-
-///
-
-// export class Virtualizer extends HTMLElement {
-//     _mo = new MutationObserver(this._observe.bind(this));
-//     _dirty = false;
-
-//     constructor() {
-//         super();
-//         this._mo.observe(this, { childList: true });
-//     }
-
-//     disconnectedCallback() {
-//         this._mo.disconnect();
-//     }
-
-//     async _observe() {
-//         if (!this._dirty) {
-//             this._dirty = true;
-//             await (new Promise((resolve) => {
-//                 requestAnimationFrame(resolve);
-//               }));
-//             this._dirty = false;
-//             console.log(this.children);
-//         }
-//     }
-
-//     _fireRangeEvent() {
-//         const n = 100;
-//         const first = Math.round(Math.random() * n);
-//         const last = Math.min(n, first + (Math.random() * n));
-//         this.dispatchEvent(new CustomEvent('rangeChanged', {
-//             detail: { first, last }
-//         }));
-//     }
-// }
-
-// customElements.define('uni-virtualizer', Virtualizer);
-
-
-
-// // class InheritingMixin {
-// //     chain: Array<Function> = []
-// //     super(propOrMethod) {
-// //         console.log(this.)
-// //     }
-// // }
-
-// // Disposable Mixin
-// class Disposable {
-//     isDisposed: boolean;
-//     dispose() {
-//         this.isDisposed = true;
-//     }
-
-// }
-
-// // Activatable Mixin
-// class Activatable {
-//     isActive: boolean;
-//     activate() {
-//         this.isActive = true;
-//     }
-//     deactivate() {
-//         this.isActive = false;
-//     }
-// }
-
-// // class PokeActivatable {
-// //     activate() {
-// //         super.activate();
-
-// //     }
-// // }
-
-// export class SmartObject {
-//     constructor() {
-//         setInterval(() => console.log(this.isActive + " : " + this.isDisposed), 500);
-//     }
-
-//     interact() {
-//         this.activate();
-//     }
-// }
-
-// export interface SmartObject extends Disposable, Activatable {}
-// applyMixins(SmartObject, [Disposable, Activatable]);
-
-// ////////////////////////////////////////
-// // In your runtime library somewhere
-// ////////////////////////////////////////
-
-// function applyMixins(derivedCtor: any, baseCtors: any[]) {
-//     let lastProto = derivedCtor.prototype;
-//     baseCtors.forEach(baseCtor => {
-//         const newProto = {};
-//         Object.setPrototypeOf(newProto, lastProto);
-//         Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-//             Object.defineProperty(newProto, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name));
-//         });
-//         lastProto = newProto;
-//     });
-//     Object.setPrototypeOf(derivedCtor, lastProto);
-// }
