@@ -20,7 +20,7 @@
     "plugins": [
       {
         "name": "ts-lit-plugin",
-        "strict": true,
+        "strict": true
       }
     ]
   },
