@@ -65,16 +65,21 @@ ESLint is recommended for linting lit-html code. The following ESLint plugin can
 
 ### Dev server
 
+lit-html is packaged as JavaScript modules. Many developers prefer to import modules using bare module specifiers:
 
-lit-html is packaged as JavaScript modules. Many developers prefer to import modules using node-style module identifiers, which aren't supported yet by browsers. To run in the browser, these module identifiers need to be transformed to browser-ready module identifiers. [ES dev server](https://open-wc.org/developing/es-dev-server.html) is an open-source dev server that handles this and other transforms.
+```js
+import {html, render} from 'lit-html';
+```
 
-You can also use the Polymer dev server, which is part of the Polymer CLI, if you already have it installed. For new projects, we recommend the ES dev server.
+To run in the browser, the bare identifier ('lit-html') needs to be transformed to a path or URL that the browser can load (such as '/node_modules/lit-html/lit-html.js'). [ES dev server](https://open-wc.org/developing/es-dev-server.html) is an open-source dev server that handles this and other transforms.
+
+You can also use the Polymer CLI dev server, if you already have it installed. For new projects, we recommend the ES dev server.
 
 If you already have a dev server that integrates with your build process, you can use that, instead.
 
 #### ES Dev Server
 
-The ES dev server handles rewriting node-style modules to browser-style modules, and enables a build-free development process.
+The ES dev server enables a build-free development process. It handles rewriting bare module specifiers to valid paths or URLs, as required by the browser. For IE11, ES dev server also transforms JavaScript modules to use the backwards-compatible SystemJS module loader. 
 
 Install ES dev server:
 
@@ -86,7 +91,7 @@ Add a command to your `package.json` file:
 
 ```json
 "scripts": {
-  "start": "es-dev-server --app-index index.html --node-resolve --dedupe --watch --open"
+  "start": "es-dev-server --app-index index.html --node-resolve --watch --open"
 }
 ```
 
@@ -96,7 +101,7 @@ Run the dev server:
 npm run start
 ```
 
-For full installation and usage instructions, see the [Open Web Component website](https://open-wc.org/developing/es-dev-server.html). 
+For full installation and usage instructions, see the [open-wc website](https://open-wc.org/developing/es-dev-server.html). 
 
 ## Testing
 
