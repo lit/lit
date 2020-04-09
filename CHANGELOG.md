@@ -10,18 +10,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## [X.Y.Z] - YYYY-MM-DD -->
+<!-- ## Unreleased -->
 <!-- ### Changed -->
+<!-- ### Added -->
+<!-- ### Fixed -->
 <!-- ### Removed -->
-### Added
-* Added interop with the proposed Trusted Types spec: https://github.com/WICG/trusted-types ([#970](https://github.com/Polymer/lit-html/pull/970))
-* Added a sanitization system, for integrating with DOM value sanitizers to prevent XSS attacks. See the docs on the SanitizerFactory type and the setSanitizerFactory function for details.
 
+## [1.2.1] - 2020-03-19
+
+### Fixed
+* Add TypeScript type declarations for older versions of TypeScript. We're currently testing back to TS 3.4. We can't commit to never breaking TypeScript builds, but we'll be supporting older versions as best we can.
+
+## [1.2.0] - 2020-03-18
+
+### Added
+* Added `unsafeSVG` directive to bind SVG source inside SVGs. ([#304](https://github.com/Polymer/lit-html/issues/304))
+* Added `templateContent()` directive for stamping out the contents of an HTML template into a text binding. ([#1058](https://github.com/Polymer/lit-html/issues/1058))
+* Added the `live()` directive. ([#877](https://github.com/Polymer/lit-html/issues/877))
 
 ### Fixed
 * Fixed a bug where `classMap` and `styleMap` directives wouldn't render mutated objects. ([#972](https://github.com/Polymer/lit-html/issues/972))
-
-
+* Fixed a bug where ifDefined() would set an attribute even when the value didn't change. ([#890](https://github.com/Polymer/lit-html/issues/890))
+* Change `classMap` directive to set classes correctly on SVGs ([#1070](https://github.com/Polymer/lit-html/issues/1070)).
 
 ## [1.1.2] - 2019-08-12
 

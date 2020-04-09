@@ -1,12 +1,7 @@
 ---
 layout: post
 title: Introduction
-permalink: /guide
 ---
-
-{::options toc_levels="1..2" /}
-* ToC
-{:toc}
 
 ## What is lit-html?
 

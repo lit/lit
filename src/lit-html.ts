@@ -38,7 +38,7 @@ export {directive, DirectiveFn, isDirective} from './lib/directive.js';
 // TODO(justinfagnani): remove line when we get NodePart moving methods
 export {removeNodes, reparentNodes} from './lib/dom.js';
 export {noChange, nothing, Part} from './lib/part.js';
-export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyCommitter, PropertyPart, SanitizerFactory as DOMSanitizerFactory, sanitizerFactory, setSanitizerFactory, ValueSanitizer as DOMValueSanitizer} from './lib/parts.js';
+export {AttributeCommitter, AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyCommitter, PropertyPart} from './lib/parts.js';
 export {RenderOptions} from './lib/render-options.js';
 export {parts, render} from './lib/render.js';
 export {templateCaches, templateFactory} from './lib/template-factory.js';
@@ -56,7 +56,9 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.2');
+if (typeof window !== 'undefined') {
+  (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.2.1');
+}
 
 /**
  * Interprets a template literal as an HTML template that can efficiently

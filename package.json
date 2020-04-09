@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "1.1.2",
+  "version": "1.2.1",
   "description": "HTML template literals in JavaScript",
   "license": "BSD-3-Clause",
   "homepage": "https://lit-html.polymer-project.org/",
@@ -8,6 +8,13 @@
   "main": "lit-html.js",
   "module": "lit-html.js",
   "typings": "lit-html.d.ts",
+  "typesVersions": {
+    "<3.8": {
+      "*": [
+        "ts3.4/*"
+      ]
+    }
+  },
   "directories": {
     "test": "test"
   },
@@ -20,10 +27,11 @@
     "/directives/",
     "/polyfills",
     "/src/",
+    "/ts3.4/",
     "!/src/test/"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && downlevel-dts . ts3.4 && cp tsconfig.json ./ts3.4/",
     "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
@@ -38,24 +46,24 @@
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.0",
-    "@types/mocha": "^5.2.0",
-    "@types/trusted-types": "^1.0.1",
-    "@typescript-eslint/eslint-plugin": "^2.10.0",
-    "@typescript-eslint/parser": "^2.10.0",
+    "@types/mocha": "^7.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
     "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/webcomponentsjs": "^2.0.4",
+    "@webcomponents/webcomponentsjs": "^2.4.2",
     "chai": "^4.1.2",
-    "clang-format": "^1.2.4",
-    "eslint": "^6.7.0",
-    "husky": "^3.1.0",
-    "lint-staged": "^9.5.0",
+    "clang-format": "~1.2.4",
+    "downlevel-dts": "^0.4.0",
+    "eslint": "^6.8.0",
+    "husky": "^4.2.0",
+    "lint-staged": "^10.1.0",
     "lit-html-benchmarks": "^0.2.1",
-    "mocha": "^5.2.0",
+    "mocha": "^7.0.1",
     "rollup": "^1.19.0",
     "rollup-plugin-filesize": "^6.2.0",
-    "rollup-plugin-terser": "^5.1.0",
+    "rollup-plugin-terser": "^5.2.0",
     "tachometer": "^0.4.15",
-    "typescript": "^3.4.1",
+    "typescript": "~3.8.0",
     "uglify-es": "^3.3.5",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"
@@ -66,9 +74,8 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,ts}": [
-      "eslint --fix",
-      "git add"
+    "src/**/*.{js,ts}": [
+      "eslint --fix"
     ]
   }
 }

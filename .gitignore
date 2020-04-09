@@ -15,6 +15,7 @@
 /test/**/*.d.ts.map
 /test/**/*.js
 /test/**/*.js.map
+/ts3.4/
 
 /lit-html.bundled.js
 
@@ -40,5 +41,6 @@ pids
 .DS_Store
 /docs/_site/
 /docs/_api/tmp/
+/docs/api/
 /docs/node_modules/
 *.pyc
