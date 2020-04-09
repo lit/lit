@@ -190,7 +190,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   /**
    * Total number of items to render. Set by totalItems.
    */
-  private _totalItems: number = 0;
+  private _totalItems: number = null;
 
   /**
    * Index of the first child in the range, not necessarily the first visible child.
@@ -252,6 +252,13 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
     if (config) {
       Object.assign(this, config);
+    }
+  }
+
+  set items(items) {
+    if (items !== this._items) {
+      this._items = items;
+      this._scheduleRender();
     }
   }
 
@@ -629,7 +636,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
     // We want to skip the first ResizeObserver callback call as we already
     // measured the children.
-    if (this._layout.measureChildren === true) {
+    if (this._layout.measureChildren) {
       // this._skipNextChildrenSizeChanged = true;
       this._children.forEach((child) => this._childrenRO.observe(child));
     }
@@ -953,6 +960,7 @@ export class UniVirtualizer<Item, Child extends HTMLElement> extends HTMLElement
   disconnectedCallback() {
       this._scroller.container = null;
   }
+  
 
   set totalItems(n) {
     this._scroller.totalItems = n;

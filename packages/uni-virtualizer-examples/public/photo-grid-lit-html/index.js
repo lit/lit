@@ -1,5 +1,7 @@
 import {html, render} from 'lit-html';
-import {scroll, layoutRef} from 'lit-virtualizer';
+// import {scroll, layoutRef} from 'lit-virtualizer';
+import { layoutRef } from 'lit-virtualizer/lib/uni-virtualizer/uni-virtualizer.js';
+import { scroll } from 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
 import {Layout1dSquareGrid} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dSquareGrid.js';
 import {Layout1dFlex} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dFlex.js';
 import {getDims, getUrl, searchFlickr} from './flickr.js';
@@ -16,14 +18,16 @@ import '@material/mwc-radio';
 ///
 
 const renderPhoto = photo => {
-    // const {width, height} = getDims(photo);
-    // return html`<div style="--ratio: ${width / height}"><img src=${getUrl(photo)} /></div>`;
-    // return html`<img src=${getUrl(photo)} />`;
-    const url = photo.id === 'TEMP' ? '' : getUrl(photo);
-    // if (photo.id === 'TEMP') {
-    //     return html`<div class="box"></div>`;
-    // }
-    return html`<img src=${url} style="width: 200px; height: 200px;" />`;
+    if (photo) {
+        // const {width, height} = getDims(photo);
+        // return html`<div style="--ratio: ${width / height}"><img src=${getUrl(photo)} /></div>`;
+        // return html`<img src=${getUrl(photo)} />`;
+        const url = photo.id === 'TEMP' ? '' : getUrl(photo);
+        // if (photo.id === 'TEMP') {
+        //     return html`<div class="box"></div>`;
+        // }
+        return html`<img src=${url} style="width: 200px; height: 200px;" />`;
+    }
 }
 
 async function getPhotos(query, mock=false) {
@@ -164,7 +168,7 @@ function renderExample() {
                 setState({first, last, firstVisible, lastVisible});
             }
         }}>
-            ${scroll({items, renderItem, layout: {
+            ${scroll({items, renderItem, keyFunction: i => i.id || window.performance.now(), layout: {
                 type: Layout,
                 idealSize,
                 spacing,
