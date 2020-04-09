@@ -47,16 +47,16 @@
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^7.0.1",
-    "@typescript-eslint/eslint-plugin": "^2.10.0",
-    "@typescript-eslint/parser": "^2.10.0",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.4.2",
     "chai": "^4.1.2",
     "clang-format": "~1.2.4",
     "downlevel-dts": "^0.4.0",
-    "eslint": "^6.7.0",
-    "husky": "^3.1.0",
-    "lint-staged": "^9.5.0",
+    "eslint": "^6.8.0",
+    "husky": "^4.2.0",
+    "lint-staged": "^10.1.0",
     "lit-html-benchmarks": "^0.2.1",
     "mocha": "^7.0.1",
     "rollup": "^1.19.0",
@@ -75,8 +75,7 @@
   },
   "lint-staged": {
     "src/**/*.{js,ts}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ]
   }
 }
