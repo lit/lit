@@ -24,7 +24,7 @@
     "checksize": "rollup -c ; cat my-element.bundled.js | gzip -9 | wc -c ; rm my-element.bundled.js"
   },
   "keywords": [
-    "web component",
+    "web-components",
     "lit-element",
     "javascript"
   ],
