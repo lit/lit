@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('Parts', () => {
   suite('AttributePart', () => {

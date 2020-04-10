@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
@@ -20,8 +22,6 @@ import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 class LiveTester extends HTMLElement {
   _x?: string;

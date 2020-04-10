@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;

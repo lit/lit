@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {AttributePart, directive, html, noChange, NodePart, nothing, Part, render, svg, templateFactory} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const isTemplatePolyfilled =
     ((HTMLTemplateElement as any).decorate != null ||

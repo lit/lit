@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {asyncReplace} from '../../directives/async-replace.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
@@ -19,8 +21,6 @@ import {TestAsyncIterable} from '../lib/test-async-iterable.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Set Symbol.asyncIterator on browsers without it
 if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {

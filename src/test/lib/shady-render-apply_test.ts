@@ -12,14 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
 import {html as htmlWithApply} from '../../lib/shady-render.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const testIfUsingNativeCSSVariables = (test: any) =>
     (window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test);

@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {render as shadyRender} from '../../lib/shady-render.js';
 import {html} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {

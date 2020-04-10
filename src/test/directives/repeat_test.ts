@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {guard} from '../../directives/guard.js';
 import {repeat} from '../../directives/repeat.js';
 import {until} from '../../directives/until.js';
@@ -20,8 +22,6 @@ import {html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 function assertItemIdentity(
     oldChildren: HTMLElement[],
