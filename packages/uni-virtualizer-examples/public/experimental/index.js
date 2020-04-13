@@ -21,7 +21,6 @@ class MyExample extends LitElement {
         return html`
             <lit-virtualizer
                 .items=${this.items}
-                .keyFunction=${item => item.index}
                 .renderItem=${renderItem}
                 .layout=${Layout1d}
                 .scrollTarget=${window}

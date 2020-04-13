@@ -16,7 +16,6 @@ const example = (contacts) => html`
         ${scroll({
             items: contacts,
             layout: Layout1d,
-            keyFunction: item => item.index,
             renderItem: ({ mediumText, index }) =>
                 html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`,
             useShadowDOM: true

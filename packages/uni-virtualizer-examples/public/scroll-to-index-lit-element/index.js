@@ -11,7 +11,6 @@ let virtualizer;
     const contacts = await(await fetch('../shared/contacts.json')).json();
     virtualizer.items = contacts;
     virtualizer.layout = Layout1d;
-    virtualizer.keyFunction = item => item.index;
     virtualizer.renderItem = ({ longText, index }) => html`<p>${index}) ${longText}</p>`;
     document.body.appendChild(virtualizer);
 

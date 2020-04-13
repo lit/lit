@@ -168,7 +168,7 @@ function renderExample() {
                 setState({first, last, firstVisible, lastVisible});
             }
         }}>
-            ${scroll({items, renderItem, keyFunction: i => i.id || window.performance.now(), layout: {
+            ${scroll({items, renderItem, layout: {
                 type: Layout,
                 idealSize,
                 spacing,

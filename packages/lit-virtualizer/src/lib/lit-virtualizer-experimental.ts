@@ -111,7 +111,10 @@ export class LitVirtualizer<Item, Child extends HTMLElement> extends LitElement 
     }
 
     render(): TemplateResult {
-        const { items, _first, _last, renderItem, keyFunction } = this;
+        let { items, _first, _last, renderItem, keyFunction } = this;
+        if (!keyFunction) {
+            keyFunction = item => item;
+        }
         const itemsToRender = [];
         for (let i = _first; i < _last + 1; i++) {
             itemsToRender.push(items[i]);
@@ -177,6 +180,9 @@ interface ScrollConfig<Item> {
   }
   
 function renderItems({renderItem, keyFunction, first, last, items}) {
+    if (!keyFunction) {
+        keyFunction = item => item;
+    }
     const itemsToRender = [];
     for (let i = first; i < last + 1; i++) {
         itemsToRender.push(items[i]);

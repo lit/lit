@@ -86,7 +86,6 @@ class ContactList extends LitElement {
             <lit-virtualizer
                 .layout=${Layout1d}
                 .items=${this.data}
-                .keyFunction=${item => item.index}
                 .renderItem=${this._renderContact}>
             </lit-virtualizer>
         `;

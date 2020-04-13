@@ -10,7 +10,6 @@ const example = (contacts, scrollToIndex = null) => html`
             items: contacts,
             layout: Layout1d,
             renderItem: ({ longText, index }) => html`<p>${index}) ${longText}</p>`,
-            keyFunction: item => item.index,
             scrollToIndex: scrollToIndex,
         })}
     </section>

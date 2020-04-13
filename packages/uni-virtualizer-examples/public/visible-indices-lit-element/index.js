@@ -18,7 +18,6 @@ let virtualizer;
     const contacts = await(await fetch('../shared/contacts.json')).json();
     virtualizer.items = contacts;
     virtualizer.layout = Layout1d;
-    virtualizer.keyFunction = (item) => item.index;
     virtualizer.renderItem = ({ mediumText, index }) =>
         html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`;
     document.body.appendChild(virtualizer);
