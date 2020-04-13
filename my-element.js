@@ -22,7 +22,7 @@ import {LitElement, html, css} from 'lit-element';
  */
 export class MyElement extends LitElement {
   static get styles() {
-    return  css`
+    return css`
       :host {
         display: block;
         border: solid 1px gray;
@@ -34,7 +34,6 @@ export class MyElement extends LitElement {
 
   static get properties() {
     return {
-
       /**
        * The name to say "Hello" to.
        */
@@ -43,10 +42,10 @@ export class MyElement extends LitElement {
       /**
        * The number of times the button has been clicked.
        */
-      count: {type: Number}
-    }
+      count: {type: Number},
+    };
   }
- 
+
   constructor() {
     super();
     this.name = 'World';
@@ -67,5 +66,5 @@ export class MyElement extends LitElement {
     this.count++;
   }
 }
- 
+
 window.customElements.define('my-element', MyElement);
