@@ -1,6 +1,6 @@
-# LitElement TypeScript starter 
+# LitElement JavaScript starter 
 
-This project includes a sample component using LitElement with TypeScript.
+This project includes a sample component using LitElement with JavaScript.
 
 ## Setup
 
@@ -9,24 +9,6 @@ Install dependencies:
 ```bash
 npm i
 ```
-
-## Build
-
-This sample uses the TypeScript compiler to produce JavaScript that runs in modern browsers.
-
-To build the JavaScript version of your component:
-
-```bash
-npm run build
-```
-
-To watch files and rebuild when the files are modified, run the following command in a separate shell:
-
-```bash
-npm run build:watch
-```
-
-Both the TypeScript compiler and lit-analyzer are configured to be very strict. You may want to change `tsconfig.json` to make them less strict.
 
 ## Testing
 
@@ -65,9 +47,9 @@ If you use VS Code, we highly reccomend the [lit-plugin extension](https://marke
 
 ## Linting
 
-Linting of TypeScript files is provided by [ESLint](eslint.org) and [TypeScript ESLint](https://github.com/typescript-eslint/typescript-eslint). In addition, [lit-analyzer](https://www.npmjs.com/package/lit-analyzer) is used to type-check and lint lit-html templates with the same engine and rules as lit-plugin.
+Linting of JavaScript files is provided by [ESLint](eslint.org). In addition, [lit-analyzer](https://www.npmjs.com/package/lit-analyzer) is used to type-check and lint lit-html templates with the same engine and rules as lit-plugin.
 
-The rules are mostly the recommended rules from each project, but some have been turned off to make LitElement usage easier. The recommended rules are pretty strict, so you may want to relax them by editing `.eslintrc.json` and `tsconfig.json`.
+The rules are mostly the recommended rules from each project, but some have been turned off to make LitElement usage easier. The recommended rules are pretty strict, so you may want to relax them by editing `.eslintrc.json`.
 
 To lint the project run:
 
