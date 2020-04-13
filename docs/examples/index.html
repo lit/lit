@@ -1,0 +1,73 @@
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><my-element> ⌲ Examples ⌲ Basic</title>
+    <link rel="stylesheet" href="../docs.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
+    <link href="../prism-okaidia.css" rel="stylesheet" />
+    <script type="module" src="../my-element.bundled.js"></script>
+  </head>
+  <body>
+    
+<header>
+  <h1>&lt;my-element></h1>
+  <h2>A web component just for me.</h2>
+</header>
+    
+<nav>
+  <a href="../">Home</a>
+  <a href="">Examples</a>
+  <a href="../api/">API</a>
+  <a href="../install/">Install</a>
+</nav>
+    <div id="main-wrapper">
+      <main>
+        
+    <h1>Example: Basic</h1>
+    <section class="examples">
+      <nav class="collection">
+        <ul>
+          
+                  <li class=selected>
+                    <a href="">A basic example</a>
+                  </li>
+                
+                  <li class=>
+                    <a href="name-property/">Setting the name property</a>
+                  </li>
+                
+        </ul>
+      </nav>
+      <div>
+        <style>
+  my-element p {
+    border: solid 1px blue;
+    padding: 8px;
+  }
+</style>
+<my-element>
+  <p>This is child content</p>
+</my-element>
+<h3>CSS</h3>
+<pre class="language-css"><code class="language-css">  <span class="token selector">p</span> <span class="token punctuation">{</span><br>    <span class="token property">border</span><span class="token punctuation">:</span> solid 1px blue<span class="token punctuation">;</span><br>    <span class="token property">padding</span><span class="token punctuation">:</span> 8px<span class="token punctuation">;</span><br>  <span class="token punctuation">}</span></code></pre>
+<h3>HTML</h3>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>This is child content<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">></span></span></code></pre>
+
+      </div>
+    </section>
+  
+      </main>
+    </div>
+    
+<footer>
+  <p>
+    Made with
+    <a href="https://github.com/PolymerLabs/lit-element-starter-js">lit-element-starter-js</a>
+  </p>
+</footer>
+  </body>
+</html>

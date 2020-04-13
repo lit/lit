@@ -1,7 +1,4 @@
-node_modules/
-dist/
-build/
+/node_modules/
 
-*.js.map
-*.d.ts
-*.d.ts.map
+# only generated for size check
+my-element.bundled.js
