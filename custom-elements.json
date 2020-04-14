@@ -3,6 +3,7 @@
   "tags": [
     {
       "name": "my-element",
+      "path": "./src/my-element.ts",
       "description": "An example element.",
       "attributes": [
         {
