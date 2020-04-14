@@ -47,8 +47,8 @@
     },
     "dependencies": {
         "event-target-shim": "^5.0.1",
-        "lit-element": "^2.2.1",
-        "lit-html": "^1.1.2",
+        "lit-element": "^2.3.1",
+        "lit-html": "^1.2.1",
         "resize-observer-polyfill": "^1.5.1",
         "tslib": "^1.10.0"
     }

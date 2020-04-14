@@ -28,7 +28,7 @@
         "@material/mwc-textfield": "^0.10.0",
         "@material/mwc-top-app-bar": "^0.10.0",
         "@webcomponents/webcomponentsjs": "^2.4.0",
-        "lit-element": "^2.2.1",
-        "lit-html": "^1.1.2"
+        "lit-element": "^2.3.1",
+        "lit-html": "^1.2.1"
     }
 }
