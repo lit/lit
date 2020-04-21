@@ -1,8 +1,6 @@
 import { render, html } from 'lit-html';
-// import { scroll } from 'lit-virtualizer/lib/scroll.js';
-// import { Layout1d } from 'lit-virtualizer';
-import { scroll } from 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
-import { Layout1d } from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
+import { scroll } from 'lit-virtualizer/lib/scroll.js';
+import { Layout1d } from 'lit-virtualizer';
 
 const urlParams = new URLSearchParams(window.location.search);
 urlParams.set('useShadowDOM', urlParams.get('useShadowDOM') === 'true');

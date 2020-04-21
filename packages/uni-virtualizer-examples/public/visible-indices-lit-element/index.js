@@ -1,8 +1,6 @@
 import { html } from 'lit-html';
-// import 'lit-virtualizer/lib/lit-virtualizer.js';
-// import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
-import 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
-import {Layout1d} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
+import 'lit-virtualizer/lib/lit-virtualizer.js';
+import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
 
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");

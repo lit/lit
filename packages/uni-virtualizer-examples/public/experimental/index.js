@@ -1,10 +1,8 @@
 import { LitElement, html, css } from 'lit-element';
 import { render } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
-// import 'lit-virtualizer/lib/uni-virtualizer/lib/Experimental.js';
-import 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
+import 'lit-virtualizer/lib/lit-virtualizer.js';
 
-// import { scroll } from 'lit-virtualizer/lib/scroll.js';
 import { Layout1d } from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
 
 

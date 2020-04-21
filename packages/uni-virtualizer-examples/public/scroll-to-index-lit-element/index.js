@@ -1,8 +1,6 @@
 import { html } from 'lit-html';
-// import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
-// import 'lit-virtualizer/lit-virtualizer.js';
-import 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
-import {Layout1d} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1d.js';
+import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
+import 'lit-virtualizer/lit-virtualizer.js';
 
 let virtualizer;
 

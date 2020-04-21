@@ -1,6 +1,9 @@
-import { html, LitElement, customElement, property, TemplateResult } from 'lit-element';
-import { scroll } from './scroll.js';
-import { Type, Layout } from './uni-virtualizer/lib/layouts/Layout.js';
+import { html, LitElement, customElement, property } from 'lit-element';
+import { TemplateResult } from 'lit-html';
+import { repeat } from 'lit-html/directives/repeat.js';
+import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
+import { VirtualScroller, RangeChangeEvent } from './uni-virtualizer/lib/VirtualScroller.js';
+
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -10,23 +13,63 @@ import { Type, Layout } from './uni-virtualizer/lib/layouts/Layout.js';
  * to the <lit-virtualizer> element.
  */
 @customElement('lit-virtualizer')
-export class LitVirtualizer<T> extends LitElement {
+export class LitVirtualizer<Item, Child extends HTMLElement> extends LitElement {
     @property()
-    private _renderItem: (item: T, index?: number) => TemplateResult;
-
-    @property()
-    items: Array<T>;
+    private _renderItem: (item: Item, index?: number) => TemplateResult;
 
     @property()
-    scrollTarget: Element | Window;
+    private _first: number = 0;
 
     @property()
-    layout: Type<Layout>
+    private _last: number = -1;
 
-    private _scrollToIndex: {index: number, position: string};
+    @property()
+    private _items: Array<Item>;
 
+    private _scroller: VirtualScroller<Item, Child> = null;
+
+    @property()
+    scrollTarget: Element | Window = this;
+
+    @property()
+    keyFunction: (item:any) => any;
+
+    // @property()
+    // private _layout: Layout | Type<Layout> | LayoutConfig
+
+    // private _scrollToIndex: {index: number, position: string};
+
+    constructor() {
+        super();
+        this._scroller = new VirtualScroller();
+        this.addEventListener('rangeChanged', (e: RangeChangeEvent) => {
+            this._first = e.first;
+            this._last = e.last;
+        })
+    }
+  
+    connectedCallback() {
+        super.connectedCallback();
+        this._scroller.container = this;
+        this._scroller.scrollTarget = this.scrollTarget;
+    }
+  
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this._scroller.container = null;
+    }
+  
     createRenderRoot() {
         return this;
+    }
+
+    get items() {
+        return this._items;
+    }
+
+    set items(items) {
+        this._items = items;
+        this._scroller.totalItems = items.length;
     }
 
     /**
@@ -42,31 +85,47 @@ export class LitVirtualizer<T> extends LitElement {
         }
     }
 
+    set layout(layout: Layout | Type<Layout> | LayoutConfig) {
+        // TODO (graynorton): Shouldn't have to set this here
+        this._scroller.container = this;
+        this._scroller.scrollTarget = this.scrollTarget;
+        this._scroller.layout = layout;
+    }
+
+    get layout() {
+        return this._scroller.layout;
+    }
+    
+    
     /**
      * Scroll to the specified index, placing that item at the given position
      * in the scroll view.
      */
     async scrollToIndex(index: number, position: string = 'start') {
-        this._scrollToIndex = {index, position};
-        this.requestUpdate();
-        await this.updateComplete;
-        this._scrollToIndex = null;
+        this._scroller.scrollToIndex = {index, position}
+        // this._scrollToIndex = {index, position};
+        // this.requestUpdate();
+        // await this.updateComplete;
+        // this._scrollToIndex = null;
     }
 
     render(): TemplateResult {
-        return html`${scroll({
-            items: this.items,
-            renderItem: this._renderItem,
-            layout: this.layout,
-            scrollTarget: this.scrollTarget,
-            scrollToIndex: this._scrollToIndex
-            // TODO: allow configuration of a layout.
-        })}`;
+        let { items, _first, _last, renderItem, keyFunction } = this;
+        if (!keyFunction) {
+            keyFunction = item => item;
+        }
+        const itemsToRender = [];
+        for (let i = _first; i < _last + 1; i++) {
+            itemsToRender.push(items[i]);
+        }
+        return html`
+            ${repeat(itemsToRender, keyFunction, renderItem)}
+        `;
     }
 }
 
-// declare global {
-//     interface HTMLElementTagNameMap {
-//         'lit-virtualizer': LitVirtualizer<unknown>;
-//     }
-// }
+declare global {
+    interface HTMLElementTagNameMap {
+        'lit-virtualizer': LitVirtualizer<unknown, HTMLElement>;
+    }
+}

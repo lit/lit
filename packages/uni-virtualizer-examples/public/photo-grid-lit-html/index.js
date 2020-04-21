@@ -1,7 +1,5 @@
 import {html, render} from 'lit-html';
-// import {scroll, layoutRef} from 'lit-virtualizer';
-import { layoutRef } from 'lit-virtualizer/lib/uni-virtualizer/uni-virtualizer.js';
-import { scroll } from 'lit-virtualizer/lib/lit-virtualizer-experimental.js';
+import {scroll, layoutRef} from 'lit-virtualizer';
 import {Layout1dSquareGrid} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dSquareGrid.js';
 import {Layout1dFlex} from 'lit-virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dFlex.js';
 import {getDims, getUrl, searchFlickr} from './flickr.js';
