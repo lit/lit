@@ -184,8 +184,10 @@ function renderItems({renderItem, keyFunction, first, last, items}) {
         keyFunction = item => item;
     }
     const itemsToRender = [];
-    for (let i = first; i < last + 1; i++) {
-        itemsToRender.push(items[i]);
+    if (first >= 0 && last >= first) {
+        for (let i = first; i < last + 1; i++) {
+            itemsToRender.push(items[i]);
+        }    
     }
     return repeat(itemsToRender, keyFunction, renderItem);
 }

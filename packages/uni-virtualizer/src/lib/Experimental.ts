@@ -89,7 +89,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * Whether the layout should receive an updated viewport size on the next
    * render.
    */
-  private _needsUpdateView: boolean = false;
+  // private _needsUpdateView: boolean = false;
 
   private _layout: Layout = null;
 
@@ -123,7 +123,14 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    */
   private _childrenPos: Array<{top: number, left: number}> = null;
 
+  // TODO: (graynorton): type
+  private _childMeasurements: any = null;
+
   private _toBeMeasured: Map<HTMLElement, any> = new Map();
+
+  private _rangeChanged: boolean = true;
+
+  private _visibilityChanged: boolean = true;
 
   /**
    * Containing element. Set by container.
@@ -172,12 +179,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   private _loadListener = this._childLoaded.bind(this);
 
   /**
-   * Flag for skipping a children measurement if that computation was just
-   * completed.
-   */
-  // private _skipNextChildrenSizeChanged: boolean = false;
-
-  /**
    * Index and position of item to scroll to.
    */
   private _scrollToIndex: {index: number, position?: string} = null;
@@ -204,16 +205,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   protected _last: number = 0;
 
   /**
-   * Previous first rendered index. Used to avoid unnecessary updates.
-   */
-  protected _prevFirst: number = 0;
-
-  /**
-   * Previous last rendered index. Used to avoid unnecessary updates.
-   */
-  protected _prevLast: number = 0;
-
-  /**
    * Index of the first item intersecting the container element.
    */
   private _firstVisible: number;
@@ -223,17 +214,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    */
   private _lastVisible: number;
 
-  /**
-   * Flag for asynchnronous render requests. Renders can be requested several
-   * times before a render actually happens.
-   */
-  protected _pendingRender = null;
-
-  /**
-   * Flag for asynchnronous remeasure requests. Signals that all children
-   * should be remeasured.
-   */
-  // private _needsRemeasure: boolean = false;
+  protected _scheduled = new WeakSet();
 
   /**
    * Invoked at the end of each render cycle: children in the range are
@@ -247,8 +228,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   constructor(config?: VirtualScrollerConfig) {
     this._first = -1;
     this._last = -1;
-    // this._prevFirst = -1;
-    // this._prevLast = -1;
 
     if (config) {
       Object.assign(this, config);
@@ -258,7 +237,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   set items(items) {
     if (items !== this._items) {
       this._items = items;
-      this._scheduleRender();
+      this._schedule(this._updateLayout);
     }
   }
 
@@ -279,9 +258,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     // Technically, Infinity would break Layout, not VirtualRepeater.
     if (num !== this._totalItems) {
       this._totalItems = num;
-    //   this.first = this._first;
-      // this.requestReset();
-      this._scheduleRender();
+      this._schedule(this._updateLayout);
     }
   }
 
@@ -299,8 +276,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
     if (this._container) {
       // Remove children from old container.
-      // this._ordered.forEach((child) => this._removeChild(child));
-
       // TODO (graynorton): Decide whether we'd rather fire an event to clear
       // the range and let the renderer take care of removing the DOM children
       this._children.forEach(child => child.parentNode.removeChild(child));
@@ -308,18 +283,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
     this._container = container;
 
-    // if (container) {
-    //   // Insert children in new container.
-    //   this._ordered.forEach((child) => this._insertBefore(child, null));
-    // } else {
-    //   this._ordered.length = 0;
-    //   this._active.clear();
-    //   this._prevActive.clear();
-    // }
-    this._scheduleRender();
-    // this.requestReset();
-
-    /// Below from scroller, above from repeater
+    this._schedule(this._updateLayout);
 
     this._initResizeObservers().then(() => {
         const oldEl = this._containerElement;
@@ -363,7 +327,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
             this._sizer = this._sizer || this._createContainerSizer();
             this._container.insertBefore(this._sizer, this._container.firstChild);
           }
-          this._scheduleUpdateView();
+          this._schedule(this._updateLayout);
           this._containerRO.observe(newEl);
           this._mutationObserver.observe(newEl, { childList: true });
           this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
@@ -434,7 +398,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           this._measureChildOverride = this._layout.measureChildren;
         }
         this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
-        // this.requestRemeasure();
       }
       this._layout.addEventListener('scrollsizechange', this);
       this._layout.addEventListener('scrollerrorchange', this);
@@ -444,48 +407,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       if (this._layout.listenForChildLoadEvents) {
         this._container.addEventListener('load', this._loadListener, true);
       }
-      this._scheduleUpdateView();
+      this._schedule(this._updateLayout);
     }
   }
-
-  /**
-   * Returns those children that are about to be displayed and that require to
-   * be positioned. If reset or remeasure has been triggered, all children are
-   * returned.
-   */
-  // private get _toMeasure(): {indices: Array<number>, children: Array<Child>} {
-  //   return this._children.reduce((toMeasure, c, i) => {
-  //     const idx = this._first + i;
-  //     if (true || this._needsRemeasure || idx < this._prevFirst ||
-  //         idx > this._prevLast) {
-  //       toMeasure.indices.push(idx);
-  //       toMeasure.children.push(c);
-  //     }
-  //     return toMeasure;
-  //   }, {indices: [], children: []});
-  // }
-
-  /**
-   * Measures each child bounds and builds a map of index/bounds to be passed
-   * to the `_measureCallback`
-   */
-  // private _measureChildren(): void {
-  //   const rangeChanged = this._first !== this._prevFirst || this._last !== this._prevLast;
-  //   const shouldMeasure = this._last >= this._first && this._measureCallback &&
-  //   (rangeChanged || this._needsRemeasure);
-  //   if (true || shouldMeasure) {
-  //     const {indices, children} = this._toMeasure;
-  //     const fn = this._measureChildOverride || this._measureChild;
-  //     const pm = children.map((c: Child, i: number) => fn.call(this, c, this._items[indices[i]]));
-  //     const mm = /** @type {{number: {width: number, height: number}}} */
-  //         (pm.reduce((out, cur, i) => {
-  //           out[indices[i]] = cur;
-  //           return out;
-  //         }, {}));
-  //     this._measureCallback(mm);  
-  //   }
-  //   this._needsRemeasure = false;
-  // }
 
   private _measureChildren(): void {
     const mm = {};
@@ -498,8 +422,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
         mm[idx] = fn.call(this, child, this._items[idx]);
       }
     }
-    this._measureCallback(mm);
-    // this._needsRemeasure = this._needsRemeasure && false;
+    this._childMeasurements = mm;
+    this._schedule(this._updateLayout);
     this._toBeMeasured.clear();
   }
 
@@ -555,116 +479,74 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    */
   set scrollToIndex(newValue: {index: number, position?: string}) {
     this._scrollToIndex = newValue;
-    this._scheduleUpdateView();
+    this._schedule(this._updateLayout);
   }
 
-  protected _shouldRender() {
-    if (!this.container || !this._containerElement || !this._layout) {
-      return false;
-    }
-    // NOTE: we're about to render, but the ResizeObserver didn't execute yet.
-    // Since we want to keep rAF timing, we compute _containerSize now. Would
-    // be nice to have a way to flush ResizeObservers.
-    if (this._containerSize === null) {
-      const {width, height} = this._containerElement.getBoundingClientRect();
-      this._containerSize = {width, height};
-    }
-    return this._containerSize.width > 0 || this._containerSize.height > 0;
-  }
-
-  /**
-   * Render at the next opportunity.
-   */
-  protected async _scheduleRender(): Promise<void> {
-    if (!this._pendingRender) {
-      this._pendingRender = true;
+  protected async _schedule(method): Promise<void> {
+    if (!this._scheduled.has(method)) {
+      this._scheduled.add(method);
       await Promise.resolve();
-      this._pendingRender = false;
-      if (this._shouldRender()) {
-        this._render();
-      }
-      // this._pendingRender = requestAnimationFrame(() => {
-      //   this._pendingRender = null;
-      //   if (this._shouldRender()) {
-      //     this._render();
-      //   }
-      // });
+      this._scheduled.delete(method);
+      method.call(this);
     }
   }
 
-  /**
-   * Display the items in the current range.
-   * Continue relayout of child positions until they have stabilized.
-   */
-  protected async _render(): Promise<void> {
-    // this._childrenRO.disconnect();
-
-    // Update layout properties before rendering to have correct first, num,
-    // scroll size, children positions.
-    this._layout.totalItems = this.totalItems;
-
-    if (this._needsUpdateView) {
-      this._needsUpdateView = false;
-      this._updateView();
+  async _updateDOM() {
+    if (this._visibilityChanged) {
+      this._notifyVisibility();
     }
+    if (this._rangeChanged) {
+      this._notifyRange();
+      this._rangeChanged = false;
+      await this._mutationPromise;
+    }
+    if (this._layout.measureChildren) {
+      this._children.forEach((child) => this._childrenRO.observe(child));
+    }
+    this._positionChildren(this._childrenPos);
+    this._sizeContainer(this._scrollSize);
+    if (this._scrollErr) {
+      this._correctScrollError(this._scrollErr);
+      this._scrollErr = null;
+    }
+  }
 
+  _updateLayout() {
+    this._layout.totalItems = this._totalItems;
     if (this._scrollToIndex !== null) {
       this._layout.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex.position);
       this._scrollToIndex = null;
     }
-
+    this._updateView();
+    if (this._childMeasurements !== null) {
+      this._measureCallback(this._childMeasurements);
+      this._childMeasurements = null;
+    }
     this._layout.reflowIfNeeded();
-
-    this._sizeContainer(this._scrollSize);
-    
-    if (this._scrollErr) {
-      // This triggers a 'scroll' event (async) which triggers another
-      // _updateView().
-      this._correctScrollError(this._scrollErr);
-      this._scrollErr = null;
-    }
-    
-    // this.container.dispatchEvent(new RangeChangeEvent('rangeChanged', {
-    //   first: this._first,
-    //   last: this._last
-    // }));
-    
-    // await this._mutationPromise;
-    
-    this._positionChildren(this._childrenPos);
-    // this._measureChildren();
-
-    // We want to skip the first ResizeObserver callback call as we already
-    // measured the children.
-    if (this._layout.measureChildren) {
-      // this._skipNextChildrenSizeChanged = true;
-      this._children.forEach((child) => this._childrenRO.observe(child));
-    }
   }
 
   handleEvent(event) {
     switch (event.type) {
       case 'scroll':
         if (!this._scrollTarget || event.target === this._scrollTarget) {
-          this._scheduleUpdateView();
+          this._schedule(this._updateLayout);
         }
         break;
       case 'scrollsizechange':
         this._scrollSize = event.detail;
-        this._scheduleRender();
+        this._schedule(this._updateDOM);
         break;
       case 'scrollerrorchange':
         this._scrollErr = event.detail;
-        this._scheduleRender();
+        this._schedule(this._updateDOM);
         break;
       case 'itempositionchange':
         this._childrenPos = event.detail;
-        this._scheduleRender();
+        this._schedule(this._updateDOM);
         break;
       case 'rangechange':
-        // TODO (graynorton): Investigate why we aren't scheduling
-        // (and maybe don't need to schedule) a render here
         this._adjustRange(event.detail);
+        this._schedule(this._updateDOM);
         break;
       default:
         console.warn('event not handled', event);
@@ -738,17 +620,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     return arr;
   }
 
-  /**
-   * Render and update the view at the next opportunity.
-   */
-  private _scheduleUpdateView() {
-    this._needsUpdateView = true;
-    this._scheduleRender();
-  }
-
   private _updateView() {
+    if (!this.container || !this._containerElement || !this._layout) {
+      return;
+    }
     let width, height, top, left;
-    if (this._scrollTarget === this._containerElement) {
+    if (this._scrollTarget === this._containerElement && this._containerSize !== null) {
       width = this._containerSize.width;
       height = this._containerSize.height;
       left = this._containerElement.scrollLeft;
@@ -838,28 +715,19 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   private async _adjustRange(range: Range) {
-    // this.num = range.num;
-    this._prevFirst = this._first;
-    this._prevLast = this._last;
+    const {_first, _last, _firstVisible, _lastVisible} = this;
     this._first = range.first;
     this._last = range.last;
-    // const visiblityChanged = this._firstVisible !== range.firstVisible || this._lastVisible !== range.lastVisible;
     this._firstVisible = range.firstVisible;
     this._lastVisible = range.lastVisible;
-    // this._incremental = !(range.stable);
-    // if (range.remeasure) {
-    //   this.requestRemeasure();
-    // } else if (range.stable || visiblityChanged) {
-    //   this._notifyRange();
-    // }
-
-    // if (range.remeasure) {
-    //   this.requestRemeasure();
-    // }
-    this._notifyRange();
-    
-    await this._mutationPromise;
-    this._scheduleRender();
+    this._rangeChanged = (
+      this._first !== _first ||
+      this._last !== _last
+    );
+    this._visibilityChanged = (
+      this._firstVisible !== _firstVisible ||
+      this._lastVisible !== _lastVisible
+    );
   }
 
   private _correctScrollError(err: {top: number, left: number}) {
@@ -873,23 +741,28 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   /**
-   * Invoke to request that all elements in the range be measured.
-   */
-  // requestRemeasure() {
-  //   this._needsRemeasure = true;
-  //   this._scheduleRender();
-  // }  
-
-  /**
    * Emits a rangechange event with the current first, last, firstVisible, and
    * lastVisible.
    */
   private _notifyRange() {
-    const {_first, _last} = this;
+    // TODO (graynorton): Including visibility here for backward compat, but 
+    // may decide to remove at some point. The rationale for separating is that
+    // range change events are mainly intended for "internal" consumption by the
+    // renderer, whereas visibility change events are mainly intended for "external"
+    // consumption by application code.
     this._container.dispatchEvent(
         new RangeChangeEvent('rangeChanged', {
-          first: _first,
-          last: _last,
+          first: this._first,
+          last: this._last,
+          firstVisible: this._firstVisible,
+          lastVisible: this._lastVisible,
+        })
+    );
+  }
+
+  private _notifyVisibility() {
+    this._container.dispatchEvent(
+        new RangeChangeEvent('visibilityChanged', {
           firstVisible: this._firstVisible,
           lastVisible: this._lastVisible,
         })
@@ -903,15 +776,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   private _containerSizeChanged(size: {width: number, height: number}) {
     const {width, height} = size;
     this._containerSize = {width, height};
-    this._scheduleUpdateView();
+    this._schedule(this._updateLayout);
   }
 
   private async _observeMutations() {
     if (!this._mutationsObserved) {
       this._mutationsObserved = true;
-      // await (new Promise((resolve) => {
-      //   requestAnimationFrame(resolve);
-      // }));
       this._mutationPromiseResolver();
       this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
       this._mutationsObserved = false;
@@ -928,16 +798,11 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   private _childrenSizeChanged(changes) {
-    // if (this._skipNextChildrenSizeChanged) {
-    //   this._skipNextChildrenSizeChanged = false;
-    // } else {
-      // this.requestRemeasure();
-      for (let change of changes) {
-        this._toBeMeasured.set(change.target, change.contentRect);
-      }
-      this._measureChildren();
-      this._layout.reflowIfNeeded();
-    // }
+    for (let change of changes) {
+      this._toBeMeasured.set(change.target, change.contentRect);
+    }
+    this._measureChildren();
+    this._schedule(this._updateLayout);
   }
 }
 
