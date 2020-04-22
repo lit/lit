@@ -13,8 +13,7 @@
  */
 
 import {DirectiveFn} from '../lib/directive.js';
-import {createStartMarker, createEndMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
-import { RenderOptions } from '../lib/render-options.js';
+import {createEndMarker, createStartMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
 export type ItemTemplate<T> = (item: T, index: number) => unknown;
@@ -106,39 +105,43 @@ export const repeat =
                   throw new Error('repeat can only be used in text bindings');
                 }
 
-                // Performing client-side hydration.
-                if (containerPart.options.prerenderedParts !== undefined) {
-                  const nodeParts: NodePart[] = [];
-                  for (const partInfo of containerPart.options.prerenderedParts) {
-                    // Remove prerenderedParts from options, as they only apply to
-                    // the container part.
-                    const {prerenderedParts, ...options} = containerPart.options;
-                    (options as RenderOptions).prerenderedParts = partInfo.children;
-                    const nodePart = new NodePart(options);
-                    nodePart.startNode = partInfo.startNode;
-                    nodePart.endNode = partInfo.endNode;
-                    nodeParts.push(nodePart);
-                  }
-                  partListCache.set(containerPart, nodeParts);
-                  // TODO: having to clean up like this is likely to lead to
-                  // bugs when it's forgotten. Directive shouldn't have to do
-                  // this. Consider either passing prerenderedParts in a
-                  // transient call, like Part.commit() and possibly a second
-                  // argument to the directive function.
-                  containerPart.options.prerenderedParts = undefined;
+                // // Performing client-side hydration.
+                // if (containerPart.options.prerenderedParts !== undefined) {
+                //   const nodeParts: NodePart[] = [];
+                //   for (const partInfo of
+                //   containerPart.options.prerenderedParts) {
+                //     // Remove prerenderedParts from options, as they only
+                //     apply to
+                //     // the container part.
+                //     const {prerenderedParts, ...options} =
+                //     containerPart.options; (options as
+                //     RenderOptions).prerenderedParts = partInfo.children;
+                //     const nodePart = new NodePart(options);
+                //     nodePart.startNode = partInfo.startNode;
+                //     nodePart.endNode = partInfo.endNode;
+                //     nodeParts.push(nodePart);
+                //   }
+                //   partListCache.set(containerPart, nodeParts);
+                //   // TODO: having to clean up like this is likely to lead to
+                //   // bugs when it's forgotten. Directive shouldn't have to do
+                //   // this. Consider either passing prerenderedParts in a
+                //   // transient call, like Part.commit() and possibly a second
+                //   // argument to the directive function.
+                //   containerPart.options.prerenderedParts = undefined;
 
-                  // Hydrate the template keys only if the data is unchanged since
-                  // pre-rendering.
-                  if (!containerPart.options.dataChanged) {
-                    const keys = [];
-                    let index = 0;
-                    for (const item of items) {
-                      keys.push(keyFn ? keyFn(item, index) : index);
-                      index++;
-                    }
-                    keyListCache.set(containerPart, keys);
-                  }
-                }
+                //   // Hydrate the template keys only if the data is unchanged
+                //   since
+                //   // pre-rendering.
+                //   if (!containerPart.options.dataChanged) {
+                //     const keys = [];
+                //     let index = 0;
+                //     for (const item of items) {
+                //       keys.push(keyFn ? keyFn(item, index) : index);
+                //       index++;
+                //     }
+                //     keyListCache.set(containerPart, keys);
+                //   }
+                // }
 
                 // Old part & key lists are retrieved from the last update
                 // (associated with the part for this instance of the directive)

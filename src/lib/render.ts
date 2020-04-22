@@ -55,4 +55,3 @@ export const render =
       part.setValue(result);
       part.commit();
     };
-
