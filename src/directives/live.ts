@@ -37,7 +37,7 @@ import {AttributePart, BooleanAttributePart, directive, EventPart, NodePart, Pro
  * passed in, or the binding will update every render.
  */
 export const live = directive(
-    (value: unknown) => (part: AttributePart|PropertyPart|
+    <T>(value: T) => (part: AttributePart|PropertyPart|
                          BooleanAttributePart) => {
       let previousValue: unknown;
       if (part instanceof EventPart || part instanceof NodePart) {

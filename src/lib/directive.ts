@@ -21,7 +21,7 @@ import {Part} from './part.js';
 const directives = new WeakMap<object, true>();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DirectiveFactory = (...args: any[]) => object;
+export type DirectiveFactory<T = unknown> = (...args: Array<any | T>) => object;
 
 export type DirectiveFn = (part: Part) => void;
 
@@ -65,7 +65,7 @@ export type DirectiveFn = (part: Part) => void;
  *   }
  * });
  */
-export const directive = <F extends DirectiveFactory>(f: F): F =>
+export const directive = <F extends DirectiveFactory<T>, T>(f: F): F =>
     ((...args: unknown[]) => {
       const d = f(...args);
       directives.set(d, true);
