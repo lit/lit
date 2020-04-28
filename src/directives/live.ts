@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, BooleanAttributePart, directive, EventPart, NodePart, PropertyPart} from '../lit-html.js';
+import {AttributePart, BooleanAttributePart, directive, DirectiveFn, EventPart, NodePart, PropertyPart} from '../lit-html.js';
 
 /**
  * Checks binding values against live DOM values, instead of previously bound
@@ -37,37 +37,37 @@ import {AttributePart, BooleanAttributePart, directive, EventPart, NodePart, Pro
  * passed in, or the binding will update every render.
  */
 export const live = directive(
-    <T>(value: T) => (part: AttributePart|PropertyPart|
-                         BooleanAttributePart) => {
-      let previousValue: unknown;
-      if (part instanceof EventPart || part instanceof NodePart) {
-        throw new Error(
-            'The `live` directive is not allowed on text or event bindings');
-      }
-      if (part instanceof BooleanAttributePart) {
-        checkStrings(part.strings);
-        previousValue = part.element.hasAttribute(part.name);
-        // This is a hack needed because BooleanAttributePart doesn't have a
-        // committer and does its own dirty checking after directives
-        part.value = previousValue;
-      } else {
-        const {element, name, strings} = part.committer;
-        checkStrings(strings);
-        if (part instanceof PropertyPart) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          previousValue = (element as any)[name];
-          if (previousValue === value) {
-            return;
+    <T>(value: T) =>
+        ((part: AttributePart|PropertyPart|BooleanAttributePart) => {
+          let previousValue: unknown;
+          if (part instanceof EventPart || part instanceof NodePart) {
+            throw new Error(
+                'The `live` directive is not allowed on text or event bindings');
           }
-        } else if (part instanceof AttributePart) {
-          previousValue = element.getAttribute(name);
-        }
-        if (previousValue === String(value)) {
-          return;
-        }
-      }
-      part.setValue(value);
-    });
+          if (part instanceof BooleanAttributePart) {
+            checkStrings(part.strings);
+            previousValue = part.element.hasAttribute(part.name);
+            // This is a hack needed because BooleanAttributePart doesn't have a
+            // committer and does its own dirty checking after directives
+            part.value = previousValue;
+          } else {
+            const {element, name, strings} = part.committer;
+            checkStrings(strings);
+            if (part instanceof PropertyPart) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              previousValue = (element as any)[name];
+              if (previousValue === value) {
+                return;
+              }
+            } else if (part instanceof AttributePart) {
+              previousValue = element.getAttribute(name);
+            }
+            if (previousValue === String(value)) {
+              return;
+            }
+          }
+          part.setValue(value);
+        }) as DirectiveFn<T>);
 
 const checkStrings = (strings: readonly string[]) => {
   if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {

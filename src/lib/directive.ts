@@ -21,9 +21,9 @@ import {Part} from './part.js';
 const directives = new WeakMap<object, true>();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DirectiveFactory<T = unknown> = (...args: Array<any | T>) => object;
+export type DirectiveFactory<T = unknown> = (...args: Array<any|T>) => object;
 
-export type DirectiveFn = (part: Part) => void;
+export type DirectiveFn<_T = unknown> = (part: Part) => void;
 
 /**
  * Brands a function as a directive factory function so that lit-html will call
