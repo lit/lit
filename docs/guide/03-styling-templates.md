@@ -25,7 +25,7 @@ import {classMap} from 'lit-html/directives/class-map.js';
 
 const itemTemplate = (item) => {
   const classes = {selected: item.selected};
-  return html`<div class="menu-item ${classMap(classes}">Classy text</div>`
+  return html`<div class="menu-item ${classMap(classes)}">Classy text</div>`;
 }
 ```
 
