@@ -15,6 +15,22 @@ To help with dynamic styling, lit-html provides two directives for manipulating 
 *   [`classMap`](template-reference#classmap) sets classes on an element based on the properties of an object.
 *   [`styleMap`](template-reference#stylemap) sets the styles on an element based on a map of style properties and values.
 
+## Setting classes with classMap {#classmap}
+
+Like `styleMap`, the `classMap` directive lets you set a group of classes based on an object.
+
+```js
+import {html} from 'lit-html';
+import {classMap} from 'lit-html/directives/class-map.js';
+
+const itemTemplate = (item) => {
+  const classes = {selected: item.selected};
+  return html`<div class="menu-item ${classMap(classes}">Classy text</div>`
+}
+```
+
+More information: see [classMap](template-reference#classmap) in the Template syntax reference.
+
 ## Inline styles with styleMap {#stylemap}
 
 You can use the `styleMap` directive to set inline styles on an element in the template.
@@ -23,13 +39,16 @@ You can use the `styleMap` directive to set inline styles on an element in the t
 import {html} from 'lit-html';
 import {styleMap} from 'lit-html/directives/style-map.js';
 
-const normalStyles = {};
-const highlightStyles = { color: 'white', backgroundColor: 'red'};
-let highlight = true;
+...
 
 const myTemplate = () => {
+  styles = {
+    color: myTextColor,
+    backgroundColor: highlight ? myHighlightColor : myBackgroundColor,
+  };
+
   html`
-    <div style=${styleMap(highlight ? highlightStyles : normalStyles)}>
+    <div style=${styleMap(styles)}>
       Hi there!
     </div>
   `;
@@ -37,30 +56,6 @@ const myTemplate = () => {
 ```
 
 More information: see See [styleMap](template-reference#stylemap) in the Template syntax reference.
-
-## Setting classes with classMap {#classmap}
-
-Like `styleMap`, the `classMap` directive lets you set a group of classes based on an object:
-
-```js
-import {html} from 'lit-html';
-import {classMap} from 'lit-html/directives/class-map.js';
-
-// Define a base set of classes for all menu items
-const baseClasses = { 
-  'menu-item': true,
-  // ...
-};
-
-const itemTemplate = (item) => {
-  // Merge in dynamically-generated classes
-  const mergedClasses = Object.assign({active: item.active}, baseClasses);
-  return html`<div class=${classMap(mergedClasses)}>Classy text</div>`
-}
-```
-
-More information: see [classMap](template-reference#classmap) in the Template syntax reference.
-
 
 ## Rendering in shadow DOM
 

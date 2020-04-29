@@ -299,13 +299,10 @@ In this case, when `user.isAdmin` is false, no text node is rendered.
 
 One specific use case where an empty text node causes issues is when you're using a `<slot>` element inside a shadow root. 
 
-<div class="alert alert-info">
+This use case is very specific to [shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM), and you probably won't encounter it unless you're using lit-html as part of LitElement or another web components base class.
 
-**Not using shadow DOM?** Understanding this use case requires some knoweldge of shadow DOM and slots. On the bright side, if you're not using lit-html to render into shadow DOM, you will probably never need to use `nothing`, and you can skip this section.
-
-</div>
-
-Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. The template for the shadow DOM looks like this:
+Imagine you have a custom element, `example-element`, that has a slot in
+its shadow DOM:
 
 ```js
 html`<slot>Sorry, no content available. I am just fallback content</slot>`;
@@ -319,18 +316,34 @@ So, extending the previous example:
 import {nothing, html} from 'lit-html';
 
 html`
-<shadow-element>${user.isAdmin
+<example-element>${user.isAdmin
         ? html`<button>DELETE</button>`
         : nothing
-      }</shadow-element>
+      }</example-element>
 `;
 ``` 
 
-If the user is logged in, the Delete button is rendered. If the user is not logged in, nothing is rendered inside of `shadow-element`. This means the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" is rendered.
+If the user is logged in, the Delete button is rendered. If the user is not logged in, nothing is rendered inside of `example-element`. This means the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" is rendered.
 
-Replacing `nothing` in this example with the empty string causes an empty text node to be rendered inside `shadow-element`, suppressing the fallback content.
+Replacing `nothing` in this example with the empty string causes an empty text node to be rendered inside `example-element`, suppressing the fallback content.
 
-**Whitespace creates text nodes.** For the example to work, the text binding inside `<shadow-element>` must be the **entire** contents of `<shadow-element>`. Any whitespace outside of the binding delimiters adds static text nodes to the template, suppressing the fallback content. However, whitespace _inside_ the binding delimiters is fine.
+**Whitespace creates text nodes.** For the example to work, the text binding inside `<example-element>` must be the **entire** contents of `<example-element>`. Any whitespace outside of the binding delimiters adds static text nodes to the template, suppressing the fallback content. However, whitespace _inside_ the binding delimiters is fine.
+
+The two following examples show an element with extra whitespace surrounding the binding delimiters. 
+
+```js
+// Whitespace around the binding means the fallback content
+// doesn't render
+html`
+<example-element> ${nothing} </example-element>
+`;
+// Line breaks count as whitespace, too
+html`
+<example-element>
+${nothing}
+</example-element>
+`;
+```
 
 ## Caching template results: the cache directive 
 
