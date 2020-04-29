@@ -18,7 +18,6 @@ import {parts} from './render.js';
 import {templateFactory} from './template-factory.js';
 import {TemplateInstance} from './template-instance.js';
 import {TemplateResult} from './template-result.js';
-import {AttributeTemplatePart} from './template.js';
 
 /**
  * Information needed to rehydrate a single TemplateResult.
@@ -220,42 +219,52 @@ export const hydrate =
           const state = stack[stack.length - 1];
           if (state.container) {
             const instance = state.instance;
-            const part = instance.template.parts[state.currentPartIndex] as
-                AttributeTemplatePart;
-            console.assert(
-                part.type === 'attribute' && part.index === nodeIndex);
-
-            const parent = node.parentElement!;
-            const attributeParts =
-                instance.processor.handleAttributeExpressions(
-                    parent, part.name, part.strings, options);
-
-            // Prime the part values so subsequent dirty-checks work
-            for (const attributePart of attributeParts) {
-              // TODO: don't use a readonly field
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (attributePart as any).value =
-                  state.result.values[state.currentPartIndex];
-
-              // Set the part's current value, but only for AttributeParts, not
-              // PropertyParts. This is because properties are not represented
-              // in DOM so we do need to set them on initial render.
-
-              // TODO: only do this if we definitely have the same data as on
-              // the server. We need a flag like `dataChanged` or `sameData` for
-              // this.
-              if (attributePart instanceof AttributePart &&
-                  !(attributePart instanceof PropertyPart)) {
-                attributePart.committer.dirty = false;
-              } else if (attributePart instanceof BooleanAttributePart) {
-                // TODO: this is ugly
-                // TODO: tests
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (attributePart as any).value = !!(attributePart as any).value;
+            let foundOnePart = false;
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+              const part = instance.template.parts[state.currentPartIndex];
+              if (part === undefined || part.type !== 'attribute' || part.index !== nodeIndex) {
+                break;
               }
-              state.currentPartIndex++;
+              foundOnePart = true;
+
+              const parent = node.parentElement!;
+              const attributeParts =
+                  instance.processor.handleAttributeExpressions(
+                      parent, part.name, part.strings, options);
+
+              // Prime the part values so subsequent dirty-checks work
+              for (const attributePart of attributeParts) {
+                // TODO: don't use a readonly field
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (attributePart as any).value =
+                    state.result.values[state.currentPartIndex];
+
+                // Set the part's current value, but only for AttributeParts, not
+                // PropertyParts. This is because properties are not represented
+                // in DOM so we do need to set them on initial render.
+
+                // TODO: only do this if we definitely have the same data as on
+                // the server. We need a flag like `dataChanged` or `sameData` for
+                // this.
+                if (attributePart instanceof AttributePart &&
+                    !(attributePart instanceof PropertyPart)) {
+                  attributePart.committer.dirty = false;
+                } else if (attributePart instanceof BooleanAttributePart) {
+                  // TODO: this is ugly
+                  // TODO: tests
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (attributePart as any).value = !!(attributePart as any).value;
+                }
+                state.currentPartIndex++;
+              }
+              instance.__parts.push(...attributeParts);
             }
-            instance.__parts.push(...attributeParts);
+            if (!foundOnePart) {
+              // For a <!--lit-bindings--> marker there should be at least
+              // one attribute part.
+              throw new Error('internal error');
+            }
           } else {
             throw new Error('internal error');
           }
