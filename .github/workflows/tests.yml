@@ -1,0 +1,34 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # LTS + Current
+        node: ['12', '14']
+
+    name: Node ${{ matrix.node }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npx tsc
+
+      - name: Check eslint
+        run: npm run lint
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+
+      - name: AVA unit tests
+        run: npx ava

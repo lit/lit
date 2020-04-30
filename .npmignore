@@ -1,0 +1,10 @@
+tsconfig.json
+.tsbuildinfo
+.eslintrc.json
+.prettierrc
+*.tgz
+.github/
+src/tests/
+dist/tests/
+ava.config.js
+scripts/
