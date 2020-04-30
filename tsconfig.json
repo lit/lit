@@ -9,10 +9,10 @@
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
     "rootDir": "src/",
-    "outDir": "dist/",
+    "outDir": "lib/",
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "tsBuildInfoFile": "lib/.tsbuildinfo"
   },
   "lib": [],
   "include": ["src/**/*"],

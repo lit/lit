@@ -13,7 +13,7 @@
     "lit-localize": "bin/lit-localize.js"
   },
   "scripts": {
-    "clean": "rimraf 'dist/*' 'dist/.*'",
+    "clean": "rimraf 'lib/*' 'lib/.*'",
     "build": "npm run clean && tsc",
     "test": "npm run build && ava",
     "lint": "eslint 'src/**/*.ts' --max-warnings 0",

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+
+# Kill all subprocesses when this script exits
 trap "kill 0" EXIT
 
 npm run clean
