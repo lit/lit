@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "src/",
+    "outDir": "lib/",
+    "sourceMap": true,
+    "incremental": true,
+    "tsBuildInfoFile": "lib/.tsbuildinfo"
+  },
+  "lib": [],
+  "include": ["src/**/*"],
+  "declaration": true,
+  "pretty": true
+}

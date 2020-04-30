@@ -1,0 +1,40 @@
+{
+  "name": "lit-localize",
+  "version": "0.1.0",
+  "description": "Localization for lit-html",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
+  "homepage": "https://github.com/PolymerLabs/lit-localize",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PolymerLabs/lit-localize.git"
+  },
+  "bin": {
+    "lit-localize": "bin/lit-localize.js"
+  },
+  "scripts": {
+    "clean": "rimraf 'lib/*' 'lib/.*'",
+    "build": "npm run clean && tsc",
+    "test": "npm run build && ava",
+    "lint": "eslint 'src/**/*.ts' --max-warnings 0",
+    "prettier": "prettier 'src/**/*.ts'",
+    "format:check": "npm run prettier -- --check",
+    "format": "npm run prettier -- --write",
+    "watch": "scripts/watch.sh",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@types/node": "^13.13.4",
+    "source-map-support": "^0.5.19"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "ava": "^3.8.1",
+    "chokidar-cli": "^2.1.0",
+    "eslint": "^6.8.0",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "typescript": "^3.8.3"
+  }
+}
