@@ -47,6 +47,7 @@
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^7.0.1",
+    "@types/trusted-types": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "@webcomponents/shadycss": "^1.8.0",
