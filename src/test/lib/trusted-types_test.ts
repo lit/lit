@@ -12,24 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {unsafeHTML} from '../../directives/unsafe-html';
+import {unsafeHTML} from '../../directives/unsafe-html.js';
 import {html, render} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers';
+import {trustedTypesIsEnforced} from '../test-utils/security.js';
+import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-
 const unsafeScriptString = 'alert(0)';
-
-function trustedTypesIsEnforced() {
-  const div = document.createElement('div');
-  try {
-    div.innerHTML = '<img src="#">';
-  } catch {
-    return true;
-  }
-  return false;
-}
 
 if (window.trustedTypes !== undefined) {
   const policy: TrustedTypePolicy =
