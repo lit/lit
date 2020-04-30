@@ -84,10 +84,12 @@ export class AttributeCommitter {
     //
     // This also allows trusted values (when using TrustedTypes) being
     // assigned to DOM sinks without being stringified in the process.
-    if (l === 1 && strings[0] === '' && strings[1] === '' &&
-        parts[0] !== undefined) {
+    if (l === 1 && strings[0] === '' && strings[1] === '') {
       const v = parts[0].value;
-      if (!isIterable(v)) {
+      if (typeof v === 'symbol') {
+        return String(v);
+      }
+      if (typeof v === 'string' || !isIterable(v)) {
         return v;
       }
     }
@@ -115,12 +117,7 @@ export class AttributeCommitter {
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      let value = this._getValue() as string;
-      if (typeof value === 'symbol') {
-        // Native Symbols throw if they're coerced to string.
-        value = String(value);
-      }
-      this.element.setAttribute(this.name, value);
+      this.element.setAttribute(this.name, this._getValue() as string);
     }
   }
 }

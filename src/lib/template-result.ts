@@ -28,7 +28,12 @@ import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from '
  * before any untrusted expressions have been mixed in. Therefor it is
  * considered safe by construction.
  */
-let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
+const policy = ((): Pick<TrustedTypePolicy, 'createHTML'>|void => {
+  const tt = window.trustedTypes;
+  if (tt !== undefined) {
+    return tt.createPolicy('lit-html', {createHTML: (s) => s});
+  }
+})();
 
 const commentMarker = ` ${marker} `;
 
@@ -111,15 +116,13 @@ export class TemplateResult {
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
     let value = this.getHTML();
-    const trustedTypes = window.trustedTypes;
-    if (trustedTypes && !policy) {
-      policy = trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
+    if (policy !== undefined) {
+      // this is secure because `this.strings` is a TemplateStringsArray.
+      // TODO: validate this when
+      // https://github.com/tc39/proposal-array-is-template-object is
+      // implemented.
+      value = policy.createHTML(value) as unknown as string;
     }
-    // this is secure because `this.strings` is a TemplateStringsArray.
-    // TODO: validate this when
-    // https://github.com/tc39/proposal-array-is-template-object is implemented.
-    value = policy ? (policy.createHTML(value) as unknown as string) : value;
-
     template.innerHTML = value;
     return template;
   }
