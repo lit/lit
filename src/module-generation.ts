@@ -9,9 +9,9 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { Bundle, Message, Placeholder } from './interfaces';
-import { applyPatches } from './patches';
-import { Locale, localeDisplayNameObject } from './locales';
+import {Bundle, Message, Placeholder} from './interfaces';
+import {applyPatches} from './patches';
+import {Locale, localeDisplayNameObject} from './locales';
 
 /**
  * Generate a TypeScript module which exports:
@@ -119,7 +119,7 @@ export function generateMsgModule(
  * translated messages.
  */
 export function generateLocaleModule(
-  { locale, messages }: Bundle,
+  {locale, messages}: Bundle,
   canonMsgs: Message[]
 ): string {
   messages = copyMessagesSortedByName(messages);
@@ -145,7 +145,7 @@ export function generateLocaleModule(
       continue;
     }
     translatedMsgNames.add(msg.name);
-    const { msgStr, usesLit } = makeMessageString(msg.contents);
+    const {msgStr, usesLit} = makeMessageString(msg.contents);
     if (usesLit) {
       importLit = true;
     }
@@ -159,7 +159,7 @@ export function generateLocaleModule(
     console.warn(
       `${locale} message ${msg.name} is missing, using canonical text as fallback`
     );
-    const { msgStr } = makeMessageString(msg.contents);
+    const {msgStr} = makeMessageString(msg.contents);
     entries.push(`${msg.name}: ${msgStr},`);
   }
   return `
@@ -189,7 +189,7 @@ function copyMessagesSortedByName(messages: Message[]): Message[] {
  */
 function makeMessageString(
   contents: Array<string | Placeholder>
-): { msgStr: string; usesLit: boolean } {
+): {msgStr: string; usesLit: boolean} {
   let hasPlaceholders = false;
   const fragments = [];
   for (const content of contents) {
@@ -204,7 +204,7 @@ function makeMessageString(
   // translation. If we encounter a placeholder, then this translated string
   // needs to use the lit-html "html" function.
   const msgStr = `${hasPlaceholders ? 'html' : ''}\`${fragments.join('')}\``;
-  return { msgStr, usesLit: hasPlaceholders };
+  return {msgStr, usesLit: hasPlaceholders};
 }
 
 /**

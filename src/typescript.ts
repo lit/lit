@@ -16,7 +16,7 @@ import * as path from 'path';
  * Set up a TypeScript API program given a tsconfig.json filepath.
  */
 export function programFromTsConfig(tsConfigPath: string): ts.Program {
-  const { config, error } = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
+  const {config, error} = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
   if (error) {
     // TODO(aomarks) Set up proper TypeScript diagnostics reporting here too.
     throw new Error(error.toString());
@@ -31,7 +31,7 @@ export function programFromTsConfig(tsConfigPath: string): ts.Program {
       parsedCommandLine.errors.map((error) => error.toString()).join('\n')
     );
   }
-  const { fileNames, options } = parsedCommandLine;
+  const {fileNames, options} = parsedCommandLine;
   const program = ts.createProgram(fileNames, options);
   return program;
 }

@@ -10,8 +10,8 @@
  */
 
 import * as xmldom from 'xmldom';
-import { ProgramMessage, Message, Bundle, Placeholder } from './interfaces';
-import { Locale, isLocale } from './locales';
+import {ProgramMessage, Message, Bundle, Placeholder} from './interfaces';
+import {Locale, isLocale} from './locales';
 
 /**
  * Generate an XLB XML file for the given messages. This file contains the
@@ -32,7 +32,7 @@ export function generateXlb(
   bundle.appendChild(doc.createTextNode('\n  '));
   const messagesNode = doc.createElement('messages');
   bundle.appendChild(messagesNode);
-  for (const { name, contents, descStack } of messages) {
+  for (const {name, contents, descStack} of messages) {
     messagesNode.appendChild(doc.createTextNode('\n    '));
     const messageNode = doc.createElement('msg');
     messageNode.setAttribute('name', name);
@@ -44,7 +44,7 @@ export function generateXlb(
       if (typeof content === 'string') {
         messageNode.appendChild(doc.createTextNode(content));
       } else {
-        const { untranslatable } = content;
+        const {untranslatable} = content;
         const ph = doc.createElement('ph');
         ph.appendChild(doc.createTextNode(untranslatable));
         messageNode.appendChild(ph);
@@ -109,14 +109,14 @@ export function parseXlb(xlbStr: string): Bundle {
         ) {
           throw new Error(`Expected <ph> to have exactly one text node`);
         }
-        contents.push({ untranslatable: phText.nodeValue || '' });
+        contents.push({untranslatable: phText.nodeValue || ''});
       } else {
         throw new Error(
           `Unexpected node in <msg>: ${child.nodeType} ${child.nodeName}`
         );
       }
     }
-    messages.push({ name, contents });
+    messages.push({name, contents});
   }
-  return { locale, messages };
+  return {locale, messages};
 }
