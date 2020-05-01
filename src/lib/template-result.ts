@@ -20,6 +20,7 @@ import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
 
+declare const trustedTypes: typeof window.trustedTypes;
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
  * tag function.
@@ -28,12 +29,8 @@ import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from '
  * before any untrusted expressions have been mixed in. Therefor it is
  * considered safe by construction.
  */
-const policy = ((): Pick<TrustedTypePolicy, 'createHTML'>|void => {
-  const tt = window.trustedTypes;
-  if (tt !== undefined) {
-    return tt.createPolicy('lit-html', {createHTML: (s) => s});
-  }
-})();
+const policy = trustedTypes &&
+    trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
 
 const commentMarker = ` ${marker} `;
 
