@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 ### Added
-* Added support for running with enforced Trusted Types: https://github.com/WICG/trusted-types
+* Added support for [Trusted Types](https://github.com/WICG/trusted-types). This support uses a policy named 'lit-html' for parsing the static parts of html literals, and ensures that we pass trusted type values through to the DOM when used in bindings.
 
 ## [1.2.1] - 2020-03-19
 
