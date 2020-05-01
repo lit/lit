@@ -29,8 +29,8 @@ declare const trustedTypes: typeof window.trustedTypes;
  * before any untrusted expressions have been mixed in. Therefor it is
  * considered safe by construction.
  */
-const policy = trustedTypes &&
-    trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
+const policy = window.trustedTypes &&
+    trustedTypes!.createPolicy('lit-html', {createHTML: (s) => s});
 
 const commentMarker = ` ${marker} `;
 
