@@ -33,7 +33,7 @@ export function isLocale(x: string): x is Locale {
  */
 const localeDisplayNames: { [P in Locale]: string } = {
   en: 'English',
-  ['es-419']: 'Español',
+  'es-419': 'Español',
 };
 
 /**

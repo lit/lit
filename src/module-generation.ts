@@ -38,27 +38,20 @@ export function generateMsgModule(
     .sort()
     .map((locale) => `'${locale}'`)
     .join(', ');
-  const messageNamesUnion = msgs
-    .map((msg) => `'${msg.name}'`)
-    .sort()
-    .join('|');
-  // Many locales have dashes in their name, but we can't use that in a
-  // JavaScript identifier, just drop the dash.
-  const localeIdents = new Map(
-    locales.map((locale) => [locale, locale.replace('-', '')])
-  );
+  const messageNamesUnion = msgs.map((msg) => `'${msg.name}'`).join('|');
   const localeImports = locales
     .slice(1)
     .map(
       (locale) =>
-        `import {messages as ${localeIdents.get(
-          locale
-        )}Messages} from './${locale}';`
+        `import {messages as ${locale.replace(
+          '-',
+          ''
+        )}Messages} from './${locale}.js';`
     )
     .join('\n');
   const localeSwitchCases = locales.slice(1).map((locale) => {
     return `case '${locale}':
-                value = ${localeIdents.get(locale)}Messages[name];
+                value = ${locale.replace('-', '')}Messages[name];
                 break;`;
   });
   return `
