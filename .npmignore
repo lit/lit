@@ -5,6 +5,7 @@ tsconfig.json
 *.tgz
 .github/
 src/tests/
-dist/tests/
+lib/tests/
+testdata/
 ava.config.js
 scripts/

@@ -19,10 +19,41 @@ import {generateMsgModule, generateLocaleModule} from './module-generation';
 import {generateXlb, parseXlb} from './xlb';
 import {ProgramMessage} from './interfaces';
 import {isLocale, Locale} from './locales';
+import {KnownError} from './error';
 
 require('source-map-support').install();
 
-export async function main(argv: string[]) {
+export async function runAndExit() {
+  const exitCode = await runAndLog(process.argv);
+  process.exit(exitCode);
+}
+
+export async function runAndLog(argv: string[]): Promise<number> {
+  try {
+    await runAndThrow(argv);
+  } catch (err) {
+    if (err instanceof KnownError) {
+      console.error(err.message);
+    } else {
+      console.error('Unexpected error\n');
+      console.error(err.message);
+      console.error();
+      console.error(err.stack);
+    }
+    console.log();
+    console.log(`Version: ${version()}`);
+    console.log(`Args: ${argv.join(' ')}`);
+    console.log();
+    return 1;
+  }
+  return 0;
+}
+
+function version() {
+  return require(path.join('..', 'package.json')).version;
+}
+
+async function runAndThrow(argv: string[]) {
   const opts = optsFromArgs(argv);
 
   // Extract messages from our TypeScript program.
@@ -30,7 +61,7 @@ export async function main(argv: string[]) {
   const {messages, errors} = extractMessagesFromProgram(program);
   if (errors.length > 0) {
     printDiagnostics(errors);
-    process.exit(1);
+    throw new KnownError('Error analyzing program');
   }
 
   // Sort by message description, then filename (for determinism, in case there
@@ -52,12 +83,32 @@ export async function main(argv: string[]) {
   // Write our canonical XLB file. This is the file that gets sent for
   // translation.
   const xlb = generateXlb(messages, opts.defaultLocale);
-  fs.writeFileSync(path.join(opts.xlbDir, `${opts.defaultLocale}.xlb`), xlb);
+  const xlbFilename = path.join(opts.xlbDir, `${opts.defaultLocale}.xlb`);
+  try {
+    fs.writeFileSync(xlbFilename, xlb);
+  } catch (e) {
+    throw new KnownError(
+      `Error writing XLB file: ${xlbFilename}\n` +
+        `Does the parent directory exist, ` +
+        `and do you have write permission?\n` +
+        e.message
+    );
+  }
 
   // Write our "localization.ts" TypeScript module. This is the file that
   // implements the "msg" function for our TypeScript program.
   const ts = generateMsgModule(messages, opts.locales, opts.defaultLocale);
-  fs.writeFileSync(path.join(opts.tsOut, 'localization.ts'), ts);
+  const tsFilename = path.join(opts.tsOut, 'localization.ts');
+  try {
+    fs.writeFileSync(tsFilename, ts);
+  } catch (e) {
+    throw new KnownError(
+      `Error writing TypeScript file: ${tsFilename}\n` +
+        `Does the parent directory exist, ` +
+        `and do you have write permission?\n` +
+        e.message
+    );
+  }
 
   // Handle each translated locale.
   for (const locale of opts.locales.slice(1)) {
@@ -68,20 +119,18 @@ export async function main(argv: string[]) {
       xmlStr = fs.readFileSync(filename, 'utf8');
     } catch (e) {
       if (e.code === 'ENOENT') {
-        console.error(
+        throw new KnownError(
           `Expected to find ${locale}.xlb in ${opts.xlbDir} for ${locale} locale`
         );
-        process.exit(1);
       } else {
         throw e;
       }
     }
     const bundle = parseXlb(xmlStr);
     if (bundle.locale !== locale) {
-      console.error(
+      throw new KnownError(
         `Expected ${locale}.xlb to have locale ${locale}, was ${bundle.locale}`
       );
-      process.exit(1);
     }
 
     // For each translated locale, generate a "<locale>.ts" TypeScript module
@@ -93,16 +142,12 @@ export async function main(argv: string[]) {
   }
 }
 
-function usage(): void {
-  console.error(
-    'Usage: lit-localize ' +
-      '--tsconfig=<path to tsconfig.json> ' +
-      '--locales=en,es-419,... ' +
-      '--xlb-dir=<directory for .xlb files> ' +
-      '--ts-out=<output directory for generated TypeScript files>'
-  );
-  process.exit(1);
-}
+const usageError = new KnownError(`
+Usage: lit-localize
+--tsconfig=<path to tsconfig.json>
+--locales=en,es-419,...
+--xlb-dir=<directory for .xlb files>
+--ts-out=<output directory for generated TypeScript files>`);
 
 interface Options {
   tsConfig: string;
@@ -115,11 +160,11 @@ interface Options {
 function optsFromArgs(argv: string[]): Options {
   const args = minimist(argv.slice(2));
   if (args._.length > 0) {
-    usage();
+    throw usageError;
   }
   const locales = requiredString(args['locales']).split(',');
   if (locales.length === 0 || locales.some((locale) => !isLocale(locale))) {
-    usage();
+    throw usageError;
   }
   return {
     tsConfig: requiredString(args['tsconfig']),
@@ -132,8 +177,7 @@ function optsFromArgs(argv: string[]): Options {
 
 function requiredString(arg: unknown): string {
   if (!arg || typeof arg !== 'string') {
-    usage();
-    return ''; // We already exited.
+    throw usageError;
   }
   return arg;
 }

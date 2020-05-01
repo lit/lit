@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localizationbundle locale="es-419">
+  <messages>
+    <msg name="a">Hola Mundo!</msg>
+    <msg name="b">Hola <ph>&lt;b></ph>Mundo!<ph>&lt;/b></ph></msg>
+  </messages>
+</localizationbundle>

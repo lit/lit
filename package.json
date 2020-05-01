@@ -13,9 +13,10 @@
     "lit-localize": "bin/lit-localize.js"
   },
   "scripts": {
-    "clean": "rimraf 'lib/*' 'lib/.*'",
+    "clean": "rimraf 'lib/*' 'lib/.*' 'testdata/*/output'",
     "build": "npm run clean && tsc",
-    "test": "npm run build && ava",
+    "test": "npm run build && ava --verbose",
+    "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true ava --verbose",
     "lint": "eslint 'src/**/*.ts' --max-warnings 0",
     "prettier": "prettier 'src/**/*.ts'",
     "format:check": "npm run prettier -- --check",
@@ -34,11 +35,16 @@
     "xmldom": "^0.3.0"
   },
   "devDependencies": {
+    "@types/diff": "^4.0.2",
+    "@types/fs-extra": "^8.1.0",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
     "ava": "^3.8.1",
     "chokidar-cli": "^2.1.0",
+    "diff": "^4.0.2",
+    "dir-compare": "^2.3.0",
     "eslint": "^6.8.0",
+    "fs-extra": "^9.0.0",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
     "typescript": "^3.8.3"

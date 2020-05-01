@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * @license
  * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
@@ -11,4 +9,11 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-require('../lib/cli.js').runAndExit();
+import {e2eGoldensTest} from './e2e-goldens-test';
+
+e2eGoldensTest('xlb', [
+  '--tsconfig=./tsconfig.json',
+  '--locales=en,es-419',
+  '--xlb-dir=./xlb/',
+  '--ts-out=./tsout/',
+]);

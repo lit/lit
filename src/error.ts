@@ -9,8 +9,8 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import test from 'ava';
-
-test('always passes', (t) => {
-  t.pass();
-});
+/**
+ * If we throw this error class, we know it was an expected error and can print
+ * a concise error instead of a stacktrace.
+ */
+export class KnownError extends Error {}
