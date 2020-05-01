@@ -11,15 +11,15 @@
 
 import * as ts from 'typescript';
 import * as parse5 from 'parse5';
-import { ProgramMessage, Placeholder, Message } from './interfaces';
-import { createDiagnostic } from './typescript';
+import {ProgramMessage, Placeholder, Message} from './interfaces';
+import {createDiagnostic} from './typescript';
 
 /**
  * Extract translation messages from all files in a TypeScript program.
  */
 export function extractMessagesFromProgram(
   node: ts.Program
-): { messages: ProgramMessage[]; errors: ts.Diagnostic[] } {
+): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of node.getSourceFiles()) {
@@ -204,7 +204,7 @@ function extractMsgDescs(node: ts.Node, fileText: string): MsgDesc[] {
       const comment = fileText.slice(range.pos, range.end);
       const match = comment.match(/.*msgdesc:\s*(.+)/);
       if (match !== null) {
-        descs.push({ pos: range.pos, end: range.end, text: match[1].trim() });
+        descs.push({pos: range.pos, end: range.end, text: match[1].trim()});
       }
     }
   }
@@ -241,7 +241,7 @@ function replaceHtmlWithPlaceholders(
   let activePlaceholder: Placeholder | undefined = undefined;
   const accretePlaceholder = (str: string): void => {
     if (activePlaceholder === undefined) {
-      activePlaceholder = { untranslatable: '' };
+      activePlaceholder = {untranslatable: ''};
       components.push(activePlaceholder);
     }
     activePlaceholder.untranslatable += str;
@@ -269,7 +269,7 @@ function replaceHtmlWithPlaceholders(
     } else {
       // We're in some untranslatable HTML. Keep building up a placeholder until
       // we hit some translatable text again.
-      const { open, close } = serializeOpenCloseTags(node);
+      const {open, close} = serializeOpenCloseTags(node);
       accretePlaceholder(open);
       for (const child of (node as parse5.DefaultTreeParentNode).childNodes) {
         traverse(child);
@@ -295,14 +295,14 @@ function replaceHtmlWithPlaceholders(
  */
 function serializeOpenCloseTags(
   node: parse5.Node
-): { open: string; close: string } {
-  const withoutChildren = { ...node, childNodes: [] };
-  const fakeParent = { childNodes: [withoutChildren] };
+): {open: string; close: string} {
+  const withoutChildren = {...node, childNodes: []};
+  const fakeParent = {childNodes: [withoutChildren]};
   const serialized = parse5.serialize(fakeParent);
   const lastLt = serialized.lastIndexOf('<');
   const open = serialized.slice(0, lastLt);
   const close = serialized.slice(lastLt);
-  return { open, close };
+  return {open, close};
 }
 
 /**
@@ -332,7 +332,7 @@ function isLitExpression(node: ts.Node): node is ts.TaggedTemplateExpression {
  */
 function dedupeMessages(
   messages: ProgramMessage[]
-): { messages: ProgramMessage[]; errors: ts.Diagnostic[] } {
+): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
   const errors: ts.Diagnostic[] = [];
   const cache = new Map<string, ProgramMessage>();
   for (const message of messages) {
@@ -356,7 +356,7 @@ function dedupeMessages(
       );
     }
   }
-  return { messages: [...cache.values()], errors };
+  return {messages: [...cache.values()], errors};
 }
 
 function messageEqual(a: Message, b: Message): boolean {

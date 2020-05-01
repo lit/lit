@@ -10,7 +10,7 @@
  */
 
 import * as ts from 'typescript';
-import { Locale } from './locales';
+import {Locale} from './locales';
 
 /**
  * A message for translation.

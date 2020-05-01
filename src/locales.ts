@@ -31,7 +31,7 @@ export function isLocale(x: string): x is Locale {
  * static list across applications, it doesn't need translation per application
  * and can just be hard-coded here.
  */
-const localeDisplayNames: { [P in Locale]: string } = {
+const localeDisplayNames: {[P in Locale]: string} = {
   en: 'English',
   'es-419': 'Español',
 };

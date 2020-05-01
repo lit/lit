@@ -13,12 +13,12 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as minimist from 'minimist';
 
-import { programFromTsConfig, printDiagnostics } from './typescript';
-import { extractMessagesFromProgram } from './program-analysis';
-import { generateMsgModule, generateLocaleModule } from './module-generation';
-import { generateXlb, parseXlb } from './xlb';
-import { ProgramMessage } from './interfaces';
-import { isLocale, Locale } from './locales';
+import {programFromTsConfig, printDiagnostics} from './typescript';
+import {extractMessagesFromProgram} from './program-analysis';
+import {generateMsgModule, generateLocaleModule} from './module-generation';
+import {generateXlb, parseXlb} from './xlb';
+import {ProgramMessage} from './interfaces';
+import {isLocale, Locale} from './locales';
 
 require('source-map-support').install();
 
@@ -27,7 +27,7 @@ export async function main(argv: string[]) {
 
   // Extract messages from our TypeScript program.
   const program = programFromTsConfig(opts.tsConfig);
-  const { messages, errors } = extractMessagesFromProgram(program);
+  const {messages, errors} = extractMessagesFromProgram(program);
   if (errors.length > 0) {
     printDiagnostics(errors);
     process.exit(1);

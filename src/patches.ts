@@ -9,12 +9,12 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { Locale } from './locales';
+import {Locale} from './locales';
 
 type Patches = Partial<
   {
     [key in Locale]: {
-      [msgName: string]: Array<{ before: string; after: string }>;
+      [msgName: string]: Array<{before: string; after: string}>;
     };
   }
 >;
@@ -30,7 +30,7 @@ const patches: Patches = {};
  */
 export const applyPatches = (locale: Locale, msgName: string, text: string) => {
   const subs = (patches[locale] || {})[msgName] || [];
-  for (const { before, after } of subs) {
+  for (const {before, after} of subs) {
     while (text.includes(before)) {
       text = text.replace(before, after);
     }
