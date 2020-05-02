@@ -1,0 +1,7 @@
+{
+  "sourceLocale": "en",
+  "targetLocales": ["es-419"],
+  "tsConfig": "tsconfig.json",
+  "tsOut": "tsout",
+  "xlbDir": "xlb"
+}

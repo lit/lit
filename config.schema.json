@@ -1,0 +1,83 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "Locale": {
+            "enum": [
+                "en",
+                "es-419"
+            ],
+            "type": "string"
+        },
+        "Patch": {
+            "additionalProperties": false,
+            "description": "Replace one string with another.",
+            "properties": {
+                "after": {
+                    "description": "The string to replace matches with.",
+                    "type": "string"
+                },
+                "before": {
+                    "description": "The string to search for.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "after",
+                "before"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "patches": {
+            "additionalProperties": {
+                "additionalProperties": {
+                    "items": {
+                        "$ref": "#/definitions/Patch"
+                    },
+                    "type": "array"
+                },
+                "type": "object"
+            },
+            "description": "Optional string substitutions to apply to specific locale messages. Useful\nfor making minor corrections without modifying source files or repeating a\nfull localization cycle.\n\nExample:\n\n\"patches\": {\n   \"es-419\": {\n     \"greeting\": [\n       {\n         \"before\": \"Buenos dias\",\n         \"after\": \"Buenos días\"\n       }\n     ]\n   }\n}",
+            "type": "object"
+        },
+        "sourceLocale": {
+            "$ref": "#/definitions/Locale",
+            "description": "Required locale code that messages in the source code are written in."
+        },
+        "targetLocales": {
+            "description": "Required locale codes that messages will be localized to.",
+            "items": {
+                "enum": [
+                    "en",
+                    "es-419"
+                ],
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "tsConfig": {
+            "description": "Path to a tsconfig.json file that describes the TypeScript source files\nfrom which messages will be extracted.",
+            "type": "string"
+        },
+        "tsOut": {
+            "description": "Required path to the directory where generated TypeScript files will be\nwritten.",
+            "type": "string"
+        },
+        "xlbDir": {
+            "description": "Required path to the directory where generated XLB files will be written.",
+            "type": "string"
+        }
+    },
+    "required": [
+        "sourceLocale",
+        "targetLocales",
+        "tsConfig",
+        "tsOut",
+        "xlbDir"
+    ],
+    "type": "object"
+}
+

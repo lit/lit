@@ -30,10 +30,11 @@ import {Locale, localeDisplayNameObject} from './locales';
  */
 export function generateMsgModule(
   msgs: Message[],
-  locales: Locale[],
-  defaultLocale: string
+  targetLocales: Locale[],
+  sourceLocale: Locale
 ): string {
   msgs = copyMessagesSortedByName(msgs);
+  const locales = [sourceLocale, ...targetLocales];
   const localesArray = locales
     .sort()
     .map((locale) => `'${locale}'`)
@@ -49,7 +50,7 @@ export function generateMsgModule(
         )}Messages} from './${locale}.js';`
     )
     .join('\n');
-  const localeSwitchCases = locales.slice(1).map((locale) => {
+  const localeSwitchCases = targetLocales.map((locale) => {
     return `case '${locale}':
                 value = ${locale.replace('-', '')}Messages[name];
                 break;`;
@@ -75,7 +76,7 @@ export function generateMsgModule(
 
     export const localeDisplayNames = ${localeDisplayNameObject(locales)};
 
-    export const defaultLocale = '${defaultLocale}';
+    export const defaultLocale = '${sourceLocale}';
 
     const getLocaleFromUrl = () => {
       const url = new URL(document.location.href);
