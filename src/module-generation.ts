@@ -10,7 +10,7 @@
  */
 
 import {Bundle, Message, Placeholder} from './interfaces';
-import {applyPatches} from './patches';
+import {applyPatches, Patches} from './patches';
 import {Locale, localeDisplayNameObject} from './locales';
 
 /**
@@ -30,10 +30,11 @@ import {Locale, localeDisplayNameObject} from './locales';
  */
 export function generateMsgModule(
   msgs: Message[],
-  locales: Locale[],
-  defaultLocale: string
+  targetLocales: Locale[],
+  sourceLocale: Locale
 ): string {
   msgs = copyMessagesSortedByName(msgs);
+  const locales = [sourceLocale, ...targetLocales];
   const localesArray = locales
     .sort()
     .map((locale) => `'${locale}'`)
@@ -49,7 +50,7 @@ export function generateMsgModule(
         )}Messages} from './${locale}.js';`
     )
     .join('\n');
-  const localeSwitchCases = locales.slice(1).map((locale) => {
+  const localeSwitchCases = targetLocales.map((locale) => {
     return `case '${locale}':
                 value = ${locale.replace('-', '')}Messages[name];
                 break;`;
@@ -75,7 +76,7 @@ export function generateMsgModule(
 
     export const localeDisplayNames = ${localeDisplayNameObject(locales)};
 
-    export const defaultLocale = '${defaultLocale}';
+    export const defaultLocale = '${sourceLocale}';
 
     const getLocaleFromUrl = () => {
       const url = new URL(document.location.href);
@@ -120,7 +121,8 @@ export function generateMsgModule(
  */
 export function generateLocaleModule(
   {locale, messages}: Bundle,
-  canonMsgs: Message[]
+  canonMsgs: Message[],
+  patches: Patches
 ): string {
   messages = copyMessagesSortedByName(messages);
   // The unique set of message names in the canonical messages we extracted from
@@ -149,7 +151,7 @@ export function generateLocaleModule(
     if (usesLit) {
       importLit = true;
     }
-    const patchedMsgStr = applyPatches(locale, msg.name, msgStr);
+    const patchedMsgStr = applyPatches(patches, locale, msg.name, msgStr);
     entries.push(`${msg.name}: ${patchedMsgStr},`);
   }
   for (const msg of canonMsgs) {

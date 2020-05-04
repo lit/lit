@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/PolymerLabs/lit-localize/master/config.schema.json",
+  "sourceLocale": "en",
+  "targetLocales": [
+    "es-419"
+  ],
+  "tsConfig": "tsconfig.json",
+  "tsOut": "tsout",
+  "xlbDir": "xlb",
+  "patches": {
+    "es-419": {
+      "a": [
+        {
+          "before": "Mundo",
+          "after": "Galaxia"
+        }
+      ]
+    }
+  }
+}

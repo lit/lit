@@ -11,9 +11,4 @@
 
 import {e2eGoldensTest} from './e2e-goldens-test';
 
-e2eGoldensTest('xlb', [
-  '--tsconfig=./tsconfig.json',
-  '--locales=en,es-419',
-  '--xlb-dir=./xlb/',
-  '--ts-out=./tsout/',
-]);
+e2eGoldensTest('xlb', ['--config=lit-localize.json']);
