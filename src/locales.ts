@@ -9,48 +9,12 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {KnownError} from './error';
+export type Locale = string & {__TYPE__: 'Locale'};
 
 /**
- * This is not an exhaustive list, simply the list of locales we have
- * encountered so far. It is expected that this module should be updated as new
- * locales are added.
- */
-const locales = ['en', 'es-419'] as const;
-
-export type Locale = typeof locales[number];
-
-/**
- * Return whether the given string is a known locale.
+ * Return whether the given string is formatted like a BCP 47 language tag. Note
+ * we don't currently strictly validate against a known list of codes.
  */
 export function isLocale(x: string): x is Locale {
-  return locales.includes(x as Locale);
+  return x.match(/^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$/) !== null;
 }
-
-/**
- * Many applications need to present a locale switcher, and usually we want
- * each locale choice to be displayed in its native language. Since this is a
- * static list across applications, it doesn't need translation per application
- * and can just be hard-coded here.
- */
-const localeDisplayNames: {[P in Locale]: string} = {
-  en: 'English',
-  'es-419': 'Español',
-};
-
-/**
- * Generate a TypeScript object that maps from locale ID to a localized display
- * name for that locale.
- */
-export const localeDisplayNameObject = (locales: Locale[]): string => {
-  const entries = locales.map((locale) => {
-    const displayName = localeDisplayNames[locale];
-    if (displayName === undefined) {
-      throw new KnownError(
-        `No native language name for locale ${locale}, please add it to locales.ts`
-      );
-    }
-    return `['${locale}']: '${displayName}',`;
-  });
-  return `{ ${entries.join('\n')} } as const`;
-};

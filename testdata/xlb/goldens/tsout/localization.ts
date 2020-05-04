@@ -17,9 +17,6 @@
       return supportedLocales.includes(x as SupportedLocale);
     };
 
-    export const localeDisplayNames = { ['en']: 'English',
-['es-419']: 'Español', } as const;
-
     export const defaultLocale = 'en';
 
     const getLocaleFromUrl = () => {

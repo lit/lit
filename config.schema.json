@@ -2,13 +2,6 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "additionalProperties": false,
     "definitions": {
-        "Locale": {
-            "enum": [
-                "en",
-                "es-419"
-            ],
-            "type": "string"
-        },
         "Patch": {
             "additionalProperties": false,
             "description": "Replace one string with another.",
@@ -48,19 +41,12 @@
             "type": "object"
         },
         "sourceLocale": {
-            "$ref": "#/definitions/Locale",
-            "description": "Required locale code that messages in the source code are written in."
+            "description": "Required locale code that messages in the source code are written in.",
+            "type": "string"
         },
         "targetLocales": {
             "description": "Required locale codes that messages will be localized to.",
-            "items": {
-                "enum": [
-                    "en",
-                    "es-419"
-                ],
-                "type": "string"
-            },
-            "type": "array"
+            "type": "string[]"
         },
         "tsConfig": {
             "description": "Path to a tsconfig.json file that describes the TypeScript source files\nfrom which messages will be extracted.",

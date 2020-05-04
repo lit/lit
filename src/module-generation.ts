@@ -11,7 +11,7 @@
 
 import {Bundle, Message, Placeholder} from './interfaces';
 import {applyPatches, Patches} from './patches';
-import {Locale, localeDisplayNameObject} from './locales';
+import {Locale} from './locales';
 
 /**
  * Generate a TypeScript module which exports:
@@ -73,8 +73,6 @@ export function generateMsgModule(
     export const isSupportedLocale = (x: string): x is SupportedLocale => {
       return supportedLocales.includes(x as SupportedLocale);
     };
-
-    export const localeDisplayNames = ${localeDisplayNameObject(locales)};
 
     export const defaultLocale = '${sourceLocale}';
 

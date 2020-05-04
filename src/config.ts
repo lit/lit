@@ -22,11 +22,13 @@ export interface Config {
 
   /**
    * Required locale code that messages in the source code are written in.
+   * @TJS-type string
    */
   sourceLocale: Locale;
 
   /**
    * Required locale codes that messages will be localized to.
+   * @TJS-type string[]
    */
   targetLocales: Locale[];
 
