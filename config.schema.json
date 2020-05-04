@@ -30,6 +30,10 @@
         }
     },
     "properties": {
+        "$schema": {
+            "description": "See https://json-schema.org/understanding-json-schema/reference/schema.html",
+            "type": "string"
+        },
         "patches": {
             "additionalProperties": {
                 "additionalProperties": {

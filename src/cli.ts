@@ -29,8 +29,10 @@ export async function runAndExit() {
 }
 
 export async function runAndLog(argv: string[]): Promise<number> {
+  let config;
   try {
-    await runAndThrow(argv);
+    config = configFromArgs(argv);
+    await runAndThrow(config);
   } catch (err) {
     if (err instanceof KnownError) {
       console.error(err.message);
@@ -42,7 +44,10 @@ export async function runAndLog(argv: string[]): Promise<number> {
     }
     console.log();
     console.log(`Version: ${version()}`);
-    console.log(`Args: ${argv.join(' ')}`);
+    console.log(`Args: ${argv.slice(2).join(' ')}`);
+    if (config) {
+      console.log(`Config:`, JSON.stringify(config, null, 2));
+    }
     console.log();
     return 1;
   }
@@ -53,9 +58,7 @@ function version() {
   return require(path.join('..', 'package.json')).version;
 }
 
-async function runAndThrow(argv: string[]) {
-  const config = configFromArgs(argv);
-
+async function runAndThrow(config: Config) {
   // Extract messages from our TypeScript program.
   const program = programFromTsConfig(config.tsConfig);
   const {messages, errors} = extractMessagesFromProgram(program);

@@ -16,6 +16,11 @@ import {KnownError} from './error';
 
 export interface Config {
   /**
+   * See https://json-schema.org/understanding-json-schema/reference/schema.html
+   */
+  $schema?: string;
+
+  /**
    * Required locale code that messages in the source code are written in.
    */
   sourceLocale: Locale;
