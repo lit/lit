@@ -10,7 +10,7 @@
  */
 
 import {Bundle, Message, Placeholder} from './interfaces';
-import {applyPatches} from './patches';
+import {applyPatches, Patches} from './patches';
 import {Locale, localeDisplayNameObject} from './locales';
 
 /**
@@ -121,7 +121,8 @@ export function generateMsgModule(
  */
 export function generateLocaleModule(
   {locale, messages}: Bundle,
-  canonMsgs: Message[]
+  canonMsgs: Message[],
+  patches: Patches
 ): string {
   messages = copyMessagesSortedByName(messages);
   // The unique set of message names in the canonical messages we extracted from
@@ -150,7 +151,7 @@ export function generateLocaleModule(
     if (usesLit) {
       importLit = true;
     }
-    const patchedMsgStr = applyPatches(locale, msg.name, msgStr);
+    const patchedMsgStr = applyPatches(patches, locale, msg.name, msgStr);
     entries.push(`${msg.name}: ${patchedMsgStr},`);
   }
   for (const msg of canonMsgs) {

@@ -3,5 +3,10 @@
   "targetLocales": ["es-419"],
   "tsConfig": "tsconfig.json",
   "tsOut": "tsout",
-  "xlbDir": "xlb"
+  "xlbDir": "xlb",
+  "patches": {
+    "es-419": {
+      "a": [{"before": "Mundo", "after": "Galaxia"}]
+    }
+  }
 }

@@ -141,7 +141,7 @@ async function runAndThrow(argv: string[]) {
     // that contains the mapping from message ID to each translated version. The
     // "localization.ts" file we generated earlier knows how to import and
     // switch between these maps.
-    const ts = generateLocaleModule(bundle, messages);
+    const ts = generateLocaleModule(bundle, messages, config.patches || {});
     fs.writeFileSync(path.join(config.tsOut, `${locale}.ts`), ts);
   }
 }

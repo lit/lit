@@ -11,24 +11,23 @@
 
 import {Locale} from './locales';
 
-type Patches = Partial<
+export type Patches = Partial<
   {
     [key in Locale]: {
       [msgName: string]: Array<{before: string; after: string}>;
     };
   }
 >;
-/**
- * Occasionally we need to apply small patches to the translations we receive.
- * Be sure to comment why they are here, and remove them when they are no longer
- * needed.
- */
-const patches: Patches = {};
 
 /**
  * Apply string-substitution patches to the given message.
  */
-export const applyPatches = (locale: Locale, msgName: string, text: string) => {
+export const applyPatches = (
+  patches: Patches,
+  locale: Locale,
+  msgName: string,
+  text: string
+) => {
   const subs = (patches[locale] || {})[msgName] || [];
   for (const {before, after} of subs) {
     while (text.includes(before)) {

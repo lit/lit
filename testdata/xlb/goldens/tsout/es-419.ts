@@ -5,7 +5,7 @@
 
     /* eslint-disable no-irregular-whitespace */
     export const messages = {
-      a: `Hola Mundo!`,
+      a: `Hola Galaxia!`,
 b: html`Hola <b>Mundo!</b>`,
     };
   
