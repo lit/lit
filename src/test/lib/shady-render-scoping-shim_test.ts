@@ -13,6 +13,7 @@
  */
 
 import {html} from '../../lib/shady-render.js';
+import {policy} from '../test-utils/security.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
@@ -71,8 +72,8 @@ suite('shady-render scoping shim', () => {
       'scoped.';
   test(testName, function() {
     const style = document.createElement('style');
-    style.innerHTML =
-        ':host { border-top: 2px solid black; } button { font-size: 7px; }';
+    style.innerHTML = policy.createHTML(
+        ':host { border-top: 2px solid black; } button { font-size: 7px; }');
     const container = document.createElement('scope-3');
     document.body.appendChild(container);
     renderShadowRoot(
