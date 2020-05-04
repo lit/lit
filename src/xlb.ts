@@ -12,6 +12,7 @@
 import * as xmldom from 'xmldom';
 import {ProgramMessage, Message, Bundle, Placeholder} from './interfaces';
 import {Locale, isLocale} from './locales';
+import {KnownError} from './error';
 
 /**
  * Generate an XLB XML file for the given messages. This file contains the
@@ -66,18 +67,18 @@ export function parseXlb(xlbStr: string): Bundle {
   const doc = new xmldom.DOMParser().parseFromString(xlbStr);
   const bundleNodes = doc.getElementsByTagName('localizationbundle');
   if (bundleNodes.length !== 1) {
-    throw new Error(
+    throw new KnownError(
       `Expected exactly one <localizationbundle> in XLB file, was ${bundleNodes.length}`
     );
   }
   const locale = bundleNodes[0].getAttribute('locale');
   if (!locale) {
-    throw new Error(
+    throw new KnownError(
       `Expected locale attribute in <localizationbundle>, was missing or empty`
     );
   }
   if (!isLocale(locale)) {
-    throw new Error(
+    throw new KnownError(
       `Did not recognize locale ${locale} in <localizationbundle>, ` +
         `maybe you need to add it to locales.ts?`
     );
@@ -88,7 +89,7 @@ export function parseXlb(xlbStr: string): Bundle {
     const msg = msgNodes[m];
     const name = msg.getAttribute('name');
     if (!name) {
-      throw new Error(
+      throw new KnownError(
         `Expected <msg> to have "name" attribute, was missing or empty`
       );
     }
@@ -107,11 +108,11 @@ export function parseXlb(xlbStr: string): Bundle {
           !phText ||
           phText.nodeType !== doc.TEXT_NODE
         ) {
-          throw new Error(`Expected <ph> to have exactly one text node`);
+          throw new KnownError(`Expected <ph> to have exactly one text node`);
         }
         contents.push({untranslatable: phText.nodeValue || ''});
       } else {
-        throw new Error(
+        throw new KnownError(
           `Unexpected node in <msg>: ${child.nodeType} ${child.nodeName}`
         );
       }

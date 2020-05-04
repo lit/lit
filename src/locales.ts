@@ -9,6 +9,8 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import {KnownError} from './error';
+
 /**
  * This is not an exhaustive list, simply the list of locales we have
  * encountered so far. It is expected that this module should be updated as new
@@ -44,8 +46,8 @@ export const localeDisplayNameObject = (locales: Locale[]): string => {
   const entries = locales.map((locale) => {
     const displayName = localeDisplayNames[locale];
     if (displayName === undefined) {
-      throw new Error(
-        `No native language name for locale ${locale}, please add it to locale-display-names.ts`
+      throw new KnownError(
+        `No native language name for locale ${locale}, please add it to locales.ts`
       );
     }
     return `['${locale}']: '${displayName}',`;
