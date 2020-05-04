@@ -11,13 +11,11 @@
 
 import {Locale} from './locales';
 
-export type Patches = Partial<
-  {
-    [key in Locale]: {
-      [msgName: string]: Array<{before: string; after: string}>;
-    };
-  }
->;
+export type Patches = {
+  [locale: string]: {
+    [msgName: string]: Array<{before: string; after: string}>;
+  };
+};
 
 /**
  * Apply string-substitution patches to the given message.
