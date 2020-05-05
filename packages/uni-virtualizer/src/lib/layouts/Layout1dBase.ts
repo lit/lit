@@ -28,7 +28,7 @@ export abstract class Layout1dBase implements Layout {
    * Index of the item that has been scrolled to via the public API. When the
    * container is otherwise scrolled, this value is set back to -1.
    */
-  private _scrollToIndex: number = -1;
+  protected _scrollToIndex: number = -1;
 
   /**
    * When a child is scrolled to, the offset from the top of the child and the
@@ -289,7 +289,6 @@ export abstract class Layout1dBase implements Layout {
             'position must be one of: start, center, end, nearest');
     }
     this._scheduleReflow();
-    this.reflowIfNeeded();
   }
 
   async dispatchEvent(...args) {

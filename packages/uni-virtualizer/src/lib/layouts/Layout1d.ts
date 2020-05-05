@@ -101,9 +101,7 @@ export class Layout1d extends Layout1dBase {
         this._tMeasured = this._tMeasured + delta;
       }
     });
-    if (!this._nMeasured) {
-      console.warn(`No items measured yet.`);
-    } else {
+    if (this._nMeasured) {
       this._updateItemSize();
       this._scheduleReflow();
     }
@@ -216,12 +214,7 @@ export class Layout1d extends Layout1dBase {
     if (this._viewDim1 === 0 || this._totalItems === 0) {
       this._clearItems();
     } else {
-      const upper = Math.min(
-          this._scrollSize,
-          this._scrollPosition + this._viewDim1 + this._overhang),
-            lower = Math.max(0, upper - this._viewDim1 - (2 * this._overhang));
-
-      this._getItems(lower, upper);
+      this._getItems();
     }
   }
 
@@ -243,15 +236,36 @@ export class Layout1d extends Layout1dBase {
   /*
    * Updates _first and _last based on items that should be in the given range.
    */
-  _getItems(lower: number, upper: number) {
+  _getItems() {
     const items = this._newPhysicalItems;
+    let lower, upper;
 
     // The anchorIdx is the anchor around which we reflow. It is designed to
     // allow jumping to any point of the scroll size. We choose it once and
     // stick with it until stable. first and last are deduced around it.
-    if (this._anchorIdx === null || this._anchorPos === null) {
-      this._anchorIdx = this._getAnchor(lower, upper);
+
+    if (this._scrollToIndex >= 0) {
+      // If we have a scrollToIndex, we anchor on the given
+      // index and set the scroll position accordingly
+      this._anchorIdx = this._scrollToIndex;
       this._anchorPos = this._getPosition(this._anchorIdx);
+      this._scrollIfNeeded();
+      lower = Math.max(0, this._scrollPosition - this._overhang);
+      upper = Math.min(this._scrollSize, this._scrollPosition + this._viewDim1 + this._overhang);
+    }
+    else {
+      // Otherwise, we find an appropriate index to anchor on
+      // given the current scroll position
+      upper = Math.min(
+        this._scrollSize,
+        this._scrollPosition + this._viewDim1 + this._overhang
+      );
+      lower = Math.max(0, upper - this._viewDim1 - (2 * this._overhang));
+
+      if (this._anchorIdx === null || this._anchorPos === null) {
+        this._anchorIdx = this._getAnchor(lower, upper);
+        this._anchorPos = this._getPosition(this._anchorIdx);    
+      }
     }
 
     let anchorSize = this._getSize(this._anchorIdx);
@@ -361,7 +375,6 @@ export class Layout1d extends Layout1dBase {
 
     this._updateScrollSize();
     this._getActiveItems();
-    this._scrollIfNeeded();
 
     if (this._scrollSize !== _scrollSize) {
       this._emitScrollSize();

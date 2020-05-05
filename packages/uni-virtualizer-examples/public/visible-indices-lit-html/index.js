@@ -4,13 +4,13 @@ import { Layout1d } from 'lit-virtualizer';
 
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");
-const handleRangeChange = (e) => {
+const handleVisibilityChange = (e) => {
     firstVisibleResult.innerHTML = e.firstVisible;
     lastVisibleResult.innerHTML = e.lastVisible;
 }
 
 const example = (contacts) => html`
-    <section @rangeChanged=${handleRangeChange} style="height: 100%;">
+    <section @visibilityChanged=${handleVisibilityChange} style="height: 100%;">
         ${scroll({
             items: contacts,
             layout: Layout1d,

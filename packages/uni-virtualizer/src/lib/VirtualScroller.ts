@@ -494,6 +494,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   async _updateDOM() {
     if (this._visibilityChanged) {
       this._notifyVisibility();
+      this._visibilityChanged = false;
     }
     if (this._rangeChanged) {
       this._notifyRange();
@@ -721,10 +722,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     this._firstVisible = range.firstVisible;
     this._lastVisible = range.lastVisible;
     this._rangeChanged = (
+      this._rangeChanged ||
       this._first !== _first ||
       this._last !== _last
     );
     this._visibilityChanged = (
+      this._visibilityChanged ||
       this._firstVisible !== _firstVisible ||
       this._lastVisible !== _lastVisible
     );
@@ -737,7 +740,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     } else {
       window.scroll(window.scrollX - err.left, window.scrollY - err.top);
     }
-    this._positionChildren(this._childrenPos);
   }
 
   /**

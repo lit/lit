@@ -32,7 +32,7 @@ class ContactCard extends LitElement {
     }
 
     render() {
-        const { mediumText, color, name } = this.contact;
+        const { mediumText, color, name } = this.contact || {};
         // return html`
         //     <div style="background: ${color}">${name}: ${mediumText}</div>
         // `;
