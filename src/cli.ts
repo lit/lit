@@ -19,7 +19,7 @@ import {generateMsgModule, generateLocaleModule} from './module-generation';
 import {generateXlb, parseXlb} from './xlb';
 import {ProgramMessage} from './interfaces';
 import {KnownError} from './error';
-import {Config, readConfigFile, writeConfigSchemaIfMissing} from './config';
+import {Config, readConfigFileAndWriteSchema} from './config';
 
 require('source-map-support').install();
 
@@ -168,7 +168,6 @@ function configFromArgs(argv: string[]): Config {
     throw new KnownError(usage);
   }
   const configPath = args['config'] || './lit-localize.json';
-  const config = readConfigFile(configPath);
-  writeConfigSchemaIfMissing(config, configPath);
+  const config = readConfigFileAndWriteSchema(configPath);
   return config;
 }
