@@ -3,6 +3,7 @@
     "target": "es2018",
     "module": "commonjs",
     "moduleResolution": "node",
+    "lib": ["es2018", "DOM"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -10,12 +11,10 @@
     "forceConsistentCasingInFileNames": true,
     "rootDir": "src/",
     "outDir": "lib/",
+    "declaration": true,
     "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": "lib/.tsbuildinfo"
   },
-  "lib": [],
-  "include": ["src/**/*"],
-  "declaration": true,
-  "pretty": true
+  "include": ["src/**/*"]
 }

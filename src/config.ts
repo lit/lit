@@ -11,6 +11,7 @@
 
 import * as fs from 'fs';
 import * as jsonSchema from 'jsonschema';
+import * as pathLib from 'path';
 import {Locale} from './locales';
 import {KnownError} from './error';
 
@@ -81,10 +82,11 @@ export interface Patch {
 }
 
 /**
- * Read a JSON config file from the given path, validate it, and return it.
- * Throws if there was a problem reading, parsing, or validating.
+ * Read a JSON config file from the given path, validate it, and return it. Also
+ * adds a "$schema" property if missing. Throws if there was a problem reading,
+ * parsing, or validating.
  */
-export function readConfigFile(configPath: string): Config {
+export function readConfigFileAndWriteSchema(configPath: string): Config {
   let str;
   try {
     str = fs.readFileSync(configPath, 'utf8');
@@ -113,7 +115,25 @@ export function readConfigFile(configPath: string): Config {
     );
   }
 
-  return parsed as Config;
+  const validated = parsed as Config;
+  writeConfigSchemaIfMissing(validated, configPath);
+
+  // Interpret paths as relative to the config file rather than the current
+  // working directory.
+  const configFileRelativePath = (path: string) =>
+    pathLib.relative(
+      process.cwd(),
+      pathLib.resolve(pathLib.dirname(configPath), path)
+    );
+
+  const config = {
+    ...validated,
+    tsConfig: configFileRelativePath(validated.tsConfig),
+    xlbDir: configFileRelativePath(validated.xlbDir),
+    tsOut: configFileRelativePath(validated.tsOut),
+  };
+
+  return config;
 }
 
 /**
@@ -123,7 +143,7 @@ export function readConfigFile(configPath: string): Config {
  * This $schema property allows editors like VSCode to provide validation and
  * auto-completion for the config format.
  */
-export function writeConfigSchemaIfMissing(config: Config, configPath: string) {
+function writeConfigSchemaIfMissing(config: Config, configPath: string) {
   if ('$schema' in config) {
     return;
   }
