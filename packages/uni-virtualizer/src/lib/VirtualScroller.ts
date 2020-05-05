@@ -765,6 +765,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   private _notifyVisibility() {
     this._container.dispatchEvent(
         new RangeChangeEvent('visibilityChanged', {
+          first: this._first,
+          last: this._last,
           firstVisible: this._firstVisible,
           lastVisible: this._lastVisible,
         })

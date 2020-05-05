@@ -1,4 +1,4 @@
-import { LitVirtualizer, scroll } from '../lit-virtualizer.js'
+import { LitVirtualizer, scroll, Layout1d } from '../lit-virtualizer.js'
 import { html, render } from 'lit-html'
 
 describe('<lit-virtualizer>', function () {
@@ -27,7 +27,7 @@ describe('scroll', function () {
       ${scroll({
         items: ['foo', 'bar', 'baz'],
         renderItem: (item) => html`<p>${item}</p>`,
-        useShadowDOM: false
+        layout: Layout1d
       })}
     `;
 
@@ -43,53 +43,57 @@ describe('scroll', function () {
     document.body.removeChild(container);
   });
 
-  describe('useShadowDOM', function() {
-    it('renders to shadow DOM when useShadowDOM is true', async function() {
-      const example = html`
-        ${scroll({
-          items: ['foo', 'bar', 'baz'],
-          renderItem: (item) => html`<p>${item}</p>`,
-          useShadowDOM: true
-        })}
-      `;
+  // TODO (graynorton): We no longer have an explicit `useShadowDOM`
+  // API, but we should write some tests to cover the new (automatic)
+  // behavior of using a shadow root iff native Shadow DOM is available
 
-      render(example, container);
+  // describe('useShadowDOM', function() {
+  //   it('renders to shadow DOM when useShadowDOM is true', async function() {
+  //     const example = html`
+  //       ${scroll({
+  //         items: ['foo', 'bar', 'baz'],
+  //         renderItem: (item) => html`<p>${item}</p>`,
+  //         useShadowDOM: true
+  //       })}
+  //     `;
+
+  //     render(example, container);
   
-      await (new Promise(resolve => requestAnimationFrame(resolve)));
-      assert.exists(container.shadowRoot);
+  //     await (new Promise(resolve => requestAnimationFrame(resolve)));
+  //     assert.exists(container.shadowRoot);
 
-      document.body.removeChild(container);
-    });
+  //     document.body.removeChild(container);
+  //   });
 
-    it('does not render to shadow DOM when useShadowDOM is false', async function() {
-      const example = html`
-        ${scroll({
-          items: ['foo', 'bar', 'baz'],
-          renderItem: (item) => html`<p>${item}</p>`,
-          useShadowDOM: false
-        })}
-      `;
+  //   it('does not render to shadow DOM when useShadowDOM is false', async function() {
+  //     const example = html`
+  //       ${scroll({
+  //         items: ['foo', 'bar', 'baz'],
+  //         renderItem: (item) => html`<p>${item}</p>`,
+  //         useShadowDOM: false
+  //       })}
+  //     `;
 
-      render(example, container);
+  //     render(example, container);
   
-      await (new Promise(resolve => requestAnimationFrame(resolve)));
-      assert.notExists(container.shadowRoot);
+  //     await (new Promise(resolve => requestAnimationFrame(resolve)));
+  //     assert.notExists(container.shadowRoot);
 
-      document.body.removeChild(container);
-    });
-  })
+  //     document.body.removeChild(container);
+  //   });
+  // })
 
   describe('visible indices', function() {
-    it('emits visibleindiceschanged events with the proper indices', async function() {
+    it('emits visibilityChanged events with the proper indices', async function() {
       const directive = scroll({
         items: ['foo', 'bar', 'baz', 'qux'],
         renderItem: (item) => html`<div style='height: 50px'>${item}</div>`,
-        useShadowDOM: false,
+        layout: Layout1d
       });
       container.style.height = '100px';
       let firstVisible;
       let lastVisible;
-      container.addEventListener('rangechange', e => {
+      container.addEventListener('visibilityChanged', e => {
         firstVisible = e.firstVisible;
         lastVisible = e.lastVisible;
       });

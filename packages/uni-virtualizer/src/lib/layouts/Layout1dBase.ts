@@ -513,12 +513,23 @@ export abstract class Layout1dBase implements Layout {
     if (this._first === -1 || this._last === -1) return;
 
     let firstVisible = this._first;
-    while (this._getItemPosition(firstVisible)[this._positionDim] + this._getItemSize(firstVisible)[this._sizeDim] < this._scrollPosition) {
+    while (
+      Math.round(
+        this._getItemPosition(firstVisible)[this._positionDim] +
+        this._getItemSize(firstVisible)[this._sizeDim]
+      )
+      <=
+      Math.round (this._scrollPosition)
+     ) {
       firstVisible++;
     }
 
     let lastVisible = this._last;
-    while (this._getItemPosition(lastVisible)[this._positionDim] > this._scrollPosition + this._viewDim1) {
+    while (
+      Math.round(this._getItemPosition(lastVisible)[this._positionDim])
+      >=
+      Math.round(this._scrollPosition + this._viewDim1)
+    ) {
       lastVisible--;
     }
 
