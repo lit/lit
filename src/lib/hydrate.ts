@@ -49,12 +49,19 @@ type NodePartState = {
   instance: TemplateInstance;
 
   /**
-   * The index of the next part/value to be hydrated. This is mutable and
+   * The index of the next Template part to be hydrated. This is mutable and
    * updated as the tree walk discovers new part markers at the right level in
-   * the template instance tree. It's used to up a TemplatePart from the
-   * template, and to retreive the associated value from the TemplateResult.
+   * the template instance tree.  Note there is only one Template part per
+   * attribute with (one or more) bindings.
    */
-  currentPartIndex: number;
+  templatePartIndex: number;
+
+  /**
+   * The index of the next TemplateInstance part to be hydrated. This is used
+   * to retrieve the value from the TemplateResult and initialize the
+   * TemplateInstance parts' values for dirty-checking on first render.
+   */
+  instancePartIndex: number;
 };
 
 /**
@@ -156,8 +163,8 @@ export const hydrate =
               currentNodePart =
                   state.instance.processor.handleTextExpression(options);
               state.instance.__parts.push(currentNodePart);
-              value = state.result.values[state.currentPartIndex];
-              state.currentPartIndex++;
+              value = state.result.values[state.instancePartIndex++];
+              state.templatePartIndex++;
             } else if (state.type === 'iterable') {
               const result = state.iterator.next();
               if (result.done) {
@@ -190,7 +197,8 @@ export const hydrate =
                 type: 'template-instance',
                 instance,
                 part: currentNodePart,
-                currentPartIndex: 0,
+                templatePartIndex: 0,
+                instancePartIndex: 0,
                 result: value,
               });
               // For TemplateResult values, we set the part value to the
@@ -249,7 +257,7 @@ export const hydrate =
         } else if (data.startsWith('lit-bindings')) {
           // The parent node has attribute bindings
 
-          // Get the nodeIndex from DOM. We're only using this for an integrety
+          // Get the nodeIndex from DOM. We're only using this for an integrity
           // check right now, we might not need it.
           const match = /lit-bindings (\d+)/.exec(data)!;
           const nodeIndex = parseInt(match[1]);
@@ -260,7 +268,7 @@ export const hydrate =
             let foundOnePart = false;
             // eslint-disable-next-line no-constant-condition
             while (true) {
-              const part = instance.template.parts[state.currentPartIndex];
+              const part = instance.template.parts[state.templatePartIndex];
               if (part === undefined || part.type !== 'attribute' ||
                   part.index !== nodeIndex) {
                 break;
@@ -287,20 +295,20 @@ export const hydrate =
                   // TODO: don't use a readonly field
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (attributePart as any).value =
-                      state.result.values[state.currentPartIndex];
+                      state.result.values[state.instancePartIndex++];
                   attributePart.committer.dirty = false;
                 } else if (attributePart instanceof BooleanAttributePart) {
                   // TODO: this is ugly
                   // TODO: tests
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (attributePart as any).value =
-                      !!state.result.values[state.currentPartIndex];
+                      !!state.result.values[state.instancePartIndex++];
                 }
                 // Do nothing for EventPart... we need to run EventPart.commit()
                 // to actually add the event listener, so we require a commit
                 // Just like properties.
-                state.currentPartIndex++;
               }
+              state.templatePartIndex++;
               instance.__parts.push(...attributeParts);
             }
             if (!foundOnePart) {
