@@ -274,11 +274,6 @@ export const hydrate =
 
               // Prime the part values so subsequent dirty-checks work
               for (const attributePart of attributeParts) {
-                // TODO: don't use a readonly field
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (attributePart as any).value =
-                    state.result.values[state.currentPartIndex];
-
                 // Set the part's current value, but only for AttributeParts,
                 // not PropertyParts. This is because properties are not
                 // represented in DOM so we do need to set them on initial
@@ -289,13 +284,21 @@ export const hydrate =
                 // for this.
                 if (attributePart instanceof AttributePart &&
                     !(attributePart instanceof PropertyPart)) {
+                  // TODO: don't use a readonly field
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (attributePart as any).value =
+                      state.result.values[state.currentPartIndex];
                   attributePart.committer.dirty = false;
                 } else if (attributePart instanceof BooleanAttributePart) {
                   // TODO: this is ugly
                   // TODO: tests
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (attributePart as any).value = !!(attributePart as any).value;
+                  (attributePart as any).value =
+                      !!state.result.values[state.currentPartIndex];
                 }
+                // Do nothing for EventPart... we need to run EventPart.commit()
+                // to actually add the event listener, so we require a commit
+                // Just like properties.
                 state.currentPartIndex++;
               }
               instance.__parts.push(...attributeParts);
