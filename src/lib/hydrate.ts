@@ -213,7 +213,7 @@ export const hydrate =
 
           // Get the nodeIndex from DOM. We're only using this for an integrety
           // check right now, we might not need it.
-          const match = /lit-bindings (\d)/.exec(data)!;
+          const match = /lit-bindings (\d+)/.exec(data)!;
           const nodeIndex = parseInt(match[1]);
 
           const state = stack[stack.length - 1];
