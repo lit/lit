@@ -223,7 +223,8 @@ export const hydrate =
             // eslint-disable-next-line no-constant-condition
             while (true) {
               const part = instance.template.parts[state.currentPartIndex];
-              if (part === undefined || part.type !== 'attribute' || part.index !== nodeIndex) {
+              if (part === undefined || part.type !== 'attribute' ||
+                  part.index !== nodeIndex) {
                 break;
               }
               foundOnePart = true;
@@ -240,13 +241,14 @@ export const hydrate =
                 (attributePart as any).value =
                     state.result.values[state.currentPartIndex];
 
-                // Set the part's current value, but only for AttributeParts, not
-                // PropertyParts. This is because properties are not represented
-                // in DOM so we do need to set them on initial render.
+                // Set the part's current value, but only for AttributeParts,
+                // not PropertyParts. This is because properties are not
+                // represented in DOM so we do need to set them on initial
+                // render.
 
                 // TODO: only do this if we definitely have the same data as on
-                // the server. We need a flag like `dataChanged` or `sameData` for
-                // this.
+                // the server. We need a flag like `dataChanged` or `sameData`
+                // for this.
                 if (attributePart instanceof AttributePart &&
                     !(attributePart instanceof PropertyPart)) {
                   attributePart.committer.dirty = false;
