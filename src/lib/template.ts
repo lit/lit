@@ -38,12 +38,6 @@ export const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
 export const boundAttributeSuffix = '$lit$';
 
 /**
- * This flag causes lit-html to simulate running in an SSR environment, which
- * includes adding extra marker nodes, and changing the marker text.
- */
-const ssr = true;
-
-/**
  * An updatable Template that tracks the location of dynamic parts.
  */
 export class Template {
@@ -162,7 +156,7 @@ export class Template {
           // the following are true:
           //  * We don't have a previousSibling
           //  * The previousSibling is already the start of a previous part
-          if (ssr || node.previousSibling === null || index === lastPartIndex) {
+          if (node.previousSibling === null || index === lastPartIndex) {
             index++;
             parent.insertBefore(createStartMarker(), node);
           }
@@ -170,7 +164,7 @@ export class Template {
           this.parts.push({type: 'node', index});
           // If we don't have a nextSibling, keep this node so we have an end.
           // Else, we can remove it to save future costs.
-          if (ssr || node.nextSibling === null) {
+          if (node.nextSibling === null) {
             // Change the static marker text injected in
             // TemplateResult.getHtml() into the end marker text. This is a hack
             // for testing hydration, unlikely to be actually useful. It would
@@ -224,13 +218,13 @@ const endsWith = (str: string, suffix: string): boolean => {
  * TemplateInstance could instead be more careful about which values it gives
  * to Part.update().
  */
-export type TemplatePart = {
+export type TemplatePart = NodeTemplatePart|AttributeTemplatePart;
+export type NodeTemplatePart = {
   readonly type: 'node'; index: number;
-}|{
-  readonly type: 'attribute';
-  index: number;
-  readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+};
+export type AttributeTemplatePart = {
+  readonly type: 'attribute'; index: number; readonly name: string; readonly strings: ReadonlyArray<
+                                                                                 string>;
 };
 
 export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;

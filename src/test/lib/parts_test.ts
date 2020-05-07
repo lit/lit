@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, createStartMarker, createEndMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, createEndMarker, createStartMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -206,8 +206,21 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '', '2', '', '', '3', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              '1',
+              '/lit-part',
+              'lit-part',
+              'lit-part',
+              '2',
+              '/lit-part',
+              '/lit-part',
+              'lit-part',
+              '3',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
       });
@@ -304,8 +317,19 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '2', '', '3', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              '1',
+              '/lit-part',
+              'lit-part',
+              '2',
+              '/lit-part',
+              'lit-part',
+              '3',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
 
@@ -313,7 +337,8 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['lit-part', '/lit-part']);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
       });
@@ -323,8 +348,19 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '2', '', '3', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              '1',
+              '/lit-part',
+              'lit-part',
+              '2',
+              '/lit-part',
+              'lit-part',
+              '3',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
 
@@ -332,8 +368,16 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '45');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '4', '', '5', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              '4',
+              '/lit-part',
+              'lit-part',
+              '5',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
 
@@ -341,7 +385,8 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue), ['', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['lit-part', '/lit-part']);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
 
@@ -349,8 +394,16 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '45');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '4', '', '5', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              '4',
+              '/lit-part',
+              'lit-part',
+              '5',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
       });
@@ -360,8 +413,21 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '1', '', '', '2', '', '', '3', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              '1',
+              '/lit-part',
+              'lit-part',
+              'lit-part',
+              '2',
+              '/lit-part',
+              '/lit-part',
+              'lit-part',
+              '3',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
 
@@ -369,8 +435,21 @@ suite('Parts', () => {
         part.commit();
         assert.equal(stripExpressionMarkers(container.innerHTML), '123');
         assert.deepEqual(
-            Array.from(container.childNodes).map((n) => n.nodeValue),
-            ['', '', '', '1', '', '', '2', '', '3', '', '']);
+            Array.from(container.childNodes).map((n) => n.nodeValue), [
+              'lit-part',
+              'lit-part',
+              'lit-part',
+              '1',
+              '/lit-part',
+              '/lit-part',
+              'lit-part',
+              '2',
+              '/lit-part',
+              'lit-part',
+              '3',
+              '/lit-part',
+              '/lit-part'
+            ]);
         assert.strictEqual<Node>(container.firstChild!, startNode);
         assert.strictEqual<Node>(container.lastChild!, endNode);
       });
@@ -486,20 +565,19 @@ suite('Parts', () => {
         const testPart = new NodePart({templateFactory});
         testPart.insertAfterPart(part);
         assert.instanceOf(testPart.startNode, Comment);
-        assert.equal(testPart.endNode, endNode);
-        const text = document.createTextNode('');
+        const text = document.createTextNode('A');
         testPart.setValue(text);
         testPart.commit();
         assert.deepEqual(
-            Array.from(container.childNodes),
-            [startNode, testPart.startNode, text, endNode]);
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['lit-part', '/lit-part', 'lit-part', 'A', '/lit-part']);
 
-        const previousText = document.createTextNode('');
+        const previousText = document.createTextNode('B');
         part.setValue(previousText);
         part.commit();
         assert.deepEqual(
-            Array.from(container.childNodes),
-            [startNode, previousText, testPart.startNode, text, endNode]);
+            Array.from(container.childNodes).map((n) => n.nodeValue),
+            ['lit-part', 'B', '/lit-part', 'lit-part', 'A', '/lit-part']);
       });
     });
 
