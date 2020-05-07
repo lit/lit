@@ -284,15 +284,15 @@ export class NodePart implements Part {
   }
 
   private __commitIterable(value: Iterable<unknown>): void {
-    // For an Iterable, we create a new InstancePart per item, then set its
+    // For an Iterable, we create a new NodePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
     // of TemplateResults that will be commonly returned from expressions like:
     // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
 
-    // If _value is an array, then the previous render was of an
-    // iterable and _value will contain the NodeParts from the previous
-    // render. If _value is not an array, clear this part and make a new
+    // If value is an array, then the previous render was of an
+    // iterable and value will contain the NodeParts from the previous
+    // render. If value is not an array, clear this part and make a new
     // array for NodeParts.
     if (!Array.isArray(this.value)) {
       this.value = [];
