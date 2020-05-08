@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, BooleanAttributePart, isIterable, NodePart, PropertyPart} from './parts.js';
+import {noChange} from './part.js';
+import {AttributePart, BooleanAttributePart, isIterable, isPrimitive, NodePart, PropertyPart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {parts} from './render.js';
 import {templateFactory} from './template-factory.js';
@@ -186,8 +187,18 @@ export const hydrate =
           // the matching marker.
           currentNodePart.startNode = node;
 
-          // Check for a template result digest
-          if (value instanceof TemplateResult) {
+          // The following logic closely follows the NodePart commit() cascade
+          // TODO: can we reuse the code?
+          if (value === noChange) {
+            stack.push({part: currentNodePart, type: 'leaf'});
+          } else if (isPrimitive(value)) {
+            // Note, strings must be handled before iterables, so that strings
+            // don't get iterated; otherwise we could just handle all primitives
+            // in the fallback else case
+            stack.push({part: currentNodePart, type: 'leaf'});
+            currentNodePart.value = value;
+          } else if (value instanceof TemplateResult) {
+            // Check for a template result digest
             const markerWithDigest = `lit-part ${value.digest}`;
             if (data === markerWithDigest) {
               const template = options.templateFactory(value);
@@ -209,25 +220,20 @@ export const hydrate =
               // need to stop hydrating this subtree? Clear it? Add tests.
               throw new Error('unimplemented');
             }
+          } else if (isIterable(value)) {
+            // currentNodePart.value will contain an array of NodeParts
+            stack.push({
+              part: currentNodePart,
+              type: 'iterable',
+              value,
+              iterator: value[Symbol.iterator](),
+              done: false,
+            });
+            currentNodePart.value = [];
           } else {
-            if (typeof value === 'string') {
-              // TODO: implement the rest of the NodePart commit() cascade. Can
-              // we reuse the code?
-              stack.push({part: currentNodePart, type: 'leaf'});
-              currentNodePart.value = value;
-            } else if (isIterable(value)) {
-              // currentNodePart.value will contain an array of NodeParts
-              stack.push({
-                part: currentNodePart,
-                type: 'iterable',
-                value,
-                iterator: value[Symbol.iterator](),
-                done: false,
-              });
-              currentNodePart.value = [];
-            } else {
-              stack.push({part: currentNodePart, type: 'leaf'});
-            }
+            // Objects, Nodes, Functions, etc...
+            stack.push({part: currentNodePart, type: 'leaf'});
+            currentNodePart.value = value;
           }
         } else if (data.startsWith('/lit-part')) {
           // This is an NodePart closing marker
