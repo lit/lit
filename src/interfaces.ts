@@ -28,9 +28,9 @@ export interface Message {
 }
 
 /**
- * Extension to "Message" with additional properties that are needed when
- * extracting messages from the TypeScript program, but are not needed when
- * reading translated files.
+ * Extension to "Message" with additional properties that are known only when
+ * extracting from the TypeScript program, but not when reading translated
+ * files.
  */
 export interface ProgramMessage extends Message {
   /**
@@ -50,6 +50,24 @@ export interface ProgramMessage extends Message {
    * extracted. Used for generating "desc" attributes in our XLB file.
    */
   descStack: string[];
+
+  /**
+   * If this message was written as a function, the names of the parameters that
+   * the function takes.
+   *
+   * E.g. given:
+   *   msg('foo', (bar: string, baz: number) => `foo ${bar} ${baz}`, 'a', 4)
+   *
+   * Then params is:
+   *   [ 'bar', 'baz' ]
+   */
+  params?: string[];
+
+  /**
+   * True if this message was tagged as a lit-html template, or was a function
+   * that returned a lit-html template.
+   */
+  isLitTemplate: boolean;
 }
 
 /**

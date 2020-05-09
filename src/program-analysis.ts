@@ -82,29 +82,22 @@ function extractMsg(
     // We're not interested.
     return;
   }
-  if (node.arguments.length !== 2) {
+  if (node.arguments.length < 2) {
     return createDiagnostic(
       file,
       node,
-      `Expected 2 arguments to msg() call, got ${node.arguments.length}`
+      `Expected at least 2 arguments to msg(), got ${node.arguments.length}`
     );
   }
   const [nameArg, contentsArg] = node.arguments;
-  if (!isStaticString(nameArg)) {
+  if (!isStaticString(nameArg) || !nameArg.text) {
     return createDiagnostic(
       file,
       nameArg,
-      `Expected first argument to be a static string`
+      `Expected first argument to msg() to be a static and non-empty string`
     );
   }
   const name = nameArg.text;
-  if (!name) {
-    return createDiagnostic(
-      file,
-      nameArg,
-      `Expected first argument to be a non-empty string`
-    );
-  }
 
   if (isStaticString(contentsArg)) {
     // E.g. msg('foo', 'bar')
@@ -114,6 +107,7 @@ function extractMsg(
       node,
       file,
       descStack: descStack.map((desc) => desc.text),
+      isLitTemplate: false,
     };
   }
 
@@ -122,62 +116,258 @@ function extractMsg(
       // E.g. msg('foo', html`bar <b>baz</b>`)
       return {
         name,
-        contents: replaceHtmlWithPlaceholders(contentsArg.template.text),
+        contents: combineAdjacentPlaceholders(
+          replaceHtmlWithPlaceholders(contentsArg.template.text)
+        ),
         node,
         file,
         descStack: descStack.map((desc) => desc.text),
+        isLitTemplate: true,
       };
-    } else {
-      // E.g. msg('foo', html`bar ${baz}`)
-      //
-      // TODO(aomarks) We have some options for supporting at least some
-      // expressions in templates.
-      //
-      // (1) Take a function that returns a template and require during analysis
-      // that expressions in that template only reference variables local to the
-      // function. For example:
-      //
-      //   msg('greet', (user: string) => html`Hello ${user}!`, this.userName)
-      //
-      // Would generate the XLB:
-      //
-      //   <msg name="greet">Hello<ph>${user}</ph>!</msg>
-      //
-      // And would generate the TypeScript function with overload:
-      //
-      //   export function msg(name: 'greet', (user: string) => TemplateResult, string);
-      //   export function msg(...args: any[]) {
-      //     return templates[activeLocale][args[0]].apply(null, args.slice(2));
-      //   };
-      //
-      //   const templates = {
-      //     en: {
-      //       foo: (user: string) => html`Hello ${user}!`,
-      //     },
-      //     es: {
-      //       foo: (user: string) => html`Hola ${user}!`;,
-      //     },
-      //   };
-      //
-      // (2) If instead of generating a runtime template map we can transform
-      // the source code as a build step, then we could also pass template
-      // expressions all the way through translation and directly substitute
-      // them at their original location, preserving variable scope.
-      //
-      // (3) Something quick and dirty with simple custom string replacements.
-      return createDiagnostic(
-        file,
-        contentsArg,
-        `lit-html expressions with substitutions are not currently supported`
-      );
     }
-  } else {
+    // E.g. msg('foo', html`bar ${baz}`)
     return createDiagnostic(
       file,
       contentsArg,
-      `javascript template literals with substitutions are not currently supported`
+      `To use a variable, use an arrow function.`
     );
   }
+
+  if (ts.isTemplateExpression(contentsArg)) {
+    // E.g. msg('foo', `bar ${baz}`)
+    return createDiagnostic(
+      file,
+      contentsArg,
+      `To use a variable, pass an arrow function.`
+    );
+  }
+
+  if (ts.isArrowFunction(contentsArg)) {
+    // E.g. msg('foo', (name) => html`Hello ${name}`, name)
+    return functionTemplate(contentsArg, name, file, node, descStack);
+  }
+
+  return createDiagnostic(
+    file,
+    contentsArg,
+    `Expected second argument to msg() to be a string, a lit-html ` +
+      `template, or an arrow function that returns one of those.`
+  );
+}
+
+/**
+ * Extract a message from calls like:
+ *   msg('foo', (name) => `Hello ${name}`, name)
+ *   msg('foo', (name) => html`Hello <b>${name}</b>`, name)
+ */
+function functionTemplate(
+  fn: ts.ArrowFunction,
+  name: string,
+  file: ts.SourceFile,
+  node: ts.Node,
+  descStack: MsgDesc[]
+): ProgramMessage | ts.Diagnostic | undefined {
+  if (fn.parameters.length === 0) {
+    return createDiagnostic(
+      file,
+      fn,
+      `Expected template function to have at least one parameter. ` +
+        `Use a regular string or lit-html template if there are no variables.`
+    );
+  }
+  const params = [];
+  for (const param of fn.parameters) {
+    if (!ts.isIdentifier(param.name)) {
+      return createDiagnostic(
+        file,
+        param,
+        `Expected template function parameter to be an identifier`
+      );
+    }
+    params.push(param.name.text);
+  }
+  const body = fn.body;
+  if (
+    !ts.isTemplateExpression(body) &&
+    !ts.isNoSubstitutionTemplateLiteral(body) &&
+    !isLitExpression(body)
+  ) {
+    return createDiagnostic(
+      file,
+      body,
+      `Expected template function to return a template string literal ` +
+        `or a lit-html template, without braces`
+    );
+  }
+  const template = isLitExpression(body) ? body.template : body;
+  const parts: Array<string | {identifier: string}> = [];
+  if (ts.isTemplateExpression(template)) {
+    const spans = template.templateSpans;
+    parts.push(template.head.text);
+    for (const span of spans) {
+      if (
+        !ts.isIdentifier(span.expression) ||
+        !params.includes(span.expression.text)
+      ) {
+        return createDiagnostic(
+          file,
+          span.expression,
+          `Placeholder must be one of the following identifiers: ` +
+            params.join(', ')
+        );
+      }
+      const identifier = span.expression.text;
+      parts.push({identifier});
+      parts.push(span.literal.text);
+    }
+  } else {
+    // A NoSubstitutionTemplateLiteral. No spans.
+    parts.push(template.text);
+  }
+  const isLitTemplate = isLitExpression(body);
+  const contents = isLitTemplate
+    ? replaceExpressionsAndHtmlWithPlaceholders(parts)
+    : parts.map((part) =>
+        typeof part === 'string'
+          ? part
+          : {untranslatable: '${' + part.identifier + '}'}
+      );
+  return {
+    name,
+    contents: combineAdjacentPlaceholders(contents),
+    node,
+    file,
+    descStack: descStack.map((desc) => desc.text),
+    params,
+    isLitTemplate,
+  };
+}
+
+interface Expression {
+  identifier: string;
+}
+
+/**
+ * These substitutions are used to delineate template string literal expressions
+ * embedded within HTML during HTML parsing in a way that is:
+ *
+ * [1] Valid anywhere a lit-html expression binding can go without changing the
+ *     structure of the HTML.
+ * [2] Unambiguous, so that existing code wouldn't accidentally look like this.
+ * [3] Not authorable in source code even intentionally (hence the random number).
+ */
+const EXPRESSION_RAND = String(Math.random()).slice(2);
+const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+
+/**
+ * Our template is split apart based on template string literal expressions.
+ * But to parse HTML, we need one valid HTML string. Concatenate the template
+ * using unique markers to encode template string expressions so that they can
+ * pass as valid HTML and be restored after parsing.
+ *
+ * Here's an example of what's going on:
+ *
+ * Source:
+ *   html`Hi ${name}, click <a href="${url}">me</a>!`
+ *
+ * After TypeScript parsing (x for expression):
+ *   ['Hi', {x: name}, ', click <a href="', {x: url}, '">me</a>!']
+ *
+ * Concatenated HTML (note X and XEND are more unique in reality):
+ *   'Hi X_name_XEND, click <a href="X_url_XEND">me</a>!'
+ *
+ * After HTML parsed and markup converted to placeholders (ph):
+ *   ['Hi X_name_XEND, click ', {ph: '<a href="X_url_XEND">'}, 'me', {ph: '</a>'}, '!']
+ *
+ * After expressions restored and additional placeholders added:
+ *   ['Hi ', {ph: '${name}'}, ', click', {ph: '<a href="${url}">'}, 'me', {ph: '</a>'}, '!']
+ */
+function replaceExpressionsAndHtmlWithPlaceholders(
+  parts: Array<string | Expression>
+): Array<string | Placeholder> {
+  const concatenatedHtml = parts
+    .map((part) =>
+      typeof part === 'string'
+        ? part
+        : EXPRESSION_START + part.identifier + EXPRESSION_END
+    )
+    .join('');
+  const contents: Array<string | Placeholder> = [];
+  for (const part of replaceHtmlWithPlaceholders(concatenatedHtml)) {
+    if (typeof part === 'string') {
+      const startSplit = part.split(EXPRESSION_START);
+      for (const substr of startSplit) {
+        const endSplit = substr.split(EXPRESSION_END);
+        if (endSplit.length === 1) {
+          if (substr) {
+            contents.push(substr);
+          }
+        } else {
+          const [identifier, tail] = endSplit;
+          contents.push({untranslatable: '${' + identifier + '}'});
+          if (tail) {
+            contents.push(tail);
+          }
+        }
+      }
+    } else {
+      // An HTML markup placeholder. If there are expressions within this
+      // markup, it's fine and good to just keep this one placeholder. We just
+      // need to fix the syntax.
+      contents.push({
+        untranslatable: part.untranslatable
+          .replace(EXPRESSION_START, '${')
+          .replace(EXPRESSION_END, '}'),
+      });
+    }
+  }
+  return contents;
+}
+
+/**
+ * Collapse all sequences of adjacent placeholders, to simplify message
+ * structure.
+ *
+ * This situation arises because we initially generate unique placeholders for
+ * each HTML open/close tag, and for each each template string literal
+ * expression, and it's simpler to collapse all of these at once afterwards.
+ *
+ * For example, if given:
+ *
+ *   [ {ph: '<b>'}, {ph: '${foo}'}, {ph: '</b>'} ]
+ *
+ * Then return:
+ *
+ *   [ {ph: '<b>${foo}</b>'} ]
+ */
+function combineAdjacentPlaceholders(
+  original: Array<string | Placeholder>
+): Array<string | Placeholder> {
+  const combined = [];
+  const phBuffer = [];
+  for (let i = 0; i < original.length; i++) {
+    const item = original[i];
+    if (typeof item !== 'string') {
+      // A placeholder.
+      phBuffer.push(item.untranslatable);
+    } else if (phBuffer.length > 0 && item.trim() === '') {
+      // Whitespace can also be combined with its preceding placeholder.
+      phBuffer.push(item);
+    } else {
+      if (phBuffer.length > 0) {
+        // Flush the placeholder buffer.
+        combined.push({untranslatable: phBuffer.splice(0).join('')});
+      }
+      // Some translatable text.
+      combined.push(item);
+    }
+  }
+  if (phBuffer.length > 0) {
+    // The final item was a placeholder, don't forget it.
+    combined.push({untranslatable: phBuffer.join('')});
+  }
+  return combined;
 }
 
 /**
@@ -238,43 +428,20 @@ function replaceHtmlWithPlaceholders(
 ): Array<string | Placeholder> {
   const components: Array<string | Placeholder> = [];
 
-  let activePlaceholder: Placeholder | undefined = undefined;
-  const accretePlaceholder = (str: string): void => {
-    if (activePlaceholder === undefined) {
-      activePlaceholder = {untranslatable: ''};
-      components.push(activePlaceholder);
-    }
-    activePlaceholder.untranslatable += str;
-  };
-
   const traverse = (node: parse5.DefaultTreeNode): void => {
     const text =
       node.nodeName === '#text'
         ? (node as parse5.DefaultTreeTextNode).value
         : null;
-    if (text !== null && text.trim() !== '') {
-      // Some translatable text.
+    if (text !== null) {
       components.push(text);
-      // If we were building a placeholder, we shouldn't be anymore.
-      activePlaceholder = undefined;
-    } else if (text !== null) {
-      // If we were building a placeholder, and then we hit a text node that's
-      // just whitespace, that doesn't indicate that we're back to some
-      // translatable text. Just add it to the placeholder.
-      if (activePlaceholder !== null) {
-        accretePlaceholder(text);
-      } else {
-        components.push(text);
-      }
     } else {
-      // We're in some untranslatable HTML. Keep building up a placeholder until
-      // we hit some translatable text again.
       const {open, close} = serializeOpenCloseTags(node);
-      accretePlaceholder(open);
+      components.push({untranslatable: open});
       for (const child of (node as parse5.DefaultTreeParentNode).childNodes) {
         traverse(child);
       }
-      accretePlaceholder(close);
+      components.push({untranslatable: close});
     }
   };
 
