@@ -18,7 +18,8 @@ npx chokidar \
   "lib/**/*.js" \
   "config.schema.json" \
   "testdata/*/input/**/*" \
-  "testdata/*/golden/**/*" \
-  "ava.config.js" -c "ava" &
+  "testdata/*/goldens/" \
+  "ava.config.js" \
+  -c "ava; npm run test:check-tsc; npm run test:check-eslint" &
 
 wait

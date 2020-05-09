@@ -32,3 +32,9 @@ jobs:
 
       - name: AVA unit tests
         run: npx ava
+
+      - name: Check test output TypeScript
+        run: npm run test:check-tsc
+
+      - name: Check test output eslint
+        run: npm run test:check-eslint
