@@ -3,7 +3,7 @@
   <messages>
     <msg name="string">Hola Mundo!</msg>
     <msg name="lit">Hola <ph>&lt;b>&lt;i></ph>Mundo!<ph>&lt;/i>&lt;/b></ph></msg>
-    <msg name="variable">Hola <ph>${name}</ph>!</msg>
+    <msg name="variables_1">Hola <ph>${name}</ph>!</msg>
     <msg name="lit_variables_1">Hola <ph>${name}</ph>, clic <ph>&lt;a href="${url}"></ph>aquí<ph>&lt;/a></ph>!</msg>
   </messages>
 </localizationbundle>

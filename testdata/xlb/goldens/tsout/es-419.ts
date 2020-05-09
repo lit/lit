@@ -12,7 +12,7 @@
       lit: html`Hola <b><i>Mundo!</i></b>`,
 lit_variables_1: (url: any, name: any) => html`Hola ${name}, clic <a href="${url}">aquí</a>!`,
 string: `Hola Mundo!`,
-variables_1: (name: any) => `Hello ${name}!`,
+variables_1: (name: any) => `Hola ${name}!`,
 lit_variables_2: (x: any) => html`${x}y${x}y${x}`,
 lit_variables_3: (x: any) => html`<b>
       ${x}
