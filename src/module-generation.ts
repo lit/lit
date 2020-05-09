@@ -9,7 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {Bundle, Message, Placeholder} from './interfaces';
+import {Bundle, Message, ProgramMessage, Placeholder} from './interfaces';
 import {applyPatches, Patches} from './patches';
 import {Locale} from './locales';
 
@@ -50,11 +50,6 @@ export function generateMsgModule(
         )}Messages} from './${locale}.js';`
     )
     .join('\n');
-  const localeSwitchCases = targetLocales.map((locale) => {
-    return `case '${locale}':
-                value = ${locale.replace('-', '')}Messages[name];
-                break;`;
-  });
   return `
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
@@ -62,9 +57,7 @@ export function generateMsgModule(
     import {TemplateResult} from 'lit-html';
     ${localeImports}
 
-    export const getLocale = () => {
-      return locale;
-    };
+    /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const supportedLocales = [${localesArray}] as const;
 
@@ -91,23 +84,52 @@ export function generateMsgModule(
 
     const locale = getLocaleFromUrl();
 
-    export const msg = (name: MessageName, defaultValue: string|TemplateResult): string|TemplateResult => {
-      let value;
+    export const getLocale = () => {
+      return locale;
+    };
+
+    export function msg(name: MessageName, str: string): string;
+
+    export function msg(name: MessageName, tmpl: TemplateResult): TemplateResult;
+
+    export function msg<F extends (...args: any) => string>(
+      name: MessageName,
+      fn: F,
+      ...params: Parameters<F>
+    ): string;
+
+    export function msg<F extends (...args: any) => TemplateResult>(
+      name: MessageName,
+      fn: F,
+      ...params: Parameters<F>
+    ): TemplateResult;
+
+    export function msg(
+      name: MessageName,
+      source: string|TemplateResult|(() => string|TemplateResult),
+      ...params: unknown[]): string|TemplateResult {
+      let resolved;
       switch (locale) {
         case defaultLocale:
-          return defaultValue;
-        ${localeSwitchCases}
+          resolved = source;
+          break;
+        ${targetLocales.map(
+          (locale) => `
+        case '${locale}':
+          resolved = ${locale.replace('-', '')}Messages[name];
+          break;`
+        )}
         default:
-          // TODO unreachable
           console.warn(\`\${locale} is not a supported locale\`);
-          return defaultValue;
       }
-      if (value !== undefined) {
-        return value;
+      if (!resolved) {
+        console.warn(\`Could not find \${locale} string for \${name}\`);
+        resolved = source;
       }
-      console.warn(\`Could not find \${locale} string for \${name}\`);
-      return defaultValue;
-    };
+      return typeof resolved === 'function'
+        ? (resolved as any)(...params)
+        : resolved;
+    }
 
     type MessageName = ${messageNamesUnion};
   `;
@@ -119,15 +141,15 @@ export function generateMsgModule(
  */
 export function generateLocaleModule(
   {locale, messages}: Bundle,
-  canonMsgs: Message[],
+  canonMsgs: ProgramMessage[],
   patches: Patches
 ): string {
   messages = copyMessagesSortedByName(messages);
   // The unique set of message names in the canonical messages we extracted from
   // the TypeScript program.
-  const canonMsgNames = new Set<string>();
+  const canonMsgsByName = new Map<string, ProgramMessage>();
   for (const canon of canonMsgs) {
-    canonMsgNames.add(canon.name);
+    canonMsgsByName.set(canon.name, canon);
   }
 
   // The unique set of message names we found in this XLB translations file.
@@ -138,15 +160,16 @@ export function generateLocaleModule(
 
   const entries = [];
   for (const msg of messages) {
-    if (!canonMsgNames.has(msg.name)) {
+    const canon = canonMsgsByName.get(msg.name);
+    if (canon === undefined) {
       console.warn(
         `${locale} message ${msg.name} does not exist in canonical messages, skipping`
       );
       continue;
     }
     translatedMsgNames.add(msg.name);
-    const {msgStr, usesLit} = makeMessageString(msg.contents);
-    if (usesLit) {
+    const msgStr = makeMessageString(msg.contents, canon);
+    if (canon.isLitTemplate) {
       importLit = true;
     }
     const patchedMsgStr = applyPatches(patches, locale, msg.name, msgStr);
@@ -159,15 +182,19 @@ export function generateLocaleModule(
     console.warn(
       `${locale} message ${msg.name} is missing, using canonical text as fallback`
     );
-    const {msgStr} = makeMessageString(msg.contents);
+    const msgStr = makeMessageString(msg.contents, msg);
     entries.push(`${msg.name}: ${msgStr},`);
   }
   return `
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
+
     ${importLit ? "import {html} from 'lit-html';" : ''}
 
     /* eslint-disable no-irregular-whitespace */
+    /* eslint-disable @typescript-eslint/camelcase */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+
     export const messages = {
       ${entries.join('\n')}
     };
@@ -188,23 +215,28 @@ function copyMessagesSortedByName(messages: Message[]): Message[] {
  * possibly using lit-html if there is embedded HTML.
  */
 function makeMessageString(
-  contents: Array<string | Placeholder>
-): {msgStr: string; usesLit: boolean} {
-  let hasPlaceholders = false;
+  contents: Array<string | Placeholder>,
+  canon: ProgramMessage
+): string {
   const fragments = [];
   for (const content of contents) {
     if (typeof content === 'string') {
       fragments.push(escapeStringLiteral(content));
     } else {
-      fragments.push(escapeStringLiteral(content.untranslatable));
-      hasPlaceholders = true;
+      fragments.push(content.untranslatable);
     }
   }
-  // We use <ph> placeholders to safely pass embedded HTML markup through
-  // translation. If we encounter a placeholder, then this translated string
-  // needs to use the lit-html "html" function.
-  const msgStr = `${hasPlaceholders ? 'html' : ''}\`${fragments.join('')}\``;
-  return {msgStr, usesLit: hasPlaceholders};
+  // We use <ph> placeholders to safely pass embedded HTML markup and
+  // template expressions through translation.
+  const tag = canon.isLitTemplate ? 'html' : '';
+  const msgStr = `${tag}\`${fragments.join('')}\``;
+  if (canon.params !== undefined && canon.params.length > 0) {
+    return `(${canon.params
+      .map((param) => `${param}: any`)
+      .join(', ')}) => ${msgStr}`;
+  } else {
+    return msgStr;
+  }
 }
 
 /**

@@ -5,9 +5,7 @@
     import {TemplateResult} from 'lit-html';
     import {messages as es419Messages} from './es-419.js';
 
-    export const getLocale = () => {
-      return locale;
-    };
+    /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const supportedLocales = ['en', 'es-419'] as const;
 
@@ -34,25 +32,50 @@
 
     const locale = getLocaleFromUrl();
 
-    export const msg = (name: MessageName, defaultValue: string|TemplateResult): string|TemplateResult => {
-      let value;
-      switch (locale) {
-        case defaultLocale:
-          return defaultValue;
-        case 'es-419':
-                value = es419Messages[name];
-                break;
-        default:
-          // TODO unreachable
-          console.warn(`${locale} is not a supported locale`);
-          return defaultValue;
-      }
-      if (value !== undefined) {
-        return value;
-      }
-      console.warn(`Could not find ${locale} string for ${name}`);
-      return defaultValue;
+    export const getLocale = () => {
+      return locale;
     };
 
-    type MessageName = 'a'|'b';
+    export function msg(name: MessageName, str: string): string;
+
+    export function msg(name: MessageName, tmpl: TemplateResult): TemplateResult;
+
+    export function msg<F extends (...args: any) => string>(
+      name: MessageName,
+      fn: F,
+      ...params: Parameters<F>
+    ): string;
+
+    export function msg<F extends (...args: any) => TemplateResult>(
+      name: MessageName,
+      fn: F,
+      ...params: Parameters<F>
+    ): TemplateResult;
+
+    export function msg(
+      name: MessageName,
+      source: string|TemplateResult|(() => string|TemplateResult),
+      ...params: unknown[]): string|TemplateResult {
+      let resolved;
+      switch (locale) {
+        case defaultLocale:
+          resolved = source;
+          break;
+        
+        case 'es-419':
+          resolved = es419Messages[name];
+          break;
+        default:
+          console.warn(`${locale} is not a supported locale`);
+      }
+      if (!resolved) {
+        console.warn(`Could not find ${locale} string for ${name}`);
+        resolved = source;
+      }
+      return typeof resolved === 'function'
+        ? (resolved as any)(...params)
+        : resolved;
+    }
+
+    type MessageName = 'lit'|'lit_variables'|'string'|'variable';
   

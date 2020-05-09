@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <localizationbundle locale="es-419">
   <messages>
-    <msg name="a">Hola Mundo!</msg>
-    <msg name="b">Hola <ph>&lt;b></ph>Mundo!<ph>&lt;/b></ph></msg>
+    <msg name="string">Hola Mundo!</msg>
+    <msg name="lit">Hola <ph>&lt;b></ph>Mundo!<ph>&lt;/b></ph></msg>
+    <msg name="variable">Hola <ph>${name}</ph>!</msg>
+    <msg name="lit_variables">Hola <ph>${name}</ph>, clic <ph>&lt;a href="${url}"></ph>aquí<ph>&lt;/a></ph>!</msg>
   </messages>
 </localizationbundle>
