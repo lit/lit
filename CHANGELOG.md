@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.1.2] - 2020-05-09
 
 - Add support for variables:
 
@@ -19,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   );
   ```
 
-## 0.1.1
+## [0.1.1] - 2020-05-05
 
 - Interpret paths as relative to the location of the config file, instead of
   relative to the current working directory.
@@ -31,6 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Publish `.d.ts` files.
 
-## 0.1.0
+## [0.1.0] - 2020-05-05
 
 - Initial release of `lit-localize`.
