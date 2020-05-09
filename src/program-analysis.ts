@@ -171,7 +171,8 @@ function functionTemplate(
     return createDiagnostic(
       file,
       fn,
-      `Expected template function to have at least one parameter`
+      `Expected template function to have at least one parameter. ` +
+        `Use a regular string or lit-html template if there are no variables.`
     );
   }
   const params = [];
@@ -199,40 +200,29 @@ function functionTemplate(
     );
   }
   const template = isLitExpression(body) ? body.template : body;
-  if (ts.isNoSubstitutionTemplateLiteral(template)) {
-    return createDiagnostic(
-      file,
-      template,
-      `Expected all params to be used, missing: ` + params.join(', ')
-    );
-  }
-  const spans = template.templateSpans;
-  const unusedParams = new Set(params);
   const parts: Array<string | {identifier: string}> = [];
-  parts.push(template.head.text);
-  for (const span of spans) {
-    if (
-      !ts.isIdentifier(span.expression) ||
-      !params.includes(span.expression.text)
-    ) {
-      return createDiagnostic(
-        file,
-        span.expression,
-        `Placeholder must be one of the following identifiers: ` +
-          params.join(', ')
-      );
+  if (ts.isTemplateExpression(template)) {
+    const spans = template.templateSpans;
+    parts.push(template.head.text);
+    for (const span of spans) {
+      if (
+        !ts.isIdentifier(span.expression) ||
+        !params.includes(span.expression.text)
+      ) {
+        return createDiagnostic(
+          file,
+          span.expression,
+          `Placeholder must be one of the following identifiers: ` +
+            params.join(', ')
+        );
+      }
+      const identifier = span.expression.text;
+      parts.push({identifier});
+      parts.push(span.literal.text);
     }
-    const identifier = span.expression.text;
-    unusedParams.delete(identifier);
-    parts.push({identifier});
-    parts.push(span.literal.text);
-  }
-  if (unusedParams.size > 0) {
-    return createDiagnostic(
-      file,
-      template,
-      `Expected all params to be used, missing: ` + [...unusedParams].join(', ')
-    );
+  } else {
+    // A NoSubstitutionTemplateLiteral. No spans.
+    parts.push(template.text);
   }
   const isLitTemplate = isLitExpression(body);
   const contents = isLitTemplate
@@ -257,6 +247,15 @@ interface Expression {
   identifier: string;
 }
 
+/**
+ * These substitutions are used to delineate template string literal expressions
+ * embedded within HTML during HTML parsing in a way that is:
+ *
+ * [1] Valid anywhere a lit-html expression binding can go without changing the
+ *     structure of the HTML.
+ * [2] Unambiguous, so that existing code wouldn't accidentally look like this.
+ * [3] Not authorable in source code even intentionally (hence the random number).
+ */
 const EXPRESSION_RAND = String(Math.random()).slice(2);
 const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
 const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
@@ -265,8 +264,7 @@ const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
  * Our template is split apart based on template string literal expressions.
  * But to parse HTML, we need one valid HTML string. Concatenate the template
  * using unique markers to encode template string expressions so that they can
- * pass as valid HTML and be restored after parsing, without any chance of
- * overlapping with "${" sequences that were actually escaped HTML.
+ * pass as valid HTML and be restored after parsing.
  *
  * Here's an example of what's going on:
  *
