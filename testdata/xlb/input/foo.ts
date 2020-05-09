@@ -1,16 +1,38 @@
 import {html} from 'lit-html';
 import {msg} from './tsout/localization';
 
-export const a = msg('string', 'Hello World!');
+msg('string', 'Hello World!');
 
-export const b = msg('lit', html`Hello <b>World!</b>`);
+msg('lit', html`Hello <b><i>World!</i></b>`);
 
-export const c = msg('variable', (name: string) => `Hello ${name}!`, 'World');
+msg('variables_1', (name: string) => `Hello ${name}!`, 'World');
 
-export const d = msg(
-  'lit_variables',
+msg(
+  'lit_variables_1',
   (url: string, name: string) =>
     html`Hello ${name}, click <a href="${url}">here</a>!`,
   'World',
   'https://www.example.com/'
+);
+
+msg('lit_variables_2', (x: string) => html`${x}y${x}y${x}`, 'x');
+
+msg(
+  'lit_variables_3',
+  (x: string) => html`<b>
+      ${x}
+    </b>
+    <i>
+      y
+    </i>
+    <b>
+      ${x}
+    </b>
+    <i>
+      y
+    </i>
+    <b>
+      ${x}
+    </b>`,
+  'x'
 );

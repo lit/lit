@@ -116,7 +116,9 @@ function extractMsg(
       // E.g. msg('foo', html`bar <b>baz</b>`)
       return {
         name,
-        contents: replaceHtmlWithPlaceholders(contentsArg.template.text),
+        contents: combineAdjacentPlaceholders(
+          replaceHtmlWithPlaceholders(contentsArg.template.text)
+        ),
         node,
         file,
         descStack: descStack.map((desc) => desc.text),
@@ -242,7 +244,7 @@ function functionTemplate(
       );
   return {
     name,
-    contents,
+    contents: combineAdjacentPlaceholders(contents),
     node,
     file,
     descStack: descStack.map((desc) => desc.text),
@@ -300,11 +302,15 @@ function replaceExpressionsAndHtmlWithPlaceholders(
       for (const substr of startSplit) {
         const endSplit = substr.split(EXPRESSION_END);
         if (endSplit.length === 1) {
-          contents.push(substr);
+          if (substr) {
+            contents.push(substr);
+          }
         } else {
           const [identifier, tail] = endSplit;
           contents.push({untranslatable: '${' + identifier + '}'});
-          contents.push(tail);
+          if (tail) {
+            contents.push(tail);
+          }
         }
       }
     } else {
@@ -319,6 +325,51 @@ function replaceExpressionsAndHtmlWithPlaceholders(
     }
   }
   return contents;
+}
+
+/**
+ * Collapse all sequences of adjacent placeholders, to simplify message
+ * structure.
+ *
+ * This situation arises because we initially generate unique placeholders for
+ * each HTML open/close tag, and for each each template string literal
+ * expression, and it's simpler to collapse all of these at once afterwards.
+ *
+ * For example, if given:
+ *
+ *   [ {ph: '<b>'}, {ph: '${foo}'}, {ph: '</b>'} ]
+ *
+ * Then return:
+ *
+ *   [ {ph: '<b>${foo}</b>'} ]
+ */
+function combineAdjacentPlaceholders(
+  original: Array<string | Placeholder>
+): Array<string | Placeholder> {
+  const combined = [];
+  const phBuffer = [];
+  for (let i = 0; i < original.length; i++) {
+    const item = original[i];
+    if (typeof item !== 'string') {
+      // A placeholder.
+      phBuffer.push(item.untranslatable);
+    } else if (phBuffer.length > 0 && item.trim() === '') {
+      // Whitespace can also be combined with its preceding placeholder.
+      phBuffer.push(item);
+    } else {
+      if (phBuffer.length > 0) {
+        // Flush the placeholder buffer.
+        combined.push({untranslatable: phBuffer.splice(0).join('')});
+      }
+      // Some translatable text.
+      combined.push(item);
+    }
+  }
+  if (phBuffer.length > 0) {
+    // The final item was a placeholder, don't forget it.
+    combined.push({untranslatable: phBuffer.join('')});
+  }
+  return combined;
 }
 
 /**
@@ -379,43 +430,20 @@ function replaceHtmlWithPlaceholders(
 ): Array<string | Placeholder> {
   const components: Array<string | Placeholder> = [];
 
-  let activePlaceholder: Placeholder | undefined = undefined;
-  const accretePlaceholder = (str: string): void => {
-    if (activePlaceholder === undefined) {
-      activePlaceholder = {untranslatable: ''};
-      components.push(activePlaceholder);
-    }
-    activePlaceholder.untranslatable += str;
-  };
-
   const traverse = (node: parse5.DefaultTreeNode): void => {
     const text =
       node.nodeName === '#text'
         ? (node as parse5.DefaultTreeTextNode).value
         : null;
-    if (text !== null && text.trim() !== '') {
-      // Some translatable text.
+    if (text !== null) {
       components.push(text);
-      // If we were building a placeholder, we shouldn't be anymore.
-      activePlaceholder = undefined;
-    } else if (text !== null) {
-      // If we were building a placeholder, and then we hit a text node that's
-      // just whitespace, that doesn't indicate that we're back to some
-      // translatable text. Just add it to the placeholder.
-      if (activePlaceholder !== null) {
-        accretePlaceholder(text);
-      } else {
-        components.push(text);
-      }
     } else {
-      // We're in some untranslatable HTML. Keep building up a placeholder until
-      // we hit some translatable text again.
       const {open, close} = serializeOpenCloseTags(node);
-      accretePlaceholder(open);
+      components.push({untranslatable: open});
       for (const child of (node as parse5.DefaultTreeParentNode).childNodes) {
         traverse(child);
       }
-      accretePlaceholder(close);
+      components.push({untranslatable: close});
     }
   };
 

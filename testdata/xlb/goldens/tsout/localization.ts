@@ -77,5 +77,5 @@
         : resolved;
     }
 
-    type MessageName = 'lit'|'lit_variables'|'string'|'variable';
+    type MessageName = 'lit'|'lit_variables_1'|'lit_variables_2'|'lit_variables_3'|'string'|'variables_1';
   
