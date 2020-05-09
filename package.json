@@ -1,6 +1,6 @@
 {
   "name": "lit-localize",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Localization for lit-html",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
@@ -48,7 +48,7 @@
     "chokidar-cli": "^2.1.0",
     "diff": "^4.0.2",
     "dir-compare": "^2.3.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.0.0",
     "fs-extra": "^9.0.0",
     "lit-html": "^1.2.1",
     "prettier": "^2.0.5",
