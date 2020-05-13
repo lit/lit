@@ -46,7 +46,7 @@ export function generateMsgModule(
       (locale) =>
         `import {messages as ${locale.replace(
           '-',
-          ''
+          '_'
         )}Messages} from './${locale}.js';`
     )
     .join('\n');
@@ -54,10 +54,11 @@ export function generateMsgModule(
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/camelcase */
+
     import {TemplateResult} from 'lit-html';
     ${localeImports}
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const supportedLocales = [${localesArray}] as const;
 
@@ -117,7 +118,7 @@ export function generateMsgModule(
           .map(
             (locale) => `
         case '${locale}':
-          resolved = ${locale.replace('-', '')}Messages[name];
+          resolved = ${locale.replace('-', '_')}Messages[name];
           break;`
           )
           .join('')}

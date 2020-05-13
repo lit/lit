@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix code generation bug where having more than one `targetLocale` would
   compile to invalid TypeScript (extra commas).
 
+- Disable eslint warnings about camelcase for locale module imports like
+  `zh_CN.ts`.
+
 ## [0.1.2] - 2020-05-09
 
 - Add support for variables:

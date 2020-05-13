@@ -2,11 +2,12 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    import {TemplateResult} from 'lit-html';
-    import {messages as es419Messages} from './es-419.js';
-import {messages as zh_CNMessages} from './zh_CN.js';
-
     /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/camelcase */
+
+    import {TemplateResult} from 'lit-html';
+    import {messages as es_419Messages} from './es-419.js';
+import {messages as zh_CNMessages} from './zh_CN.js';
 
     export const supportedLocales = ['en', 'es-419', 'zh_CN'] as const;
 
@@ -64,7 +65,7 @@ import {messages as zh_CNMessages} from './zh_CN.js';
           break;
         
         case 'es-419':
-          resolved = es419Messages[name];
+          resolved = es_419Messages[name];
           break;
         case 'zh_CN':
           resolved = zh_CNMessages[name];
