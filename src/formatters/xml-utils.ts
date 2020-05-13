@@ -53,6 +53,7 @@ export function getNonEmptyAttributeOrThrow(
 export function formatXml(xmlStr: string): string {
   // TODO(aomarks) Types for the xml-parser plugin.
   return prettier.format(xmlStr, ({
+    plugins: ['@prettier/plugin-xml'],
     parser: 'xml',
     xmlWhitespaceSensitivity: 'ignore',
   } as unknown) as prettier.Options);
