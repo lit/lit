@@ -15,6 +15,7 @@ import * as pathLib from 'path';
 import {Config} from '../config';
 import {Locale} from '../locales';
 import {Formatter} from './index';
+import {KnownError} from '../error';
 import {Bundle, Message, ProgramMessage, Placeholder} from '../messages';
 import {
   getOneElementByTagNameOrThrow,
@@ -113,7 +114,7 @@ export class XliffFormatter implements Formatter {
         continue;
       }
       if (targets.length > 1) {
-        throw new Error(
+        throw new KnownError(
           `Expected 0 or 1 <target> in <trans-unit>, got ${targets.length}`
         );
       }
@@ -133,11 +134,11 @@ export class XliffFormatter implements Formatter {
             !phText ||
             phText.nodeType !== doc.TEXT_NODE
           ) {
-            throw new Error(`Expected <ph> to have exactly one text node`);
+            throw new KnownError(`Expected <ph> to have exactly one text node`);
           }
           contents.push({untranslatable: phText.nodeValue || ''});
         } else {
-          throw new Error(
+          throw new KnownError(
             `Unexpected node in <trans-unit>: ${child.nodeType} ${child.nodeName}`
           );
         }

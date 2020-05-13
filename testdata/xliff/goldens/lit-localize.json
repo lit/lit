@@ -12,7 +12,7 @@
   },
   "patches": {
     "es-419": {
-      "a": [
+      "lit": [
         {
           "before": "Mundo",
           "after": "Galaxia"

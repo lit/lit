@@ -15,6 +15,7 @@ import * as fsExtra from 'fs-extra';
 import {Config} from '../config';
 import {Locale} from '../locales';
 import {Formatter} from './index';
+import {KnownError} from '../error';
 import {ProgramMessage, Message, Bundle, Placeholder} from '../messages';
 import {
   getOneElementByTagNameOrThrow,
@@ -61,7 +62,7 @@ class XlbFormatter implements Formatter {
 
   constructor(config: Config) {
     if (config.interchange.format !== 'xlb') {
-      throw new Error(
+      throw new KnownError(
         `Internal error: expected interchange.format "xlb", ` +
           `got ${config.interchange.format}`
       );
@@ -127,11 +128,11 @@ class XlbFormatter implements Formatter {
             !phText ||
             phText.nodeType !== doc.TEXT_NODE
           ) {
-            throw new Error(`Expected <ph> to have exactly one text node`);
+            throw new KnownError(`Expected <ph> to have exactly one text node`);
           }
           contents.push({untranslatable: phText.nodeValue || ''});
         } else {
-          throw new Error(
+          throw new KnownError(
             `Unexpected node in <msg>: ${child.nodeType} ${child.nodeName}`
           );
         }
