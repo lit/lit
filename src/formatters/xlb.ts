@@ -79,7 +79,7 @@ class XlbFormatter implements Formatter {
     const files = await new Promise<string[]>((resolve, reject) =>
       glob(
         this.xlbConfig.translationsGlob,
-        {cwd: this.config.baseDir},
+        {cwd: this.config.baseDir, absolute: true},
         (err, files) => {
           if (err) {
             reject(err);
