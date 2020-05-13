@@ -29,11 +29,14 @@
   },
   "dependencies": {
     "@prettier/plugin-xml": "^0.7.2",
+    "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.2.6",
     "minimist": "^1.2.5",
     "parse5": "^6.0.0",
+    "prettier": "^2.0.5",
     "source-map-support": "^0.5.19",
+    "typescript": "^3.8.3",
     "xmldom": "^0.3.0"
   },
   "devDependencies": {
@@ -53,11 +56,8 @@
     "diff": "^4.0.2",
     "dir-compare": "^2.3.0",
     "eslint": "^7.0.0",
-    "fs-extra": "^9.0.0",
     "lit-html": "^1.2.1",
-    "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
-    "typescript": "^3.8.3",
     "typescript-json-schema": "^0.42.0"
   }
 }
