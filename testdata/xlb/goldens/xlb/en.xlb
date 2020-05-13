@@ -1,10 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <localizationbundle locale="en">
   <messages>
     <msg name="string">Hello World!</msg>
-    <msg name="lit">Hello <ph>&lt;b>&lt;i></ph>World!<ph>&lt;/i>&lt;/b></ph></msg>
+    <msg name="lit">Hello <ph>&lt;b>&lt;i></ph>World!<ph
+      >&lt;/i>&lt;/b></ph></msg>
     <msg name="variables_1">Hello <ph>${name}</ph>!</msg>
-    <msg name="lit_variables_1">Hello <ph>${name}</ph>, click <ph>&lt;a href="${url}"></ph>here<ph>&lt;/a></ph>!</msg>
+    <msg name="lit_variables_1">Hello <ph>${name}</ph>, click <ph
+      >&lt;a href="${url}"></ph>here<ph>&lt;/a></ph>!</msg>
     <msg name="lit_variables_2"><ph>${x}</ph>y<ph>${x}</ph>y<ph>${x}</ph></msg>
     <msg name="lit_variables_3"><ph>&lt;b>
       ${x}

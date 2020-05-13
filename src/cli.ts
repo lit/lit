@@ -16,10 +16,11 @@ import * as minimist from 'minimist';
 import {programFromTsConfig, printDiagnostics} from './typescript';
 import {extractMessagesFromProgram} from './program-analysis';
 import {generateMsgModule, generateLocaleModule} from './module-generation';
-import {generateXlb, parseXlb} from './xlb';
-import {ProgramMessage} from './interfaces';
+import {makeFormatter} from './formatters';
+import {ProgramMessage, Message} from './messages';
 import {KnownError} from './error';
 import {Config, readConfigFileAndWriteSchema} from './config';
+import {Locale} from './locales';
 
 require('source-map-support').install();
 
@@ -60,7 +61,7 @@ function version() {
 
 async function runAndThrow(config: Config) {
   // Extract messages from our TypeScript program.
-  const program = programFromTsConfig(config.tsConfig);
+  const program = programFromTsConfig(config.resolve(config.tsConfig));
   const {messages, errors} = extractMessagesFromProgram(program);
   if (errors.length > 0) {
     printDiagnostics(errors);
@@ -69,10 +70,10 @@ async function runAndThrow(config: Config) {
 
   // Sort by message description, then filename (for determinism, in case there
   // is no description, since file-process order is arbitrary), then by
-  // source-code position order. The order of entries in XLB files is
-  // significant, and will determine the order in which messages are displayed
-  // to translators. We want messages that are logically related to be presented
-  // together.
+  // source-code position order. The order of entries in interchange files can
+  // be significant, e.g. in determining the order in which messages are
+  // displayed to translators. We want messages that are logically related to be
+  // presented together.
   messages.sort((a: ProgramMessage, b: ProgramMessage) => {
     const descCompare = a.descStack
       .join('')
@@ -83,20 +84,14 @@ async function runAndThrow(config: Config) {
     return a.file.fileName.localeCompare(b.file.fileName);
   });
 
-  // Write our canonical XLB file. This is the file that gets sent for
-  // translation.
-  const xlb = generateXlb(messages, config.sourceLocale);
-  const xlbFilename = path.join(config.xlbDir, `${config.sourceLocale}.xlb`);
-  try {
-    fs.writeFileSync(xlbFilename, xlb);
-  } catch (e) {
-    throw new KnownError(
-      `Error writing XLB file: ${xlbFilename}\n` +
-        `Does the parent directory exist, ` +
-        `and do you have write permission?\n` +
-        e.message
-    );
+  // Read existing translations, and write translation interchange data
+  // according to the formatter that is configured.
+  const formatter = makeFormatter(config);
+  const translationMap = new Map<Locale, Message[]>();
+  for (const bundle of await formatter.readTranslations()) {
+    translationMap.set(bundle.locale, bundle.messages);
   }
+  await formatter.writeOutput(messages, translationMap);
 
   // Write our "localization.ts" TypeScript module. This is the file that
   // implements the "msg" function for our TypeScript program.
@@ -105,7 +100,7 @@ async function runAndThrow(config: Config) {
     config.targetLocales,
     config.sourceLocale
   );
-  const tsFilename = path.join(config.tsOut, 'localization.ts');
+  const tsFilename = path.join(config.resolve(config.tsOut), 'localization.ts');
   try {
     fs.writeFileSync(tsFilename, ts);
   } catch (e) {
@@ -117,35 +112,22 @@ async function runAndThrow(config: Config) {
     );
   }
 
-  // Handle each translated locale.
+  // For each translated locale, generate a "<locale>.ts" TypeScript module that
+  // contains the mapping from message ID to each translated version. The
+  // "localization.ts" file we generated earlier knows how to import and switch
+  // between these maps.
   for (const locale of config.targetLocales) {
-    // Parse translated messages out of XLB files.
-    const filename = path.join(path.join(config.xlbDir, `${locale}.xlb`));
-    let xmlStr;
-    try {
-      xmlStr = fs.readFileSync(filename, 'utf8');
-    } catch (e) {
-      if (e.code === 'ENOENT') {
-        throw new KnownError(
-          `Expected to find ${locale}.xlb in ${config.xlbDir} for ${locale} locale`
-        );
-      } else {
-        throw e;
-      }
-    }
-    const bundle = parseXlb(xmlStr);
-    if (bundle.locale !== locale) {
-      throw new KnownError(
-        `Expected ${locale}.xlb to have locale ${locale}, was ${bundle.locale}`
-      );
-    }
-
-    // For each translated locale, generate a "<locale>.ts" TypeScript module
-    // that contains the mapping from message ID to each translated version. The
-    // "localization.ts" file we generated earlier knows how to import and
-    // switch between these maps.
-    const ts = generateLocaleModule(bundle, messages, config.patches || {});
-    fs.writeFileSync(path.join(config.tsOut, `${locale}.ts`), ts);
+    const translations = translationMap.get(locale) || [];
+    const ts = generateLocaleModule(
+      locale,
+      translations,
+      messages,
+      config.patches || {}
+    );
+    fs.writeFileSync(
+      path.join(config.resolve(config.tsOut), `${locale}.ts`),
+      ts
+    );
   }
 }
 

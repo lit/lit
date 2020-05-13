@@ -8,7 +8,7 @@ trap "kill 0" EXIT
 npm run clean
 npx tsc --watch --noEmitOnError &
 npx chokidar "src/**/*.ts" .eslintrc.json -c "npm run lint" &
-npx chokidar "src/config.ts" -c "npm run generate-json-schema" &
+npx chokidar "src/**/*.ts" -c "npm run generate-json-schema" &
 
 # Use chokidar instead of `ava --watch`, because even though
 # https://github.com/avajs/ava/issues/2040 is marked fixed, it seems to still be

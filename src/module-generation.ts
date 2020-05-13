@@ -9,7 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {Bundle, Message, ProgramMessage, Placeholder} from './interfaces';
+import {Message, ProgramMessage, Placeholder} from './messages';
 import {applyPatches, Patches} from './patches';
 import {Locale} from './locales';
 
@@ -140,11 +140,12 @@ export function generateMsgModule(
  * translated messages.
  */
 export function generateLocaleModule(
-  {locale, messages}: Bundle,
+  locale: Locale,
+  translations: Message[],
   canonMsgs: ProgramMessage[],
   patches: Patches
 ): string {
-  messages = copyMessagesSortedByName(messages);
+  translations = copyMessagesSortedByName(translations);
   // The unique set of message names in the canonical messages we extracted from
   // the TypeScript program.
   const canonMsgsByName = new Map<string, ProgramMessage>();
@@ -159,7 +160,7 @@ export function generateLocaleModule(
   let importLit = false;
 
   const entries = [];
-  for (const msg of messages) {
+  for (const msg of translations) {
     const canon = canonMsgsByName.get(msg.name);
     if (canon === undefined) {
       console.warn(
