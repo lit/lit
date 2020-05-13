@@ -2,7 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/PolymerLabs/lit-localize/master/config.schema.json",
   "sourceLocale": "en",
   "targetLocales": [
-    "es-419"
+    "es-419",
+    "zh_CN"
   ],
   "tsConfig": "tsconfig.json",
   "tsOut": "tsout",

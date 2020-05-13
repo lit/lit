@@ -4,10 +4,11 @@
 
     import {TemplateResult} from 'lit-html';
     import {messages as es419Messages} from './es-419.js';
+import {messages as zh_CNMessages} from './zh_CN.js';
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
 
-    export const supportedLocales = ['en', 'es-419'] as const;
+    export const supportedLocales = ['en', 'es-419', 'zh_CN'] as const;
 
     export type SupportedLocale = typeof supportedLocales[number];
 
@@ -64,6 +65,9 @@
         
         case 'es-419':
           resolved = es419Messages[name];
+          break;,
+        case 'zh_CN':
+          resolved = zh_CNMessages[name];
           break;
         default:
           console.warn(`${locale} is not a supported locale`);
