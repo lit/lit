@@ -15,51 +15,6 @@ import {Locale, isLocale} from './locales';
 import {KnownError} from './error';
 
 /**
- * Generate an XLB XML file for the given messages. This file contains the
- * canonical set of messages that will be translatd.
- */
-export function generateXlb(
-  messages: ProgramMessage[],
-  locale: Locale
-): string {
-  const doc = new xmldom.DOMImplementation().createDocument('', '', null);
-  doc.appendChild(
-    doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
-  );
-  doc.appendChild(doc.createTextNode('\n'));
-  const bundle = doc.createElement('localizationbundle');
-  bundle.setAttribute('locale', locale);
-  doc.appendChild(bundle);
-  bundle.appendChild(doc.createTextNode('\n  '));
-  const messagesNode = doc.createElement('messages');
-  bundle.appendChild(messagesNode);
-  for (const {name, contents, descStack} of messages) {
-    messagesNode.appendChild(doc.createTextNode('\n    '));
-    const messageNode = doc.createElement('msg');
-    messageNode.setAttribute('name', name);
-    if (descStack.length > 0) {
-      messageNode.setAttribute('desc', descStack.join(' / '));
-    }
-    messagesNode.appendChild(messageNode);
-    for (const content of contents) {
-      if (typeof content === 'string') {
-        messageNode.appendChild(doc.createTextNode(content));
-      } else {
-        const {untranslatable} = content;
-        const ph = doc.createElement('ph');
-        ph.appendChild(doc.createTextNode(untranslatable));
-        messageNode.appendChild(ph);
-      }
-    }
-  }
-  messagesNode.appendChild(doc.createTextNode('\n  '));
-  bundle.appendChild(doc.createTextNode('\n'));
-  doc.appendChild(doc.createTextNode('\n'));
-  const serialized = new xmldom.XMLSerializer().serializeToString(doc);
-  return serialized;
-}
-
-/**
  * Parse an XLB XML file. These files contain translations organized using the
  * same message names that we originally requested.
  */
@@ -120,4 +75,49 @@ export function parseXlb(xlbStr: string): Bundle {
     messages.push({name, contents});
   }
   return {locale, messages};
+}
+
+/**
+ * Generate an XLB XML file for the given messages. This file contains the
+ * canonical set of messages that will be translatd.
+ */
+export function generateXlb(
+  messages: ProgramMessage[],
+  locale: Locale
+): string {
+  const doc = new xmldom.DOMImplementation().createDocument('', '', null);
+  doc.appendChild(
+    doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
+  );
+  doc.appendChild(doc.createTextNode('\n'));
+  const bundle = doc.createElement('localizationbundle');
+  bundle.setAttribute('locale', locale);
+  doc.appendChild(bundle);
+  bundle.appendChild(doc.createTextNode('\n  '));
+  const messagesNode = doc.createElement('messages');
+  bundle.appendChild(messagesNode);
+  for (const {name, contents, descStack} of messages) {
+    messagesNode.appendChild(doc.createTextNode('\n    '));
+    const messageNode = doc.createElement('msg');
+    messageNode.setAttribute('name', name);
+    if (descStack.length > 0) {
+      messageNode.setAttribute('desc', descStack.join(' / '));
+    }
+    messagesNode.appendChild(messageNode);
+    for (const content of contents) {
+      if (typeof content === 'string') {
+        messageNode.appendChild(doc.createTextNode(content));
+      } else {
+        const {untranslatable} = content;
+        const ph = doc.createElement('ph');
+        ph.appendChild(doc.createTextNode(untranslatable));
+        messageNode.appendChild(ph);
+      }
+    }
+  }
+  messagesNode.appendChild(doc.createTextNode('\n  '));
+  bundle.appendChild(doc.createTextNode('\n'));
+  doc.appendChild(doc.createTextNode('\n'));
+  const serialized = new xmldom.XMLSerializer().serializeToString(doc);
+  return serialized;
 }
