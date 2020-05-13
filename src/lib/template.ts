@@ -162,19 +162,12 @@ export class Template {
           }
           lastPartIndex = index;
           this.parts.push({type: 'node', index});
-          // If we don't have a nextSibling, keep this node so we have an end.
-          // Else, we can remove it to save future costs.
-          if (node.nextSibling === null) {
-            // Change the static marker text injected in
-            // TemplateResult.getHtml() into the end marker text. This is a hack
-            // for testing hydration, unlikely to be actually useful. It would
-            // only be useful if we use this code path for SSR. We might want
-            // to move it to text code.
-            (node as Comment).data = '/lit-part';
-          } else {
-            nodesToRemove.push(node);
-            index--;
-          }
+          // Reuse the marker as the end node; we should only strictly need to
+          // do this if there is no node.nextSibling, since that could serve
+          // as the end marker. However SSR currently relies on balanced markers
+          // around parts.
+          // TODO: re-implement marker optimization
+          (node as Comment).data = '/lit-part';
           partIndex++;
         } else {
           let i = -1;
