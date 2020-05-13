@@ -44,7 +44,9 @@ export const cache = directive((value: unknown) => (part: Part) => {
 
   let templateCache = templateCaches.get(part);
 
+  let firstRender = false;
   if (templateCache === undefined) {
+    firstRender = true;
     templateCache = new WeakMap();
     templateCaches.set(part, templateCache);
   }
@@ -75,7 +77,7 @@ export const cache = directive((value: unknown) => (part: Part) => {
   }
 
   // Next, can we reuse nodes from the cache?
-  if (value instanceof TemplateResult) {
+  if (!firstRender && value instanceof TemplateResult) {
     const template = part.options.templateFactory(value);
     const cachedTemplate = templateCache.get(template);
     if (cachedTemplate !== undefined) {

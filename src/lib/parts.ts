@@ -147,7 +147,7 @@ export class NodePart implements Part {
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
-  private __pendingValue: unknown = undefined;
+  __pendingValue: unknown = undefined;
 
   constructor(options: RenderOptions) {
     this.options = options;

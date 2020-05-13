@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DirectiveFn} from '../lib/directive.js';
+import {DirectiveFn, HydrateFn} from '../lib/directive.js';
 import {createEndMarker, createStartMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
@@ -100,58 +100,10 @@ export const repeat =
                 keyFn = keyFnOrTemplate as KeyFn<T>;
               }
 
-              return (containerPart: Part): void => {
+              return (containerPart: Part, hydrate?: HydrateFn): void => {
                 if (!(containerPart instanceof NodePart)) {
                   throw new Error('repeat can only be used in text bindings');
                 }
-
-                // // Performing client-side hydration.
-                // if (containerPart.options.prerenderedParts !== undefined) {
-                //   const nodeParts: NodePart[] = [];
-                //   for (const partInfo of
-                //   containerPart.options.prerenderedParts) {
-                //     // Remove prerenderedParts from options, as they only
-                //     apply to
-                //     // the container part.
-                //     const {prerenderedParts, ...options} =
-                //     containerPart.options; (options as
-                //     RenderOptions).prerenderedParts = partInfo.children;
-                //     const nodePart = new NodePart(options);
-                //     nodePart.startNode = partInfo.startNode;
-                //     nodePart.endNode = partInfo.endNode;
-                //     nodeParts.push(nodePart);
-                //   }
-                //   partListCache.set(containerPart, nodeParts);
-                //   // TODO: having to clean up like this is likely to lead to
-                //   // bugs when it's forgotten. Directive shouldn't have to do
-                //   // this. Consider either passing prerenderedParts in a
-                //   // transient call, like Part.commit() and possibly a second
-                //   // argument to the directive function.
-                //   containerPart.options.prerenderedParts = undefined;
-
-                //   // Hydrate the template keys only if the data is unchanged
-                //   since
-                //   // pre-rendering.
-                //   if (!containerPart.options.dataChanged) {
-                //     const keys = [];
-                //     let index = 0;
-                //     for (const item of items) {
-                //       keys.push(keyFn ? keyFn(item, index) : index);
-                //       index++;
-                //     }
-                //     keyListCache.set(containerPart, keys);
-                //   }
-                // }
-
-                // Old part & key lists are retrieved from the last update
-                // (associated with the part for this instance of the directive)
-                const oldParts = partListCache.get(containerPart) || [];
-                const oldKeys = keyListCache.get(containerPart) || [];
-
-                // New part list will be built up as we go (either reused from
-                // old parts or created for new keys in this update). This is
-                // saved in the above cache at the end of the update.
-                const newParts: NodePart[] = [];
 
                 // New value list is eagerly generated from items along with a
                 // parallel array indicating its key.
@@ -163,6 +115,32 @@ export const repeat =
                   newValues[index] = template !(item, index);
                   index++;
                 }
+
+                if (hydrate) {
+                  partListCache.set(containerPart,
+                    hydrate(newValues, containerPart, containerPart.options));
+                  keyListCache.set(containerPart, newKeys);
+                  return;
+                }
+
+                // Old part & key lists are retrieved from the last update
+                // (associated with the part for this instance of the directive)
+                const oldParts = partListCache.get(containerPart);
+                if (!oldParts) {
+                  // The initial render always uses setValue() to be compatible
+                  // with SSR; subsequent renders will imperatively move nodes
+                  // around
+                  containerPart.setValue(newValues);
+                  partListCache.set(containerPart, containerPart.value as NodePart[]);
+                  keyListCache.set(containerPart, newKeys);
+                  return;
+                }
+                const oldKeys = keyListCache.get(containerPart) || [];
+
+                // New part list will be built up as we go (either reused from
+                // old parts or created for new keys in this update). This is
+                // saved in the above cache at the end of the update.
+                const newParts: NodePart[] = [];
 
                 // Maps from key to index for current and previous update; these
                 // are generated lazily only when needed as a performance
