@@ -20,7 +20,6 @@ import {Bundle, Message, ProgramMessage, Placeholder} from '../messages';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
-  formatXml,
 } from './xml-utils';
 
 /**
@@ -187,10 +186,12 @@ export class XliffFormatter implements Formatter {
     }
 
     const doc = new xmldom.DOMImplementation().createDocument('', '', null);
+    const indent = (node: Element | Document, level = 0) =>
+      node.appendChild(doc.createTextNode('\n' + Array(level + 1).join('  ')));
     doc.appendChild(
       doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
     );
-    doc.appendChild(doc.createTextNode('\n'));
+    indent(doc);
 
     // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#xliff
     const xliff = doc.createElement('xliff');
@@ -201,10 +202,13 @@ export class XliffFormatter implements Formatter {
       'urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-strict.xsd'
     );
     doc.appendChild(xliff);
+    indent(xliff);
 
     // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#file
     const file = doc.createElement('file');
     xliff.appendChild(file);
+    file.setAttribute('target-language', targetLocale);
+    file.setAttribute('source-language', this.config.sourceLocale);
     // TODO The spec requires the source filename in the "original" attribute,
     // but we don't currently track filenames.
     file.setAttribute('original', 'lit-localize-inputs');
@@ -212,16 +216,18 @@ export class XliffFormatter implements Formatter {
     // message text is just text, and all HTML markup is encoded into <ph>
     // elements.
     file.setAttribute('datatype', 'plaintext');
-    file.setAttribute('source-language', this.config.sourceLocale);
-    file.setAttribute('target-language', targetLocale);
+    indent(file);
 
+    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#body
     const body = doc.createElement('body');
     file.appendChild(body);
+    indent(body);
 
     for (const {name, contents: sourceContents, descStack} of sourceMessages) {
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#trans-unit
       const transUnit = doc.createElement('trans-unit');
       body.appendChild(transUnit);
+      indent(transUnit, 1);
       transUnit.setAttribute('id', name);
 
       if (descStack.length > 0) {
@@ -245,12 +251,18 @@ export class XliffFormatter implements Formatter {
         for (const child of this.encodeContents(doc, translation.contents)) {
           target.appendChild(child);
         }
+        indent(transUnit, 1);
         transUnit.appendChild(target);
       }
+      indent(transUnit);
+      indent(body);
     }
+    indent(file);
+    indent(xliff);
+    indent(doc);
     const serializer = new xmldom.XMLSerializer();
     const xmlStr = serializer.serializeToString(doc);
-    return formatXml(xmlStr);
+    return xmlStr;
   }
 
   /**

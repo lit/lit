@@ -9,8 +9,6 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import * as prettier from 'prettier';
-
 /**
  * Query the given parent element for a descendent with the given tag name and
  * return it, or throw if none or more than one are found.
@@ -45,16 +43,4 @@ export function getNonEmptyAttributeOrThrow(
     );
   }
   return attribute;
-}
-
-/**
- * Format the given serialized XML using Prettier.
- */
-export function formatXml(xmlStr: string): string {
-  // TODO(aomarks) Types for the xml-parser plugin.
-  return prettier.format(xmlStr, ({
-    plugins: ['@prettier/plugin-xml'],
-    parser: 'xml',
-    xmlWhitespaceSensitivity: 'ignore',
-  } as unknown) as prettier.Options);
 }

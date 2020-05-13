@@ -20,7 +20,6 @@ import {ProgramMessage, Message, Bundle, Placeholder} from '../messages';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
-  formatXml,
 } from './xml-utils';
 
 /**
@@ -147,12 +146,16 @@ class XlbFormatter implements Formatter {
    */
   async writeOutput(sourceMessages: ProgramMessage[]): Promise<void> {
     const doc = new xmldom.DOMImplementation().createDocument('', '', null);
+    const indent = (node: Element | Document, level = 0) =>
+      node.appendChild(doc.createTextNode('\n' + Array(level + 1).join('  ')));
     doc.appendChild(
       doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
     );
+    indent(doc);
     const bundle = doc.createElement('localizationbundle');
     bundle.setAttribute('locale', this.config.sourceLocale);
     doc.appendChild(bundle);
+    indent(bundle, 1);
     const messagesNode = doc.createElement('messages');
     bundle.appendChild(messagesNode);
     for (const {name, contents, descStack} of sourceMessages) {
@@ -161,6 +164,7 @@ class XlbFormatter implements Formatter {
       if (descStack.length > 0) {
         messageNode.setAttribute('desc', descStack.join(' / '));
       }
+      indent(messagesNode, 2);
       messagesNode.appendChild(messageNode);
       for (const content of contents) {
         if (typeof content === 'string') {
@@ -173,11 +177,13 @@ class XlbFormatter implements Formatter {
         }
       }
     }
+    indent(messagesNode, 1);
+    indent(bundle);
+    indent(doc);
     const serialized = new xmldom.XMLSerializer().serializeToString(doc);
-    const formatted = formatXml(serialized);
     await fsExtra.writeFile(
       this.config.resolve(this.xlbConfig.outputFile),
-      formatted,
+      serialized,
       'utf8'
     );
   }
