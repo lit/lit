@@ -65,7 +65,7 @@ import {messages as zh_CNMessages} from './zh_CN.js';
         
         case 'es-419':
           resolved = es419Messages[name];
-          break;,
+          break;
         case 'zh_CN':
           resolved = zh_CNMessages[name];
           break;

@@ -113,12 +113,14 @@ export function generateMsgModule(
         case defaultLocale:
           resolved = source;
           break;
-        ${targetLocales.map(
-          (locale) => `
+        ${targetLocales
+          .map(
+            (locale) => `
         case '${locale}':
           resolved = ${locale.replace('-', '')}Messages[name];
           break;`
-        )}
+          )
+          .join('')}
         default:
           console.warn(\`\${locale} is not a supported locale\`);
       }
@@ -170,13 +172,13 @@ export function generateLocaleModule(
     }
     translatedMsgNames.add(msg.name);
     const msgStr = makeMessageString(msg.contents, canon);
-    if (canon.isLitTemplate) {
-      importLit = true;
-    }
     const patchedMsgStr = applyPatches(patches, locale, msg.name, msgStr);
     entries.push(`${msg.name}: ${patchedMsgStr},`);
   }
   for (const msg of canonMsgs) {
+    if (msg.isLitTemplate) {
+      importLit = true;
+    }
     if (translatedMsgNames.has(msg.name)) {
       continue;
     }

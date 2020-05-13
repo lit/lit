@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The interchange format is set with `interchange.format` (currently `xliff` or
   `xlb`), and other format-specific configuration is set in that object.
 
+- Fix code generation bug where having more than one `targetLocale` would
+  compile to invalid TypeScript (extra commas).
+
 ## [0.1.2] - 2020-05-09
 
 - Add support for variables:
