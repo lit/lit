@@ -95,12 +95,11 @@ async function runAndThrow(config: Config) {
 
   // Write our "localization.ts" TypeScript module. This is the file that
   // implements the "msg" function for our TypeScript program.
-  const ts = generateMsgModule(
-    messages,
-    config.targetLocales,
-    config.sourceLocale
+  const ts = generateMsgModule(messages, config, config.output);
+  const tsFilename = path.join(
+    config.resolve(config.output.outputDir),
+    'localization.ts'
   );
-  const tsFilename = path.join(config.resolve(config.tsOut), 'localization.ts');
   try {
     fs.writeFileSync(tsFilename, ts);
   } catch (e) {
@@ -125,7 +124,7 @@ async function runAndThrow(config: Config) {
       config.patches || {}
     );
     fs.writeFileSync(
-      path.join(config.resolve(config.tsOut), `${locale}.ts`),
+      path.join(config.resolve(config.output.outputDir), `${locale}.ts`),
       ts
     );
   }

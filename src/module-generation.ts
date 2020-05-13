@@ -12,6 +12,8 @@
 import {Message, ProgramMessage, Placeholder} from './messages';
 import {applyPatches, Patches} from './patches';
 import {Locale} from './locales';
+import {Config, RuntimeOutputConfig} from './config';
+import {KnownError} from './error';
 
 /**
  * Generate a TypeScript module which exports:
@@ -30,11 +32,11 @@ import {Locale} from './locales';
  */
 export function generateMsgModule(
   msgs: Message[],
-  targetLocales: Locale[],
-  sourceLocale: Locale
+  config: Config,
+  runtime: RuntimeOutputConfig
 ): string {
   msgs = copyMessagesSortedByName(msgs);
-  const locales = [sourceLocale, ...targetLocales];
+  const locales = [config.sourceLocale, ...config.targetLocales];
   const localesArray = locales
     .sort()
     .map((locale) => `'${locale}'`)
@@ -68,26 +70,9 @@ export function generateMsgModule(
       return supportedLocales.includes(x as SupportedLocale);
     };
 
-    export const defaultLocale = '${sourceLocale}';
+    export const defaultLocale = '${config.sourceLocale}';
 
-    const getLocaleFromUrl = () => {
-      const url = new URL(document.location.href);
-      const locale = new URLSearchParams(url.search).get('locale');
-      if (locale) {
-        if (isSupportedLocale(locale)) {
-          return locale;
-        } else {
-          console.warn(\`\${locale} is not a supported locale\`);
-        }
-      }
-      return defaultLocale;
-    };
-
-    const locale = getLocaleFromUrl();
-
-    export const getLocale = () => {
-      return locale;
-    };
+    ${genLocaleInitialization(config, runtime)}
 
     export function msg(name: MessageName, str: string): string;
 
@@ -114,7 +99,7 @@ export function generateMsgModule(
         case defaultLocale:
           resolved = source;
           break;
-        ${targetLocales
+        ${config.targetLocales
           .map(
             (locale) => `
         case '${locale}':
@@ -136,6 +121,94 @@ export function generateMsgModule(
 
     type MessageName = ${messageNamesUnion};
   `;
+}
+
+/**
+ * Generate the setLocale and getLocaleFromUrl functions.
+ */
+function genLocaleInitialization(
+  config: Config,
+  runtime: RuntimeOutputConfig
+): string {
+  const ts = [];
+  let isConst = true;
+  let isSetFromUrl = false;
+
+  if (runtime.exportSetLocaleFunction) {
+    isConst = false;
+    ts.push(`
+      export function setLocale(newLocale: SupportedLocale) {
+        if (isSupportedLocale(newLocale)) {
+          locale = newLocale;
+        }
+      }
+    `);
+  }
+
+  if (runtime.setLocaleFromUrl) {
+    const {regexp, param} = runtime.setLocaleFromUrl;
+    isSetFromUrl = true;
+
+    if (regexp) {
+      const allLocales = [config.sourceLocale, ...config.targetLocales];
+      allLocales.sort((a, b) => {
+        // The regexp group must match longer locale codes first, because
+        // otherwise e.g. "es" would match before "es-419" does.
+        if (a.length !== b.length) {
+          return b.length - a.length;
+        }
+        // Fall back to lexicographic for stability of generated code.
+        return a.localeCompare(b);
+      });
+      const finalRegexp = regexp
+        .replace(':LOCALE:', `(${allLocales.join('|')})`)
+        // Note eslint errors about useless escapes on a regexp like `/[\/]/`
+        // because the JS regexp parser is smart enough to know that the `/`
+        // inside the `[]` is unambiguous. That's too clever for us, though.
+        .replace(/\//g, '\\/');
+      ts.push(`
+        function getLocaleFromUrl() {
+          const match = window.location.href.match(
+              // eslint-disable-next-line no-useless-escape
+              /${finalRegexp}/);
+          if (match && isSupportedLocale(match[1])) {
+            return match[1];
+          }
+          return defaultLocale;
+        }
+      `);
+    } else if (param) {
+      ts.push(`
+        function getLocaleFromUrl() {
+          for (const param of window.location.search.substring(1).split('&')) {
+            if (param.startsWith('${param}=')) {
+              const value = param.substring(${param.length + 1});
+              if (isSupportedLocale(value)) {
+                return value;
+              }
+              break;
+            }
+          }
+          return defaultLocale;
+        }
+      `);
+    } else {
+      throw new KnownError(
+        'Internal error: setLocaleFromUrl config had neither regex nor param.'
+      );
+    }
+  }
+
+  const varType = isConst ? 'const' : 'let';
+  if (isSetFromUrl) {
+    ts.push(`${varType} locale = getLocaleFromUrl();`);
+  } else {
+    // We need the cast so that locale doesn't get overly-narrowed to the
+    // default const value, and then disallow comparisons against other values.
+    ts.push(`${varType} locale = defaultLocale as SupportedLocale;`);
+  }
+
+  return ts.join('\n');
 }
 
 /**

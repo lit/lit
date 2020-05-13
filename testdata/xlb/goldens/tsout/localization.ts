@@ -17,24 +17,7 @@ export const isSupportedLocale = (x: string): x is SupportedLocale => {
 
 export const defaultLocale = 'en';
 
-const getLocaleFromUrl = () => {
-  const url = new URL(document.location.href);
-  const locale = new URLSearchParams(url.search).get('locale');
-  if (locale) {
-    if (isSupportedLocale(locale)) {
-      return locale;
-    } else {
-      console.warn(`${locale} is not a supported locale`);
-    }
-  }
-  return defaultLocale;
-};
-
-const locale = getLocaleFromUrl();
-
-export const getLocale = () => {
-  return locale;
-};
+const locale = defaultLocale as SupportedLocale;
 
 export function msg(name: MessageName, str: string): string;
 

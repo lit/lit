@@ -5,10 +5,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 import {TemplateResult} from 'lit-html';
+import {messages as esMessages} from './es.js';
 import {messages as es_419Messages} from './es-419.js';
 import {messages as zh_CNMessages} from './zh_CN.js';
 
-export const supportedLocales = ['en', 'es-419', 'zh_CN'] as const;
+export const supportedLocales = ['en', 'es', 'es-419', 'zh_CN'] as const;
 
 export type SupportedLocale = typeof supportedLocales[number];
 
@@ -18,13 +19,18 @@ export const isSupportedLocale = (x: string): x is SupportedLocale => {
 
 export const defaultLocale = 'en';
 
-export function setLocale(newLocale: SupportedLocale) {
-  if (isSupportedLocale(newLocale)) {
-    locale = newLocale;
+function getLocaleFromUrl() {
+  const match = window.location.href.match(
+    // eslint-disable-next-line no-useless-escape
+    /^https?:\/\/[^\/]+\/(es-419|zh_CN|en|es)(?:$|[\/?#])/
+  );
+  if (match && isSupportedLocale(match[1])) {
+    return match[1];
   }
+  return defaultLocale;
 }
 
-let locale = defaultLocale as SupportedLocale;
+const locale = getLocaleFromUrl();
 
 export function msg(name: MessageName, str: string): string;
 
@@ -53,6 +59,9 @@ export function msg(
       resolved = source;
       break;
 
+    case 'es':
+      resolved = esMessages[name];
+      break;
     case 'es-419':
       resolved = es_419Messages[name];
       break;
@@ -71,10 +80,4 @@ export function msg(
     : resolved;
 }
 
-type MessageName =
-  | 'lit'
-  | 'lit_variables_1'
-  | 'lit_variables_2'
-  | 'lit_variables_3'
-  | 'string'
-  | 'variables_1';
+type MessageName = 'hello';

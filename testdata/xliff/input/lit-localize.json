@@ -1,8 +1,13 @@
 {
+  "$schema": "../../../config.schema.json",
   "sourceLocale": "en",
   "targetLocales": ["es-419", "zh_CN"],
   "tsConfig": "tsconfig.json",
-  "tsOut": "tsout",
+  "output": {
+    "mode": "runtime",
+    "outputDir": "tsout",
+    "exportSetLocaleFunction": true
+  },
   "interchange": {
     "format": "xliff",
     "xliffDir": "xliff/"
