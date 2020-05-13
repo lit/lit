@@ -1,6 +1,6 @@
 {
   "name": "lit-localize",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Localization for lit-html",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

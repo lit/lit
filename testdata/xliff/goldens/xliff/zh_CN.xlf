@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<file
+  original="lit-localize-inputs"
+  datatype="plaintext"
+  source-language="en"
+  target-language="zh_CN"
+>
+  <body>
+    <trans-unit id="string">
+      <source>Hello World!</source>
+    </trans-unit>
+    <trans-unit id="lit">
+      <source>Hello <ph id="0">&lt;b>&lt;i></ph>World!<ph
+          id="1"
+        >&lt;/i>&lt;/b></ph></source>
+    </trans-unit>
+    <trans-unit id="variables_1">
+      <source>Hello <ph id="0">${name}</ph>!</source>
+    </trans-unit>
+    <trans-unit id="lit_variables_1">
+      <source>Hello <ph id="0">${name}</ph>, click <ph
+          id="1"
+        >&lt;a href="${url}"></ph>here<ph id="2">&lt;/a></ph>!</source>
+    </trans-unit>
+    <trans-unit id="lit_variables_2">
+      <source><ph id="0">${x}</ph>y<ph id="1">${x}</ph>y<ph
+          id="2"
+        >${x}</ph></source>
+    </trans-unit>
+    <trans-unit id="lit_variables_3">
+      <source><ph id="0">&lt;b>
+      ${x}
+    &lt;/b>
+    &lt;i></ph>
+      y
+    <ph id="1">&lt;/i>
+    &lt;b>
+      ${x}
+    &lt;/b>
+    &lt;i></ph>
+      y
+    <ph id="2">&lt;/i>
+    &lt;b>
+      ${x}
+    &lt;/b></ph></source>
+    </trans-unit>
+  </body>
+</file>

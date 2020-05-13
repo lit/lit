@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.2.0] - 2020-05-13
 
 - Add support for the XLIFF localization interchange format:
   https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html
@@ -13,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [BREAKING] Replaced `xlbDir` config file property with `interchange` property.
   The interchange format is set with `interchange.format` (currently `xliff` or
   `xlb`), and other format-specific configuration is set in that object.
+
+- Fix code generation bug where having more than one `targetLocale` would
+  compile to invalid TypeScript (extra commas).
+
+- Disable eslint warnings about camelcase for locale module imports like
+  `zh_CN.ts`.
 
 ## [0.1.2] - 2020-05-09
 

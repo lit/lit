@@ -46,7 +46,7 @@ export function generateMsgModule(
       (locale) =>
         `import {messages as ${locale.replace(
           '-',
-          ''
+          '_'
         )}Messages} from './${locale}.js';`
     )
     .join('\n');
@@ -54,10 +54,11 @@ export function generateMsgModule(
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/camelcase */
+
     import {TemplateResult} from 'lit-html';
     ${localeImports}
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const supportedLocales = [${localesArray}] as const;
 
@@ -113,12 +114,14 @@ export function generateMsgModule(
         case defaultLocale:
           resolved = source;
           break;
-        ${targetLocales.map(
-          (locale) => `
+        ${targetLocales
+          .map(
+            (locale) => `
         case '${locale}':
-          resolved = ${locale.replace('-', '')}Messages[name];
+          resolved = ${locale.replace('-', '_')}Messages[name];
           break;`
-        )}
+          )
+          .join('')}
         default:
           console.warn(\`\${locale} is not a supported locale\`);
       }
@@ -170,13 +173,13 @@ export function generateLocaleModule(
     }
     translatedMsgNames.add(msg.name);
     const msgStr = makeMessageString(msg.contents, canon);
-    if (canon.isLitTemplate) {
-      importLit = true;
-    }
     const patchedMsgStr = applyPatches(patches, locale, msg.name, msgStr);
     entries.push(`${msg.name}: ${patchedMsgStr},`);
   }
   for (const msg of canonMsgs) {
+    if (msg.isLitTemplate) {
+      importLit = true;
+    }
     if (translatedMsgNames.has(msg.name)) {
       continue;
     }

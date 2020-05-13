@@ -2,12 +2,14 @@
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    import {TemplateResult} from 'lit-html';
-    import {messages as es419Messages} from './es-419.js';
-
     /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/camelcase */
 
-    export const supportedLocales = ['en', 'es-419'] as const;
+    import {TemplateResult} from 'lit-html';
+    import {messages as es_419Messages} from './es-419.js';
+import {messages as zh_CNMessages} from './zh_CN.js';
+
+    export const supportedLocales = ['en', 'es-419', 'zh_CN'] as const;
 
     export type SupportedLocale = typeof supportedLocales[number];
 
@@ -63,7 +65,10 @@
           break;
         
         case 'es-419':
-          resolved = es419Messages[name];
+          resolved = es_419Messages[name];
+          break;
+        case 'zh_CN':
+          resolved = zh_CNMessages[name];
           break;
         default:
           console.warn(`${locale} is not a supported locale`);
