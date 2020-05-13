@@ -25,7 +25,8 @@ const directives = new WeakMap<object, true>();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DirectiveFactory = (...args: any[]) => object;
 
-export type HydrateFn = (rootValues: unknown[],
+export type HydrateFn =
+    (rootValues: unknown[],
      container: Element|DocumentFragment|NodePart,
      options: RenderOptions) => NodePart[];
 

@@ -117,8 +117,9 @@ export const repeat =
                 }
 
                 if (hydrate) {
-                  partListCache.set(containerPart,
-                    hydrate(newValues, containerPart, containerPart.options));
+                  partListCache.set(
+                      containerPart,
+                      hydrate(newValues, containerPart, containerPart.options));
                   keyListCache.set(containerPart, newKeys);
                   return;
                 }
@@ -131,7 +132,8 @@ export const repeat =
                   // with SSR; subsequent renders will imperatively move nodes
                   // around
                   containerPart.setValue(newValues);
-                  partListCache.set(containerPart, containerPart.value as NodePart[]);
+                  partListCache.set(
+                      containerPart, containerPart.value as NodePart[]);
                   keyListCache.set(containerPart, newKeys);
                   return;
                 }
