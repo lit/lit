@@ -20,12 +20,70 @@
                 "before"
             ],
             "type": "object"
+        },
+        "XlbConfig": {
+            "additionalProperties": false,
+            "description": "Parse an XLB XML file. These files contain translations organized using the\nsame message names that we originally requested.\nConfiguration for XLB interchange format.",
+            "properties": {
+                "format": {
+                    "enum": [
+                        "xlb"
+                    ],
+                    "type": "string"
+                },
+                "outputFile": {
+                    "description": "Output path on disk to the XLB XML file that will be created containing all\nmessages extracted from the source. E.g. \"data/localization/en.xlb\".",
+                    "type": "string"
+                },
+                "translationsGlob": {
+                    "description": "Glob pattern of XLB XML files to read from disk containing translated\nmessages. E.g. \"data/localization/*.xlb\".\n\nSee https://github.com/isaacs/node-glob#README for valid glob syntax.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "format",
+                "outputFile",
+                "translationsGlob"
+            ],
+            "type": "object"
+        },
+        "XliffConfig": {
+            "additionalProperties": false,
+            "description": "Configuration for XLIFF interchange format.",
+            "properties": {
+                "format": {
+                    "enum": [
+                        "xliff"
+                    ],
+                    "type": "string"
+                },
+                "xliffDir": {
+                    "description": "Directory on disk to read/write .xlf XML files. For each target locale,\nthe file path \"<xliffDir>/<locale>.xlf\" will be used.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "format",
+                "xliffDir"
+            ],
+            "type": "object"
         }
     },
     "properties": {
         "$schema": {
             "description": "See https://json-schema.org/understanding-json-schema/reference/schema.html",
             "type": "string"
+        },
+        "interchange": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/XlbConfig"
+                },
+                {
+                    "$ref": "#/definitions/XliffConfig"
+                }
+            ],
+            "description": "Localization interchange format and configuration specific to that format."
         },
         "patches": {
             "additionalProperties": {
@@ -55,18 +113,14 @@
         "tsOut": {
             "description": "Required path to the directory where generated TypeScript files will be\nwritten.",
             "type": "string"
-        },
-        "xlbDir": {
-            "description": "Required path to the directory where generated XLB files will be written.",
-            "type": "string"
         }
     },
     "required": [
+        "interchange",
         "sourceLocale",
         "targetLocales",
         "tsConfig",
-        "tsOut",
-        "xlbDir"
+        "tsOut"
     ],
     "type": "object"
 }

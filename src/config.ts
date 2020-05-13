@@ -14,8 +14,9 @@ import * as jsonSchema from 'jsonschema';
 import * as pathLib from 'path';
 import {Locale} from './locales';
 import {KnownError} from './error';
+import {FormatConfig} from './formatters';
 
-export interface Config {
+interface ConfigFile {
   /**
    * See https://json-schema.org/understanding-json-schema/reference/schema.html
    */
@@ -40,9 +41,9 @@ export interface Config {
   tsConfig: string;
 
   /**
-   * Required path to the directory where generated XLB files will be written.
+   * Localization interchange format and configuration specific to that format.
    */
-  xlbDir: string;
+  interchange: FormatConfig;
 
   /**
    * Required path to the directory where generated TypeScript files will be
@@ -69,6 +70,24 @@ export interface Config {
    * }
    */
   patches?: {[locale: string]: {[messageId: string]: Patch[]}};
+}
+
+/**
+ * A validated config file, plus any extra properties not present in the file
+ * itself.
+ */
+export interface Config extends ConfigFile {
+  /**
+   * Base directory on disk that contained the config file. Used for resolving
+   * paths relative to the config file.
+   */
+  baseDir: string;
+
+  /**
+   * Resolve a filepath relative to the directory that contained the config
+   * file.
+   */
+  resolve: (path: string) => string;
 }
 
 /**
@@ -115,22 +134,14 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
     );
   }
 
-  const validated = parsed as Config;
+  const validated = parsed as ConfigFile;
   writeConfigSchemaIfMissing(validated, configPath);
 
-  // Interpret paths as relative to the config file rather than the current
-  // working directory.
-  const configFileRelativePath = (path: string) =>
-    pathLib.relative(
-      process.cwd(),
-      pathLib.resolve(pathLib.dirname(configPath), path)
-    );
-
+  const baseDir = pathLib.dirname(configPath);
   const config = {
     ...validated,
-    tsConfig: configFileRelativePath(validated.tsConfig),
-    xlbDir: configFileRelativePath(validated.xlbDir),
-    tsOut: configFileRelativePath(validated.tsOut),
+    baseDir,
+    resolve: (path: string) => pathLib.resolve(baseDir, path),
   };
 
   return config;
@@ -143,7 +154,7 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
  * This $schema property allows editors like VSCode to provide validation and
  * auto-completion for the config format.
  */
-function writeConfigSchemaIfMissing(config: Config, configPath: string) {
+function writeConfigSchemaIfMissing(config: ConfigFile, configPath: string) {
   if ('$schema' in config) {
     return;
   }

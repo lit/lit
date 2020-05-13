@@ -7,9 +7,8 @@
   "tsConfig": "tsconfig.json",
   "tsOut": "tsout",
   "interchange": {
-    "format": "xlb",
-    "outputFile": "xlb/en.xlb",
-    "translationsGlob": "xlb/*.xlb"
+    "format": "xliff",
+    "xliffDir": "xliff/"
   },
   "patches": {
     "es-419": {
