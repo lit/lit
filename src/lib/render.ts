@@ -50,7 +50,6 @@ export const render =
                                ...options,
                              }));
         part.appendInto(container);
-        console.log('render container', (container as HTMLElement).innerHTML);
       }
       part.setValue(result);
       part.commit();

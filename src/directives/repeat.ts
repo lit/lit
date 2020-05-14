@@ -126,14 +126,13 @@ export const repeat =
 
                 // Old part & key lists are retrieved from the last update
                 // (associated with the part for this instance of the directive)
-                const oldParts = partListCache.get(containerPart);
+                const oldParts = partListCache.get(containerPart) ||
+                  containerPart.value as NodePart[];
                 if (!oldParts) {
                   // The initial render always uses setValue() to be compatible
                   // with SSR; subsequent renders will imperatively move nodes
                   // around
                   containerPart.setValue(newValues);
-                  partListCache.set(
-                      containerPart, containerPart.value as NodePart[]);
                   keyListCache.set(containerPart, newKeys);
                   return;
                 }
