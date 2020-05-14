@@ -20,7 +20,6 @@ import {ProgramMessage, Message, Bundle, Placeholder} from '../messages';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
-  formatXml,
 } from './xml-utils';
 
 /**
@@ -147,12 +146,16 @@ class XlbFormatter implements Formatter {
    */
   async writeOutput(sourceMessages: ProgramMessage[]): Promise<void> {
     const doc = new xmldom.DOMImplementation().createDocument('', '', null);
+    const indent = (node: Element | Document, level = 0) =>
+      node.appendChild(doc.createTextNode('\n' + Array(level + 1).join('  ')));
     doc.appendChild(
       doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
     );
+    indent(doc);
     const bundle = doc.createElement('localizationbundle');
     bundle.setAttribute('locale', this.config.sourceLocale);
     doc.appendChild(bundle);
+    indent(bundle, 1);
     const messagesNode = doc.createElement('messages');
     bundle.appendChild(messagesNode);
     for (const {name, contents, descStack} of sourceMessages) {
@@ -161,6 +164,7 @@ class XlbFormatter implements Formatter {
       if (descStack.length > 0) {
         messageNode.setAttribute('desc', descStack.join(' / '));
       }
+      indent(messagesNode, 2);
       messagesNode.appendChild(messageNode);
       for (const content of contents) {
         if (typeof content === 'string') {
@@ -173,57 +177,14 @@ class XlbFormatter implements Formatter {
         }
       }
     }
+    indent(messagesNode, 1);
+    indent(bundle);
+    indent(doc);
     const serialized = new xmldom.XMLSerializer().serializeToString(doc);
-    const formatted = formatXml(serialized);
     await fsExtra.writeFile(
       this.config.resolve(this.xlbConfig.outputFile),
-      formatted,
+      serialized,
       'utf8'
     );
   }
-}
-
-/**
- * Generate an XLB XML file for the given messages. This file contains the
- * canonical set of messages that will be translatd.
- */
-export function generateXlb(
-  messages: ProgramMessage[],
-  locale: Locale
-): string {
-  const doc = new xmldom.DOMImplementation().createDocument('', '', null);
-  doc.appendChild(
-    doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
-  );
-  doc.appendChild(doc.createTextNode('\n'));
-  const bundle = doc.createElement('localizationbundle');
-  bundle.setAttribute('locale', locale);
-  doc.appendChild(bundle);
-  bundle.appendChild(doc.createTextNode('\n  '));
-  const messagesNode = doc.createElement('messages');
-  bundle.appendChild(messagesNode);
-  for (const {name, contents, descStack} of messages) {
-    messagesNode.appendChild(doc.createTextNode('\n    '));
-    const messageNode = doc.createElement('msg');
-    messageNode.setAttribute('name', name);
-    if (descStack.length > 0) {
-      messageNode.setAttribute('desc', descStack.join(' / '));
-    }
-    messagesNode.appendChild(messageNode);
-    for (const content of contents) {
-      if (typeof content === 'string') {
-        messageNode.appendChild(doc.createTextNode(content));
-      } else {
-        const {untranslatable} = content;
-        const ph = doc.createElement('ph');
-        ph.appendChild(doc.createTextNode(untranslatable));
-        messageNode.appendChild(ph);
-      }
-    }
-  }
-  messagesNode.appendChild(doc.createTextNode('\n  '));
-  bundle.appendChild(doc.createTextNode('\n'));
-  doc.appendChild(doc.createTextNode('\n'));
-  const serialized = new xmldom.XMLSerializer().serializeToString(doc);
-  return serialized;
 }
