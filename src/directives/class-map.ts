@@ -16,13 +16,22 @@ import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
 class ClassList {
-  element: Element;
+  element: Element|undefined;
+  part: AttributePart|undefined;
   classes: Set<string> = new Set();
-  changed = false;
+  changed = true;
 
-  constructor(element: Element) {
-    this.element = element;
-    const classList = (element.getAttribute('class') || '').split(/\s+/);
+  constructor(elementOrPart: Element|AttributePart) {
+    let classList;
+    if (elementOrPart instanceof AttributePart) {
+      this.part = elementOrPart;
+      this.element = undefined;
+      classList = this.part.committer.strings.join(' ');
+    } else {
+      this.part = undefined;
+      this.element = elementOrPart;
+      classList = (this.element.getAttribute('class') || '').split(/\s+/);
+    }
     for (const cls of classList) {
       this.classes.add(cls);
     }
@@ -41,7 +50,11 @@ class ClassList {
     if (this.changed) {
       let classString = '';
       this.classes.forEach((cls) => classString += cls + ' ');
-      this.element.setAttribute('class', classString);
+      if (this.element !== undefined) {
+        this.element.setAttribute('class', classString);
+      } else {
+        this.part!.setValue(classString);
+      }
     }
   }
 }
@@ -74,18 +87,17 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   }
 
   const {committer} = part;
-  const {element} = committer;
 
+  let classList: DOMTokenList|ClassList;
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
-    // Write static classes once
-    // Use setAttribute() because className isn't a string on SVG elements
-    element.setAttribute('class', committer.strings.join(' '));
+    classList = new ClassList(part);
     previousClassesCache.set(part, previousClasses = new Set());
+  } else {
+    const {element} = committer;
+    classList = element.classList || new ClassList(element);
   }
 
-  const classList =
-      (element.classList || new ClassList(element)) as DOMTokenList | ClassList;
 
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level

@@ -60,13 +60,13 @@ export class AttributeCommitter {
   }
 
   /**
-   * Creates a single part. Override this to create a differnt type of part.
+   * Creates a single part. Override this to create a different type of part.
    */
   protected _createPart(): AttributePart {
     return new AttributePart(this);
   }
 
-  protected _getValue(): unknown {
+  getValue(): unknown {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
@@ -91,9 +91,9 @@ export class AttributeCommitter {
   }
 
   commit(): void {
-    if (this.dirty) {
+    if (this.dirty && this.element) {
       this.dirty = false;
-      this.element.setAttribute(this.name, this._getValue() as string);
+      this.element.setAttribute(this.name, this.getValue() as string);
     }
   }
 }
@@ -409,18 +409,18 @@ export class PropertyCommitter extends AttributeCommitter {
     return new PropertyPart(this);
   }
 
-  protected _getValue() {
+  getValue() {
     if (this.single) {
       return this.parts[0].value;
     }
-    return super._getValue();
+    return super.getValue();
   }
 
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this.element as any)[this.name] = this._getValue();
+      (this.element as any)[this.name] = this.getValue();
     }
   }
 }
