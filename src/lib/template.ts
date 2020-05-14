@@ -58,7 +58,6 @@ export class Template {
     // Keeps track of the last index associated with a part. We try to delete
     // unnecessary nodes, but we never want to associate two different parts
     // to the same index. They must have a constant node between.
-    let lastPartIndex = 0;
     let index = -1;
     let partIndex = 0;
     const {strings, values: {length}} = result;
@@ -152,22 +151,14 @@ export class Template {
       } else if (node.nodeType === 8 /* Node.COMMENT_NODE */) {
         if ((node as Comment).data === marker) {
           const parent = node.parentNode!;
-          // Add a new marker node to be the startNode of the Part if any of
-          // the following are true:
-          //  * We don't have a previousSibling
-          //  * The previousSibling is already the start of a previous part
-          if (node.previousSibling === null || index === lastPartIndex) {
-            index++;
-            parent.insertBefore(createStartMarker(), node);
-          }
-          lastPartIndex = index;
-          this.parts.push({type: 'node', index});
-          // Reuse the marker as the end node; we should only strictly need to
-          // do this if there is no node.nextSibling, since that could serve
-          // as the end marker. However SSR currently relies on balanced markers
-          // around parts.
+          // Temporary: For SSR-compatibility, we are generating balanced
+          // part markers, and removing the optimization to reuse stable
+          // nodes for part start and/or end markers for now.
           // TODO: re-implement marker optimization
+          index++;
+          parent.insertBefore(createStartMarker(), node);
           (node as Comment).data = '/lit-part';
+          this.parts.push({type: 'node', index});
           partIndex++;
         } else {
           let i = -1;
