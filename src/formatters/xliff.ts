@@ -200,10 +200,11 @@ export class XliffFormatter implements Formatter {
       'xsi:schemaLocation',
       'urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-strict.xsd'
     );
+    doc.appendChild(xliff);
 
     // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#file
     const file = doc.createElement('file');
-    doc.appendChild(file);
+    xliff.appendChild(file);
     // TODO The spec requires the source filename in the "original" attribute,
     // but we don't currently track filenames.
     file.setAttribute('original', 'lit-localize-inputs');
