@@ -30,13 +30,13 @@ suite('Template', () => {
         countNodes(html`<div>${0}</div>`, (c) => c.childNodes[0].childNodes),
         2);
     assert.equal(countNodes(html`${0}`, (c) => c.childNodes), 2);
-    assert.equal(countNodes(html`a${0}`, (c) => c.childNodes), 2);
-    assert.equal(countNodes(html`${0}a`, (c) => c.childNodes), 2);
-    assert.equal(countNodes(html`${0}${0}`, (c) => c.childNodes), 3);
-    assert.equal(countNodes(html`a${0}${0}`, (c) => c.childNodes), 3);
-    assert.equal(countNodes(html`${0}b${0}`, (c) => c.childNodes), 3);
-    assert.equal(countNodes(html`${0}${0}c`, (c) => c.childNodes), 3);
-    assert.equal(countNodes(html`a${0}b${0}c`, (c) => c.childNodes), 3);
+    assert.equal(countNodes(html`a${0}`, (c) => c.childNodes), 3);
+    assert.equal(countNodes(html`${0}a`, (c) => c.childNodes), 3);
+    assert.equal(countNodes(html`${0}${0}`, (c) => c.childNodes), 4);
+    assert.equal(countNodes(html`a${0}${0}`, (c) => c.childNodes), 5);
+    assert.equal(countNodes(html`${0}b${0}`, (c) => c.childNodes), 5);
+    assert.equal(countNodes(html`${0}${0}c`, (c) => c.childNodes), 5);
+    assert.equal(countNodes(html`a${0}b${0}c`, (c) => c.childNodes), 7);
   });
 
   test('parses parts for multiple expressions', () => {
