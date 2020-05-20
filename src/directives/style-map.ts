@@ -18,6 +18,31 @@ export interface StyleInfo {
   readonly [name: string]: string;
 }
 
+class StyleDeclaration {
+  setProperty(name: string, value: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this as any)[name] = value;
+  }
+  removeProperty(name: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this as any)[name] = null;
+  }
+  getValue() {
+    return (Object.getOwnPropertyNames(this).reduce((value, prop) => {
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             const v = (this as any)[prop];
+             if (v === null) {
+               return value;
+             }
+             if (!prop.startsWith('--')) {
+               prop = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+               return value + `${prop}: ${v}; `;
+             }
+             return value + `${prop}:${v}; `;
+           }, '')).trim();
+  }
+}
+
 /**
  * Stores the StyleInfo object applied to a given AttributePart.
  * Used to unset existing values when a new StyleInfo object is applied.
@@ -50,14 +75,15 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
   }
 
   const {committer} = part;
-  const {style} = committer.element as HTMLElement;
 
   let previousStyleProperties = previousStylePropertyCache.get(part);
 
+  let style: CSSStyleDeclaration|StyleDeclaration;
   if (previousStyleProperties === undefined) {
-    // Write static styles once
-    style.cssText = committer.strings.join(' ');
+    style = new StyleDeclaration(committer.strings);
     previousStylePropertyCache.set(part, previousStyleProperties = new Set());
+  } else {
+    style = (committer.element as HTMLElement).style;
   }
 
   // Remove old properties that no longer exist in styleInfo
@@ -84,5 +110,9 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
     } else {
       style.setProperty(name, styleInfo[name]);
     }
+  }
+
+  if (style instanceof StyleDeclaration) {
+    part.setValue(style.getValue());
   }
 });
