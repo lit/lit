@@ -26,7 +26,7 @@ class ClassList {
     if (elementOrPart instanceof AttributePart) {
       this.part = elementOrPart;
       this.element = undefined;
-      classList = this.part.committer.strings.join(' ');
+      classList = this.part.committer.strings;
     } else {
       this.part = undefined;
       this.element = elementOrPart;
