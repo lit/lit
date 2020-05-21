@@ -116,15 +116,19 @@ export interface RuntimeOutputConfig {
      * Set locale based on matching a regular expression against the URL.
      *
      * The regexp will be matched against `window.location.href`, and the first
-     * capturing group will be used as the locale [use `(?:foo)` to create a
-     * non-capturing group]. If no match is found, or if the capturing group
-     * does not contain a valid locale code, then `defaultLocale` is used.
+     * capturing group will be used as the locale. If no match is found, or if
+     * the capturing group does not contain a valid locale code, then
+     * `defaultLocale` is used.
      *
      * Optionally use the special string `:LOCALE:` to substitute a capturing
      * group into the regexp that will only match the currently configured
      * locale codes (`sourceLocale` and `targetLocales`). For example, if
      * sourceLocale=en and targetLocales=es,zh_CN, then the regexp
-     * "^https?://:LOCALE:\." becomes "^https?://(en|es|zh_CN)\.".
+     * "^https?://:LOCALE:\\." becomes "^https?://(en|es|zh_CN)\\.".
+     *
+     * Tips: Remember to double-escape literal backslashes (once for JSON, once
+     * for the regexp), and note that you can use `(?:foo)` to create a
+     * non-capturing group.
      *
      * It is an error to set both `regexp` and `param`.
      *
@@ -137,7 +141,7 @@ export interface RuntimeOutputConfig {
      *     E.g. https://www.example.com/es/foo
      *                                  ^^
      *
-     * 2. "^https?://:LOCALE:\."
+     * 2. "^https?://:LOCALE:\\."
      *
      *     Set locale from the first subdomain.
      *

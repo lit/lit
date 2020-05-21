@@ -182,7 +182,8 @@ function genLocaleInitialization(
         function getLocaleFromUrl() {
           for (const param of window.location.search.substring(1).split('&')) {
             if (param.startsWith('${param}=')) {
-              const value = param.substring(${param.length + 1});
+              const value = decodeURIComponent(
+                param.substring(${param.length + 1}));
               if (isSupportedLocale(value)) {
                 return value;
               }

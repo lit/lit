@@ -22,7 +22,7 @@ export const defaultLocale = 'en';
 function getLocaleFromUrl() {
   for (const param of window.location.search.substring(1).split('&')) {
     if (param.startsWith('locale=')) {
-      const value = param.substring(7);
+      const value = decodeURIComponent(param.substring(7));
       if (isSupportedLocale(value)) {
         return value;
       }
