@@ -10,6 +10,7 @@
  */
 
 import * as path from 'path';
+import {execFileSync} from 'child_process';
 import test from 'ava';
 import {runAndLog} from '../cli';
 import * as fsExtra from 'fs-extra';
@@ -63,6 +64,14 @@ export function e2eGoldensTest(
 
     const exitCode = await runAndLog(['node', 'lit-localize', ...args]);
     t.is(exitCode, expectedExitCode);
+
+    // Format emitted TypeScript to make test output more readable.
+    execFileSync('npx', [
+      '--no-install',
+      'prettier',
+      '--write',
+      `${outputDir}/**/*.ts`,
+    ]);
 
     if (process.env.UPDATE_TEST_GOLDENS) {
       fsExtra.emptyDirSync(goldensDir);

@@ -2,7 +2,10 @@
   "sourceLocale": "en",
   "targetLocales": ["es-419"],
   "tsConfig": "tsconfig.json",
-  "tsOut": "tsout",
+  "output": {
+    "mode": "runtime",
+    "outputDir": "tsout"
+  },
   "interchange": {
     "format": "xlb",
     "outputFile": "xlb/en.xlb",

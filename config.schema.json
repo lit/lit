@@ -21,6 +21,50 @@
             ],
             "type": "object"
         },
+        "RuntimeOutputConfig": {
+            "additionalProperties": false,
+            "description": "Configuration specific to the `runtime` output mode.",
+            "properties": {
+                "defaultLocale": {
+                    "description": "The initial locale, if no other explicit locale selection has been made.\nDefaults to the value of `sourceLocale`.",
+                    "type": "string"
+                },
+                "exportSetLocaleFunction": {
+                    "description": "If true, export a `setLocale(locale: Locale)` function in the generated\n`<outputDir>/localization.ts` module. Defaults to false.\n\nNote that calling this function will set the locale for subsequent calls to\n`msg`, but will not automatically re-render existing templates.",
+                    "type": "boolean"
+                },
+                "mode": {
+                    "enum": [
+                        "runtime"
+                    ],
+                    "type": "string"
+                },
+                "outputDir": {
+                    "description": "Output directory for generated TypeScript modules. After running\nlit-localize, this directory will contain:\n\n1. localization.ts -- A TypeScript module that exports the `msg` function,\n    along with other utilities.\n\n2. <locale>.ts -- For each `targetLocale`, a TypeScript module that exports\n    the translations in that locale keyed by message ID. These modules are\n    used automatically by localization.ts and should not typically be\n    imported directly by user code.",
+                    "type": "string"
+                },
+                "setLocaleFromUrl": {
+                    "additionalProperties": false,
+                    "description": "Automatically set the locale based on the URL at application startup.",
+                    "properties": {
+                        "param": {
+                            "description": "Set locale based on the value of a URL query parameter.\n\nFinds the first matching query parameter from `window.location.search`.\nIf no such URL query parameter is set, or if it is not a valid locale\ncode, then `defaultLocale` is used.\n\nIt is an error to set both `regexp` and `param`.\n\nExamples:\n\n1. \"lang\"\n\n     https://example.com?foo&lang=es&bar\n                                  ^^",
+                            "type": "string"
+                        },
+                        "regexp": {
+                            "description": "Set locale based on matching a regular expression against the URL.\n\nThe regexp will be matched against `window.location.href`, and the first\ncapturing group will be used as the locale. If no match is found, or if\nthe capturing group does not contain a valid locale code, then\n`defaultLocale` is used.\n\nOptionally use the special string `:LOCALE:` to substitute a capturing\ngroup into the regexp that will only match the currently configured\nlocale codes (`sourceLocale` and `targetLocales`). For example, if\nsourceLocale=en and targetLocales=es,zh_CN, then the regexp\n\"^https?://:LOCALE:\\\\.\" becomes \"^https?://(en|es|zh_CN)\\\\.\".\n\nTips: Remember to double-escape literal back-slashes (once for JSON, once\nfor the regexp), and note that you can use `(?:foo)` to create a\nnon-capturing group.\n\nIt is an error to set both `regexp` and `param`.\n\nExamples:\n\n1. \"^https?://[^/]+/:LOCALE:(?:$|[/?#])\"\n\n     Set locale from the first path component.\n\n     E.g. https://www.example.com/es/foo\n                                  ^^\n\n2. \"^https?://:LOCALE:\\\\.\"\n\n     Set locale from the first subdomain.\n\n     E.g. https://es.example.com/foo\n                  ^^",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "required": [
+                "mode",
+                "outputDir"
+            ],
+            "type": "object"
+        },
         "XlbConfig": {
             "additionalProperties": false,
             "description": "Parse an XLB XML file. These files contain translations organized using the\nsame message names that we originally requested.\nConfiguration for XLB interchange format.",
@@ -85,6 +129,10 @@
             ],
             "description": "Localization interchange format and configuration specific to that format."
         },
+        "output": {
+            "$ref": "#/definitions/RuntimeOutputConfig",
+            "description": "Set and configure the output mode."
+        },
         "patches": {
             "additionalProperties": {
                 "additionalProperties": {
@@ -104,23 +152,22 @@
         },
         "targetLocales": {
             "description": "Required locale codes that messages will be localized to.",
-            "type": "string[]"
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
         },
         "tsConfig": {
             "description": "Path to a tsconfig.json file that describes the TypeScript source files\nfrom which messages will be extracted.",
-            "type": "string"
-        },
-        "tsOut": {
-            "description": "Required path to the directory where generated TypeScript files will be\nwritten.",
             "type": "string"
         }
     },
     "required": [
         "interchange",
+        "output",
         "sourceLocale",
         "targetLocales",
-        "tsConfig",
-        "tsOut"
+        "tsConfig"
     ],
     "type": "object"
 }
