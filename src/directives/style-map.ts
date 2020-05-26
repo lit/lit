@@ -80,7 +80,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
 
   let style: CSSStyleDeclaration|StyleDeclaration;
   if (previousStyleProperties === undefined) {
-    style = new StyleDeclaration(committer.strings);
+    style = new StyleDeclaration();
     previousStylePropertyCache.set(part, previousStyleProperties = new Set());
   } else {
     style = (committer.element as HTMLElement).style;
