@@ -47,13 +47,15 @@ export class AttributeCommitter {
   readonly name: string;
   readonly strings: ReadonlyArray<string>;
   readonly parts: ReadonlyArray<AttributePart>;
+  readonly options: RenderOptions;
   dirty = true;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>, options: RenderOptions) {
     this.element = element;
     this.name = name;
     this.strings = strings;
     this.parts = [];
+    this.options = options;
     for (let i = 0; i < strings.length - 1; i++) {
       (this.parts as AttributePart[])[i] = this._createPart();
     }
@@ -399,8 +401,8 @@ export class BooleanAttributePart implements Part {
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
-    super(element, name, strings);
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>, options: RenderOptions) {
+    super(element, name, strings, options);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
   }
