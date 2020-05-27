@@ -15,6 +15,7 @@
 import {unsafeHTML} from '../../directives/unsafe-html.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
+import {policy, trustedTypesIsEnforced} from '../test-utils/security.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -30,52 +31,60 @@ suite('unsafeHTML', () => {
 
   test('renders HTML', () => {
     render(
-        html`<div>before${unsafeHTML('<span>inner</span>after')}</div>`,
+        html`<div>before${
+            unsafeHTML(policy.createHTML('<span>inner</span>after'))}</div>`,
         container);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),
         '<div>before<span>inner</span>after</div>');
   });
 
-  test('dirty checks primitive values', () => {
-    const value = 'aaa';
-    const t = () => html`<div>${unsafeHTML(value)}</div>`;
+  if (!trustedTypesIsEnforced()) {
+    test('dirty checks primitive values', () => {
+      const value = 'aaa';
+      const t = () => html`<div>${unsafeHTML(value)}</div>`;
 
-    // Initial render
-    render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
+      // Initial render
+      render(t(), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
 
-    // Modify instance directly. Since lit-html doesn't dirty check against
-    // actual DOM, but again previous part values, this modification should
-    // persist through the next render if dirty checking works.
-    const text = container.querySelector('div')!.childNodes[1] as Text;
-    text.textContent = 'bbb';
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+      // Modify instance directly. Since lit-html doesn't dirty check against
+      // actual DOM, but again previous part values, this modification should
+      // persist through the next render if dirty checking works.
+      const text = container.querySelector('div')!.childNodes[1] as Text;
+      text.textContent = 'bbb';
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
 
-    // Re-render with the same value
-    render(t(), container);
+      // Re-render with the same value
+      render(t(), container);
 
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-    const text2 = container.querySelector('div')!.childNodes[1] as Text;
-    assert.strictEqual(text, text2);
-  });
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+      const text2 = container.querySelector('div')!.childNodes[1] as Text;
+      assert.strictEqual(text, text2);
+    });
 
-  test('does not dirty check complex values', () => {
-    const value = ['aaa'];
-    const t = () => html`<div>${unsafeHTML(value)}</div>`;
+    test('does not dirty check complex values', () => {
+      const value = ['aaa'];
+      const t = () => html`<div>${unsafeHTML(value)}</div>`;
 
-    // Initial render
-    render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
+      // Initial render
+      render(t(), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
 
-    // Re-render with the same value, but a different deep property
-    value[0] = 'bbb';
-    render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
-  });
+      // Re-render with the same value, but a different deep property
+      value[0] = 'bbb';
+      render(t(), container);
+      assert.equal(
+          stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+    });
+  }
 
   test('renders after other values', () => {
-    const value = '<span></span>';
+    const value = policy.createHTML('<span></span>');
     const primitive = 'aaa';
     const t = (content: any) => html`<div>${content}</div>`;
 

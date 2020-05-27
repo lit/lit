@@ -48,6 +48,7 @@
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^7.0.1",
+    "@types/trusted-types": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "@webcomponents/shadycss": "^1.8.0",
@@ -66,7 +67,7 @@
     "tachometer": "^0.4.15",
     "typescript": "~3.8.0",
     "uglify-es": "^3.3.5",
-    "wct-mocha": "^1.0.0",
+    "wct-mocha": "^1.1.0",
     "web-component-tester": "^6.9.0"
   },
   "husky": {

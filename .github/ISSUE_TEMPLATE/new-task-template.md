@@ -2,8 +2,9 @@
 name: New Task Template
 about: Use this template when you are creating a new task
 title: ''
-labels: ''
+labels: 'Focus Area: Core Libraries'
 assignees: ''
+
 ---
 
 ## Description

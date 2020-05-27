@@ -69,11 +69,35 @@ export class AttributeCommitter {
   protected _getValue(): unknown {
     const strings = this.strings;
     const l = strings.length - 1;
+    const parts = this.parts;
+
+    // If we're assigning an attribute via syntax like:
+    //    attr="${foo}"  or  attr=${foo}
+    // but not
+    //    attr="${foo} ${bar}" or attr="${foo} baz"
+    // then we don't want to coerce the attribute value into one long
+    // string. Instead we want to just return the value itself directly,
+    // so that sanitizeDOMValue can get the actual value rather than
+    // String(value)
+    // The exception is if v is an array, in which case we do want to smash
+    // it together into a string without calling String() on the array.
+    //
+    // This also allows trusted values (when using TrustedTypes) being
+    // assigned to DOM sinks without being stringified in the process.
+    if (l === 1 && strings[0] === '' && strings[1] === '') {
+      const v = parts[0].value;
+      if (typeof v === 'symbol') {
+        return String(v);
+      }
+      if (typeof v === 'string' || !isIterable(v)) {
+        return v;
+      }
+    }
     let text = '';
 
     for (let i = 0; i < l; i++) {
       text += strings[i];
-      const part = this.parts[i];
+      const part = parts[i];
       if (part !== undefined) {
         const v = part.value;
         if (isPrimitive(v) || !isIterable(v)) {
