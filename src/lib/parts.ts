@@ -72,12 +72,22 @@ export class AttributeCommitter {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
+    let changed = false;
 
     for (let i = 0; i < l; i++) {
       text += strings[i];
       const part = this.parts[i];
       if (part !== undefined) {
         const v = part.value;
+        if (v !== noChange) {
+          // TODO(kschaaf): The change tracking will return `noChange` as long
+          // as _all_ parts were `noChange`, allowing us to skip the
+          // `setAttribute` call.  However, we will still concat
+          // '[object Object]' into the string for noChange if there are
+          // multiple parts, since AttributePart currently does not keep the
+          // last-rendered value around
+          changed = true;
+        }
         if (isPrimitive(v) || !isIterable(v)) {
           text += typeof v === 'string' ? v : String(v);
         } else {
@@ -89,13 +99,16 @@ export class AttributeCommitter {
     }
 
     text += strings[l];
-    return text;
+    return changed ? text : noChange;
   }
 
   commit(): void {
     if (this.dirty && this.element) {
       this.dirty = false;
-      this.element.setAttribute(this.name, this.getValue() as string);
+      const value = this.getValue();
+      if (value !== noChange) {
+        this.element.setAttribute(this.name, value as string);
+      }
     }
   }
 }
