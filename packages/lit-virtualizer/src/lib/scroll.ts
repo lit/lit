@@ -90,9 +90,9 @@ export const scroll: <Item>(config: ScrollConfig<Item>) => (part: NodePart) => P
             items
         };
         partToState.set(part, state);
-        container.addEventListener('rangeChanged', (e: RangeChangeEvent) => {
-            state.first = e.first;
-            state.last = e.last;
+        container.addEventListener('rangeChanged', (e: CustomEvent<RangeChangeEvent>) => {
+            state.first = e.detail.first;
+            state.last = e.detail.last;
             part.setValue(renderItems(state));
             part.commit();
         });

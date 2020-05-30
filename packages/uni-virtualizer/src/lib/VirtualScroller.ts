@@ -1,7 +1,7 @@
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import { ItemBox, Margins, Type, Layout, LayoutConfig } from './layouts/Layout.js';
 
-export const layoutRef = Symbol('layoutRef');
+export const scrollerRef = Symbol('scrollerRef');
 
 // TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
 declare global {
@@ -46,20 +46,35 @@ function attachGlobalContainerStylesheet() {
   }
 }
 
-export class RangeChangeEvent extends Event {
+// export const RangeChangeEvent = "rangeChanged";
+export type RangeChangeEvent = {
   first: number;
   last: number;
   firstVisible: number;
   lastVisible: number;
+};
 
-  constructor(type, init) {
-    super(type, init);
-    this.first = Math.floor(init.first || 0);
-    this.last = Math.floor(init.last || 0);
-    this.firstVisible = Math.floor(init.firstVisible || 0);
-    this.lastVisible = Math.floor(init.lastVisible || 0);
-  }
-}
+// // inform compiler of the as24 custom events
+// declare global {
+//   interface DocumentEventMap {
+//     'rangeChanged': CustomEvent<RangeChangeEvent>;
+//   }
+// }
+
+// export class RangeChangeEvent extends Event {
+//   first: number;
+//   last: number;
+//   firstVisible: number;
+//   lastVisible: number;
+
+//   constructor(type, init) {
+//     super(type, init);
+//     this.first = Math.floor(init.first || 0);
+//     this.last = Math.floor(init.last || 0);
+//     this.firstVisible = Math.floor(init.firstVisible || 0);
+//     this.lastVisible = Math.floor(init.lastVisible || 0);
+//   }
+// }
 
 // TODO (graynorton): Import this from somewhere upstream
 interface VirtualScrollerConfig {
@@ -85,6 +100,8 @@ interface VirtualScrollerConfig {
  * manipulation methods.
  */
 export class VirtualScroller<Item, Child extends HTMLElement> {
+  private _benchmarkStart = null;
+  private _openMeasure = false;
   /**
    * Whether the layout should receive an updated viewport size on the next
    * render.
@@ -382,7 +399,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
-      delete this.container[layoutRef];
+      delete this.container[scrollerRef];
       this.container.removeEventListener('load', this._loadListener, true);
       // Reset container size so layout can get correct viewport size.
       if (this._containerElement) {
@@ -403,12 +420,35 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
-      this._container[layoutRef] = this._layout;
+      this._container[scrollerRef] = this;
       if (this._layout.listenForChildLoadEvents) {
         this._container.addEventListener('load', this._loadListener, true);
       }
       this._schedule(this._updateLayout);
     }
+  }
+
+  // TODO (graynorton): document
+  startBenchmarking() {
+    if (this._benchmarkStart === null) {
+      this._benchmarkStart = window.performance.now();
+      this._openMeasure = false;
+    }
+  }
+
+  stopBenchmarking() {
+    if (this._benchmarkStart !== null) {
+      const timeElapsed = window.performance.now() - this._benchmarkStart;
+      const virtualizationTime = performance.getEntriesByName('uv-virtualizing', 'measure')
+        .reduce((t, m) => t + m.duration, 0);
+      this._benchmarkStart = null;
+      this._openMeasure = false;
+      performance.clearMarks('uv-start');
+      performance.clearMarks('uv-end');
+      performance.clearMarks('uv-virtualizing');
+      return { timeElapsed, virtualizationTime };
+    }
+    return null;
   }
 
   private _measureChildren(): void {
@@ -492,11 +532,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   async _updateDOM() {
+    const {_rangeChanged} = this;
     if (this._visibilityChanged) {
       this._notifyVisibility();
       this._visibilityChanged = false;
     }
-    if (this._rangeChanged) {
+    if (_rangeChanged) {
       this._notifyRange();
       this._rangeChanged = false;
       await this._mutationPromise;
@@ -509,6 +550,17 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     if (this._scrollErr) {
       this._correctScrollError(this._scrollErr);
       this._scrollErr = null;
+    }
+    if (!_rangeChanged) {
+      if (this._benchmarkStart && 'mark' in window.performance && this._openMeasure) {
+        window.performance.mark('uv-end');
+        window.performance.measure(
+          'uv-virtualizing',
+          'uv-start',
+          'uv-end'
+        );
+        this._openMeasure = false;
+      }
     }
   }
 
@@ -530,6 +582,10 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     switch (event.type) {
       case 'scroll':
         if (!this._scrollTarget || event.target === this._scrollTarget) {
+          if (this._benchmarkStart && 'mark' in window.performance) {
+            window.performance.mark('uv-start');
+            this._openMeasure = true;
+          }
           this._schedule(this._updateLayout);
         }
         break;
@@ -636,8 +692,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       const scrollBounds = this._scrollTarget ?
           this._scrollTarget.getBoundingClientRect() :
           {
-            top: containerBounds.top + scrollY,
-            left: containerBounds.left + scrollX,
+            top: containerBounds.top + window.pageYOffset,
+            left: containerBounds.left + window.pageXOffset,
             width: innerWidth,
             height: innerHeight
           };
@@ -738,7 +794,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._scrollTarget.scrollTop -= err.top;
       this._scrollTarget.scrollLeft -= err.left;
     } else {
-      window.scroll(window.scrollX - err.left, window.scrollY - err.top);
+      window.scroll(window.pageXOffset - err.left, window.pageYOffset - err.top);
     }
   }
 
@@ -753,23 +809,23 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     // renderer, whereas visibility change events are mainly intended for "external"
     // consumption by application code.
     this._container.dispatchEvent(
-        new RangeChangeEvent('rangeChanged', {
+        new CustomEvent('rangeChanged', {detail:{
           first: this._first,
           last: this._last,
           firstVisible: this._firstVisible,
           lastVisible: this._lastVisible,
-        })
+        }})
     );
   }
 
   private _notifyVisibility() {
     this._container.dispatchEvent(
-        new RangeChangeEvent('visibilityChanged', {
+        new CustomEvent('rangeChanged', {detail:{
           first: this._first,
           last: this._last,
           firstVisible: this._firstVisible,
           lastVisible: this._lastVisible,
-        })
+        }})
     );
   }
 

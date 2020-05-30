@@ -42,9 +42,9 @@ export class LitVirtualizer<Item, Child extends HTMLElement> extends LitElement 
     constructor() {
         super();
         this._scroller = new VirtualScroller();
-        this.addEventListener('rangeChanged', (e: RangeChangeEvent) => {
-            this._first = e.first;
-            this._last = e.last;
+        this.addEventListener('rangeChanged', (e: CustomEvent<RangeChangeEvent>) => {
+            this._first = e.detail.first;
+            this._last = e.detail.last;
         })
     }
   

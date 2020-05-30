@@ -14,12 +14,24 @@
     },
     "author": "The Polymer Authors",
     "devDependencies": {
+        "@babel/core": "^7.9.6",
+        "@babel/plugin-transform-classes": "^7.9.5",
+        "@babel/plugin-transform-runtime": "^7.9.6",
+        "@babel/preset-env": "^7.9.6",
+        "@rollup/plugin-commonjs": "^11.1.0",
+        "@rollup/plugin-node-resolve": "^7.1.3",
         "http-server": "^0.11.1",
         "rollup": "^1.11.2",
-        "rollup-plugin-node-resolve": "^4.2.3",
-        "rollup-plugin-terser": "^5.0.0"
+        "rollup-plugin-babel": "^4.4.0",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-copy": "^3.3.0",
+        "rollup-plugin-filesize": "^9.0.0",
+        "rollup-plugin-minify-html-literals": "^1.2.3",
+        "rollup-plugin-terser": "^5.0.0",
+        "scroll-behavior-polyfill": "^2.0.13"
     },
     "dependencies": {
+        "@babel/runtime": "^7.9.6",
         "@material/mwc-drawer": "^0.10.0",
         "@material/mwc-formfield": "^0.10.0",
         "@material/mwc-icon-button": "^0.10.0",
@@ -28,7 +40,11 @@
         "@material/mwc-textfield": "^0.10.0",
         "@material/mwc-top-app-bar": "^0.10.0",
         "@webcomponents/webcomponentsjs": "^2.4.0",
+        "bluebird": "^3.7.2",
+        "core-js": "^3.6.5",
         "lit-element": "^2.3.1",
-        "lit-html": "^1.2.1"
+        "lit-html": "^1.2.1",
+        "systemjs": "^2.0.0-alpha.1",
+        "whatwg-fetch": "^3.0.0"
     }
 }

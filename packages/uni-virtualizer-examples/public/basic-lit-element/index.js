@@ -1,4 +1,5 @@
 import {html, css, LitElement} from 'lit-element';
+import {styleMap} from 'lit-html/directives/style-map';
 import 'lit-virtualizer/lib/lit-virtualizer.js';
 import {Layout1d} from 'lit-virtualizer/lit-virtualizer.js';
 
@@ -13,7 +14,8 @@ import {Layout1d} from 'lit-virtualizer/lit-virtualizer.js';
 class ContactCard extends LitElement {
     static get properties() {
         return {
-            contact: {type: Object}
+            contact: {type: Object},
+            open: {type: Boolean}
         };
     }
 
@@ -27,8 +29,15 @@ class ContactCard extends LitElement {
             div, details {
                 padding: 1em;
                 color: white;
+                display: block;
             }
         `;
+    }
+
+    constructor() {
+        super();
+        this.open = false;
+        this._details = 'HTMLDetailsElement' in window;
     }
 
     render() {
@@ -38,10 +47,20 @@ class ContactCard extends LitElement {
         // `;
         return html`
             <details style="background: ${color}">
-                <summary>${name}</summary>
-                <p>${mediumText}</p>
+                <summary @click=${this._handleSummaryClick}>${name}</summary>
+                <p style=${styleMap(this._summaryStyle())}>${mediumText}</p>
             </details>
         `;
+    }
+
+    _summaryStyle() {
+        return (!this._details && !this.open) ? { display: 'none' } : { display: 'block' };
+    }
+
+    _handleSummaryClick() {
+        if (!this._details) {
+            this.open = !this.open;
+        }
     }
 }
 
@@ -56,6 +75,14 @@ class ContactList extends LitElement {
 
     static get styles() {
         return css`
+        :host {
+            display: block;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
         lit-virtualizer {
             height: 100%;
         }
