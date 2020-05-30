@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isPrimitive} from '../lib/parts.js';
+import {isPrimitive, AttributePart, NodePart} from '../lib/parts.js';
 import {directive, Part} from '../lit-html.js';
 
 interface AsyncState {
@@ -77,6 +77,12 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
       // Since a lower-priority value will never overwrite a higher-priority
       // synchronous value, we can stop processing now.
       break;
+    }
+
+    // Don't await promises on the server
+    if (part instanceof AttributePart && part.committer.options.isServerRendering ||
+        part instanceof NodePart && part.options.isServerRendering) {
+      continue;
     }
 
     // If this is a Promise we've already handled, skip it.
