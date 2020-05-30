@@ -390,7 +390,7 @@ const createAttributeParts =
               }
             } else if (attributePart instanceof BooleanAttributePart) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (attributePart as any).value = !!value;
+              (attributePart as any).value = !!value && (value !== noChange);
             }
             // Do nothing for EventPart... we need to run EventPart.commit()
             // to actually add the event listener, so we require a commit
