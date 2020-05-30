@@ -375,22 +375,20 @@ const createAttributeParts =
             // TODO: only do this if we definitely have the same data as on
             // the server. We need a flag like `dataChanged` or `sameData`
             // for this.
-            // TODO: don't use a readonly field
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const value = state.result.values[state.instancePartIndex++];
             if (attributePart instanceof AttributePart) {
+              // TODO: don't use a readonly field
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attributePart as any).value = value;
-              if (isDirective(attributePart.value)) {
-                while (isDirective(attributePart.value)) {
-                  attributePart.value(attributePart);
-                }
+              while (isDirective(attributePart.value)) {
+                const directive = attributePart.value;
+                attributePart.value = noChange;
+                directive(attributePart);
               }
               if (!(attributePart instanceof PropertyPart)) {
                 attributePart.committer.dirty = false;
               }
             } else if (attributePart instanceof BooleanAttributePart) {
-              // TODO: this is ugly
-              // TODO: tests
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attributePart as any).value = !!value;
             }
