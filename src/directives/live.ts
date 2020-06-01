@@ -45,25 +45,28 @@ export const live = directive(
             'The `live` directive is not allowed on text or event bindings');
       }
       if (part instanceof BooleanAttributePart) {
+        // TODO: add isServerRendering check for BooleanAttributePart
         checkStrings(part.strings);
         previousValue = part.element.hasAttribute(part.name);
         // This is a hack needed because BooleanAttributePart doesn't have a
         // committer and does its own dirty checking after directives
         part.value = previousValue;
       } else {
-        const {element, name, strings} = part.committer;
-        checkStrings(strings);
-        if (part instanceof PropertyPart) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          previousValue = (element as any)[name];
-          if (previousValue === value) {
+        if (!part.committer.options.isServerRendering) {
+          const {element, name, strings} = part.committer;
+          checkStrings(strings);
+          if (part instanceof PropertyPart) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            previousValue = (element as any)[name];
+            if (previousValue === value) {
+              return;
+            }
+          } else if (part instanceof AttributePart) {
+            previousValue = element.getAttribute(name);
+          }
+          if (previousValue === String(value)) {
             return;
           }
-        } else if (part instanceof AttributePart) {
-          previousValue = element.getAttribute(name);
-        }
-        if (previousValue === String(value)) {
-          return;
         }
       }
       part.setValue(value);
