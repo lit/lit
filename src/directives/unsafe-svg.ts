@@ -39,6 +39,9 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
   if (!(part instanceof NodePart)) {
     throw new Error('unsafeSVG can only be used in text bindings');
   }
+  if (part.options.isServerRendering) {
+    throw new Error('unsafeSVG does not support SSR');
+  }
 
   const previousValue = previousValues.get(part);
 
