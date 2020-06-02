@@ -14,7 +14,7 @@
 
 import {isDirective} from './directive.js';
 import {noChange} from './part.js';
-import {AttributePart, BooleanAttributePart, isIterable, isPrimitive, NodePart, PropertyPart} from './parts.js';
+import {AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyPart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {parts} from './render.js';
 import {templateFactory} from './template-factory.js';
@@ -377,27 +377,35 @@ const createAttributeParts =
             // for this.
             const value = state.result.values[state.instancePartIndex++];
             if (attributePart instanceof AttributePart) {
-              // TODO: don't use a readonly field
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (attributePart as any).value = value;
+              attributePart.setValue(value);
               while (isDirective(attributePart.value)) {
                 const directive = attributePart.value;
                 attributePart.value = noChange;
                 directive(attributePart);
               }
               if (!(attributePart instanceof PropertyPart)) {
+                // PropertyPart's will be committed via the committer after
+                // this loop.
                 attributePart.committer.dirty = false;
               }
             } else if (attributePart instanceof BooleanAttributePart) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attributePart as any).value = !!value && (value !== noChange);
+            } else if (attributePart instanceof EventPart) {
+              // Install event listeners during hydrate
+              attributePart.setValue(value as EventListener);
+              attributePart.commit();
             }
-            // Do nothing for EventPart... we need to run EventPart.commit()
-            // to actually add the event listener, so we require a commit
-            // Just like properties.
           }
           state.templatePartIndex++;
           instance.__parts.push(...attributeParts);
+          if (attributeParts[0] instanceof PropertyPart) {
+            // Commit any PropertyParts since they were not serialized on the
+            // server
+            for (const attributePart of attributeParts) {
+              (attributePart as PropertyPart).commit();
+            }
+          }
         }
         if (!foundOnePart) {
           // For a <!--lit-bindings--> marker there should be at least
