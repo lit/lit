@@ -364,7 +364,7 @@ export class BooleanAttributePart implements Part {
   readonly name: string;
   readonly strings: readonly string[];
   value: unknown = undefined;
-  private __pendingValue: unknown = undefined;
+  __pendingValue: unknown = undefined;
 
   constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
@@ -391,10 +391,12 @@ export class BooleanAttributePart implements Part {
     }
     const value = !!this.__pendingValue;
     if (this.value !== value) {
-      if (value) {
-        this.element.setAttribute(this.name, '');
-      } else {
-        this.element.removeAttribute(this.name);
+      if (this.element) {
+        if (value) {
+          this.element.setAttribute(this.name, '');
+        } else {
+          this.element.removeAttribute(this.name);
+        }
       }
       this.value = value;
     }

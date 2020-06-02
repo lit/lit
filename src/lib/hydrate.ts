@@ -375,7 +375,7 @@ const createAttributeParts =
             // TODO: only do this if we definitely have the same data as on
             // the server. We need a flag like `dataChanged` or `sameData`
             // for this.
-            const value = state.result.values[state.instancePartIndex++];
+            let value = state.result.values[state.instancePartIndex++];
             if (attributePart instanceof AttributePart) {
               attributePart.setValue(value);
               while (isDirective(attributePart.value)) {
@@ -389,6 +389,13 @@ const createAttributeParts =
                 attributePart.committer.dirty = false;
               }
             } else if (attributePart instanceof BooleanAttributePart) {
+              attributePart.setValue(value);
+              while (isDirective(attributePart.__pendingValue)) {
+                const directive = attributePart.__pendingValue;
+                attributePart.__pendingValue = noChange;
+                directive(attributePart);
+              }
+              value = attributePart.__pendingValue;
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attributePart as any).value = !!value && (value !== noChange);
             } else if (attributePart instanceof EventPart) {
