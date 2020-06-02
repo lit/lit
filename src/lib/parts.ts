@@ -434,7 +434,7 @@ export class PropertyCommitter extends AttributeCommitter {
   }
 
   commit(): void {
-    if (this.dirty) {
+    if (this.dirty && this.element) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = this.getValue();
