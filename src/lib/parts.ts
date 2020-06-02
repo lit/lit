@@ -360,13 +360,14 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
+  readonly options: RenderOptions;
   readonly element: Element;
   readonly name: string;
   readonly strings: readonly string[];
   value: unknown = undefined;
   __pendingValue: unknown = undefined;
 
-  constructor(element: Element, name: string, strings: readonly string[]) {
+  constructor(element: Element, name: string, strings: readonly string[], options: RenderOptions) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -374,6 +375,7 @@ export class BooleanAttributePart implements Part {
     this.element = element;
     this.name = name;
     this.strings = strings;
+    this.options = options;
   }
 
   setValue(value: unknown): void {

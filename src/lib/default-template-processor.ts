@@ -46,7 +46,7 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
       return [new EventPart(element, name.slice(1), options.eventContext)];
     }
     if (prefix === '?') {
-      return [new BooleanAttributePart(element, name.slice(1), strings)];
+      return [new BooleanAttributePart(element, name.slice(1), strings, options)];
     }
     const committer = new AttributeCommitter(element, name, strings, options);
     return committer.parts;

@@ -45,12 +45,13 @@ export const live = directive(
             'The `live` directive is not allowed on text or event bindings');
       }
       if (part instanceof BooleanAttributePart) {
-        // TODO: add isServerRendering check for BooleanAttributePart
-        checkStrings(part.strings);
-        previousValue = part.element.hasAttribute(part.name);
-        // This is a hack needed because BooleanAttributePart doesn't have a
-        // committer and does its own dirty checking after directives
-        part.value = previousValue;
+        if (!part.options.isServerRendering) {
+          checkStrings(part.strings);
+          previousValue = part.element.hasAttribute(part.name);
+          // This is a hack needed because BooleanAttributePart doesn't have a
+          // committer and does its own dirty checking after directives
+          part.value = previousValue;
+        }
       } else {
         if (!part.committer.options.isServerRendering) {
           const {element, name, strings} = part.committer;
