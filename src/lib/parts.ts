@@ -103,6 +103,9 @@ export class AttributeCommitter {
   }
 
   commit(): void {
+    // TODO(kschaaf): The `this.element` check is for reusing Part code on the
+    // server; type-wise, this is a hack since `this.element` should always be
+    // there, but changing it to be optional would be a breaking type change
     if (this.dirty && this.element) {
       this.dirty = false;
       const value = this.getValue();
@@ -393,6 +396,9 @@ export class BooleanAttributePart implements Part {
     }
     const value = !!this.__pendingValue;
     if (this.value !== value) {
+      // TODO(kschaaf): The `this.element` check is for reusing Part code on the
+      // server; type-wise, this is a hack since `this.element` should always be
+      // there, but changing it to be optional would be a breaking type change
       if (this.element) {
         if (value) {
           this.element.setAttribute(this.name, '');
@@ -436,6 +442,9 @@ export class PropertyCommitter extends AttributeCommitter {
   }
 
   commit(): void {
+    // TODO(kschaaf): The `this.element` check is for reusing Part code on the
+    // server; type-wise, this is a hack since `this.element` should always be
+    // there, but changing it to be optional would be a breaking type change
     if (this.dirty && this.element) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
