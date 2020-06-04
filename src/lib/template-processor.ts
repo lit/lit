@@ -29,8 +29,13 @@ export interface TemplateProcessor {
    * @param name  The attribute name, including a possible prefix. The name may
    *   be prefixed by `.` (for a property binding), `@` (for an event binding) or
    *   `?` (for a boolean attribute binding).
-   * @param strings The string literals. There are always at least two strings,
-   *   even for fully-controlled bindings with a single expression.
+   * @param strings The array of literal strings that form the static part of the
+   *   attribute value. There are always at least two strings,
+   *   even for fully-controlled bindings with a single expression. For example,
+   *   for the binding `attr="${e1}-${e2}"`, the `strings` array includes three
+   *   strings (`['', '-', '']`)—the text _before_ the first expression (the empty
+   *   string), the text between the two expressions (`'-'`), and the text after the 
+   *   last expression (another empty string). 
    */
   handleAttributeExpressions(
       element: Element, name: string, strings: ReadonlyArray<string>,
