@@ -14,6 +14,8 @@
 
 import {AttributePart, directive, Part} from '../lit-html.js';
 
+const previousValues = new WeakMap<Part, unknown>();
+
 /**
  * For AttributeParts, sets the attribute if the value is defined and removes
  * the attribute if the value is undefined.
@@ -21,12 +23,18 @@ import {AttributePart, directive, Part} from '../lit-html.js';
  * For other part types, this directive is a no-op.
  */
 export const ifDefined = directive((value: unknown) => (part: Part) => {
+  const previousValue = previousValues.get(part);
+
   if (value === undefined && part instanceof AttributePart) {
-    if (value !== part.value) {
+    // If the value is undefined, remove the attribute, but only if the value
+    // was previously defined.
+    if (previousValue !== undefined || !previousValues.has(part)) {
       const name = part.committer.name;
       part.committer.element.removeAttribute(name);
     }
-  } else {
+  } else if (value !== previousValue) {
     part.setValue(value);
   }
+
+  previousValues.set(part, value);
 });

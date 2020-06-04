@@ -1,0 +1,53 @@
+---
+permalink: /{{ page.filePathStem }}.html
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="description" content="{{ site.description }}">
+  <title>{% if page.title %}{{ page.title }} &ndash;{% endif %} {{ site.name }}</title>
+  <meta name="theme-color" content="#FF2F2F">
+  <link rel="shortcut icon" href="{{site.baseurl}}/images/favicon.png">
+  <link rel="stylesheet" href="{{site.baseurl}}/css/main.css">
+  <link rel="stylesheet" href="{{site.baseurl}}/css/theme.css">
+  <link rel="stylesheet" href="{{site.baseurl}}/css/prism-okaidia-a11y.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  {% if site.google_analytics %}
+  {% include analytics.html %}
+  {% endif %}
+</head>
+<body>
+  {{content}}
+
+  <footer>
+      <div class="wrapper">
+        <div class="social-links">
+          <a target="_blank" href="https://github.com/Polymer/lit-html" rel="noopener" aria-label="Github"><img src="/images/logos/logo_github.svg"></a>
+          <a target="_blank" href="https://twitter.com/polymer" rel="noopener" aria-label="Twitter"><img src="/images/logos/logo_twitter.svg"></a>
+          <a target="_blank" href="https://groups.google.com/forum/#!forum/polymer-dev" rel="noopener" aria-label="Email"><img src="/images/logos/logo_email.svg"></a>
+          <a target="_blank" href="https://www.polymer-project.org/slack-invite" rel="noopener" aria-label="Slack"><img src="/images/logos/logo_slack.svg"></a>
+        </div>
+        <div class="attribution">
+          Brought to you by <a href="https://www.polymer-project.org">The Polymer Project</a>.<br>
+          Copyright 2017–{{ "now" | date:"%Y" }} The Polymer Project Authors. Code licensed under the
+          <a target="_blank" href="http://polymer.github.io/LICENSE.txt">BSD License</a>.
+          Documentation licensed under CC BY 3.0.
+        </div>
+      </div>
+  </footer>
+
+  <script>
+    searchBox.addEventListener('keypress', function(event) {
+      if (event.keyCode === 13 /* enter */) {
+        const site = window.location.hostname;
+        const query = encodeURIComponent(searchBox.value);
+        ga('send', 'pageview', '/search?q='+query);
+        window.location = 'https://www.google.com/search?q=site%3A'+site+'+'+query;
+        event.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -15,11 +15,12 @@
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from '../../lib/modify-template.js';
 import {render} from '../../lib/render.js';
 import {html, templateFactory} from '../../lit-html.js';
+import {policy} from '../test-utils/security.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('add/remove nodes from template', () => {
   let container: HTMLElement;
@@ -39,15 +40,15 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux');
         const template = templateFactory(result);
         const div1 = document.createElement('div');
-        div1.innerHTML = '<span>1</span>';
+        div1.innerHTML = policy.createHTML('<span>1</span>');
         insertNodeIntoTemplate(
             template, div1, template.element.content.firstChild);
         const div2 = document.createElement('div');
-        div2.innerHTML = '<span>2</span>';
+        div2.innerHTML = policy.createHTML('<span>2</span>');
         insertNodeIntoTemplate(
             template, div2, template.element.content.querySelector('p'));
         const div3 = document.createElement('div');
-        div3.innerHTML = '<span>3</span>';
+        div3.innerHTML = policy.createHTML('<span>3</span>');
         insertNodeIntoTemplate(template, div3);
         render(result, container);
         assert.equal(
@@ -74,7 +75,8 @@ suite('add/remove nodes from template', () => {
     const template = templateFactory(result);
     const fragment1 = document.createDocumentFragment();
     fragment1.appendChild(document.createElement('div'));
-    (fragment1.firstChild as HTMLElement).innerHTML = '<span>1</span>';
+    (fragment1.firstChild as HTMLElement).innerHTML =
+        policy.createHTML('<span>1</span>');
     insertNodeIntoTemplate(
         template, fragment1, template.element.content.firstChild);
     const fragment2 = document.createDocumentFragment();
@@ -165,6 +167,7 @@ suite('add/remove nodes from template', () => {
         const result = getResult('bar', 'baz', 'qux', 'r1', 'r2', 'r3');
         const template = templateFactory(result);
         let node;
+        // eslint-disable-next-line no-cond-assign
         while (node =
                    template.element.content.querySelector('[name="remove"]')) {
           const nodeSet = new Set<Node>();

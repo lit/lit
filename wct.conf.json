@@ -1,9 +1,21 @@
 {
+  "plugins": {
+    "local": {
+      "browserOptions": {
+        "chrome": [
+          "disable-background-timer-throttling",
+          "disable-renderer-backgrounding"
+        ]
+      }
+    }
+  },
   "browserOptions": {
     "chrome": [
       "window-size=1920,1080",
       "headless",
-      "disable-gpu"
+      "disable-gpu",
+      "disable-background-timer-throttling",
+      "disable-renderer-backgrounding"
     ]
   }
 }

@@ -214,9 +214,13 @@ const endsWith = (str: string, suffix: string): boolean => {
  * to Part.update().
  */
 export type TemplatePart = {
-  readonly type: 'node',
-  index: number
-}|{readonly type: 'attribute', index: number, readonly name: string, readonly strings: ReadonlyArray<string>};
+  readonly type: 'node'; index: number;
+}|{
+  readonly type: 'attribute';
+  index: number;
+  readonly name: string;
+  readonly strings: ReadonlyArray<string>;
+};
 
 export const isTemplatePartActive = (part: TemplatePart) => part.index !== -1;
 
@@ -251,4 +255,5 @@ export const createMarker = () => document.createComment('');
  *    * (') then any non-(')
  */
 export const lastAttributeNameRegex =
+    // eslint-disable-next-line no-control-regex
     /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
