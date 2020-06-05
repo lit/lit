@@ -17,20 +17,13 @@
  */
 
 import {Part} from './part.js';
-import {NodePart} from './parts.js';
-import {RenderOptions} from './render-options.js';
 
 const directives = new WeakMap<object, true>();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DirectiveFactory = (...args: any[]) => object;
 
-export type HydrateFn =
-    (rootValues: unknown[],
-     container: Element|DocumentFragment|NodePart,
-     options: RenderOptions) => NodePart[];
-
-export type DirectiveFn = (part: Part, hydrate?: HydrateFn) => void;
+export type DirectiveFn = (part: Part) => void;
 
 /**
  * Brands a function as a directive factory function so that lit-html will call

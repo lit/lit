@@ -120,20 +120,11 @@ export const hydrate =
         ...userOptions,
       };
 
-      const rootParts = hydrateContainer([rootValue], container, options);
-
       // Since render() creates a NodePart to render into, we'll always have
-      // exactly one root part
-      console.assert(
-          rootParts.length === 1,
-          'there should be exactly one root part in a render container');
-      parts.set(container, rootParts[0]);
-    };
+      // exactly one root part. We need to hold a reference to it so we can set
+      // it in the parts cache.
+      let rootPart: NodePart|undefined = undefined;
 
-const hydrateContainer =
-    (rootValues: unknown[],
-     container: Element|DocumentFragment|NodePart,
-     options: RenderOptions) => {
       // When we are in-between node part markers, this is the current NodePart.
       // It's needed to be able to set the NodePart's endNode when we see a
       // close marker
@@ -143,33 +134,21 @@ const hydrateContainer =
       // templates
       const stack: Array<NodePartState> = [];
 
-      const rootNode = (container instanceof NodePart) ?
-          container.startNode.parentNode! :
-          container;
-
       const walker = document.createTreeWalker(
-          rootNode, NodeFilter.SHOW_COMMENT, null, false);
-      if (container instanceof NodePart) {
-        walker.currentNode = container.startNode;
-      }
+          container, NodeFilter.SHOW_COMMENT, null, false);
       let marker: Comment|null;
-      const rootParts: NodePart[] = [];
-      let nextRootValue = rootValues[0];
 
       // Walk the DOM looking for part marker comments
       while ((marker = walker.nextNode() as Comment | null) !== null) {
         const markerText = marker.data;
         if (markerText.startsWith('lit-part')) {
-          // Create a new NodePart and push it onto the stack
-          let currentNode;
-          ({part: currentNodePart, endNode: currentNode} =
-               openNodePart(nextRootValue, marker, stack, options));
-          if (stack.length === 1) {
-            rootParts.push(currentNodePart);
-            nextRootValue = rootValues[rootParts.length];
+          if (stack.length === 0 && rootPart !== undefined) {
+            throw new Error('there must be only one root part per container');
           }
-          if (currentNode !== undefined) {
-            walker.currentNode = currentNode;
+          // Create a new NodePart and push it onto the stack
+          currentNodePart = openNodePart(rootValue, marker, stack, options);
+          if (rootPart === undefined) {
+            rootPart = currentNodePart;
           }
         } else if (markerText.startsWith('lit-bindings')) {
           // Create and hydrate attribute parts into the current NodePart on the
@@ -177,22 +156,16 @@ const hydrateContainer =
           createAttributeParts(marker, stack, options);
         } else if (markerText.startsWith('/lit-part')) {
           // Close the current NodePart, and pop the previous one off the stack
-          if (stack.length === 1 &&
-              currentNodePart !== rootParts[rootParts.length - 1]) {
+          if (stack.length === 1 && currentNodePart !== rootPart) {
             throw new Error('internal error');
           }
           currentNodePart = closeNodePart(marker, currentNodePart, stack);
-          if (currentNodePart === undefined &&
-              rootParts.length === rootValues.length) {
-            break;
-          }
         }
       }
-      if (rootParts.length !== rootValues.length) {
-        throw new Error(
-            'there should be as many parts in container as rootValues');
-      }
-      return rootParts;
+      console.assert(
+          rootPart !== undefined,
+          'there should be exactly one root part in a render container');
+      parts.set(container, rootPart!);
     };
 
 const openNodePart =
@@ -252,20 +225,11 @@ const openNodePart =
       // 6. Iterable
       // 7. nothing (handled in fallback)
       // 8. Fallback for everything else
-      let endNode: Node|undefined;
       part.setValue(value);
       while (isDirective(part.__pendingValue)) {
         const directive = part.__pendingValue;
         part.__pendingValue = noChange;
-        const hydrate =
-            (rootValues: unknown[],
-             container: Element|DocumentFragment|NodePart,
-             options: RenderOptions) => {
-              const parts = hydrateContainer(rootValues, container, options);
-              endNode = parts[parts.length - 1].endNode!;
-              return parts;
-            };
-        directive(part, hydrate);
+        directive(part);
       }
       value = part.__pendingValue;
       if (value === noChange) {
@@ -314,7 +278,7 @@ const openNodePart =
         stack.push({part: part, type: 'leaf'});
         part.value = value == null ? '' : value;
       }
-      return {part, endNode};
+      return part;
     };
 
 const closeNodePart =

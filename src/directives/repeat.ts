@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DirectiveFn, HydrateFn} from '../lib/directive.js';
+import {DirectiveFn} from '../lib/directive.js';
 import {createEndMarker, createStartMarker, directive, NodePart, Part, removeNodes, reparentNodes} from '../lit-html.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
@@ -100,7 +100,7 @@ export const repeat =
                 keyFn = keyFnOrTemplate as KeyFn<T>;
               }
 
-              return (containerPart: Part, hydrate?: HydrateFn): void => {
+              return (containerPart: Part): void => {
                 if (!(containerPart instanceof NodePart)) {
                   throw new Error('repeat can only be used in text bindings');
                 }
@@ -116,16 +116,7 @@ export const repeat =
                   index++;
                 }
 
-                if (hydrate) {
-                  partListCache.set(
-                      containerPart,
-                      hydrate(newValues, containerPart, containerPart.options));
-                  keyListCache.set(containerPart, newKeys);
-                  return;
-                }
-
                 // Old part & key lists are retrieved from the last update
-                // (associated with the part for this instance of the directive)
                 const oldParts = partListCache.get(containerPart) ||
                     containerPart.value as NodePart[];
                 if (!oldParts) {
