@@ -18,7 +18,7 @@ export interface StyleInfo {
   readonly [name: string]: string;
 }
 
-// This shim is used on first render, to generate a string to commit 
+// This shim is used on first render, to generate a string to commit
 // rather than manipulate the style object, to be compatible with SSR.
 class StyleDeclaration {
   setProperty(name: string, value: string) {

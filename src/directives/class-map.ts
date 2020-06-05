@@ -15,7 +15,7 @@
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
-// This shim is also used on first render, to generate a string to commit 
+// This shim is also used on first render, to generate a string to commit
 // rather than manipulate classList, to be compatible with SSR.
 class ClassList {
   element: Element|undefined;
