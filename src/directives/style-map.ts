@@ -36,7 +36,7 @@ class StyleDeclaration {
              if (v === null) {
                return value;
              }
-             if (!prop.startsWith('--')) {
+             if (prop.indexOf('-') === -1) {
                prop = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
                return value + `${prop}: ${v}; `;
              }
