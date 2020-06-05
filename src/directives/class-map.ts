@@ -18,10 +18,8 @@ import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 // This shim is also used on first render, to generate a string to commit 
 // rather than manipulate classList, to be compatible with SSR.
 class ClassList {
-  element: Element|undefined;
   part: AttributePart;
   classes: Set<string> = new Set();
-  changed = true;
 
   constructor(part: AttributePart) {
     this.part = part;
@@ -31,20 +29,16 @@ class ClassList {
   }
   add(cls: string) {
     this.classes.add(cls);
-    this.changed = true;
   }
 
   remove(cls: string) {
     this.classes.delete(cls);
-    this.changed = true;
   }
 
   commit() {
-    if (this.changed) {
-      let classString = '';
-      this.classes.forEach((cls) => classString += cls + ' ');
-      this.part.setValue(classString);
-    }
+    let classString = '';
+    this.classes.forEach((cls) => classString += cls + ' ');
+    this.part.setValue(classString);
   }
 }
 
