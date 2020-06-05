@@ -102,7 +102,7 @@ export class AttributeCommitter {
   }
 
   commit(): void {
-    if (this.dirty && !this.isServerRendering) {
+    if (this.dirty) {
       this.dirty = false;
       const value = this.getValue();
       if (value !== noChange) {
@@ -136,13 +136,17 @@ export class AttributePart implements Part {
     }
   }
 
-  commit() {
+  resolvePendingDirective() {
     while (isDirective(this.value)) {
       const directive = this.value;
       this.value = noChange;
       directive(this);
     }
-    if (this.value === noChange) {
+    return this.value;
+  }
+
+  commit() {
+    if (this.resolvePendingDirective() === noChange) {
       return;
     }
     this.committer.commit();
@@ -220,7 +224,12 @@ export class NodePart implements Part {
     this.__pendingValue = value;
   }
 
-  getPendingValue() {
+  resolvePendingDirective() {
+    while (isDirective(this.__pendingValue)) {
+      const directive = this.__pendingValue;
+      this.__pendingValue = noChange;
+      directive(this);
+    }
     return this.__pendingValue;
   }
 
@@ -228,12 +237,7 @@ export class NodePart implements Part {
     if (this.startNode.parentNode === null) {
       return;
     }
-    while (isDirective(this.__pendingValue)) {
-      const directive = this.__pendingValue;
-      this.__pendingValue = noChange;
-      directive(this);
-    }
-    const value = this.__pendingValue;
+    const value = this.resolvePendingDirective();
     if (value === noChange) {
       return;
     }
@@ -386,27 +390,26 @@ export class BooleanAttributePart implements Part {
     this.__pendingValue = value;
   }
 
-  getPendingValue() {
-    return this.__pendingValue;
-  }
-
-  commit() {
+  resolvePendingDirective() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
       directive(this);
     }
-    if (this.__pendingValue === noChange) {
+    return this.__pendingValue;
+  }
+
+  commit() {
+    let value = this.resolvePendingDirective();
+    if (value === noChange) {
       return;
     }
-    const value = !!this.__pendingValue;
+    value = !!value;
     if (this.value !== value) {
-      if (!this.isServerRendering) {
-        if (value) {
-          this.element.setAttribute(this.name, '');
-        } else {
-          this.element.removeAttribute(this.name);
-        }
+      if (value) {
+        this.element.setAttribute(this.name, '');
+      } else {
+        this.element.removeAttribute(this.name);
       }
       this.value = value;
     }
@@ -444,7 +447,7 @@ export class PropertyCommitter extends AttributeCommitter {
   }
 
   commit(): void {
-    if (this.dirty && !this.isServerRendering) {
+    if (this.dirty) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = this.getValue();
@@ -504,17 +507,21 @@ export class EventPart implements Part {
     this.__pendingValue = value;
   }
 
-  commit() {
+  resolvePendingDirective() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange as EventHandlerWithOptions;
       directive(this);
     }
-    if (this.__pendingValue === noChange) {
+    return this.__pendingValue;
+  }
+
+  commit() {
+    const newListener = this.resolvePendingDirective();
+    if (newListener === noChange) {
       return;
     }
 
-    const newListener = this.__pendingValue;
     const oldListener = this.value;
     const shouldRemoveListener = newListener == null ||
         oldListener != null &&

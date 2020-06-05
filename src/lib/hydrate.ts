@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isDirective, DirectiveFn} from './directive.js';
 import {noChange} from './part.js';
 import {AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyPart} from './parts.js';
 import {RenderOptions} from './render-options.js';
@@ -226,10 +225,7 @@ const openNodePart =
       // 7. nothing (handled in fallback)
       // 8. Fallback for everything else
       part.setValue(value);
-      while (isDirective(value = part.getPendingValue())) {
-        part.setValue(noChange);
-        (value as DirectiveFn)(part);
-      }
+      value = part.resolvePendingDirective();
       if (value === noChange) {
         stack.push({part, type: 'leaf'});
       } else if (isPrimitive(value)) {
@@ -340,11 +336,7 @@ const createAttributeParts =
             let value = state.result.values[state.instancePartIndex++];
             if (attributePart instanceof AttributePart) {
               attributePart.setValue(value);
-              while (isDirective(attributePart.value)) {
-                const directive = attributePart.value;
-                attributePart.value = noChange;
-                directive(attributePart);
-              }
+              attributePart.resolvePendingDirective();
               if (!(attributePart instanceof PropertyPart)) {
                 // PropertyPart's will be committed via the committer after
                 // this loop.
@@ -352,10 +344,7 @@ const createAttributeParts =
               }
             } else if (attributePart instanceof BooleanAttributePart) {
               attributePart.setValue(value);
-              while (isDirective(value = attributePart.getPendingValue())) {
-                attributePart.setValue(noChange);
-                (value as DirectiveFn)(attributePart);
-              }
+              value = attributePart.resolvePendingDirective();
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attributePart as any).value = !!value && (value !== noChange);
             } else if (attributePart instanceof EventPart) {

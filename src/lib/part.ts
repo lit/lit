@@ -30,6 +30,11 @@ export interface Part {
   setValue(value: unknown): void;
 
   /**
+   * Resolves any pending directive value and returns the resolved value
+   */
+  resolvePendingDirective(): unknown;
+
+  /**
    * Commits the current part value, causing it to actually be written to the
    * DOM.
    *
