@@ -47,15 +47,14 @@ export class AttributeCommitter {
   readonly name: string;
   readonly strings: ReadonlyArray<string>;
   readonly parts: ReadonlyArray<AttributePart>;
-  readonly options: RenderOptions;
+  isServerRendering?: boolean;
   dirty = true;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>, options: RenderOptions) {
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
     this.element = element;
     this.name = name;
     this.strings = strings;
     this.parts = [];
-    this.options = options;
     for (let i = 0; i < strings.length - 1; i++) {
       (this.parts as AttributePart[])[i] = this._createPart();
     }
@@ -103,10 +102,7 @@ export class AttributeCommitter {
   }
 
   commit(): void {
-    // TODO(kschaaf): The `this.element` check is for reusing Part code on the
-    // server; type-wise, this is a hack since `this.element` should always be
-    // there, but changing it to be optional would be a breaking type change
-    if (this.dirty && this.element) {
+    if (this.dirty && !this.isServerRendering) {
       this.dirty = false;
       const value = this.getValue();
       if (value !== noChange) {
@@ -122,6 +118,7 @@ export class AttributeCommitter {
 export class AttributePart implements Part {
   readonly committer: AttributeCommitter;
   value: unknown = undefined;
+  isServerRendering?: boolean;
 
   constructor(committer: AttributeCommitter) {
     this.committer = committer;
@@ -166,6 +163,7 @@ export class NodePart implements Part {
   endNode!: Node;
   value: unknown = undefined;
   __pendingValue: unknown = undefined;
+  isServerRendering?: boolean;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -363,14 +361,14 @@ export class NodePart implements Part {
  * ''. If the value is falsey, the attribute is removed.
  */
 export class BooleanAttributePart implements Part {
-  readonly options: RenderOptions;
   readonly element: Element;
   readonly name: string;
   readonly strings: readonly string[];
   value: unknown = undefined;
   __pendingValue: unknown = undefined;
+  isServerRendering?: boolean;
 
-  constructor(element: Element, name: string, strings: readonly string[], options: RenderOptions) {
+  constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
       throw new Error(
           'Boolean attributes can only contain a single expression');
@@ -378,7 +376,6 @@ export class BooleanAttributePart implements Part {
     this.element = element;
     this.name = name;
     this.strings = strings;
-    this.options = options;
   }
 
   setValue(value: unknown): void {
@@ -396,10 +393,7 @@ export class BooleanAttributePart implements Part {
     }
     const value = !!this.__pendingValue;
     if (this.value !== value) {
-      // TODO(kschaaf): The `this.element` check is for reusing Part code on the
-      // server; type-wise, this is a hack since `this.element` should always be
-      // there, but changing it to be optional would be a breaking type change
-      if (this.element) {
+      if (!this.isServerRendering) {
         if (value) {
           this.element.setAttribute(this.name, '');
         } else {
@@ -424,8 +418,8 @@ export class BooleanAttributePart implements Part {
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>, options: RenderOptions) {
-    super(element, name, strings, options);
+  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+    super(element, name, strings);
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
   }
@@ -442,10 +436,7 @@ export class PropertyCommitter extends AttributeCommitter {
   }
 
   commit(): void {
-    // TODO(kschaaf): The `this.element` check is for reusing Part code on the
-    // server; type-wise, this is a hack since `this.element` should always be
-    // there, but changing it to be optional would be a breaking type change
-    if (this.dirty && this.element) {
+    if (this.dirty && !this.isServerRendering) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.element as any)[this.name] = this.getValue();
@@ -471,10 +462,12 @@ let eventOptionsSupported = false;
         return false;
       }
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.addEventListener('test', options as any, options);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.removeEventListener('test', options as any, options);
+    if (window.addEventListener) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.addEventListener('test', options as any, options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.removeEventListener('test', options as any, options);
+    }
   } catch (_e) {
     // event options not supported
   }
@@ -490,6 +483,7 @@ export class EventPart implements Part {
   private __options?: AddEventListenerOptions;
   private __pendingValue: undefined|EventHandlerWithOptions = undefined;
   private readonly __boundHandleEvent: (event: Event) => void;
+  isServerRendering?: boolean;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;

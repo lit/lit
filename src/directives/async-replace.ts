@@ -41,7 +41,7 @@ export const asyncReplace = directive(
           // If we've already set up this particular iterable, we don't need
           // to do anything.
           // Async rendering not supported in SSR.
-          if (value === part.value || part.options.isServerRendering) {
+          if (value === part.value || part.isServerRendering) {
             return;
           }
 

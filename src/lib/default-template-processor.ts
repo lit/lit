@@ -39,16 +39,16 @@ export class DefaultTemplateProcessor implements TemplateProcessor {
       options: RenderOptions): ReadonlyArray<Part> {
     const prefix = name[0];
     if (prefix === '.') {
-      const committer = new PropertyCommitter(element, name.slice(1), strings, options);
+      const committer = new PropertyCommitter(element, name.slice(1), strings);
       return committer.parts;
     }
     if (prefix === '@') {
       return [new EventPart(element, name.slice(1), options.eventContext)];
     }
     if (prefix === '?') {
-      return [new BooleanAttributePart(element, name.slice(1), strings, options)];
+      return [new BooleanAttributePart(element, name.slice(1), strings)];
     }
-    const committer = new AttributeCommitter(element, name, strings, options);
+    const committer = new AttributeCommitter(element, name, strings);
     return committer.parts;
   }
   /**

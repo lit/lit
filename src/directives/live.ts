@@ -45,7 +45,7 @@ export const live = directive(
             'The `live` directive is not allowed on text or event bindings');
       }
       if (part instanceof BooleanAttributePart) {
-        if (!part.options.isServerRendering) {
+        if (!part.isServerRendering) {
           checkStrings(part.strings);
           previousValue = part.element.hasAttribute(part.name);
           // This is a hack needed because BooleanAttributePart doesn't have a
@@ -53,7 +53,7 @@ export const live = directive(
           part.value = previousValue;
         }
       } else {
-        if (!part.committer.options.isServerRendering) {
+        if (!part.isServerRendering) {
           const {element, name, strings} = part.committer;
           checkStrings(strings);
           if (part instanceof PropertyPart) {

@@ -27,7 +27,7 @@ suite('Parts', () => {
 
     setup(() => {
       element = document.createElement('div');
-      committer = new AttributeCommitter(element, 'foo', ['', ''], {templateFactory});
+      committer = new AttributeCommitter(element, 'foo', ['', '']);
       part = committer.parts[0];
     });
 

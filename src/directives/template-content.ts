@@ -38,7 +38,7 @@ export const templateContent =
       if (!(part instanceof NodePart)) {
         throw new Error('templateContent can only be used in text bindings');
       }
-      if (part.options.isServerRendering) {
+      if (part.isServerRendering) {
         throw new Error('templateContent does not support SSR');
       }
 

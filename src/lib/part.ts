@@ -40,6 +40,11 @@ export interface Part {
    * `part.commit()` manually.
    */
   commit(): void;
+
+  /**
+   * Optional flag set on parts when server rendering.
+   */
+  isServerRendering?: boolean;
 }
 
 /**

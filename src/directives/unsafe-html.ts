@@ -38,7 +38,7 @@ export const unsafeHTML = directive((value: unknown) => (part: Part): void => {
   if (!(part instanceof NodePart)) {
     throw new Error('unsafeHTML can only be used in text bindings');
   }
-  if (part.options.isServerRendering) {
+  if (part.isServerRendering) {
     throw new Error('unsafeHTML does not support SSR');
   }
 

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isPrimitive, AttributePart, NodePart} from '../lib/parts.js';
+import {isPrimitive} from '../lib/parts.js';
 import {directive, Part} from '../lit-html.js';
 
 interface AsyncState {
@@ -80,8 +80,7 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
     }
 
     // Don't await promises on the server
-    if (part instanceof AttributePart && part.committer.options.isServerRendering ||
-        part instanceof NodePart && part.options.isServerRendering) {
+    if (part.isServerRendering) {
       continue;
     }
 
