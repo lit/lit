@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {isDirective} from './directive.js';
+import {isDirective, DirectiveFn} from './directive.js';
 import {noChange} from './part.js';
 import {AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyPart} from './parts.js';
 import {RenderOptions} from './render-options.js';
@@ -226,12 +226,10 @@ const openNodePart =
       // 7. nothing (handled in fallback)
       // 8. Fallback for everything else
       part.setValue(value);
-      while (isDirective(part.__pendingValue)) {
-        const directive = part.__pendingValue;
-        part.__pendingValue = noChange;
-        directive(part);
+      while (isDirective(value = part.getPendingValue())) {
+        part.setValue(noChange);
+        (value as DirectiveFn)(part);
       }
-      value = part.__pendingValue;
       if (value === noChange) {
         stack.push({part, type: 'leaf'});
       } else if (isPrimitive(value)) {
@@ -354,12 +352,10 @@ const createAttributeParts =
               }
             } else if (attributePart instanceof BooleanAttributePart) {
               attributePart.setValue(value);
-              while (isDirective(attributePart.__pendingValue)) {
-                const directive = attributePart.__pendingValue;
-                attributePart.__pendingValue = noChange;
-                directive(attributePart);
+              while (isDirective(value = attributePart.getPendingValue())) {
+                attributePart.setValue(noChange);
+                (value as DirectiveFn)(attributePart);
               }
-              value = attributePart.__pendingValue;
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attributePart as any).value = !!value && (value !== noChange);
             } else if (attributePart instanceof EventPart) {

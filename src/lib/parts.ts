@@ -162,7 +162,7 @@ export class NodePart implements Part {
   startNode!: Node;
   endNode!: Node;
   value: unknown = undefined;
-  __pendingValue: unknown = undefined;
+  private __pendingValue: unknown = undefined;
   isServerRendering?: boolean;
 
   constructor(options: RenderOptions) {
@@ -218,6 +218,10 @@ export class NodePart implements Part {
 
   setValue(value: unknown): void {
     this.__pendingValue = value;
+  }
+
+  getPendingValue() {
+    return this.__pendingValue;
   }
 
   commit() {
@@ -365,7 +369,7 @@ export class BooleanAttributePart implements Part {
   readonly name: string;
   readonly strings: readonly string[];
   value: unknown = undefined;
-  __pendingValue: unknown = undefined;
+  private __pendingValue: unknown = undefined;
   isServerRendering?: boolean;
 
   constructor(element: Element, name: string, strings: readonly string[]) {
@@ -380,6 +384,10 @@ export class BooleanAttributePart implements Part {
 
   setValue(value: unknown): void {
     this.__pendingValue = value;
+  }
+
+  getPendingValue() {
+    return this.__pendingValue;
   }
 
   commit() {
