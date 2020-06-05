@@ -18,27 +18,49 @@ import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 // This shim is also used on first render, to generate a string to commit 
 // rather than manipulate classList, to be compatible with SSR.
 class ClassList {
-  part: AttributePart;
+  element: Element|undefined;
+  part: AttributePart|undefined;
   classes: Set<string> = new Set();
+  changed = false;
 
-  constructor(part: AttributePart) {
-    this.part = part;
-    for (const cls of this.part.committer.strings) {
+  constructor(elementOrPart: Element|AttributePart) {
+    let classList;
+    if (elementOrPart instanceof AttributePart) {
+      this.part = elementOrPart;
+      this.element = undefined;
+      classList = this.part.committer.strings;
+      // The part is only used on first render, and we always need to commit
+      // the static strings
+      this.changed = true;
+    } else {
+      this.part = undefined;
+      this.element = elementOrPart;
+      classList = (this.element.getAttribute('class') || '').split(/\s+/);
+    }
+    for (const cls of classList) {
       this.classes.add(cls);
     }
   }
   add(cls: string) {
     this.classes.add(cls);
+    this.changed = true;
   }
 
   remove(cls: string) {
     this.classes.delete(cls);
+    this.changed = true;
   }
 
   commit() {
-    let classString = '';
-    this.classes.forEach((cls) => classString += cls + ' ');
-    this.part.setValue(classString);
+    if (this.changed) {
+      let classString = '';
+      this.classes.forEach((cls) => classString += cls + ' ');
+      if (this.element !== undefined) {
+        this.element.setAttribute('class', classString);
+      } else {
+        this.part!.setValue(classString);
+      }
+    }
   }
 }
 
