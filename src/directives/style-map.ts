@@ -18,6 +18,8 @@ export interface StyleInfo {
   readonly [name: string]: string;
 }
 
+// This shim is used on first render, to generate a string to commit 
+// rather than manipulate the style object, to be compatible with SSR.
 class StyleDeclaration {
   setProperty(name: string, value: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,6 +82,8 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
 
   let style: CSSStyleDeclaration|StyleDeclaration;
   if (previousStyleProperties === undefined) {
+    // First render of this directive into this part, so use StyleDeclaration
+    // shim to generate a string for first-render, to be compatible with SSR
     style = new StyleDeclaration();
     previousStylePropertyCache.set(part, previousStyleProperties = new Set());
   } else {
@@ -112,6 +116,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
     }
   }
 
+  // Commit the string if this was initial render
   if (style instanceof StyleDeclaration) {
     part.setValue(style.getValue());
   }

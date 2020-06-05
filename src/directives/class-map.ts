@@ -15,24 +15,17 @@
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
+// This shim is also used on first render, to generate a string to commit 
+// rather than manipulate classList, to be compatible with SSR.
 class ClassList {
   element: Element|undefined;
-  part: AttributePart|undefined;
+  part: AttributePart;
   classes: Set<string> = new Set();
   changed = true;
 
-  constructor(elementOrPart: Element|AttributePart) {
-    let classList;
-    if (elementOrPart instanceof AttributePart) {
-      this.part = elementOrPart;
-      this.element = undefined;
-      classList = this.part.committer.strings;
-    } else {
-      this.part = undefined;
-      this.element = elementOrPart;
-      classList = (this.element.getAttribute('class') || '').split(/\s+/);
-    }
-    for (const cls of classList) {
+  constructor(part: AttributePart) {
+    this.part = part;
+    for (const cls of this.part.committer.strings) {
       this.classes.add(cls);
     }
   }
@@ -50,11 +43,7 @@ class ClassList {
     if (this.changed) {
       let classString = '';
       this.classes.forEach((cls) => classString += cls + ' ');
-      if (this.element !== undefined) {
-        this.element.setAttribute('class', classString);
-      } else {
-        this.part!.setValue(classString);
-      }
+      this.part.setValue(classString);
     }
   }
 }
@@ -91,11 +80,15 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   let classList: DOMTokenList|ClassList;
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
+    // First render of this directive into this part, so use ClassList shim to
+    // generate a string for first-render, to be compatible with SSR
     classList = new ClassList(part);
     previousClassesCache.set(part, previousClasses = new Set());
   } else {
     const {element} = committer;
-    classList = element.classList || new ClassList(element);
+    // Use the ClassList shim on subsequent renders only if it doesn't exist
+    // on element (IE11 SVGs)
+    classList = element.classList || new ClassList(part);
   }
 
 
@@ -124,7 +117,9 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
       }
     }
   }
-  if (typeof (classList as ClassList).commit === 'function') {
-    (classList as ClassList).commit();
+
+  // If using the shim, commit the string
+  if (classList instanceof ClassList) {
+    classList.commit();
   }
 });
