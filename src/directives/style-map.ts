@@ -18,7 +18,7 @@ export interface StyleInfo {
   readonly [name: string]: string;
 }
 
-const VENDOR_PREFIX = /(webkit|moz|ms|o)[A-Z]/;
+const VENDOR_PREFIX = /^(webkit|moz|ms|o)[A-Z]/;
 
 // This shim is used on first render, to generate a string to commit rather than
 // manipulate the style object, to be compatible with SSR. Note that this shim
