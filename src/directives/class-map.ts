@@ -16,7 +16,11 @@ import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
 // This shim is also used on first render, to generate a string to commit
-// rather than manipulate classList, to be compatible with SSR.
+// rather than manipulate classList, to be compatible with SSR. Note that
+// an `AttributePart` is used _only_ on first render, since using it on
+// every render would overwrite any untracked classes. When using an `Element`,
+// (only on IE11, after first render) we always initialize the classList from
+// the current value of the attribtue.
 class ClassList {
   element: Element|undefined;
   part: AttributePart|undefined;
@@ -24,21 +28,19 @@ class ClassList {
   changed = false;
 
   constructor(elementOrPart: Element|AttributePart) {
-    let classList;
     if (elementOrPart instanceof AttributePart) {
       this.part = elementOrPart;
       this.element = undefined;
-      classList = this.part.committer.strings;
       // The part is only used on first render, and we always need to commit
-      // the static strings
+      // so that the static strings are written
       this.changed = true;
     } else {
       this.part = undefined;
       this.element = elementOrPart;
-      classList = (this.element.getAttribute('class') || '').split(/\s+/);
-    }
-    for (const cls of classList) {
-      this.classes.add(cls);
+      const classList = (this.element.getAttribute('class') || '').split(/\s+/);
+      for (const cls of classList) {
+        this.classes.add(cls);
+      }
     }
   }
   add(cls: string) {

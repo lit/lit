@@ -85,6 +85,7 @@ export class AttributeCommitter {
           // '[object Object]' into the string for noChange if there are
           // multiple parts, since AttributePart currently does not keep the
           // last-rendered value around
+          // https://github.com/Polymer/lit-html/issues/1066
           changed = true;
         }
         if (isPrimitive(v) || !isIterable(v)) {

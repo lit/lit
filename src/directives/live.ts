@@ -44,16 +44,14 @@ export const live = directive(
         throw new Error(
             'The `live` directive is not allowed on text or event bindings');
       }
-      if (part instanceof BooleanAttributePart) {
-        if (!part.isServerRendering) {
+      if (!part.isServerRendering) {
+        if (part instanceof BooleanAttributePart) {
           checkStrings(part.strings);
           previousValue = part.element.hasAttribute(part.name);
           // This is a hack needed because BooleanAttributePart doesn't have a
           // committer and does its own dirty checking after directives
           part.value = previousValue;
-        }
-      } else {
-        if (!part.isServerRendering) {
+        } else {
           const {element, name, strings} = part.committer;
           checkStrings(strings);
           if (part instanceof PropertyPart) {

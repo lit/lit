@@ -18,8 +18,12 @@ export interface StyleInfo {
   readonly [name: string]: string;
 }
 
-// This shim is used on first render, to generate a string to commit
-// rather than manipulate the style object, to be compatible with SSR.
+const VENDOR_PREFIX = /(webkit|moz|ms|o)[A-Z]/;
+
+// This shim is used on first render, to generate a string to commit rather than
+// manipulate the style object, to be compatible with SSR. Note that this shim
+// should only be used on first render, since using it on every render would
+// overwrite any untracked style properties.
 class StyleDeclaration {
   setProperty(name: string, value: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,7 +40,18 @@ class StyleDeclaration {
              if (v === null) {
                return value;
              }
+             // Convert property names from camel-case to dash-case, i.e.:
+             //  `backgroundColor` -> `background-color`
+             // Vendor-prefixed names need an extra `-` appended to front:
+             //  `webkitAppearance` -> `-webkit-appearance`
+             // Exception is any property name containing a dash, including
+             // custom properties; we assume these are already dash-cased i.e.:
+             //  `--my-button-color` --> `--my-button-color`
+             // Note that prefixed
              if (prop.indexOf('-') === -1) {
+               if (VENDOR_PREFIX.test(prop)) {
+                 prop = '-' + prop;
+               }
                prop = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
                return value + `${prop}: ${v}; `;
              }
