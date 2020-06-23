@@ -47,6 +47,7 @@ export class AttributeCommitter {
   readonly name: string;
   readonly strings: ReadonlyArray<string>;
   readonly parts: ReadonlyArray<AttributePart>;
+  isServerRendering?: boolean;
   dirty = true;
 
   constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
@@ -60,22 +61,33 @@ export class AttributeCommitter {
   }
 
   /**
-   * Creates a single part. Override this to create a differnt type of part.
+   * Creates a single part. Override this to create a different type of part.
    */
   protected _createPart(): AttributePart {
     return new AttributePart(this);
   }
 
-  protected _getValue(): unknown {
+  getValue(): unknown {
     const strings = this.strings;
     const l = strings.length - 1;
     let text = '';
+    let changed = false;
 
     for (let i = 0; i < l; i++) {
       text += strings[i];
       const part = this.parts[i];
       if (part !== undefined) {
         const v = part.value;
+        if (v !== noChange) {
+          // TODO(kschaaf): The change tracking will return `noChange` as long
+          // as _all_ parts were `noChange`, allowing us to skip the
+          // `setAttribute` call.  However, we will still concat
+          // '[object Object]' into the string for noChange if there are
+          // multiple parts, since AttributePart currently does not keep the
+          // last-rendered value around
+          // https://github.com/Polymer/lit-html/issues/1066
+          changed = true;
+        }
         if (isPrimitive(v) || !isIterable(v)) {
           text += typeof v === 'string' ? v : String(v);
         } else {
@@ -87,13 +99,16 @@ export class AttributeCommitter {
     }
 
     text += strings[l];
-    return text;
+    return changed ? text : noChange;
   }
 
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
-      this.element.setAttribute(this.name, this._getValue() as string);
+      const value = this.getValue();
+      if (value !== noChange) {
+        this.element.setAttribute(this.name, value as string);
+      }
     }
   }
 }
@@ -104,6 +119,7 @@ export class AttributeCommitter {
 export class AttributePart implements Part {
   readonly committer: AttributeCommitter;
   value: unknown = undefined;
+  isServerRendering?: boolean;
 
   constructor(committer: AttributeCommitter) {
     this.committer = committer;
@@ -121,13 +137,17 @@ export class AttributePart implements Part {
     }
   }
 
-  commit() {
+  resolvePendingDirective() {
     while (isDirective(this.value)) {
       const directive = this.value;
       this.value = noChange;
       directive(this);
     }
-    if (this.value === noChange) {
+    return this.value;
+  }
+
+  commit() {
+    if (this.resolvePendingDirective() === noChange) {
       return;
     }
     this.committer.commit();
@@ -148,6 +168,7 @@ export class NodePart implements Part {
   endNode!: Node;
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
+  isServerRendering?: boolean;
 
   constructor(options: RenderOptions) {
     this.options = options;
@@ -204,16 +225,20 @@ export class NodePart implements Part {
     this.__pendingValue = value;
   }
 
-  commit() {
-    if (this.startNode.parentNode === null) {
-      return;
-    }
+  resolvePendingDirective() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
       directive(this);
     }
-    const value = this.__pendingValue;
+    return this.__pendingValue;
+  }
+
+  commit() {
+    if (this.startNode.parentNode === null) {
+      return;
+    }
+    const value = this.resolvePendingDirective();
     if (value === noChange) {
       return;
     }
@@ -350,6 +375,7 @@ export class BooleanAttributePart implements Part {
   readonly strings: readonly string[];
   value: unknown = undefined;
   private __pendingValue: unknown = undefined;
+  isServerRendering?: boolean;
 
   constructor(element: Element, name: string, strings: readonly string[]) {
     if (strings.length !== 2 || strings[0] !== '' || strings[1] !== '') {
@@ -365,16 +391,21 @@ export class BooleanAttributePart implements Part {
     this.__pendingValue = value;
   }
 
-  commit() {
+  resolvePendingDirective() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange;
       directive(this);
     }
-    if (this.__pendingValue === noChange) {
+    return this.__pendingValue;
+  }
+
+  commit() {
+    let value = this.resolvePendingDirective();
+    if (value === noChange) {
       return;
     }
-    const value = !!this.__pendingValue;
+    value = !!value;
     if (this.value !== value) {
       if (value) {
         this.element.setAttribute(this.name, '');
@@ -409,18 +440,18 @@ export class PropertyCommitter extends AttributeCommitter {
     return new PropertyPart(this);
   }
 
-  protected _getValue() {
+  getValue() {
     if (this.single) {
       return this.parts[0].value;
     }
-    return super._getValue();
+    return super.getValue();
   }
 
   commit(): void {
     if (this.dirty) {
       this.dirty = false;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this.element as any)[this.name] = this._getValue();
+      (this.element as any)[this.name] = this.getValue();
     }
   }
 }
@@ -443,10 +474,12 @@ let eventOptionsSupported = false;
         return false;
       }
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.addEventListener('test', options as any, options);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.removeEventListener('test', options as any, options);
+    if (window.addEventListener) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.addEventListener('test', options as any, options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.removeEventListener('test', options as any, options);
+    }
   } catch (_e) {
     // event options not supported
   }
@@ -462,6 +495,7 @@ export class EventPart implements Part {
   private __options?: AddEventListenerOptions;
   private __pendingValue: undefined|EventHandlerWithOptions = undefined;
   private readonly __boundHandleEvent: (event: Event) => void;
+  isServerRendering?: boolean;
 
   constructor(element: Element, eventName: string, eventContext?: EventTarget) {
     this.element = element;
@@ -474,17 +508,21 @@ export class EventPart implements Part {
     this.__pendingValue = value;
   }
 
-  commit() {
+  resolvePendingDirective() {
     while (isDirective(this.__pendingValue)) {
       const directive = this.__pendingValue;
       this.__pendingValue = noChange as EventHandlerWithOptions;
       directive(this);
     }
-    if (this.__pendingValue === noChange) {
+    return this.__pendingValue;
+  }
+
+  commit() {
+    const newListener = this.resolvePendingDirective();
+    if (newListener === noChange) {
       return;
     }
 
-    const newListener = this.__pendingValue;
     const oldListener = this.value;
     const shouldRemoveListener = newListener == null ||
         oldListener != null &&

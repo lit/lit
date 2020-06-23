@@ -39,6 +39,13 @@ export const unsafeHTML = directive((value: unknown) => (part: Part): void => {
     throw new Error('unsafeHTML can only be used in text bindings');
   }
 
+  // We don't support `unsafeHTML` on the server because there's no way to
+  // create a TemplateResult to pass to setValue using non-literal strings
+  // without coercing types (`html` only accepts a `TemplateStringsArray`).
+  if (part.isServerRendering) {
+    throw new Error('unsafeHTML does not support SSR');
+  }
+
   const previousValue = previousValues.get(part);
 
   if (previousValue !== undefined && isPrimitive(value) &&

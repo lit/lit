@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, Part} from '../lit-html.js';
+import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 const previousValues = new WeakMap<Part, unknown>();
 
@@ -25,7 +25,8 @@ const previousValues = new WeakMap<Part, unknown>();
 export const ifDefined = directive((value: unknown) => (part: Part) => {
   const previousValue = previousValues.get(part);
 
-  if (value === undefined && part instanceof AttributePart) {
+  if (value === undefined && part instanceof AttributePart &&
+      !(part instanceof PropertyPart) && !part.isServerRendering) {
     // If the value is undefined, remove the attribute, but only if the value
     // was previously defined.
     if (previousValue !== undefined || !previousValues.has(part)) {

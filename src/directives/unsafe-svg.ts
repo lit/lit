@@ -40,6 +40,13 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
     throw new Error('unsafeSVG can only be used in text bindings');
   }
 
+  // We don't support `unsafeSVG` on the server because there's no way to
+  // create a TemplateResult to pass to setValue using non-literal strings
+  // without coercing types (`html` only accepts a `TemplateStringsArray`).
+  if (part.isServerRendering) {
+    throw new Error('unsafeSVG does not support SSR');
+  }
+
   const previousValue = previousValues.get(part);
 
   if (previousValue !== undefined && isPrimitive(value) &&

@@ -15,16 +15,32 @@
 import {AttributePart, directive, Part, PropertyPart} from '../lit-html.js';
 
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
+// This shim is also used on first render, to generate a string to commit
+// rather than manipulate classList, to be compatible with SSR. Note that
+// an `AttributePart` is used _only_ on first render, since using it on
+// every render would overwrite any untracked classes. When using an `Element`,
+// (only on IE11, after first render) we always initialize the classList from
+// the current value of the attribtue.
 class ClassList {
-  element: Element;
+  element: Element|undefined;
+  part: AttributePart|undefined;
   classes: Set<string> = new Set();
   changed = false;
 
-  constructor(element: Element) {
-    this.element = element;
-    const classList = (element.getAttribute('class') || '').split(/\s+/);
-    for (const cls of classList) {
-      this.classes.add(cls);
+  constructor(elementOrPart: Element|AttributePart) {
+    if (elementOrPart instanceof AttributePart) {
+      this.part = elementOrPart;
+      this.element = undefined;
+      // The part is only used on first render, and we always need to commit
+      // so that the static strings are written
+      this.changed = true;
+    } else {
+      this.part = undefined;
+      this.element = elementOrPart;
+      const classList = (this.element.getAttribute('class') || '').split(/\s+/);
+      for (const cls of classList) {
+        this.classes.add(cls);
+      }
     }
   }
   add(cls: string) {
@@ -41,7 +57,11 @@ class ClassList {
     if (this.changed) {
       let classString = '';
       this.classes.forEach((cls) => classString += cls + ' ');
-      this.element.setAttribute('class', classString);
+      if (this.element !== undefined) {
+        this.element.setAttribute('class', classString);
+      } else {
+        this.part!.setValue(classString);
+      }
     }
   }
 }
@@ -74,18 +94,21 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
   }
 
   const {committer} = part;
-  const {element} = committer;
 
+  let classList: DOMTokenList|ClassList;
   let previousClasses = previousClassesCache.get(part);
   if (previousClasses === undefined) {
-    // Write static classes once
-    // Use setAttribute() because className isn't a string on SVG elements
-    element.setAttribute('class', committer.strings.join(' '));
+    // First render of this directive into this part, so use ClassList shim to
+    // generate a string for first-render, to be compatible with SSR
+    classList = new ClassList(part);
     previousClassesCache.set(part, previousClasses = new Set());
+  } else {
+    const {element} = committer;
+    // Use the ClassList shim on subsequent renders only if it doesn't exist
+    // on element (IE11 SVGs)
+    classList = element.classList || new ClassList(part);
   }
 
-  const classList =
-      (element.classList || new ClassList(element)) as DOMTokenList | ClassList;
 
   // Remove old classes that no longer apply
   // We use forEach() instead of for-of so that re don't require down-level
@@ -112,7 +135,9 @@ export const classMap = directive((classInfo: ClassInfo) => (part: Part) => {
       }
     }
   }
-  if (typeof (classList as ClassList).commit === 'function') {
-    (classList as ClassList).commit();
+
+  // If using the shim, commit the string
+  if (classList instanceof ClassList) {
+    classList.commit();
   }
 });

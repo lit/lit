@@ -79,6 +79,11 @@ export const until = directive((...args: unknown[]) => (part: Part) => {
       break;
     }
 
+    // Don't await promises on the server
+    if (part.isServerRendering) {
+      continue;
+    }
+
     // If this is a Promise we've already handled, skip it.
     if (i < previousLength && value === previousValues[i]) {
       continue;
