@@ -1,0 +1,12 @@
+{
+  "readme": "./_api/readme.md",
+  "tsconfig": "../tsconfig.json",
+  "mode": "library",
+  "theme": "./_api/theme",
+  "excludeNotExported": true,
+  "excludePrivate": true,
+  "ignoreCompilerErrors": true,
+  "exclude":  ["**/*test*", "**/node_modules/!(lit-html)/**", "**/test/**"],
+  "out": "./api",
+  "gaID": "UA-39334307-23"
+}

@@ -5,7 +5,7 @@
     "build": "npm run build:api && npm run build:site",
     "build:site": "eleventy",
     "build:site:watch": "eleventy --watch",
-    "build:api": "(cd _api && sh copy_api.sh) &&  typedoc --name \"lit-html API\" --readme _api/readme.md  --mode modules --theme _api/theme --tsconfig ../tsconfig.json --ignoreCompilerErrors --excludeNotExported --excludePrivate --out ./api --gaID UA-39334307-23 _api/tmp/lit-html.ts _api/tmp/lib/shady-render.ts",
+    "build:api": "typedoc ../src/lit-html.ts ../src/lib/shady-render.ts",
     "assets": "cp ../node_modules/prismjs/themes/prism-okaidia.css css/",
     "serve": "serve",
     "deploy": "npm run build && gcloud app deploy _site/app.yaml --project polymer-lit-html --no-promote"
@@ -19,7 +19,6 @@
     "markdown-it-attrs": "^3.0.1",
     "serve": "^11.3.0",
     "slugify": "^1.3.6",
-    "typedoc": "^0.13.0",
-    "typedoc-plugin-external-module-name": "^1.1.3"
+    "typedoc": "^0.17.0-3"
   }
 }
