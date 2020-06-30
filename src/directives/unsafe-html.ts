@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {defaultTemplateProcessor} from '../lib/default-template-processor.js';
 import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
 import {TemplateResult} from '../lit-html.js';
-import { defaultTemplateProcessor } from '../lib/default-template-processor.js';
 
 interface PreviousValue {
   readonly value: unknown;
