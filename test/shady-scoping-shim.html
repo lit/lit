@@ -1,6 +1,9 @@
 <!doctype html>
 <html>
   <head>
+    <meta http-equiv="Content-Security-Policy"
+        content="require-trusted-types-for 'script';">
+
     <script>
       if (location.search.match('shadydom')) {
         window.ShadyDOM = {force: true};

@@ -10,7 +10,7 @@ Efficient, Expressive, Extensible HTML templates in JavaScript
 
 Full documentation is available at [lit-html.polymer-project.org](https://lit-html.polymer-project.org).
 
-Docs source is in the `docs` folder. To build the site youself, see the instructions in [docs/README.md](docs/README.md).
+Docs source is in the `docs` folder. To build the site yourself, see the instructions in [docs/README.md](docs/README.md).
 
 ## Overview
 
