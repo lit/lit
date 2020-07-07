@@ -40,7 +40,8 @@ const example = (contacts) => html`
         else {
             console.log(frames, stamp - start, 1000 / ((stamp - start) / frames));
             const { timeElapsed, virtualizationTime } = scroller.stopBenchmarking();
-            console.log(timeElapsed, virtualizationTime, virtualizationTime / frames);
+            console.log(timeElapsed, virtualizationTime, virtualizationTime / timeElapsed);
+            window.tachometerResult = virtualizationTime / timeElapsed * 1000;
         }
     }
 
@@ -48,5 +49,5 @@ const example = (contacts) => html`
         scroller = document.querySelector('section')[scrollerRef];
         scroller.startBenchmarking();
         window.requestAnimationFrame(onFrame);
-    }, 5000);
+    }, 1000);
 })();

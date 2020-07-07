@@ -14,6 +14,7 @@
     "scripts": {
         "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "bench:debug": "tach --root=../.. test/benchmarks/${BENCH:-basic}.html --measure=fcp",
+        "bench:scroll": "tach --sample-size=5 --package-version=lit-virtualizer@file:~/source/uni-virtualizer/packages/lit-virtualizer --root=.. ../uni-virtualizer-examples/public/basic-lit-html/index.html --measure=global",
         "build": "tsc",
         "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
         "clean": "rm -r node_modules/",
