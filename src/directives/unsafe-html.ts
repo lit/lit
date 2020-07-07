@@ -12,12 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {defaultTemplateProcessor} from '../lib/default-template-processor.js';
 import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
+import {TemplateResult} from '../lit-html.js';
 
 interface PreviousValue {
   readonly value: unknown;
-  readonly fragment: DocumentFragment;
+  readonly result: TemplateResult;
 }
 
 // For each part, remember the value that was last rendered to the part by the
@@ -39,23 +41,19 @@ export const unsafeHTML = directive((value: unknown) => (part: Part): void => {
     throw new Error('unsafeHTML can only be used in text bindings');
   }
 
-  // We don't support `unsafeHTML` on the server because there's no way to
-  // create a TemplateResult to pass to setValue using non-literal strings
-  // without coercing types (`html` only accepts a `TemplateStringsArray`).
-  if (part.isServerRendering) {
-    throw new Error('unsafeHTML does not support SSR');
-  }
-
   const previousValue = previousValues.get(part);
 
+  let result;
   if (previousValue !== undefined && isPrimitive(value) &&
-      value === previousValue.value && part.value === previousValue.fragment) {
-    return;
+      value === previousValue.value) {
+    result = previousValue.result;
+  } else {
+    // DO NOT COPY THIS CODE. IT IS UNSAFE TO CONSTRUCT TEMPLATE RESULTS THIS
+    // WAY (HENCE THE NAME).
+    const string = String(value);
+    const strings = Object.assign([string], {raw: [string]});
+    result = new TemplateResult(strings, [], 'html', defaultTemplateProcessor)
+    previousValues.set(part, {value, result});
   }
-
-  const template = document.createElement('template');
-  template.innerHTML = value as string;  // innerHTML casts to string internally
-  const fragment = document.importNode(template.content, true);
-  part.setValue(fragment);
-  previousValues.set(part, {value, fragment});
+  part.setValue(result);
 });

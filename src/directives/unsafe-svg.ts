@@ -12,20 +12,21 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {reparentNodes} from '../lib/dom.js';
+import {defaultTemplateProcessor} from '../lib/default-template-processor.js';
 import {isPrimitive} from '../lib/parts.js';
 import {directive, NodePart, Part} from '../lit-html.js';
+import {SVGTemplateResult} from '../lit-html.js';
 
 interface PreviousValue {
   readonly value: unknown;
-  readonly fragment: DocumentFragment;
+  readonly result: SVGTemplateResult;
 }
 
 // For each part, remember the value that was last rendered to the part by the
-// unsafeSVG directive, and the DocumentFragment that was last set as a value.
+// unsafeHTML directive, and the DocumentFragment that was last set as a value.
 // The DocumentFragment is used as a unique key to check if the last value
-// rendered to the part was with unsafeSVG. If not, we'll always re-render the
-// value passed to unsafeSVG.
+// rendered to the part was with unsafeHTML. If not, we'll always re-render the
+// value passed to unsafeHTML.
 const previousValues = new WeakMap<NodePart, PreviousValue>();
 
 /**
@@ -40,27 +41,19 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
     throw new Error('unsafeSVG can only be used in text bindings');
   }
 
-  // We don't support `unsafeSVG` on the server because there's no way to
-  // create a TemplateResult to pass to setValue using non-literal strings
-  // without coercing types (`html` only accepts a `TemplateStringsArray`).
-  if (part.isServerRendering) {
-    throw new Error('unsafeSVG does not support SSR');
-  }
-
   const previousValue = previousValues.get(part);
 
+  let result;
   if (previousValue !== undefined && isPrimitive(value) &&
-      value === previousValue.value && part.value === previousValue.fragment) {
-    return;
+      value === previousValue.value) {
+    result = previousValue.result;
+  } else {
+    // DO NOT COPY THIS CODE. IT IS UNSAFE TO CONSTRUCT TEMPLATE RESULTS THIS
+    // WAY (HENCE THE NAME).
+    const string = String(value);
+    const strings = Object.assign([string], {raw: [string]});
+    result = new SVGTemplateResult(strings, [], 'svg', defaultTemplateProcessor)
+    previousValues.set(part, {value, result});
   }
-
-  const template = document.createElement('template');
-  template.innerHTML = `<svg>${value}</svg>`;
-  const content = template.content;
-  const svgElement = content.firstChild!;
-  content.removeChild(svgElement);
-  reparentNodes(content, svgElement.firstChild);
-  const fragment = document.importNode(content, true);
-  part.setValue(fragment);
-  previousValues.set(part, {value, fragment});
+  part.setValue(result);
 });
