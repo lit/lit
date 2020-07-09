@@ -7,7 +7,7 @@
     "build:site:watch": "eleventy --watch",
     "build:api": "typedoc ../src/lit-html.ts ../src/lib/shady-render.ts",
     "assets": "cp ../node_modules/prismjs/themes/prism-okaidia.css css/",
-    "serve": "serve",
+    "serve": "dev_appserver.py _site/app.yaml",
     "deploy": "npm run build && gcloud app deploy _site/app.yaml --project polymer-lit-html --no-promote"
   },
   "devDependencies": {
