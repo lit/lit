@@ -50,24 +50,24 @@ During the development phase, you might want the following tools:
 
 There are a number of IDE plugins that may be useful when developing with lit-html. In particular, we recommend using a code highlighter that works with lit-html style templates. In addition, we recommend using a linter like ESLint that supports modern JavaScript.
 
-VSCode plugin
+VS Code plugin
 
 * [https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin](https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin)
 
 TypeScript plugin (works with Sublime and Atom)
 
-* [https://github.com/Microsoft/typescript-lit-html-plugin](https://github.com/Microsoft/typescript-lit-html-plugin)
+* [https://github.com/runem/lit-analyzer/tree/master/packages/ts-lit-plugin](https://github.com/runem/lit-analyzer/tree/master/packages/ts-lit-plugin)
 
 More plugins
 
 The [awesome-lit-html](https://github.com/web-padawan/awesome-lit-html#ide-plugins) repo lists other IDE plugins.
 
 
-### Linter plugins
+### Linting
 
-ESLint is recommended for linting lit-html code. The following ESLint plugin can be added to check for some common issues in lit-html templates:
+ESLint is recommended for linting lit-html code. You can use the `lit-analyzer` CLI alongside ESLint to detect issues in your lit-html templates:
 
-* [https://github.com/43081j/eslint-plugin-lit](https://github.com/43081j/eslint-plugin-lit)
+* [https://github.com/runem/lit-analyzer/tree/master/packages/lit-analyzer](https://github.com/runem/lit-analyzer/tree/master/packages/lit-analyzer)
 
 ### Dev server
 
