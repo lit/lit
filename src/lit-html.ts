@@ -22,8 +22,7 @@
  * -  [[svg]]
  * -  [[render]]
  *
- * @module lit-html
- * @preferred
+ * @packageDocumentation
  */
 
 /**

@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 interface MaybePolyfilledCe extends CustomElementRegistry {
   readonly polyfillWrapFlushCallback?: object;
 }
