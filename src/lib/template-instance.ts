@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';
@@ -40,7 +36,7 @@ export class TemplateInstance {
     this.options = options;
   }
 
-  update(values: ReadonlyArray<unknown>) {
+  update(values: readonly unknown[]) {
     let i = 0;
     for (const part of this.__parts) {
       if (part !== undefined) {
@@ -76,7 +72,7 @@ export class TemplateInstance {
     // Given these constraints, with full custom elements support we would
     // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
     //
-    // But Safari dooes not implement CustomElementRegistry#upgrade, so we
+    // But Safari does not implement CustomElementRegistry#upgrade, so we
     // can not implement that order and still have upgrade-before-update and
     // upgrade disconnected fragments. So we instead sacrifice the
     // process-before-upgrade constraint, since in Custom Elements v1 elements

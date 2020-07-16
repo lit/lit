@@ -17,7 +17,7 @@
 
 import {ClassInfo, classMap} from '../../directives/class-map.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import {html, svg} from '../../lit-html.js';
 
 const assert = chai.assert;
 
@@ -79,6 +79,51 @@ suite('classMap', () => {
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isFalse(el.classList.contains('foo'));
+  });
+
+  test('works with imperatively added classes', () => {
+    renderClassMap({foo: true});
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('foo'));
+
+    el.classList.add('bar');
+    assert.isTrue(el.classList.contains('bar'));
+
+    renderClassMap({foo: false});
+    assert.isFalse(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+  });
+
+  test('can not override static classes', () => {
+    renderClassMapStatic({aa: false, bb: true});
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+  });
+
+  test('changes classes when used with the same object', () => {
+    const classInfo = {foo: true};
+    renderClassMapStatic(classInfo);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('foo'));
+    classInfo.foo = false;
+    renderClassMapStatic(classInfo);
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isFalse(el.classList.contains('foo'));
+  });
+
+  test('adds classes on SVG elements', () => {
+    const cssInfo = {foo: 0, bar: true, zonk: true};
+    render(svg`<circle class="${classMap(cssInfo)}"></circle>`, container);
+    const el = container.firstElementChild!;
+    const classes = el.getAttribute('class')!.split(' ');
+    // Sigh, IE.
+    assert.isTrue(classes.indexOf('foo') === -1);
+    assert.isTrue(classes.indexOf('bar') > -1);
+    assert.isTrue(classes.indexOf('zonk') > -1);
   });
 
   test('throws when used on non-class attribute', () => {

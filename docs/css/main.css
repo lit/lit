@@ -212,6 +212,31 @@ main {
   display: none;
 }
 
+.hero.blm {
+  background: #696969;
+  color: #fff;
+}
+
+.hero .blm-banner {
+  position: relative;
+  background: #000;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  padding: 0 20px 0 20px;
+}
+
+.hero .blm-banner p {
+  margin: auto;
+  text-align: center;
+}
+
+.hero .blm-banner a {
+  color: #F07474;
+}
+
+
 .hero .wrapper {
   padding-top: 21vh;
   padding-bottom: 24vh;
@@ -375,6 +400,14 @@ article {
   margin: 40px 0;
   min-width: 1px;
   max-width: 720px;
+}
+
+article .toc ol {
+  list-style-type: disc;
+}
+
+article .toc ol ol {
+  list-style-type: circle;
 }
 
 article h1 {

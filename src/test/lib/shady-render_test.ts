@@ -18,7 +18,7 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('shady-render', () => {
   test('style elements apply in shadowRoots', () => {
@@ -375,4 +375,37 @@ suite('shady-render', () => {
         assert.equal(error3.message, 'The `scopeName` option is required.');
         document.body.removeChild(container);
       });
+
+  test('parts around <slot> elemnets', () => {
+    const el = document.createElement('slot-host');
+    document.body.appendChild(el);
+    const render = (title: string) => {
+      renderShadowRoot(
+          html
+          `<slot name="before" > </slot>${title}<slot name="after"></slot >`,
+          el);
+    };
+    render('foo');
+    assert.equal(el.shadowRoot?.textContent, ' foo');
+    render('bar');
+    assert.equal(el.shadowRoot?.textContent, ' bar');
+    render('');
+    assert.equal(el.shadowRoot?.textContent, ' ');
+    render('zot');
+    assert.equal(el.shadowRoot?.textContent, ' zot');
+    const c1 = document.createElement('div');
+    c1.setAttribute('slot', 'before');
+    el.appendChild(c1);
+    assert.equal(el.shadowRoot?.textContent, ' zot');
+    render('c1');
+    assert.equal(el.shadowRoot?.textContent, ' c1');
+    const c2 = document.createElement('div');
+    c2.setAttribute('slot', 'after');
+    el.appendChild(c2);
+    render('c1c2');
+    assert.equal(el.shadowRoot?.textContent, ' c1c2');
+    el.textContent = '';
+    assert.equal(el.shadowRoot?.textContent, ' c1c2');
+    document.body.removeChild(el);
+  });
 });

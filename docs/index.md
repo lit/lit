@@ -1,8 +1,14 @@
 ---
 layout: default
 ---
-<header class="hero" markdown="0">
+<header class="hero blm" markdown="0">
 {% include topnav.html %}
+<div class="blm-banner">
+<p>
+<a href="https://blacklivesmatter.com" target="_blank" rel="noopener noreferrer">Black Lives Matter.</a> Support the 
+<a href="https://eji.org/" target="_blank" rel="noopener noreferrer">Equal Justice Initiative</a> and 
+<a href="https://www.joincampaignzero.org/" target="_blank" rel="noopener noreferrer" >Campaign Zero</a>.</p> 
+</div>
 <div class="wrapper">
 <div class="hero-title">{{ site.name }}</div>
 <p class="hero-caption">{{ site.description }}</p>
@@ -18,9 +24,14 @@ Next-generation HTML Templates in JavaScript
 
 <div class="responsive-row">
 
-<h3 class="description" style="flex: 1; margin-bottom: 0; max-width: 600px;">lit-html lets you write HTML templates in JavaScript, then efficiently render and _re-render_ those templates together with data to create and update DOM:</h3>
+<h3 class="description" style="flex: 1; margin-bottom: 0; max-width: 600px;">
+
+lit-html lets you write HTML templates in JavaScript, then efficiently render and _re-render_ those templates together with data to create and update DOM:
+
+</h3>
 
 <div style="flex: 2">
+
 ```js
 import {html, render} from 'lit-html';
 

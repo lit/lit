@@ -17,7 +17,7 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const isTemplatePolyfilled =
     ((HTMLTemplateElement as any).decorate != null ||
@@ -25,6 +25,7 @@ const isTemplatePolyfilled =
 const testSkipForTemplatePolyfill = (test: any) =>
     isTemplatePolyfilled ? test.skip : test;
 
+/* eslint @typescript-eslint/camelcase: ["error", { allow: ["Safari10_0"] }] */
 const isSafari10_0 =
     (window.navigator.userAgent.indexOf('AppleWebKit/602') !== -1);
 const testSkipSafari10_0 = (test: any) => isSafari10_0 ? test.skip : test;
@@ -263,6 +264,13 @@ suite('render()', () => {
         <p>${'bar'}</p>`;
       render(t, container);
       assert.equal(container.querySelector('p')!.textContent, 'bar');
+      assert.equal(container.textContent!.trim(), 'bar');
+    });
+
+    test('renders comments with bindings', () => {
+      const t = html`<!--${'foo'}-->`;
+      render(t, container);
+      assert.equal(container.textContent, '');
     });
 
     test('renders comments with attribute-like bindings', () => {
@@ -623,7 +631,7 @@ suite('render()', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget;
+      const eventContext = {} as EventTarget;  // eslint-disable-line
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -648,7 +656,7 @@ suite('render()', () => {
           thisValue = this;
         }
       };
-      const eventContext = {} as EventTarget;
+      const eventContext = {} as EventTarget;  // eslint-disable-line
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -700,11 +708,13 @@ suite('render()', () => {
           div.addEventListener = () => addCount++;
           div.removeEventListener = () => removeCount++;
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
           assert.equal(removeCount, 0);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 1);
@@ -715,11 +725,13 @@ suite('render()', () => {
           assert.equal(addCount, 1);
           assert.equal(removeCount, 1);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
           assert.equal(removeCount, 1);
 
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           listener = () => {};
           render(t(), container);
           assert.equal(addCount, 2);
@@ -1021,14 +1033,14 @@ suite('render()', () => {
 
   suiteIfCustomElementsAreSupported(suite)('custom elements', () => {
     class PropertySetterElement extends HTMLElement {
-      public readonly calledSetter = false;
+      readonly calledSetter = false;
       private _value?: string = undefined;
 
-      public get value(): string|undefined {
+      get value(): string|undefined {
         return this._value;
       }
 
-      public set value(value: string|undefined) {
+      set value(value: string|undefined) {
         (this as {calledSetter: boolean}).calledSetter = true;
         this._value = value;
       }

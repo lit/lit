@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, EventPart, html, NodePart, render, templateFactory, TemplateResult} from '../../lit-html.js';
+import {AttributeCommitter, AttributePart, createMarker, DefaultTemplateProcessor, directive, EventPart, html, NodePart, Part, render, templateFactory, TemplateResult} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
-// tslint:disable:no-any OK in test code.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 suite('Parts', () => {
   suite('AttributePart', () => {
@@ -517,6 +517,38 @@ suite('Parts', () => {
             Array.from(container.childNodes), [startNode, endNode]);
       });
     });
+
+    suite('directive holds NodePart', () => {
+      test('does not throw errors when part is detached', () => {
+        let part: Part;
+        const fooDirective = directive(() => (p: Part) => {
+          part = p;
+        });
+
+        const t = (bool: boolean) =>
+            html`<div>${bool ? html`${fooDirective()}` : 'detached'}</div>`;
+
+        // First render with unresolved Promise
+        render(t(true), container);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+        // Simulate an async part settting.
+        part!.setValue('foo');
+        part!.commit();
+
+        // Now detach the part's wrapping TemplateResult
+        render(t(false), container);
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>detached</div>');
+
+        // Simulate an async part settting.
+        part!.setValue('bar');
+        part!.commit();
+        assert.equal(
+            stripExpressionMarkers(container.innerHTML), '<div>detached</div>');
+      });
+    });
   });
 
   suite('EventPart', () => {
@@ -549,7 +581,7 @@ suite('Parts', () => {
       };
       window.addEventListener('test', options as any, options);
       window.removeEventListener('test', options as any, options);
-    } catch (_e) {
+    } catch (_e) {  // eslint-disable-line no-empty
     }
 
     setup(() => {

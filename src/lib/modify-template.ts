@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module shady-render
- */
-
 import {isTemplatePartActive, Template, TemplatePart} from './template.js';
 
 const walkerNodeFilter = 133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */;
@@ -88,7 +84,7 @@ const countNodes = (node: Node) => {
 };
 
 const nextActiveIndexInTemplateParts =
-    (parts: TemplatePart[], startIndex: number = -1) => {
+    (parts: TemplatePart[], startIndex = -1) => {
       for (let i = startIndex + 1; i < parts.length; i++) {
         const part = parts[i];
         if (isTemplatePartActive(part)) {

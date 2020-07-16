@@ -13,10 +13,6 @@
  */
 
 /**
- * @module lit-html
- */
-
-/**
  * The Part interface represents a dynamic part of a template instance rendered
  * by lit-html.
  */
