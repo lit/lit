@@ -16,8 +16,7 @@
  * Module to add shady DOM/shady CSS polyfill support to lit-html template
  * rendering. See the [[render]] method for details.
  *
- * @module shady-render
- * @preferred
+ * @packageDocumentation
  */
 
 /**
