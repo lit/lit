@@ -2,6 +2,8 @@ import { render, html } from 'lit-html';
 import { scroll } from 'lit-virtualizer/lib/scroll.js';
 import { Layout1d } from 'lit-virtualizer';
 
+import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
+
 const example = (contacts, scrollToIndex = null) => html`
     <section style="height: 100%;">
         ${scroll({
@@ -17,7 +19,9 @@ let contacts;
 
 (async function go() {
     contacts = await(await fetch('../shared/contacts.json')).json();
-    render(example(contacts), document.getElementById("container"));
+    const container = document.getElementById('container');
+    render(example(contacts), container);
+    runBenchmarkIfRequested(container);
 })();
 
 window.scrollToIndex = (index, position) => {

@@ -16,7 +16,7 @@
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
-// import {terser} from 'rollup-plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import filesize from 'rollup-plugin-filesize';
 import minifyHTML from 'rollup-plugin-minify-html-literals';
 // import copy from 'rollup-plugin-copy';
@@ -46,7 +46,7 @@ const terserConfig = {
         // multiline comment
         return /@preserve|@license|@cc_on/i.test(text);
       }
-    },
+    }
   },
 };
 
@@ -75,7 +75,7 @@ const samples = [
 let configs = [
   // Babel polyfills for older browsers that don't support ES2015+.
   {
-    input: 'babel-polyfills.js',
+    input: 'lib/babel-polyfills.js',
     output: {
       file: 'public/shared/build/system-transpiled/babel-polyfills.js',
       format: 'system',

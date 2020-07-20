@@ -2,6 +2,8 @@ import { html } from 'lit-html';
 import 'lit-virtualizer/lib/lit-virtualizer.js';
 import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
 
+import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
+
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");
 const handleVisibilityChange = (e) => {
@@ -21,4 +23,6 @@ let virtualizer;
     document.body.appendChild(virtualizer);
 
     virtualizer.addEventListener("visibilityChanged", handleVisibilityChange);
+
+    runBenchmarkIfRequested(virtualizer);
 })();

@@ -2,6 +2,8 @@ import { html } from 'lit-html';
 import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
 import 'lit-virtualizer/lit-virtualizer.js';
 
+import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
+
 let virtualizer;
 
 (async function go() {
@@ -14,4 +16,6 @@ let virtualizer;
 
     window.virtualizer = virtualizer;
     window.scrollToIndex = virtualizer.scrollToIndex.bind(virtualizer);
+
+    runBenchmarkIfRequested(virtualizer);
 })();

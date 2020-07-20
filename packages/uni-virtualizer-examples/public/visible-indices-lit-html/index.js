@@ -2,11 +2,13 @@ import { render, html } from 'lit-html';
 import { scroll } from 'lit-virtualizer/lib/scroll.js';
 import { Layout1d } from 'lit-virtualizer';
 
+import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
+
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");
 const handleVisibilityChange = (e) => {
-    firstVisibleResult.innerHTML = e.firstVisible;
-    lastVisibleResult.innerHTML = e.lastVisible;
+    firstVisibleResult.innerHTML = e.detail.firstVisible;
+    lastVisibleResult.innerHTML = e.detail.lastVisible;
 }
 
 const example = (contacts) => html`
@@ -23,5 +25,7 @@ const example = (contacts) => html`
 
 (async function go() {
     const contacts = await(await fetch('../shared/contacts.json')).json();
-    render(example(contacts), document.querySelector("#container"));
+    const container = document.querySelector("#container");
+    render(example(contacts), container);
+    runBenchmarkIfRequested(container.querySelector('section'));
 })();

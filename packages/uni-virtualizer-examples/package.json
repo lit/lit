@@ -45,6 +45,7 @@
         "lit-element": "^2.3.1",
         "lit-html": "^1.2.1",
         "systemjs": "^2.0.0-alpha.1",
-        "whatwg-fetch": "^3.0.0"
+        "whatwg-fetch": "^3.0.0",
+        "lit-virtualizer": "^0.5.0"
     }
 }

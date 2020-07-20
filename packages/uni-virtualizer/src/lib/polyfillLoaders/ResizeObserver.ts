@@ -20,7 +20,8 @@ async function init() {
     else {
         _RO = (window as {ResizeObserver?: ResizeObserver}).ResizeObserver;
         try {
-            throw new Error();
+            // throw new Error();
+            document.title='native ResizeObserver';
             new _RO(function() {});
         }
         catch (e) {

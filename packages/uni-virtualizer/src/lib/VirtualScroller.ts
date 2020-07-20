@@ -428,7 +428,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     }
   }
 
-  // TODO (graynorton): document
+  // TODO (graynorton): Rework benchmarking so that it has no API and
+  // instead is always on except in production builds
   startBenchmarking() {
     if (this._benchmarkStart === null) {
       this._benchmarkStart = window.performance.now();
@@ -439,13 +440,14 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   stopBenchmarking() {
     if (this._benchmarkStart !== null) {
       const timeElapsed = window.performance.now() - this._benchmarkStart;
-      const virtualizationTime = performance.getEntriesByName('uv-virtualizing', 'measure')
-        .reduce((t, m) => t + m.duration, 0);
+      const entries = performance.getEntriesByName('uv-virtualizing', 'measure');
+      // debugger;
+      const virtualizationTime = entries.reduce((t, m) => t + m.duration, 0);
       this._benchmarkStart = null;
       this._openMeasure = false;
-      performance.clearMarks('uv-start');
-      performance.clearMarks('uv-end');
-      performance.clearMarks('uv-virtualizing');
+      // performance.clearMarks('uv-start');
+      // performance.clearMarks('uv-end');
+      // performance.clearMarks('uv-virtualizing');
       return { timeElapsed, virtualizationTime };
     }
     return null;
@@ -551,16 +553,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._correctScrollError(this._scrollErr);
       this._scrollErr = null;
     }
-    if (!_rangeChanged) {
-      if (this._benchmarkStart && 'mark' in window.performance && this._openMeasure) {
-        window.performance.mark('uv-end');
-        window.performance.measure(
-          'uv-virtualizing',
-          'uv-start',
-          'uv-end'
-        );
-        this._openMeasure = false;
-      }
+    if (this._benchmarkStart && 'mark' in window.performance) {
+      window.performance.mark('uv-end');
+      this._openMeasure = true;
     }
   }
 
@@ -578,15 +573,33 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     this._layout.reflowIfNeeded();
   }
 
+  private _awaitingScrollFrame = false;
+
+  private _handleScrollEvent() {
+    if (!this._scrollTarget || event.target === this._scrollTarget) {
+      if (this._benchmarkStart && 'mark' in window.performance) {
+        if (this._openMeasure) {
+          window.performance.measure(
+            'uv-virtualizing',
+            'uv-start',
+            'uv-end'
+          );
+          this._openMeasure = false;      
+        }
+        window.performance.mark('uv-start');
+        // this._openMeasure = true;
+      }
+      this._schedule(this._updateLayout);
+      this._awaitingScrollFrame = false;
+    }
+  }
+
   handleEvent(event) {
     switch (event.type) {
       case 'scroll':
-        if (!this._scrollTarget || event.target === this._scrollTarget) {
-          if (this._benchmarkStart && 'mark' in window.performance) {
-            window.performance.mark('uv-start');
-            this._openMeasure = true;
-          }
-          this._schedule(this._updateLayout);
+        if (!this._awaitingScrollFrame) {
+          requestAnimationFrame(() => this._handleScrollEvent());
+          this._awaitingScrollFrame = true;
         }
         break;
       case 'scrollsizechange':
@@ -820,7 +833,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
   private _notifyVisibility() {
     this._container.dispatchEvent(
-        new CustomEvent('rangeChanged', {detail:{
+        new CustomEvent('visibilityChanged', {detail:{
           first: this._first,
           last: this._last,
           firstVisible: this._firstVisible,
