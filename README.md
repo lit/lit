@@ -5,6 +5,7 @@ Efficient, Expressive, Extensible HTML templates in JavaScript
 [![Published on npm](https://img.shields.io/npm/v/lit-html.svg)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
+[![GitHub issues by-label](https://img.shields.io/github/issues-raw/Polymer/lit-html/Type:%20Bug)](https://github.com/Polymer/lit-html/issues?q=is%3Aissue+is%3Aopen+label%3A%22Type%3A+Bug%22)
 
 ## Documentation
 
