@@ -170,10 +170,14 @@ To build the project, run the following command in your project folder:
 
 For more on building with Polymer CLI, see [Build for production](https://polymer-library.polymer-project.org/3.0/docs/apps/build-for-production) in the Polymer library docs.
 
+### Build your project with Rollup
+
+Rollup works well with lit-html. The [lit-html-build](https://github.com/PolymerLabs/lit-html-build) repository is a simple example project using lit-html with a Rollup build.
+
 ### Build your project with webpack
 
 
-See the Open Web Components default webpack configuration provides a great starting point for building projects that use lit-html. See their [webpack page](https://open-wc.org/building/building-webpack.html#default-configuration) for instructions on getting started. 
+See the Open Web Components default webpack configuration provides a great starting point for building projects that use lit-html. See their [webpack page](https://github.com/open-wc/open-wc/tree/master/packages/building-webpack) for instructions on getting started. 
 
 ### Build considerations for other tools {#build-considerations}
 
@@ -183,6 +187,7 @@ If you're creating your own configuration for webpack, Rollup, or another tool, 
 * ES6 to ES5 transpilation.
 * Transforming JavaScript modules to other formats for legacy browsers.
 * lit-html template minification.
+* Template polyfill
 
 #### Transpilation and module transform
 
@@ -193,11 +198,32 @@ If you're working in TypeScript, the TypeScript compiler can generate different 
 * In general, ES6 is faster than the ES5 equivalent, so try to serve ES6 to browsers that support it.
 * TypeScript has slightly buggy template literal support when compiling to ES5, which can hurt performance.
 
-Your build tools need to accept JavaScript modules (also called ES modules) and transform them to another module format, such as UMD, if necessary. If you use node-style module specifiers, your build will also need to transform them to browser-ready modules specifiers. 
+Your build tools need to accept JavaScript modules (also called ES modules) and transform them to another module format, such as SystemJS, if necessary. If you use node-style module specifiers, your build will also need to transform them to browser-ready modules specifiers. 
 
 #### Template minification
 
-As part of the build process, you'll probably want to minify the HTML templates. Most HTML minifiers don't support HTML inside template literals, as used by lit-html, so you'll need to use a build plugin that supports minifying lit-html templates. Minifying lit-html templates can improve performance by reducing the number of nodes in a template.
+As part of the build process, you'll probably want to minify the HTML templates. Most HTML minifiers don't support HTML inside template literals, as used by lit-html, so you'll need to use a build plugin that supports minifying lit-html templates. Minifying lit-html templates can improve performance by reducing the number of nodes in a template. 
 
 * [Babel plugin](https://github.com/cfware/babel-plugin-template-html-minifier). For build chains that use Babel for transpilation. The open-wc webpack default configuration uses this plugin.
 * [Rollup plugin](https://github.com/asyncLiz/rollup-plugin-minify-html-literals). If you're building your own Rollup configuration.
+
+Template minification is a fairly small optimization compared to other common optimizations like JavaScript minification, bundling, and compression. 
+
+#### Template polyfill
+
+To run on Internet Explorer 11, which doesn't support the `<template>` element, you'll need a polyfill. You can use the template polyfill included with the Web Components polyfills.
+
+Install the Web Components polyfill:
+
+```bash
+npm i @webcomponents/webcomponentsjs
+```
+
+Use the template polyfill:
+
+```html
+<script src="./node_modules/@webcomponents/template/template.js"></script>
+```
+
+Note: when transpiling for IE11, the Babel polyfills need to be bundled separately from the application code, and loaded before the template polyfill.
+
