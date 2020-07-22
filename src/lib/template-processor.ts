@@ -23,13 +23,22 @@ import {AttributeTemplatePart, NodeTemplatePart} from './template.js';
 
 export interface TemplateProcessor {
   /**
-   * Create parts for an attribute-position binding, given the event, attribute
-   * name, and string literals.
+   * Create parts for an attribute-position binding, given the element,
+   * attribute name, and string literals.
    *
    * @param element The element containing the binding
-   * @param name  The attribute name
-   * @param strings The string literals. There are always at least two strings,
-   *   event for fully-controlled bindings with a single expression.
+   * @param name  The attribute name, including a possible prefix. The name may
+   *   be prefixed by `.` (for a property binding), `@` (for an event binding)
+   * or
+   *   `?` (for a boolean attribute binding).
+   * @param strings The array of literal strings that form the static part of
+   *     the
+   *   attribute value. There are always at least two strings,
+   *   even for fully-controlled bindings with a single expression. For example,
+   *   for the binding `attr="${e1}-${e2}"`, the `strings` array includes three
+   *   strings (`['', '-', '']`)—the text _before_ the first expression (the
+   * empty string), the text between the two expressions (`'-'`), and the text
+   * after the last expression (another empty string).
    * @param templatePart The AttributeTemplatePart for this expression
    *     as extracted by the Template class. Can be used to cache information
    *     that should be computed once per template literal in the source code.

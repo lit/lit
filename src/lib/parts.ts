@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
 import {noChange, nothing, Part} from './part.js';
@@ -162,10 +158,12 @@ export class AttributeCommitter {
     //
     // This also allows trusted values (when using TrustedTypes) being
     // assigned to DOM sinks without being stringified in the process.
-    if (l === 1 && strings[0] === '' && strings[1] === '' &&
-        parts[0] !== undefined) {
+    if (l === 1 && strings[0] === '' && strings[1] === '') {
       const v = parts[0].value;
-      if (!isIterable(v)) {
+      if (typeof v === 'symbol') {
+        return String(v);
+      }
+      if (typeof v === 'string' || !isIterable(v)) {
         return v;
       }
     }

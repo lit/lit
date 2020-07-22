@@ -13,7 +13,7 @@ html`<div>
 
 However, instead of _returning_ a value to render, the directive controls what gets rendered to its location in the DOM.
 
-Internally, lit-html uses the [`Part`](/api/classes/lit_html.part.html) interface to represent the dynamic DOM associated with a binding. A directive has access to the `Part` associated with its binding. For example, it can find the current value of the part and set a new value for the part.
+Internally, lit-html uses the [`Part`](/api/interfaces/_lit_html_.part.html) interface to represent the dynamic DOM associated with a binding. A directive has access to the `Part` associated with its binding. For example, it can find the current value of the part and set a new value for the part.
 
 To create a directive, pass a factory function to lit-html's `directive` function:
 
@@ -27,11 +27,11 @@ The factory function can take optional arguments for configuration and values to
 
 The returned function is called each time the part is rendered. The `part` argument is a `Part` object with an API for directly managing the dynamic DOM associated with expressions. Each type of binding has its own specific Part object: 
 
-*   [`NodePart`](/api/classes/lit_html.nodepart.html) for content bindings.
-*   [`AttributePart`](/api/classes/lit_html.attributepart.html) for standard attribute bindings.
-*   [`BooleanAttributePart`](/api/classes/lit_html.booleanattributepart.html) for boolean attribute bindings.
-*   [`EventPart`](/api/classes/lit_html.eventpart.html) for event bindings.
-*   [`PropertyPart`](/api/classes/lit_html.propertypart.html) for property bindings.
+*   [`NodePart`](/api/classes/_lit_html_.nodepart.html) for content bindings.
+*   [`AttributePart`](/api/classes/_lit_html_.attributepart.html) for standard attribute bindings.
+*   [`BooleanAttributePart`](/api/classes/_lit_html_.booleanattributepart.html) for boolean attribute bindings.
+*   [`EventPart`](/api/classes/_lit_html_.eventpart.html) for event bindings.
+*   [`PropertyPart`](/api/classes/_lit_html_.propertypart.html) for property bindings.
 
 Each of these part types implement a common API:
 
@@ -166,7 +166,7 @@ const statefulDirective = directive(() => (part) => {
 
 Sometimes you want a directive to manage multiple nested parts. For example, a directive that renders a list of items (like `repeat`) might create a nested part for each item. Keeping separate parts lets you manipulate them efficiently: for example, you can change the value of a single part without re-rendering the entire list.
 
-To create nested parts, you construct [`NodePart`](/api/classes/lit_html.nodepart.html) instances and associate them with specific locations in the DOM. The section of DOM controlled by a given `NodePart` needs to be delimited by static nodes that serve as markers. (lit-html usually uses comment nodes for these markers.)
+To create nested parts, you construct [`NodePart`](/api/classes/_lit_html_.nodepart.html) instances and associate them with specific locations in the DOM. The section of DOM controlled by a given `NodePart` needs to be delimited by static nodes that serve as markers. (lit-html usually uses comment nodes for these markers.)
 
 <img alt="Diagram showing a tree of DOM nodes and a NodePart object. The DOM tree consists of a parent node and several child nodes, with two of the child nodes identified as 'marker nodes.' The NodePart object has a startNode property, which points to the first marker node, and an endNode property, which points to the second marker node. Child nodes between the two marker nodes are identified as 'nodes managed by NodePart.'" src="/images/guides/node-part-markers.png" style="max-width: 515px;">
 
@@ -250,4 +250,4 @@ const duplicate = directive((value) => {
 });
 ```
 
-The `NodePart` class provides a number of other convenience methods, including other methods for adding nested parts, and a [`clear`](/api/classes/lit_html.nodepart.html#clear) method to remove all of the DOM associated with a part. See the [NodePart API docs](/api/classes/lit_html.nodepart.html) for details.
+The `NodePart` class provides a number of other convenience methods, including other methods for adding nested parts, and a [`clear`](/api/classes/_lit_html_.nodepart.html#clear) method to remove all of the DOM associated with a part. See the [NodePart API docs](/api/classes/_lit_html_.nodepart.html) for details.

@@ -1,3 +1,5 @@
+import {policy} from '../test-utils/security.js';
+
 const assert = chai.assert;
 
 suite('Template', function() {
@@ -7,7 +9,8 @@ suite('Template', function() {
     const container = document.createElement('div');
     document.body.appendChild(container);
     template = document.createElement('template');
-    template.innerHTML = '<span id="content">Hello World!</span>';
+    template.innerHTML =
+        policy.createHTML('<span id="content">Hello World!</span>');
     container.appendChild(template);
   });
 
@@ -36,11 +39,11 @@ suite('Template', function() {
   test('innerHTML', function() {
     const imp = document.createElement('template');
     let s = 'pre<div>Hi</div><div>Bye</div>post';
-    imp.innerHTML = s;
+    imp.innerHTML = policy.createHTML(s);
     assert.equal(imp.content.childNodes.length, 4);
     assert.equal(imp.content.firstChild!.textContent, 'pre');
     s = 'foo';
-    imp.innerHTML = s;
+    imp.innerHTML = policy.createHTML(s);
     assert.equal(imp.content.childNodes.length, 1);
     assert.equal(imp.content.firstChild!.textContent, s);
   });

@@ -12,9 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
 import {ValueSanitizer} from './parts.js';
 import {TemplateResult} from './template-result.js';
 

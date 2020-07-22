@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 import {isCEPolyfill} from './dom.js';
 import {Part} from './part.js';
 import {RenderOptions} from './render-options.js';

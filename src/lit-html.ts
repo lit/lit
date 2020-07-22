@@ -22,8 +22,7 @@
  * -  [[svg]]
  * -  [[render]]
  *
- * @module lit-html
- * @preferred
+ * @packageDocumentation
  */
 
 /**
@@ -57,7 +56,7 @@ declare global {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 if (typeof window !== 'undefined') {
-  (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.2');
+  (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.2.1');
 }
 
 /**
