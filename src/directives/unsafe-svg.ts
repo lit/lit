@@ -48,9 +48,11 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
   }
 
   const template = document.createElement('template');
-  template.innerHTML = `<svg>${value}</svg>`;
+  const svgElement =
+      document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  template.content.appendChild(svgElement);
+  svgElement.innerHTML = value as string;
   const content = template.content;
-  const svgElement = content.firstChild!;
   content.removeChild(svgElement);
   reparentNodes(content, svgElement.firstChild);
   const fragment = document.importNode(content, true);

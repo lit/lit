@@ -14,7 +14,8 @@
 
 import {unsafeSVG} from '../../directives/unsafe-svg.js';
 import {render} from '../../lib/render.js';
-import {html} from '../../lit-html.js';
+import { html } from '../../lit-html.js';
+import { policy, trustedTypesIsEnforced } from '../test-utils/security.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -32,7 +33,7 @@ suite('unsafeSVG', () => {
     render(
         html`<svg>before${
             unsafeSVG(
-                '<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>')}</svg>`,
+                policy.createHTML('<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>'))}</svg>`,
         container);
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<svg>before<line x1="0" y1="0" x2="10" y2="10" stroke="black"></line></svg>',
@@ -43,59 +44,61 @@ suite('unsafeSVG', () => {
     assert.equal(lineElement.namespaceURI, 'http://www.w3.org/2000/svg');
   });
 
-  test('dirty checks primitive values', () => {
-    const value = 'aaa';
-    const t = () => html`<svg>${unsafeSVG(value)}</svg>`;
+  if (!trustedTypesIsEnforced) {
+    test('dirty checks primitive values', () => {
+      const value = 'aaa';
+      const t = () => html`<svg>${unsafeSVG(value)}</svg>`;
 
-    // Initial render
-    render(t(), container);
-    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
-      '<svg>aaa</svg>',
-      '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>',
-    ]);
+      // Initial render
+      render(t(), container);
+      assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+        '<svg>aaa</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>',
+      ]);
 
-    // Modify instance directly. Since lit-html doesn't dirty check against
-    // actual DOM, but against previous part values, this modification should
-    // persist through the next render if dirty checking works.
-    const text = container.querySelector('svg')!.childNodes[1] as Text;
-    text.textContent = 'bbb';
-    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
-      '<svg>bbb</svg>',
-      '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
-    ]);
+      // Modify instance directly. Since lit-html doesn't dirty check against
+      // actual DOM, but against previous part values, this modification should
+      // persist through the next render if dirty checking works.
+      const text = container.querySelector('svg')!.childNodes[1] as Text;
+      text.textContent = 'bbb';
+      assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+        '<svg>bbb</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
+      ]);
 
-    // Re-render with the same value
-    render(t(), container);
-    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
-      '<svg>bbb</svg>',
-      '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
-    ]);
-    const text2 = container.querySelector('svg')!.childNodes[1] as Text;
-    assert.strictEqual(text, text2);
-  });
+      // Re-render with the same value
+      render(t(), container);
+      assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+        '<svg>bbb</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
+      ]);
+      const text2 = container.querySelector('svg')!.childNodes[1] as Text;
+      assert.strictEqual(text, text2);
+    });
 
-  test('does not dirty check complex values', () => {
-    const value = ['aaa'];
-    const t = () => html`<svg>${unsafeSVG(value)}</svg>`;
+    test('does not dirty check complex values', () => {
+      const value = ['aaa'];
+      const t = () => html`<svg>${unsafeSVG(value)}</svg>`;
 
-    // Initial render
-    render(t(), container);
-    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
-      '<svg>aaa</svg>',
-      '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>',
-    ]);
+      // Initial render
+      render(t(), container);
+      assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+        '<svg>aaa</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg">aaa</svg>',
+      ]);
 
-    // Re-render with the same value, but a different deep property
-    value[0] = 'bbb';
-    render(t(), container);
-    assert.oneOf(stripExpressionMarkers(container.innerHTML), [
-      '<svg>bbb</svg>',
-      '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
-    ]);
-  });
+      // Re-render with the same value, but a different deep property
+      value[0] = 'bbb';
+      render(t(), container);
+      assert.oneOf(stripExpressionMarkers(container.innerHTML), [
+        '<svg>bbb</svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg">bbb</svg>',
+      ]);
+    });
+  }
 
   test('renders after other values', () => {
-    const value = '<text></text>';
+    const value = policy.createHTML('<text></text>');
     const primitive = 'aaa';
     const t = (content: any) => html`<svg>${content}</svg>`;
 
