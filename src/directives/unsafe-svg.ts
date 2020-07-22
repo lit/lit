@@ -49,7 +49,7 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
 
   const template = document.createElement('template');
   const content = template.content;
-  const svgElement = content.ownerDocument.createElementNS(
+  const svgElement = content.ownerDocument!.createElementNS(
       'http://www.w3.org/2000/svg', 'svg');
   content.appendChild(svgElement);
   svgElement.innerHTML = value as string;
