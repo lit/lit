@@ -14,8 +14,8 @@
 
 import {unsafeSVG} from '../../directives/unsafe-svg.js';
 import {render} from '../../lib/render.js';
-import { html } from '../../lit-html.js';
-import { policy, trustedTypesIsEnforced } from '../test-utils/security.js';
+import {html} from '../../lit-html.js';
+import {policy, trustedTypesIsEnforced} from '../test-utils/security.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -32,8 +32,8 @@ suite('unsafeSVG', () => {
   test('renders SVG', () => {
     render(
         html`<svg>before${
-            unsafeSVG(
-                policy.createHTML('<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>'))}</svg>`,
+            unsafeSVG(policy.createHTML(
+                '<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>'))}</svg>`,
         container);
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<svg>before<line x1="0" y1="0" x2="10" y2="10" stroke="black"></line></svg>',
