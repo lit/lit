@@ -101,7 +101,6 @@ interface VirtualScrollerConfig {
  */
 export class VirtualScroller<Item, Child extends HTMLElement> {
   private _benchmarkStart = null;
-  private _openMeasure = false;
   /**
    * Whether the layout should receive an updated viewport size on the next
    * render.
@@ -433,18 +432,18 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   startBenchmarking() {
     if (this._benchmarkStart === null) {
       this._benchmarkStart = window.performance.now();
-      this._openMeasure = false;
     }
   }
 
   stopBenchmarking() {
     if (this._benchmarkStart !== null) {
-      const timeElapsed = window.performance.now() - this._benchmarkStart;
+      const now = window.performance.now();
+      const timeElapsed = now - this._benchmarkStart;
       const entries = performance.getEntriesByName('uv-virtualizing', 'measure');
-      // debugger;
-      const virtualizationTime = entries.reduce((t, m) => t + m.duration, 0);
+      const virtualizationTime = entries
+        .filter(e => e.startTime >= this._benchmarkStart && e.startTime < now)
+        .reduce((t, m) => t + m.duration, 0);
       this._benchmarkStart = null;
-      this._openMeasure = false;
       // performance.clearMarks('uv-start');
       // performance.clearMarks('uv-end');
       // performance.clearMarks('uv-virtualizing');
@@ -555,7 +554,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     }
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
-      this._openMeasure = true;
     }
   }
 
@@ -571,35 +569,30 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._childMeasurements = null;
     }
     this._layout.reflowIfNeeded();
+    if (this._benchmarkStart && 'mark' in window.performance) {
+      window.performance.mark('uv-end');
+    }
   }
 
-  private _awaitingScrollFrame = false;
-
   private _handleScrollEvent() {
-    if (!this._scrollTarget || event.target === this._scrollTarget) {
-      if (this._benchmarkStart && 'mark' in window.performance) {
-        if (this._openMeasure) {
-          window.performance.measure(
-            'uv-virtualizing',
-            'uv-start',
-            'uv-end'
-          );
-          this._openMeasure = false;      
-        }
-        window.performance.mark('uv-start');
-        // this._openMeasure = true;
-      }
-      this._schedule(this._updateLayout);
-      this._awaitingScrollFrame = false;
+    if (this._benchmarkStart && 'mark' in window.performance) {
+      try {
+        window.performance.measure(
+          'uv-virtualizing',
+          'uv-start',
+          'uv-end'
+        );
+      } catch(e) {}
+      window.performance.mark('uv-start');
     }
+    this._schedule(this._updateLayout);
   }
 
   handleEvent(event) {
     switch (event.type) {
       case 'scroll':
-        if (!this._awaitingScrollFrame) {
-          requestAnimationFrame(() => this._handleScrollEvent());
-          this._awaitingScrollFrame = true;
+        if (!this._scrollTarget || event.target === this._scrollTarget) {
+          this._handleScrollEvent();
         }
         break;
       case 'scrollsizechange':

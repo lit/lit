@@ -1,5 +1,8 @@
 import { scrollerRef } from 'lit-virtualizer';
 
+const targetFPS = 60;
+const t = 1000 / targetFPS;
+
 export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000, delay=1000) {
     let scroller, target, scrolled, scrollTo, start;
     let frames = 0;
@@ -13,7 +16,7 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
         const elapsed = stamp - start;
         if (scrolled() < distance || elapsed < duration) {
             scrollTo(Math.min(distance, Math.ceil(elapsed / duration * distance)));
-            window.requestAnimationFrame(onFrame);
+            setTimeout(onFrame, t);
         }
         else {
             const fps = Math.floor(1000 / ((stamp - start) / frames));
@@ -30,13 +33,7 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
     }
 
     setTimeout(function() {
-        const node = scrollerNodeOrQuery instanceof HTMLElement
-            ? scrollerNodeOrQuery
-            : document.querySelector(scrollerNodeOrQuery);
-        if (!node) {
-            throw new Error(`Scroller not found: ${scrollerNodeOrQuery}`);
-        }
-        scroller = node[scrollerRef];
+        scroller = getScroller(scrollerNodeOrQuery);
         // TODO (graynorton): support horizontal?
         if (scroller.scrollTarget) {
             target = scroller.scrollTarget;
@@ -48,7 +45,7 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
             scrollTo = y => target.scrollTo(0, y);
         }
         scroller.startBenchmarking();
-        window.requestAnimationFrame(onFrame);
+        setTimeout(onFrame, t);
     }, delay);
 }
 
@@ -64,9 +61,32 @@ function getSearchParams() {
     return params;
 }
 
-export function runBenchmarkIfRequested(scrollerQuery) {
-    const { benchmark, distance, duration, delay } = getSearchParams();
-    if (benchmark) {
-        runBenchmark(scrollerQuery, distance, duration, delay);
+export function runBenchmarkIfRequested(scrollerNodeOrQuery) {
+    setTimeout(() => {
+        const { benchmark, distance, duration, delay } = getSearchParams();
+        registerScroller(scrollerNodeOrQuery);
+        if (benchmark) {
+            runBenchmark(scrollerNodeOrQuery, distance, duration, delay);
+        }    
+    }, 0);
+}
+
+function getScroller(nodeOrQuery) {
+    const node = nodeOrQuery instanceof HTMLElement
+        ? nodeOrQuery
+        : document.querySelector(nodeOrQuery);
+    if (!node) {
+        throw new Error(`Scroller not found: ${scrollerNodeOrQuery}`);
+    }
+    return node[scrollerRef];
+}
+
+export function registerScroller(scrollerNodeOrQuery) {
+    const scroller = getScroller(scrollerNodeOrQuery);
+    if (scroller) {
+        const scrollers = window.scrollers || (window.scrollers = []);
+        if (!scrollers.find(s => s === scroller)) {
+            scrollers.push(scroller);
+        }
     }
 }
