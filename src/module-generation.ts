@@ -57,7 +57,6 @@ export function generateMsgModule(
     // Re-generate this file by running lit-localize
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    /* eslint-disable @typescript-eslint/camelcase */
 
     import {TemplateResult} from 'lit-html';
     ${localeImports}
@@ -270,7 +269,6 @@ export function generateLocaleModule(
     ${importLit ? "import {html} from 'lit-html';" : ''}
 
     /* eslint-disable no-irregular-whitespace */
-    /* eslint-disable @typescript-eslint/camelcase */
     /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const messages = {
