@@ -9,11 +9,157 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {Message, ProgramMessage, Placeholder} from './messages';
-import {applyPatches, Patches} from './patches';
-import {Locale} from './locales';
-import {Config, RuntimeOutputConfig} from './config';
-import {KnownError} from './error';
+import {Message, ProgramMessage, Placeholder} from '../messages';
+import {applyPatches, Patches} from '../patches';
+import {Locale} from '../locales';
+import {Config} from '../config';
+import {KnownError} from '../error';
+import * as fs from 'fs';
+import * as pathLib from 'path';
+
+/**
+ * Configuration specific to the `runtime` output mode.
+ */
+export interface RuntimeOutputConfig {
+  mode: 'runtime';
+
+  /**
+   * Output directory for generated TypeScript modules. After running
+   * lit-localize, this directory will contain:
+   *
+   * 1. localization.ts -- A TypeScript module that exports the `msg` function,
+   *    along with other utilities.
+   *
+   * 2. <locale>.ts -- For each `targetLocale`, a TypeScript module that exports
+   *    the translations in that locale keyed by message ID. These modules are
+   *    used automatically by localization.ts and should not typically be
+   *    imported directly by user code.
+   */
+  outputDir: string;
+
+  /**
+   * The initial locale, if no other explicit locale selection has been made.
+   * Defaults to the value of `sourceLocale`.
+   *
+   * @TJS-type string
+   */
+  defaultLocale?: Locale;
+
+  /**
+   * If true, export a `setLocale(locale: Locale)` function in the generated
+   * `<outputDir>/localization.ts` module. Defaults to false.
+   *
+   * Note that calling this function will set the locale for subsequent calls to
+   * `msg`, but will not automatically re-render existing templates.
+   */
+  exportSetLocaleFunction?: boolean;
+
+  /**
+   * Automatically set the locale based on the URL at application startup.
+   */
+  setLocaleFromUrl?: {
+    /**
+     * Set locale based on matching a regular expression against the URL.
+     *
+     * The regexp will be matched against `window.location.href`, and the first
+     * capturing group will be used as the locale. If no match is found, or if
+     * the capturing group does not contain a valid locale code, then
+     * `defaultLocale` is used.
+     *
+     * Optionally use the special string `:LOCALE:` to substitute a capturing
+     * group into the regexp that will only match the currently configured
+     * locale codes (`sourceLocale` and `targetLocales`). For example, if
+     * sourceLocale=en and targetLocales=es,zh_CN, then the regexp
+     * "^https?://:LOCALE:\\." becomes "^https?://(en|es|zh_CN)\\.".
+     *
+     * Tips: Remember to double-escape literal backslashes (once for JSON, once
+     * for the regexp), and note that you can use `(?:foo)` to create a
+     * non-capturing group.
+     *
+     * It is an error to set both `regexp` and `param`.
+     *
+     * Examples:
+     *
+     * 1. "^https?://[^/]+/:LOCALE:(?:$|[/?#])"
+     *
+     *     Set locale from the first path component.
+     *
+     *     E.g. https://www.example.com/es/foo
+     *                                  ^^
+     *
+     * 2. "^https?://:LOCALE:\\."
+     *
+     *     Set locale from the first subdomain.
+     *
+     *     E.g. https://es.example.com/foo
+     *                  ^^
+     */
+    regexp?: string;
+
+    /**
+     * Set locale based on the value of a URL query parameter.
+     *
+     * Finds the first matching query parameter from `window.location.search`.
+     * If no such URL query parameter is set, or if it is not a valid locale
+     * code, then `defaultLocale` is used.
+     *
+     * It is an error to set both `regexp` and `param`.
+     *
+     * Examples:
+     *
+     * 1. "lang"
+     *
+     *     https://example.com?foo&lang=es&bar
+     *                                  ^^
+     */
+    param?: string;
+  };
+}
+
+/**
+ * Write output for the `runtime` output mode.
+ */
+export function runtimeOutput(
+  messages: ProgramMessage[],
+  translationMap: Map<Locale, Message[]>,
+  config: Config,
+  runtimeConfig: RuntimeOutputConfig
+) {
+  // Write our "localization.ts" TypeScript module. This is the file that
+  // implements the "msg" function for our TypeScript program.
+  const ts = generateMsgModule(messages, config, runtimeConfig);
+  const tsFilename = pathLib.join(
+    config.resolve(runtimeConfig.outputDir),
+    'localization.ts'
+  );
+  try {
+    fs.writeFileSync(tsFilename, ts);
+  } catch (e) {
+    throw new KnownError(
+      `Error writing TypeScript file: ${tsFilename}\n` +
+        `Does the parent directory exist, ` +
+        `and do you have write permission?\n` +
+        e.message
+    );
+  }
+  // For each translated locale, generate a "<locale>.ts" TypeScript module that
+  // contains the mapping from message ID to each translated version. The
+  // "localization.ts" file we generated earlier knows how to import and switch
+  // between these maps.
+  for (const locale of config.targetLocales) {
+    const translations = translationMap.get(locale) || [];
+    const ts = generateLocaleModule(
+      locale,
+      translations,
+      messages,
+      config.patches || {}
+    );
+    fs.writeFileSync(
+      pathLib.join(config.resolve(runtimeConfig.outputDir), `${locale}.ts`),
+      ts
+    );
+  }
+}
 
 /**
  * Generate a TypeScript module which exports:
@@ -30,7 +176,7 @@ import {KnownError} from './error';
  * generator can be referenced in `msg` calls, and only our supported locales
  * can be switched to by `setLocale`.
  */
-export function generateMsgModule(
+function generateMsgModule(
   msgs: Message[],
   config: Config,
   runtime: RuntimeOutputConfig
@@ -215,7 +361,7 @@ function genLocaleInitialization(
  * Generate a "<locale>.ts" TypeScript module from the given bundle of
  * translated messages.
  */
-export function generateLocaleModule(
+function generateLocaleModule(
   locale: Locale,
   translations: Message[],
   canonMsgs: ProgramMessage[],

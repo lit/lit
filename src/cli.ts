@@ -10,15 +10,14 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs';
 import * as minimist from 'minimist';
 
 import {programFromTsConfig, printDiagnostics} from './typescript';
 import {extractMessagesFromProgram} from './program-analysis';
-import {generateMsgModule, generateLocaleModule} from './module-generation';
+import {runtimeOutput} from './outputters/runtime';
 import {makeFormatter} from './formatters';
 import {ProgramMessage, Message} from './messages';
-import {KnownError} from './error';
+import {KnownError, throwUnreachable} from './error';
 import {Config, readConfigFileAndWriteSchema} from './config';
 import {Locale} from './locales';
 
@@ -93,39 +92,14 @@ async function runAndThrow(config: Config) {
   }
   await formatter.writeOutput(messages, translationMap);
 
-  // Write our "localization.ts" TypeScript module. This is the file that
-  // implements the "msg" function for our TypeScript program.
-  const ts = generateMsgModule(messages, config, config.output);
-  const tsFilename = path.join(
-    config.resolve(config.output.outputDir),
-    'localization.ts'
-  );
-  try {
-    fs.writeFileSync(tsFilename, ts);
-  } catch (e) {
-    throw new KnownError(
-      `Error writing TypeScript file: ${tsFilename}\n` +
-        `Does the parent directory exist, ` +
-        `and do you have write permission?\n` +
-        e.message
-    );
-  }
-
-  // For each translated locale, generate a "<locale>.ts" TypeScript module that
-  // contains the mapping from message ID to each translated version. The
-  // "localization.ts" file we generated earlier knows how to import and switch
-  // between these maps.
-  for (const locale of config.targetLocales) {
-    const translations = translationMap.get(locale) || [];
-    const ts = generateLocaleModule(
-      locale,
-      translations,
-      messages,
-      config.patches || {}
-    );
-    fs.writeFileSync(
-      path.join(config.resolve(config.output.outputDir), `${locale}.ts`),
-      ts
+  if (config.output.mode === 'runtime') {
+    runtimeOutput(messages, translationMap, config, config.output);
+  } else {
+    throwUnreachable(
+      config.output.mode,
+      `Internal error: unknown output mode ${
+        (config.output as typeof config.output).mode
+      }`
     );
   }
 }
