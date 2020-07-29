@@ -14,6 +14,7 @@ import {applyPatches, Patches} from '../patches';
 import {Locale} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
+import {escapeStringLiteral} from '../typescript';
 import * as fs from 'fs';
 import * as pathLib from 'path';
 
@@ -459,15 +460,4 @@ function makeMessageString(
   } else {
     return msgStr;
   }
-}
-
-/**
- * Escape a string such that it can be safely embedded in a JavaScript template
- * literal (backtick string).
- */
-function escapeStringLiteral(unescaped: string): string {
-  return unescaped
-    .replace(`\\`, `\\\\`)
-    .replace('`', '\\`')
-    .replace('$', '\\$');
 }

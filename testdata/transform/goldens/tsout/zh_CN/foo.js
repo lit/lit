@@ -1,11 +1,5 @@
 import {html} from 'lit-html';
-import {msg} from '../../../lib_client/index.js';
-msg('string', 'Hello World!');
-msg('lit', html`Hello <b><i>World!</i></b>`);
-msg('variables_1', (name) => `Hello ${name}!`, 'World');
-msg(
-  'lit_variables_1',
-  (url, name) => html`Hello ${name}, click <a href="${url}">here</a>!`,
-  'https://www.example.com/',
-  'World'
-);
+`\u4F60\u597D\uFF0C\u4E16\u754C\uFF01`;
+html`你好, <b><i>世界!</i></b>`;
+`Hello World!`;
+html`Hello World, click <a href="https://www.example.com/">here</a>!`;

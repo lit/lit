@@ -74,11 +74,7 @@ function extractMsg(
   node: ts.Node,
   descStack: MsgDesc[]
 ): ProgramMessage | ts.Diagnostic | undefined {
-  if (
-    !ts.isCallExpression(node) ||
-    !ts.isIdentifier(node.expression) ||
-    node.expression.escapedText !== 'msg'
-  ) {
+  if (!isMsgCall(node)) {
     // We're not interested.
     return;
   }
@@ -475,7 +471,7 @@ function serializeOpenCloseTags(
 /**
  * E.g. "foo", 'foo', or `foo`, but not `foo${bar}`.
  */
-function isStaticString(
+export function isStaticString(
   node: ts.Node
 ): node is ts.StringLiteral | ts.NoSubstitutionTemplateLiteral {
   return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node);
@@ -484,11 +480,26 @@ function isStaticString(
 /**
  * E.g. html`foo` or html`foo${bar}`
  */
-function isLitExpression(node: ts.Node): node is ts.TaggedTemplateExpression {
+export function isLitExpression(
+  node: ts.Node
+): node is ts.TaggedTemplateExpression {
   return (
     ts.isTaggedTemplateExpression(node) &&
     ts.isIdentifier(node.tag) &&
     node.tag.escapedText === 'html'
+  );
+}
+
+/**
+ * Return whether this is a call to the lit-localize `msg` function.
+ */
+export function isMsgCall(node: ts.Node): node is ts.CallExpression {
+  // TODO(aomarks) This is too crude. We should do better to identify only our
+  // `msg` function.
+  return (
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.escapedText === 'msg'
   );
 }
 

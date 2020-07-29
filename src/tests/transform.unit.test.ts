@@ -81,4 +81,202 @@ test('unchanged html', (t) => {
   checkTransform(t, src, src, []);
 });
 
-// TODO(aomarks) The actual tests!
+test('msg(string)', (t) => {
+  checkTransform(t, 'msg("foo", "Hello World");', '"Hello World";', []);
+});
+
+test('msg(string) translated', (t) => {
+  checkTransform(t, 'msg("foo", "Hello World");', '`Hola Mundo`;', [
+    {name: 'foo', contents: ['Hola Mundo']},
+  ]);
+});
+
+test('html(msg(string))', (t) => {
+  checkTransform(
+    t,
+    'html`<b>${msg("foo", "Hello World")}</b>`;',
+    'html`<b>Hello World</b>`;',
+    []
+  );
+});
+
+test('html(msg(string)) translated', (t) => {
+  checkTransform(
+    t,
+    'html`<b>${msg("foo", "Hello World")}</b>`;',
+    'html`<b>Hola Mundo</b>`;',
+    [{name: 'foo', contents: ['Hola Mundo']}]
+  );
+});
+
+test('html(msg(html))', (t) => {
+  checkTransform(
+    t,
+    'html`<b>${msg("foo", html`Hello <i>World</i>`)}</b>`;',
+    'html`<b>Hello <i>World</i></b>`;',
+    []
+  );
+});
+
+test('html(msg(html)) translated', (t) => {
+  checkTransform(
+    t,
+    'html`<b>${msg("foo", html`Hello <i>World</i>`)}</b>`;',
+    'html`<b>Hola <i>Mundo</i></b>`;',
+    [
+      {
+        name: 'foo',
+        contents: [
+          'Hola ',
+          {untranslatable: '<i>'},
+          'Mundo',
+          {untranslatable: '</i>'},
+        ],
+      },
+    ]
+  );
+});
+
+test('msg(fn(string), expr)', (t) => {
+  checkTransform(
+    t,
+    'const name = "World";' + 'msg("foo", (name) => `Hello ${name}!`, name);',
+    'const name = "World";' + '`Hello ${name}!`;',
+    []
+  );
+});
+
+test('msg(fn(string), expr) translated', (t) => {
+  checkTransform(
+    t,
+    'const name = "World";' + 'msg("foo", (name) => `Hello ${name}!`, name);',
+    'const name = "World";' + '`Hola ${name}!`;',
+    [
+      {
+        name: 'foo',
+        contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+      },
+    ]
+  );
+});
+
+test('msg(fn(string), string)', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => `Hello ${name}!`, "World");',
+    '`Hello World!`;',
+    []
+  );
+});
+
+test('msg(fn(string), string) translated', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => `Hello ${name}!`, "World");',
+    '`Hola World!`;',
+    [
+      {
+        name: 'foo',
+        contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+      },
+    ]
+  );
+});
+
+test('msg(fn(html), expr)', (t) => {
+  checkTransform(
+    t,
+    'const name = "World";' +
+      'msg("foo", (name) => html`Hello <b>${name}</b>!`, name);',
+    'const name = "World";' + 'html`Hello <b>${name}</b>!`;',
+    []
+  );
+});
+
+test('msg(fn(html), expr) translated', (t) => {
+  checkTransform(
+    t,
+    'const name = "World";' +
+      'msg("foo", (name) => html`Hello <b>${name}</b>!`, name);',
+    'const name = "World";' + 'html`Hola <b>${name}</b>!`;',
+    [
+      {
+        name: 'foo',
+        contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+      },
+    ]
+  );
+});
+
+test('msg(fn(html), string)', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => html`Hello <b>${name}</b>!`, "World");',
+    'html`Hello <b>World</b>!`;',
+    []
+  );
+});
+
+test('msg(fn(html), string) translated', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => html`Hello <b>${name}</b>!`, "World");',
+    'html`Hola <b>World</b>!`;',
+    [
+      {
+        name: 'foo',
+        contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+      },
+    ]
+  );
+});
+
+test('msg(fn(html), html)', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => html`Hello <b>${name}</b>!`, html`<i>World</i>`);',
+    'html`Hello <b><i>World</i></b>!`;',
+    []
+  );
+});
+
+test('msg(fn(html), html) translated', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => html`Hello <b>${name}</b>!`, html`<i>World</i>`);',
+    'html`Hola <b><i>World</i></b>!`;',
+    [
+      {
+        name: 'foo',
+        contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+      },
+    ]
+  );
+});
+
+test('msg(fn(string), msg(string))', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => `Hello ${name}!`, msg("bar", "World"));',
+    '`Hello World!`;',
+    []
+  );
+});
+
+test('msg(fn(string), msg(string)) translated', (t) => {
+  checkTransform(
+    t,
+    'msg("foo", (name) => `Hello ${name}!`, msg("bar", "World"));',
+    '`Hola Mundo!`;',
+    [
+      {
+        name: 'foo',
+        contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+      },
+      {
+        name: 'bar',
+        contents: ['Mundo'],
+      },
+    ]
+  );
+});
