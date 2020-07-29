@@ -1,4 +1,5 @@
 lib/**/*
+lib_client/**/*
 node_modules/
 *.tgz
 testdata/*/output
