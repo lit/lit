@@ -4,7 +4,6 @@
 import {html} from 'lit-html';
 
 /* eslint-disable no-irregular-whitespace */
-/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const messages = {

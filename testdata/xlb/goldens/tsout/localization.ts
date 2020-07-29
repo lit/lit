@@ -2,7 +2,6 @@
 // Re-generate this file by running lit-localize
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/camelcase */
 
 import {TemplateResult} from 'lit-html';
 import {messages as es_419Messages} from './es-419.js';
