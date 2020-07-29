@@ -16,6 +16,7 @@ import {Locale} from './locales';
 import {KnownError} from './error';
 import {FormatConfig} from './formatters';
 import {RuntimeOutputConfig} from './outputters/runtime';
+import {TransformOutputConfig} from './outputters/transform';
 
 interface ConfigFile {
   /**
@@ -49,7 +50,7 @@ interface ConfigFile {
   /**
    * Set and configure the output mode.
    */
-  output: RuntimeOutputConfig;
+  output: RuntimeOutputConfig | TransformOutputConfig;
 
   /**
    * Optional string substitutions to apply to specific locale messages. Useful

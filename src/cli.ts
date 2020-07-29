@@ -15,6 +15,7 @@ import * as minimist from 'minimist';
 import {programFromTsConfig, printDiagnostics} from './typescript';
 import {extractMessagesFromProgram} from './program-analysis';
 import {runtimeOutput} from './outputters/runtime';
+import {transformOutput} from './outputters/transform';
 import {makeFormatter} from './formatters';
 import {ProgramMessage, Message} from './messages';
 import {KnownError, throwUnreachable} from './error';
@@ -94,9 +95,11 @@ async function runAndThrow(config: Config) {
 
   if (config.output.mode === 'runtime') {
     runtimeOutput(messages, translationMap, config, config.output);
+  } else if (config.output.mode === 'transform') {
+    transformOutput(translationMap, config, program);
   } else {
     throwUnreachable(
-      config.output.mode,
+      config.output,
       `Internal error: unknown output mode ${
         (config.output as typeof config.output).mode
       }`

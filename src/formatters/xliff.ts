@@ -16,7 +16,13 @@ import {Config} from '../config';
 import {Locale} from '../locales';
 import {Formatter} from './index';
 import {KnownError} from '../error';
-import {Bundle, Message, ProgramMessage, Placeholder} from '../messages';
+import {
+  Bundle,
+  Message,
+  ProgramMessage,
+  Placeholder,
+  makeMessageIdMap,
+} from '../messages';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
@@ -180,10 +186,7 @@ export class XliffFormatter implements Formatter {
     targetLocale: Locale,
     targetMessages: Message[]
   ): string {
-    const translationsByName = new Map<string, Message>();
-    for (const message of targetMessages) {
-      translationsByName.set(message.name, message);
-    }
+    const translationsByName = makeMessageIdMap(targetMessages);
 
     const doc = new xmldom.DOMImplementation().createDocument('', '', null);
     const indent = (node: Element | Document, level = 0) =>
