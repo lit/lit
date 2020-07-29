@@ -15,6 +15,7 @@ import * as pathLib from 'path';
 import {Locale} from './locales';
 import {KnownError} from './error';
 import {FormatConfig} from './formatters';
+import {RuntimeOutputConfig} from './outputters/runtime';
 
 interface ConfigFile {
   /**
@@ -69,105 +70,6 @@ interface ConfigFile {
    * }
    */
   patches?: {[locale: string]: {[messageId: string]: Patch[]}};
-}
-
-/**
- * Configuration specific to the `runtime` output mode.
- */
-export interface RuntimeOutputConfig {
-  mode: 'runtime';
-
-  /**
-   * Output directory for generated TypeScript modules. After running
-   * lit-localize, this directory will contain:
-   *
-   * 1. localization.ts -- A TypeScript module that exports the `msg` function,
-   *    along with other utilities.
-   *
-   * 2. <locale>.ts -- For each `targetLocale`, a TypeScript module that exports
-   *    the translations in that locale keyed by message ID. These modules are
-   *    used automatically by localization.ts and should not typically be
-   *    imported directly by user code.
-   */
-  outputDir: string;
-
-  /**
-   * The initial locale, if no other explicit locale selection has been made.
-   * Defaults to the value of `sourceLocale`.
-   *
-   * @TJS-type string
-   */
-  defaultLocale?: Locale;
-
-  /**
-   * If true, export a `setLocale(locale: Locale)` function in the generated
-   * `<outputDir>/localization.ts` module. Defaults to false.
-   *
-   * Note that calling this function will set the locale for subsequent calls to
-   * `msg`, but will not automatically re-render existing templates.
-   */
-  exportSetLocaleFunction?: boolean;
-
-  /**
-   * Automatically set the locale based on the URL at application startup.
-   */
-  setLocaleFromUrl?: {
-    /**
-     * Set locale based on matching a regular expression against the URL.
-     *
-     * The regexp will be matched against `window.location.href`, and the first
-     * capturing group will be used as the locale. If no match is found, or if
-     * the capturing group does not contain a valid locale code, then
-     * `defaultLocale` is used.
-     *
-     * Optionally use the special string `:LOCALE:` to substitute a capturing
-     * group into the regexp that will only match the currently configured
-     * locale codes (`sourceLocale` and `targetLocales`). For example, if
-     * sourceLocale=en and targetLocales=es,zh_CN, then the regexp
-     * "^https?://:LOCALE:\\." becomes "^https?://(en|es|zh_CN)\\.".
-     *
-     * Tips: Remember to double-escape literal backslashes (once for JSON, once
-     * for the regexp), and note that you can use `(?:foo)` to create a
-     * non-capturing group.
-     *
-     * It is an error to set both `regexp` and `param`.
-     *
-     * Examples:
-     *
-     * 1. "^https?://[^/]+/:LOCALE:(?:$|[/?#])"
-     *
-     *     Set locale from the first path component.
-     *
-     *     E.g. https://www.example.com/es/foo
-     *                                  ^^
-     *
-     * 2. "^https?://:LOCALE:\\."
-     *
-     *     Set locale from the first subdomain.
-     *
-     *     E.g. https://es.example.com/foo
-     *                  ^^
-     */
-    regexp?: string;
-
-    /**
-     * Set locale based on the value of a URL query parameter.
-     *
-     * Finds the first matching query parameter from `window.location.search`.
-     * If no such URL query parameter is set, or if it is not a valid locale
-     * code, then `defaultLocale` is used.
-     *
-     * It is an error to set both `regexp` and `param`.
-     *
-     * Examples:
-     *
-     * 1. "lang"
-     *
-     *     https://example.com?foo&lang=es&bar
-     *                                  ^^
-     */
-    param?: string;
-  };
 }
 
 /**
