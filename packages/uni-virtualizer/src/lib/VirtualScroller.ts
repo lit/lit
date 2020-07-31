@@ -539,7 +539,10 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     }
     this._updateView();
     if (this._childMeasurements !== null) {
-      this._measureCallback(this._childMeasurements);
+      // If the layout has been changed, we may have measurements but no callback
+      if (this._measureCallback) {
+        this._measureCallback(this._childMeasurements);
+      }
       this._childMeasurements = null;
     }
     this._layout.reflowIfNeeded();
