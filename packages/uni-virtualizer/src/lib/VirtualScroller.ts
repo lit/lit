@@ -641,15 +641,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   get _children(): Array<Child> {
     const arr = [];
     let next = this.container.firstElementChild;
-    if (next) {
-      // TODO (graynorton): Hack: skip the first child, which is our spacer
-      if (next.id === 'uni-virtualizer-spacer') {
-        next = next.nextElementSibling;
-      }
-      while (next) {
+    while (next) {
+      // Skip our spacer. TODO (graynorton): Feels a bit hacky. Anything better?
+      if (next.id !== 'uni-virtualizer-spacer') {
         arr.push(next);
-        next = next.nextElementSibling;
       }
+      next = next.nextElementSibling;
     }
     return arr;
   }

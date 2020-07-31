@@ -250,7 +250,7 @@ export class Layout1dFlex extends Layout1dBase {
 
   _updateScrollSize() {
     const chunk = this._chunks[0];
-    this._scrollSize = chunk._rolumns.length === 0 ? 1 : chunk._size + (2 * this._spacing);
+    this._scrollSize = !chunk || chunk._rolumns.length === 0 ? 1 : chunk._size + (2 * this._spacing);
         // chunk._rolumns[chunk._rolumns.length - 1]._startPos +
         // chunk._itemPositions[chunk._rolumns.length - 1][this._sizeDim] +
         // (this._spacing * 2);
