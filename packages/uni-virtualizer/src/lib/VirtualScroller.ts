@@ -46,35 +46,12 @@ function attachGlobalContainerStylesheet() {
   }
 }
 
-// export const RangeChangeEvent = "rangeChanged";
 export type RangeChangeEvent = {
   first: number;
   last: number;
   firstVisible: number;
   lastVisible: number;
 };
-
-// // inform compiler of the as24 custom events
-// declare global {
-//   interface DocumentEventMap {
-//     'rangeChanged': CustomEvent<RangeChangeEvent>;
-//   }
-// }
-
-// export class RangeChangeEvent extends Event {
-//   first: number;
-//   last: number;
-//   firstVisible: number;
-//   lastVisible: number;
-
-//   constructor(type, init) {
-//     super(type, init);
-//     this.first = Math.floor(init.first || 0);
-//     this.last = Math.floor(init.last || 0);
-//     this.firstVisible = Math.floor(init.firstVisible || 0);
-//     this.lastVisible = Math.floor(init.lastVisible || 0);
-//   }
-// }
 
 // TODO (graynorton): Import this from somewhere upstream
 interface VirtualScrollerConfig {
@@ -444,9 +421,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
         .filter(e => e.startTime >= this._benchmarkStart && e.startTime < now)
         .reduce((t, m) => t + m.duration, 0);
       this._benchmarkStart = null;
-      // performance.clearMarks('uv-start');
-      // performance.clearMarks('uv-end');
-      // performance.clearMarks('uv-virtualizing');
       return { timeElapsed, virtualizationTime };
     }
     return null;
@@ -664,9 +638,6 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     return sizer;
   }
 
-  /**
-   * TODO: Rename _ordered to _children?
-   */
   get _children(): Array<Child> {
     const arr = [];
     let next = this.container.firstElementChild;
@@ -709,7 +680,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           0, Math.min(scrollerWidth, containerBounds.left - scrollBounds.left));
       const yMin = Math.max(
           0, Math.min(scrollerHeight, containerBounds.top - scrollBounds.top));
-      // TODO: Direction is intended to be a layout-level concept, not a scroller-level concept,
+      // TODO (graynorton): Direction is intended to be a layout-level concept, not a scroller-level concept,
       // so this feels like a factoring problem
       const xMax = this._layout.direction === 'vertical' ?
           Math.max(
