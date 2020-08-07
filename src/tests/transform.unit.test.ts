@@ -29,19 +29,22 @@ function checkTransform(
   t: ExecutionContext,
   inputTs: string,
   expectedJs: string,
-  messages: Message[]
+  messages: Message[],
+  autoImport = true
 ) {
-  // Rather than fuss with imports in all the test cases, this little hack
-  // automatically imports for `msg` and `html` (assuming those strings aren't
-  // used with any other meanings).
-  if (inputTs.includes('msg')) {
-    inputTs = IMPORT_MSG + inputTs;
-    // Note we don't expect to see the `msg` import in the output JS, since it
-    // should be un-used after litLocalizeTransformation.
-  }
-  if (inputTs.includes('html')) {
-    inputTs = IMPORT_LIT_HTML + inputTs;
-    expectedJs = IMPORT_LIT_HTML + expectedJs;
+  if (autoImport) {
+    // Rather than fuss with imports in all the test cases, this little hack
+    // automatically imports for `msg` and `html` (assuming those strings aren't
+    // used with any other meanings).
+    if (inputTs.includes('msg')) {
+      inputTs = IMPORT_MSG + inputTs;
+      // Note we don't expect to see the `msg` import in the output JS, since it
+      // should be un-used after litLocalizeTransformation.
+    }
+    if (inputTs.includes('html')) {
+      inputTs = IMPORT_LIT_HTML + inputTs;
+      expectedJs = IMPORT_LIT_HTML + expectedJs;
+    }
   }
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ES2015;
@@ -50,9 +53,9 @@ function checkTransform(
   // Don't automatically load typings from nodes_modules/@types, we're not using
   // them here, so it's a waste of time.
   options.typeRoots = [];
-  const result = compileTsFragment(inputTs, options, cache, {
-    before: [litLocalizeTransform(makeMessageIdMap(messages))],
-  });
+  const result = compileTsFragment(inputTs, options, cache, (program) => ({
+    before: [litLocalizeTransform(makeMessageIdMap(messages), program)],
+  }));
 
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
   let formattedActual;
@@ -278,5 +281,43 @@ test('msg(fn(string), msg(string)) translated', (t) => {
         contents: ['Mundo'],
       },
     ]
+  );
+});
+
+test('import * as litLocalize', (t) => {
+  checkTransform(
+    t,
+    `
+    import * as litLocalize from './lib_client/index.js';
+    litLocalize.msg("foo", "Hello World");
+  `,
+    '"Hello World";',
+    [],
+    false
+  );
+});
+
+test('import {msg as foo}', (t) => {
+  checkTransform(
+    t,
+    `
+    import {msg as foo} from './lib_client/index.js';
+    foo("foo", "Hello World");
+  `,
+    '"Hello World";',
+    [],
+    false
+  );
+});
+
+test('exclude different msg function', (t) => {
+  checkTransform(
+    t,
+    `function msg(id: string, template: string) { return template; }
+    msg("foo", "Hello World");`,
+    `function msg(id, template) { return template; }
+    msg("foo", "Hello World");`,
+    [],
+    false
   );
 });

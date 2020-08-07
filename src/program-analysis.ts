@@ -18,11 +18,11 @@ import {createDiagnostic} from './typescript';
  * Extract translation messages from all files in a TypeScript program.
  */
 export function extractMessagesFromProgram(
-  node: ts.Program
+  program: ts.Program
 ): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
-  for (const sourcefile of node.getSourceFiles()) {
+  for (const sourcefile of program.getSourceFiles()) {
     extractMessagesFromNode(sourcefile, sourcefile, messages, errors, []);
   }
   const deduped = dedupeMessages(messages);
@@ -493,14 +493,23 @@ export function isLitExpression(
 /**
  * Return whether this is a call to the lit-localize `msg` function.
  */
-export function isMsgCall(node: ts.Node): node is ts.CallExpression {
-  // TODO(aomarks) This is too crude. We should do better to identify only our
-  // `msg` function.
-  return (
-    ts.isCallExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.escapedText === 'msg'
-  );
+export function isMsgCall(
+  node: ts.Node,
+  typeChecker?: ts.TypeChecker
+): node is ts.CallExpression {
+  if (!ts.isCallExpression(node)) {
+    return false;
+  }
+  if (typeChecker === undefined) {
+    // TODO(aomarks) Remove this branch once migration to static lit-localize
+    // library is done.
+    return (
+      ts.isIdentifier(node.expression) && node.expression.escapedText === 'msg'
+    );
+  }
+  const type = typeChecker.getTypeAtLocation(node.expression);
+  const props = typeChecker.getPropertiesOfType(type);
+  return props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_MSG_');
 }
 
 /**

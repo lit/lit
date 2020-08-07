@@ -52,7 +52,7 @@ export function transformOutput(
     }
     opts.outDir = pathLib.join(outRoot, '/', locale);
     program.emit(undefined, undefined, undefined, undefined, {
-      before: [litLocalizeTransform(translations)],
+      before: [litLocalizeTransform(translations, program)],
     });
   }
 }
@@ -61,10 +61,11 @@ export function transformOutput(
  * Return a TypeScript TransformerFactory for the lit-localize transformer.
  */
 export function litLocalizeTransform(
-  translations: Map<string, Message> | undefined
+  translations: Map<string, Message> | undefined,
+  program: ts.Program
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
-    const transformer = new Transformer(context, translations);
+    const transformer = new Transformer(context, translations, program);
     return (file) => ts.visitNode(file, transformer.boundVisitNode);
   };
 }
@@ -75,21 +76,24 @@ export function litLocalizeTransform(
 class Transformer {
   private context: ts.TransformationContext;
   private translations: Map<string, Message> | undefined;
+  private typeChecker: ts.TypeChecker;
   boundVisitNode = this.visitNode.bind(this);
 
   constructor(
     context: ts.TransformationContext,
-    translations: Map<string, Message> | undefined
+    translations: Map<string, Message> | undefined,
+    program: ts.Program
   ) {
     this.context = context;
     this.translations = translations;
+    this.typeChecker = program.getTypeChecker();
   }
 
   /**
    * Top-level delegating visitor for all nodes.
    */
   visitNode(node: ts.Node): ts.VisitResult<ts.Node> {
-    if (isMsgCall(node)) {
+    if (isMsgCall(node, this.typeChecker)) {
       return this.replaceMsgCall(node);
     }
     if (isLitExpression(node)) {
@@ -101,8 +105,8 @@ class Transformer {
         )
       );
     }
-    if (ts.isImportDeclaration(node)) {
-      return this.removeMsgImport(node);
+    if (this.isLitLocalizeImport(node)) {
+      return undefined;
     }
     return ts.visitEachChild(node, this.boundVisitNode, this.context);
   }
@@ -328,29 +332,31 @@ class Transformer {
   }
 
   /**
-   * Remove import declarations for the lit-localize `msg` function, because we
-   * are transforming away all calls to that function.
+   * Return whether the given node is an import for the lit-localize module.
    */
-  removeMsgImport(
-    imprt: ts.ImportDeclaration
-  ): ts.ImportDeclaration | undefined {
-    const clause = imprt.importClause;
-    if (clause === undefined) {
-      return imprt;
+  isLitLocalizeImport(node: ts.Node): node is ts.ImportDeclaration {
+    if (!ts.isImportDeclaration(node)) {
+      return false;
     }
-    const bindings = clause.namedBindings;
-    if (bindings === undefined || !ts.isNamedImports(bindings)) {
-      return imprt;
+    const moduleSymbol = this.typeChecker.getSymbolAtLocation(
+      node.moduleSpecifier
+    );
+    if (!moduleSymbol) {
+      return false;
     }
-    // TODO(aomarks) This is too crude. We should do better to identify only our
-    // `msg` function.
-    if (
-      bindings.elements.length === 1 &&
-      bindings.elements[0].name.text === 'msg'
-    ) {
-      return undefined;
+    // TODO(aomarks) Is there a better way to reliably identify the lit-localize
+    // module that doesn't require this cast? We could export a const with a
+    // known name and then look through `exports`, but it doesn't seem good to
+    // polute the module like that.
+    const file = (moduleSymbol.valueDeclaration as unknown) as {
+      identifiers: Map<string, unknown>;
+    };
+    for (const id of file.identifiers.keys()) {
+      if (id === '_LIT_LOCALIZE_MSG_') {
+        return true;
+      }
     }
-    return imprt;
+    return false;
   }
 }
 
