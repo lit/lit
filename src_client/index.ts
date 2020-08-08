@@ -88,7 +88,18 @@ let validLocales: Set<string> | undefined;
 let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
-const changeLocaleCallbacks = new Set<() => void>();
+
+/**
+ * Whenever the locale changes and templates have finished loading, an event by
+ * this name ("lit-localize-locale-changed") is dispatched to window.
+ *
+ * You can listen for this event to know when your application should be
+ * re-rendered following a locale change. See also the Localized mixin, which
+ * automatically re-renders LitElement classes using this event.
+ */
+export const LOCALE_CHANGED_EVENT: string & {
+  _LIT_LOCALIZE_LOCALE_CHANGED_EVENT_?: never;
+} = 'lit-localize-locale-changed';
 
 /**
  * Set runtime configuration parameters for lit-localize. This function must be
@@ -135,14 +146,14 @@ export const setLocale: ((newLocale: string) => void) & {
   }
   if (newLocale === sourceLocale) {
     loading.resolve();
-    fireChangeLocaleCallbacks();
+    window.dispatchEvent(new Event(LOCALE_CHANGED_EVENT));
   } else {
     loadLocale(newLocale).then(
       (mod) => {
         if (newLocale === activeLocale) {
           templates = mod.templates;
           loading.resolve();
-          fireChangeLocaleCallbacks();
+          window.dispatchEvent(new Event(LOCALE_CHANGED_EVENT));
         }
         // Else another locale was requested in the meantime. Don't resolve or
         // reject, because the newer load call is going to use the same promise.
@@ -165,40 +176,6 @@ export const setLocale: ((newLocale: string) => void) & {
 export const localeReady: (() => Promise<void>) & {
   _LIT_LOCALIZE_LOCALE_READY_?: never;
 } = () => loading.promise;
-
-/**
- * Add the given function to the set of callbacks that will be invoked whenever
- * the locale changes and its localized messages are ready.
- *
- * Use this function to re-render your application whenever the locale is changed.
- *
- * If you are using LitElement, consider using LocalizedLitElement, which performs
- * this re-rendering automatically.
- */
-export const addLocaleChangeCallback: ((callback: () => void) => void) & {
-  _LIT_LOCALIZE_ADD_LOCALE_CHANGE_CALLBACK_?: never;
-} = (callback: () => void) => {
-  changeLocaleCallbacks.add(callback);
-};
-
-/**
- * Remove the given function from the set of callbacks that will be invoked
- * whenever the locale changes and its localized messages are ready.
- */
-export const removeLocaleChangeCallback: ((callback: () => void) => void) & {
-  _LIT_LOCALIZE_REMOVE_LOCALE_CHANGE_CALLBACK_?: never;
-} = (callback: () => void) => {
-  changeLocaleCallbacks.delete(callback);
-};
-
-/**
- * Fire all of the registered change locale callback functions.
- */
-const fireChangeLocaleCallbacks = () => {
-  for (const callback of changeLocaleCallbacks) {
-    callback();
-  }
-};
 
 /**
  * Make a string or lit-html template localizable.

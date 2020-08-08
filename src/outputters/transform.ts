@@ -118,62 +118,62 @@ class Transformer {
       return undefined;
     }
 
-    // configureLocalization(...) -> undefined
-    if (
-      this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_CONFIGURE_LOCALIZATION_')
-    ) {
-      return ts.createIdentifier('undefined');
-    }
+    if (ts.isCallExpression(node)) {
+      // configureLocalization(...) -> undefined
+      if (
+        this.typeHasProperty(
+          node.expression,
+          '_LIT_LOCALIZE_CONFIGURE_LOCALIZATION_'
+        )
+      ) {
+        return ts.createIdentifier('undefined');
+      }
 
-    // getLocale() -> "es-419"
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_GET_LOCALE_')) {
-      return ts.createStringLiteral(this.locale);
-    }
+      // getLocale() -> "es-419"
+      if (this.typeHasProperty(node.expression, '_LIT_LOCALIZE_GET_LOCALE_')) {
+        return ts.createStringLiteral(this.locale);
+      }
 
-    // setLocale("es-419") -> undefined
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_SET_LOCALE_')) {
-      return ts.createIdentifier('undefined');
-    }
+      // setLocale("es-419") -> undefined
+      if (this.typeHasProperty(node.expression, '_LIT_LOCALIZE_SET_LOCALE_')) {
+        return ts.createIdentifier('undefined');
+      }
 
-    // localeReady() -> Promise.resolve(undefined)
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_LOCALE_READY_')) {
-      return ts.createCall(
-        ts.createPropertyAccess(ts.createIdentifier('Promise'), 'resolve'),
-        [],
-        [ts.createIdentifier('undefined')]
-      );
-    }
-
-    // addLocaleChangeCallback(...) -> undefined
-    if (
-      this.isCallToTaggedFunction(
-        node,
-        '_LIT_LOCALIZE_ADD_LOCALE_CHANGE_CALLBACK_'
-      )
-    ) {
-      return ts.createIdentifier('undefined');
-    }
-
-    // removeLocaleChangeCallback(...) -> undefined
-    if (
-      this.isCallToTaggedFunction(
-        node,
-        '_LIT_LOCALIZE_REMOVE_LOCALE_CHANGE_CALLBACK_'
-      )
-    ) {
-      return ts.createIdentifier('undefined');
-    }
-
-    // Localized(LitElement) -> LitElement
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_LOCALIZED_')) {
-      if (node.arguments.length !== 1) {
-        // TODO(aomarks) Surface as diagnostic instead.
-        throw new KnownError(
-          `Expected Localized mixin call to have one argument, ` +
-            `got ${node.arguments.length}`
+      // localeReady() -> Promise.resolve(undefined)
+      if (
+        this.typeHasProperty(node.expression, '_LIT_LOCALIZE_LOCALE_READY_')
+      ) {
+        return ts.createCall(
+          ts.createPropertyAccess(ts.createIdentifier('Promise'), 'resolve'),
+          [],
+          [ts.createIdentifier('undefined')]
         );
       }
-      return node.arguments[0];
+
+      // Localized(LitElement) -> LitElement
+      if (this.typeHasProperty(node.expression, '_LIT_LOCALIZE_LOCALIZED_')) {
+        if (node.arguments.length !== 1) {
+          // TODO(aomarks) Surface as diagnostic instead.
+          throw new KnownError(
+            `Expected Localized mixin call to have one argument, ` +
+              `got ${node.arguments.length}`
+          );
+        }
+        return node.arguments[0];
+      }
+    }
+
+    // LOCALE_CHANGED_EVENT -> "lit-localize-locale-changed"
+    //
+    // This is slightly odd, but by replacing the LOCALE_CHANGED_EVENT const
+    // with its static string value, we don't have to be smart about deciding
+    // when to remove the 'lit-localize' module import, since we can assume that
+    // everything it exports will be transformed out.
+    if (
+      ts.isIdentifier(node) &&
+      this.typeHasProperty(node, '_LIT_LOCALIZE_LOCALE_CHANGED_EVENT_')
+    ) {
+      return ts.createStringLiteral('lit-localize-locale-changed');
     }
 
     return ts.visitEachChild(node, this.boundVisitNode, this.context);
@@ -429,19 +429,16 @@ class Transformer {
   }
 
   /**
-   * Return whether the given node is call to a function which is is "tagged"
-   * with the given special identifying property (e.g. "_LIT_LOCALIZE_MSG_").
+   * Return whether the tpe of the given node is "tagged" with the given special
+   * identifying property (e.g. "_LIT_LOCALIZE_MSG_").
    */
-  isCallToTaggedFunction(
+  typeHasProperty(
     node: ts.Node,
-    tagProperty: string
+    propertyName: string
   ): node is ts.CallExpression {
-    if (!ts.isCallExpression(node)) {
-      return false;
-    }
-    const type = this.typeChecker.getTypeAtLocation(node.expression);
+    const type = this.typeChecker.getTypeAtLocation(node);
     const props = this.typeChecker.getPropertiesOfType(type);
-    return props.some((prop) => prop.escapedName === tagProperty);
+    return props.some((prop) => prop.escapedName === propertyName);
   }
 }
 

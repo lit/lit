@@ -10,11 +10,7 @@
  */
 
 import {LitElement} from 'lit-element';
-import {
-  addLocaleChangeCallback,
-  removeLocaleChangeCallback,
-  localeReady,
-} from './index.js';
+import {localeReady, LOCALE_CHANGED_EVENT} from './index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T> = new (...args: any[]) => T;
@@ -42,17 +38,20 @@ type Constructor<T> = new (...args: any[]) => T;
  *   }
  */
 function _Localized<T extends Constructor<LitElement>>(Base: T): T {
-  class LocalizedLitElement extends Base {
-    private __boundRequestUpdate = this.requestUpdate.bind(this);
+  class Localized extends Base {
+    private __boundRequestUpdate = () => this.requestUpdate();
 
     connectedCallback() {
       super.connectedCallback();
-      addLocaleChangeCallback(this.__boundRequestUpdate);
+      window.addEventListener(LOCALE_CHANGED_EVENT, this.__boundRequestUpdate);
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
-      removeLocaleChangeCallback(this.__boundRequestUpdate);
+      window.removeEventListener(
+        LOCALE_CHANGED_EVENT,
+        this.__boundRequestUpdate
+      );
     }
 
     protected async performUpdate(): Promise<unknown> {
@@ -61,7 +60,7 @@ function _Localized<T extends Constructor<LitElement>>(Base: T): T {
     }
   }
 
-  return LocalizedLitElement;
+  return Localized;
 }
 
 export const Localized: typeof _Localized & {

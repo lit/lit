@@ -40,7 +40,7 @@ configureLocalization({
 In transform mode, this function is not required, and calls to it will be
 replaced with `undefined`.
 
-### `getLocale(): string`
+### `getLocale() => string`
 
 Return the active locale code.
 
@@ -54,7 +54,7 @@ the `loadLocale` function that was passed to `configureLocalization`.
 
 In transform mode, calls to this function are replaced with `undefined`.
 
-### `localeReady(): Promise`
+### `localeReady() => Promise`
 
 Return a promise that is resolved when the next set of templates are loaded and
 available for rendering. Applications in runtime mode should always `await localeReady()` before rendering.
@@ -62,7 +62,7 @@ available for rendering. Applications in runtime mode should always `await local
 In transform mode, calls to this function are replaced with
 `Promise.resolve(undefined)`.
 
-### `msg(id: string, template, ...args): string|TemplateResult`
+### `msg(id: string, template, ...args) => string|TemplateResult`
 
 Make a string or lit-html template localizable.
 
@@ -111,27 +111,25 @@ template for each emitted locale. For example:
 html`Hola <b>${getUsername()}!</b>`;
 ```
 
-### `addLocaleChangeCallback(callback: () => void)`
+### `LOCALE_CHANGED_EVENT: string`
 
-Add the given function to the set of callbacks that will be invoked whenever the
-locale changes and its localized messages are ready.
+Whenever the locale changes and templates have finished loading, an event by
+this name (`"lit-localize-locale-changed"`) is dispatched to `window`.
 
-Use this function to re-render your application whenever the locale is changed.
+You can listen for this event to know when your application should be
+re-rendered following a locale change. See also the
+[`Localized`](#localized-mixin) mixin, which automatically re-renders
+`LitElement` classes using this event.
 
-If you are using `LitElement`, consider using
-[`LocalizedLitElement`](#localizedlitelement), which performs this re-rendering
-automatically.
+```typescript
+import {LOCALE_CHANGED_EVENT} from 'lit-localize';
 
-In transform mode, calls to this function are replaced with `undefined`.
+window.addEventListener(LOCALE_CHANGED_EVENT, () => {
+  renderApplication();
+});
+```
 
-### `removeLocaleChangeCallback(callback: () => void)`
-
-Remove the given function from the set of callbacks that will be invoked
-whenever the locale changes and its localized messages are ready.
-
-In transform mode, calls to this function are replaced with `undefined`.
-
-## `LocalizedLitElement`
+## `Localized` mixin
 
 If you are using [LitElement](https://lit-element.polymer-project.org/), then
 you can use the `Localized`

@@ -382,23 +382,12 @@ test('localeReady() -> Promise.resolve(undefined)', (t) => {
   );
 });
 
-test('addLocaleChangeCallback -> undefined', (t) => {
+test('LOCALE_CHANGED_EVENT => "lit-localize-locale-changed"', (t) => {
   checkTransform(
     t,
-    `import {addLocaleChangeCallback} from './lib_client/index.js';
-     addLocaleChangeCallback(() => console.log('ok'));`,
-    `undefined`,
-    [],
-    false
-  );
-});
-
-test('removeLocaleChangeCallback -> undefined', (t) => {
-  checkTransform(
-    t,
-    `import {removeLocaleChangeCallback} from './lib_client/index.js';
-     removeLocaleChangeCallback(() => console.log('ok'));`,
-    `undefined`,
+    `import {LOCALE_CHANGED_EVENT} from './lib_client/index.js';
+     window.addEventListener(LOCALE_CHANGED_EVENT, () => console.log('ok'));`,
+    `window.addEventListener('lit-localize-locale-changed', () => console.log('ok'));`,
     [],
     false
   );
