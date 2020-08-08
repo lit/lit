@@ -110,3 +110,49 @@ template for each emitted locale. For example:
 ```typescript
 html`Hola <b>${getUsername()}!</b>`;
 ```
+
+### `addLocaleChangeCallback(callback: () => void)`
+
+Add the given function to the set of callbacks that will be invoked whenever the
+locale changes and its localized messages are ready.
+
+Use this function to re-render your application whenever the locale is changed.
+
+If you are using `LitElement`, consider using
+[`LocalizedLitElement`](#localizedlitelement), which performs this re-rendering
+automatically.
+
+In transform mode, calls to this function are replaced with `undefined`.
+
+### `removeLocaleChangeCallback(callback: () => void)`
+
+Remove the given function from the set of callbacks that will be invoked
+whenever the locale changes and its localized messages are ready.
+
+In transform mode, calls to this function are replaced with `undefined`.
+
+## `LocalizedLitElement`
+
+If you are using [LitElement](https://lit-element.polymer-project.org/), then
+you can use the `Localized`
+[mixin](https://justinfagnani.com/2015/12/21/real-mixins-with-javascript-classes/)
+from `lit-localize/localized-element.js` to ensure that your elements
+automatically re-render whenever the locale changes.
+
+```typescript
+import {Localized} from 'lit-localize/localized-element.js';
+import {msg} from 'lit-localize';
+import {LitElement, html} from 'lit-element';
+
+class MyElement extends Localized(LitElement) {
+  render() {
+    // Whenever setLocale() is called, and templates for that locale have
+    // finished loading, this render() function will be re-invoked.
+    return html`<p>
+      ${msg('greeting', html`Hello <b>World!</b>`)}
+    </p>`;
+  }
+}
+```
+
+In transform mode, applications of the `Localized` mixin are removed.

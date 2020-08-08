@@ -144,6 +144,38 @@ class Transformer {
       );
     }
 
+    // addLocaleChangeCallback(...) -> undefined
+    if (
+      this.isCallToTaggedFunction(
+        node,
+        '_LIT_LOCALIZE_ADD_LOCALE_CHANGE_CALLBACK_'
+      )
+    ) {
+      return ts.createIdentifier('undefined');
+    }
+
+    // removeLocaleChangeCallback(...) -> undefined
+    if (
+      this.isCallToTaggedFunction(
+        node,
+        '_LIT_LOCALIZE_REMOVE_LOCALE_CHANGE_CALLBACK_'
+      )
+    ) {
+      return ts.createIdentifier('undefined');
+    }
+
+    // Localized(LitElement) -> LitElement
+    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_LOCALIZED_')) {
+      if (node.arguments.length !== 1) {
+        // TODO(aomarks) Surface as diagnostic instead.
+        throw new KnownError(
+          `Expected Localized mixin call to have one argument, ` +
+            `got ${node.arguments.length}`
+        );
+      }
+      return node.arguments[0];
+    }
+
     return ts.visitEachChild(node, this.boundVisitNode, this.context);
   }
 
@@ -368,7 +400,8 @@ class Transformer {
   }
 
   /**
-   * Return whether the given node is an import for the lit-localize module.
+   * Return whether the given node is an import for the lit-localize main
+   * module, or the localized-element module.
    */
   isLitLocalizeImport(node: ts.Node): node is ts.ImportDeclaration {
     if (!ts.isImportDeclaration(node)) {
@@ -381,14 +414,14 @@ class Transformer {
       return false;
     }
     // TODO(aomarks) Is there a better way to reliably identify the lit-localize
-    // module that doesn't require this cast? We could export a const with a
+    // modules that don't require this cast? We could export a const with a
     // known name and then look through `exports`, but it doesn't seem good to
-    // polute the module like that.
+    // polute the modules like that.
     const file = (moduleSymbol.valueDeclaration as unknown) as {
       identifiers: Map<string, unknown>;
     };
     for (const id of file.identifiers.keys()) {
-      if (id === '_LIT_LOCALIZE_MSG_') {
+      if (id === '_LIT_LOCALIZE_MSG_' || id === '_LIT_LOCALIZE_LOCALIZED_') {
         return true;
       }
     }

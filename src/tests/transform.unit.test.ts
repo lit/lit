@@ -334,7 +334,7 @@ test('configureLocalization() -> undefined', (t) => {
      });`,
     `undefined;`,
     [],
-    true
+    false
   );
 });
 
@@ -345,7 +345,7 @@ test('getLocale() -> "es-419"', (t) => {
      getLocale();`,
     `"en";`,
     [],
-    true,
+    false,
     'en'
   );
 
@@ -355,7 +355,7 @@ test('getLocale() -> "es-419"', (t) => {
      getLocale();`,
     `"es-419";`,
     [],
-    true,
+    false,
     'es-419'
   );
 });
@@ -367,7 +367,7 @@ test('setLocale() -> undefined', (t) => {
      setLocale("es-419");`,
     `undefined;`,
     [],
-    true
+    false
   );
 });
 
@@ -375,9 +375,53 @@ test('localeReady() -> Promise.resolve(undefined)', (t) => {
   checkTransform(
     t,
     `import {localeReady} from './lib_client/index.js';
-     localeReady().then(() => console.log('ok'))`,
-    `Promise.resolve(undefined).then(() => console.log('ok'))`,
+     localeReady().then(() => console.log('ok'));`,
+    `Promise.resolve(undefined).then(() => console.log('ok'));`,
     [],
-    true
+    false
+  );
+});
+
+test('addLocaleChangeCallback -> undefined', (t) => {
+  checkTransform(
+    t,
+    `import {addLocaleChangeCallback} from './lib_client/index.js';
+     addLocaleChangeCallback(() => console.log('ok'));`,
+    `undefined`,
+    [],
+    false
+  );
+});
+
+test('removeLocaleChangeCallback -> undefined', (t) => {
+  checkTransform(
+    t,
+    `import {removeLocaleChangeCallback} from './lib_client/index.js';
+     removeLocaleChangeCallback(() => console.log('ok'));`,
+    `undefined`,
+    [],
+    false
+  );
+});
+
+test('Localized(LitElement) -> LitElement', (t) => {
+  checkTransform(
+    t,
+    `import {LitElement, html} from 'lit-element';
+     import {msg} from './lib_client/index.js';
+     import {Localized} from './lib_client/localized-element.js';
+     class MyElement extends Localized(LitElement) {
+       render() {
+         return html\`<b>\${msg('greeting', 'Hello World!')}</b>\`;
+       }
+     }`,
+    `import {LitElement, html} from 'lit-element';
+     class MyElement extends LitElement {
+       render() {
+         return html\`<b>Hello World!</b>\`;
+       }
+     }`,
+    [],
+    false
   );
 });
