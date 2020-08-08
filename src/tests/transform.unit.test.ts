@@ -30,7 +30,8 @@ function checkTransform(
   inputTs: string,
   expectedJs: string,
   messages: Message[],
-  autoImport = true
+  autoImport = true,
+  locale = 'en'
 ) {
   if (autoImport) {
     // Rather than fuss with imports in all the test cases, this little hack
@@ -54,7 +55,7 @@ function checkTransform(
   // them here, so it's a waste of time.
   options.typeRoots = [];
   const result = compileTsFragment(inputTs, options, cache, (program) => ({
-    before: [litLocalizeTransform(makeMessageIdMap(messages), program)],
+    before: [litLocalizeTransform(makeMessageIdMap(messages), locale, program)],
   }));
 
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
@@ -319,5 +320,64 @@ test('exclude different msg function', (t) => {
     msg("foo", "Hello World");`,
     [],
     false
+  );
+});
+
+test('configureLocalization() -> undefined', (t) => {
+  checkTransform(
+    t,
+    `import {configureLocalization} from './lib_client/index.js';
+     configureLocalization({
+       sourceLocale: 'en',
+       targetLocales: ['es-419'],
+       loadLocale: (locale: string) => import(\`/\${locale}.js\`),
+     });`,
+    `undefined;`,
+    [],
+    true
+  );
+});
+
+test('getLocale() -> "es-419"', (t) => {
+  checkTransform(
+    t,
+    `import {getLocale} from './lib_client/index.js';
+     getLocale();`,
+    `"en";`,
+    [],
+    true,
+    'en'
+  );
+
+  checkTransform(
+    t,
+    `import {getLocale} from './lib_client/index.js';
+     getLocale();`,
+    `"es-419";`,
+    [],
+    true,
+    'es-419'
+  );
+});
+
+test('setLocale() -> undefined', (t) => {
+  checkTransform(
+    t,
+    `import {setLocale} from './lib_client/index.js';
+     setLocale("es-419");`,
+    `undefined;`,
+    [],
+    true
+  );
+});
+
+test('localeReady() -> Promise.resolve(undefined)', (t) => {
+  checkTransform(
+    t,
+    `import {localeReady} from './lib_client/index.js';
+     localeReady().then(() => console.log('ok'))`,
+    `Promise.resolve(undefined).then(() => console.log('ok'))`,
+    [],
+    true
   );
 });

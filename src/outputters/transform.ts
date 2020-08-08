@@ -52,7 +52,7 @@ export function transformOutput(
     }
     opts.outDir = pathLib.join(outRoot, '/', locale);
     program.emit(undefined, undefined, undefined, undefined, {
-      before: [litLocalizeTransform(translations, program)],
+      before: [litLocalizeTransform(translations, locale, program)],
     });
   }
 }
@@ -62,10 +62,11 @@ export function transformOutput(
  */
 export function litLocalizeTransform(
   translations: Map<string, Message> | undefined,
+  locale: string,
   program: ts.Program
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
-    const transformer = new Transformer(context, translations, program);
+    const transformer = new Transformer(context, translations, locale, program);
     return (file) => ts.visitNode(file, transformer.boundVisitNode);
   };
 }
@@ -76,16 +77,19 @@ export function litLocalizeTransform(
 class Transformer {
   private context: ts.TransformationContext;
   private translations: Map<string, Message> | undefined;
+  private locale: string;
   private typeChecker: ts.TypeChecker;
   boundVisitNode = this.visitNode.bind(this);
 
   constructor(
     context: ts.TransformationContext,
     translations: Map<string, Message> | undefined,
+    locale: string,
     program: ts.Program
   ) {
     this.context = context;
     this.translations = translations;
+    this.locale = locale;
     this.typeChecker = program.getTypeChecker();
   }
 
@@ -93,9 +97,12 @@ class Transformer {
    * Top-level delegating visitor for all nodes.
    */
   visitNode(node: ts.Node): ts.VisitResult<ts.Node> {
+    // msg('greeting', 'hello') -> 'hola'
     if (isMsgCall(node, this.typeChecker)) {
       return this.replaceMsgCall(node);
     }
+
+    // html`<b>${msg('greeting', 'hello')}</b>` -> html`<b>hola</b>`
     if (isLitExpression(node)) {
       // If an html-tagged template literal embeds a msg call, we want to
       // collapse the result of that msg call into the parent template.
@@ -105,9 +112,38 @@ class Transformer {
         )
       );
     }
+
+    // import ... from 'lit-localize' -> (removed)
     if (this.isLitLocalizeImport(node)) {
       return undefined;
     }
+
+    // configureLocalization(...) -> undefined
+    if (
+      this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_CONFIGURE_LOCALIZATION_')
+    ) {
+      return ts.createIdentifier('undefined');
+    }
+
+    // getLocale() -> "es-419"
+    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_GET_LOCALE_')) {
+      return ts.createStringLiteral(this.locale);
+    }
+
+    // setLocale("es-419") -> undefined
+    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_SET_LOCALE_')) {
+      return ts.createIdentifier('undefined');
+    }
+
+    // localeReady() -> Promise.resolve(undefined)
+    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_LOCALE_READY_')) {
+      return ts.createCall(
+        ts.createPropertyAccess(ts.createIdentifier('Promise'), 'resolve'),
+        [],
+        [ts.createIdentifier('undefined')]
+      );
+    }
+
     return ts.visitEachChild(node, this.boundVisitNode, this.context);
   }
 
@@ -357,6 +393,22 @@ class Transformer {
       }
     }
     return false;
+  }
+
+  /**
+   * Return whether the given node is call to a function which is is "tagged"
+   * with the given special identifying property (e.g. "_LIT_LOCALIZE_MSG_").
+   */
+  isCallToTaggedFunction(
+    node: ts.Node,
+    tagProperty: string
+  ): node is ts.CallExpression {
+    if (!ts.isCallExpression(node)) {
+      return false;
+    }
+    const type = this.typeChecker.getTypeAtLocation(node.expression);
+    const props = this.typeChecker.getPropertiesOfType(type);
+    return props.some((prop) => prop.escapedName === tagProperty);
   }
 }
 

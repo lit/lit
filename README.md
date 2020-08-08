@@ -59,7 +59,8 @@ In transform mode, calls to this function are replaced with `undefined`.
 Return a promise that is resolved when the next set of templates are loaded and
 available for rendering. Applications in runtime mode should always `await localeReady()` before rendering.
 
-In transform mode, calls to this function are replaced with `undefined`.
+In transform mode, calls to this function are replaced with
+`Promise.resolve(undefined)`.
 
 ### `msg(id: string, template, ...args): string|TemplateResult`
 

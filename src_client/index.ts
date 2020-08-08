@@ -93,26 +93,32 @@ let loading = new Deferred<void>();
  * Set runtime configuration parameters for lit-localize. This function must be
  * called before using any other lit-localize function.
  */
-export function configureLocalization(config: Configuration) {
+export const configureLocalization: ((config: Configuration) => void) & {
+  _LIT_LOCALIZE_CONFIGURE_LOCALIZATION_?: never;
+} = (config: Configuration) => {
   activeLocale = sourceLocale = config.sourceLocale;
   validLocales = new Set(config.targetLocales);
   validLocales.add(config.sourceLocale);
   loadLocale = config.loadLocale;
-}
+};
 
 /**
  * Return the active locale code. Returns empty string if lit-localize has not
  * yet been configured.
  */
-export function getLocale(): string {
+export const getLocale: (() => string) & {
+  _LIT_LOCALIZE_GET_LOCALE_?: never;
+} = () => {
   return activeLocale;
-}
+};
 
 /**
  * Set the active locale code, and begin loading templates for that locale using
  * the `loadLocale` function that was passed to `configureLocalization`.
  */
-export function setLocale(newLocale: string): void {
+export const setLocale: ((newLocale: string) => void) & {
+  _LIT_LOCALIZE_SET_LOCALE_?: never;
+} = (newLocale: string) => {
   if (
     newLocale === activeLocale ||
     !validLocales ||
@@ -147,15 +153,15 @@ export function setLocale(newLocale: string): void {
       }
     );
   }
-}
+};
 
 /**
  * Return a promise that is resolved when the next set of templates are loaded
  * and available for rendering.
  */
-export function localeReady(): Promise<void> {
-  return loading.promise;
-}
+export const localeReady: (() => Promise<void>) & {
+  _LIT_LOCALIZE_LOCALE_READY_?: never;
+} = () => loading.promise;
 
 /**
  * Make a string or lit-html template localizable.
