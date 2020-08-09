@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix incorrect JSON schema error about `targetLocales` field not being a
   `string[]`.
 
+- Fix bug where `html` templates could not contain `<!-- comments -->`. HTML
+  comments are now preserved as placeholders, similar to other HTML markup.
+
 ## [0.2.3] - 2020-05-13
 
 - Fix missing `<xliff>` element in XLIFF output.

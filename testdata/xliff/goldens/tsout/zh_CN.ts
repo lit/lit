@@ -28,4 +28,5 @@ export const templates = {
     <b>
       ${x}
     </b>`,
+  comment: html`Hello <b><!-- comment -->World!</b>`,
 };

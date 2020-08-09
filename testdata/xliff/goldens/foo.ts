@@ -36,3 +36,5 @@ msg(
     </b>`,
   'x'
 );
+
+msg('comment', html`Hello <b><!-- comment -->World!</b>`);

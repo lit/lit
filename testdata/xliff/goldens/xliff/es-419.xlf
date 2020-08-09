@@ -38,6 +38,10 @@
       ${x}
     &lt;/b></ph></source>
 </trans-unit>
+<trans-unit id="comment">
+  <source>Hello <ph id="0">&lt;b>&lt;!-- comment --></ph>World!<ph id="1">&lt;/b></ph></source>
+  <target>Hola <ph id="0">&lt;b>&lt;!-- comment --></ph>Mundo!<ph id="1">&lt;/b></ph></target>
+</trans-unit>
 </body>
 </file>
 </xliff>
