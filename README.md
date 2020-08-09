@@ -2,7 +2,139 @@
 
 [![Published on npm](https://img.shields.io/npm/v/lit-localize.svg)](https://www.npmjs.com/package/lit-localize) [![Test Status](https://github.com/PolymerLabs/lit-localize/workflows/tests/badge.svg?branch=master)](https://github.com/PolymerLabs/lit-localize/actions?query=workflow%3Atests+branch%3Amaster+event%3Apush)
 
-WIP
+<img src="./rgb_lit.png" height="100" align="right"></img>
+
+###### [API](#api) | [Tutorial](#tutorial) | [API](#api)
+
+> lit-localize is a library and command-line tool for localizing/translating web
+> applications that are based on lit-html and LitElement.
+
+## Features
+
+- 🌐 Localize your lit-html and LitElement applications
+- 🔥 Safely embed HTML markup within localized templates
+- 📄 Standard XLIFF interchange format
+- 🆓 Generate a zero-overhead bundle for each locale
+- 🔁 ... or dynamically load locales and automatically re-render
+
+## Tutorial
+
+1. Install lit-localize. You get both a client library and a command-line tool.
+   You'll always use both together.
+
+   ```bash
+   npm install --save lit-localize
+   ```
+
+2. Set up a TypeScript lit-html project if you don't have one already:
+
+   ```bash
+   npm install --save lit-html
+   npm install --save-dev typescript
+   npx tsc --init
+   ```
+
+   You'll want these TypeScript settings:
+
+   ```json
+   "compilerOptions": {
+     "target": "es2018",
+     "module": "esnext",
+     "moduleResolution": "node"
+   }
+   ```
+
+   You'll also need this directory to exist:
+
+   ```bash
+   mkdir xliff
+   ```
+
+3. Create an `index.ts`, and declare a localizable template using the `msg`
+   function. The first argument is a unique identifier for this template, and
+   the second is a string or lit-html template.
+
+   ```typescript
+   import {html, render} from 'lit-html';
+   import {msg} from 'lit-localize';
+
+   render(
+     html`<p>${msg('greeting', html`Hello <b>World</b>!`)}</p>`,
+     document.body
+   );
+   ```
+
+4. Make a JSON config file at the root of your project called
+   `lit-localize.json`. In this example we're using _transform_ mode, but you
+   can also use _runtime_ mode.
+
+   ```json
+   {
+     "$schema": "https://raw.githubusercontent.com/PolymerLabs/lit-localize/master/config.schema.json",
+     "sourceLocale": "en",
+     "targetLocales": ["es-419"],
+     "tsConfig": "tsconfig.json",
+     "output": {
+       "mode": "transform"
+     },
+     "interchange": {
+       "format": "xliff",
+       "xliffDir": "xliff/"
+     }
+   }
+   ```
+
+5. Run the lit-localize CLI:
+
+   ```bash
+   npx lit-localize
+   ```
+
+6. Take a look at the generated XLIFF file `xliff/es-419.xlf`. Note that we have
+   a `<source>` template extracted from your source code, but we don't have a
+   localized version yet. Also note that embedded HTML markup has been encoded
+   into `<ph>` tags.
+
+   ```xml
+   <trans-unit id="greeting">
+     <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+   </trans-unit>
+   ```
+
+7. Edit `xliff/es-419.xlf` to add a `<target>` tag containing a localized
+   version of the template. Usually you would use a tool or service to generate
+   this tag by feeding it this XLIFF file.
+
+   ```xml
+   <trans-unit id="greeting">
+     <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+     <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
+   </trans-unit>
+   ```
+
+8. Run `lit-localize` again:
+
+   ```bash
+   npx lit-localize
+   ```
+
+9. Now take a look at the generated file `es-419/index.js`:
+
+   ```javascript
+   import {html, render} from 'lit-html';
+   render(html`<p>Hola <b>Mundo</b>!</p>`, document.body);
+   ```
+
+   and `en/index.js`:
+
+   ```javascript
+   import {html, render} from 'lit-html';
+   render(html`<p>Hello <b>World</b>!</p>`, document.body);
+   ```
+
+   Note that the localized template has been substituted into your code, the
+   `msg` call has been removed, the lit-html template has been reduced to its
+   simplest form, and the `lit-localize` module is no longer imported.
 
 ## API
 
