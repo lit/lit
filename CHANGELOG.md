@@ -10,15 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [BREAKING] The `tsOut` parameter is replaced by the new `output` object with
   `mode: "runtime"|"transform"`.
 
+- [BREAKING] Runtime mode no longer emits a `localization.ts` module. Instead,
+  users should always import from the `lit-localize` module and use
+  `configureLocalization`, `msg`, and other functions. See the README details of
+  this new API.
+
 - Add `transform` output mode, which emits an entire copy of the program in each
   locale, where all `msg` calls have been replaced with the raw translated
   template for that locale.
-
-- Add ability to generate a `setLocale` function by setting
-  `output.exportSetLocaleFunction: true`.
-
-- Add ability to customize how locale is initialized from the URL through
-  the `regexp` and `param` properties of the `output.setLocaleFromUrl` object.
 
 - Fix incorrect JSON schema error about `targetLocales` field not being a
   `string[]`.
