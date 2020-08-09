@@ -7,6 +7,7 @@ trap "kill 0" EXIT
 
 npm run clean
 npx tsc --watch --noEmitOnError &
+npx tsc --watch --noEmitOnError --project tsconfig.client.json &
 npx chokidar "src/**/*.ts" .eslintrc.json -c "npm run lint" &
 npx chokidar "src/config.ts" -c "npm run generate-json-schema" &
 

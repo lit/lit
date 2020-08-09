@@ -12,16 +12,17 @@
   "bin": {
     "lit-localize": "bin/lit-localize.js"
   },
+  "main": "lib_client/index.js",
   "scripts": {
-    "clean": "rimraf 'lib/*' 'lib/.*' 'testdata/*/output'",
-    "build": "npm run clean && npm run generate-json-schema && tsc",
+    "clean": "rimraf 'lib/*' 'lib/.*' 'lib_client/*' 'lib_client/.*' 'testdata/*/output'",
+    "build": "npm run clean && npm run generate-json-schema && tsc && tsc --project tsconfig.client.json",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/config.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && ava --verbose && npm run test:check-tsc && npm run test:check-eslint",
     "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true ava --verbose",
     "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
     "test:check-eslint": "eslint 'testdata/*/output/*.ts' 'testdata/*/output/**/*.ts' --max-warnings 0",
-    "lint": "eslint 'src/*.ts' 'src/**/*.ts' --max-warnings 0",
-    "prettier": "prettier 'src/**/*.ts'",
+    "lint": "eslint 'src/*.ts' 'src/**/*.ts' 'src_client/*.ts' 'src_client/**/*.ts' --max-warnings 0",
+    "prettier": "prettier 'src/**/*.ts' 'src_client/**/*.ts'",
     "format:check": "npm run prettier -- --check",
     "format": "npm run prettier -- --write",
     "watch": "scripts/watch.sh",
