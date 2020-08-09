@@ -1,13 +1,13 @@
 import {html} from 'lit-html';
-import {msg} from './tsout/localization';
+import * as litLocalize from '../../../lib_client/index.js';
 
-msg('string', 'Hello World!');
+litLocalize.msg('string', 'Hello World!');
 
-msg('lit', html`Hello <b><i>World!</i></b>`);
+litLocalize.msg('lit', html`Hello <b><i>World!</i></b>`);
 
-msg('variables_1', (name: string) => `Hello ${name}!`, 'World');
+litLocalize.msg('variables_1', (name: string) => `Hello ${name}!`, 'World');
 
-msg(
+litLocalize.msg(
   'lit_variables_1',
   (url: string, name: string) =>
     html`Hello ${name}, click <a href="${url}">here</a>!`,
@@ -15,9 +15,9 @@ msg(
   'https://www.example.com/'
 );
 
-msg('lit_variables_2', (x: string) => html`${x}y${x}y${x}`, 'x');
+litLocalize.msg('lit_variables_2', (x: string) => html`${x}y${x}y${x}`, 'x');
 
-msg(
+litLocalize.msg(
   'lit_variables_3',
   (x: string) => html`<b>
       ${x}

@@ -5,8 +5,7 @@
   "tsConfig": "tsconfig.json",
   "output": {
     "mode": "runtime",
-    "outputDir": "tsout",
-    "exportSetLocaleFunction": true
+    "outputDir": "tsout"
   },
   "interchange": {
     "format": "xliff",

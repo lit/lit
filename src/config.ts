@@ -136,17 +136,6 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
   }
 
   const validated = parsed as ConfigFile;
-  const output = validated.output;
-  if (output.mode === 'runtime' && output.setLocaleFromUrl) {
-    if (!!output.setLocaleFromUrl.param === !!output.setLocaleFromUrl.regexp) {
-      throw new KnownError(
-        `Error validating config file ${configPath}:\n\n` +
-          `If output.setLocaleFromUrl is set, then either param or regexp ` +
-          `must be set, but not both.`
-      );
-    }
-  }
-
   writeConfigSchemaIfMissing(validated, configPath);
 
   const baseDir = pathLib.dirname(configPath);

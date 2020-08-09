@@ -23,7 +23,14 @@ export function extractMessagesFromProgram(
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of program.getSourceFiles()) {
-    extractMessagesFromNode(sourcefile, sourcefile, messages, errors, []);
+    extractMessagesFromNode(
+      sourcefile,
+      program,
+      sourcefile,
+      messages,
+      errors,
+      []
+    );
   }
   const deduped = dedupeMessages(messages);
   return {
@@ -34,9 +41,14 @@ export function extractMessagesFromProgram(
 
 /**
  * Traverse through a TypeScript node and collect all translation messages.
+ *
+ * TODO(aomarks) There is a fair bit of overlap between this and
+ * outputters/transform.ts. Consider sharing more code, or unifying somehow
+ * (e.g. a common analyzing traverser with hooks?).
  */
 function extractMessagesFromNode(
   file: ts.SourceFile,
+  program: ts.Program,
   node: ts.Node,
   messages: ProgramMessage[],
   errors: ts.Diagnostic[],
@@ -51,7 +63,7 @@ function extractMessagesFromNode(
     descStack = dedupeMsgDescs([...descStack, ...newDescs]);
   }
 
-  const msg = extractMsg(file, node, descStack);
+  const msg = extractMsg(file, program, node, descStack);
   if (msg !== undefined) {
     if ('contents' in msg) {
       messages.push(msg);
@@ -61,7 +73,7 @@ function extractMessagesFromNode(
   }
 
   ts.forEachChild(node, (node) => {
-    extractMessagesFromNode(file, node, messages, errors, descStack);
+    extractMessagesFromNode(file, program, node, messages, errors, descStack);
   });
 }
 
@@ -71,10 +83,11 @@ function extractMessagesFromNode(
  */
 function extractMsg(
   file: ts.SourceFile,
+  program: ts.Program,
   node: ts.Node,
   descStack: MsgDesc[]
 ): ProgramMessage | ts.Diagnostic | undefined {
-  if (!isMsgCall(node)) {
+  if (!isMsgCall(node, program.getTypeChecker())) {
     // We're not interested.
     return;
   }
@@ -495,17 +508,10 @@ export function isLitExpression(
  */
 export function isMsgCall(
   node: ts.Node,
-  typeChecker?: ts.TypeChecker
+  typeChecker: ts.TypeChecker
 ): node is ts.CallExpression {
   if (!ts.isCallExpression(node)) {
     return false;
-  }
-  if (typeChecker === undefined) {
-    // TODO(aomarks) Remove this branch once migration to static lit-localize
-    // library is done.
-    return (
-      ts.isIdentifier(node.expression) && node.expression.escapedText === 'msg'
-    );
   }
   const type = typeChecker.getTypeAtLocation(node.expression);
   const props = typeChecker.getPropertiesOfType(type);
