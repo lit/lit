@@ -341,18 +341,16 @@ class Transformer {
     const moduleSymbol = this.typeChecker.getSymbolAtLocation(
       node.moduleSpecifier
     );
-    if (!moduleSymbol) {
+    if (!moduleSymbol || !moduleSymbol.exports) {
       return false;
     }
-    // TODO(aomarks) Is there a better way to reliably identify the lit-localize
-    // module that doesn't require this cast? We could export a const with a
-    // known name and then look through `exports`, but it doesn't seem good to
-    // polute the module like that.
-    const file = (moduleSymbol.valueDeclaration as unknown) as {
-      identifiers: Map<string, unknown>;
-    };
-    for (const id of file.identifiers.keys()) {
-      if (id === '_LIT_LOCALIZE_MSG_') {
+    const exports = moduleSymbol.exports.values();
+    for (const xport of exports as typeof exports & {
+      [Symbol.iterator](): Iterator<ts.Symbol>;
+    }) {
+      const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
+      const props = this.typeChecker.getPropertiesOfType(type);
+      if (props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_MSG_')) {
         return true;
       }
     }
