@@ -2,17 +2,19 @@
 
 [![Published on npm](https://img.shields.io/npm/v/lit-localize.svg)](https://www.npmjs.com/package/lit-localize) [![Test Status](https://github.com/PolymerLabs/lit-localize/workflows/tests/badge.svg?branch=master)](https://github.com/PolymerLabs/lit-localize/actions?query=workflow%3Atests+branch%3Amaster+event%3Apush)
 
-WIP
-
 ## API
 
 The `lit-localize` module exports the following functions:
 
 ### `configureLocalization(configuration)`
 
-Set runtime localization configuration.
+Set configuration parameters for lit-localize when in runtime mode. Returns an
+object with functions:
 
-In runtime mode, this function must be called once, before any calls to `msg()`.
+- [`getLocale`](#getLocale): Return the active locale code.
+- [`setLocale`](#setLocale): Set the active locale code.
+
+Throws if called more than once.
 
 The `configuration` object must have the following properties:
 
@@ -30,15 +32,37 @@ The `configuration` object must have the following properties:
 Example:
 
 ```typescript
-configureLocalization({
+const {getLocale, setLocale} = configureLocalization({
   sourceLocale: 'en',
   targetLocales: ['es-419', 'zh_CN'],
   loadLocale: (locale) => import(`/${locale}.js`),
 });
 ```
 
-In transform mode, this function is not required, and calls to it will be
-replaced with `undefined`.
+### `configureTransformLocalization(configuration)`
+
+Set configuration parameters for lit-localize when in transform mode. Returns an
+object with functions:
+
+- [`getLocale`](#getLocale): Return the active locale code.
+
+(Note that [`setLocale`](#setLocale) is not available, because changing locales
+at runtime is not supported in transform mode.)
+
+Throws if called more than once.
+
+The `configuration` object must have the following properties:
+
+- `sourceLocale: string`: Required locale code in which source templates in this
+  project are written, and the active locale.
+
+Example:
+
+```typescript
+const {getLocale} = configureLocalization({
+  sourceLocale: 'en',
+});
+```
 
 ### `getLocale(): string`
 
@@ -50,16 +74,17 @@ code string for each emitted locale.
 ### `setLocale(locale: string)`
 
 Set the active locale code, and begin loading templates for that locale using
-the `loadLocale` function that was passed to `configureLocalization`.
+the `loadLocale` function that was passed to `configureLocalization`. Returns a
+promise that resolves when the next locale is ready to be rendered.
 
-In transform mode, calls to this function are replaced with `undefined`.
+Note that if a second call to `setLocale` is made while the first requested
+locale is still loading, then the second call takes precedence, and the promise
+returned from the first call will resolve when second locale is ready. If you
+need to know whether a particular locale was loaded, check `getLocale` after the
+promise resolves.
 
-### `localeReady(): Promise`
-
-Return a promise that is resolved when the next set of templates are loaded and
-available for rendering. Applications in runtime mode should always `await localeReady()` before rendering.
-
-In transform mode, calls to this function are replaced with `undefined`.
+Throws if the given locale is not contained by the configured `sourceLocale` or
+`targetLocales`.
 
 ### `msg(id: string, template, ...args): string|TemplateResult`
 

@@ -14,9 +14,9 @@ import {TemplateResult} from 'lit-html';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Runtime configuration parameters for lit-localize.
+ * Configuration parameters for lit-localize when in runtime mode.
  */
-export interface Configuration {
+export interface RuntimeConfiguration {
   /**
    * Required locale code in which source templates in this project are written,
    * and the initial active locale.
@@ -35,6 +35,17 @@ export interface Configuration {
    * with a `locale` that is contained by `targetLocales`.
    */
   loadLocale: (locale: string) => Promise<LocaleModule>;
+}
+
+/**
+ * Configuration parameters for lit-localize when in transform mode.
+ */
+export interface TransformConfiguration {
+  /**
+   * Required locale code in which source templates in this project are written,
+   * and the active locale.
+   */
+  sourceLocale: string;
 }
 
 /**
@@ -83,55 +94,101 @@ class Deferred<T> {
 }
 
 let activeLocale = '';
+let loadingLocale: string | undefined;
 let sourceLocale: string | undefined;
 let validLocales: Set<string> | undefined;
 let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
+let configured = false;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
+// The initial locale is always the source locale, which is immediately
+// available.
+loading.resolve();
 
 /**
- * Set runtime configuration parameters for lit-localize. This function must be
- * called before using any other lit-localize function.
+ * Set configuration parameters for lit-localize when in runtime mode. Returns
+ * an object with functions:
+ *
+ * - `getLocale`: Return the active locale code.
+ * - `setLocale`: Set the active locale code.
+ *
+ * Throws if called more than once.
  */
-export function configureLocalization(config: Configuration) {
+export function configureLocalization(config: RuntimeConfiguration) {
+  if (configured === true) {
+    throw new Error('lit-localize can only be configured once');
+  }
+  configured = true;
   activeLocale = sourceLocale = config.sourceLocale;
   validLocales = new Set(config.targetLocales);
   validLocales.add(config.sourceLocale);
   loadLocale = config.loadLocale;
+  return {getLocale, setLocale};
 }
 
 /**
- * Return the active locale code. Returns empty string if lit-localize has not
- * yet been configured.
+ * Set configuration parameters for lit-localize when in transform mode. Returns
+ * an object with function:
+ *
+ * - `getLocale`: Return the active locale code.
+ *
+ * Throws if called more than once.
  */
-export function getLocale(): string {
+export function configureTransformLocalization(config: TransformConfiguration) {
+  if (configured === true) {
+    throw new Error('lit-localize can only be configured once');
+  }
+  configured = true;
+  activeLocale = sourceLocale = config.sourceLocale;
+  return {getLocale};
+}
+
+/**
+ * Return the active locale code.
+ */
+function getLocale(): string {
   return activeLocale;
 }
 
 /**
  * Set the active locale code, and begin loading templates for that locale using
- * the `loadLocale` function that was passed to `configureLocalization`.
+ * the `loadLocale` function that was passed to `configureLocalization`. Returns
+ * a promise that resolves when the next locale is ready to be rendered.
+ *
+ * Note that if a second call to `setLocale` is made while the first requested
+ * locale is still loading, then the second call takes precedence, and the
+ * promise returned from the first call will resolve when second locale is
+ * ready. If you need to know whether a particular locale was loaded, check
+ * `getLocale` after the promise resolves.
+ *
+ * Throws if the given locale is not contained by the configured `sourceLocale`
+ * or `targetLocales`.
  */
-export function setLocale(newLocale: string): void {
-  if (
-    newLocale === activeLocale ||
-    !validLocales ||
-    !validLocales.has(newLocale) ||
-    !loadLocale
-  ) {
-    return;
+function setLocale(newLocale: string): Promise<void> {
+  if (!configured || !validLocales || !loadLocale) {
+    throw new Error('Must call configureLocalization before setLocale');
   }
-  activeLocale = newLocale;
-  templates = undefined;
+  if (newLocale === loadingLocale ?? activeLocale) {
+    return loading.promise;
+  }
+  if (!validLocales.has(newLocale)) {
+    throw new Error('Invalid locale code');
+  }
+  loadingLocale = newLocale;
   if (loading.settled) {
     loading = new Deferred();
   }
   if (newLocale === sourceLocale) {
+    activeLocale = newLocale;
+    loadingLocale = undefined;
+    templates = undefined;
     loading.resolve();
   } else {
     loadLocale(newLocale).then(
       (mod) => {
-        if (newLocale === activeLocale) {
+        if (newLocale === loadingLocale) {
+          activeLocale = newLocale;
+          loadingLocale = undefined;
           templates = mod.templates;
           loading.resolve();
         }
@@ -141,19 +198,12 @@ export function setLocale(newLocale: string): void {
         // need to check if the locale is still the one they expected to load.
       },
       (err) => {
-        if (newLocale === activeLocale) {
+        if (newLocale === loadingLocale) {
           loading.reject(err);
         }
       }
     );
   }
-}
-
-/**
- * Return a promise that is resolved when the next set of templates are loaded
- * and available for rendering.
- */
-export function localeReady(): Promise<void> {
   return loading.promise;
 }
 
@@ -187,7 +237,7 @@ export function msg(
   template: TemplateLike,
   ...params: any[]
 ): string | TemplateResult {
-  if (activeLocale !== sourceLocale && templates) {
+  if (templates) {
     const localized = templates[id];
     if (localized) {
       template = localized;
