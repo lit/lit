@@ -13,9 +13,9 @@ import {Message} from '../messages';
 import {Locale} from '../locales';
 import {Config} from '../config';
 import * as ts from 'typescript';
-import {isLitExpression, isMsgCall, isStaticString} from '../program-analysis';
+import {isLitTemplate, isMsgCall, isStaticString} from '../program-analysis';
 import {KnownError} from '../error';
-import {escapeStringLiteral} from '../typescript';
+import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as pathLib from 'path';
 
 /**
@@ -92,7 +92,7 @@ class Transformer {
     if (isMsgCall(node)) {
       return this.replaceMsgCall(node);
     }
-    if (isLitExpression(node)) {
+    if (isLitTemplate(node)) {
       // If an html-tagged template literal embeds a msg call, we want to
       // collapse the result of that msg call into the parent template.
       return tagLit(
@@ -128,7 +128,7 @@ class Transformer {
       !(
         ts.isStringLiteral(arg1) ||
         ts.isTemplateLiteral(arg1) ||
-        isLitExpression(arg1) ||
+        isLitTemplate(arg1) ||
         ts.isArrowFunction(arg1)
       )
     ) {
@@ -149,19 +149,19 @@ class Transformer {
       if (
         !ts.isStringLiteral(arg1.body) &&
         !ts.isTemplateLiteral(arg1.body) &&
-        !isLitExpression(arg1.body)
+        !isLitTemplate(arg1.body)
       ) {
         throw new KnownError(
           'Expected function body to be a template or string'
         );
       }
-      if (isLitExpression(arg1.body)) {
+      if (isLitTemplate(arg1.body)) {
         isLitTagged = true;
         template = arg1.body.template;
       } else {
         template = arg1.body;
       }
-    } else if (isLitExpression(arg1)) {
+    } else if (isLitTemplate(arg1)) {
       isLitTagged = true;
       template = arg1.template;
     } else {
@@ -176,7 +176,7 @@ class Transformer {
         const templateLiteralBody = translation.contents
           .map((content) =>
             typeof content === 'string'
-              ? escapeStringLiteral(content)
+              ? escapeStringToEmbedInTemplateLiteral(content)
               : content.untranslatable
           )
           .join('');
@@ -299,7 +299,7 @@ class Transformer {
         fragments.push(expression.text);
       } else if (ts.isTemplateLiteral(expression)) {
         fragments.push(...this.recursivelyFlattenTemplate(expression, false));
-      } else if (isLit && isLitExpression(expression)) {
+      } else if (isLit && isLitTemplate(expression)) {
         fragments.push(
           ...this.recursivelyFlattenTemplate(expression.template, true)
         );

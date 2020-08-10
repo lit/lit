@@ -107,7 +107,7 @@ function extractMsg(
     };
   }
 
-  if (isLitExpression(contentsArg)) {
+  if (isLitTemplate(contentsArg)) {
     if (ts.isNoSubstitutionTemplateLiteral(contentsArg.template)) {
       // E.g. msg('foo', html`bar <b>baz</b>`)
       return {
@@ -186,7 +186,7 @@ function functionTemplate(
   if (
     !ts.isTemplateExpression(body) &&
     !ts.isNoSubstitutionTemplateLiteral(body) &&
-    !isLitExpression(body)
+    !isLitTemplate(body)
   ) {
     return createDiagnostic(
       file,
@@ -195,7 +195,7 @@ function functionTemplate(
         `or a lit-html template, without braces`
     );
   }
-  const template = isLitExpression(body) ? body.template : body;
+  const template = isLitTemplate(body) ? body.template : body;
   const parts: Array<string | {identifier: string}> = [];
   if (ts.isTemplateExpression(template)) {
     const spans = template.templateSpans;
@@ -220,8 +220,8 @@ function functionTemplate(
     // A NoSubstitutionTemplateLiteral. No spans.
     parts.push(template.text);
   }
-  const isLitTemplate = isLitExpression(body);
-  const contents = isLitTemplate
+  const isLit = isLitTemplate(body);
+  const contents = isLit
     ? replaceExpressionsAndHtmlWithPlaceholders(parts)
     : parts.map((part) =>
         typeof part === 'string'
@@ -235,7 +235,7 @@ function functionTemplate(
     file,
     descStack: descStack.map((desc) => desc.text),
     params,
-    isLitTemplate,
+    isLitTemplate: isLit,
   };
 }
 
@@ -480,7 +480,7 @@ export function isStaticString(
 /**
  * E.g. html`foo` or html`foo${bar}`
  */
-export function isLitExpression(
+export function isLitTemplate(
   node: ts.Node
 ): node is ts.TaggedTemplateExpression {
   return (
