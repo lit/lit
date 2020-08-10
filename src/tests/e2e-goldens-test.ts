@@ -70,7 +70,7 @@ export function e2eGoldensTest(
       '--no-install',
       'prettier',
       '--write',
-      `${outputDir}/**/*.ts`,
+      `${outputDir}/**/*.{ts,js}`,
     ]);
 
     if (process.env.UPDATE_TEST_GOLDENS) {

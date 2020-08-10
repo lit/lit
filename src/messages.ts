@@ -91,3 +91,16 @@ export interface Placeholder {
   // END_BOLD, and also allow a way to define them in the template (e.g. a
   // "placeholder-name" element attribute or similar).
 }
+
+/**
+ * Given an array of messages, return a new map from message ID to message.
+ */
+export function makeMessageIdMap<T extends Message>(
+  messages: T[]
+): Map<string, T> {
+  const map = new Map<string, T>();
+  for (const msg of messages) {
+    map.set(msg.name, msg);
+  }
+  return map;
+}

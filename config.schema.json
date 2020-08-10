@@ -65,6 +65,22 @@
             ],
             "type": "object"
         },
+        "TransformOutputConfig": {
+            "additionalProperties": false,
+            "description": "Configuration specific to the `transform` output mode.",
+            "properties": {
+                "mode": {
+                    "enum": [
+                        "transform"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "mode"
+            ],
+            "type": "object"
+        },
         "XlbConfig": {
             "additionalProperties": false,
             "description": "Parse an XLB XML file. These files contain translations organized using the\nsame message names that we originally requested.\nConfiguration for XLB interchange format.",
@@ -130,7 +146,14 @@
             "description": "Localization interchange format and configuration specific to that format."
         },
         "output": {
-            "$ref": "#/definitions/RuntimeOutputConfig",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/RuntimeOutputConfig"
+                },
+                {
+                    "$ref": "#/definitions/TransformOutputConfig"
+                }
+            ],
             "description": "Set and configure the output mode."
         },
         "patches": {
