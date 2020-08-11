@@ -74,11 +74,7 @@ function extractMsg(
   node: ts.Node,
   descStack: MsgDesc[]
 ): ProgramMessage | ts.Diagnostic | undefined {
-  if (
-    !ts.isCallExpression(node) ||
-    !ts.isIdentifier(node.expression) ||
-    node.expression.escapedText !== 'msg'
-  ) {
+  if (!isMsgCall(node)) {
     // We're not interested.
     return;
   }
@@ -111,7 +107,7 @@ function extractMsg(
     };
   }
 
-  if (isLitExpression(contentsArg)) {
+  if (isLitTemplate(contentsArg)) {
     if (ts.isNoSubstitutionTemplateLiteral(contentsArg.template)) {
       // E.g. msg('foo', html`bar <b>baz</b>`)
       return {
@@ -190,7 +186,7 @@ function functionTemplate(
   if (
     !ts.isTemplateExpression(body) &&
     !ts.isNoSubstitutionTemplateLiteral(body) &&
-    !isLitExpression(body)
+    !isLitTemplate(body)
   ) {
     return createDiagnostic(
       file,
@@ -199,7 +195,7 @@ function functionTemplate(
         `or a lit-html template, without braces`
     );
   }
-  const template = isLitExpression(body) ? body.template : body;
+  const template = isLitTemplate(body) ? body.template : body;
   const parts: Array<string | {identifier: string}> = [];
   if (ts.isTemplateExpression(template)) {
     const spans = template.templateSpans;
@@ -224,8 +220,8 @@ function functionTemplate(
     // A NoSubstitutionTemplateLiteral. No spans.
     parts.push(template.text);
   }
-  const isLitTemplate = isLitExpression(body);
-  const contents = isLitTemplate
+  const isLit = isLitTemplate(body);
+  const contents = isLit
     ? replaceExpressionsAndHtmlWithPlaceholders(parts)
     : parts.map((part) =>
         typeof part === 'string'
@@ -239,7 +235,7 @@ function functionTemplate(
     file,
     descStack: descStack.map((desc) => desc.text),
     params,
-    isLitTemplate,
+    isLitTemplate: isLit,
   };
 }
 
@@ -475,7 +471,7 @@ function serializeOpenCloseTags(
 /**
  * E.g. "foo", 'foo', or `foo`, but not `foo${bar}`.
  */
-function isStaticString(
+export function isStaticString(
   node: ts.Node
 ): node is ts.StringLiteral | ts.NoSubstitutionTemplateLiteral {
   return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node);
@@ -484,11 +480,26 @@ function isStaticString(
 /**
  * E.g. html`foo` or html`foo${bar}`
  */
-function isLitExpression(node: ts.Node): node is ts.TaggedTemplateExpression {
+export function isLitTemplate(
+  node: ts.Node
+): node is ts.TaggedTemplateExpression {
   return (
     ts.isTaggedTemplateExpression(node) &&
     ts.isIdentifier(node.tag) &&
     node.tag.escapedText === 'html'
+  );
+}
+
+/**
+ * Return whether this is a call to the lit-localize `msg` function.
+ */
+export function isMsgCall(node: ts.Node): node is ts.CallExpression {
+  // TODO(aomarks) This is too crude. We should do better to identify only our
+  // `msg` function.
+  return (
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.escapedText === 'msg'
   );
 }
 

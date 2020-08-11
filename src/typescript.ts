@@ -76,3 +76,16 @@ export function printDiagnostics(diagnostics: ts.Diagnostic[]): void {
     })
   );
 }
+
+/**
+ * Escape a string such that it can be safely embedded in a JavaScript template
+ * literal (backtick string).
+ */
+export function escapeStringToEmbedInTemplateLiteral(
+  unescaped: string
+): string {
+  return unescaped
+    .replace(/\\/g, `\\\\`)
+    .replace(/`/g, '\\`')
+    .replace(/\$/g, '\\$');
+}

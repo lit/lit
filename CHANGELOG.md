@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 - [BREAKING] The `tsOut` parameter is replaced by the new `output` object with
-  `mode: "runtime"`. Other outputs modes will follow.
+  `mode: "runtime"|"transform"`.
+
+- Add `transform` output mode, which emits an entire copy of the program in each
+  locale, where all `msg` calls have been replaced with the raw translated
+  template for that locale.
 
 - Add ability to generate a `setLocale` function by setting
   `output.exportSetLocaleFunction: true`.

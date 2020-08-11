@@ -14,6 +14,7 @@ import {applyPatches, Patches} from '../patches';
 import {Locale} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
+import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as fs from 'fs';
 import * as pathLib from 'path';
 
@@ -443,7 +444,7 @@ function makeMessageString(
   const fragments = [];
   for (const content of contents) {
     if (typeof content === 'string') {
-      fragments.push(escapeStringLiteral(content));
+      fragments.push(escapeStringToEmbedInTemplateLiteral(content));
     } else {
       fragments.push(content.untranslatable);
     }
@@ -459,15 +460,4 @@ function makeMessageString(
   } else {
     return msgStr;
   }
-}
-
-/**
- * Escape a string such that it can be safely embedded in a JavaScript template
- * literal (backtick string).
- */
-function escapeStringLiteral(unescaped: string): string {
-  return unescaped
-    .replace(`\\`, `\\\\`)
-    .replace('`', '\\`')
-    .replace('$', '\\$');
 }
