@@ -101,9 +101,6 @@ let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
 let configured = false;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
-// The initial locale is always the source locale, which is immediately
-// available.
-loading.resolve();
 
 /**
  * Set configuration parameters for lit-localize when in runtime mode. Returns
