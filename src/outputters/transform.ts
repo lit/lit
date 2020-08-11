@@ -188,6 +188,7 @@ class Transformer {
         // manipulation of placeholder contents. We should validate that the set
         // of translated placeholders is exactly equal to the set of original
         // source placeholders (order can change, but contents can't).
+        // See https://github.com/PolymerLabs/lit-localize/issues/49
         template = parseStringAsTemplateLiteral(templateLiteralBody);
       }
       // TODO(aomarks) Emit a warning that a translation was missing.
