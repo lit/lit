@@ -1,5 +1,11 @@
 import {html} from 'lit-html';
-import {msg} from '../../../lib_client/index.js';
+import {
+  msg,
+  configureTransformLocalization,
+} from '../../../lib_client/index.js';
+
+const {getLocale} = configureTransformLocalization({sourceLocale: 'en'});
+console.log(`Locale is ${getLocale()}`);
 
 msg('string', 'Hello World!');
 

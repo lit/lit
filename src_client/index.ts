@@ -111,7 +111,9 @@ let loading = new Deferred<void>();
  *
  * Throws if called more than once.
  */
-export const configureLocalization: ((config: RuntimeConfiguration) => void) & {
+export const configureLocalization: ((
+  config: RuntimeConfiguration
+) => {getLocale: typeof getLocale; setLocale: typeof setLocale}) & {
   _LIT_LOCALIZE_CONFIGURE_LOCALIZATION_?: never;
 } = (config: RuntimeConfiguration) => {
   if (configured === true) {
@@ -133,14 +135,18 @@ export const configureLocalization: ((config: RuntimeConfiguration) => void) & {
  *
  * Throws if called more than once.
  */
-export function configureTransformLocalization(config: TransformConfiguration) {
+export const configureTransformLocalization: ((
+  config: TransformConfiguration
+) => {getLocale: typeof getLocale}) & {
+  _LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_?: never;
+} = (config: TransformConfiguration) => {
   if (configured === true) {
     throw new Error('lit-localize can only be configured once');
   }
   configured = true;
   activeLocale = sourceLocale = config.sourceLocale;
   return {getLocale};
-}
+};
 
 /**
  * Return the active locale code.

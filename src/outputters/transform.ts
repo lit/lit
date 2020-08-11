@@ -118,29 +118,40 @@ class Transformer {
       return undefined;
     }
 
-    // configureLocalization(...) -> undefined
+    // configureTransformLocalization(...) -> {getLocale: () => "es-419"}
+    if (
+      this.isCallToTaggedFunction(
+        node,
+        '_LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_'
+      )
+    ) {
+      return ts.createObjectLiteral(
+        [
+          ts.createPropertyAssignment(
+            ts.createIdentifier('getLocale'),
+            ts.createArrowFunction(
+              undefined,
+              undefined,
+              [],
+              undefined,
+              ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              ts.createStringLiteral(this.locale)
+            )
+          ),
+        ],
+        false
+      );
+    }
+
+    // configureLocalization(...) -> Error
     if (
       this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_CONFIGURE_LOCALIZATION_')
     ) {
-      return ts.createIdentifier('undefined');
-    }
-
-    // getLocale() -> "es-419"
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_GET_LOCALE_')) {
-      return ts.createStringLiteral(this.locale);
-    }
-
-    // setLocale("es-419") -> undefined
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_SET_LOCALE_')) {
-      return ts.createIdentifier('undefined');
-    }
-
-    // localeReady() -> Promise.resolve(undefined)
-    if (this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_LOCALE_READY_')) {
-      return ts.createCall(
-        ts.createPropertyAccess(ts.createIdentifier('Promise'), 'resolve'),
-        [],
-        [ts.createIdentifier('undefined')]
+      // TODO(aomarks) This error is not surfaced earlier in the analysis phase
+      // as a nicely formatted diagnostic, but it should be.
+      throw new KnownError(
+        'Cannot use configureLocalization in transform mode. ' +
+          'Use configureTransformLocalization instead.'
       );
     }
 

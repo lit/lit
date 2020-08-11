@@ -21,10 +21,15 @@ The `lit-localize` module exports the following functions:
 Set configuration parameters for lit-localize when in runtime mode. Returns an
 object with functions:
 
-- [`getLocale`](#getLocale): Return the active locale code.
-- [`setLocale`](#setLocale): Set the active locale code.
+- [`getLocale`](#getlocale-string): Return the active locale code.
+- [`setLocale`](#setlocalelocale-string-promise): Set the active locale code.
 
 Throws if called more than once.
+
+When in transform mode, the lit-localize CLI will error if this function is
+called. Use
+[`configureTransformLocalization`](#configuretransformlocalizationconfiguration)
+instead.
 
 The `configuration` object must have the following properties:
 
@@ -52,12 +57,13 @@ const {getLocale, setLocale} = configureLocalization({
 ### `configureTransformLocalization(configuration)`
 
 Set configuration parameters for lit-localize when in transform mode. Returns an
-object with functions:
+object with function:
 
-- [`getLocale`](#getLocale): Return the active locale code.
+- [`getLocale`](#getlocale-string): Return the active locale code.
 
-(Note that [`setLocale`](#setLocale) is not available, because changing locales
-at runtime is not supported in transform mode.)
+(Note that [`setLocale`](#setlocalelocale-string-promise) is not available from
+this function, because changing locales at runtime is not supported in transform
+mode.)
 
 Throws if called more than once.
 
@@ -74,14 +80,19 @@ const {getLocale} = configureLocalization({
 });
 ```
 
+In transform mode, calls to this function are transformed to an object with a
+`getLocale` implementation that returns the static locale code for each locale
+bundle. For example:
+
+```typescript
+const {getLocale} = {getLocale: () => 'es-419'};
+```
+
 ### `getLocale(): string`
 
 Return the active locale code.
 
-In transform mode, calls to this function are transformed into the static locale
-code string for each emitted locale.
-
-### `setLocale(locale: string)`
+### `setLocale(locale: string): Promise`
 
 Set the active locale code, and begin loading templates for that locale using
 the `loadLocale` function that was passed to `configureLocalization`. Returns a

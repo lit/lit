@@ -334,51 +334,34 @@ test('exclude different msg function', (t) => {
   );
 });
 
-test('configureLocalization() -> undefined', (t) => {
+test('configureTransformLocalization() -> {getLocale: () => "es-419"}', (t) => {
   checkTransform(
     t,
-    `import {configureLocalization} from './lib_client/index.js';
+    `import {configureTransformLocalization} from './lib_client/index.js';
+     const {getLocale} = configureTransformLocalization({
+       sourceLocale: 'en',
+     });
+     const locale = getLocale();`,
+    `const {getLocale} = {getLocale: () => 'es-419'};
+     const locale = getLocale();`,
+    {locale: 'es-419'}
+  );
+});
+
+test('configureLocalization() throws', (t) => {
+  t.throws(
+    () =>
+      checkTransform(
+        t,
+        `import {configureLocalization} from './lib_client/index.js';
      configureLocalization({
        sourceLocale: 'en',
        targetLocales: ['es-419'],
        loadLocale: (locale: string) => import(\`/\${locale}.js\`),
      });`,
-    `undefined;`
-  );
-});
-
-test('getLocale() -> "es-419"', (t) => {
-  checkTransform(
-    t,
-    `import {getLocale} from './lib_client/index.js';
-     getLocale();`,
-    `"en";`,
-    {locale: 'es-419'}
-  );
-
-  checkTransform(
-    t,
-    `import {getLocale} from './lib_client/index.js';
-     getLocale();`,
-    `"es-419";`,
-    {locale: 'es-419'}
-  );
-});
-
-test('setLocale() -> undefined', (t) => {
-  checkTransform(
-    t,
-    `import {setLocale} from './lib_client/index.js';
-     setLocale("es-419");`,
-    `undefined;`
-  );
-});
-
-test('localeReady() -> Promise.resolve(undefined)', (t) => {
-  checkTransform(
-    t,
-    `import {localeReady} from './lib_client/index.js';
-     localeReady().then(() => console.log('ok'))`,
-    `Promise.resolve(undefined).then(() => console.log('ok'))`
+        `undefined;`
+      ),
+    undefined,
+    'Cannot use configureLocalization in transform mode'
   );
 });
