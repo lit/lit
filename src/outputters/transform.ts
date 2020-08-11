@@ -13,9 +13,9 @@ import {Message} from '../messages';
 import {Locale} from '../locales';
 import {Config} from '../config';
 import * as ts from 'typescript';
-import {isLitExpression, isMsgCall, isStaticString} from '../program-analysis';
+import {isLitTemplate, isMsgCall, isStaticString} from '../program-analysis';
 import {KnownError} from '../error';
-import {escapeStringLiteral} from '../typescript';
+import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as pathLib from 'path';
 
 /**
@@ -103,7 +103,7 @@ class Transformer {
     }
 
     // html`<b>${msg('greeting', 'hello')}</b>` -> html`<b>hola</b>`
-    if (isLitExpression(node)) {
+    if (isLitTemplate(node)) {
       // If an html-tagged template literal embeds a msg call, we want to
       // collapse the result of that msg call into the parent template.
       return tagLit(
@@ -168,7 +168,7 @@ class Transformer {
       !(
         ts.isStringLiteral(arg1) ||
         ts.isTemplateLiteral(arg1) ||
-        isLitExpression(arg1) ||
+        isLitTemplate(arg1) ||
         ts.isArrowFunction(arg1)
       )
     ) {
@@ -189,19 +189,19 @@ class Transformer {
       if (
         !ts.isStringLiteral(arg1.body) &&
         !ts.isTemplateLiteral(arg1.body) &&
-        !isLitExpression(arg1.body)
+        !isLitTemplate(arg1.body)
       ) {
         throw new KnownError(
           'Expected function body to be a template or string'
         );
       }
-      if (isLitExpression(arg1.body)) {
+      if (isLitTemplate(arg1.body)) {
         isLitTagged = true;
         template = arg1.body.template;
       } else {
         template = arg1.body;
       }
-    } else if (isLitExpression(arg1)) {
+    } else if (isLitTemplate(arg1)) {
       isLitTagged = true;
       template = arg1.template;
     } else {
@@ -216,7 +216,7 @@ class Transformer {
         const templateLiteralBody = translation.contents
           .map((content) =>
             typeof content === 'string'
-              ? escapeStringLiteral(content)
+              ? escapeStringToEmbedInTemplateLiteral(content)
               : content.untranslatable
           )
           .join('');
@@ -228,6 +228,7 @@ class Transformer {
         // manipulation of placeholder contents. We should validate that the set
         // of translated placeholders is exactly equal to the set of original
         // source placeholders (order can change, but contents can't).
+        // See https://github.com/PolymerLabs/lit-localize/issues/49
         template = parseStringAsTemplateLiteral(templateLiteralBody);
       }
       // TODO(aomarks) Emit a warning that a translation was missing.
@@ -339,7 +340,7 @@ class Transformer {
         fragments.push(expression.text);
       } else if (ts.isTemplateLiteral(expression)) {
         fragments.push(...this.recursivelyFlattenTemplate(expression, false));
-      } else if (isLit && isLitExpression(expression)) {
+      } else if (isLit && isLitTemplate(expression)) {
         fragments.push(
           ...this.recursivelyFlattenTemplate(expression.template, true)
         );
@@ -377,18 +378,16 @@ class Transformer {
     const moduleSymbol = this.typeChecker.getSymbolAtLocation(
       node.moduleSpecifier
     );
-    if (!moduleSymbol) {
+    if (!moduleSymbol || !moduleSymbol.exports) {
       return false;
     }
-    // TODO(aomarks) Is there a better way to reliably identify the lit-localize
-    // module that doesn't require this cast? We could export a const with a
-    // known name and then look through `exports`, but it doesn't seem good to
-    // polute the module like that.
-    const file = (moduleSymbol.valueDeclaration as unknown) as {
-      identifiers: Map<string, unknown>;
-    };
-    for (const id of file.identifiers.keys()) {
-      if (id === '_LIT_LOCALIZE_MSG_') {
+    const exports = moduleSymbol.exports.values();
+    for (const xport of exports as typeof exports & {
+      [Symbol.iterator](): Iterator<ts.Symbol>;
+    }) {
+      const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
+      const props = this.typeChecker.getPropertiesOfType(type);
+      if (props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_MSG_')) {
         return true;
       }
     }

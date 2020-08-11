@@ -14,7 +14,7 @@ import {applyPatches, Patches} from '../patches';
 import {Locale} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
-import {escapeStringLiteral} from '../typescript';
+import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as fs from 'fs';
 import * as pathLib from 'path';
 
@@ -444,7 +444,7 @@ function makeMessageString(
   const fragments = [];
   for (const content of contents) {
     if (typeof content === 'string') {
-      fragments.push(escapeStringLiteral(content));
+      fragments.push(escapeStringToEmbedInTemplateLiteral(content));
     } else {
       fragments.push(content.untranslatable);
     }
