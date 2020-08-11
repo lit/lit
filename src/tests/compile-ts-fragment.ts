@@ -42,7 +42,7 @@ export function compileTsFragment(
   inputCode: string,
   options: ts.CompilerOptions,
   cache: CompilerHostCache,
-  transformers?: ts.CustomTransformers
+  transformers?: (program: ts.Program) => ts.CustomTransformers
 ): CompileResult {
   const dummyTsFilename = '__DUMMY__.ts';
   const dummyJsFilename = '__DUMMY__.js';
@@ -124,7 +124,7 @@ export function compileTsFragment(
     undefined,
     undefined,
     undefined,
-    transformers
+    transformers ? transformers(program) : undefined
   );
   return {
     code: outputCode,

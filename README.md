@@ -6,6 +6,16 @@
 
 The `lit-localize` module exports the following functions:
 
+> Note that lit-localize relies on distinctive, annotated TypeScript type
+> signatures to identify calls to `msg` and other APIs during analysis of your
+> code. Casting a lit-localize function to a type that does not include its
+> annotation will prevent lit-localize from being able to extract and transform
+> templates from your application. For example, a cast like
+> `(msg as any)("greeting", "Hello")` will not be identified. It is safe to
+> re-assign lit-localize functions or pass them as parameters, as long as the
+> distinctive type signature is preserved. If needed, you can reference each
+> function's distinctive type with e.g. `typeof msg`.
+
 ### `configureLocalization(configuration)`
 
 Set configuration parameters for lit-localize when in runtime mode. Returns an

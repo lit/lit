@@ -213,23 +213,23 @@ function setLocale(newLocale: string): Promise<void> {
  * @param args In the case that `template` is a function, it is invoked with
  * the 3rd and onwards arguments to `msg`.
  */
-export function msg(id: string, template: string): string;
+export function _msg(id: string, template: string): string;
 
-export function msg(id: string, template: TemplateResult): TemplateResult;
+export function _msg(id: string, template: TemplateResult): TemplateResult;
 
-export function msg<F extends (...args: any[]) => string>(
+export function _msg<F extends (...args: any[]) => string>(
   id: string,
   fn: F,
   ...params: Parameters<F>
 ): string;
 
-export function msg<F extends (...args: any[]) => TemplateResult>(
+export function _msg<F extends (...args: any[]) => TemplateResult>(
   id: string,
   fn: F,
   ...params: Parameters<F>
 ): TemplateResult;
 
-export function msg(
+export function _msg(
   id: string,
   template: TemplateLike,
   ...params: any[]
@@ -245,3 +245,5 @@ export function msg(
   }
   return template;
 }
+
+export const msg: typeof _msg & {_LIT_LOCALIZE_MSG_?: never} = _msg;
