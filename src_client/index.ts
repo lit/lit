@@ -171,7 +171,7 @@ const getLocale: (() => string) & {
  * Throws if the given locale is not contained by the configured `sourceLocale`
  * or `targetLocales`.
  */
-export const setLocale: ((newLocale: string) => void) & {
+const setLocale: ((newLocale: string) => void) & {
   _LIT_LOCALIZE_SET_LOCALE_?: never;
 } = (newLocale: string) => {
   if (!configured || !validLocales || !loadLocale) {
@@ -213,6 +213,7 @@ export const setLocale: ((newLocale: string) => void) & {
       }
     );
   }
+  return loading.promise;
 };
 
 /**
