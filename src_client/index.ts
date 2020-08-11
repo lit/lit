@@ -240,7 +240,7 @@ export function msg(
       template = localized;
     }
   }
-  if (template instanceof Function) {
+  if (typeof template === 'function') {
     return template(...params);
   }
   return template;
