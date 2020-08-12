@@ -10,7 +10,7 @@
  */
 
 import {LitElement} from 'lit-element';
-import {localeReady, LOCALE_CHANGED_EVENT} from './index.js';
+import {LOCALE_CHANGED_EVENT} from './index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T> = new (...args: any[]) => T;
@@ -52,11 +52,6 @@ function _Localized<T extends Constructor<LitElement>>(Base: T): T {
         LOCALE_CHANGED_EVENT,
         this.__boundRequestUpdate
       );
-    }
-
-    protected async performUpdate(): Promise<unknown> {
-      await localeReady();
-      return super.performUpdate();
     }
   }
 

@@ -29,11 +29,13 @@ function checkTransform(
   t: ExecutionContext,
   inputTs: string,
   expectedJs: string,
-  messages: Message[],
-  autoImport = true,
-  locale = 'en'
+  opts?: {
+    messages?: Message[];
+    autoImport?: boolean;
+    locale?: string;
+  }
 ) {
-  if (autoImport) {
+  if (opts?.autoImport ?? true) {
     // Rather than fuss with imports in all the test cases, this little hack
     // automatically imports for `msg` and `html` (assuming those strings aren't
     // used with any other meanings).
@@ -55,7 +57,13 @@ function checkTransform(
   // them here, so it's a waste of time.
   options.typeRoots = [];
   const result = compileTsFragment(inputTs, options, cache, (program) => ({
-    before: [litLocalizeTransform(makeMessageIdMap(messages), locale, program)],
+    before: [
+      litLocalizeTransform(
+        makeMessageIdMap(opts?.messages ?? []),
+        opts?.locale ?? 'en',
+        program
+      ),
+    ],
   }));
 
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
@@ -76,31 +84,30 @@ function checkTransform(
 
 test('unchanged const', (t) => {
   const src = 'const foo = "foo";';
-  checkTransform(t, src, src, []);
+  checkTransform(t, src, src);
 });
 
 test('unchanged html', (t) => {
   const src =
     'const foo = "foo"; const bar = "bar"; html`Hello ${foo} and ${bar}!`;';
-  checkTransform(t, src, src, []);
+  checkTransform(t, src, src);
 });
 
 test('msg(string)', (t) => {
-  checkTransform(t, 'msg("foo", "Hello World");', '"Hello World";', []);
+  checkTransform(t, 'msg("foo", "Hello World");', '"Hello World";');
 });
 
 test('msg(string) translated', (t) => {
-  checkTransform(t, 'msg("foo", "Hello World");', '`Hola Mundo`;', [
-    {name: 'foo', contents: ['Hola Mundo']},
-  ]);
+  checkTransform(t, 'msg("foo", "Hello World");', '`Hola Mundo`;', {
+    messages: [{name: 'foo', contents: ['Hola Mundo']}],
+  });
 });
 
 test('html(msg(string))', (t) => {
   checkTransform(
     t,
     'html`<b>${msg("foo", "Hello World")}</b>`;',
-    'html`<b>Hello World</b>`;',
-    []
+    'html`<b>Hello World</b>`;'
   );
 });
 
@@ -109,7 +116,7 @@ test('html(msg(string)) translated', (t) => {
     t,
     'html`<b>${msg("foo", "Hello World")}</b>`;',
     'html`<b>Hola Mundo</b>`;',
-    [{name: 'foo', contents: ['Hola Mundo']}]
+    {messages: [{name: 'foo', contents: ['Hola Mundo']}]}
   );
 });
 
@@ -117,8 +124,7 @@ test('html(msg(html))', (t) => {
   checkTransform(
     t,
     'html`<b>${msg("foo", html`Hello <i>World</i>`)}</b>`;',
-    'html`<b>Hello <i>World</i></b>`;',
-    []
+    'html`<b>Hello <i>World</i></b>`;'
   );
 });
 
@@ -127,17 +133,19 @@ test('html(msg(html)) translated', (t) => {
     t,
     'html`<b>${msg("foo", html`Hello <i>World</i>`)}</b>`;',
     'html`<b>Hola <i>Mundo</i></b>`;',
-    [
-      {
-        name: 'foo',
-        contents: [
-          'Hola ',
-          {untranslatable: '<i>'},
-          'Mundo',
-          {untranslatable: '</i>'},
-        ],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: [
+            'Hola ',
+            {untranslatable: '<i>'},
+            'Mundo',
+            {untranslatable: '</i>'},
+          ],
+        },
+      ],
+    }
   );
 });
 
@@ -145,8 +153,7 @@ test('msg(fn(string), expr)', (t) => {
   checkTransform(
     t,
     'const name = "World";' + 'msg("foo", (name) => `Hello ${name}!`, name);',
-    'const name = "World";' + '`Hello ${name}!`;',
-    []
+    'const name = "World";' + '`Hello ${name}!`;'
   );
 });
 
@@ -155,12 +162,14 @@ test('msg(fn(string), expr) translated', (t) => {
     t,
     'const name = "World";' + 'msg("foo", (name) => `Hello ${name}!`, name);',
     'const name = "World";' + '`Hola ${name}!`;',
-    [
-      {
-        name: 'foo',
-        contents: ['Hola ', {untranslatable: '${name}'}, '!'],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+        },
+      ],
+    }
   );
 });
 
@@ -168,8 +177,7 @@ test('msg(fn(string), string)', (t) => {
   checkTransform(
     t,
     'msg("foo", (name) => `Hello ${name}!`, "World");',
-    '`Hello World!`;',
-    []
+    '`Hello World!`;'
   );
 });
 
@@ -178,12 +186,14 @@ test('msg(fn(string), string) translated', (t) => {
     t,
     'msg("foo", (name) => `Hello ${name}!`, "World");',
     '`Hola World!`;',
-    [
-      {
-        name: 'foo',
-        contents: ['Hola ', {untranslatable: '${name}'}, '!'],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+        },
+      ],
+    }
   );
 });
 
@@ -192,8 +202,7 @@ test('msg(fn(html), expr)', (t) => {
     t,
     'const name = "World";' +
       'msg("foo", (name) => html`Hello <b>${name}</b>!`, name);',
-    'const name = "World";' + 'html`Hello <b>${name}</b>!`;',
-    []
+    'const name = "World";' + 'html`Hello <b>${name}</b>!`;'
   );
 });
 
@@ -203,12 +212,14 @@ test('msg(fn(html), expr) translated', (t) => {
     'const name = "World";' +
       'msg("foo", (name) => html`Hello <b>${name}</b>!`, name);',
     'const name = "World";' + 'html`Hola <b>${name}</b>!`;',
-    [
-      {
-        name: 'foo',
-        contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+        },
+      ],
+    }
   );
 });
 
@@ -216,8 +227,7 @@ test('msg(fn(html), string)', (t) => {
   checkTransform(
     t,
     'msg("foo", (name) => html`Hello <b>${name}</b>!`, "World");',
-    'html`Hello <b>World</b>!`;',
-    []
+    'html`Hello <b>World</b>!`;'
   );
 });
 
@@ -226,12 +236,14 @@ test('msg(fn(html), string) translated', (t) => {
     t,
     'msg("foo", (name) => html`Hello <b>${name}</b>!`, "World");',
     'html`Hola <b>World</b>!`;',
-    [
-      {
-        name: 'foo',
-        contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+        },
+      ],
+    }
   );
 });
 
@@ -239,8 +251,7 @@ test('msg(fn(html), html)', (t) => {
   checkTransform(
     t,
     'msg("foo", (name) => html`Hello <b>${name}</b>!`, html`<i>World</i>`);',
-    'html`Hello <b><i>World</i></b>!`;',
-    []
+    'html`Hello <b><i>World</i></b>!`;'
   );
 });
 
@@ -249,12 +260,14 @@ test('msg(fn(html), html) translated', (t) => {
     t,
     'msg("foo", (name) => html`Hello <b>${name}</b>!`, html`<i>World</i>`);',
     'html`Hola <b><i>World</i></b>!`;',
-    [
-      {
-        name: 'foo',
-        contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+        },
+      ],
+    }
   );
 });
 
@@ -262,8 +275,7 @@ test('msg(fn(string), msg(string))', (t) => {
   checkTransform(
     t,
     'msg("foo", (name) => `Hello ${name}!`, msg("bar", "World"));',
-    '`Hello World!`;',
-    []
+    '`Hello World!`;'
   );
 });
 
@@ -272,16 +284,18 @@ test('msg(fn(string), msg(string)) translated', (t) => {
     t,
     'msg("foo", (name) => `Hello ${name}!`, msg("bar", "World"));',
     '`Hola Mundo!`;',
-    [
-      {
-        name: 'foo',
-        contents: ['Hola ', {untranslatable: '${name}'}, '!'],
-      },
-      {
-        name: 'bar',
-        contents: ['Mundo'],
-      },
-    ]
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+        },
+        {
+          name: 'bar',
+          contents: ['Mundo'],
+        },
+      ],
+    }
   );
 });
 
@@ -293,8 +307,7 @@ test('import * as litLocalize', (t) => {
     litLocalize.msg("foo", "Hello World");
   `,
     '"Hello World";',
-    [],
-    false
+    {autoImport: false}
   );
 });
 
@@ -306,8 +319,7 @@ test('import {msg as foo}', (t) => {
     foo("foo", "Hello World");
   `,
     '"Hello World";',
-    [],
-    false
+    {autoImport: false}
   );
 });
 
@@ -318,67 +330,39 @@ test('exclude different msg function', (t) => {
     msg("foo", "Hello World");`,
     `function msg(id, template) { return template; }
     msg("foo", "Hello World");`,
-    [],
-    false
+    {autoImport: false}
   );
 });
 
-test('configureLocalization() -> undefined', (t) => {
+test('configureTransformLocalization() -> {getLocale: () => "es-419"}', (t) => {
   checkTransform(
     t,
-    `import {configureLocalization} from './lib_client/index.js';
-     configureLocalization({
+    `import {configureTransformLocalization} from './lib_client/index.js';
+     const {getLocale} = configureTransformLocalization({
        sourceLocale: 'en',
-       targetLocales: ['es-419'],
-       loadLocale: (locale: string) => import(\`/\${locale}.js\`),
-     });`,
-    `undefined;`,
-    [],
-    false
+     });
+     const locale = getLocale();`,
+    `const {getLocale} = {getLocale: () => 'es-419'};
+     const locale = getLocale();`,
+    {locale: 'es-419'}
   );
 });
 
-test('getLocale() -> "es-419"', (t) => {
-  checkTransform(
-    t,
-    `import {getLocale} from './lib_client/index.js';
-     getLocale();`,
-    `"en";`,
-    [],
-    false,
-    'en'
-  );
-
-  checkTransform(
-    t,
-    `import {getLocale} from './lib_client/index.js';
-     getLocale();`,
-    `"es-419";`,
-    [],
-    false,
-    'es-419'
-  );
-});
-
-test('setLocale() -> undefined', (t) => {
-  checkTransform(
-    t,
-    `import {setLocale} from './lib_client/index.js';
-     setLocale("es-419");`,
-    `undefined;`,
-    [],
-    false
-  );
-});
-
-test('localeReady() -> Promise.resolve(undefined)', (t) => {
-  checkTransform(
-    t,
-    `import {localeReady} from './lib_client/index.js';
-     localeReady().then(() => console.log('ok'));`,
-    `Promise.resolve(undefined).then(() => console.log('ok'));`,
-    [],
-    false
+test('configureLocalization() throws', (t) => {
+  t.throws(
+    () =>
+      checkTransform(
+        t,
+        `import {configureLocalization} from './lib_client/index.js';
+         configureLocalization({
+           sourceLocale: 'en',
+           targetLocales: ['es-419'],
+           loadLocale: (locale: string) => import(\`/\${locale}.js\`),
+         });`,
+        ``
+      ),
+    undefined,
+    'Cannot use configureLocalization in transform mode'
   );
 });
 
@@ -387,9 +371,7 @@ test('LOCALE_CHANGED_EVENT => "lit-localize-locale-changed"', (t) => {
     t,
     `import {LOCALE_CHANGED_EVENT} from './lib_client/index.js';
      window.addEventListener(LOCALE_CHANGED_EVENT, () => console.log('ok'));`,
-    `window.addEventListener('lit-localize-locale-changed', () => console.log('ok'));`,
-    [],
-    false
+    `window.addEventListener('lit-localize-locale-changed', () => console.log('ok'));`
   );
 });
 
@@ -397,7 +379,6 @@ test('Localized(LitElement) -> LitElement', (t) => {
   checkTransform(
     t,
     `import {LitElement, html} from 'lit-element';
-     import {msg} from './lib_client/index.js';
      import {Localized} from './lib_client/localized-element.js';
      class MyElement extends Localized(LitElement) {
        render() {
@@ -409,8 +390,6 @@ test('Localized(LitElement) -> LitElement', (t) => {
        render() {
          return html\`<b>Hello World!</b>\`;
        }
-     }`,
-    [],
-    false
+     }`
   );
 });

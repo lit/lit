@@ -1,6 +1,12 @@
 import {LitElement, html} from 'lit-element';
-import {msg, getLocale} from '../../../lib_client/index.js';
+import {
+  msg,
+  configureTransformLocalization,
+} from '../../../lib_client/index.js';
 import {Localized} from '../../../lib_client/localized-element.js';
+
+const {getLocale} = configureTransformLocalization({sourceLocale: 'en'});
+console.log(`Locale is ${getLocale()}`);
 
 msg('string', 'Hello World!');
 
