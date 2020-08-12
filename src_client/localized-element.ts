@@ -10,7 +10,7 @@
  */
 
 import {LitElement} from 'lit-element';
-import {LOCALE_CHANGED_EVENT} from './index.js';
+import {LOCALE_STATUS_EVENT} from './index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T> = new (...args: any[]) => T;
@@ -39,19 +39,28 @@ type Constructor<T> = new (...args: any[]) => T;
  */
 function _Localized<T extends Constructor<LitElement>>(Base: T): T {
   class Localized extends Base {
-    private __boundRequestUpdate = () => this.requestUpdate();
+    private readonly __litLocalizeEventHandler = (
+      event: WindowEventMap[typeof LOCALE_STATUS_EVENT]
+    ) => {
+      if (event.detail.status === 'ready') {
+        this.requestUpdate();
+      }
+    };
 
     connectedCallback() {
       super.connectedCallback();
-      window.addEventListener(LOCALE_CHANGED_EVENT, this.__boundRequestUpdate);
+      window.addEventListener(
+        LOCALE_STATUS_EVENT,
+        this.__litLocalizeEventHandler
+      );
     }
 
     disconnectedCallback() {
-      super.disconnectedCallback();
       window.removeEventListener(
-        LOCALE_CHANGED_EVENT,
-        this.__boundRequestUpdate
+        LOCALE_STATUS_EVENT,
+        this.__litLocalizeEventHandler
       );
+      super.disconnectedCallback();
     }
   }
 

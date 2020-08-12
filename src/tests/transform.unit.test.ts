@@ -366,12 +366,48 @@ test('configureLocalization() throws', (t) => {
   );
 });
 
-test('LOCALE_CHANGED_EVENT => "lit-localize-locale-changed"', (t) => {
+test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
   checkTransform(
     t,
-    `import {LOCALE_CHANGED_EVENT} from './lib_client/index.js';
-     window.addEventListener(LOCALE_CHANGED_EVENT, () => console.log('ok'));`,
-    `window.addEventListener('lit-localize-locale-changed', () => console.log('ok'));`
+    `import {LOCALE_STATUS_EVENT} from './lib_client/index.js';
+     window.addEventListener(LOCALE_STATUS_EVENT, () => console.log('ok'));`,
+    `window.addEventListener('lit-localize-status', () => console.log('ok'));`
+  );
+});
+
+test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
+  checkTransform(
+    t,
+    `import * as litLocalize from './lib_client/index.js';
+     window.addEventListener(litLocalize.LOCALE_STATUS_EVENT, () => console.log('ok'));`,
+    `window.addEventListener('lit-localize-status', () => console.log('ok'));`
+  );
+});
+
+test('re-assigned LOCALE_STATUS_EVENT', (t) => {
+  checkTransform(
+    t,
+    `import {LOCALE_STATUS_EVENT} from './lib_client/index.js';
+     const event = LOCALE_STATUS_EVENT;
+     window.addEventListener(event, () => console.log('ok'));`,
+    `const event = 'lit-localize-status';
+     window.addEventListener(event, () => console.log('ok'));`
+  );
+});
+
+test('different LOCALE_STATUS_EVENT variable unchanged', (t) => {
+  checkTransform(
+    t,
+    `const LOCALE_STATUS_EVENT = "x";`,
+    `const LOCALE_STATUS_EVENT = "x";`
+  );
+});
+
+test('different variable cast to "lit-localie-status" unchanged', (t) => {
+  checkTransform(
+    t,
+    `const x = "x" as "lit-localize-status";`,
+    `const x = "x";`
   );
 });
 
@@ -380,6 +416,7 @@ test('Localized(LitElement) -> LitElement', (t) => {
     t,
     `import {LitElement, html} from 'lit-element';
      import {Localized} from './lib_client/localized-element.js';
+     import {msg} from './lib_client/index.js';
      class MyElement extends Localized(LitElement) {
        render() {
          return html\`<b>\${msg('greeting', 'Hello World!')}</b>\`;
@@ -390,6 +427,7 @@ test('Localized(LitElement) -> LitElement', (t) => {
        render() {
          return html\`<b>Hello World!</b>\`;
        }
-     }`
+     }`,
+    {autoImport: false}
   );
 });

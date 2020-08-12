@@ -88,11 +88,11 @@ bundle. For example:
 const {getLocale} = {getLocale: () => 'es-419'};
 ```
 
-### `getLocale(): string`
+### `getLocale() => string`
 
 Return the active locale code.
 
-### `setLocale(locale: string): Promise`
+### `setLocale(locale: string) => Promise`
 
 Set the active locale code, and begin loading templates for that locale using
 the `loadLocale` function that was passed to `configureLocalization`. Returns a
@@ -156,21 +156,74 @@ template for each emitted locale. For example:
 html`Hola <b>${getUsername()}!</b>`;
 ```
 
-### `LOCALE_CHANGED_EVENT: string`
+### `LOCALE_STATUS_EVENT`
 
-Whenever the locale changes and templates have finished loading, an event by
-this name (`"lit-localize-locale-changed"`) is dispatched to `window`.
+Name of the [`lit-localize-status` event](#lit-localize-status-event).
+
+## `lit-localize-status` event
+
+In runtime mode, whenever a locale change starts, finishes successfully, or
+fails, lit-localize will dispatch a `lit-localize-status` event to `window`.
 
 You can listen for this event to know when your application should be
 re-rendered following a locale change. See also the
 [`Localized`](#localized-mixin) mixin, which automatically re-renders
 `LitElement` classes using this event.
 
-```typescript
-import {LOCALE_CHANGED_EVENT} from 'lit-localize';
+### Event types
 
-window.addEventListener(LOCALE_CHANGED_EVENT, () => {
-  renderApplication();
+The `detail.status` string property tells you what kind of status change has occured,
+and can be one of: `loading`, `ready`, or `error`:
+
+#### `loading`
+
+A new locale has started to load. The `detail` object also contains:
+
+- `loadingLocale: string`: Code of the locale that has started loading.
+
+A `loading` status can be followed by a `ready`, `error`, or `loading` status.
+It will be followed by another `loading` status in the case that a second locale
+was requested before the first one finished loading.
+
+#### `ready`
+
+A new locale has successfully loaded and is ready for rendering. The `detail` object also contains:
+
+- `readyLocale: string`: Code of the locale that has successfully loaded.
+
+A `ready` status can be followed only by a `loading` status.
+
+#### `error`
+
+A new locale failed to load. The `detail` object also contains the following
+properties:
+
+- `errorLocale: string`: Code of the locale that failed to load.
+- `errorMessage: string`: Error message from locale load failure.
+
+An `error` status can be followed only by a `loading` status.
+
+### Event example
+
+```typescript
+// Show/hide a progress indicator whenever a new locale is loading,
+// and re-render the application every time a new locale successfully loads.
+window.addEventListener('lit-localize-status', (event) => {
+  const spinner = document.querySelector('#spinner');
+  if (event.detail.status === 'loading') {
+    console.log(`Loading new locale: ${event.detail.loadingLocale}`);
+    spinner.removeAttribute('hidden');
+  } else if (event.detail.status === 'ready') {
+    console.log(`Loaded new locale: ${event.detail.readyLocale}`);
+    spinner.addAttribute('hidden');
+    renderApplication();
+  } else if (event.detail.status === 'error') {
+    console.error(
+      `Error loading locale ${event.detail.errorLocale}: ` +
+        event.detail.errorMessage
+    );
+    spinner.addAttribute('hidden');
+  }
 });
 ```
 

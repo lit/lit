@@ -114,8 +114,13 @@ class Transformer {
     }
 
     // import ... from 'lit-localize' -> (removed)
-    if (this.isLitLocalizeImport(node)) {
-      return undefined;
+    if (ts.isImportDeclaration(node)) {
+      const moduleSymbol = this.typeChecker.getSymbolAtLocation(
+        node.moduleSpecifier
+      );
+      if (moduleSymbol && this.isLitLocalizeModule(moduleSymbol)) {
+        return undefined;
+      }
     }
 
     if (ts.isCallExpression(node)) {
@@ -172,17 +177,41 @@ class Transformer {
       }
     }
 
-    // LOCALE_CHANGED_EVENT -> "lit-localize-locale-changed"
+    // LOCALE_STATUS_EVENT -> "lit-localize-status"
     //
-    // This is slightly odd, but by replacing the LOCALE_CHANGED_EVENT const
-    // with its static string value, we don't have to be smart about deciding
-    // when to remove the 'lit-localize' module import, since we can assume that
-    // everything it exports will be transformed out.
-    if (
-      ts.isIdentifier(node) &&
-      this.typeHasProperty(node, '_LIT_LOCALIZE_LOCALE_CHANGED_EVENT_')
-    ) {
-      return ts.createStringLiteral('lit-localize-locale-changed');
+    // We want to replace this imported string constant with its static value so
+    // that we can always safely remove the 'lit-localize' module import.
+    //
+    // TODO(aomarks) Maybe we should error here instead, since lit-localize
+    // won't fire any of these events in transform mode? But I'm still thinking
+    // about the use case of an app that can run in either runtime or transform
+    // mode without code changes (e.g. runtime for dev, transform for
+    // production)...
+    //
+    // We can't tag this string const with a special property like we do with
+    // our exported functions, because doing so breaks lookups into
+    // `WindowEventMap`. So we instead identify the symbol by name, and check
+    // that it was declared in the lit-localize module.
+    let eventSymbol = this.typeChecker.getSymbolAtLocation(node);
+    if (eventSymbol && eventSymbol.name === 'LOCALE_STATUS_EVENT') {
+      if (eventSymbol.flags & ts.SymbolFlags.Alias) {
+        // Symbols will be aliased in the case of
+        // `import {LOCALE_STATUS_EVENT} ...`
+        // but not in the case of `import * as ...`.
+        eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
+      }
+      for (const decl of eventSymbol.declarations) {
+        let sourceFile: ts.Node = decl;
+        while (!ts.isSourceFile(sourceFile)) {
+          sourceFile = sourceFile.parent;
+        }
+        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
+          sourceFile
+        );
+        if (sourceFileSymbol && this.isLitLocalizeModule(sourceFileSymbol)) {
+          return ts.createStringLiteral('lit-localize-status');
+        }
+      }
     }
 
     return ts.visitEachChild(node, this.boundVisitNode, this.context);
@@ -410,17 +439,11 @@ class Transformer {
   }
 
   /**
-   * Return whether the given node is an import for the lit-localize main
-   * module, or the localized-element module.
+   * Return whether the given symbol looks like one of the lit-localize modules
+   * (because it exports one of the special tagged functions).
    */
-  isLitLocalizeImport(node: ts.Node): node is ts.ImportDeclaration {
-    if (!ts.isImportDeclaration(node)) {
-      return false;
-    }
-    const moduleSymbol = this.typeChecker.getSymbolAtLocation(
-      node.moduleSpecifier
-    );
-    if (!moduleSymbol || !moduleSymbol.exports) {
+  isLitLocalizeModule(moduleSymbol: ts.Symbol): boolean {
+    if (!moduleSymbol.exports) {
       return false;
     }
     const exports = moduleSymbol.exports.values();
@@ -429,7 +452,13 @@ class Transformer {
     }) {
       const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
       const props = this.typeChecker.getPropertiesOfType(type);
-      if (props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_MSG_')) {
+      if (
+        props.some(
+          (prop) =>
+            prop.escapedName === '_LIT_LOCALIZE_MSG_' ||
+            prop.escapedName === '_LIT_LOCALIZE_LOCALIZED_'
+        )
+      ) {
         return true;
       }
     }

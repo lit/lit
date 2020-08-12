@@ -1,7 +1,9 @@
 import {LitElement, html} from 'lit-element';
-import {Localized} from '../../../lib_client/localized-element.js';
 const {getLocale} = {getLocale: () => 'en'};
 console.log(`Locale is ${getLocale()}`);
+window.addEventListener('lit-localize-status', (event) => {
+  console.log(event.detail.status);
+});
 ('Hello World!');
 html`Hello <b><i>World!</i></b>`;
 `Hello World!`;
