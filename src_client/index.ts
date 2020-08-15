@@ -172,6 +172,7 @@ let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
 let configured = false;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
+let requestId = 0;
 
 /**
  * Set configuration parameters for lit-localize when in runtime mode. Returns
@@ -254,6 +255,8 @@ const setLocale: ((newLocale: string) => void) & {
   if (!validLocales.has(newLocale)) {
     throw new Error('Invalid locale code');
   }
+  requestId++;
+  const thisRequestId = requestId;
   loadingLocale = newLocale;
   if (loading.settled) {
     loading = new Deferred();
@@ -268,7 +271,7 @@ const setLocale: ((newLocale: string) => void) & {
   } else {
     loadLocale(newLocale).then(
       (mod) => {
-        if (newLocale === loadingLocale) {
+        if (requestId === thisRequestId) {
           activeLocale = newLocale;
           loadingLocale = undefined;
           templates = mod.templates;
@@ -281,7 +284,7 @@ const setLocale: ((newLocale: string) => void) & {
         // need to check if the locale is still the one they expected to load.
       },
       (err) => {
-        if (newLocale === loadingLocale) {
+        if (requestId === thisRequestId) {
           loading.reject(err);
           dispatchStatusEvent({
             status: 'error',

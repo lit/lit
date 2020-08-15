@@ -182,8 +182,10 @@ A new locale has started to load. The `detail` object also contains:
 - `loadingLocale: string`: Code of the locale that has started loading.
 
 A `loading` status can be followed by a `ready`, `error`, or `loading` status.
-It will be followed by another `loading` status in the case that a second locale
-was requested before the first one finished loading.
+
+In the case that a second locale is requested before the first one finishes
+loading, a new `loading` event is dispatched, and no `ready` or `error` event
+will be dispatched for the first request, because it is now stale.
 
 #### `ready`
 
