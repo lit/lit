@@ -114,45 +114,104 @@ class Transformer {
     }
 
     // import ... from 'lit-localize' -> (removed)
-    if (this.isLitLocalizeImport(node)) {
-      return undefined;
+    if (ts.isImportDeclaration(node)) {
+      const moduleSymbol = this.typeChecker.getSymbolAtLocation(
+        node.moduleSpecifier
+      );
+      if (moduleSymbol && this.isLitLocalizeModule(moduleSymbol)) {
+        return undefined;
+      }
     }
 
-    // configureTransformLocalization(...) -> {getLocale: () => "es-419"}
-    if (
-      this.isCallToTaggedFunction(
-        node,
-        '_LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_'
-      )
-    ) {
-      return ts.createObjectLiteral(
-        [
-          ts.createPropertyAssignment(
-            ts.createIdentifier('getLocale'),
-            ts.createArrowFunction(
-              undefined,
-              undefined,
-              [],
-              undefined,
-              ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              ts.createStringLiteral(this.locale)
-            )
-          ),
-        ],
-        false
-      );
+    if (ts.isCallExpression(node)) {
+      // configureTransformLocalization(...) -> {getLocale: () => "es-419"}
+      if (
+        this.typeHasProperty(
+          node.expression,
+          '_LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_'
+        )
+      ) {
+        return ts.createObjectLiteral(
+          [
+            ts.createPropertyAssignment(
+              ts.createIdentifier('getLocale'),
+              ts.createArrowFunction(
+                undefined,
+                undefined,
+                [],
+                undefined,
+                ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                ts.createStringLiteral(this.locale)
+              )
+            ),
+          ],
+          false
+        );
+      }
+
+      // configureLocalization(...) -> Error
+      if (
+        this.typeHasProperty(
+          node.expression,
+          '_LIT_LOCALIZE_CONFIGURE_LOCALIZATION_'
+        )
+      ) {
+        // TODO(aomarks) This error is not surfaced earlier in the analysis phase
+        // as a nicely formatted diagnostic, but it should be.
+        throw new KnownError(
+          'Cannot use configureLocalization in transform mode. ' +
+            'Use configureTransformLocalization instead.'
+        );
+      }
+
+      // Localized(LitElement) -> LitElement
+      if (this.typeHasProperty(node.expression, '_LIT_LOCALIZE_LOCALIZED_')) {
+        if (node.arguments.length !== 1) {
+          // TODO(aomarks) Surface as diagnostic instead.
+          throw new KnownError(
+            `Expected Localized mixin call to have one argument, ` +
+              `got ${node.arguments.length}`
+          );
+        }
+        return node.arguments[0];
+      }
     }
 
-    // configureLocalization(...) -> Error
-    if (
-      this.isCallToTaggedFunction(node, '_LIT_LOCALIZE_CONFIGURE_LOCALIZATION_')
-    ) {
-      // TODO(aomarks) This error is not surfaced earlier in the analysis phase
-      // as a nicely formatted diagnostic, but it should be.
-      throw new KnownError(
-        'Cannot use configureLocalization in transform mode. ' +
-          'Use configureTransformLocalization instead.'
-      );
+    // LOCALE_STATUS_EVENT -> "lit-localize-status"
+    //
+    // We want to replace this imported string constant with its static value so
+    // that we can always safely remove the 'lit-localize' module import.
+    //
+    // TODO(aomarks) Maybe we should error here instead, since lit-localize
+    // won't fire any of these events in transform mode? But I'm still thinking
+    // about the use case of an app that can run in either runtime or transform
+    // mode without code changes (e.g. runtime for dev, transform for
+    // production)...
+    //
+    // We can't tag this string const with a special property like we do with
+    // our exported functions, because doing so breaks lookups into
+    // `WindowEventMap`. So we instead identify the symbol by name, and check
+    // that it was declared in the lit-localize module.
+    let eventSymbol = this.typeChecker.getSymbolAtLocation(node);
+    if (eventSymbol && eventSymbol.name === 'LOCALE_STATUS_EVENT') {
+      if (eventSymbol.flags & ts.SymbolFlags.Alias) {
+        // Symbols will be aliased in the case of
+        // `import {LOCALE_STATUS_EVENT} ...`
+        // but not in the case of `import * as ...`.
+        eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
+      }
+      for (const decl of eventSymbol.declarations) {
+        let sourceFile: ts.Node = decl;
+        while (!ts.isSourceFile(sourceFile)) {
+          sourceFile = sourceFile.parent;
+        }
+        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
+          sourceFile
+        );
+        if (sourceFileSymbol && this.isLitLocalizeModule(sourceFileSymbol)) {
+          return ts.createStringLiteral('lit-localize-status');
+        }
+      }
     }
 
     return ts.visitEachChild(node, this.boundVisitNode, this.context);
@@ -380,16 +439,11 @@ class Transformer {
   }
 
   /**
-   * Return whether the given node is an import for the lit-localize module.
+   * Return whether the given symbol looks like one of the lit-localize modules
+   * (because it exports one of the special tagged functions).
    */
-  isLitLocalizeImport(node: ts.Node): node is ts.ImportDeclaration {
-    if (!ts.isImportDeclaration(node)) {
-      return false;
-    }
-    const moduleSymbol = this.typeChecker.getSymbolAtLocation(
-      node.moduleSpecifier
-    );
-    if (!moduleSymbol || !moduleSymbol.exports) {
+  isLitLocalizeModule(moduleSymbol: ts.Symbol): boolean {
+    if (!moduleSymbol.exports) {
       return false;
     }
     const exports = moduleSymbol.exports.values();
@@ -398,7 +452,13 @@ class Transformer {
     }) {
       const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
       const props = this.typeChecker.getPropertiesOfType(type);
-      if (props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_MSG_')) {
+      if (
+        props.some(
+          (prop) =>
+            prop.escapedName === '_LIT_LOCALIZE_MSG_' ||
+            prop.escapedName === '_LIT_LOCALIZE_LOCALIZED_'
+        )
+      ) {
         return true;
       }
     }
@@ -406,19 +466,16 @@ class Transformer {
   }
 
   /**
-   * Return whether the given node is call to a function which is is "tagged"
-   * with the given special identifying property (e.g. "_LIT_LOCALIZE_MSG_").
+   * Return whether the tpe of the given node is "tagged" with the given special
+   * identifying property (e.g. "_LIT_LOCALIZE_MSG_").
    */
-  isCallToTaggedFunction(
+  typeHasProperty(
     node: ts.Node,
-    tagProperty: string
+    propertyName: string
   ): node is ts.CallExpression {
-    if (!ts.isCallExpression(node)) {
-      return false;
-    }
-    const type = this.typeChecker.getTypeAtLocation(node.expression);
+    const type = this.typeChecker.getTypeAtLocation(node);
     const props = this.typeChecker.getPropertiesOfType(type);
-    return props.some((prop) => prop.escapedName === tagProperty);
+    return props.some((prop) => prop.escapedName === propertyName);
   }
 }
 

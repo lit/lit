@@ -88,11 +88,11 @@ bundle. For example:
 const {getLocale} = {getLocale: () => 'es-419'};
 ```
 
-### `getLocale(): string`
+### `getLocale() => string`
 
 Return the active locale code.
 
-### `setLocale(locale: string): Promise`
+### `setLocale(locale: string) => Promise`
 
 Set the active locale code, and begin loading templates for that locale using
 the `loadLocale` function that was passed to `configureLocalization`. Returns a
@@ -107,7 +107,7 @@ promise resolves.
 Throws if the given locale is not contained by the configured `sourceLocale` or
 `targetLocales`.
 
-### `msg(id: string, template, ...args): string|TemplateResult`
+### `msg(id: string, template, ...args) => string|TemplateResult`
 
 Make a string or lit-html template localizable.
 
@@ -155,3 +155,102 @@ template for each emitted locale. For example:
 ```typescript
 html`Hola <b>${getUsername()}!</b>`;
 ```
+
+### `LOCALE_STATUS_EVENT`
+
+Name of the [`lit-localize-status` event](#lit-localize-status-event).
+
+## `lit-localize-status` event
+
+In runtime mode, whenever a locale change starts, finishes successfully, or
+fails, lit-localize will dispatch a `lit-localize-status` event to `window`.
+
+You can listen for this event to know when your application should be
+re-rendered following a locale change. See also the
+[`Localized`](#localized-mixin) mixin, which automatically re-renders
+`LitElement` classes using this event.
+
+### Event types
+
+The `detail.status` string property tells you what kind of status change has occured,
+and can be one of: `loading`, `ready`, or `error`:
+
+#### `loading`
+
+A new locale has started to load. The `detail` object also contains:
+
+- `loadingLocale: string`: Code of the locale that has started loading.
+
+A `loading` status can be followed by a `ready`, `error`, or `loading` status.
+
+In the case that a second locale is requested before the first one finishes
+loading, a new `loading` event is dispatched, and no `ready` or `error` event
+will be dispatched for the first request, because it is now stale.
+
+#### `ready`
+
+A new locale has successfully loaded and is ready for rendering. The `detail` object also contains:
+
+- `readyLocale: string`: Code of the locale that has successfully loaded.
+
+A `ready` status can be followed only by a `loading` status.
+
+#### `error`
+
+A new locale failed to load. The `detail` object also contains the following
+properties:
+
+- `errorLocale: string`: Code of the locale that failed to load.
+- `errorMessage: string`: Error message from locale load failure.
+
+An `error` status can be followed only by a `loading` status.
+
+### Event example
+
+```typescript
+// Show/hide a progress indicator whenever a new locale is loading,
+// and re-render the application every time a new locale successfully loads.
+window.addEventListener('lit-localize-status', (event) => {
+  const spinner = document.querySelector('#spinner');
+  if (event.detail.status === 'loading') {
+    console.log(`Loading new locale: ${event.detail.loadingLocale}`);
+    spinner.removeAttribute('hidden');
+  } else if (event.detail.status === 'ready') {
+    console.log(`Loaded new locale: ${event.detail.readyLocale}`);
+    spinner.addAttribute('hidden');
+    renderApplication();
+  } else if (event.detail.status === 'error') {
+    console.error(
+      `Error loading locale ${event.detail.errorLocale}: ` +
+        event.detail.errorMessage
+    );
+    spinner.addAttribute('hidden');
+  }
+});
+```
+
+## `Localized` mixin
+
+If you are using [LitElement](https://lit-element.polymer-project.org/), then
+you can use the `Localized`
+[mixin](https://justinfagnani.com/2015/12/21/real-mixins-with-javascript-classes/)
+from `lit-localize/localized-element.js` to ensure that your elements
+automatically re-render whenever the locale changes.
+
+```typescript
+import {Localized} from 'lit-localize/localized-element.js';
+import {msg} from 'lit-localize';
+import {LitElement, html} from 'lit-element';
+
+class MyElement extends Localized(LitElement) {
+  render() {
+    // Whenever setLocale() is called, and templates for that locale have
+    // finished loading, this render() function will be re-invoked.
+    return html`<p>
+      ${msg('greeting', html`Hello <b>World!</b>`)}
+    </p>`;
+  }
+}
+```
+
+In transform mode, applications of the `Localized` mixin are removed.

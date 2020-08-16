@@ -354,14 +354,80 @@ test('configureLocalization() throws', (t) => {
       checkTransform(
         t,
         `import {configureLocalization} from './lib_client/index.js';
-     configureLocalization({
-       sourceLocale: 'en',
-       targetLocales: ['es-419'],
-       loadLocale: (locale: string) => import(\`/\${locale}.js\`),
-     });`,
-        `undefined;`
+         configureLocalization({
+           sourceLocale: 'en',
+           targetLocales: ['es-419'],
+           loadLocale: (locale: string) => import(\`/\${locale}.js\`),
+         });`,
+        ``
       ),
     undefined,
     'Cannot use configureLocalization in transform mode'
+  );
+});
+
+test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
+  checkTransform(
+    t,
+    `import {LOCALE_STATUS_EVENT} from './lib_client/index.js';
+     window.addEventListener(LOCALE_STATUS_EVENT, () => console.log('ok'));`,
+    `window.addEventListener('lit-localize-status', () => console.log('ok'));`
+  );
+});
+
+test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
+  checkTransform(
+    t,
+    `import * as litLocalize from './lib_client/index.js';
+     window.addEventListener(litLocalize.LOCALE_STATUS_EVENT, () => console.log('ok'));`,
+    `window.addEventListener('lit-localize-status', () => console.log('ok'));`
+  );
+});
+
+test('re-assigned LOCALE_STATUS_EVENT', (t) => {
+  checkTransform(
+    t,
+    `import {LOCALE_STATUS_EVENT} from './lib_client/index.js';
+     const event = LOCALE_STATUS_EVENT;
+     window.addEventListener(event, () => console.log('ok'));`,
+    `const event = 'lit-localize-status';
+     window.addEventListener(event, () => console.log('ok'));`
+  );
+});
+
+test('different LOCALE_STATUS_EVENT variable unchanged', (t) => {
+  checkTransform(
+    t,
+    `const LOCALE_STATUS_EVENT = "x";`,
+    `const LOCALE_STATUS_EVENT = "x";`
+  );
+});
+
+test('different variable cast to "lit-localie-status" unchanged', (t) => {
+  checkTransform(
+    t,
+    `const x = "x" as "lit-localize-status";`,
+    `const x = "x";`
+  );
+});
+
+test('Localized(LitElement) -> LitElement', (t) => {
+  checkTransform(
+    t,
+    `import {LitElement, html} from 'lit-element';
+     import {Localized} from './lib_client/localized-element.js';
+     import {msg} from './lib_client/index.js';
+     class MyElement extends Localized(LitElement) {
+       render() {
+         return html\`<b>\${msg('greeting', 'Hello World!')}</b>\`;
+       }
+     }`,
+    `import {LitElement, html} from 'lit-element';
+     class MyElement extends LitElement {
+       render() {
+         return html\`<b>Hello World!</b>\`;
+       }
+     }`,
+    {autoImport: false}
   );
 });

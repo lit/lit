@@ -69,6 +69,77 @@ export interface LocaleModule {
   templates: TemplateMap;
 }
 
+/**
+ * Name of the event dispatched to `window` whenever a locale change starts,
+ * finishes successfully, or fails. Only relevant to runtime mode.
+ *
+ * The `detail` of this event is an object with a `status` string that can be:
+ * "loading", "ready", or "error", along with the relevant locale code, and
+ * error message if applicable.
+ *
+ * You can listen for this event to know when your application should be
+ * re-rendered following a locale change. See also the Localized mixin, which
+ * automatically re-renders LitElement classes using this event.
+ */
+export const LOCALE_STATUS_EVENT = 'lit-localize-status';
+
+declare global {
+  interface WindowEventMap {
+    [LOCALE_STATUS_EVENT]: CustomEvent<LocaleStatusEventDetail>;
+  }
+}
+
+/**
+ * The possible details of the "lit-localize-status" event.
+ */
+export type LocaleStatusEventDetail = LocaleLoading | LocaleReady | LocaleError;
+
+/**
+ * Detail of the "lit-localize-status" event when a new locale has started to
+ * load.
+ *
+ * A "loading" status can be followed by [1] another "loading" status (in the
+ * case that a second locale is requested before the first one completed), [2] a
+ * "ready" status, or [3] an "error" status.
+ */
+export interface LocaleLoading {
+  status: 'loading';
+  /** Code of the locale that has started loading. */
+  loadingLocale: string;
+}
+
+/**
+ * Detail of the "lit-localize-status" event when a new locale has successfully
+ * loaded and is ready for rendering.
+ *
+ * A "ready" status can be followed only by a "loading" status.
+ */
+export interface LocaleReady {
+  status: 'ready';
+  /** Code of the locale that has successfully loaded. */
+  readyLocale: string;
+}
+
+/**
+ * Detail of the "lit-localize-status" event when a new locale failed to load.
+ *
+ * An "error" status can be followed only by a "loading" status.
+ */
+export interface LocaleError {
+  status: 'error';
+  /** Code of the locale that failed to load. */
+  errorLocale: string;
+  /** Error message from locale load failure. */
+  errorMessage: string;
+}
+
+/**
+ * Dispatch a "lit-localize-status" event to `window` with the given detail.
+ */
+function dispatchStatusEvent(detail: LocaleStatusEventDetail) {
+  window.dispatchEvent(new CustomEvent(LOCALE_STATUS_EVENT, {detail}));
+}
+
 class Deferred<T> {
   readonly promise: Promise<T>;
   private _resolve!: (value: T) => void;
@@ -101,6 +172,7 @@ let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
 let configured = false;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
+let requestId = 0;
 
 /**
  * Set configuration parameters for lit-localize when in runtime mode. Returns
@@ -183,23 +255,28 @@ const setLocale: ((newLocale: string) => void) & {
   if (!validLocales.has(newLocale)) {
     throw new Error('Invalid locale code');
   }
+  requestId++;
+  const thisRequestId = requestId;
   loadingLocale = newLocale;
   if (loading.settled) {
     loading = new Deferred();
   }
+  dispatchStatusEvent({status: 'loading', loadingLocale: newLocale});
   if (newLocale === sourceLocale) {
     activeLocale = newLocale;
     loadingLocale = undefined;
     templates = undefined;
     loading.resolve();
+    dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
   } else {
     loadLocale(newLocale).then(
       (mod) => {
-        if (newLocale === loadingLocale) {
+        if (requestId === thisRequestId) {
           activeLocale = newLocale;
           loadingLocale = undefined;
           templates = mod.templates;
           loading.resolve();
+          dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
         }
         // Else another locale was requested in the meantime. Don't resolve or
         // reject, because the newer load call is going to use the same promise.
@@ -207,8 +284,13 @@ const setLocale: ((newLocale: string) => void) & {
         // need to check if the locale is still the one they expected to load.
       },
       (err) => {
-        if (newLocale === loadingLocale) {
+        if (requestId === thisRequestId) {
           loading.reject(err);
+          dispatchStatusEvent({
+            status: 'error',
+            errorLocale: newLocale,
+            errorMessage: err.toString(),
+          });
         }
       }
     );

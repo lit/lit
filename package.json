@@ -32,6 +32,7 @@
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.2.6",
+    "lit-element": "^2.3.1",
     "lit-html": "^1.2.1",
     "minimist": "^1.2.5",
     "parse5": "^6.0.0",

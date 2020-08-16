@@ -1,11 +1,17 @@
-import {html} from 'lit-html';
+import {LitElement, html} from 'lit-element';
 import {
   msg,
   configureTransformLocalization,
+  LOCALE_STATUS_EVENT,
 } from '../../../lib_client/index.js';
+import {Localized} from '../../../lib_client/localized-element.js';
 
 const {getLocale} = configureTransformLocalization({sourceLocale: 'en'});
 console.log(`Locale is ${getLocale()}`);
+
+window.addEventListener(LOCALE_STATUS_EVENT, (event) => {
+  console.log(event.detail.status);
+});
 
 msg('string', 'Hello World!');
 
@@ -20,3 +26,11 @@ msg(
   'https://www.example.com/',
   'World'
 );
+
+export class MyElement extends Localized(LitElement) {
+  render() {
+    return html`<p>
+      ${msg('lit', html`Hello <b><i>World!</i></b>`)} (${getLocale()})
+    </p>`;
+  }
+}
