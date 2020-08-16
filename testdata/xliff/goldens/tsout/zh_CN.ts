@@ -6,7 +6,7 @@ import {html} from 'lit-html';
 /* eslint-disable no-irregular-whitespace */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export const messages = {
+export const templates = {
   string: `Hello World!`,
   lit: html`Hello <b><i>World!</i></b>`,
   variables_1: (name: any) => `Hello ${name}!`,

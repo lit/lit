@@ -1,5 +1,5 @@
 import {html} from 'lit-html';
-import {msg} from './tsout/localization';
+import {msg} from '../../../lib_client/index.js';
 
 msg('string', 'Hello World!');
 
