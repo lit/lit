@@ -438,17 +438,20 @@ function replaceHtmlWithPlaceholders(
   const components: Array<string | Placeholder> = [];
 
   const traverse = (node: parse5.DefaultTreeNode): void => {
-    const text =
-      node.nodeName === '#text'
-        ? (node as parse5.DefaultTreeTextNode).value
-        : null;
-    if (text !== null) {
+    if (node.nodeName === '#text') {
+      const text = (node as parse5.DefaultTreeTextNode).value;
       components.push(text);
+    } else if (node.nodeName === '#comment') {
+      components.push({
+        untranslatable: serializeComment(node as parse5.DefaultTreeCommentNode),
+      });
     } else {
       const {open, close} = serializeOpenCloseTags(node);
       components.push({untranslatable: open});
-      for (const child of (node as parse5.DefaultTreeParentNode).childNodes) {
-        traverse(child);
+      if ('childNodes' in node) {
+        for (const child of (node as parse5.DefaultTreeParentNode).childNodes) {
+          traverse(child);
+        }
       }
       components.push({untranslatable: close});
     }
@@ -479,6 +482,17 @@ function serializeOpenCloseTags(
   const open = serialized.slice(0, lastLt);
   const close = serialized.slice(lastLt);
   return {open, close};
+}
+
+/**
+ * Serialize an HTML comment node.
+ *
+ * Example:
+ *
+ *   {data: "foo"} --> "<!-- foo -->"
+ */
+function serializeComment(comment: parse5.DefaultTreeCommentNode): string {
+  return parse5.serialize({childNodes: [comment]});
 }
 
 /**

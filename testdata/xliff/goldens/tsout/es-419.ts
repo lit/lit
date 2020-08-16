@@ -7,6 +7,7 @@ import {html} from 'lit-html';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const templates = {
+  comment: html`Hola <b><!-- comment -->Mundo!</b>`,
   lit: html`Hola <b><i>Galaxia!</i></b>`,
   lit_variables_1: (url: any, name: any) =>
     html`Hola ${name}, clic <a href="${url}">aquí</a>!`,
