@@ -14,9 +14,9 @@ import {TemplateResult} from 'lit-html';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Runtime configuration parameters for lit-localize.
+ * Configuration parameters for lit-localize when in runtime mode.
  */
-export interface Configuration {
+export interface RuntimeConfiguration {
   /**
    * Required locale code in which source templates in this project are written,
    * and the initial active locale.
@@ -38,6 +38,17 @@ export interface Configuration {
 }
 
 /**
+ * Configuration parameters for lit-localize when in transform mode.
+ */
+export interface TransformConfiguration {
+  /**
+   * Required locale code in which source templates in this project are written,
+   * and the active locale.
+   */
+  sourceLocale: string;
+}
+
+/**
  * The template-like types that can be passed to `msg`.
  */
 export type TemplateLike =
@@ -56,6 +67,77 @@ export type TemplateMap = {[id: string]: TemplateLike};
  */
 export interface LocaleModule {
   templates: TemplateMap;
+}
+
+/**
+ * Name of the event dispatched to `window` whenever a locale change starts,
+ * finishes successfully, or fails. Only relevant to runtime mode.
+ *
+ * The `detail` of this event is an object with a `status` string that can be:
+ * "loading", "ready", or "error", along with the relevant locale code, and
+ * error message if applicable.
+ *
+ * You can listen for this event to know when your application should be
+ * re-rendered following a locale change. See also the Localized mixin, which
+ * automatically re-renders LitElement classes using this event.
+ */
+export const LOCALE_STATUS_EVENT = 'lit-localize-status';
+
+declare global {
+  interface WindowEventMap {
+    [LOCALE_STATUS_EVENT]: CustomEvent<LocaleStatusEventDetail>;
+  }
+}
+
+/**
+ * The possible details of the "lit-localize-status" event.
+ */
+export type LocaleStatusEventDetail = LocaleLoading | LocaleReady | LocaleError;
+
+/**
+ * Detail of the "lit-localize-status" event when a new locale has started to
+ * load.
+ *
+ * A "loading" status can be followed by [1] another "loading" status (in the
+ * case that a second locale is requested before the first one completed), [2] a
+ * "ready" status, or [3] an "error" status.
+ */
+export interface LocaleLoading {
+  status: 'loading';
+  /** Code of the locale that has started loading. */
+  loadingLocale: string;
+}
+
+/**
+ * Detail of the "lit-localize-status" event when a new locale has successfully
+ * loaded and is ready for rendering.
+ *
+ * A "ready" status can be followed only by a "loading" status.
+ */
+export interface LocaleReady {
+  status: 'ready';
+  /** Code of the locale that has successfully loaded. */
+  readyLocale: string;
+}
+
+/**
+ * Detail of the "lit-localize-status" event when a new locale failed to load.
+ *
+ * An "error" status can be followed only by a "loading" status.
+ */
+export interface LocaleError {
+  status: 'error';
+  /** Code of the locale that failed to load. */
+  errorLocale: string;
+  /** Error message from locale load failure. */
+  errorMessage: string;
+}
+
+/**
+ * Dispatch a "lit-localize-status" event to `window` with the given detail.
+ */
+function dispatchStatusEvent(detail: LocaleStatusEventDetail) {
+  window.dispatchEvent(new CustomEvent(LOCALE_STATUS_EVENT, {detail}));
 }
 
 class Deferred<T> {
@@ -83,42 +165,65 @@ class Deferred<T> {
 }
 
 let activeLocale = '';
+let loadingLocale: string | undefined;
 let sourceLocale: string | undefined;
 let validLocales: Set<string> | undefined;
 let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
+let configured = false;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
+let requestId = 0;
 
 /**
- * Whenever the locale changes and templates have finished loading, an event by
- * this name ("lit-localize-locale-changed") is dispatched to window.
+ * Set configuration parameters for lit-localize when in runtime mode. Returns
+ * an object with functions:
  *
- * You can listen for this event to know when your application should be
- * re-rendered following a locale change. See also the Localized mixin, which
- * automatically re-renders LitElement classes using this event.
+ * - `getLocale`: Return the active locale code.
+ * - `setLocale`: Set the active locale code.
+ *
+ * Throws if called more than once.
  */
-export const LOCALE_CHANGED_EVENT: string & {
-  _LIT_LOCALIZE_LOCALE_CHANGED_EVENT_?: never;
-} = 'lit-localize-locale-changed';
-
-/**
- * Set runtime configuration parameters for lit-localize. This function must be
- * called before using any other lit-localize function.
- */
-export const configureLocalization: ((config: Configuration) => void) & {
+export const configureLocalization: ((
+  config: RuntimeConfiguration
+) => {getLocale: typeof getLocale; setLocale: typeof setLocale}) & {
   _LIT_LOCALIZE_CONFIGURE_LOCALIZATION_?: never;
-} = (config: Configuration) => {
+} = (config: RuntimeConfiguration) => {
+  if (configured === true) {
+    throw new Error('lit-localize can only be configured once');
+  }
+  configured = true;
   activeLocale = sourceLocale = config.sourceLocale;
   validLocales = new Set(config.targetLocales);
   validLocales.add(config.sourceLocale);
   loadLocale = config.loadLocale;
+  return {getLocale, setLocale};
 };
 
 /**
- * Return the active locale code. Returns empty string if lit-localize has not
- * yet been configured.
+ * Set configuration parameters for lit-localize when in transform mode. Returns
+ * an object with function:
+ *
+ * - `getLocale`: Return the active locale code.
+ *
+ * Throws if called more than once.
  */
-export const getLocale: (() => string) & {
+export const configureTransformLocalization: ((
+  config: TransformConfiguration
+) => {getLocale: typeof getLocale}) & {
+  _LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_?: never;
+} = (config: TransformConfiguration) => {
+  if (configured === true) {
+    throw new Error('lit-localize can only be configured once');
+  }
+  configured = true;
+  activeLocale = sourceLocale = config.sourceLocale;
+  return {getLocale};
+};
+
+/**
+ * Return the active locale code.
+ */
+const getLocale: (() => string) & {
   _LIT_LOCALIZE_GET_LOCALE_?: never;
 } = () => {
   return activeLocale;
@@ -126,34 +231,52 @@ export const getLocale: (() => string) & {
 
 /**
  * Set the active locale code, and begin loading templates for that locale using
- * the `loadLocale` function that was passed to `configureLocalization`.
+ * the `loadLocale` function that was passed to `configureLocalization`. Returns
+ * a promise that resolves when the next locale is ready to be rendered.
+ *
+ * Note that if a second call to `setLocale` is made while the first requested
+ * locale is still loading, then the second call takes precedence, and the
+ * promise returned from the first call will resolve when second locale is
+ * ready. If you need to know whether a particular locale was loaded, check
+ * `getLocale` after the promise resolves.
+ *
+ * Throws if the given locale is not contained by the configured `sourceLocale`
+ * or `targetLocales`.
  */
-export const setLocale: ((newLocale: string) => void) & {
+const setLocale: ((newLocale: string) => void) & {
   _LIT_LOCALIZE_SET_LOCALE_?: never;
 } = (newLocale: string) => {
-  if (
-    newLocale === activeLocale ||
-    !validLocales ||
-    !validLocales.has(newLocale) ||
-    !loadLocale
-  ) {
-    return;
+  if (!configured || !validLocales || !loadLocale) {
+    throw new Error('Must call configureLocalization before setLocale');
   }
-  activeLocale = newLocale;
-  templates = undefined;
+  if (newLocale === loadingLocale ?? activeLocale) {
+    return loading.promise;
+  }
+  if (!validLocales.has(newLocale)) {
+    throw new Error('Invalid locale code');
+  }
+  requestId++;
+  const thisRequestId = requestId;
+  loadingLocale = newLocale;
   if (loading.settled) {
     loading = new Deferred();
   }
+  dispatchStatusEvent({status: 'loading', loadingLocale: newLocale});
   if (newLocale === sourceLocale) {
+    activeLocale = newLocale;
+    loadingLocale = undefined;
+    templates = undefined;
     loading.resolve();
-    window.dispatchEvent(new Event(LOCALE_CHANGED_EVENT));
+    dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
   } else {
     loadLocale(newLocale).then(
       (mod) => {
-        if (newLocale === activeLocale) {
+        if (requestId === thisRequestId) {
+          activeLocale = newLocale;
+          loadingLocale = undefined;
           templates = mod.templates;
           loading.resolve();
-          window.dispatchEvent(new Event(LOCALE_CHANGED_EVENT));
+          dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
         }
         // Else another locale was requested in the meantime. Don't resolve or
         // reject, because the newer load call is going to use the same promise.
@@ -161,21 +284,19 @@ export const setLocale: ((newLocale: string) => void) & {
         // need to check if the locale is still the one they expected to load.
       },
       (err) => {
-        if (newLocale === activeLocale) {
+        if (requestId === thisRequestId) {
           loading.reject(err);
+          dispatchStatusEvent({
+            status: 'error',
+            errorLocale: newLocale,
+            errorMessage: err.toString(),
+          });
         }
       }
     );
   }
+  return loading.promise;
 };
-
-/**
- * Return a promise that is resolved when the next set of templates are loaded
- * and available for rendering.
- */
-export const localeReady: (() => Promise<void>) & {
-  _LIT_LOCALIZE_LOCALE_READY_?: never;
-} = () => loading.promise;
 
 /**
  * Make a string or lit-html template localizable.
@@ -207,13 +328,13 @@ export function _msg(
   template: TemplateLike,
   ...params: any[]
 ): string | TemplateResult {
-  if (activeLocale !== sourceLocale && templates) {
+  if (templates) {
     const localized = templates[id];
     if (localized) {
       template = localized;
     }
   }
-  if (template instanceof Function) {
+  if (typeof template === 'function') {
     return template(...params);
   }
   return template;

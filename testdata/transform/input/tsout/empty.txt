@@ -1,1 +1,0 @@
-git won't track an empty directory
