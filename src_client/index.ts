@@ -111,7 +111,11 @@ let loading = new Deferred<void>();
  *
  * Throws if called more than once.
  */
-export function configureLocalization(config: RuntimeConfiguration) {
+export const configureLocalization: ((
+  config: RuntimeConfiguration
+) => {getLocale: typeof getLocale; setLocale: typeof setLocale}) & {
+  _LIT_LOCALIZE_CONFIGURE_LOCALIZATION_?: never;
+} = (config: RuntimeConfiguration) => {
   if (configured === true) {
     throw new Error('lit-localize can only be configured once');
   }
@@ -121,7 +125,7 @@ export function configureLocalization(config: RuntimeConfiguration) {
   validLocales.add(config.sourceLocale);
   loadLocale = config.loadLocale;
   return {getLocale, setLocale};
-}
+};
 
 /**
  * Set configuration parameters for lit-localize when in transform mode. Returns
@@ -131,21 +135,27 @@ export function configureLocalization(config: RuntimeConfiguration) {
  *
  * Throws if called more than once.
  */
-export function configureTransformLocalization(config: TransformConfiguration) {
+export const configureTransformLocalization: ((
+  config: TransformConfiguration
+) => {getLocale: typeof getLocale}) & {
+  _LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_?: never;
+} = (config: TransformConfiguration) => {
   if (configured === true) {
     throw new Error('lit-localize can only be configured once');
   }
   configured = true;
   activeLocale = sourceLocale = config.sourceLocale;
   return {getLocale};
-}
+};
 
 /**
  * Return the active locale code.
  */
-function getLocale(): string {
+const getLocale: (() => string) & {
+  _LIT_LOCALIZE_GET_LOCALE_?: never;
+} = () => {
   return activeLocale;
-}
+};
 
 /**
  * Set the active locale code, and begin loading templates for that locale using
@@ -161,7 +171,9 @@ function getLocale(): string {
  * Throws if the given locale is not contained by the configured `sourceLocale`
  * or `targetLocales`.
  */
-function setLocale(newLocale: string): Promise<void> {
+const setLocale: ((newLocale: string) => void) & {
+  _LIT_LOCALIZE_SET_LOCALE_?: never;
+} = (newLocale: string) => {
   if (!configured || !validLocales || !loadLocale) {
     throw new Error('Must call configureLocalization before setLocale');
   }
@@ -202,7 +214,7 @@ function setLocale(newLocale: string): Promise<void> {
     );
   }
   return loading.promise;
-}
+};
 
 /**
  * Make a string or lit-html template localizable.

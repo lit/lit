@@ -1,4 +1,6 @@
 import {html} from 'lit-html';
+const {getLocale} = {getLocale: () => 'zh_CN'};
+console.log(`Locale is ${getLocale()}`);
 `\u4F60\u597D\uFF0C\u4E16\u754C\uFF01`;
 html`你好, <b><i>世界!</i></b>`;
 `Hello World!`;

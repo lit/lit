@@ -32,6 +32,7 @@ function checkTransform(
   opts?: {
     messages?: Message[];
     autoImport?: boolean;
+    locale?: string;
   }
 ) {
   if (opts?.autoImport ?? true) {
@@ -57,7 +58,11 @@ function checkTransform(
   options.typeRoots = [];
   const result = compileTsFragment(inputTs, options, cache, (program) => ({
     before: [
-      litLocalizeTransform(makeMessageIdMap(opts?.messages ?? []), program),
+      litLocalizeTransform(
+        makeMessageIdMap(opts?.messages ?? []),
+        opts?.locale ?? 'en',
+        program
+      ),
     ],
   }));
 
@@ -326,5 +331,37 @@ test('exclude different msg function', (t) => {
     `function msg(id, template) { return template; }
     msg("foo", "Hello World");`,
     {autoImport: false}
+  );
+});
+
+test('configureTransformLocalization() -> {getLocale: () => "es-419"}', (t) => {
+  checkTransform(
+    t,
+    `import {configureTransformLocalization} from './lib_client/index.js';
+     const {getLocale} = configureTransformLocalization({
+       sourceLocale: 'en',
+     });
+     const locale = getLocale();`,
+    `const {getLocale} = {getLocale: () => 'es-419'};
+     const locale = getLocale();`,
+    {locale: 'es-419'}
+  );
+});
+
+test('configureLocalization() throws', (t) => {
+  t.throws(
+    () =>
+      checkTransform(
+        t,
+        `import {configureLocalization} from './lib_client/index.js';
+     configureLocalization({
+       sourceLocale: 'en',
+       targetLocales: ['es-419'],
+       loadLocale: (locale: string) => import(\`/\${locale}.js\`),
+     });`,
+        `undefined;`
+      ),
+    undefined,
+    'Cannot use configureLocalization in transform mode'
   );
 });
