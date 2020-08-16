@@ -2,7 +2,7 @@
 
 [![Published on npm](https://img.shields.io/npm/v/lit-localize.svg)](https://www.npmjs.com/package/lit-localize) [![Test Status](https://github.com/PolymerLabs/lit-localize/workflows/tests/badge.svg?branch=master)](https://github.com/PolymerLabs/lit-localize/actions?query=workflow%3Atests+branch%3Amaster+event%3Apush)
 
-<img src="./rgb_lit.png" height="100" align="right"></img>
+<img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
 ###### [API](#api) | [Tutorial](#tutorial) | [API](#api)
 
@@ -13,6 +13,7 @@
 
 - 🌐 Localize your lit-html and LitElement applications
 - 🔥 Safely embed HTML markup within localized templates
+- 🍦 Write vanilla code that works in development with no new tooling
 - 📄 Standard XLIFF interchange format
 - 🆓 Generate a zero-overhead bundle for each locale
 - 🔁 ... or dynamically load locales and automatically re-render
@@ -54,6 +55,10 @@
    function. The first argument is a unique identifier for this template, and
    the second is a string or lit-html template.
 
+   (Note that this code will directly compile and run, just as it would if you
+   were rendering the lit template directly, so your build process doesn't need
+   to change until you want to integrate localized templates.)
+
    ```typescript
    import {html, render} from 'lit-html';
    import {msg} from 'lit-localize';
@@ -66,7 +71,8 @@
 
 4. Make a JSON config file at the root of your project called
    `lit-localize.json`. In this example we're using _transform_ mode, but you
-   can also use _runtime_ mode.
+   can also use _runtime_ mode. The `$schema` property is optional, and lets
+   editors like VSCode auto-complete and check for errors.
 
    ```json
    {
