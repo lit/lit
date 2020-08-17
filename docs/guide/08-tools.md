@@ -122,9 +122,9 @@ Alternately, you can also use the Karma test runner. The Open Web Components rec
 
 Build tools take your code and make it production-ready. Among the things you may need build tools to do:
 
-* Transform ES6 code to ES5 for legacy browsers, including transforming JavaScript modules into other formats.
 * Bundle modules together can improve performance by reducing the number of files that need to be transferred. 
 * Minify JavaScript, HTML, and CSS.
+* To support legacy browsers, transform ES6 code to ES5, including transforming JavaScript modules into other formats.
 * Add required polyfills (may be done manually).
 
 Many build tools can do this for you. Currently we recommend Rollup, and provide a [sample project using Rollup](https://github.com/PolymerLabs/lit-html-build). 
@@ -160,14 +160,11 @@ For more details on these considerations, see the LitElement [Build for producti
 
 #### Compilation and module transform {#transpilation-and-module-transform}
 
-You build tools need to compile ES6 features to ES5 for legacy browsers. 
-
-If you're working in TypeScript, the TypeScript compiler can generate different output for different browsers.
-
-* In general, ES6 is faster than the ES5 equivalent, so try to serve ES6 to browsers that support it.
-* TypeScript has slightly buggy template literal support when compiling to ES5, which can hurt performance.
+You build tools need to compile ES6 features to ES5 for legacy browsers. n general, ES6 is faster than the ES5 equivalent, so try to serve ES6 to browsers that support it.
 
 Your build tools need to accept JavaScript modules (also called ES modules) and transform them to another module format, such as SystemJS, if necessary. If you use node-style module specifiers, your build will also need to transform them to browser-ready modules specifiers. 
+
+If you're working in TypeScript, the TypeScript compiler, `tsc`, can generate different output for different browsers. However, there are known issues with the compiled output for older browsers. **We recommend compiling TypeScript using the ES2017 target and ES modules (the default module system for the ES2017 target).** Use Babel to transform the compiled output for older browsers.
 
 #### Template minification
 
