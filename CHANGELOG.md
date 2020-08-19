@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## [1.3.0-pre.1] - 2020-07-28
+## [1.3.0] - 2020-08-19
+
 ### Changed
 * Set the "type" field in package.json to "module. ([#1146](https://github.com/Polymer/lit-html/pull/1146))
 
