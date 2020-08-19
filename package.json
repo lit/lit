@@ -32,7 +32,7 @@
     "!/src/test/"
   ],
   "scripts": {
-    "build": "tsc && downlevel-dts . ts3.4 && cp tsconfig.json ./ts3.4/",
+    "build": "tsc && rm -rf ./ts3.4 && downlevel-dts . ts3.4 && cp tsconfig.json ./ts3.4/",
     "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
     "test": "npm run build && npm run lint && wct --npm",
     "quicktest": "wct -l chrome -p --npm",
