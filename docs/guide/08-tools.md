@@ -122,82 +122,84 @@ Alternately, you can also use the Karma test runner. The Open Web Components rec
 
 Build tools take your code and make it production-ready. Among the things you may need build tools to do:
 
-* Transform ES6 code to ES5 for legacy browsers, including transforming JavaScript modules into other formats.
-* Bundle modules together can improve performance by reducing the number of files that need to be transferred. 
+* Bundle modules together to improve performance by reducing the number of files that need to be transferred. 
 * Minify JavaScript, HTML, and CSS.
+* Transform code for legacy browsers: compile ES6 code to ES5, and transform JavaScript modules into other formats.
+* Add required polyfills (may be done manually).
 
-Many build tools can do this for you. Currently we recommend the Polymer CLI or webpack. 
+Many build tools can do this for you. Currently we recommend Rollup, and provide a [sample project using Rollup](https://github.com/PolymerLabs/lit-html-build). 
 
-The Polymer CLI includes a set of build tools that can handle lit-html with minimal configuration.
+If you're using another tool or creating your own Rollup configuration, see the section on [Build considerations](#build-consderations).
 
-webpack is a powerful build tool with a large ecosystem of plugins. The [Open Web Components](https://open-wc.org/building/#webpack) project provides a default configuration for webpack that works well for lit-html and LitElement.
+For more details on the build steps, see the LitElement [Build for production](https://lit-element.polymer-project.org/guide/build) guide. lit-html has the same requirements as LitElement, except that lit-html requires only the [Template polyfill](#template-polyfill), not the full Web Components polyfills.
 
-Other tools such as Rollup can work, too. If you're using another tool or creating your own webpack configuration, see the section on [Build considerations for other tools](#build-consderations).
+### Build your project with Rollup
 
-### Build your project with Polymer CLI
+Rollup works well with lit-html. The [lit-html-build](https://github.com/PolymerLabs/lit-html-build) repository is a simple example project using lit-html with a Rollup build.
 
-Originally developed to work with the Polymer library, the Polymer CLI can handle build duties for a variety of projects. It's not as flexible and extensible as webpack or Rollup, but it requires minimal configuration.
+For more information on the build steps, see the LitElement [Build for production](https://lit-element.polymer-project.org/guide/build) guide.
 
-To build your project with the Polymer CLI, first install the Polymer CLI:
-
-`npm i -g polymer-cli`
-
-Create a `polymer.json` file in your project folder. A simple example would look like this:
-
-```json
-{
-  "entrypoint": "index.html",
-  "shell": "src/myapp.js",
-  "sources": [
-    "src/**.js",
-    "manifest/**",
-    "package.json"
-  ],
-  "extraDependencies": [
-    "node_modules/@webcomponents/webcomponentsjs/bundles/**"
-  ],
-  "builds": [
-    {"preset": "es6-bundled"}
-  ]
-}
-```
-
-This configuration specifies that the app has an HTML entrypoint called `index.html`, has a main JavaScript file (app shell) called `src/myapp.js`. It will produce a single build, bundled but not transpiled to ES5. For details on the polymer.json file, see [polymer.json specification](https://polymer-library.polymer-project.org/3.0/docs/tools/polymer-json) on the Polymer library site.
-
-To build the project, run the following command in your project folder:
-
-`polymer build`
-
-For more on building with Polymer CLI, see [Build for production](https://polymer-library.polymer-project.org/3.0/docs/apps/build-for-production) in the Polymer library docs.
+open-wc also has [Rollup build resources](https://open-wc.org/building/building-rollup.html). 
 
 ### Build your project with webpack
 
+webpack is a powerful build tool with a large ecosystem of plugins. 
 
-See the Open Web Components default webpack configuration provides a great starting point for building projects that use lit-html. See their [webpack page](https://open-wc.org/building/building-webpack.html#default-configuration) for instructions on getting started. 
+See the open-wc default webpack configuration provides a great starting point for building projects that use lit-html. See their [webpack page](https://github.com/open-wc/open-wc/tree/master/packages/building-webpack) for instructions on getting started. 
 
-### Build considerations for other tools {#build-considerations}
-
+### Build considerations  {#build-considerations}
 
 If you're creating your own configuration for webpack, Rollup, or another tool, here are some factors to consider:
 
-* ES6 to ES5 transpilation.
+* ES6 to ES5 compilation.
 * Transforming JavaScript modules to other formats for legacy browsers.
 * lit-html template minification.
+* Polyfills.
 
-#### Transpilation and module transform
+For more details on these considerations, see the LitElement [Build for production](https://lit-element.polymer-project.org/guide/build) guide. lit-html has the same requirements as LitElement, except that lit-html requires only the [Template polyfill](#template-polyfill), not the full Web Components polyfills.
 
-You build tools need to transpile ES6 features to ES5 for legacy browsers. 
+#### Compilation and module transform {#transpilation-and-module-transform}
 
-If you're working in TypeScript, the TypeScript compiler can generate different output for different browsers.
+To support legacy browsers, your build tools need to compile ES6 features to ES5. In general, ES6 is faster than the ES5 equivalent, so try to serve ES6 to browsers that support it.
 
-* In general, ES6 is faster than the ES5 equivalent, so try to serve ES6 to browsers that support it.
-* TypeScript has slightly buggy template literal support when compiling to ES5, which can hurt performance.
+Your build tools need to accept JavaScript modules (also called ES modules) and transform them to another module format, such as SystemJS, if necessary. If you use node-style module specifiers, your build will also need to transform them to browser-ready modules specifiers. 
 
-Your build tools need to accept JavaScript modules (also called ES modules) and transform them to another module format, such as UMD, if necessary. If you use node-style module specifiers, your build will also need to transform them to browser-ready modules specifiers. 
+If you're working in TypeScript, the TypeScript compiler, `tsc`, can generate different output for different browsers. However, there are known issues with the compiled output for older browsers. **We recommend configuring TypeScript to output modern JavaScript (ES2017 target and ES modules) and using Babel to compile the output for older browsers.** 
+
+For example, if you have a `tsconfig.json` file, you'd include the following options to output modern JavaScript:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "es2015",
+    ...
+```
 
 #### Template minification
 
-As part of the build process, you'll probably want to minify the HTML templates. Most HTML minifiers don't support HTML inside template literals, as used by lit-html, so you'll need to use a build plugin that supports minifying lit-html templates. Minifying lit-html templates can improve performance by reducing the number of nodes in a template.
+As part of the build process, you'll probably want to minify the HTML templates. Most HTML minifiers don't support HTML inside template literals, as used by lit-html, so you'll need to use a build plugin that supports minifying lit-html templates. Minifying lit-html templates can improve performance by reducing the number of nodes in a template. 
 
-* [Babel plugin](https://github.com/cfware/babel-plugin-template-html-minifier). For build chains that use Babel for transpilation. The open-wc webpack default configuration uses this plugin.
+* [Babel plugin](https://github.com/cfware/babel-plugin-template-html-minifier). For build chains that use Babel for compilation. The open-wc webpack default configuration uses this plugin.
 * [Rollup plugin](https://github.com/asyncLiz/rollup-plugin-minify-html-literals). If you're building your own Rollup configuration.
+
+Template minification is a fairly small optimization compared to other common optimizations like JavaScript minification, bundling, and compression. 
+
+#### Template polyfill
+
+To run on Internet Explorer 11, which doesn't support the `<template>` element, you'll need a polyfill. You can use the template polyfill included with the Web Components polyfills.
+
+Install the template polyfill:
+
+```bash
+npm i @webcomponents/template
+```
+
+Use the template polyfill:
+
+```html
+<script src="./node_modules/@webcomponents/template/template.js"></script>
+```
+
+Note: when transpiling for IE11, the Babel polyfills need to be bundled separately from the application code, and loaded *before* the template polyfill. This is demonstrated in the [`index-prod.html`](https://github.com/PolymerLabs/lit-html-build/blob/master/index-prod.html) file in the Rollup sample project.
+
