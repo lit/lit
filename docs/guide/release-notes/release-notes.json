@@ -1,5 +1,0 @@
-
-{
-  "layout": "post",
-  "permalink": "{{page.filePathStem}}.html"
-}

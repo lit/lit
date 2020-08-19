@@ -1,0 +1,33 @@
+{
+  "name": "lit-html",
+  "version": "2.0.0-pre.0",
+  "description": "HTML templates literals in JavaScript",
+  "license": "BSD-3-Clause",
+  "homepage": "https://lit-html.polymer-project.org/",
+  "repository": "Polymer/lit-html",
+  "type": "module",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    "/index.js",
+    "/index.js.map",
+    "/index.d.ts",
+    "/index.d.ts.map",
+    "/lib/",
+    "/directives/",
+    "/src/",
+    "!/src/test/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "check-version": "node check-version-tracker.js"
+  },
+  "author": "The Polymer Authors",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.0.0-beta"
+  }
+}

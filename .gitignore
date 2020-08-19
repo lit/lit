@@ -1,46 +1,11 @@
 /node_modules/
-/lib/
-/directives/
-/polyfills/
 
-/tools/node_modules/
-/tools/lib/
+/packages/*/node_modules/
+/packages/*/lib/
+/packages/*/test/
+/packages/*/index.js
+/packages/*/index.js.map
+/packages/*/index.d.ts
+/packages/*/index.d.ts.map
 
-# Compiler output
-/lit-html.d.ts
-/lit-html.d.ts.map
-/lit-html.js
-/lit-html.js.map
-/test/**/*.d.ts
-/test/**/*.d.ts.map
-/test/**/*.js
-/test/**/*.js.map
-/ts3.4/
-
-/lit-html.bundled.js
-
-yarn.lock
-
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Optional npm cache directory
-.npm
-
-# Docs
-.DS_Store
-/docs/_site/
-/docs/_api/tmp/
-/docs/api/
-/docs/node_modules/
-*.pyc
+/packages/lit-html/directives
