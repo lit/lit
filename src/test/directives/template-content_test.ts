@@ -15,6 +15,7 @@
 import {templateContent} from '../../directives/template-content';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
+import {policy} from '../test-utils/security';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
@@ -24,7 +25,7 @@ const assert = chai.assert;
 suite('templateContent', () => {
   let container: HTMLElement;
   const template = document.createElement('template');
-  template.innerHTML = '<div>aaa</div>';
+  template.innerHTML = policy.createHTML('<div>aaa</div>');
 
   setup(() => {
     container = document.createElement('div');
@@ -60,7 +61,7 @@ suite('templateContent', () => {
         '<div><div>aaa</div></div>');
 
     const newTemplate = document.createElement('template');
-    newTemplate.innerHTML = '<span>bbb</span>';
+    newTemplate.innerHTML = policy.createHTML('<span>bbb</span>');
     go(newTemplate);
     assert.equal(
         stripExpressionMarkers(container.innerHTML),

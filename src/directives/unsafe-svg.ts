@@ -28,6 +28,8 @@ interface PreviousValue {
 // value passed to unsafeSVG.
 const previousValues = new WeakMap<NodePart, PreviousValue>();
 
+const isIe = window.navigator.userAgent.indexOf('Trident/') > 0;
+
 /**
  * Renders the result as SVG, rather than text.
  *
@@ -48,9 +50,19 @@ export const unsafeSVG = directive((value: unknown) => (part: Part): void => {
   }
 
   const template = document.createElement('template');
-  template.innerHTML = `<svg>${value}</svg>`;
   const content = template.content;
-  const svgElement = content.firstChild!;
+  let svgElement;
+  if (isIe) {
+    // IE can't set innerHTML of an svg element. However, it also doesn't
+    // support Trusted Types, so it's ok for us to use a string when setting
+    // innerHTML.
+    template.innerHTML = `<svg>${value}</svg>`;
+    svgElement = content.firstChild!;
+  } else {
+    svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    content.appendChild(svgElement);
+    svgElement.innerHTML = value as string;
+  }
   content.removeChild(svgElement);
   reparentNodes(content, svgElement.firstChild);
   const fragment = document.importNode(content, true);

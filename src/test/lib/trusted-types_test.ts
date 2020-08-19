@@ -105,5 +105,5 @@ if (window.trustedTypes !== undefined) {
     });
   });
 } else {
-  it('trusted types not present in this browser', () => null);
+  test('trusted types not present in this browser', () => null);
 }

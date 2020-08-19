@@ -17,10 +17,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## Unreleased
+## [1.3.0-pre.1] - 2020-07-28
+### Changed
+* Set the "type" field in package.json to "module. ([#1146](https://github.com/Polymer/lit-html/pull/1146))
 
 ### Added
-* Added support for [Trusted Types](https://github.com/WICG/trusted-types). This support uses a policy named 'lit-html' for parsing the static parts of html literals, and ensures that we pass trusted type values through to the DOM when used in bindings.
+* Added support for [Trusted Types](https://github.com/WICG/trusted-types). This support uses a policy named 'lit-html' for parsing the static parts of html literals, and ensures that we pass trusted type values through to the DOM when used in bindings. ([#1153](https://github.com/Polymer/lit-html/pull/1153))
+* Export the `shadyTemplateFactory` from `lib/shady-render.js` ([#1135](https://github.com/Polymer/lit-html/pull/1135))
 
 ## [1.2.1] - 2020-03-19
 
