@@ -138,7 +138,7 @@ function extractMsg(
     return createDiagnostic(
       file,
       contentsArg,
-      `To use a variable, use an arrow function.`
+      `To use a variable, pass an arrow function.`
     );
   }
 
