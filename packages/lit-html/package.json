@@ -23,11 +23,16 @@
   ],
   "scripts": {
     "build": "tsc",
+    "test": "wtr test/**/*_test.js --node-resolve",
     "check-version": "node check-version-tracker.js"
   },
   "author": "The Polymer Authors",
   "dependencies": {},
   "devDependencies": {
+    "@bundled-es-modules/chai": "^4.2.2",
+    "@types/mocha": "^8.0.3",
+    "@web/test-runner": "^0.7.3",
+    "mocha": "^8.1.1",
     "typescript": "^4.0.0-beta"
   }
 }

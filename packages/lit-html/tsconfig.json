@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "es2015",
-    "lib": ["es2020", "dom"],
+    "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -14,7 +14,9 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*.ts"
