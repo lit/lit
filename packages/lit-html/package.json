@@ -25,6 +25,7 @@
     "build": "tsc",
     "test": "wtr test/**/*_test.js --node-resolve",
     "format": "prettier src/* --write",
+    "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
     "check-version": "node check-version-tracker.js"
   },
   "author": "The Polymer Authors",
@@ -35,6 +36,10 @@
     "@web/test-runner": "^0.7.11",
     "mocha": "^8.1.1",
     "prettier": "^2.0.5",
+    "rollup": "^2.26.4",
+    "rollup-plugin-filesize": "^9.0.2",
+    "rollup-plugin-terser": "^7.0.0",
+    "terser": "^5.2.1",
     "typescript": "^4.0.0-beta"
   }
 }
