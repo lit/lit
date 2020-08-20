@@ -75,8 +75,15 @@ const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+
  */
 const rawTextElement = /^(?:script|style|textarea)$/i;
 
+/** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
+
+/** TemplatePart types */
+const ATTRIBUTE_PART = 1;
+const NODE_PART = 2;
+const ELEMENT_PART = 3;
+const COMMENT_PART = 4;
 
 type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
@@ -163,6 +170,13 @@ export const render = (
 };
 
 const walker = d.createTreeWalker(d);
+
+//
+// Classes only below here, const variable declarations only above here...
+//
+// Keeping variable declarations and classes together improves minification.
+// Interfaces and type aliases can be interleaved freely.
+//
 
 class Template {
   private __strings: TemplateStringsArray;
@@ -321,7 +335,8 @@ class Template {
               this.__parts.push({
                 type: ATTRIBUTE_PART,
                 index: nodeIndex,
-                // TODO: remove this regex by storing the name during scanning
+                // TODO (justinfagnani): remove this regex by storing the name
+                // during HTML scanning
                 name: lastAttributeNameRegex.exec(strings[bindingIndex])![2],
                 strings: statics,
               });
@@ -444,11 +459,6 @@ class TemplateInstance {
 /*
  * Parts
  */
-
-const ATTRIBUTE_PART = 1;
-const NODE_PART = 2;
-const ELEMENT_PART = 3;
-const COMMENT_PART = 4;
 
 type AttributeTemplatePart = {
   readonly type: typeof ATTRIBUTE_PART;

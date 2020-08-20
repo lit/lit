@@ -16,7 +16,7 @@ import filesize from 'rollup-plugin-filesize';
 import { terser } from 'rollup-plugin-terser';
 
 export default {
-  input: 'lit-html.js',
+  input: 'lib/lit-html.js',
   output: {
     file: 'lit-html.bundled.js',
     format: 'esm',
@@ -30,6 +30,9 @@ export default {
       },
       output: {
         comments: false,
+        inline_script: false,
+        // TODO (justinfagnani): benchmark
+        // wrap_func_args: false,
       },
       mangle: {
         properties: {
