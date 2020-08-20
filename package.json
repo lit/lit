@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
+    "test": "lerna run test"
   },
   "dependencies": {
     "lerna": "^3.22.1"
