@@ -1,0 +1,25 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Lerna bootstrap
+        run: npm run bootstrap
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
