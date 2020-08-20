@@ -17,18 +17,17 @@ import {
   nothing,
   render,
   svg,
-  TemplateResult
+  TemplateResult,
 } from '../lib/lit-html.js';
-import { chai } from '@bundled-es-modules/chai';
+import {chai} from '@bundled-es-modules/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
 
-const { assert } = chai;
+const {assert} = chai;
 
 suite('lit-html', () => {
-
   let container: HTMLDivElement;
 
   setup(() => {
@@ -343,7 +342,5 @@ suite('lit-html', () => {
       assert.equal(line.tagName, 'line');
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
     });
-
   });
-
 });

@@ -69,7 +69,7 @@ const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+
 
 /**
  * Matches the raw text elements.
- * 
+ *
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
@@ -553,4 +553,7 @@ export class NodePart {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.0');
+(
+  (globalThis as any)['litHtmlVersions'] ||
+  ((globalThis as any)['litHtmlVersions'] = [])
+).push('1.3.0');
