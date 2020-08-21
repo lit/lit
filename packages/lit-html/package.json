@@ -40,6 +40,6 @@
     "rollup-plugin-filesize": "^9.0.2",
     "rollup-plugin-terser": "^7.0.0",
     "terser": "^5.2.1",
-    "typescript": "^4.0.0-beta"
+    "typescript": "^4.0.2"
   }
 }
