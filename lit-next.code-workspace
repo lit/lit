@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "lit-html",
+			"path": "packages/lit-html"
+		},
+		{
+			"name": "lit-next",
+			"path": "."
+		}
+	],
+	"settings": {
+		"typescript.tsdk": "lit-html/node_modules/typescript/lib"
+	}
+}

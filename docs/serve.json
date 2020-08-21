@@ -1,9 +1,0 @@
-{
-  "public": "_site",
-  "cleanUrls": [
-    "/",
-    "/guide",
-    "/guide/**",
-    "/!api/**"
-  ]
-}
