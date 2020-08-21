@@ -25,6 +25,10 @@ import {
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
 
+
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+
 suite('lit-html', () => {
   let container: HTMLDivElement;
 
@@ -97,6 +101,22 @@ suite('lit-html', () => {
 
     test('renders multiple parts per element, preserving whitespace', () => {
       assertRender(html`<div>${'foo'} ${'bar'}</div>`, '<div>foo bar</div>');
+    });
+
+    test('renders templates with comments', () => {
+      // prettier-ignore
+      assertRender(html`
+        <div>
+          <!-- this is a comment -->
+          <h1 class="${'foo'}">title</h1>
+          <p>${'foo'}</p>
+        </div>`, `
+        <div>
+          <!-- this is a comment -->
+          <h1 class="foo">title</h1>
+          <p>foo</p>
+        </div>`
+      );
     });
 
     test('text after element', () => {
@@ -209,6 +229,115 @@ suite('lit-html', () => {
       // prettier-ignore
       assertRender(html`<scriptx>${'foo'}</scriptx>`, '<scriptx>foo</scriptx>');
     });
+
+    test('attribute after raw text element', () => {
+      // prettier-ignore
+      assertRender(
+        html`<script></script><div a=${'A'}></div>`,
+        '<script></script><div a="A"></div>'
+      );
+    });
+
+    test('unquoted attribute', () => {
+      // prettier-ignore
+      assertRender(html`<div a=${'A'}></div>`, '<div a="A"></div>');
+      // prettier-ignore
+      assertRender(html`<div abc=${'A'}></div>`, '<div abc="A"></div>');
+      // prettier-ignore
+      assertRender(html`<div abc = ${'A'}></div>`, '<div abc="A"></div>');
+    });
+
+    test('quoted attribute', () => {
+      // prettier-ignore
+      assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
+      // prettier-ignore
+      assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
+      // prettier-ignore
+      assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
+    });
+
+    test('second quoted attribute', () => {
+      // prettier-ignore
+      assertRender(
+        html`<div a="b" c="${'A'}"></div>`,
+        '<div a="b" c="A"></div>'
+      );
+    });
+
+    test('two quoted attributes', () => {
+      // prettier-ignore
+      assertRender(
+        html`<div a="${'A'}" b="${'A'}"></div>`,
+        '<div a="A" b="A"></div>'
+      );
+    });
+
+    test('two unquoted attributes', () => {
+      // prettier-ignore
+      assertRender(
+        html`<div a=${'A'} b=${'A'}></div>`,
+        '<div a="A" b="A"></div>'
+      );
+    });
+
+    test('quoted attribute multi', () => {
+      assertRender(html`<div a="${'A'} ${'A'}"></div>`, '<div a="A A"></div>');
+    });
+
+    test('quoted attribute with markup', () => {
+      // prettier-ignore
+      assertRender(
+        html`<div a="<table>${'A'}"></div>`,
+        '<div a="<table>A"></div>'
+      );
+    });
+
+    test('text after quoted attribute', () => {
+      assertRender(html`<div a="${'A'}">${'A'}</div>`, '<div a="A">A</div>');
+    });
+
+    test('text after unquoted attribute', () => {
+      assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
+    });
+
+    // test('inside start tag', () => {
+    //   assertRender(html`<div ${attr`a="b"`}></div>`, '<div a="b"></div>');
+    // });
+
+    // test('inside start tag x2', () => {
+    //   // We don't support multiple attribute-position bindings yet, so just
+    //   // ensure this parses ok
+    //   assertRender(
+    //     html`<div ${attr`a="b"`} ${attr`c="d"`}></div>`,
+    //     '<div a="b"></div>'
+    //   );
+    // });
+
+    // test('inside start tag after unquoted attribute', () => {
+    //   // prettier-ignore
+    //   assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
+    // });
+
+    // test('inside start tag after quoted attribute', () => {
+    //   // prettier-ignore
+    //   assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
+    // });
+
+    // test('inside start tag before unquoted attribute', () => {
+    //   // bound attributes always appear after static attributes
+    //   assertRender(
+    //     html`<div ${attr`c="d"`} a="b"></div>`,
+    //     '<div a="b" c="d"></div>'
+    //   );
+    // });
+
+    // test('inside start tag before quoted attribute', () => {
+    //   // bound attributes always appear after static attributes
+    //   assertRender(
+    //     html`<div ${attr`c="d"`} a="b"></div>`,
+    //     '<div a="b" c="d"></div>'
+    //   );
+    // });
 
     test('"dynamic" tag name', () => {
       render(html`<${'A'}></${'A'}>`, container);
@@ -382,6 +511,317 @@ suite('lit-html', () => {
       const line = container.firstElementChild!;
       assert.equal(line.tagName, 'line');
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
+    });
+  });
+
+  suite('attributes', () => {
+    test('renders to a quoted attribute', () => {
+      render(html`<div foo="${'bar'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar"></div>'
+      );
+    });
+
+    test('renders to an unquoted attribute', () => {
+      render(html`<div foo=${'bar'}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar"></div>'
+      );
+    });
+
+    test('renders interpolation to an attribute', () => {
+      render(html`<div foo="A${'B'}C"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+    });
+
+    test('renders multiple bindings in an attribute', () => {
+      render(html`<div foo="a${'b'}c${'d'}e"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="abcde"></div>'
+      );
+    });
+
+    test('renders two attributes on one element', () => {
+      const result = html`<div a="${1}" b="${2}"></div>`;
+      render(result, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="1" b="2"></div>'
+      );
+    });
+
+    test('renders multiple bindings in two attributes', () => {
+      render(
+        html`<div foo="a${'b'}c${'d'}e" bar="a${'b'}c${'d'}e"></div>`,
+        container
+      );
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="abcde" bar="abcde"></div>'
+      );
+    });
+
+    test.skip('renders a Symbol to an attribute', () => {
+      render(html`<div foo=${Symbol('A')}></div>`, container);
+      assert.include(
+        container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
+        'symbol'
+      );
+    });
+
+    test.skip('renders a Symbol in an array to an attribute', () => {
+      render(html`<div foo=${[Symbol('A')] as any}></div>`, container);
+      assert.include(
+        container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
+        'symbol'
+      );
+    });
+
+    test('renders a binding in a style attribute', () => {
+      const t = html`<div style="color: ${'red'}"></div>`;
+      render(t, container);
+      if (isIe) {
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          '<div style="color: red;"></div>'
+        );
+      } else {
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          '<div style="color: red"></div>'
+        );
+      }
+    });
+
+    test('renders multiple bindings in a style attribute', () => {
+      const t = html`<div style="${'color'}: ${'red'}"></div>`;
+      render(t, container);
+      if (isIe) {
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          '<div style="color: red;"></div>'
+        );
+      } else {
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          '<div style="color: red"></div>'
+        );
+      }
+    });
+
+    test('renders a binding in a class attribute', () => {
+      render(html`<div class="${'red'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div class="red"></div>'
+      );
+    });
+
+    test('renders a binding in an input value attribute', () => {
+      render(html`<input value="${'the-value'}" />`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<input value="the-value">'
+      );
+      assert.equal(container.querySelector('input')!.value, 'the-value');
+    });
+
+    test('renders a case-sensitive attribute', () => {
+      const size = 100;
+      render(html`<svg viewBox="0 0 ${size} ${size}"></svg>`, container);
+      assert.include(
+        stripExpressionComments(container.innerHTML),
+        'viewBox="0 0 100 100"'
+      );
+
+      // Make sure non-alpha valid attribute name characters are handled
+      render(html`<svg view_Box="0 0 ${size} ${size}"></svg>`, container);
+      assert.include(
+        stripExpressionComments(container.innerHTML),
+        'view_Box="0 0 100 100"'
+      );
+    });
+
+    test('renders to an attribute expression after an attribute literal', () => {
+      render(html`<div a="b" foo="${'bar'}"></div>`, container);
+      // IE and Edge can switch attribute order!
+      assert.include(
+        ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
+        stripExpressionComments(container.innerHTML)
+      );
+    });
+
+    test('renders to an attribute expression before an attribute literal', () => {
+      render(html`<div foo="${'bar'}" a="b"></div>`, container);
+      // IE and Edge can switch attribute order!
+      assert.include(
+        ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
+        stripExpressionComments(container.innerHTML)
+      );
+    });
+
+    // Regression test for exception in template parsing caused by attributes
+    // reordering when a attribute binding precedes an attribute literal.
+    test('renders attribute binding after attribute binding that moved', () => {
+      render(
+        html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
+        container
+      );
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        `<a class="bar" href="foo"><div id="a"></div></a>`
+      );
+    });
+
+    test('renders to an attribute without quotes', () => {
+      render(html`<div foo=${'bar'}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar"></div>'
+      );
+    });
+
+    test('renders to multiple attribute expressions', () => {
+      render(
+        html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
+        container
+      );
+      assert.oneOf(stripExpressionComments(container.innerHTML), [
+        '<div foo="Foo" bar="Bar" baz="Baz"></div>',
+        '<div foo="Foo" baz="Baz" bar="Bar"></div>',
+        '<div bar="Bar" foo="Foo" baz="Baz"></div>',
+      ]);
+    });
+
+    test('renders to attributes with attribute-like values', () => {
+      render(html`<div foo="bar=${'foo'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar=foo"></div>'
+      );
+    });
+
+    test('does not call a function bound to an attribute', () => {
+      const f = () => {
+        throw new Error();
+      };
+      render(html`<div foo=${f as any}></div>`, container);
+      const div = container.querySelector('div')!;
+      assert.isTrue(div.hasAttribute('foo'));
+    });
+
+    test('renders an array to an attribute', () => {
+      render(html`<div foo=${[1, 2, 3] as any}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="1,2,3"></div>'
+      );
+    });
+
+    test('renders to an attribute before a node', () => {
+      render(html`<div foo="${'bar'}">${'baz'}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar">baz</div>'
+      );
+    });
+
+    test('renders to an attribute after a node', () => {
+      // prettier-ignore
+      render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>baz</div><div foo="bar"></div>'
+      );
+    });
+
+    test('renders undefined in attributes', () => {
+      render(html`<div attribute="it's ${undefined}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div attribute="it\'s "></div>'
+      );
+    });
+
+    test('renders undefined in attributes', () => {
+      render(html`<div attribute="${undefined}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div attribute=""></div>'
+      );
+    });
+
+    test('nothing sentinel removes an attribute', () => {
+      render(html`<div attribute=${nothing}></div>`, container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+    });
+
+    test('interpolated nothing sentinel removes an attribute', () => {
+      render(html`<div attribute="it's ${nothing}"></div>`, container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+    });
+
+    test('noChange works', () => {
+      const go = (v: any) => render(html`<div foo=${v}></div>`, container);
+      go('A');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="A"></div>',
+        'A'
+      );
+      go(noChange);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="A"></div>',
+        'B'
+      );
+    });
+
+    test('noChange works on one of multiple expressions', () => {
+      const go = (a: any, b: any) =>
+        render(html`<div foo="${a}:${b}"></div>`, container);
+      go('A', 'B');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="A:B"></div>',
+        'A'
+      );
+      go(noChange, 'C');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="A:C"></div>',
+        'B'
+      );
+    });
+  });
+
+  suite('boolean attributes', () => {
+    test('adds attributes for true values', () => {
+      render(html`<div ?foo=${true}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo=""></div>'
+      );
+    });
+
+    test('removes attributes for true values', () => {
+      render(html`<div ?foo=${false}></div>`, container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+    });
+  });
+
+  suite('properties', () => {
+    test('sets properties', () => {
+      render(html`<div .foo=${123} .Bar=${456}></div>`, container);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 123);
+      assert.strictEqual((div as any).Bar, 456);
     });
   });
 });

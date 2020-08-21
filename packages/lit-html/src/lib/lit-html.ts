@@ -429,8 +429,20 @@ class TemplateInstance {
         let part: Part | undefined;
         if (templatePart.type === NODE_PART) {
           part = new NodePart(node as HTMLElement, node.nextSibling, options);
-        } else {
-          // TODO: other part types
+        } else if (templatePart.type === ATTRIBUTE_PART) {
+          const [, prefix, name] = templatePart.name.match(/(\.|\?|@)?(.*)/)!;
+          const ctor =
+            prefix === '.'
+              ? PropertyPart
+              : prefix === '?'
+              ? BooleanAttributePart
+              : AttributePart;
+          part = new ctor(
+            node as HTMLElement,
+            name,
+            templatePart.strings,
+            options
+          );
         }
         this.__parts.push(part);
         templatePart = parts[++partIndex];
@@ -450,8 +462,12 @@ class TemplateInstance {
         i++;
         continue;
       }
-      // TODO: other part types
-      (part as NodePart).__setValue(values[i++]);
+      if ((part as AttributePart).__strings !== undefined) {
+        (part as AttributePart).__setValue(values, i);
+        i += (part as AttributePart).__strings!.length - 1;
+      } else {
+        (part as NodePart).__setValue(values[i++]);
+      }
     }
   }
 }
@@ -490,7 +506,11 @@ type TemplatePart =
   | ElementTemplatePart
   | CommentTemplatePart;
 
-export type Part = NodePart;
+export type Part =
+  | NodePart
+  | AttributePart
+  | PropertyPart
+  | BooleanAttributePart;
 
 export class NodePart {
   __value: unknown;
@@ -580,6 +600,119 @@ export class NodePart {
       const n = start!.nextSibling;
       start!.remove();
       start = n;
+    }
+  }
+}
+
+export class AttributePart {
+  readonly __element: HTMLElement;
+  readonly name: string;
+
+  /**
+   * If this attribute part represents an interpolation, this contains the
+   * static strings of the interpolation. For single-value, complete bindings,
+   * this is undefined.
+   */
+  readonly __strings?: ReadonlyArray<string>;
+  __value: unknown | Array<unknown> = nothing;
+
+  constructor(
+    element: HTMLElement,
+    name: string,
+    strings: ReadonlyArray<string>,
+    _options?: RenderOptions
+  ) {
+    this.__element = element;
+    this.name = name;
+    if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
+      this.__value = new Array(strings.length - 1).fill(nothing);
+      this.__strings = strings;
+    }
+  }
+
+  /**
+   * Normalizes a user-provided value before writing it to the DOM. In the
+   * near future this will include invoking a directive if the value is
+   * a DirectiveResult.
+   *
+   * @param value the raw input value to normalize
+   * @param _i the index in the values array this value was read from
+   */
+  __getValue(value: unknown, _i: number) {
+    // TODO (justinfagnani): invoke directives here, which will need
+    // _i to revive directive state
+    return value == null ? '' : value;
+  }
+
+  __setValue(value: unknown | Array<unknown>, from?: number) {
+    const strings = this.__strings;
+
+    if (strings === undefined) {
+      // Single-value binding case
+      const v = this.__getValue(value, 0);
+      if (
+        !((isPrimitive(v) || v === nothing) && v === this.__value) &&
+        v !== noChange
+      ) {
+        this.__commitValue((this.__value = v));
+      }
+    } else {
+      // Interpolation case
+      let attributeValue = strings[0];
+
+      // Whether any of the values has changed, for dirty-checking
+      let change = false;
+
+      // Whether any of the values is the `nothing` sentinel. If any are, we
+      // remove the entire attribute.
+      let remove = false;
+
+      let i, v;
+      for (i = 0; i < strings.length - 1; i++) {
+        v = this.__getValue((value as Array<unknown>)[from! + i], i);
+        if (v === noChange) {
+          // If the user-provided value is `noChange`, use the previous value
+          v = (this.__value as Array<unknown>)[i];
+        } else {
+          remove = remove || v === nothing;
+          change =
+            change ||
+            !(
+              (isPrimitive(v) || v === nothing) &&
+              v === (this.__value as Array<unknown>)[i]
+            );
+          (this.__value as Array<unknown>)[i] = v;
+        }
+        attributeValue +=
+          (typeof v === 'string' ? v : String(v)) + strings[i + 1];
+      }
+      if (change) {
+        this.__commitValue(remove ? nothing : attributeValue);
+      }
+    }
+  }
+
+  __commitValue(value: unknown) {
+    if (value === nothing) {
+      this.__element.removeAttribute(this.name);
+    } else {
+      this.__element.setAttribute(this.name, value as string);
+    }
+  }
+}
+
+export class PropertyPart extends AttributePart {
+  __commitValue(value: unknown) {
+    (this.__element as any)[this.name] = value;
+  }
+}
+
+export class BooleanAttributePart extends AttributePart {
+  __commitValue(value: unknown) {
+    if (value) {
+      this.__element.setAttribute(this.name, '');
+    } else {
+      this.__element.removeAttribute(this.name);
     }
   }
 }
