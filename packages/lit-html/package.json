@@ -27,7 +27,7 @@
     "test": "wtr test/**/*_test.js --node-resolve",
     "test:watch": "wtr test/**/*_test.js --node-resolve --watch",
     "format": "prettier src/* --write",
-    "checksize": "rollup -c ; cat lit-html.bundled.js | gzip -9 | wc -c ; rm lit-html.bundled.js",
+    "checksize": "rollup -c ; cat lit-html.bundled.js | wc -c ; rm lit-html.bundled.js",
     "check-version": "node check-version-tracker.js"
   },
   "author": "The Polymer Authors",
