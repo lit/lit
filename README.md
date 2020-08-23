@@ -4,9 +4,9 @@
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
-###### [API](#api) | [Tutorial](#tutorial) | [API](#api)
+###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
 
-> lit-localize is a library and command-line tool for localizing/translating web
+> lit-localize is a library and command-line tool for localizing web
 > applications that are based on lit-html and LitElement.
 
 ## Features
@@ -17,6 +17,64 @@
 - 📄 Standard XLIFF interchange format
 - 🆓 Generate a zero-overhead bundle for each locale
 - 🔁 ... or dynamically load locales and automatically re-render
+
+## Overview
+
+Wrap your template with the `msg` function to make it localizable:
+
+```typescript
+import {html} from 'lit-html';
+import {msg} from 'lit-localize';
+render(msg('greeting', html`Hello <b>World</b>!`), document.body);
+```
+
+Run `lit-localize` to extract all localizable templates and generate an XLIFF
+file, a format which is supported by many localization tools and services:
+
+```xml
+<trans-unit id="greeting">
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+  <!-- target tag added by your localization process -->
+  <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
+</trans-unit>
+```
+
+Use _transform_ mode to generate an optimized bundle for each locale:
+
+```javascript
+import {html} from 'lit-html';
+render(html`Hola <b>Mundo</b>!`, document.body);
+```
+
+Alternatively, use _runtime_ mode to dynamically switch locales without a page
+reload:
+
+```typescript
+import {configureLocalization} from 'lit-localize';
+
+const {setLocale} = configureLocalization({
+  sourceLocale: 'en',
+  targetLocales: ['es-419', 'zh_CN'],
+  loadLocale: (locale) => import(`/locales/${locale}.js`),
+});
+
+(async () => {
+  await setLocale('es-419');
+  renderApplication();
+})();
+```
+
+## Modes
+
+lit-localize supports two output modes: _transform_ and _runtime_.
+
+|                           | Transform mode                                                                                                   | Runtime mode                                                                                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Output                    | A full build of your application for each locale, with all `msg` calls replaced with static localized templates. | A dynamically loadable template module for each target locale.                                                                                       |
+| Make template localizable | `msg()`                                                                                                          | `msg()`                                                                                                                                              |
+| Configure                 | `const {getLocale, setLocale} =`<br>`configureLocalization(...);`                                                | (Optional)<br><br> `const {getLocale} =`<br>`configureTransformLocalization(...);`                                                                   |
+| Switch locales            | Refresh page and load a different `.js` file                                                                     | Call `setLocale()` and re-render using any of:<br><br>- `lit-localize-status` event<br>- `setLocale` promise<br>- `Localized` mixin for `LitElement` |
+| Advantages                | - Fastest rendering<br>- Fewer bytes for a single locale                                                         | - Faster locale switching<br>- Fewer _marginal_ bytes when switching locales                                                                         |
 
 ## Tutorial
 
@@ -234,9 +292,10 @@ Return the active locale code.
 
 ### `setLocale(locale: string) => Promise`
 
-Set the active locale code, and begin loading templates for that locale using
-the `loadLocale` function that was passed to `configureLocalization`. Returns a
-promise that resolves when the next locale is ready to be rendered.
+Available only in runtime mode. Set the active locale code, and begin loading
+templates for that locale using the `loadLocale` function that was passed to
+`configureLocalization`. Returns a promise that resolves when the next locale is
+ready to be rendered.
 
 Note that if a second call to `setLocale` is made while the first requested
 locale is still loading, then the second call takes precedence, and the promise
@@ -298,7 +357,7 @@ html`Hola <b>${getUsername()}!</b>`;
 
 ### `LOCALE_STATUS_EVENT`
 
-Name of the [`lit-localize-status` event](#lit-localize-status-event).
+Name of the [`lit-localize-status`](#lit-localize-status-event) event.
 
 ## `lit-localize-status` event
 
@@ -375,7 +434,7 @@ If you are using [LitElement](https://lit-element.polymer-project.org/), then
 you can use the `Localized`
 [mixin](https://justinfagnani.com/2015/12/21/real-mixins-with-javascript-classes/)
 from `lit-localize/localized-element.js` to ensure that your elements
-automatically re-render whenever the locale changes.
+automatically re-render whenever the locale changes in runtime mode.
 
 ```typescript
 import {Localized} from 'lit-localize/localized-element.js';
@@ -394,3 +453,126 @@ class MyElement extends Localized(LitElement) {
 ```
 
 In transform mode, applications of the `Localized` mixin are removed.
+
+## CLI
+
+Running the `lit-localize` command-line program does the following:
+
+1. Reads your [config file](#config-file) according to the `--config` flag.
+
+2. Analyzes all TypeScript files covered by your `tsconfig.json`, and discovers
+   all calls to the lit-localize `msg` function.
+
+3. Creates or updates an XLIFF (`.xlf`) file for each of your target locales,
+   with a `<source>` tag corresponding to each `msg` call.
+
+4. Reads existing `<target>` tags from existing XLIFF files for each `msg` call.
+
+5. When in _transform_ mode, compiles your TypeScript project for each locale,
+   where all `msg` calls are replaced with the corresponding static, localized
+   version from that locale's XLIFF file.
+
+6. When in _runtime_ mode, generates a `<locale>.ts` file for each locale, which
+   can be dynamically loaded by the `lit-localize` module.
+
+It takes the following flags:
+
+| Flag       | Description                                                                 |
+| ---------- | --------------------------------------------------------------------------- |
+| `--help`   | Display this list of flags.                                                 |
+| `--config` | Path to JSON [config file](#config-file). Defaults to `./lit-localize.json` |
+
+## Config file
+
+| Property                                 | Type                       | Description                                                                                                                                                                                                                  |
+| ---------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sourceLocale`                           | `string`                   | Required locale code that templates in the source code are written in.                                                                                                                                                       |
+| `targetLocales`                          | `string[]`                 | Required locale codes that templates will be localized to.                                                                                                                                                                   |
+| `tsConfig`                               | `string`                   | Path to a `tsconfig.json` file that describes the TypeScript source files from which messages will be extracted.                                                                                                             |
+| `output.mode`                            | `"transform"`, `"runtime"` | What kind of output should be produced. See [modes](#modes).                                                                                                                                                                 |
+| `interchange.format`                     | `"xliff"`, `"xlb"`         | Data format to be consumed by your localization process. Options:<br><br>- `"xliff"`: [XLIFF 1.2](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html) XML format<br>- `"xlb"`: Google-internal XML format              |
+| <h4 colspan="3">Transform mode only</h4> |
+| `output.outputDir`                       | `string`                   | Output directory for generated TypeScript modules. Into this directory will be generated a `<locale>.ts` for each `targetLocale`, each a TypeScript module that exports the translations in that locale keyed by message ID. |
+| <h4 colspan="3">XLIFF only</h4>          |                            |
+| `interchange.xliffDir`                   | `string`                   | Directory on disk to read/write `.xlf` XML files. For each target locale, the file path `"<xliffDir>/<locale>.xlf"` will be used.                                                                                            |
+
+## FAQ
+
+- [How should I set the initial locale in transform mode?](#how-should-i-set-the-initial-locale-in-transform-mode)
+- [How should I switch locales in transform mode?](#how-should-i-switch-locales-in-transform-mode)
+
+### How should I set the initial locale in transform mode?
+
+In transform mode, the locale is determined simply by the JavaScript bundle you
+load. How you determine which bundle to load when your page loads is up to you.
+
+> IMPORTANT: Take care to always validate your locale codes when dynamically
+> choosing a script name! The example below is safe because a script can only be
+> loaded if it matches one of the fixed locale codes in the regular expression,
+> but if our matching logic was less precise, it could result in bugs or attacks
+> that inject insecure JavaScript.
+
+For example, if your application's locale is reflected in the URL, you can
+include an inline script in your HTML file that checks the URL and inserts the
+appropriate `<script>` tag:
+
+```html
+<!DOCTYPE html>
+<script>
+  // If the subdomain matches one of our locale codes, load that bundle.
+  // Otherwise, load the default locale bundle.
+  //
+  // E.g. https://es-419.example.com/
+  //              ^^^^^^
+  const match = window.location.href.match(
+    /^https?:\/\/(es-419|zh_CN|en|es)\./
+  );
+  const locale = match ? match[1] : 'en';
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = `/${locale}.js`;
+  document.head.appendChild(script);
+</script>
+```
+
+Implementing logic similar to this on your _server_ so that the appropriate
+script tag is statically rendered into your HTML file will usually result in the
+best performance, because the browser will start downloading your script as
+early as possible.
+
+### How should I switch locales in transform mode?
+
+In transform mode, the `setLocale` function is not available. Instead, reload
+the page so that the next load will pick a different locale bundle.
+
+For example, this `locale-picker` custom element loads a new subdomain whenever
+a new locale is selected from a drop-down list:
+
+```typescript
+import {LitElement} from 'lit-element';
+
+const locales = ['es-419', 'zh_CN', 'en', 'es'];
+
+class LocalePicker extends LitElement {
+  render() {
+    return html`
+      <select @change=${this.localeChanged}>
+        ${locales.map(
+          (locale) => html`<option value="${locale}">${locale}</option>`
+        )}
+      </select>
+    `;
+  }
+
+  localeChanged(event: Event) {
+    const newLocale = event.target.value;
+    const newHostname = `${newLocale}.example.com`;
+    const url = new URL(window.location);
+    if (newHostname !== url.hostname) {
+      url.hostname = newHostname;
+      window.location.assign(url);
+    }
+  }
+}
+customElements.define('locale-picker', LocalePicker);
+```
