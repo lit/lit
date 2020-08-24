@@ -15,6 +15,7 @@ import {
   AttributePart,
   Directive,
   directive,
+  attr,
   html,
   noChange,
   NodePart,
@@ -306,44 +307,44 @@ suite('lit-html', () => {
       assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
     });
 
-    // test('inside start tag', () => {
-    //   assertRender(html`<div ${attr`a="b"`}></div>`, '<div a="b"></div>');
-    // });
+    test('inside start tag', () => {
+      assertRender(html`<div ${attr`a="b"`}></div>`, '<div a="b"></div>');
+    });
 
-    // test('inside start tag x2', () => {
-    //   // We don't support multiple attribute-position bindings yet, so just
-    //   // ensure this parses ok
-    //   assertRender(
-    //     html`<div ${attr`a="b"`} ${attr`c="d"`}></div>`,
-    //     '<div a="b"></div>'
-    //   );
-    // });
+    test('inside start tag x2', () => {
+      // We don't support multiple attribute-position bindings yet, so just
+      // ensure this parses ok
+      assertRender(
+        html`<div ${attr`a="b"`} ${attr`c="d"`}></div>`,
+        '<div a="b"></div>'
+      );
+    });
 
-    // test('inside start tag after unquoted attribute', () => {
-    //   // prettier-ignore
-    //   assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
-    // });
+    test('inside start tag after unquoted attribute', () => {
+      // prettier-ignore
+      assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
+    });
 
-    // test('inside start tag after quoted attribute', () => {
-    //   // prettier-ignore
-    //   assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
-    // });
+    test('inside start tag after quoted attribute', () => {
+      // prettier-ignore
+      assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
+    });
 
-    // test('inside start tag before unquoted attribute', () => {
-    //   // bound attributes always appear after static attributes
-    //   assertRender(
-    //     html`<div ${attr`c="d"`} a="b"></div>`,
-    //     '<div a="b" c="d"></div>'
-    //   );
-    // });
+    test('inside start tag before unquoted attribute', () => {
+      // bound attributes always appear after static attributes
+      assertRender(
+        html`<div ${attr`c="d"`} a="b"></div>`,
+        '<div a="b" c="d"></div>'
+      );
+    });
 
-    // test('inside start tag before quoted attribute', () => {
-    //   // bound attributes always appear after static attributes
-    //   assertRender(
-    //     html`<div ${attr`c="d"`} a="b"></div>`,
-    //     '<div a="b" c="d"></div>'
-    //   );
-    // });
+    test('inside start tag before quoted attribute', () => {
+      // bound attributes always appear after static attributes
+      assertRender(
+        html`<div ${attr`c="d"`} a="b"></div>`,
+        '<div a="b" c="d"></div>'
+      );
+    });
 
     test('"dynamic" tag name', () => {
       render(html`<${'A'}></${'A'}>`, container);
@@ -1467,6 +1468,33 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+  });
+
+  suite('spread', () => {
+    test('renders a static attr result', () => {
+      render(html`<div ${attr`foo=bar`} a="b"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="b" foo="bar"></div>'
+      );
+    });
+
+    test('renders a dynamic attr result', () => {
+      render(html`<div ${attr`foo=${'bar'}`} a="b"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="b" foo="bar"></div>'
+      );
+    });
+
+    test.only('renders a property', () => {
+      render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),'<div a="b"></div>'
+      );
+      const div = container.querySelector('div');
+      assert.equal((div as any).foo, 'bar');
     });
   });
 });

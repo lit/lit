@@ -109,6 +109,9 @@ const rawTextElement = /^(?:script|style|textarea)$/i;
 /** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
+const ATTR_RESULT = 3;
+
+type ResultType = typeof HTML_RESULT | typeof SVG_RESULT  | typeof ATTR_RESULT;
 
 /** TemplatePart types */
 const ATTRIBUTE_PART = 1;
@@ -116,7 +119,6 @@ const NODE_PART = 2;
 const ELEMENT_PART = 3;
 const COMMENT_PART = 4;
 
-type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
 /**
  * The return type of the template tag functions.
@@ -156,6 +158,8 @@ export const html = tag(HTML_RESULT);
  */
 export const svg = tag(SVG_RESULT);
 
+export const attr = tag(ATTR_RESULT);
+
 /**
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
@@ -175,6 +179,10 @@ export const nothing = {};
  * path for rendering.
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
+const attributesTemplateCache = new Map<
+  TemplateStringsArray,
+  AttributesTemplate
+>();
 
 export type DirectiveClass = {new (part: Part): Directive};
 
@@ -451,6 +459,24 @@ class Template {
   }
 }
 
+class AttributesTemplate {
+  __attrs: Array<{name: string; strings: Array<string>}> = [];
+  constructor(protected __strings: TemplateStringsArray) {
+    const el = d.createElement('template');
+    el.innerHTML = `<div ${__strings.join(marker)}></div>`;
+    console.log(el.innerHTML);
+    for (const {name, value} of el.content.firstElementChild!.attributes) {
+      const [, prefix, n] = /([.?@])?(.*)/.exec(name)!;
+      // const type = prefix === '.' ? PROP
+      this.__attrs.push({
+        name: n,
+        strings: value.split(marker),
+      });
+    }
+    console.log(this.__attrs);
+  }
+}
+
 /**
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
@@ -490,6 +516,8 @@ class TemplateInstance {
             templatePart.__strings,
             options
           );
+        } else if (templatePart.__type === ELEMENT_PART) {
+          part = new SpreadPart(node as HTMLElement);
         }
         this.__parts.push(part);
         templatePart = parts[++partIndex];
@@ -557,7 +585,8 @@ export type Part =
   | NodePart
   | AttributePart
   | PropertyPart
-  | BooleanAttributePart;
+  | BooleanAttributePart
+  | SpreadPart;
 
 export class NodePart {
   __value: unknown;
@@ -884,6 +913,44 @@ export class EventPart extends AttributePart {
       this.__value.call(this.__eventContext ?? this.__element, event);
     } else {
       (this.__value as EventListenerObject).handleEvent(event);
+    }
+  }
+}
+
+export class SpreadPart {
+  __value: unknown;
+  constructor(public __element: Element) {}
+
+  __setValue(value: unknown): void {
+    if ((value as TemplateResult)._$litType$ !== ATTR_RESULT) {
+      throw new Error('only Attributes can be set here');
+    }
+    const {strings, values} = value as TemplateResult;
+    const element = this.__element;
+    let from = 0;
+    let template = attributesTemplateCache.get(strings);
+    if (template === undefined) {
+      attributesTemplateCache.set(
+        strings,
+        (template = new AttributesTemplate(strings))
+      );
+    }
+    for (const {name, strings} of template.__attrs) {
+      if (strings.length === 1) {
+        // TODO: static, only set once
+        element.setAttribute(name, strings[0]);
+      } else {
+        let value = strings[0];
+        const size = strings.length - 1;
+        for (let i = 0; i < size; i++) {
+          const v = values[from++];
+          value +=
+            (typeof v === 'string' ? v : v == null ? '' : String(v)) +
+            strings[i + 1];
+        }
+        // TODO: dirty-check
+        element.setAttribute(name, value as string);
+      }
     }
   }
 }
