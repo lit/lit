@@ -5,19 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+<!-- ## Unreleased -->
 
-- [BREAKING] The `tsOut` parameter is replaced by the new `output` object with
-  `mode: "runtime"|"transform"`.
+## [0.3.0] - 2020-08-25
 
-- [BREAKING] Runtime mode no longer emits a `localization.ts` module. Instead,
-  users should always import from the `lit-localize` module and use
-  `configureLocalization`, `msg`, and other functions. See the README details of
-  this new API.
+- [BREAKING] The `msg` function has moved from the generated `localization.ts`
+  module to the static `lit-localize` module. `localization.ts` is no longer
+  generated, and all of its exports have been replaced by a substantially
+  different API (see the README).
+
+- [BREAKING] The initial locale is no longer automatically initialized from the
+  `locale` URL parameter. Initializing/changing locales is now user-controlled.
+
+- [BREAKING] The `tsOut` config file option is replaced by the new `output`
+  object, with `mode: "runtime"|"transform"`.
 
 - Add `transform` output mode, which emits an entire copy of the program in each
   locale, where all `msg` calls have been replaced with the raw translated
   template for that locale.
+
+- Add `configureLocalization` function, which returns a `setLocale` and `getLocale`
+  object.
+
+- Add `lit-localize-status` event, which is dispatched to `window` whenever a
+  locale change starts, completes, or fails.
+
+- Add `Localized` mixin for `LitElement` components, which automatically
+  re-renders whenever the locale changes in `runtime` mode.
 
 - Fix incorrect JSON schema error about `targetLocales` field not being a
   `string[]`.
