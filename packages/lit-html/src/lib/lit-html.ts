@@ -123,6 +123,10 @@ type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
  */
 export type TemplateResult = {
   _$litType$: ResultType;
+  // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
+  // semi-public API though. We can't just let Terser rename them for us,
+  // because we need TemplateResults to work between compatible versions of
+  // lit-html.
   strings: TemplateStringsArray;
   values: unknown[];
 };
@@ -336,21 +340,28 @@ class Template {
             const {name, value} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
               i--;
-              const statics = value.split(marker);
               (node as Element).removeAttribute(name);
+              const statics = value.split(marker);
+              const m = /([.?@])?(.*)/.exec(attrNames[attrNameIndex++])!;
               this.__parts.push({
-                type: ATTRIBUTE_PART,
-                index: nodeIndex,
-                name: attrNames[attrNameIndex++],
-                strings: statics,
+                __type: ATTRIBUTE_PART,
+                __index: nodeIndex,
+                __name: m[2],
+                __strings: statics,
+                __constructor:
+                  m[1] === '.'
+                    ? PropertyPart
+                    : m[1] === '?'
+                    ? BooleanAttributePart
+                    : AttributePart,
               });
               bindingIndex += statics.length - 1;
             } else if (name === marker) {
               (node as Element).removeAttribute(name);
               i--;
               this.__parts.push({
-                type: ELEMENT_PART,
-                index: nodeIndex,
+                __type: ELEMENT_PART,
+                __index: nodeIndex,
               });
             }
           }
@@ -371,7 +382,7 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this.__parts.push({type: NODE_PART, index: ++nodeIndex});
+              this.__parts.push({__type: NODE_PART, __index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -381,7 +392,7 @@ class Template {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this.__parts.push({type: NODE_PART, index: nodeIndex});
+          this.__parts.push({__type: NODE_PART, __index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -389,7 +400,7 @@ class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this.__parts.push({type: COMMENT_PART, index: nodeIndex});
+            this.__parts.push({__type: COMMENT_PART, __index: nodeIndex});
             bindingIndex++;
             // Move to the end of the match
             i += marker.length - 1;
@@ -429,29 +440,22 @@ class TemplateInstance {
     let templatePart = parts[0];
 
     while (templatePart !== undefined && node !== null) {
-      if (nodeIndex === templatePart.index) {
+      if (nodeIndex === templatePart.__index) {
         let part: Part | undefined;
-        if (templatePart.type === NODE_PART) {
+        if (templatePart.__type === NODE_PART) {
           part = new NodePart(node as HTMLElement, node.nextSibling, options);
-        } else if (templatePart.type === ATTRIBUTE_PART) {
-          const [, prefix, name] = /([.?@])?(.*)/.exec(templatePart.name)!;
-          const ctor =
-            prefix === '.'
-              ? PropertyPart
-              : prefix === '?'
-              ? BooleanAttributePart
-              : AttributePart;
-          part = new ctor(
+        } else if (templatePart.__type === ATTRIBUTE_PART) {
+          part = new templatePart.__constructor(
             node as HTMLElement,
-            name,
-            templatePart.strings,
+            templatePart.__name,
+            templatePart.__strings,
             options
           );
         }
         this.__parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart.index) {
+      if (templatePart !== undefined && nodeIndex !== templatePart.__index) {
         node = walker.nextNode();
         nodeIndex++;
       }
@@ -479,24 +483,24 @@ class TemplateInstance {
 /*
  * Parts
  */
-
 type AttributeTemplatePart = {
-  readonly type: typeof ATTRIBUTE_PART;
-  index: number;
-  readonly name: string;
-  readonly strings: ReadonlyArray<string>;
+  readonly __type: typeof ATTRIBUTE_PART;
+  readonly __index: number;
+  readonly __name: string;
+  readonly __constructor: typeof AttributePart;
+  readonly __strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly type: typeof NODE_PART;
-  index: number;
+  readonly __type: typeof NODE_PART;
+  readonly __index: number;
 };
 type ElementTemplatePart = {
-  readonly type: typeof ELEMENT_PART;
-  index: number;
+  readonly __type: typeof ELEMENT_PART;
+  readonly __index: number;
 };
 type CommentTemplatePart = {
-  readonly type: typeof COMMENT_PART;
-  index: number;
+  readonly __type: typeof COMMENT_PART;
+  readonly __index: number;
 };
 
 /**
