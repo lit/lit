@@ -208,7 +208,7 @@ class Template {
     for (let i = 0; i < strings.length - 1; i++) {
       const s = strings[i];
       // The index of the end of the last attribute. When this is !== -1 at
-      // end of a string, it means we're in q quoted attribute position.
+      // end of a string, it means we're in a quoted attribute position.
       let attrNameEnd = -1;
       let lastIndex = 0;
 
