@@ -54,6 +54,10 @@ suite('lit-html', () => {
       assertRender(html`a=${'A'}`, 'a=A');
     });
 
+    test('< in text', () => {
+      assertRender(html`a < ${'b'}`, 'a &lt; b');
+    });
+
     test('text child', () => {
       assertRender(html`<div>${'A'}</div>`, '<div>A</div>');
     });
@@ -190,9 +194,12 @@ suite('lit-html', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
     });
 
-    test('after tag name', () => {
+    test('binding after end tag name', () => {
       // we don't really care what the syntax position is here
       assertRender(html`<div></div ${'A'}>`, '<div></div>');
+
+      // TODO (justinfagnani): This will fail. TBD how we want to handle it.
+      // assertRender(html`<div></div ${'A'}>${'B'}`, '<div></div>B');
     });
 
     test('comment', () => {

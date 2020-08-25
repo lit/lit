@@ -37,7 +37,7 @@ const createMarker = () => d.createComment('');
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 const isPrimitive = (value: unknown): value is Primitive =>
-  value === null || !(typeof value === 'object' || typeof value === 'function');
+  value === null || typeof value != 'object' && typeof value != 'function';
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
@@ -73,7 +73,7 @@ const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
-const rawTextElement = /(script|style|textarea)/i;
+const rawTextElement = /script|style|textarea/i;
 
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
@@ -189,14 +189,14 @@ class Template {
     // we also dynamically create a regex to find the matching end tags for raw
     // text elements.
 
-    const textRegex = /<((?:!--)|(?:\w*))/g;
+    const textRegex = /<(!--|\/?\w+|(\W|$))/g;
     const commentRegex = /-->/g;
     const tagRegex = /(>)|(?:(?:[ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*([^ \x09\x0a\x0c\x0d"'`<>=]|("|')|$)))/g;
     const singleQuoteAttr = /'/g;
     const doubleQuoteAttr = /"/g;
 
     let html = type === 2 ? '<svg>' : '';
-    let quote: string | undefined = undefined;
+    let quote: string | undefined;
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
@@ -233,12 +233,17 @@ class Template {
           // HTML, like `<?` or `</{`. Figure out whether / how to handle that.
           if (match[1] === '!--') {
             regex = commentRegex;
-          } else {
+          } else if (match[2] === undefined) {
+            // If match[2] !== undefined, then we have an unescaped < and stay
+            // in the text state
             if (rawTextElement.test(match[1])) {
-              regex = new RegExp(`<\/${match[1]}`);
+              regex = new RegExp(`<\/${match[1]}`, 'g');
             } else {
               regex = tagRegex;
             }
+          } else if (match[2] === '' || match[2] === '/') {
+            // dynamic tag name
+            regex = tagRegex;
           }
         } else if (regex === commentRegex) {
           regex = textRegex;
@@ -249,7 +254,7 @@ class Template {
         ) {
           if (match[1] === '>') {
             regex = textRegex;
-          } else if (quote && (match[0] === '"' || match[0] === "'")) {
+          } else if (match[0] === quote) {
             // End quoted attribute
             attrNameEnd = -1;
             regex = tagRegex;
@@ -267,7 +272,7 @@ class Template {
           // Not one of the five state regexes, so it must be the dynamically
           // created raw text regex and we're at the close of that element.
           regex = tagRegex;
-        }
+        }    
       }
 
       html +=
@@ -282,8 +287,9 @@ class Template {
     // TODO (justinfagnani): if regex is not textRegex log a warning for a
     // malformed template in dev mode.
 
-    this.__element.innerHTML =
-      html + this.__strings[l] + (type === 2 ? '</svg>' : '');
+    // Note, we don't add '</svg>' for SVG result types because the parser
+    // will close the <svg> tag for us.
+    this.__element.innerHTML = html + this.__strings[l];
 
     if (type === SVG_RESULT) {
       const content = this.__element.content;
