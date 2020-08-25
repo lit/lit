@@ -12,6 +12,7 @@
 import * as xmldom from 'xmldom';
 import * as glob from 'glob';
 import * as fsExtra from 'fs-extra';
+import * as pathlib from 'path';
 import {Config} from '../config';
 import {Locale} from '../locales';
 import {Formatter} from './index';
@@ -181,10 +182,25 @@ class XlbFormatter implements Formatter {
     indent(bundle);
     indent(doc);
     const serialized = new xmldom.XMLSerializer().serializeToString(doc);
-    await fsExtra.writeFile(
-      this.config.resolve(this.xlbConfig.outputFile),
-      serialized,
-      'utf8'
-    );
+    const filePath = this.config.resolve(this.xlbConfig.outputFile);
+    const parentDir = pathlib.dirname(filePath);
+    try {
+      await fsExtra.ensureDir(parentDir);
+    } catch (e) {
+      throw new KnownError(
+        `Error creating XLB directory: ${parentDir}\n` +
+          `Do you have write permission?\n` +
+          e.message
+      );
+    }
+    try {
+      await fsExtra.writeFile(filePath, serialized, 'utf8');
+    } catch (e) {
+      throw new KnownError(
+        `Error creating XLB file: ${filePath}\n` +
+          `Do you have write permission?\n` +
+          e.message
+      );
+    }
   }
 }
