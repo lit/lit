@@ -17,6 +17,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+## [2.0.0] - Unreleased
+
+### Changed
+* [Breaking] `render()` does not clear the container it's rendered to
+* [Breaking] Expressions in comments are not rendered
+* [Breaking] Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
+
+### Added
+
+### Fixed
+* All usage of `instanceof` has been removed, making rendering more likely to
+work when multiple instances of the library interact.
+* Template processing is more robust to expressions in places other than text and attribute values.
+
+### Removed
+* [Breaking] The `templateFactory` option of `RenderOptions` has been removed
+* [Breaking] TemplateProcessor has been removed
+
 ## [1.3.0] - 2020-08-19
 
 ### Changed
