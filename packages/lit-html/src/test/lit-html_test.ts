@@ -19,13 +19,11 @@ import {
   svg,
   TemplateResult,
 } from '../lib/lit-html.js';
-import {chai} from '@bundled-es-modules/chai';
+import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-
-const {assert} = chai;
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
