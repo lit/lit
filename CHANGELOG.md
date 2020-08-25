@@ -9,16 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2020-08-25
 
-- [BREAKING] The `msg` function has moved from the generated `localization.ts`
+### Changed
+
+- **[BREAKING]** The `msg` function has moved from the generated `localization.ts`
   module to the static `lit-localize` module. `localization.ts` is no longer
   generated, and all of its exports have been replaced by a substantially
   different API (see the README).
 
-- [BREAKING] The initial locale is no longer automatically initialized from the
+- **[BREAKING]** The initial locale is no longer automatically initialized from the
   `locale` URL parameter. Initializing/changing locales is now user-controlled.
 
-- [BREAKING] The `tsOut` config file option is replaced by the new `output`
+- **[BREAKING]** The `tsOut` config file option is replaced by the new `output`
   object, with `mode: "runtime"|"transform"`.
+
+### Added
 
 - Add `transform` output mode, which emits an entire copy of the program in each
   locale, where all `msg` calls have been replaced with the raw translated
@@ -32,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `Localized` mixin for `LitElement` components, which automatically
   re-renders whenever the locale changes in `runtime` mode.
+
+### Fixed
 
 - Fix incorrect JSON schema error about `targetLocales` field not being a
   `string[]`.
