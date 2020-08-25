@@ -7,4 +7,5 @@ export default {
     // Don't watch generated test output files, or we'll get stuck in a loop.
     'testdata/*/output/**/*',
   ],
+  timeout: '3m',
 };

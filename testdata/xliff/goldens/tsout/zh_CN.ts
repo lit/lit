@@ -13,20 +13,10 @@ export const templates = {
   lit_variables_1: (url: any, name: any) =>
     html`Hello ${name}, click <a href="${url}">here</a>!`,
   lit_variables_2: (x: any) => html`${x}y${x}y${x}`,
-  lit_variables_3: (x: any) => html`<b>
-      ${x}
-    </b>
-    <i>
-      y
-    </i>
-    <b>
-      ${x}
-    </b>
-    <i>
-      y
-    </i>
-    <b>
-      ${x}
-    </b>`,
+  lit_variables_3: (x: any) => html`<b> ${x} </b>
+    <i> y </i>
+    <b> ${x} </b>
+    <i> y </i>
+    <b> ${x} </b>`,
   comment: html`Hello <b><!-- comment -->World!</b>`,
 };
