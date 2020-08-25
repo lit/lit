@@ -207,6 +207,8 @@ class Template {
 
     for (let i = 0; i < strings.length - 1; i++) {
       const s = strings[i];
+      // The index of the end of the last attribute. When this is !== -1 at
+      // end of a string, it means we're in q quoted attribute position.
       let attrNameEnd = -1;
       let lastIndex = 0;
 
@@ -217,7 +219,10 @@ class Template {
         regex.lastIndex = lastIndex;
         const match = regex.exec(s);
         if (match === null) {
-          if (quote === undefined) {
+          // TODO (justfagnani): add test coverage from spread parts
+          // If we're not in a quoted attribute value, make sure we clear
+          // the attrNameEnd marker
+          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {
             attrNameEnd = -1;
           }
           break;
@@ -259,8 +264,8 @@ class Template {
                 : singleQuoteAttr;
           }
         } else {
-          // Not one of the five state regexes, so we're at the close of a raw a
-          // text element.
+          // Not one of the five state regexes, so it must be the dynamically
+          // created raw text regex and we're at the close of that element.
           regex = tagRegex;
         }
       }
@@ -273,6 +278,10 @@ class Template {
               : s.slice(0, attrNameEnd) + '$lit$' + s.slice(attrNameEnd)) +
             marker;
     }
+
+    // TODO (justinfagnani): if regex is not textRegex log a warning for a
+    // malformed template in dev mode.
+
     this.__element.innerHTML =
       html + this.__strings[l] + (type === 2 ? '</svg>' : '');
 
