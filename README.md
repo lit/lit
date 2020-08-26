@@ -64,6 +64,12 @@ const {setLocale} = configureLocalization({
 })();
 ```
 
+See
+[`examples/transform`](https://github.com/PolymerLabs/lit-localize/tree/master/examples/transform)
+and
+[`examples/runtime`](https://github.com/PolymerLabs/lit-localize/tree/master/examples/runtime)
+for full working examples.
+
 ## Modes
 
 lit-localize supports two output modes: _transform_ and _runtime_.
@@ -407,23 +413,25 @@ An `error` status can be followed only by a `loading` status.
 ### Event example
 
 ```typescript
+import {LIT_LOCALIZE_STATUS} from 'lit-localize';
+
 // Show/hide a progress indicator whenever a new locale is loading,
 // and re-render the application every time a new locale successfully loads.
-window.addEventListener('lit-localize-status', (event) => {
+window.addEventListener(LIT_LOCALIZE_STATUS, (event) => {
   const spinner = document.querySelector('#spinner');
   if (event.detail.status === 'loading') {
     console.log(`Loading new locale: ${event.detail.loadingLocale}`);
     spinner.removeAttribute('hidden');
   } else if (event.detail.status === 'ready') {
     console.log(`Loaded new locale: ${event.detail.readyLocale}`);
-    spinner.addAttribute('hidden');
+    spinner.setAttribute('hidden', '');
     renderApplication();
   } else if (event.detail.status === 'error') {
     console.error(
       `Error loading locale ${event.detail.errorLocale}: ` +
         event.detail.errorMessage
     );
-    spinner.addAttribute('hidden');
+    spinner.setAttribute('hidden', '');
   }
 });
 ```
@@ -445,9 +453,7 @@ class MyElement extends Localized(LitElement) {
   render() {
     // Whenever setLocale() is called, and templates for that locale have
     // finished loading, this render() function will be re-invoked.
-    return html`<p>
-      ${msg('greeting', html`Hello <b>World!</b>`)}
-    </p>`;
+    return html`<p>${msg('greeting', html`Hello <b>World!</b>`)}</p>`;
   }
 }
 ```
@@ -549,28 +555,33 @@ For example, this `locale-picker` custom element loads a new subdomain whenever
 a new locale is selected from a drop-down list:
 
 ```typescript
-import {LitElement} from 'lit-element';
+import {LitElement, html} from 'lit-element';
+import {getLocale} from './localization.js';
+import {Localized} from 'lit-localize/localized-element.js';
 
-const locales = ['es-419', 'zh_CN', 'en', 'es'];
+const locales = ['es-419', 'zh_CN', 'en'];
 
-class LocalePicker extends LitElement {
+export class LocalePicker extends Localized(LitElement) {
   render() {
     return html`
       <select @change=${this.localeChanged}>
         ${locales.map(
-          (locale) => html`<option value="${locale}">${locale}</option>`
+          (locale) =>
+            html`<option value=${locale} selected=${locale === getLocale()}>
+              ${locale}
+            </option>`
         )}
       </select>
     `;
   }
 
   localeChanged(event: Event) {
-    const newLocale = event.target.value;
+    const newLocale = (event.target as HTMLSelectElement).value;
     const newHostname = `${newLocale}.example.com`;
-    const url = new URL(window.location);
+    const url = new URL(window.location.href);
     if (newHostname !== url.hostname) {
       url.hostname = newHostname;
-      window.location.assign(url);
+      window.location.assign(url.toString());
     }
   }
 }
