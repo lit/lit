@@ -194,8 +194,8 @@ class Template {
     // how to relax correctness to simplify the regexes and states.
 
     // End of text is: `<` followed by:
-    // (comment start) or (tag) or (unescaped <) or (dynamic tag)
-    const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|\s|(\/?$))/g;
+    // (comment start) or (tag) or (dynamic tag binding)
+    const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
     const commentRegex = /-->/g;
     // Comments not started with <!--, like </{, can be ended by a single `>`
     const comment2Regex = />/g;
