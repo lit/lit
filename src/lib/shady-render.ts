@@ -39,14 +39,13 @@ const getTemplateCacheKey = (type: string, scopeName: string) =>
     `${type}--${scopeName}`;
 
 const getIsCompatibleShadyCSSVersion = (): boolean => {
-  if (typeof window.ShadyCSS === "undefined") {
+  if (typeof window.ShadyCSS === 'undefined') {
     return false;
-  } else if (typeof window.ShadyCSS.prepareTemplateDom === "undefined") {
+  } else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
     console.warn(
-      `Incompatible ShadyCSS version detected. ` +
+        `Incompatible ShadyCSS version detected. ` +
         `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and ` +
-        `@webcomponents/shadycss@1.3.1.`
-    );
+        `@webcomponents/shadycss@1.3.1.`);
     return false;
   }
   return true;
