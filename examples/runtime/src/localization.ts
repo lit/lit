@@ -1,13 +1,14 @@
 import {configureLocalization} from 'lit-localize';
+import {sourceLocale, targetLocales} from './locale-codes.js';
 
 export const {getLocale, setLocale} = configureLocalization({
-  sourceLocale: 'en',
-  targetLocales: ['es-419', 'zh_CN'],
+  sourceLocale,
+  targetLocales,
   loadLocale: (locale: string) => import(`/lib/locales/${locale}.js`),
 });
 
 export const setLocaleFromUrl = async () => {
   const url = new URL(window.location.href);
-  const locale = url.searchParams.get('locale') || 'en';
+  const locale = url.searchParams.get('locale') || sourceLocale;
   await setLocale(locale);
 };

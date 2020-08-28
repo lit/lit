@@ -11,11 +11,11 @@
 
 import {Message, ProgramMessage, Placeholder} from '../messages';
 import {applyPatches, Patches} from '../patches';
-import {Locale} from '../locales';
+import {Locale, writeLocaleCodesModule} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
-import * as fs from 'fs';
+import * as fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 
 /**
@@ -30,17 +30,39 @@ export interface RuntimeOutputConfig {
    * module that exports the translations in that locale keyed by message ID.
    */
   outputDir: string;
+
+  /**
+   * Optional filepath for a generated TypeScript module that exports
+   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
+   * from your config file. Use to keep your config file and client config in
+   * sync. For example:
+   *
+   *   export const sourceLocale = 'en';
+   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
+   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
+   */
+  localeCodesModule?: string;
 }
 
 /**
  * Write output for the `runtime` output mode.
  */
-export function runtimeOutput(
+export async function runtimeOutput(
   messages: ProgramMessage[],
   translationMap: Map<Locale, Message[]>,
   config: Config,
   runtimeConfig: RuntimeOutputConfig
 ) {
+  const writes = [];
+  if (runtimeConfig.localeCodesModule) {
+    writes.push(
+      writeLocaleCodesModule(
+        config.sourceLocale,
+        config.targetLocales,
+        runtimeConfig.localeCodesModule
+      )
+    );
+  }
   for (const locale of config.targetLocales) {
     const translations = translationMap.get(locale) || [];
     const ts = generateLocaleModule(
@@ -53,17 +75,18 @@ export function runtimeOutput(
       config.resolve(runtimeConfig.outputDir),
       `${locale}.ts`
     );
-    try {
-      fs.writeFileSync(filename, ts);
-    } catch (e) {
-      throw new KnownError(
-        `Error writing TypeScript file: ${filename}\n` +
-          `Does the parent directory exist, ` +
-          `and do you have write permission?\n` +
-          e.message
-      );
-    }
+    writes.push(
+      fsExtra.writeFile(filename, ts, 'utf8').catch((e) => {
+        throw new KnownError(
+          `Error writing TypeScript file: ${filename}\n` +
+            `Does the parent directory exist, ` +
+            `and do you have write permission?\n` +
+            e.message
+        );
+      })
+    );
   }
+  await Promise.all(writes);
 }
 
 /**

@@ -94,9 +94,9 @@ async function runAndThrow(config: Config) {
   await formatter.writeOutput(messages, translationMap);
 
   if (config.output.mode === 'runtime') {
-    runtimeOutput(messages, translationMap, config, config.output);
+    await runtimeOutput(messages, translationMap, config, config.output);
   } else if (config.output.mode === 'transform') {
-    transformOutput(translationMap, config, program);
+    await transformOutput(translationMap, config, config.output, program);
   } else {
     throwUnreachable(
       config.output,

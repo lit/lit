@@ -248,6 +248,11 @@ The `configuration` object must have the following properties:
   For security, this function will only ever be called with a `locale` that is
   contained by `targetLocales`.
 
+It is recommended to use the `output.localeCodesModule` config file setting to
+generate a module which exports a `sourceLocale` string and `targetLocales`
+array that can be passed to `configureLocalization`, to ensure that your client
+remains in sync with your config file.
+
 Example:
 
 ```typescript
@@ -275,6 +280,11 @@ The `configuration` object must have the following properties:
 
 - `sourceLocale: string`: Required locale code in which source templates in this
   project are written, and the active locale.
+
+It is recommended to use the `output.localeCodesModule` config file setting to
+generate a module which exports a `sourceLocale` string that can be passed to
+`configureTansformLocalization`, to ensure that your client remains in sync with
+your config file.
 
 Example:
 
@@ -496,6 +506,7 @@ It takes the following flags:
 | `targetLocales`                          | `string[]`                 | Required locale codes that templates will be localized to.                                                                                                                                                                   |
 | `tsConfig`                               | `string`                   | Path to a `tsconfig.json` file that describes the TypeScript source files from which messages will be extracted.                                                                                                             |
 | `output.mode`                            | `"transform"`, `"runtime"` | What kind of output should be produced. See [modes](#modes).                                                                                                                                                                 |
+| `output.localeCodesModule`               | `string`                   | Optional filepath for a generated TypeScript module that exports `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes from your config file. Use to keep your config file and client config in sync.     |
 | `interchange.format`                     | `"xliff"`, `"xlb"`         | Data format to be consumed by your localization process. Options:<br><br>- `"xliff"`: [XLIFF 1.2](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html) XML format<br>- `"xlb"`: Google-internal XML format              |
 | <h4 colspan="3">Transform mode only</h4> |
 | `output.outputDir`                       | `string`                   | Output directory for generated TypeScript modules. Into this directory will be generated a `<locale>.ts` for each `targetLocale`, each a TypeScript module that exports the translations in that locale keyed by message ID. |
@@ -557,15 +568,14 @@ a new locale is selected from a drop-down list:
 ```typescript
 import {LitElement, html} from 'lit-element';
 import {getLocale} from './localization.js';
+import {allLocales} from './locale-codes.js';
 import {Localized} from 'lit-localize/localized-element.js';
-
-const locales = ['es-419', 'zh_CN', 'en'];
 
 export class LocalePicker extends Localized(LitElement) {
   render() {
     return html`
       <select @change=${this.localeChanged}>
-        ${locales.map(
+        ${allLocales.map(
           (locale) =>
             html`<option value=${locale} selected=${locale === getLocale()}>
               ${locale}

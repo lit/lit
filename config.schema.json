@@ -25,6 +25,10 @@
             "additionalProperties": false,
             "description": "Configuration specific to the `runtime` output mode.",
             "properties": {
+                "localeCodesModule": {
+                    "description": "Optional filepath for a generated TypeScript module that exports\n`sourceLocale`, `targetLocales`, and `allLocales` using the locale codes\nfrom your config file. Use to keep your config file and client config in\nsync. For example:\n\n   export const sourceLocale = 'en';\n   export const targetLocales = ['es-419', 'zh_CN'] as const;\n   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;",
+                    "type": "string"
+                },
                 "mode": {
                     "enum": [
                         "runtime"
@@ -46,6 +50,10 @@
             "additionalProperties": false,
             "description": "Configuration specific to the `transform` output mode.",
             "properties": {
+                "localeCodesModule": {
+                    "description": "Optional filepath for a generated TypeScript module that exports\n`sourceLocale`, `targetLocales`, and `allLocales` using the locale codes\nfrom your config file. Use to keep your config file and client config in\nsync. For example:\n\n   export const sourceLocale = 'en';\n   export const targetLocales = ['es-419', 'zh_CN'] as const;\n   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;",
+                    "type": "string"
+                },
                 "mode": {
                     "enum": [
                         "transform"
