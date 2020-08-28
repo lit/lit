@@ -38,17 +38,19 @@ export {html, svg, TemplateResult} from '../lit-html.js';
 const getTemplateCacheKey = (type: string, scopeName: string) =>
     `${type}--${scopeName}`;
 
-let compatibleShadyCSSVersion = true;
-
-if (typeof window.ShadyCSS === 'undefined') {
-  compatibleShadyCSSVersion = false;
-} else if (typeof window.ShadyCSS.prepareTemplateDom === 'undefined') {
-  console.warn(
+const getIsCompatibleShadyCSSVersion = (): boolean => {
+  if (typeof window.ShadyCSS === "undefined") {
+    return false;
+  } else if (typeof window.ShadyCSS.prepareTemplateDom === "undefined") {
+    console.warn(
       `Incompatible ShadyCSS version detected. ` +
-      `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and ` +
-      `@webcomponents/shadycss@1.3.1.`);
-  compatibleShadyCSSVersion = false;
-}
+        `Please update to at least @webcomponents/webcomponentsjs@2.0.2 and ` +
+        `@webcomponents/shadycss@1.3.1.`
+    );
+    return false;
+  }
+  return true;
+};
 
 /**
  * Template factory which scopes template DOM using ShadyCSS.
@@ -75,7 +77,7 @@ export const shadyTemplateFactory = (scopeName: string) =>
       template = templateCache.keyString.get(key);
       if (template === undefined) {
         const element = result.getTemplateElement();
-        if (compatibleShadyCSSVersion) {
+        if (getIsCompatibleShadyCSSVersion()) {
           window.ShadyCSS!.prepareTemplateDom(element, scopeName);
         }
         template = new Template(result, element);
@@ -264,7 +266,7 @@ export const render =
       }
       const scopeName = options.scopeName;
       const hasRendered = parts.has(container);
-      const needsScoping = compatibleShadyCSSVersion &&
+      const needsScoping = getIsCompatibleShadyCSSVersion() &&
           container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
           !!(container as ShadowRoot).host;
       // Handle first render to a scope specially...
