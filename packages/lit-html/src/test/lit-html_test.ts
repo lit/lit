@@ -56,6 +56,14 @@ suite('lit-html', () => {
       assertRender(html`a < ${'b'}`, 'a &lt; b');
     });
 
+    test('<1a> in text', () => {
+      assertRender(html`a <1a> ${'b'}`, 'a &lt;1a&gt; b');
+    });
+
+    test('<a1> in text', () => {
+      assertRender(html`a <a1> ${'b'} </a1>`, 'a <a1> b </a1>');
+    });
+
     test('text child', () => {
       assertRender(html`<div>${'A'}</div>`, '<div>A</div>');
     });
@@ -187,9 +195,24 @@ suite('lit-html', () => {
       );
     });
 
+    test('renders inside raw-like element', () => {
+      // prettier-ignore
+      assertRender(html`<scriptx>${'foo'}</scriptx>`, '<scriptx>foo</scriptx>');
+    });
+
     test('"dynamic" tag name', () => {
       render(html`<${'A'}></${'A'}>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+    });
+
+    test('malformed "dynamic" tag name', () => {
+      // `</ ` starts a comment
+      render(html`<${'A'}></ ${'A'}>`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- --></>');
+
+      // Currently fails:
+      // render(html`<${'A'}></ ${'A'}>${'B'}`, container);
+      // assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- -->B</>');
     });
 
     test('binding after end tag name', () => {

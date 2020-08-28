@@ -73,7 +73,7 @@ const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
-const rawTextElement = /script|style|textarea/i;
+const rawTextElement = /^(?:script|style|textarea)$/i;
 
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
@@ -189,8 +189,16 @@ class Template {
     // we also dynamically create a regex to find the matching end tags for raw
     // text elements.
 
-    const textRegex = /<(!--|\/?\w+|(\W|$))/g;
+    // TODO (justinfagnani): we detect many more parsing edge-cases than we
+    // used to, and many of those are of dubious value. Decide and document
+    // how to relax correctness to simplify the regexes and states.
+
+    // End of text is: `<` followed by:
+    // (comment start) or (tag) or (unescaped <) or (dynamic tag)
+    const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z]\w*)|(\s)|(\/?$))/g;
     const commentRegex = /-->/g;
+    // Comments not started with <!--, like </{, can be ended by a single `>`
+    const comment2Regex = />/g;
     const tagRegex = /(>)|(?:(?:[ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*([^ \x09\x0a\x0c\x0d"'`<>=]|("|')|$)))/g;
     const singleQuoteAttr = /'/g;
     const doubleQuoteAttr = /"/g;
@@ -219,7 +227,7 @@ class Template {
         regex.lastIndex = lastIndex;
         const match = regex.exec(s);
         if (match === null) {
-          // TODO (justfagnani): add test coverage from spread parts
+          // TODO (justinfagnani): add test coverage from spread parts
           // If we're not in a quoted attribute value, make sure we clear
           // the attrNameEnd marker
           if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {
@@ -229,23 +237,24 @@ class Template {
         }
         lastIndex = regex.lastIndex;
         if (regex === textRegex) {
-          // TODO (justinfagnani): there are more ways to open a comment in
-          // HTML, like `<?` or `</{`. Figure out whether / how to handle that.
           if (match[1] === '!--') {
             regex = commentRegex;
-          } else if (match[2] === undefined) {
-            // If match[2] !== undefined, then we have an unescaped < and stay
-            // in the text state
-            if (rawTextElement.test(match[1])) {
-              regex = new RegExp(`<\/${match[1]}`, 'g');
+          } else if (match[1] !== undefined) {
+            regex = comment2Regex;
+          } else if (match[2] !== undefined) {
+            if (rawTextElement.test(match[2])) {
+              regex = new RegExp(`<\/${match[2]}`, 'g');
             } else {
               regex = tagRegex;
             }
-          } else if (match[2] === '' || match[2] === '/') {
+          } else if (match[3] !== undefined) {
+            // If match[2] !== undefined, then we have an unescaped < and stay
+            // in the text state
+          } else if (match[4] !== undefined) {
             // dynamic tag name
             regex = tagRegex;
           }
-        } else if (regex === commentRegex) {
+        } else if (regex === commentRegex || regex === comment2Regex) {
           regex = textRegex;
         } else if (
           regex === tagRegex ||
@@ -301,6 +310,9 @@ class Template {
     // Walk the template to find binding markers and create TemplateParts
     while ((node = walker.nextNode()) !== null && bindingIndex < l) {
       if (node.nodeType === 1) {
+        // TODO (justinfagnani): for attempted dynamic tag names, we don't
+        // increment the bindingIndex, and it'll be off by 1 in the element
+        // and off by two after it.
         if ((node as Element).hasAttributes()) {
           const {attributes} = node as Element;
           for (let i = 0; i < attributes.length; i++) {
