@@ -37,7 +37,7 @@ const createMarker = () => d.createComment('');
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 const isPrimitive = (value: unknown): value is Primitive =>
-  value === null || typeof value != 'object' && typeof value != 'function';
+  value === null || (typeof value != 'object' && typeof value != 'function');
 
 /**
  * This regex extracts the attribute name preceding an attribute-position
@@ -195,7 +195,7 @@ class Template {
 
     // End of text is: `<` followed by:
     // (comment start) or (tag) or (unescaped <) or (dynamic tag)
-    const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z]\w*)|(\s)|(\/?$))/g;
+    const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|\s|(\/?$))/g;
     const commentRegex = /-->/g;
     // Comments not started with <!--, like </{, can be ended by a single `>`
     const comment2Regex = />/g;
@@ -203,7 +203,7 @@ class Template {
     const singleQuoteAttr = /'/g;
     const doubleQuoteAttr = /"/g;
 
-    let html = type === 2 ? '<svg>' : '';
+    let html = type === SVG_RESULT ? '<svg>' : '';
     let quote: string | undefined;
     let node: Node | null;
     let nodeIndex = 0;
@@ -248,9 +248,6 @@ class Template {
               regex = tagRegex;
             }
           } else if (match[3] !== undefined) {
-            // If match[2] !== undefined, then we have an unescaped < and stay
-            // in the text state
-          } else if (match[4] !== undefined) {
             // dynamic tag name
             regex = tagRegex;
           }
@@ -281,7 +278,7 @@ class Template {
           // Not one of the five state regexes, so it must be the dynamically
           // created raw text regex and we're at the close of that element.
           regex = tagRegex;
-        }    
+        }
       }
 
       html +=

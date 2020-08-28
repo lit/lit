@@ -56,16 +56,26 @@ suite('lit-html', () => {
       assertRender(html`a < ${'b'}`, 'a &lt; b');
     });
 
-    test('<1a> in text', () => {
+    test('after tag-like in text', () => {
       assertRender(html`a <1a> ${'b'}`, 'a &lt;1a&gt; b');
-    });
-
-    test('<a1> in text', () => {
-      assertRender(html`a <a1> ${'b'} </a1>`, 'a <a1> b </a1>');
+      assertRender(html`a <-a> ${'b'}`, 'a &lt;-a&gt; b');
+      assertRender(html`a <:a> ${'b'}`, 'a &lt;:a&gt; b');
     });
 
     test('text child', () => {
       assertRender(html`<div>${'A'}</div>`, '<div>A</div>');
+    });
+
+    test('text child of various tag names', () => {
+      assertRender(html`<x-foo>${'A'}</x-foo>`, '<x-foo>A</x-foo>');
+      assertRender(html`<x=foo>${'A'}</x=foo>`, '<x=foo>A</x=foo>');
+      assertRender(html`<x:foo>${'A'}</x:foo>`, '<x:foo>A</x:foo>');
+      assertRender(html`<x1>${'A'}</x1>`, '<x1>A</x1>');
+    });
+
+    test('text after self-closing tag', () => {
+      assertRender(html`<input />${'A'}`, '<input>A');
+      assertRender(html`<x-foo />${'A'}`, '<x-foo>A</x-foo>');
     });
 
     test('text child of element with unquoted attribute', () => {
@@ -208,7 +218,10 @@ suite('lit-html', () => {
     test('malformed "dynamic" tag name', () => {
       // `</ ` starts a comment
       render(html`<${'A'}></ ${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- --></>');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<><!-- --></>'
+      );
 
       // Currently fails:
       // render(html`<${'A'}></ ${'A'}>${'B'}`, container);
