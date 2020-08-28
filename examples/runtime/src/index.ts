@@ -8,19 +8,6 @@ import '@material/mwc-circular-progress';
 const main = document.querySelector('main')!;
 const spinner = document.querySelector('#spinner')!;
 
-(async () => {
-  try {
-    // Defer first render until our initial locale is ready, to avoid a flash of
-    // the wrong locale.
-    await setLocaleFromUrl();
-  } catch (e) {
-    // Either the URL locale code was invalid, or there was a problem loading
-    // the locale module.
-    console.error(`Error loading locale: ${e.message}`);
-  }
-  render(html` <x-greeter></x-greeter> `, main);
-})();
-
 // Update the locale to match the URL when the user moves backwards or forwards
 // through history.
 window.addEventListener('popstate', () => {
@@ -42,3 +29,16 @@ window.addEventListener(LOCALE_STATUS_EVENT, ({detail}) => {
     spinner.setAttribute('hidden', '');
   }
 });
+
+(async () => {
+  try {
+    // Defer first render until our initial locale is ready, to avoid a flash of
+    // the wrong locale.
+    await setLocaleFromUrl();
+  } catch (e) {
+    // Either the URL locale code was invalid, or there was a problem loading
+    // the locale module.
+    console.error(`Error loading locale: ${e.message}`);
+  }
+  render(html` <x-greeter></x-greeter> `, main);
+})();
