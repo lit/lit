@@ -627,6 +627,8 @@ export class AttributePart {
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this.__value = new Array(strings.length - 1).fill(nothing);
       this.__strings = strings;
+    } else {
+      this.__value = nothing;
     }
   }
 
@@ -638,18 +640,37 @@ export class AttributePart {
    * @param value the raw input value to normalize
    * @param _i the index in the values array this value was read from
    */
-  __getValue(value: unknown, _i: number) {
+  __resolveValue(value: unknown, _i: number) {
     // TODO (justinfagnani): invoke directives here, which will need
     // _i to revive directive state
     return value == null ? '' : value;
   }
 
+  /**
+   * Sets the value of this part.
+   *
+   * If this part is single-valued, `this.__strings` will be undefined, and the
+   * method will be called with a single value argument. If this part is
+   * multi-value, `this.__strings` will be defined, and the method is called
+   * with the value array of the part's owning TemplateInstance, and an offset
+   * into the value array from which the values should be read.
+   *
+   * This method is overloaded this way to eliminate short-lived array slices
+   * of the template instance values, and allow a fast-path for single-valued
+   * parts.
+   *
+   * @param value The part value, or an array of values for multi-valued parts
+   * @param from the index to start reading values from. `undefined` for
+   *   single-valued parts
+   */
+  __setValue(value: unknown): void;
+  __setValue(value: Array<unknown>, from: number): void;
   __setValue(value: unknown | Array<unknown>, from?: number) {
     const strings = this.__strings;
 
     if (strings === undefined) {
       // Single-value binding case
-      const v = this.__getValue(value, 0);
+      const v = this.__resolveValue(value, 0);
       if (
         !((isPrimitive(v) || v === nothing) && v === this.__value) &&
         v !== noChange
@@ -669,7 +690,7 @@ export class AttributePart {
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = this.__getValue((value as Array<unknown>)[from! + i], i);
+        v = this.__resolveValue((value as Array<unknown>)[from! + i], i);
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this.__value as Array<unknown>)[i];
@@ -692,6 +713,10 @@ export class AttributePart {
     }
   }
 
+  /**
+   * Writes the value to the DOM. An override point for PropertyPart and
+   * BooleanAttributePart.
+   */
   __commitValue(value: unknown) {
     if (value === nothing) {
       this.__element.removeAttribute(this.name);
@@ -703,13 +728,13 @@ export class AttributePart {
 
 export class PropertyPart extends AttributePart {
   __commitValue(value: unknown) {
-    (this.__element as any)[this.name] = value;
+    (this.__element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
 
 export class BooleanAttributePart extends AttributePart {
   __commitValue(value: unknown) {
-    if (value) {
+    if (value && value !== nothing) {
       this.__element.setAttribute(this.name, '');
     } else {
       this.__element.removeAttribute(this.name);

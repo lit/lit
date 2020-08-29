@@ -25,7 +25,6 @@ import {
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
 
-
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
 
@@ -79,7 +78,10 @@ suite('lit-html', () => {
 
     test('text after self-closing tag', () => {
       assertRender(html`<input />${'A'}`, '<input>A');
-      assertRender(html`<x-foo />${'A'}`, '<x-foo>A</x-foo>');
+      assertRender(
+        html`<!-- @ts-ignore --><x-foo />${'A'}`,
+        '<!-- @ts-ignore --><x-foo>A</x-foo>'
+      );
     });
 
     test('text child of element with unquoted attribute', () => {
@@ -699,6 +701,18 @@ suite('lit-html', () => {
       ]);
     });
 
+    test('renders to multiple attribute expressions without quotes', () => {
+      render(
+        html`<div foo=${'Foo'} bar=${'Bar'} baz=${'Baz'}></div>`,
+        container
+      );
+      assert.oneOf(stripExpressionComments(container.innerHTML), [
+        '<div foo="Foo" bar="Bar" baz="Baz"></div>',
+        '<div foo="Foo" baz="Baz" bar="Bar"></div>',
+        '<div bar="Bar" foo="Foo" baz="Baz"></div>',
+      ]);
+    });
+
     test('renders to attributes with attribute-like values', () => {
       render(html`<div foo="bar=${'foo'}"></div>`, container);
       assert.equal(
@@ -750,7 +764,7 @@ suite('lit-html', () => {
     });
 
     test('renders undefined in attributes', () => {
-      render(html`<div attribute="${undefined}"></div>`, container);
+      render(html`<div attribute="${undefined as any}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div attribute=""></div>'
@@ -758,12 +772,26 @@ suite('lit-html', () => {
     });
 
     test('nothing sentinel removes an attribute', () => {
-      render(html`<div attribute=${nothing}></div>`, container);
+      const go = (v: any) => html`<div a=${v}></div>`;
+      render(go('a'), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="a"></div>'
+      );
+
+      render(go(nothing), container);
       assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
     });
 
     test('interpolated nothing sentinel removes an attribute', () => {
-      render(html`<div attribute="it's ${nothing}"></div>`, container);
+      const go = (v: any) => html`<div a="A${v}"></div>`;
+      render(go('a'), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="Aa"></div>'
+      );
+
+      render(go(nothing), container);
       assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
     });
 
@@ -775,12 +803,14 @@ suite('lit-html', () => {
         '<div foo="A"></div>',
         'A'
       );
+      const observer = new MutationObserver(() => {});
       go(noChange);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="A"></div>',
         'B'
       );
+      assert.isEmpty(observer.takeRecords());
     });
 
     test('noChange works on one of multiple expressions', () => {
@@ -810,9 +840,37 @@ suite('lit-html', () => {
       );
     });
 
-    test('removes attributes for true values', () => {
+    test('removes attributes for false values', () => {
       render(html`<div ?foo=${false}></div>`, container);
       assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+    });
+
+    test('removes attributes for nothing values', () => {
+      const go = (v: any) => render(html`<div ?foo=${v}></div>`, container);
+      go(true);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo=""></div>'
+      );
+
+      go(nothing);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+    });
+
+    test('noChange works', () => {
+      const go = (v: any) => render(html`<div ?foo=${v}></div>`, container);
+      go(true);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo=""></div>'
+      );
+      const observer = new MutationObserver(() => {});
+      go(noChange);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo=""></div>'
+      );
+      assert.isEmpty(observer.takeRecords());
     });
   });
 
@@ -823,5 +881,248 @@ suite('lit-html', () => {
       assert.strictEqual((div as any).foo, 123);
       assert.strictEqual((div as any).Bar, 456);
     });
+
+    test('nothing becomes undefined', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(1);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 1);
+
+      go(nothing);
+      assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('noChange works', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+      go(1);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 1);
+
+      go(noChange);
+      assert.strictEqual((div as any).foo, 1);
+    });
+  });
+
+  suite('updates', () => {
+    let container: HTMLElement;
+
+    setup(() => {
+      container = document.createElement('div');
+    });
+
+    test('dirty checks simple values', () => {
+      const foo = 'aaa';
+
+      const t = () => html`<div>${foo}</div>`;
+
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>aaa</div>'
+      );
+      const text = container.querySelector('div')!;
+      assert.equal(text.textContent, 'aaa');
+
+      // Set textContent manually. Since lit-html doesn't dirty check against
+      // actual DOM, but again previous part values, this modification should
+      // persist through the next render with the same value.
+      text.textContent = 'bbb';
+      assert.equal(text.textContent, 'bbb');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>bbb</div>'
+      );
+
+      // Re-render with the same content, should be a no-op
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>bbb</div>'
+      );
+      const text2 = container.querySelector('div')!;
+
+      // The next node should be the same too
+      assert.strictEqual(text, text2);
+    });
+
+    test('dirty checks node values', async () => {
+      const node = document.createElement('div');
+      const t = () => html`${node}`;
+
+      let mutationRecords: MutationRecord[] = [];
+      const mutationObserver = new MutationObserver((records) => {
+        mutationRecords = records;
+      });
+      mutationObserver.observe(container, {childList: true});
+
+      assert.equal(stripExpressionComments(container.innerHTML), '');
+      render(t(), container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
+      // Wait for mutation callback to be called
+      await new Promise((resolve) => setTimeout(resolve));
+
+      const elementNodes: Node[] = [];
+      for (const record of mutationRecords) {
+        elementNodes.push(
+          ...Array.from(record.addedNodes).filter(
+            (n) => n.nodeType === Node.ELEMENT_NODE
+          )
+        );
+      }
+      assert.equal(elementNodes.length, 1);
+
+      mutationRecords = [];
+      render(t(), container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      await new Promise((resolve) => setTimeout(resolve));
+      assert.equal(mutationRecords.length, 0);
+    });
+
+    test('renders to and updates a container', () => {
+      let foo = 'aaa';
+
+      const t = () => html`<div>${foo}</div>`;
+
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>aaa</div>'
+      );
+      const div = container.querySelector('div')!;
+      assert.equal(div.tagName, 'DIV');
+
+      foo = 'bbb';
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>bbb</div>'
+      );
+      const div2 = container.querySelector('div')!;
+      // check that only the part changed
+      assert.equal(div, div2);
+    });
+
+    test('renders to and updates sibling parts', () => {
+      let foo = 'foo';
+      const bar = 'bar';
+
+      const t = () => html`<div>${foo}${bar}</div>`;
+
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>foobar</div>'
+      );
+
+      foo = 'bbb';
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>bbbbar</div>'
+      );
+    });
+
+    test('renders and updates attributes', () => {
+      let foo = 'foo';
+      const bar = 'bar';
+
+      const t = () => html`<div a="${foo}:${bar}"></div>`;
+
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="foo:bar"></div>'
+      );
+
+      foo = 'bbb';
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div a="bbb:bar"></div>'
+      );
+    });
+
+    test('updates nested templates', () => {
+      let foo = 'foo';
+      const bar = 'bar';
+      const baz = 'baz';
+
+      const t = (x: boolean) => {
+        let partial;
+        if (x) {
+          partial = html`<h1>${foo}</h1>`;
+        } else {
+          partial = html`<h2>${bar}</h2>`;
+        }
+
+        return html`${partial}${baz}`;
+      };
+
+      render(t(true), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<h1>foo</h1>baz'
+      );
+
+      foo = 'bbb';
+      render(t(true), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<h1>bbb</h1>baz'
+      );
+
+      render(t(false), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<h2>bar</h2>baz'
+      );
+    });
+
+    test('updates an element', () => {
+      let child: any = document.createElement('p');
+      // prettier-ignore
+      const t = () => html`<div>${child}<div></div></div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><div></div></div>'
+      );
+
+      child = undefined;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><div></div></div>'
+      );
+
+      child = document.createTextNode('foo');
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>foo<div></div></div>'
+      );
+    });
+
+    test(
+      'overwrites an existing TemplateInstance if one exists and does ' +
+        'not have a matching Template',
+      () => {
+        render(html`<div>foo</div>`, container);
+
+        assert.equal(container.children.length, 1);
+        const fooDiv = container.children[0];
+        assert.equal(fooDiv.textContent, 'foo');
+
+        render(html`<div>bar</div>`, container);
+
+        assert.equal(container.children.length, 1);
+        const barDiv = container.children[0];
+        assert.equal(barDiv.textContent, 'bar');
+
+        assert.notEqual(fooDiv, barDiv);
+      }
+    );
   });
 });
