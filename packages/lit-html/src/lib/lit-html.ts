@@ -38,6 +38,10 @@ const createMarker = () => d.createComment('');
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 const isPrimitive = (value: unknown): value is Primitive =>
   value === null || (typeof value != 'object' && typeof value != 'function');
+const isArray = Array.isArray;
+const isIterable = (value: unknown): value is Iterable<unknown> =>
+  isArray(value) ||
+  (value && typeof (value as any)[Symbol.iterator] === 'function');
 
 // TODO (justinfagnani): can we get away with `\s`?
 const SPACE_CHAR = `[ \t\n\f\r]`;
@@ -68,6 +72,7 @@ const commentRegex = /-->/g;
  * Comments not started with <!--, like </{, can be ended by a single `>`
  */
 const comment2Regex = />/g;
+
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
  * position. It either matches a `>` or an attribute.
@@ -166,6 +171,25 @@ export const noChange = {};
  * A sentinel value that signals a NodePart to fully clear its content.
  */
 export const nothing = {};
+
+/**
+ * A sentinel value that signals to remove an item from a list.
+ */
+export const remove = {};
+
+type InsertValue = {
+  _$litInsert$: true;
+  value: unknown;
+};
+
+/**
+ * A wrapper that signals to insert a new value into a list, rather than write
+ * over the current existing value.
+ */
+export const insert = (value: unknown): InsertValue => ({
+  _$litInsert$: true,
+  value,
+});
 
 /**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
@@ -615,6 +639,8 @@ export class NodePart {
       this.__commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
       this.__commitNode(value as Node);
+    } else if (isIterable(value)) {
+      this.__commitIterable(value);
     } else if (value === nothing) {
       this.__value = nothing;
       this.__clear();
@@ -624,8 +650,8 @@ export class NodePart {
     }
   }
 
-  private __insert(node: Node) {
-    this.__startNode.parentNode!.insertBefore(node, this.__endNode);
+  private __insert<T extends Node>(node: T, ref = this.__endNode) {
+    return this.__startNode.parentNode!.insertBefore(node, ref);
   }
 
   private __commitDirective(value: DirectiveResult) {
@@ -643,15 +669,14 @@ export class NodePart {
   private __commitNode(value: Node): void {
     if (this.__value !== value) {
       this.__clear();
-      // For internal calls to __commitNode, this value is overwritten. Can we
-      // avoid this?
-      this.__insert((this.__value = value));
+      this.__value = this.__insert(value);
     }
   }
 
   private __commitText(value: unknown): void {
     const node = this.__startNode.nextSibling;
-    // If `value` isn't already a string, we explicitly convert it here
+    // Make sure undefined and null render as an empty string
+    // TODO: use `nothing` to clear the node?
     value ??= '';
     // TODO(justinfagnani): Can we just check if this.__value is primitive?
     if (
@@ -687,6 +712,94 @@ export class NodePart {
       instance.__update(values);
       this.__commitNode(fragment);
       this.__value = instance;
+    }
+  }
+
+  private __commitIterable(value: Iterable<unknown>): void {
+    // For an Iterable, we create a new NodePart per item, then set its
+    // value to the item. This is a little bit of overhead for every item in
+    // an Iterable, but it lets us recurse easily and efficiently update Arrays
+    // of TemplateResults that will be commonly returned from expressions like:
+    // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
+
+    // If value is an array, then the previous render was of an
+    // iterable and value will contain the NodeParts from the previous
+    // render. If value is not an array, clear this part and make a new
+    // array for NodeParts.
+    if (!isArray(this.__value)) {
+      this.__value = [];
+      this.__clear();
+    }
+
+    // Previous item parts. Lets us keep track of how many items we've stamped
+    // so we can clear leftover items from a previous render
+    const itemParts = this.__value as NodePart[];
+    let partIndex = 0;
+    let itemPart: NodePart | undefined;
+    let marker: ChildNode;
+    let previousMarker: ChildNode;
+    let item: unknown;
+    let insert;
+
+    for (item of value) {
+      // Try to reuse an existing part
+      itemPart = itemParts[partIndex];
+
+      if ((insert = (item as InsertValue)._$litInsert$ === true)) {
+        item = (item as InsertValue).value;
+      }
+
+      // If no existing part, create a new one
+      if (itemPart === undefined) {
+        if (item === remove) {
+          continue;
+        }
+        if (partIndex === 0) {
+          // TODO (justinfagnani): use this.__startNode?
+          this.__insert((previousMarker = createMarker()));
+        }
+        itemParts.push(
+          (itemPart = new NodePart(
+            previousMarker!,
+            this.__insert(createMarker()),
+            this.options
+          ))
+        );
+      } else if (insert) {
+        // Make an end marker for the new part. Insert it first because we need
+        // to use it in __insert().
+        // We try to use the start marker of the next part if there is one.
+        marker =
+          itemPart?.__startNode ??
+          this.__insert(createMarker(), this.__startNode.nextSibling);
+        itemParts.splice(
+          partIndex,
+          0,
+          (itemPart = new NodePart(
+            this.__insert(createMarker(), marker),
+            marker,
+            this.options
+          ))
+        );
+      }
+      if (item === remove) {
+        itemPart!.__clear();
+        if (previousMarker! === itemPart.__startNode) {
+          itemParts[partIndex].__endNode = itemPart.__endNode;
+        }
+        itemPart.__startNode.remove();
+      } else {
+        itemPart.__setValue(item);
+      }
+      previousMarker = itemPart.__endNode as Comment;
+      partIndex++;
+    }
+
+    if (partIndex < itemParts.length) {
+      // Truncate the parts array so __value reflects the current state
+      itemParts.length = partIndex;
+      // itemParts always have end nodes
+      this.__clear(itemPart?.__endNode!.nextSibling);
     }
   }
 
@@ -926,7 +1039,4 @@ export class EventPart extends AttributePart {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(
-  (globalThis as any)['litHtmlVersions'] ||
-  ((globalThis as any)['litHtmlVersions'] = [])
-).push('1.3.0');
+((globalThis as any)['litHtmlVersions'] ??= []).push('1.3.0');
