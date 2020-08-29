@@ -176,6 +176,36 @@ export const nothing = {};
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
 
+export type DirectiveClass = {new (part: Part): Directive};
+
+/**
+ * This utility type extracts the signature of a directive class's render()
+ * method so we can use it for the type of the generated directive function.
+ */
+type DirectiveProps<C extends DirectiveClass> = Parameters<
+  InstanceType<C>['render']
+>;
+
+/**
+ * A generated directive function doesn't evaluate the directive, but just
+ * returns a DirectiveResult object that captures the arguments.
+ */
+type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
+  _$litDirective$: C;
+  values: DirectiveProps<C>;
+};
+
+/**
+ * Creates a user-facing directive function from a Directive class. This
+ * function has the same parameters as the directive's render() method.
+ */
+export const directive = <C extends DirectiveClass>(c: C) => (
+  ...values: DirectiveProps<C>
+): DirectiveResult<C> => ({
+  _$litDirective$: c,
+  values,
+});
+
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
@@ -212,6 +242,13 @@ const walker = d.createTreeWalker(d);
 // Keeping variable declarations and classes together improves minification.
 // Interfaces and type aliases can be interleaved freely.
 //
+
+export abstract class Directive {
+  abstract render(...props: Array<unknown>): unknown;
+  update(_part: Part, props: Array<unknown>): unknown {
+    return this.render(...props);
+  }
+}
 
 class Template {
   private __strings: TemplateStringsArray;
@@ -524,6 +561,8 @@ export type Part =
 
 export class NodePart {
   __value: unknown;
+  protected __directive?: Directive;
+
   constructor(
     public __startNode: ChildNode,
     public __endNode: ChildNode | null,
@@ -537,6 +576,8 @@ export class NodePart {
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
       this.__commitTemplateResult(value as TemplateResult);
+    } else if ((value as DirectiveResult)._$litDirective$ !== undefined) {
+      this.__commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
       this.__commitNode(value as Node);
     } else if (value === nothing) {
@@ -552,15 +593,25 @@ export class NodePart {
     this.__startNode.parentNode!.insertBefore(node, this.__endNode);
   }
 
-  private __commitNode(value: Node): void {
-    if (this.__value === value) {
-      return;
+  private __commitDirective(value: DirectiveResult) {
+    const directive = value._$litDirective$;
+    if (this.__directive?.constructor !== directive) {
+      this.__clear();
+      this.__directive = new directive(this);
     }
-    this.__clear();
-    this.__insert(value);
-    // For internal calls to __commitNode, this value is overwritten. Can we
-    // avoid this?
-    this.__value = value;
+    // TODO (justinfagnani): To support nested directives, we'd need to
+    // resolve the directive result's values. We may want to offer another
+    // way of composing directives.
+    this.__setValue(this.__directive.update(this, value.values));
+  }
+
+  private __commitNode(value: Node): void {
+    if (this.__value !== value) {
+      this.__clear();
+      // For internal calls to __commitNode, this value is overwritten. Can we
+      // avoid this?
+      this.__insert((this.__value = value));
+    }
   }
 
   private __commitText(value: unknown): void {
@@ -624,6 +675,7 @@ export class AttributePart {
    */
   readonly __strings?: ReadonlyArray<string>;
   __value: unknown | Array<unknown> = nothing;
+  private __directives?: Array<Directive>;
 
   constructor(
     element: HTMLElement,
@@ -649,9 +701,20 @@ export class AttributePart {
    * @param value the raw input value to normalize
    * @param _i the index in the values array this value was read from
    */
-  __resolveValue(value: unknown, _i: number) {
-    // TODO (justinfagnani): invoke directives here, which will need
-    // _i to revive directive state
+  __resolveValue(value: unknown, i: number) {
+    const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+    if (directiveCtor !== undefined) {
+      // TODO (justinfagnani): Initialize array to the correct value,
+      // or check length.
+      let directive: Directive = (this.__directives ??= [])[i];
+      if (directive?.constructor !== directiveCtor) {
+        directive = this.__directives[i] = new directiveCtor(this);
+      }
+      // TODO (justinfagnani): To support nested directives, we'd need to
+      // resolve the directive result's values. We may want to offer another
+      // way of composing directives.
+      value = directive.update(this, (value as DirectiveResult).values);
+    }
     return value ?? '';
   }
 

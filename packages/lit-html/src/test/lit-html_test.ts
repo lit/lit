@@ -12,8 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {
+  AttributePart,
+  Directive,
+  directive,
   html,
   noChange,
+  NodePart,
   nothing,
   render,
   svg,
@@ -1328,5 +1332,141 @@ suite('lit-html', () => {
         assert.notEqual(fooDiv, barDiv);
       }
     );
+  });
+
+  suite('directives', () => {
+    // A stateful directive
+    class CountDirective extends Directive {
+      count = 0;
+      render(v: unknown) {
+        return `${v}:${++this.count}`;
+      }
+    }
+    const count = directive(CountDirective);
+
+    test('renders directives on NodeParts', () => {
+      class TestDirective extends Directive {
+        render(v: string) {
+          return html`TEST:${v}`;
+        }
+      }
+      const testDirective = directive(TestDirective);
+
+      render(html`<div>${testDirective('A')}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>TEST:A</div>'
+      );
+    });
+
+    test('directives are stateful', () => {
+      const go = (v: string) => {
+        render(html`<div>${count(v)}</div>`, container);
+      };
+      go('A');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>A:1</div>'
+      );
+      go('A');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>A:2</div>'
+      );
+      go('B');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>B:3</div>'
+      );
+    });
+
+    test('directives can update', () => {
+      let receivedPart: NodePart;
+      let receivedValue: unknown;
+
+      class TestUpdateDirective extends Directive {
+        render(v: unknown) {
+          return v;
+        }
+
+        update(part: NodePart, [v]: Parameters<this['render']>) {
+          receivedPart = part;
+          receivedValue = v;
+          return this.render(v);
+        }
+      }
+      const update = directive(TestUpdateDirective);
+      const go = (v: boolean) => {
+        render(html`<div>${update(v)}</div>`, container);
+      };
+      go(true);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>true</div>'
+      );
+      assert.instanceOf(receivedPart!, NodePart);
+      assert.equal(receivedValue, true);
+    });
+
+    test('renders directives on AttributeParts', () => {
+      const go = () => html`<div foo=${count('A')}></div>`;
+      render(go(), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div foo="A:1"></div>'
+      );
+      render(go(), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div foo="A:2"></div>'
+      );
+    });
+
+    test('renders multiple directives on AttributeParts', () => {
+      const go = () => html`<div foo="a:${count('A')}:b:${count('B')}"></div>`;
+      render(go(), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div foo="a:A:1:b:B:1"></div>'
+      );
+      render(go(), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div foo="a:A:2:b:B:2"></div>'
+      );
+    });
+
+    test('renders directives on PropertyParts', () => {
+      render(html`<div .foo=${count('A')}></div>`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
+    });
+
+    test('event listeners can see events fired in attribute directives', () => {
+      class FireEventDirective {
+        render() {
+          return nothing;
+        }
+        // TODO (justinfagnani): make this work on SpreadPart
+        update(part: AttributePart) {
+          part.__element.dispatchEvent(
+            new CustomEvent('test-event', {
+              bubbles: true,
+            })
+          );
+          return nothing;
+        }
+      }
+      const fireEvent = directive(FireEventDirective);
+      let event = undefined;
+      const listener = (e: Event) => {
+        event = e;
+      };
+      render(
+        html`<div @test-event=${listener} b=${fireEvent()}></div>`,
+        container
+      );
+      assert.isOk(event);
+    });
   });
 });
