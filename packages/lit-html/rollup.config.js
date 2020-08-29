@@ -41,6 +41,7 @@ export default {
       },
     }),
     filesize({
+      showMinifiedSize: false,
       showBrotliSize: true,
     })
   ]

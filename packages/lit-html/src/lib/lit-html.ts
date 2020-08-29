@@ -353,6 +353,8 @@ class Template {
                     ? PropertyPart
                     : m[1] === '?'
                     ? BooleanAttributePart
+                    : m[1] === '@'
+                    ? EventPart
                     : AttributePart,
               });
               bindingIndex += statics.length - 1;
@@ -563,9 +565,8 @@ export class NodePart {
 
   private __commitText(value: unknown): void {
     const node = this.__startNode.nextSibling;
-    // If `value` isn't already a string, we explicitly convert it here in case
-    // it can't be implicitly converted - i.e. it's a symbol.
-    value = value == null ? '' : value;
+    // If `value` isn't already a string, we explicitly convert it here
+    value = value ??= '';
     // TODO(justinfagnani): Can we just check if this.__value is primitive?
     if (
       node !== null &&
@@ -590,7 +591,7 @@ export class NodePart {
       templateCache.set(strings, (template = new Template(result)));
     }
     if (
-      this.__value != undefined &&
+      this.__value != null &&
       (this.__value as TemplateInstance).__template === template
     ) {
       (this.__value as TemplateInstance).__update(values);
@@ -651,7 +652,7 @@ export class AttributePart {
   __resolveValue(value: unknown, _i: number) {
     // TODO (justinfagnani): invoke directives here, which will need
     // _i to revive directive state
-    return value == null ? '' : value;
+    return (value ??= '');
   }
 
   /**
@@ -746,6 +747,80 @@ export class BooleanAttributePart extends AttributePart {
       this.__element.setAttribute(this.name, '');
     } else {
       this.__element.removeAttribute(this.name);
+    }
+  }
+}
+
+type EventListenerWithOptions = EventListenerOrEventListenerObject &
+  Partial<AddEventListenerOptions>;
+
+/**
+ * An AttributePart that manages an event listener via add/removeEventListener.
+ *
+ * This part works by adding itself as the event listener on an element, then
+ * delegating to the value passed to it. This reduces the number of calls to
+ * add/removeEventListener if the listener changes frequently, such as when an
+ * inline function is used as a listener.
+ *
+ * Because event options are passed when adding listeners, we must take case
+ * to add and remove the part as a listener when the event options change.
+ */
+export class EventPart extends AttributePart {
+  __eventContext?: unknown;
+
+  constructor(...args: ConstructorParameters<typeof AttributePart>) {
+    super(...args);
+    this.__eventContext = args[3]?.eventContext;
+  }
+
+  __setValue(newListener: unknown) {
+    newListener ??= nothing;
+    const oldListener = this.__value;
+
+    // If the new value is nothing or any options change we have to remove the
+    // part as a listener.
+    const shouldRemoveListener =
+      (newListener === nothing && oldListener !== nothing) ||
+      (newListener as EventListenerWithOptions).capture !==
+        (oldListener as EventListenerWithOptions).capture ||
+      (newListener as EventListenerWithOptions).once !==
+        (oldListener as EventListenerWithOptions).once ||
+      (newListener as EventListenerWithOptions).passive !==
+        (oldListener as EventListenerWithOptions).passive;
+
+    // If the new value is not nothing and we removed the listener, we have
+    // to add the part as a listener.
+    const shouldAddListener =
+      newListener !== nothing &&
+      (oldListener === nothing || shouldRemoveListener);
+
+    if (shouldRemoveListener) {
+      this.__element.removeEventListener(
+        this.name,
+        this,
+        oldListener as EventListenerWithOptions
+      );
+    }
+    if (shouldAddListener) {
+      // Beware: IE11 and Chrome 41 don't like using the listener as the
+      // options object. Figure out how to deal w/ this in IE11 - maybe
+      // patch addEventListener?
+      this.__element.addEventListener(
+        this.name,
+        this,
+        newListener as EventListenerWithOptions
+      );
+    }
+    this.__value = newListener;
+  }
+
+  handleEvent(event: Event) {
+    if (typeof this.__value === 'function') {
+      // TODO (justinfagnani): do we need to default to this.__element?
+      // It'll always be the same as `e.currentTarget`.
+      this.__value.call(this.__eventContext ?? this.__element, event);
+    } else {
+      (this.__value as EventListenerObject).handleEvent(event);
     }
   }
 }

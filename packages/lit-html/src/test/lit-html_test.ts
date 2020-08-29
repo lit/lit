@@ -922,6 +922,197 @@ suite('lit-html', () => {
     });
   });
 
+  suite('events', () => {
+    setup(() => {
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      document.body.removeChild(container);
+    });
+
+    test('adds event listener functions, calls with right this value', () => {
+      let thisValue;
+      let event: Event | undefined = undefined;
+      const listener = function (this: any, e: any) {
+        event = e;
+        thisValue = this;
+      };
+      const eventContext = {} as EventTarget; // eslint-disable-line
+      render(html`<div @click=${listener}></div>`, container, {eventContext});
+      const div = container.querySelector('div')!;
+      div.click();
+      if (event === undefined) {
+        throw new Error(`Event listener never fired!`);
+      }
+      assert.equal(thisValue, eventContext);
+
+      // MouseEvent is not a function in IE, so the event cannot be an instance
+      // of it
+      if (typeof MouseEvent === 'function') {
+        assert.instanceOf(event, MouseEvent);
+      } else {
+        assert.isDefined((event as MouseEvent).initMouseEvent);
+      }
+    });
+
+    test('adds event listener objects, calls with right this value', () => {
+      let thisValue;
+      const listener = {
+        handleEvent(_e: Event) {
+          thisValue = this;
+        },
+      };
+      const eventContext = {} as EventTarget; // eslint-disable-line
+      render(html`<div @click=${listener}></div>`, container, {eventContext});
+      const div = container.querySelector('div')!;
+      div.click();
+      assert.equal(thisValue, listener);
+    });
+
+    test('only adds event listener once', () => {
+      let count = 0;
+      const listener = () => {
+        count++;
+      };
+      render(html`<div @click=${listener}></div>`, container);
+      render(html`<div @click=${listener}></div>`, container);
+
+      const div = container.querySelector('div')!;
+      div.click();
+      assert.equal(count, 1);
+    });
+
+    test('allows updating event listener', () => {
+      let count1 = 0;
+      const listener1 = () => {
+        count1++;
+      };
+      let count2 = 0;
+      const listener2 = () => {
+        count2++;
+      };
+      const t = (listener: () => void) => html`<div @click=${listener}></div>`;
+      render(t(listener1), container);
+      render(t(listener2), container);
+
+      const div = container.querySelector('div')!;
+      div.click();
+      assert.equal(count1, 0);
+      assert.equal(count2, 1);
+    });
+
+    test('allows updating event listener without extra calls to remove/addEventListener', () => {
+      let listener: Function | null;
+      const t = () => html`<div @click=${listener}></div>`;
+      render(t(), container);
+      const div = container.querySelector('div')!;
+
+      let addCount = 0;
+      let removeCount = 0;
+      div.addEventListener = () => addCount++;
+      div.removeEventListener = () => removeCount++;
+
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 0);
+
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 0);
+
+      listener = null;
+      render(t(), container);
+      assert.equal(addCount, 1);
+      assert.equal(removeCount, 1);
+
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 2);
+      assert.equal(removeCount, 1);
+
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      listener = () => {};
+      render(t(), container);
+      assert.equal(addCount, 2);
+      assert.equal(removeCount, 1);
+    });
+
+    test('removes event listeners', () => {
+      let target;
+      let listener: any = (e: any) => (target = e.target);
+      const t = () => html`<div @click=${listener}></div>`;
+      render(t(), container);
+      const div = container.querySelector('div')!;
+      div.click();
+      assert.equal(target, div);
+
+      listener = null;
+      target = undefined;
+      render(t(), container);
+      div.click();
+      assert.equal(target, undefined);
+    });
+
+    test('allows capturing events', () => {
+      let event!: Event;
+      let eventPhase!: number;
+      const listener = {
+        handleEvent(e: Event) {
+          event = e;
+          // read here because it changes
+          eventPhase = event.eventPhase;
+        },
+        capture: true,
+      };
+      render(
+        html`
+          <div id="outer" @test=${listener}>
+            <div id="inner"><div></div></div>
+          </div>
+        `,
+        container
+      );
+      const inner = container.querySelector('#inner')!;
+      inner.dispatchEvent(new Event('test'));
+      assert.isOk(event);
+      assert.equal(eventPhase, Event.CAPTURING_PHASE);
+    });
+
+    test('event listeners can see events fired by dynamic children', () => {
+      // This tests that node directives are called in the commit phase, not
+      // the setValue phase
+      class TestElement1 extends HTMLElement {
+        connectedCallback() {
+          this.dispatchEvent(
+            new CustomEvent('test-event', {
+              bubbles: true,
+            })
+          );
+        }
+      }
+      customElements.define('test-element-1', TestElement1);
+
+      let event: Event | undefined = undefined;
+      const listener = (e: Event) => {
+        event = e;
+      };
+      document.body.appendChild(container);
+      render(
+        html`<div @test-event=${listener}>
+          ${html`<test-element-1></test-element-1>`}
+        </div>`,
+        container
+      );
+      assert.isOk(event);
+    });
+  });
+
   suite('updates', () => {
     let container: HTMLElement;
 
