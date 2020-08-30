@@ -565,6 +565,19 @@ export type Part =
   | PropertyPart
   | BooleanAttributePart;
 
+/**
+ * The state of a NodePart, which can be detached and reattached.
+ */
+export type NodePartState = {};
+
+/**
+ * The private interface for NodePartState, which should be kept opaque.
+ */
+type NodePartStateInternal = {
+  __value: unknown;
+  __fragment: DocumentFragment;
+};
+
 export class NodePart {
   __value: unknown;
   protected __directive?: Directive;
@@ -574,6 +587,28 @@ export class NodePart {
     public __endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
+
+  detach(): NodePartState {
+    const fragment = document.createDocumentFragment();
+    const state: NodePartStateInternal = {
+      __value: this.__value,
+      __fragment: fragment,
+    };
+    let start = this.__startNode.nextSibling;
+    let nextNode;
+    while (start !== this.__endNode) {
+      nextNode = start!.nextSibling;
+      fragment.append(start!);
+      start = nextNode;
+    }
+    this.__value = nothing;
+    return state;
+  }
+
+  restore(state: NodePartState) {
+    this.__commitNode((state as NodePartStateInternal).__fragment);
+    this.__value = (state as NodePartStateInternal).__value;
+  }
 
   __setValue(value: unknown): void {
     if (isPrimitive(value)) {
