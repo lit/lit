@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from './lib/lit-element.js';
+export * from "./lib/lit-element.js";

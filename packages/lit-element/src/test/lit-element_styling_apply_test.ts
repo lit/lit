@@ -12,19 +12,23 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import '@webcomponents/shadycss/apply-shim.min.js';
+import "@webcomponents/shadycss/apply-shim.min.js";
 
-import {html as htmlWithStyles, LitElement} from '../lib/lit-element.js';
+import { html as htmlWithStyles, LitElement } from "../lib/lit-element.js";
 
-import {generateElementName, getComputedStyleValue, nextFrame} from './test-helpers.js';
+import {
+  generateElementName,
+  getComputedStyleValue,
+  nextFrame,
+} from "./test-helpers.js";
 
 const assert = chai.assert;
 
-suite('Styling @apply', () => {
+suite("Styling @apply", () => {
   let container: HTMLElement;
 
   setup(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
   });
 
@@ -34,21 +38,24 @@ suite('Styling @apply', () => {
     }
   });
 
-  test('@apply renders in nested elements', async () => {
-    customElements.define('x-inner2', class extends LitElement {
-      render() {
-        return htmlWithStyles`
+  test("@apply renders in nested elements", async () => {
+    customElements.define(
+      "x-inner2",
+      class extends LitElement {
+        render() {
+          return htmlWithStyles`
         <style>
           div {
             @apply --bag;
           }
         </style>
         <div>Testing...</div>`;
+        }
       }
-    });
+    );
     const name = generateElementName();
     class E extends LitElement {
-      inner: LitElement|null = null;
+      inner: LitElement | null = null;
       render() {
         return htmlWithStyles`
         <style>
@@ -62,7 +69,7 @@ suite('Styling @apply', () => {
       }
 
       firstUpdated() {
-        this.inner = this.shadowRoot!.querySelector('x-inner2') as LitElement;
+        this.inner = this.shadowRoot!.querySelector("x-inner2") as LitElement;
       }
     }
     customElements.define(name, E);
@@ -70,21 +77,22 @@ suite('Styling @apply', () => {
     container.appendChild(el);
 
     // Workaround for Safari 9 Promise timing bugs.
-    await el.updateComplete && await el.inner!.updateComplete;
+    (await el.updateComplete) && (await el.inner!.updateComplete);
 
     await nextFrame();
-    const div = el.shadowRoot!.querySelector(
-                                  'x-inner2')!.shadowRoot!.querySelector('div');
+    const div = el
+      .shadowRoot!.querySelector("x-inner2")!
+      .shadowRoot!.querySelector("div");
     assert.equal(
-        getComputedStyleValue(div!, 'border-top-width').trim(), '10px');
+      getComputedStyleValue(div!, "border-top-width").trim(),
+      "10px"
+    );
   });
 
-  test(
-      '@apply renders in nested elements when sub-element renders separately first',
-      async () => {
-        class I extends LitElement {
-          render() {
-            return htmlWithStyles`
+  test("@apply renders in nested elements when sub-element renders separately first", async () => {
+    class I extends LitElement {
+      render() {
+        return htmlWithStyles`
         <style>
           :host {
             display: block;
@@ -95,16 +103,16 @@ suite('Styling @apply', () => {
             @apply --bag;
           }
         </style>Hi`;
-          }
-        }
-        customElements.define('x-applied', I);
+      }
+    }
+    customElements.define("x-applied", I);
 
-        const name = generateElementName();
-        class E extends LitElement {
-          applied: HTMLElement|undefined;
+    const name = generateElementName();
+    class E extends LitElement {
+      applied: HTMLElement | undefined;
 
-          render() {
-            return htmlWithStyles`
+      render() {
+        return htmlWithStyles`
         <style>
           :host {
             --bag: {
@@ -114,34 +122,42 @@ suite('Styling @apply', () => {
           }
         </style>
         <x-applied></x-applied>`;
-          }
+      }
 
-          firstUpdated() {
-            this.applied =
-                this.shadowRoot!.querySelector('x-applied') as LitElement;
-          }
-        }
-        customElements.define(name, E);
+      firstUpdated() {
+        this.applied = this.shadowRoot!.querySelector(
+          "x-applied"
+        ) as LitElement;
+      }
+    }
+    customElements.define(name, E);
 
-        const firstApplied = document.createElement('x-applied') as I;
-        container.appendChild(firstApplied);
-        const el = document.createElement(name) as E;
-        container.appendChild(el);
+    const firstApplied = document.createElement("x-applied") as I;
+    container.appendChild(firstApplied);
+    const el = document.createElement(name) as E;
+    container.appendChild(el);
 
-        // Workaround for Safari 9 Promise timing bugs.
-        await firstApplied.updateComplete && el.updateComplete &&
-            await (el.applied as I).updateComplete;
+    // Workaround for Safari 9 Promise timing bugs.
+    (await firstApplied.updateComplete) &&
+      el.updateComplete &&
+      (await (el.applied as I).updateComplete);
 
-        await nextFrame();
-        assert.equal(
-            getComputedStyleValue(firstApplied, 'border-top-width').trim(),
-            '2px');
-        assert.equal(
-            getComputedStyleValue(firstApplied, 'margin-top').trim(), '10px');
-        assert.equal(
-            getComputedStyleValue(el.applied!, 'border-top-width').trim(),
-            '10px');
-        assert.equal(
-            getComputedStyleValue(el.applied!, 'margin-top').trim(), '2px');
-      });
+    await nextFrame();
+    assert.equal(
+      getComputedStyleValue(firstApplied, "border-top-width").trim(),
+      "2px"
+    );
+    assert.equal(
+      getComputedStyleValue(firstApplied, "margin-top").trim(),
+      "10px"
+    );
+    assert.equal(
+      getComputedStyleValue(el.applied!, "border-top-width").trim(),
+      "10px"
+    );
+    assert.equal(
+      getComputedStyleValue(el.applied!, "margin-top").trim(),
+      "2px"
+    );
+  });
 });

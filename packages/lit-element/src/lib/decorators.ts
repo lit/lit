@@ -19,57 +19,61 @@
  * not an arrow function.
  */
 
-import {LitElement} from './lit-element.js';
+import { LitElement } from "./lit-element.js";
 
-import {PropertyDeclaration, UpdatingElement} from './updating-element.js';
+import { PropertyDeclaration, UpdatingElement } from "./updating-element.js";
 
 export type Constructor<T> = {
   // tslint:disable-next-line:no-any
-  new (...args: any[]): T
+  new (...args: any[]): T;
 };
 
 // From the TC39 Decorators proposal
 interface ClassDescriptor {
-  kind: 'class';
+  kind: "class";
   elements: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
 }
 
 // From the TC39 Decorators proposal
 interface ClassElement {
-  kind: 'field'|'method';
+  kind: "field" | "method";
   key: PropertyKey;
-  placement: 'static'|'prototype'|'own';
+  placement: "static" | "prototype" | "own";
   initializer?: Function;
   extras?: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
   descriptor?: PropertyDescriptor;
 }
 
-const legacyCustomElement =
-    (tagName: string, clazz: Constructor<HTMLElement>) => {
-      window.customElements.define(tagName, clazz);
-      // Cast as any because TS doesn't recognize the return type as being a
-      // subtype of the decorated class when clazz is typed as
-      // `Constructor<HTMLElement>` for some reason.
-      // `Constructor<HTMLElement>` is helpful to make sure the decorator is
-      // applied to elements however.
-      // tslint:disable-next-line:no-any
-      return clazz as any;
-    };
+const legacyCustomElement = (
+  tagName: string,
+  clazz: Constructor<HTMLElement>
+) => {
+  window.customElements.define(tagName, clazz);
+  // Cast as any because TS doesn't recognize the return type as being a
+  // subtype of the decorated class when clazz is typed as
+  // `Constructor<HTMLElement>` for some reason.
+  // `Constructor<HTMLElement>` is helpful to make sure the decorator is
+  // applied to elements however.
+  // tslint:disable-next-line:no-any
+  return clazz as any;
+};
 
-const standardCustomElement =
-    (tagName: string, descriptor: ClassDescriptor) => {
-      const {kind, elements} = descriptor;
-      return {
-        kind,
-        elements,
-        // This callback is called once the class is otherwise fully defined
-        finisher(clazz: Constructor<HTMLElement>) {
-          window.customElements.define(tagName, clazz);
-        }
-      };
-    };
+const standardCustomElement = (
+  tagName: string,
+  descriptor: ClassDescriptor
+) => {
+  const { kind, elements } = descriptor;
+  return {
+    kind,
+    elements,
+    // This callback is called once the class is otherwise fully defined
+    finisher(clazz: Constructor<HTMLElement>) {
+      window.customElements.define(tagName, clazz);
+    },
+  };
+};
 
 /**
  * Class decorator factory that defines the decorated class as a custom element.
@@ -85,60 +89,68 @@ const standardCustomElement =
  * @category Decorator
  * @param tagName The name of the custom element to define.
  */
-export const customElement = (tagName: string) =>
-    (classOrDescriptor: Constructor<HTMLElement>|ClassDescriptor) =>
-        (typeof classOrDescriptor === 'function') ?
-    legacyCustomElement(tagName, classOrDescriptor) :
-    standardCustomElement(tagName, classOrDescriptor);
+export const customElement = (tagName: string) => (
+  classOrDescriptor: Constructor<HTMLElement> | ClassDescriptor
+) =>
+  typeof classOrDescriptor === "function"
+    ? legacyCustomElement(tagName, classOrDescriptor)
+    : standardCustomElement(tagName, classOrDescriptor);
 
-const standardProperty =
-    (options: PropertyDeclaration, element: ClassElement) => {
-      // When decorating an accessor, pass it through and add property metadata.
-      // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
-      // stomp over the user's accessor.
-      if (element.kind === 'method' && element.descriptor &&
-          !('value' in element.descriptor)) {
-        return {
-          ...element,
-          finisher(clazz: typeof UpdatingElement) {
-            clazz.createProperty(element.key, options);
-          }
-        };
-      } else {
-        // createProperty() takes care of defining the property, but we still
-        // must return some kind of descriptor, so return a descriptor for an
-        // unused prototype field. The finisher calls createProperty().
-        return {
-          kind: 'field',
-          key: Symbol(),
-          placement: 'own',
-          descriptor: {},
-          // When @babel/plugin-proposal-decorators implements initializers,
-          // do this instead of the initializer below. See:
-          // https://github.com/babel/babel/issues/9260 extras: [
-          //   {
-          //     kind: 'initializer',
-          //     placement: 'own',
-          //     initializer: descriptor.initializer,
-          //   }
-          // ],
-          initializer(this: {[key: string]: unknown}) {
-            if (typeof element.initializer === 'function') {
-              this[element.key as string] = element.initializer.call(this);
-            }
-          },
-          finisher(clazz: typeof UpdatingElement) {
-            clazz.createProperty(element.key, options);
-          }
-        };
-      }
+const standardProperty = (
+  options: PropertyDeclaration,
+  element: ClassElement
+) => {
+  // When decorating an accessor, pass it through and add property metadata.
+  // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
+  // stomp over the user's accessor.
+  if (
+    element.kind === "method" &&
+    element.descriptor &&
+    !("value" in element.descriptor)
+  ) {
+    return {
+      ...element,
+      finisher(clazz: typeof UpdatingElement) {
+        clazz.createProperty(element.key, options);
+      },
     };
+  } else {
+    // createProperty() takes care of defining the property, but we still
+    // must return some kind of descriptor, so return a descriptor for an
+    // unused prototype field. The finisher calls createProperty().
+    return {
+      kind: "field",
+      key: Symbol(),
+      placement: "own",
+      descriptor: {},
+      // When @babel/plugin-proposal-decorators implements initializers,
+      // do this instead of the initializer below. See:
+      // https://github.com/babel/babel/issues/9260 extras: [
+      //   {
+      //     kind: 'initializer',
+      //     placement: 'own',
+      //     initializer: descriptor.initializer,
+      //   }
+      // ],
+      initializer(this: { [key: string]: unknown }) {
+        if (typeof element.initializer === "function") {
+          this[element.key as string] = element.initializer.call(this);
+        }
+      },
+      finisher(clazz: typeof UpdatingElement) {
+        clazz.createProperty(element.key, options);
+      },
+    };
+  }
+};
 
-const legacyProperty =
-    (options: PropertyDeclaration, proto: Object, name: PropertyKey) => {
-      (proto.constructor as typeof UpdatingElement)
-          .createProperty(name, options);
-    };
+const legacyProperty = (
+  options: PropertyDeclaration,
+  proto: Object,
+  name: PropertyKey
+) => {
+  (proto.constructor as typeof UpdatingElement).createProperty(name, options);
+};
 
 /**
  * A property decorator which creates a LitElement property which reflects a
@@ -160,10 +172,10 @@ const legacyProperty =
  */
 export function property(options?: PropertyDeclaration) {
   // tslint:disable-next-line:no-any decorator
-  return (protoOrDescriptor: Object|ClassElement, name?: PropertyKey): any =>
-             (name !== undefined) ?
-      legacyProperty(options!, protoOrDescriptor as Object, name) :
-      standardProperty(options!, protoOrDescriptor as ClassElement);
+  return (protoOrDescriptor: Object | ClassElement, name?: PropertyKey): any =>
+    name !== undefined
+      ? legacyProperty(options!, protoOrDescriptor as Object, name)
+      : standardProperty(options!, protoOrDescriptor as ClassElement);
 }
 
 export interface InternalPropertyDeclaration<Type = unknown> {
@@ -185,7 +197,7 @@ export interface InternalPropertyDeclaration<Type = unknown> {
  * @category Decorator
  */
 export function internalProperty(options?: InternalPropertyDeclaration) {
-  return property({attribute: false, hasChanged: options?.hasChanged});
+  return property({ attribute: false, hasChanged: options?.hasChanged });
 }
 
 /**
@@ -216,9 +228,11 @@ export function internalProperty(options?: InternalPropertyDeclaration) {
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean) {
-  return (protoOrDescriptor: Object|ClassElement,
-          // tslint:disable-next-line:no-any decorator
-          name?: PropertyKey): any => {
+  return (
+    protoOrDescriptor: Object | ClassElement,
+    // tslint:disable-next-line:no-any decorator
+    name?: PropertyKey
+  ): any => {
     const descriptor = {
       get(this: LitElement) {
         return this.renderRoot.querySelector(selector);
@@ -227,20 +241,25 @@ export function query(selector: string, cache?: boolean) {
       configurable: true,
     };
     if (cache) {
-      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-      descriptor.get = function(this: LitElement) {
-        if ((this as unknown as
-             {[key: string]: Element | null})[key as string] === undefined) {
-          ((this as unknown as {[key: string]: Element | null})[key as string] =
-               this.renderRoot.querySelector(selector));
+      const key = typeof name === "symbol" ? Symbol() : `__${name}`;
+      descriptor.get = function (this: LitElement) {
+        if (
+          ((this as unknown) as { [key: string]: Element | null })[
+            key as string
+          ] === undefined
+        ) {
+          ((this as unknown) as { [key: string]: Element | null })[
+            key as string
+          ] = this.renderRoot.querySelector(selector);
         }
-        return (
-            this as unknown as {[key: string]: Element | null})[key as string];
+        return ((this as unknown) as { [key: string]: Element | null })[
+          key as string
+        ];
       };
     }
-    return (name !== undefined) ?
-        legacyQuery(descriptor, protoOrDescriptor as Object, name) :
-        standardQuery(descriptor, protoOrDescriptor as ClassElement);
+    return name !== undefined
+      ? legacyQuery(descriptor, protoOrDescriptor as Object, name)
+      : standardQuery(descriptor, protoOrDescriptor as ClassElement);
   };
 }
 
@@ -283,9 +302,11 @@ export function query(selector: string, cache?: boolean) {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (protoOrDescriptor: Object|ClassElement,
-          // tslint:disable-next-line:no-any decorator
-          name?: PropertyKey): any => {
+  return (
+    protoOrDescriptor: Object | ClassElement,
+    // tslint:disable-next-line:no-any decorator
+    name?: PropertyKey
+  ): any => {
     const descriptor = {
       async get(this: LitElement) {
         await this.updateComplete;
@@ -294,9 +315,9 @@ export function queryAsync(selector: string) {
       enumerable: true,
       configurable: true,
     };
-    return (name !== undefined) ?
-        legacyQuery(descriptor, protoOrDescriptor as Object, name) :
-        standardQuery(descriptor, protoOrDescriptor as ClassElement);
+    return name !== undefined
+      ? legacyQuery(descriptor, protoOrDescriptor as Object, name)
+      : standardQuery(descriptor, protoOrDescriptor as ClassElement);
   };
 }
 
@@ -326,9 +347,11 @@ export function queryAsync(selector: string) {
  * @category Decorator
  */
 export function queryAll(selector: string) {
-  return (protoOrDescriptor: Object|ClassElement,
-          // tslint:disable-next-line:no-any decorator
-          name?: PropertyKey): any => {
+  return (
+    protoOrDescriptor: Object | ClassElement,
+    // tslint:disable-next-line:no-any decorator
+    name?: PropertyKey
+  ): any => {
     const descriptor = {
       get(this: LitElement) {
         return this.renderRoot.querySelectorAll(selector);
@@ -336,41 +359,50 @@ export function queryAll(selector: string) {
       enumerable: true,
       configurable: true,
     };
-    return (name !== undefined) ?
-        legacyQuery(descriptor, protoOrDescriptor as Object, name) :
-        standardQuery(descriptor, protoOrDescriptor as ClassElement);
+    return name !== undefined
+      ? legacyQuery(descriptor, protoOrDescriptor as Object, name)
+      : standardQuery(descriptor, protoOrDescriptor as ClassElement);
   };
 }
 
-const legacyQuery =
-    (descriptor: PropertyDescriptor, proto: Object, name: PropertyKey) => {
-      Object.defineProperty(proto, name, descriptor);
-    };
+const legacyQuery = (
+  descriptor: PropertyDescriptor,
+  proto: Object,
+  name: PropertyKey
+) => {
+  Object.defineProperty(proto, name, descriptor);
+};
 
-const standardQuery = (descriptor: PropertyDescriptor, element: ClassElement) =>
-    ({
-      kind: 'method',
-      placement: 'prototype',
-      key: element.key,
-      descriptor,
-    });
+const standardQuery = (
+  descriptor: PropertyDescriptor,
+  element: ClassElement
+) => ({
+  kind: "method",
+  placement: "prototype",
+  key: element.key,
+  descriptor,
+});
 
-const standardEventOptions =
-    (options: AddEventListenerOptions, element: ClassElement) => {
-      return {
-        ...element,
-        finisher(clazz: typeof UpdatingElement) {
-          Object.assign(
-              clazz.prototype[element.key as keyof UpdatingElement], options);
-        }
-      };
-    };
+const standardEventOptions = (
+  options: AddEventListenerOptions,
+  element: ClassElement
+) => {
+  return {
+    ...element,
+    finisher(clazz: typeof UpdatingElement) {
+      Object.assign(
+        clazz.prototype[element.key as keyof UpdatingElement],
+        options
+      );
+    },
+  };
+};
 
 const legacyEventOptions =
-    // tslint:disable-next-line:no-any legacy decorator
-    (options: AddEventListenerOptions, proto: any, name: PropertyKey) => {
-      Object.assign(proto[name], options);
-    };
+  // tslint:disable-next-line:no-any legacy decorator
+  (options: AddEventListenerOptions, proto: any, name: PropertyKey) => {
+    Object.assign(proto[name], options);
+  };
 
 /**
  * Adds event listener options to a method used as an event listener in a
@@ -409,20 +441,21 @@ export function eventOptions(options: AddEventListenerOptions) {
   // signature
   // TODO(kschaaf): unclear why it was only failing on this decorator and not
   // the others
-  return ((protoOrDescriptor: Object|ClassElement, name?: string) =>
-              (name !== undefined) ?
-              legacyEventOptions(options, protoOrDescriptor as Object, name) :
-              standardEventOptions(
-                  options, protoOrDescriptor as ClassElement)) as
-             // tslint:disable-next-line:no-any decorator
-             any;
+  return ((protoOrDescriptor: Object | ClassElement, name?: string) =>
+    name !== undefined
+      ? legacyEventOptions(options, protoOrDescriptor as Object, name)
+      : standardEventOptions(
+          options,
+          protoOrDescriptor as ClassElement
+        )) as // tslint:disable-next-line:no-any decorator
+  any;
 }
 
 // x-browser support for matches
 // tslint:disable-next-line:no-any
 const ElementProto = Element.prototype as any;
 const legacyMatches =
-    ElementProto.msMatchesSelector || ElementProto.webkitMatchesSelector;
+  ElementProto.msMatchesSelector || ElementProto.webkitMatchesSelector;
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -452,30 +485,37 @@ const legacyMatches =
  * @category Decorator
  */
 export function queryAssignedNodes(
-    slotName = '', flatten = false, selector = '') {
-  return (protoOrDescriptor: Object|ClassElement,
-          // tslint:disable-next-line:no-any decorator
-          name?: PropertyKey): any => {
+  slotName = "",
+  flatten = false,
+  selector = ""
+) {
+  return (
+    protoOrDescriptor: Object | ClassElement,
+    // tslint:disable-next-line:no-any decorator
+    name?: PropertyKey
+  ): any => {
     const descriptor = {
       get(this: LitElement) {
-        const slotSelector =
-            `slot${slotName ? `[name=${slotName}]` : ':not([name])'}`;
+        const slotSelector = `slot${
+          slotName ? `[name=${slotName}]` : ":not([name])"
+        }`;
         const slot = this.renderRoot.querySelector(slotSelector);
-        let nodes = slot && (slot as HTMLSlotElement).assignedNodes({flatten});
+        let nodes =
+          slot && (slot as HTMLSlotElement).assignedNodes({ flatten });
         if (nodes && selector) {
-          nodes = nodes.filter(
-              (node) => node.nodeType === Node.ELEMENT_NODE &&
-                      (node as Element).matches ?
-                  (node as Element).matches(selector) :
-                  legacyMatches.call(node as Element, selector));
+          nodes = nodes.filter((node) =>
+            node.nodeType === Node.ELEMENT_NODE && (node as Element).matches
+              ? (node as Element).matches(selector)
+              : legacyMatches.call(node as Element, selector)
+          );
         }
         return nodes;
       },
       enumerable: true,
       configurable: true,
     };
-    return (name !== undefined) ?
-        legacyQuery(descriptor, protoOrDescriptor as Object, name) :
-        standardQuery(descriptor, protoOrDescriptor as ClassElement);
+    return name !== undefined
+      ? legacyQuery(descriptor, protoOrDescriptor as Object, name)
+      : standardQuery(descriptor, protoOrDescriptor as ClassElement);
   };
 }
