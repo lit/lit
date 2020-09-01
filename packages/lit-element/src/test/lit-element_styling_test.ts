@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {css, CSSResult, html as htmlWithStyles, LitElement, unsafeCSS} from '../lit-element.js';
+import {css, CSSResult, html as htmlWithStyles, LitElement, unsafeCSS} from '../lib/lit-element.js';
 
 import {generateElementName, getComputedStyleValue, nextFrame} from './test-helpers.js';
 

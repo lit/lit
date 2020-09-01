@@ -13,7 +13,7 @@
  */
 
 import {eventOptions, property} from '../../lib/decorators.js';
-import {html, LitElement, PropertyValues} from '../../lit-element.js';
+import {html, LitElement, PropertyValues} from '../../lib/lit-element.js';
 import {customElement, query, queryAll, queryAssignedNodes, queryAsync} from '../../lib/decorators.js';
 import {generateElementName} from '../test-helpers.js';
 

@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2020",
     "module": "es2015",
-    "moduleResolution": "node",
-    "lib": ["esnext.array", "esnext", "es2017", "dom"],
+    "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
+    "outDir": "./",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -15,13 +15,11 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "outDir": "./",
-    // Only necessary because @types/uglify-js can't find types for source-map
-    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true
   },
   "include": [
-    "custom_typings/**/*.ts",
     "src/**/*.ts"
   ],
   "exclude": []

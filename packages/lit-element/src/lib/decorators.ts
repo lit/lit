@@ -19,7 +19,7 @@
  * not an arrow function.
  */
 
-import {LitElement} from '../lit-element.js';
+import {LitElement} from './lit-element.js';
 
 import {PropertyDeclaration, UpdatingElement} from './updating-element.js';
 

@@ -54,14 +54,14 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
+import {PropertyValues, UpdatingElement} from './updating-element.js';
 // TODO(sorvell) Add shady-render package.
-import {render, RenderOptions} from 'lit-html/lib/lit-html.js';
+import {render, RenderOptions} from 'lit-html';
 
-export * from './lib/updating-element.js';
-export {html, svg, TemplateResult} from 'lit-html/lib/lit-html.js';
-import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './lib/css-tag.js';
-export * from './lib/css-tag.js';
+export * from './updating-element.js';
+export {html, svg, TemplateResult} from 'lit-html';
+import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './css-tag.js';
+export * from './css-tag.js';
 
 declare global {
   interface Window {
@@ -252,7 +252,7 @@ export class LitElement extends UpdatingElement {
     // rendering
     if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
       window.ShadyCSS.ScopingShim!.prepareAdoptedCssText(
-          styles.map((s) => s.cssText), this.localName);
+          styles.map((s) => (s as CSSResult).cssText), this.localName);
     } else if (supportsAdoptingStyleSheets) {
       (this.renderRoot as ShadowRoot).adoptedStyleSheets =
           styles.map((s) => s instanceof CSSStyleSheet ? s : s.styleSheet!);
@@ -299,7 +299,7 @@ export class LitElement extends UpdatingElement {
       this._needsShimAdoptedStyleSheets = false;
       (this.constructor as typeof LitElement)._styles!.forEach((s) => {
         const style = document.createElement('style');
-        style.textContent = s.cssText;
+        style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
       });
     }

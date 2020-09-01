@@ -13,24 +13,32 @@
  */
 
 import filesize from 'rollup-plugin-filesize';
-import {terser} from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
+import { terser } from 'rollup-plugin-terser';
 
 export default {
-  input: 'lit-element.js',
+  input: 'lib/lit-element.js',
   output: {
     file: 'lit-element.bundled.js',
     format: 'esm',
   },
-  onwarn(warning) {
-    if (warning.code !== 'CIRCULAR_DEPENDENCY') {
-      console.error(`(!) ${warning.message}`);
-    }
-  },
   plugins: [
-    resolve(),
     terser({
       warnings: true,
+      ecma: 2017,
+      compress: {
+        unsafe: true,
+      },
+      output: {
+        comments: false,
+        inline_script: false,
+        // TODO (justinfagnani): benchmark
+        // wrap_func_args: false,
+      },
+      mangle: {
+        properties: {
+          regex: /^__/,
+        },
+      },
     }),
     filesize({
       showBrotliSize: true,

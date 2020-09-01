@@ -6,8 +6,9 @@
   "homepage": "https://lit-element.polymer-project.org/",
   "repository": "Polymer/lit-element",
   "type": "module",
-  "main": "lit-element.js",
-  "module": "lit-element.js",
+  "main": "index.js",
+  "module": "index.js",
+  "typings": "index.d.ts",
   "directories": {
     "test": "test"
   },
@@ -23,14 +24,13 @@
     "/ts3.4/"
   ],
   "scripts": {
-    "build": "tsc && rm -rf ./ts3.4 && downlevel-dts . ts3.4 && cp tsconfig.json ./ts3.4/",
+    "build": "tsc",
     "build:watch": "tsc --watch",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
-    "gen-docs": "typedoc src/lit-element.ts src/lib/updating-element.ts",
     "test": "npm run build && npm run build:babel-test && wct",
     "quicktest": "wct -l chrome -p",
     "checksize": "rollup -c ; rm lit-element.bundled.js",
-    "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "format": "prettier src/* --write",
     "lint": "tslint --project ./",
     "prepublishOnly": "node check-version-tracker.cjs && npm run lint && npm test",
     "prepare": "npm run build",
@@ -46,6 +46,12 @@
     "@babel/plugin-transform-typescript": "^7.2.0",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^5.2.4",
+    "prettier": "^2.0.5",
+    "rollup": "^2.26.4",
+    "rollup-plugin-filesize": "^9.0.2",
+    "rollup-plugin-terser": "^7.0.0",
+    "terser": "^5.2.1",
+    "typescript": "^4.0.2",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.2.3",
     "chai": "^4.0.2",
@@ -54,25 +60,13 @@
     "lit-element-benchmarks": "^0.1.0",
     "mocha": "^6.2.2",
     "np": "^5.2.1",
-    "rollup": "^1.26.0",
-    "rollup-plugin-filesize": "^6.2.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.1.0",
     "tachometer": "^0.4.16",
     "tslint": "^5.20.1",
     "typedoc": "^0.17.0-3",
-    "typescript": "~3.8.2",
     "uglify-es": "^3.3.9",
     "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.2"
-  },
-  "typings": "lit-element.d.ts",
-  "typesVersions": {
-    "<3.8": {
-      "*": [
-        "ts3.4/*"
-      ]
-    }
   },
   "dependencies": {
     "lit-html": "^2.0.0-pre.0"

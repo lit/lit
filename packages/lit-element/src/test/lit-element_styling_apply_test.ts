@@ -14,7 +14,7 @@
 
 import '@webcomponents/shadycss/apply-shim.min.js';
 
-import {html as htmlWithStyles, LitElement} from '../lit-element.js';
+import {html as htmlWithStyles, LitElement} from '../lib/lit-element.js';
 
 import {generateElementName, getComputedStyleValue, nextFrame} from './test-helpers.js';
 

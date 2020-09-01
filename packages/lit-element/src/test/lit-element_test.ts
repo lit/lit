@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../lit-element.js';
+import {html, LitElement} from '../lib/lit-element.js';
 import {property} from '../lib/decorators.js';
 import {stripExpressionComments} from 'lit-html/test/test-utils/strip-markers.js';
 import {generateElementName} from './test-helpers.js';
