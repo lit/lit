@@ -416,7 +416,7 @@ suite('Static get styles', () => {
         margin: ${spacer * 2}px;
       }
     `;
-    assert.equal(result.cssText, 'div { margin: 4px; }');
+    assert.equal(result.cssText.replace(/\s/g, ''), 'div{margin:4px;}');
   });
 
   test('`CSSResult` cannot be constructed', async () => {
@@ -882,7 +882,7 @@ suite('Static get styles', () => {
     // Example use case: apply cssModule as global page styles at
     // document.body level.
     const bodyStyles = `${cssModule}`;
-    assert.equal(bodyStyles, '.my-module { color: yellow; }');
+    assert.equal(bodyStyles.replace(/\s/g, ''), '.my-module{color:yellow;}');
   });
 
   test('Styles are not removed if the first rendered value is undefined.', async () => {

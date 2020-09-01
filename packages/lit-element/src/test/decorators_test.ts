@@ -477,14 +477,24 @@ suite('decorators', () => {
       await c.assignedNodesEl.updateComplete;
       // Note, `defaultAssigned` does not `flatten` so we test that the property
       // reflects current state and state when nodes are added or removed.
-      assert.deepEqual(c.assignedNodesEl.defaultAssigned, [c.div]);
+      assert.deepEqual(c.assignedNodesEl.defaultAssigned, [
+        c.div,
+        c.div.nextSibling!,
+      ]);
       const child = document.createElement('div');
       c.assignedNodesEl.appendChild(child);
       flush();
-      assert.deepEqual(c.assignedNodesEl.defaultAssigned, [c.div, child]);
+      assert.deepEqual(c.assignedNodesEl.defaultAssigned, [
+        c.div,
+        c.div.nextSibling!,
+        child,
+      ]);
       c.assignedNodesEl.removeChild(child);
       flush();
-      assert.deepEqual(c.assignedNodesEl.defaultAssigned, [c.div]);
+      assert.deepEqual(c.assignedNodesEl.defaultAssigned, [
+        c.div,
+        c.div.nextSibling!,
+      ]);
     });
 
     test('returns assignedNodes for unnamed slot that is not first slot', async () => {
