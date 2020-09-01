@@ -681,7 +681,7 @@ suite('lit-html', () => {
       );
     });
 
-    test('renders to an attribute without quotes', () => {
+    test('renders a bound attribute without quotes', () => {
       render(html`<div foo=${'bar'}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -689,7 +689,7 @@ suite('lit-html', () => {
       );
     });
 
-    test('renders to multiple attribute expressions', () => {
+    test('renders multiple bound attributes', () => {
       render(
         html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
         container
@@ -701,7 +701,7 @@ suite('lit-html', () => {
       ]);
     });
 
-    test('renders to multiple attribute expressions without quotes', () => {
+    test('renders multiple bound attributes without quotes', () => {
       render(
         html`<div foo=${'Foo'} bar=${'Bar'} baz=${'Baz'}></div>`,
         container
@@ -711,6 +711,15 @@ suite('lit-html', () => {
         '<div foo="Foo" baz="Baz" bar="Bar"></div>',
         '<div bar="Bar" foo="Foo" baz="Baz"></div>',
       ]);
+    });
+
+    test('renders multi-expression attribute without quotes', () => {
+      render(
+        html`<div foo=${'Foo'}${'Bar'}></div>`,
+        container
+      );
+      assert.equal(stripExpressionComments(container.innerHTML),
+              '<div foo="FooBar"></div>');
     });
 
     test('renders to attributes with attribute-like values', () => {
@@ -773,6 +782,9 @@ suite('lit-html', () => {
 
     test('nothing sentinel removes an attribute', () => {
       const go = (v: any) => html`<div a=${v}></div>`;
+      render(go(nothing), container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
       render(go('a'), container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -804,6 +816,8 @@ suite('lit-html', () => {
         'A'
       );
       const observer = new MutationObserver(() => {});
+      observer.observe(container, {attributes: true});
+
       go(noChange);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -847,6 +861,10 @@ suite('lit-html', () => {
 
     test('removes attributes for nothing values', () => {
       const go = (v: any) => render(html`<div ?foo=${v}></div>`, container);
+
+      go(nothing);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
       go(true);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -950,20 +968,16 @@ suite('lit-html', () => {
       const node = document.createElement('div');
       const t = () => html`${node}`;
 
-      let mutationRecords: MutationRecord[] = [];
-      const mutationObserver = new MutationObserver((records) => {
-        mutationRecords = records;
-      });
-      mutationObserver.observe(container, {childList: true});
+      const observer = new MutationObserver(() => {});
+      observer.observe(container, {childList: true});
 
       assert.equal(stripExpressionComments(container.innerHTML), '');
       render(t(), container);
       assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
 
-      // Wait for mutation callback to be called
-      await new Promise((resolve) => setTimeout(resolve));
 
       const elementNodes: Node[] = [];
+      let mutationRecords: MutationRecord[] = observer.takeRecords();
       for (const record of mutationRecords) {
         elementNodes.push(
           ...Array.from(record.addedNodes).filter(
@@ -976,7 +990,7 @@ suite('lit-html', () => {
       mutationRecords = [];
       render(t(), container);
       assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
-      await new Promise((resolve) => setTimeout(resolve));
+      mutationRecords = observer.takeRecords();
       assert.equal(mutationRecords.length, 0);
     });
 
