@@ -1,0 +1,10 @@
+docs/
+.travis.yml
+check-version-tracker.js
+rollup.config.js
+tslint.json
+tsconfig_apidoc.json
+wct.conf.json
+.vscode/
+.github/
+.clang-format

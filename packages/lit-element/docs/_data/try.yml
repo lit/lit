@@ -1,0 +1,20 @@
+title: LitElement Documentation
+toc:
+  introduction: 
+    title: Try LitElement
+    url: /try
+  create: 
+    title: 1. Create
+    url: /try/create
+  properties: 
+    title: 2. Properties
+    url: /try/properties
+  logic: 
+    title: 3. Logic
+    url: /try/logic
+  events: 
+    title: 4. Events
+    url: /try/events
+  style: 
+    title: 5. Style
+    url: /try/style

@@ -1,0 +1,31 @@
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+libraries:
+- name: jinja2
+  version: "2.6"
+- name: webapp2
+  version: "2.5.2"
+
+default_expiration: "1m"
+
+handlers:
+- url: /api
+  static_dir: api
+  secure: always
+- url: /build
+  static_dir: build
+  secure: always
+- url: /css
+  static_dir: css
+  secure: always
+- url: /images
+  static_dir: images
+  secure: always
+- url: /includes
+  static_dir: includes
+  secure: always
+- url: /.*
+  script: main.app
+  secure: always

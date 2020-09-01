@@ -1,0 +1,16 @@
+<html>
+  <head>
+    <title>lit-element code sample</title>
+    <script type="module" src="./my-element.js"></script>
+    <style>
+      html { --themeColor1: rgb(67, 156, 144); }
+      my-element {
+        --myBackground: var(--themeColor1);
+        --myColor: rgb(156, 67, 152);
+      }
+    </style>
+  </head>
+  <body>
+    <my-element></my-element>
+  </body>
+</html>

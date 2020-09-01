@@ -1,0 +1,1 @@
+import './my-page.js';

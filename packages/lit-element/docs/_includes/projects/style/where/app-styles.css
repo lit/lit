@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  color: blue;
+}
+div { 
+  background: aliceblue; 
+}
+button { 
+  width: 200px; 
+}

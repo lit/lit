@@ -5,6 +5,10 @@
 			"path": "packages/lit-html"
 		},
 		{
+			"name": "lit-element",
+			"path": "packages/lit-element"
+		},
+		{
 			"name": "lit-next",
 			"path": "."
 		}

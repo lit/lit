@@ -1,0 +1,58 @@
+/* Theme colors */
+a,
+h1,
+h2,
+h3,
+h4 {
+  color: #2196F3;
+}
+
+.hero {
+  background: #00A3E6;
+  background: linear-gradient(315deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%), linear-gradient(315deg, #8FCDFF 0%, #2196F3 100%);
+}
+
+.main-nav {
+  background: #304ffe;
+  background: linear-gradient(315deg, #8FCDFF 0%, #2196F3 100%);
+}
+
+.nav-item.active {
+  border-bottom: 2px solid #fff;
+}
+
+.hero-title,
+.hero-link,
+.main-nav {
+  color: #fff;
+}
+
+.hero-title::after {
+  background: #fff;
+}
+
+.grey-bg {
+  background: #f5f5f5;
+}
+
+.hero-link.link-with-arrow::before {
+  content: url('data:image/svg+xml; utf8, <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="%23FFFFFF"><path d="M21.5 12.495L16 18h-3l4.498-4.5H3v-2h14.498L13 7h3z"/></svg>');
+}
+
+.fixed-width-caption {
+  min-width: 300px;
+  max-width: 300px;
+  margin-bottom: 0;
+}
+
+@media screen and (max-width: 640px) {
+  .fixed-width-caption {
+    min-width: unset;
+    max-width: unset;
+  }
+}
+
+.inline-action-buttons > * {
+  display: inline-block;
+  margin-right: 20px;
+}

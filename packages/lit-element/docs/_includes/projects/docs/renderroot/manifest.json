@@ -1,0 +1,15 @@
+{
+  "files": [
+    "default-root.js",
+    "light-dom.js",
+    "index.html",
+    "index.ts"
+  ],
+  "title": "lit-element code sample",
+  "description": "lit-element code sample",
+  "template": "typescript",
+  "dependencies": {
+    "lit-element": "latest",
+    "@webcomponents/webcomponentsjs": "latest"
+  }
+}

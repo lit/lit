@@ -1,0 +1,12 @@
+BasedOnStyle: Google
+AlignAfterOpenBracket: AlwaysBreak
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+BinPackArguments: false
+# This breaks async functions sometimes, see
+#     https://github.com/Polymer/polymer-analyzer/pull/393
+# BinPackParameters: false

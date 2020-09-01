@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="/node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js"></script>
+  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  
+  <script type="module" src="./my-element.js"></script>
+  <title>lit-element code sample</title>
+</head>
+<body>
+    <!-- Assign child to a specific slot -->
+
+    <my-element>
+      <p slot="two">Include me in slot "two".</p>
+    </my-element>
+
+    <!-- 
+      Named slots only accept children with a matching `slot` attribute. 
+      
+      Children with a `slot` attribute can only go into a slot with a matching name. 
+    -->
+
+    <my-element>
+      <p slot="one">Include me in slot "one".</p>
+      <p slot="nope">This one will not render at all.</p>
+      <p>No default slot, so this one won't render either.</p>
+    </my-element>
+</body>
+</html>

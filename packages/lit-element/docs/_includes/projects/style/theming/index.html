@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <script type="module" src="./my-element.js"></script>
+    <title>lit-element code sample</title>
+    <style>
+      html {
+        --theme-primary: green;
+        --theme-secondary: aliceblue;
+        --theme-warning: red;
+        --theme-font-family: Roboto;
+      }
+      my-element { 
+        --my-element-text-color: var(--theme-primary); 
+        --my-element-background-color: var(--theme-secondary); 
+        --my-element-font-family: var(--theme-font-family);
+      } 
+      .warning {
+        --my-element-text-color: var(--theme-warning); 
+      }
+    </style>
+  </head>
+  <body>
+    <my-element></my-element>
+    <my-element class="warning"></my-element>
+  </body>
+</html>

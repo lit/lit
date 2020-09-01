@@ -1,0 +1,14 @@
+{
+  "files": [
+    "my-element.js",
+    "index.html",
+    "index.ts"
+  ],
+  "title": "LitElement Example",
+  "description": "LitElement Example",
+  "template": "typescript",
+  "dependencies": {
+    "lit-element": "latest",
+    "@webcomponents/webcomponentsjs": "latest"
+  }
+}

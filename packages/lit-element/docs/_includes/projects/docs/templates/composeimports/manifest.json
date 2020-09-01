@@ -1,0 +1,17 @@
+{
+  "title": "lit-element code sample",
+  "description": "lit-element code sample",
+  "files": [
+    "my-page.js",
+    "my-header.js",
+    "my-article.js",
+    "my-footer.js",
+    "index.html",
+    "index.ts"
+  ],
+  "dependencies": {
+    "lit-element": "latest",
+    "@webcomponents/webcomponentsjs": "latest"
+  },
+  "template": "typescript"
+}

@@ -1,0 +1,16 @@
+{
+  "npm": true,
+  "moduleResolution": "node",
+  "entrypoint": "src/index.html",
+  "shell": "src/index.js",
+  "extraDependencies": [
+    "node_modules/@webcomponents/webcomponentsjs/**"
+  ],
+  "builds": [{
+    "name": "gh-pages",
+    "bundle": true,
+    "js": {
+      "minify": true
+    }
+  }]
+}

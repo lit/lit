@@ -1,0 +1,1 @@
+import './my-element.ts';

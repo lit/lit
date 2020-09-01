@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="description" content="{{ site.description }}">
+  <title>{%- if page.title -%}{{page.title}}&nbsp;&ndash;&nbsp;{%- endif -%}{{site.name}}</title>
+  <meta name="theme-color" content="#00A3E6">
+  <link rel="shortcut icon" href="{{site.baseurl}}/images/favicon.png">
+  <link rel="stylesheet" href="{{site.baseurl}}/css/main.css">
+  <link rel="stylesheet" href="{{site.baseurl}}/css/theme.css">
+  <link rel="stylesheet" href="{{site.baseurl}}/css/pygments.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+  {% if site.google_analytics %}
+  {% include analytics.html %}
+  {% endif %}
+  <!-- JavaScript bundle is only loaded to enable the StackBlitz buttons & embeds. The 
+       -nomodule version is basically for IE11 support. Currently StackBlitz doesn't work 
+       on IE11, so don't bother loading the -nomodule bundle. -->
+  <!-- <script nomodule src="{{site.baseurl}}/build/babel-polyfills-nomodule.js"></script> -->
+  <script src="{{site.baseurl}}/build/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script type="module" src="{{site.baseurl}}/build/bundle.js"></script>
+  <!-- <script nomodule src="{{site.baseurl}}/build/bundle-nomodule.js"></script> -->
+</head>
+<body>
+  {{content}}
+
+  <footer>
+      <div class="wrapper">
+        <div class="social-links">
+          <a target="_blank" href="https://github.com/Polymer/lit-element" rel="noopener" aria-label="Github"><img src="/images/logos/logo_github.svg" alt="GitHub"/></a>
+          <a target="_blank" href="https://twitter.com/polymer" rel="noopener" aria-label="Twitter"><img src="/images/logos/logo_twitter.svg" alt="Twitter"/></a>
+          <a target="_blank" href="https://groups.google.com//forum/#!forum/polymer-dev" rel="noopener" aria-label="Email"><img src="/images/logos/logo_email.svg" alt="polymer-dev mailing list"/></a>
+          <a target="_blank" href="https://www.polymer-project.org/slack-invite" rel="noopener" aria-label="Slack"><img src="/images/logos/logo_slack.svg" alt="Polymer Project Slack workspace"/></a>
+        </div>
+        <div class="attribution">
+          Brought to you by <a href="https://www.polymer-project.org">The Polymer Project</a>.<br>
+          Copyright 2018-{{ "now" | date:"%Y" }} The Polymer Project Authors. Code licensed under the
+          <a target="_blank" href="http://polymer.github.io/LICENSE.txt">BSD License</a>.
+          Documentation licensed under CC BY 3.0.
+        </div>
+      </div>
+  </footer>
+
+  <script>
+    searchBox.addEventListener('keypress', function(event) {
+      if (event.keyCode === 13 /* enter */) {
+        const site = window.location.hostname;
+        const query = encodeURIComponent(searchBox.value);
+        ga('send', 'pageview', '/search?q='+query);
+        window.location = 'https://www.google.com/search?q=site%3A'+site+'+'+query;
+        event.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>

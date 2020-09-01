@@ -1,0 +1,13 @@
+{
+  "title": "lit-element code sample",
+  "description": "lit-element code sample",
+  "files": [
+    "super-element.js",
+    "my-element.js",
+    "index.html"
+  ],
+  "dependencies": {
+    "lit-element": "latest"
+  },
+  "template": "polymer"
+}

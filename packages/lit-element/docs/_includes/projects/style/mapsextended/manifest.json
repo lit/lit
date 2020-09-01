@@ -1,0 +1,14 @@
+{
+  "title": "lit-element code sample",
+  "description": "lit-element code sample",
+  "files": [
+    "my-button.js",
+    "my-element.js",
+    "index.html"
+  ],
+  "dependencies": {
+    "lit-element": "latest",
+    "lit-html": "latest"
+  },
+  "template": "polymer"
+}

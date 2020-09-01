@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "rimraf build && rollup -c && jekyll build",
+    "build-all": "(cd .. && npm run gen-docs) && npm run build",
+    "serve": "dev_appserver.py _site/app.yaml",
+    "deploy": "npm run build && gcloud app deploy _site/app.yaml --project polymer-lit-element --no-promote",
+    "deploy-staging": "npm run build && gcloud app deploy _site/app.yaml --project polymer-lit-element-staging"
+  },
+  "dependencies": {
+    "@stackblitz/sdk": "^1.3.0",
+    "@webcomponents/webcomponentsjs": "^2.1.3",
+    "core-js": "^3.6.5",
+    "lit-element": "^2.1.0",
+    "regenerator-runtime": "^0.13.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "polymer-cli": "^1.9.11",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.6.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-filesize": "^7.0.0",
+    "rollup-plugin-minify-html-literals": "^1.2.3",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-terser": "^5.3.0"
+  }
+}
