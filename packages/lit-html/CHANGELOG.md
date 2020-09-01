@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Breaking] `render()` does not clear the container it's rendered to
 * [Breaking] Expressions in comments are not rendered
 * [Breaking] Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
+* Multiple bindings in an attribute value don't need to be in quotes
 
 ### Added
 
