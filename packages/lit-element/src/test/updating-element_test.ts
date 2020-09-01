@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { customElement, property } from "../../lib/decorators.js";
+import { customElement, property } from "../lib/decorators.js";
 import {
   ComplexAttributeConverter,
   defaultConverter,
@@ -20,12 +20,11 @@ import {
   PropertyDeclarations,
   PropertyValues,
   UpdatingElement,
-} from "../../lib/updating-element.js";
-import { generateElementName } from "../test-helpers.js";
+} from "../lib/updating-element.js";
+import { generateElementName } from "./test-helpers.js";
+import {assert} from '@esm-bundle/chai';
 
 // tslint:disable:no-any ok in tests
-
-const assert = chai.assert;
 
 suite("UpdatingElement", () => {
   let container: HTMLElement;

@@ -14,6 +14,7 @@
 
 import filesize from 'rollup-plugin-filesize';
 import { terser } from 'rollup-plugin-terser';
+import resolve from 'rollup-plugin-node-resolve';
 
 export default {
   input: 'lib/lit-element.js',
@@ -22,6 +23,7 @@ export default {
     format: 'esm',
   },
   plugins: [
+    resolve(),
     terser({
       warnings: true,
       ecma: 2017,

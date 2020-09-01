@@ -24,8 +24,7 @@ import {
   getComputedStyleValue,
   nextFrame,
 } from "./test-helpers.js";
-
-const assert = chai.assert;
+import {assert} from '@esm-bundle/chai';
 
 suite("Styling", () => {
   let container: HTMLElement;
@@ -412,12 +411,7 @@ suite("Static get styles", () => {
 
   test("`css` allows real JavaScript numbers", async () => {
     const spacer = 2;
-
-    const result = css`
-      div {
-        margin: ${spacer * 2}px;
-      }
-    `;
+    const result = css`div { margin: ${spacer * 2}px; }`;
     assert.equal(result.cssText, "div { margin: 4px; }");
   });
 
@@ -875,11 +869,7 @@ suite("Static get styles", () => {
   });
 
   test("`CSSResult` allows for String type coercion via toString()", async () => {
-    const cssModule = css`
-      .my-module {
-        color: yellow;
-      }
-    `;
+    const cssModule = css`.my-module { color: yellow; }`;
     // Coercion allows for reusage of css-tag outcomes in regular strings.
     // Example use case: apply cssModule as global page styles at
     // document.body level.

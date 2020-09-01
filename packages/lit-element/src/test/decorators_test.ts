@@ -12,16 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { eventOptions, property } from "../../lib/decorators.js";
-import { html, LitElement, PropertyValues } from "../../lib/lit-element.js";
+import { eventOptions, property } from "../lib/decorators.js";
+import { html, LitElement, PropertyValues } from "../lib/lit-element.js";
 import {
   customElement,
   query,
   queryAll,
   queryAssignedNodes,
   queryAsync,
-} from "../../lib/decorators.js";
-import { generateElementName } from "../test-helpers.js";
+} from "../lib/decorators.js";
+import { generateElementName } from "./test-helpers.js";
+import {assert} from '@esm-bundle/chai';
 
 const flush =
   window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
@@ -74,8 +75,6 @@ const supportsPassive = (function () {
   document.body.removeChild(f);
   return hasPassive;
 })();
-
-const assert = chai.assert;
 
 suite("decorators", () => {
   let container: HTMLElement;
@@ -463,8 +462,7 @@ suite("decorators", () => {
       render() {
         return html`
           <assigned-nodes-el
-            ><div id="div1">A</div>
-            <slot slot="footer"></slot
+            ><div id="div1">A</div><slot slot="footer"></slot
           ></assigned-nodes-el>
           <assigned-nodes-el-2><div id="div2">B</div></assigned-nodes-el-2>
         `;
@@ -577,7 +575,8 @@ suite("decorators", () => {
     });
   });
 
-  suite("@eventOptions", () => {
+  // TODO(sorvell): Enable when support for events lands in lit-html.
+  suite.skip("@eventOptions", () => {
     test("allows capturing listeners", async function () {
       if (!supportsOptions) {
         this.skip();

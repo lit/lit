@@ -12,9 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export const stripExpressionDelimeters = (html: string) =>
-  html.replace(/<!---->/g, "");
-
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
 

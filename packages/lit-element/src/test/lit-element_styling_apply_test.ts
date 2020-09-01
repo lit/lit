@@ -21,10 +21,10 @@ import {
   getComputedStyleValue,
   nextFrame,
 } from "./test-helpers.js";
+import {assert} from '@esm-bundle/chai';
 
-const assert = chai.assert;
-
-suite("Styling @apply", () => {
+// TODO(sorvell): Enable when polyfill support is available.
+suite.skip("Styling @apply", () => {
   let container: HTMLElement;
 
   setup(() => {
