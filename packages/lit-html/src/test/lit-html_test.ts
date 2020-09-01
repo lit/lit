@@ -815,7 +815,7 @@ suite('lit-html', () => {
         'A'
       );
       const observer = new MutationObserver(() => {});
-      observer.observe(container, {attributes: true});
+      observer.observe(container, {attributes: true, subtree: true});
 
       go(noChange);
       assert.equal(
@@ -882,6 +882,7 @@ suite('lit-html', () => {
         '<div foo=""></div>'
       );
       const observer = new MutationObserver(() => {});
+      observer.observe(container, {attributes: true, subtree: true});
       go(noChange);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -968,7 +969,7 @@ suite('lit-html', () => {
       const t = () => html`${node}`;
 
       const observer = new MutationObserver(() => {});
-      observer.observe(container, {childList: true});
+      observer.observe(container, {childList: true, subtree: true});
 
       assert.equal(stripExpressionComments(container.innerHTML), '');
       render(t(), container);
