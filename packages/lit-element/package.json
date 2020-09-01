@@ -29,7 +29,7 @@
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
     "test": "wtr test/*test.js --node-resolve --root-dir ../../",
     "test:watch": "wtr test/*test.js --node-resolve --root-dir ../../ --watch",
-    "checksize": "rollup -c ; cat lit-element.bundled.js | gzip -9 | wc -c ; rm lit-element.bundled.js",
+    "checksize": "rollup -c ; cat lit-element.bundled.js | wc -c ; rm lit-element.bundled.js",
     "format": "prettier src/* --write",
     "lint": "tslint --project ./",
     "prepublishOnly": "node check-version-tracker.cjs && npm run lint && npm test",
@@ -65,8 +65,7 @@
     "np": "^5.2.1",
     "tachometer": "^0.4.16",
     "tslint": "^5.20.1",
-    "typedoc": "^0.17.0-3",
-    "uglify-es": "^3.3.9"
+    "typedoc": "^0.17.0-3"
   },
   "dependencies": {
     "lit-html": "^2.0.0-pre.0"

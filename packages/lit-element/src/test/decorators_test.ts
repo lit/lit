@@ -12,16 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { eventOptions, property } from "../lib/decorators.js";
-import { html, LitElement, PropertyValues } from "../lib/lit-element.js";
+import {eventOptions, property} from '../lib/decorators.js';
+import {html, LitElement, PropertyValues} from '../lib/lit-element.js';
 import {
   customElement,
   query,
   queryAll,
   queryAssignedNodes,
   queryAsync,
-} from "../lib/decorators.js";
-import { generateElementName } from "./test-helpers.js";
+} from '../lib/decorators.js';
+import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 const flush =
@@ -35,7 +35,7 @@ const supportsOptions = (function () {
     return hasOptions;
   }
   const fn = () => {};
-  const event = "foo";
+  const event = 'foo';
   hasOptions = false;
   const options = {
     get capture() {
@@ -55,10 +55,10 @@ const supportsPassive = (function () {
   }
   // Use an iframe since ShadyDOM will pass this test but doesn't actually
   // enforce passive behavior.
-  const f = document.createElement("iframe");
+  const f = document.createElement('iframe');
   document.body.appendChild(f);
   const fn = () => {};
-  const event = "foo";
+  const event = 'foo';
   hasPassive = false;
   const options = {
     get passive() {
@@ -76,12 +76,12 @@ const supportsPassive = (function () {
   return hasPassive;
 })();
 
-suite("decorators", () => {
+suite('decorators', () => {
   let container: HTMLElement;
 
   setup(() => {
-    container = document.createElement("div");
-    container.id = "test-container";
+    container = document.createElement('div');
+    container.id = 'test-container';
     document.body.appendChild(container);
   });
 
@@ -92,8 +92,8 @@ suite("decorators", () => {
     }
   });
 
-  suite("@customElement", () => {
-    test("defines an element", () => {
+  suite('@customElement', () => {
+    test('defines an element', () => {
       const tagName = generateElementName();
       @customElement(tagName)
       class C0 extends HTMLElement {}
@@ -102,25 +102,25 @@ suite("decorators", () => {
     });
   });
 
-  suite("@property", () => {
-    test("property options via decorator", async () => {
+  suite('@property', () => {
+    test('property options via decorator', async () => {
       const hasChanged = (value: any, old: any) =>
         old === undefined || value > old;
       const fromAttribute = (value: any) => parseInt(value);
       const toAttribute = (value: any) => `${value}-attr`;
       class E extends LitElement {
-        @property({ attribute: false }) noAttr = "noAttr";
-        @property({ attribute: true }) atTr = "attr";
-        @property({ attribute: "custom", reflect: true })
-        customAttr = "customAttr";
-        @property({ hasChanged }) hasChanged = 10;
-        @property({ converter: fromAttribute }) fromAttribute = 1;
-        @property({ reflect: true, converter: { toAttribute } })
+        @property({attribute: false}) noAttr = 'noAttr';
+        @property({attribute: true}) atTr = 'attr';
+        @property({attribute: 'custom', reflect: true})
+        customAttr = 'customAttr';
+        @property({hasChanged}) hasChanged = 10;
+        @property({converter: fromAttribute}) fromAttribute = 1;
+        @property({reflect: true, converter: {toAttribute}})
         toAttribute = 1;
         @property({
-          attribute: "all-attr",
+          attribute: 'all-attr',
           hasChanged,
-          converter: { fromAttribute, toAttribute },
+          converter: {fromAttribute, toAttribute},
           reflect: true,
         })
         all = 10;
@@ -141,39 +141,39 @@ suite("decorators", () => {
       container.appendChild(el);
       await el.updateComplete;
       assert.equal(el.updateCount, 1);
-      assert.equal(el.noAttr, "noAttr");
-      assert.equal(el.atTr, "attr");
-      assert.equal(el.customAttr, "customAttr");
+      assert.equal(el.noAttr, 'noAttr');
+      assert.equal(el.atTr, 'attr');
+      assert.equal(el.customAttr, 'customAttr');
       assert.equal(el.hasChanged, 10);
       assert.equal(el.fromAttribute, 1);
       assert.equal(el.toAttribute, 1);
-      assert.equal(el.getAttribute("toattribute"), "1-attr");
+      assert.equal(el.getAttribute('toattribute'), '1-attr');
       assert.equal(el.all, 10);
-      assert.equal(el.getAttribute("all-attr"), "10-attr");
-      el.setAttribute("noattr", "noAttr2");
-      el.setAttribute("attr", "attr2");
-      el.setAttribute("custom", "customAttr2");
-      el.setAttribute("fromattribute", "2attr");
+      assert.equal(el.getAttribute('all-attr'), '10-attr');
+      el.setAttribute('noattr', 'noAttr2');
+      el.setAttribute('attr', 'attr2');
+      el.setAttribute('custom', 'customAttr2');
+      el.setAttribute('fromattribute', '2attr');
       el.toAttribute = 2;
       el.all = 5;
       await el.updateComplete;
       assert.equal(el.updateCount, 2);
-      assert.equal(el.noAttr, "noAttr");
-      assert.equal(el.atTr, "attr2");
-      assert.equal(el.customAttr, "customAttr2");
+      assert.equal(el.noAttr, 'noAttr');
+      assert.equal(el.atTr, 'attr2');
+      assert.equal(el.customAttr, 'customAttr2');
       assert.equal(el.fromAttribute, 2);
       assert.equal(el.toAttribute, 2);
-      assert.equal(el.getAttribute("toattribute"), "2-attr");
+      assert.equal(el.getAttribute('toattribute'), '2-attr');
       assert.equal(el.all, 5);
       el.all = 15;
       await el.updateComplete;
       assert.equal(el.updateCount, 3);
       assert.equal(el.all, 15);
-      assert.equal(el.getAttribute("all-attr"), "15-attr");
-      el.setAttribute("all-attr", "16-attr");
+      assert.equal(el.getAttribute('all-attr'), '15-attr');
+      el.setAttribute('all-attr', '16-attr');
       await el.updateComplete;
       assert.equal(el.updateCount, 4);
-      assert.equal(el.getAttribute("all-attr"), "16-attr");
+      assert.equal(el.getAttribute('all-attr'), '16-attr');
       assert.equal(el.all, 16);
       el.hasChanged = 5;
       await el.updateComplete;
@@ -183,7 +183,7 @@ suite("decorators", () => {
       await el.updateComplete;
       assert.equal(el.hasChanged, 15);
       assert.equal(el.updateCount, 5);
-      el.setAttribute("all-attr", "5-attr");
+      el.setAttribute('all-attr', '5-attr');
       await el.updateComplete;
       assert.equal(el.all, 5);
       assert.equal(el.updateCount, 5);
@@ -193,12 +193,12 @@ suite("decorators", () => {
       assert.equal(el.updateCount, 6);
     });
 
-    test("can decorate user accessor with @property", async () => {
+    test('can decorate user accessor with @property', async () => {
       class E extends LitElement {
         _foo?: number;
         updatedContent?: number;
 
-        @property({ reflect: true, type: Number })
+        @property({reflect: true, type: Number})
         get foo() {
           return this._foo as number;
         }
@@ -206,7 +206,7 @@ suite("decorators", () => {
         set foo(v: number) {
           const old = this.foo;
           this._foo = v;
-          this.requestUpdate("foo", old);
+          this.requestUpdate('foo', old);
         }
 
         updated() {
@@ -219,28 +219,28 @@ suite("decorators", () => {
       await el.updateComplete;
       assert.equal(el._foo, undefined);
       assert.equal(el.updatedContent, undefined);
-      assert.isFalse(el.hasAttribute("foo"));
+      assert.isFalse(el.hasAttribute('foo'));
       el.foo = 5;
       await el.updateComplete;
       assert.equal(el._foo, 5);
       assert.equal(el.updatedContent, 5);
-      assert.equal(el.getAttribute("foo"), "5");
+      assert.equal(el.getAttribute('foo'), '5');
     });
 
-    test("can mix property options via decorator and via getter", async () => {
+    test('can mix property options via decorator and via getter', async () => {
       const hasChanged = (value: any, old: any) =>
         old === undefined || value > old;
       const fromAttribute = (value: any) => parseInt(value);
       const toAttribute = (value: any) => `${value}-attr`;
       class E extends LitElement {
-        @property({ hasChanged }) hasChanged = 10;
-        @property({ converter: fromAttribute }) fromAttribute = 1;
-        @property({ reflect: true, converter: { toAttribute } })
+        @property({hasChanged}) hasChanged = 10;
+        @property({converter: fromAttribute}) fromAttribute = 1;
+        @property({reflect: true, converter: {toAttribute}})
         toAttribute = 1;
         @property({
-          attribute: "all-attr",
+          attribute: 'all-attr',
           hasChanged,
-          converter: { fromAttribute, toAttribute },
+          converter: {fromAttribute, toAttribute},
           reflect: true,
         })
         all = 10;
@@ -249,9 +249,9 @@ suite("decorators", () => {
 
         static get properties() {
           return {
-            noAttr: { attribute: false },
-            atTr: { attribute: true },
-            customAttr: { attribute: "custom", reflect: true },
+            noAttr: {attribute: false},
+            atTr: {attribute: true},
+            customAttr: {attribute: 'custom', reflect: true},
           };
         }
 
@@ -261,9 +261,9 @@ suite("decorators", () => {
 
         constructor() {
           super();
-          this.noAttr = "noAttr";
-          this.atTr = "attr";
-          this.customAttr = "customAttr";
+          this.noAttr = 'noAttr';
+          this.atTr = 'attr';
+          this.customAttr = 'customAttr';
         }
 
         update(changed: PropertyValues) {
@@ -280,39 +280,39 @@ suite("decorators", () => {
       container.appendChild(el);
       await el.updateComplete;
       assert.equal(el.updateCount, 1);
-      assert.equal(el.noAttr, "noAttr");
-      assert.equal(el.atTr, "attr");
-      assert.equal(el.customAttr, "customAttr");
+      assert.equal(el.noAttr, 'noAttr');
+      assert.equal(el.atTr, 'attr');
+      assert.equal(el.customAttr, 'customAttr');
       assert.equal(el.hasChanged, 10);
       assert.equal(el.fromAttribute, 1);
       assert.equal(el.toAttribute, 1);
-      assert.equal(el.getAttribute("toattribute"), "1-attr");
+      assert.equal(el.getAttribute('toattribute'), '1-attr');
       assert.equal(el.all, 10);
-      assert.equal(el.getAttribute("all-attr"), "10-attr");
-      el.setAttribute("noattr", "noAttr2");
-      el.setAttribute("attr", "attr2");
-      el.setAttribute("custom", "customAttr2");
-      el.setAttribute("fromattribute", "2attr");
+      assert.equal(el.getAttribute('all-attr'), '10-attr');
+      el.setAttribute('noattr', 'noAttr2');
+      el.setAttribute('attr', 'attr2');
+      el.setAttribute('custom', 'customAttr2');
+      el.setAttribute('fromattribute', '2attr');
       el.toAttribute = 2;
       el.all = 5;
       await el.updateComplete;
       assert.equal(el.updateCount, 2);
-      assert.equal(el.noAttr, "noAttr");
-      assert.equal(el.atTr, "attr2");
-      assert.equal(el.customAttr, "customAttr2");
+      assert.equal(el.noAttr, 'noAttr');
+      assert.equal(el.atTr, 'attr2');
+      assert.equal(el.customAttr, 'customAttr2');
       assert.equal(el.fromAttribute, 2);
       assert.equal(el.toAttribute, 2);
-      assert.equal(el.getAttribute("toattribute"), "2-attr");
+      assert.equal(el.getAttribute('toattribute'), '2-attr');
       assert.equal(el.all, 5);
       el.all = 15;
       await el.updateComplete;
       assert.equal(el.updateCount, 3);
       assert.equal(el.all, 15);
-      assert.equal(el.getAttribute("all-attr"), "15-attr");
-      el.setAttribute("all-attr", "16-attr");
+      assert.equal(el.getAttribute('all-attr'), '15-attr');
+      el.setAttribute('all-attr', '16-attr');
       await el.updateComplete;
       assert.equal(el.updateCount, 4);
-      assert.equal(el.getAttribute("all-attr"), "16-attr");
+      assert.equal(el.getAttribute('all-attr'), '16-attr');
       assert.equal(el.all, 16);
       el.hasChanged = 5;
       await el.updateComplete;
@@ -322,7 +322,7 @@ suite("decorators", () => {
       await el.updateComplete;
       assert.equal(el.hasChanged, 15);
       assert.equal(el.updateCount, 5);
-      el.setAttribute("all-attr", "5-attr");
+      el.setAttribute('all-attr', '5-attr');
       await el.updateComplete;
       assert.equal(el.all, 5);
       assert.equal(el.updateCount, 5);
@@ -333,12 +333,12 @@ suite("decorators", () => {
     });
   });
 
-  suite("@query", () => {
+  suite('@query', () => {
     @customElement(generateElementName())
     class C extends LitElement {
-      @query("#blah") div?: HTMLDivElement;
+      @query('#blah') div?: HTMLDivElement;
 
-      @query("span", true) span?: HTMLSpanElement;
+      @query('span', true) span?: HTMLSpanElement;
 
       @property() condition = false;
 
@@ -351,42 +351,42 @@ suite("decorators", () => {
       }
     }
 
-    test("returns an element when it exists", async () => {
+    test('returns an element when it exists', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
       const div = c.div;
       assert.instanceOf(div, HTMLDivElement);
-      assert.equal(div!.innerText, "This one");
+      assert.equal(div!.innerText, 'This one');
     });
 
-    test("returns null when no match", async () => {
+    test('returns null when no match', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
       assert.isNull(c.span);
     });
 
-    test("returns cached value", async () => {
+    test('returns cached value', async () => {
       const c = new C();
       c.condition = true;
       container.appendChild(c);
       await c.updateComplete;
-      assert.equal(c.span, c.renderRoot.querySelector("span"));
+      assert.equal(c.span, c.renderRoot.querySelector('span'));
       assert.instanceOf(c.span, HTMLSpanElement);
       c.condition = false;
       await c.updateComplete;
       assert.instanceOf(c.span, HTMLSpanElement);
-      assert.notEqual(c.span, c.renderRoot.querySelector("span"));
+      assert.notEqual(c.span, c.renderRoot.querySelector('span'));
     });
   });
 
-  suite("@queryAll", () => {
+  suite('@queryAll', () => {
     @customElement(generateElementName())
     class C extends LitElement {
-      @queryAll("div") divs!: NodeList;
+      @queryAll('div') divs!: NodeList;
 
-      @queryAll("span") spans!: NodeList;
+      @queryAll('span') spans!: NodeList;
 
       render() {
         return html`
@@ -396,7 +396,7 @@ suite("decorators", () => {
       }
     }
 
-    test("returns elements when they exists", async () => {
+    test('returns elements when they exists', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
@@ -406,7 +406,7 @@ suite("decorators", () => {
       assert.lengthOf(divs, 2);
     });
 
-    test("returns empty NodeList when no match", async () => {
+    test('returns empty NodeList when no match', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
@@ -417,15 +417,15 @@ suite("decorators", () => {
     });
   });
 
-  suite("@queryAssignedNodes", () => {
-    @customElement("assigned-nodes-el")
+  suite('@queryAssignedNodes', () => {
+    @customElement('assigned-nodes-el')
     class D extends LitElement {
       @queryAssignedNodes() defaultAssigned!: Node[];
 
       // The `true` on the decorator indicates that results should be flattened.
-      @queryAssignedNodes("footer", true) footerAssigned!: Node[];
+      @queryAssignedNodes('footer', true) footerAssigned!: Node[];
 
-      @queryAssignedNodes("footer", true, ".item")
+      @queryAssignedNodes('footer', true, '.item')
       footerAssignedItems!: Element[];
 
       render() {
@@ -436,11 +436,11 @@ suite("decorators", () => {
       }
     }
 
-    @customElement("assigned-nodes-el-2")
+    @customElement('assigned-nodes-el-2')
     class E extends LitElement {
       @queryAssignedNodes() defaultAssigned!: Node[];
 
-      @queryAssignedNodes("header") headerAssigned!: Node[];
+      @queryAssignedNodes('header') headerAssigned!: Node[];
 
       render() {
         return html`
@@ -454,22 +454,23 @@ suite("decorators", () => {
     // the decorator can be tested.
     @customElement(generateElementName())
     class C extends LitElement {
-      @query("#div1") div!: HTMLDivElement;
-      @query("#div2") div2!: HTMLDivElement;
-      @query("assigned-nodes-el") assignedNodesEl!: D;
-      @query("assigned-nodes-el-2") assignedNodesEl2!: E;
+      @query('#div1') div!: HTMLDivElement;
+      @query('#div2') div2!: HTMLDivElement;
+      @query('assigned-nodes-el') assignedNodesEl!: D;
+      @query('assigned-nodes-el-2') assignedNodesEl2!: E;
 
       render() {
         return html`
           <assigned-nodes-el
-            ><div id="div1">A</div><slot slot="footer"></slot
+            ><div id="div1">A</div>
+            <slot slot="footer"></slot
           ></assigned-nodes-el>
           <assigned-nodes-el-2><div id="div2">B</div></assigned-nodes-el-2>
         `;
       }
     }
 
-    test("returns assignedNodes for slot", async () => {
+    test('returns assignedNodes for slot', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
@@ -477,7 +478,7 @@ suite("decorators", () => {
       // Note, `defaultAssigned` does not `flatten` so we test that the property
       // reflects current state and state when nodes are added or removed.
       assert.deepEqual(c.assignedNodesEl.defaultAssigned, [c.div]);
-      const child = document.createElement("div");
+      const child = document.createElement('div');
       c.assignedNodesEl.appendChild(child);
       flush();
       assert.deepEqual(c.assignedNodesEl.defaultAssigned, [c.div, child]);
@@ -486,7 +487,7 @@ suite("decorators", () => {
       assert.deepEqual(c.assignedNodesEl.defaultAssigned, [c.div]);
     });
 
-    test("returns assignedNodes for unnamed slot that is not first slot", async () => {
+    test('returns assignedNodes for unnamed slot that is not first slot', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
@@ -494,7 +495,7 @@ suite("decorators", () => {
       assert.deepEqual(c.assignedNodesEl2.defaultAssigned, [c.div2]);
     });
 
-    test("returns flattened assignedNodes for slot", async () => {
+    test('returns flattened assignedNodes for slot', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
@@ -503,8 +504,8 @@ suite("decorators", () => {
       // reflects current state and state when nodes are added or removed to
       // the light DOM of the element containing the element under test.
       assert.deepEqual(c.assignedNodesEl.footerAssigned, []);
-      const child1 = document.createElement("div");
-      const child2 = document.createElement("div");
+      const child1 = document.createElement('div');
+      const child2 = document.createElement('div');
       c.appendChild(child1);
       c.appendChild(child2);
       flush();
@@ -514,7 +515,7 @@ suite("decorators", () => {
       assert.deepEqual(c.assignedNodesEl.footerAssigned, [child1]);
     });
 
-    test("returns assignedNodes for slot filtered by selector", async () => {
+    test('returns assignedNodes for slot filtered by selector', async () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
@@ -523,9 +524,9 @@ suite("decorators", () => {
       // reflects current state and state when nodes are added or removed to
       // the light DOM of the element containing the element under test.
       assert.deepEqual(c.assignedNodesEl.footerAssignedItems, []);
-      const child1 = document.createElement("div");
-      const child2 = document.createElement("div");
-      child2.classList.add("item");
+      const child1 = document.createElement('div');
+      const child2 = document.createElement('div');
+      child2.classList.add('item');
       c.appendChild(child1);
       c.appendChild(child2);
       flush();
@@ -536,12 +537,12 @@ suite("decorators", () => {
     });
   });
 
-  suite("@queryAsync", () => {
+  suite('@queryAsync', () => {
     @customElement(generateElementName())
     class C extends LitElement {
-      @queryAsync("#blah") blah!: Promise<HTMLDivElement>;
+      @queryAsync('#blah') blah!: Promise<HTMLDivElement>;
 
-      @queryAsync("span") nope!: Promise<HTMLSpanElement | null>;
+      @queryAsync('span') nope!: Promise<HTMLSpanElement | null>;
 
       @property() foo = false;
 
@@ -555,19 +556,19 @@ suite("decorators", () => {
       }
     }
 
-    test("returns an element when it exists after update", async () => {
+    test('returns an element when it exists after update', async () => {
       const c = new C();
       container.appendChild(c);
       let div = await c.blah;
       assert.instanceOf(div, HTMLDivElement);
-      assert.isFalse(div.hasAttribute("foo"));
+      assert.isFalse(div.hasAttribute('foo'));
       c.foo = true;
       div = await c.blah;
       assert.instanceOf(div, HTMLDivElement);
-      assert.isTrue(div.hasAttribute("foo"));
+      assert.isTrue(div.hasAttribute('foo'));
     });
 
-    test("returns null when no match", async () => {
+    test('returns null when no match', async () => {
       const c = new C();
       container.appendChild(c);
       const span = await c.nope;
@@ -576,8 +577,8 @@ suite("decorators", () => {
   });
 
   // TODO(sorvell): Enable when support for events lands in lit-html.
-  suite.skip("@eventOptions", () => {
-    test("allows capturing listeners", async function () {
+  suite.skip('@eventOptions', () => {
+    test('allows capturing listeners', async function () {
       if (!supportsOptions) {
         this.skip();
       }
@@ -589,7 +590,7 @@ suite("decorators", () => {
           return html` <div @click=${this.onClick}><button></button></div> `;
         }
 
-        @eventOptions({ capture: true })
+        @eventOptions({capture: true})
         onClick(e: Event) {
           this.eventPhase = e.eventPhase;
         }
@@ -598,12 +599,12 @@ suite("decorators", () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
-      const button = c.shadowRoot!.querySelector("button")!;
+      const button = c.shadowRoot!.querySelector('button')!;
       button.click();
       assert.equal(c.eventPhase, Event.CAPTURING_PHASE);
     });
 
-    test("allows once listeners", async function () {
+    test('allows once listeners', async function () {
       if (!supportsOptions) {
         this.skip();
       }
@@ -615,7 +616,7 @@ suite("decorators", () => {
           return html` <div @click=${this.onClick}><button></button></div> `;
         }
 
-        @eventOptions({ once: true })
+        @eventOptions({once: true})
         onClick() {
           this.clicked++;
         }
@@ -624,13 +625,13 @@ suite("decorators", () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
-      const button = c.shadowRoot!.querySelector("button")!;
+      const button = c.shadowRoot!.querySelector('button')!;
       button.click();
       button.click();
       assert.equal(c.clicked, 1);
     });
 
-    test("allows passive listeners", async function () {
+    test('allows passive listeners', async function () {
       if (!supportsPassive) {
         this.skip();
       }
@@ -642,7 +643,7 @@ suite("decorators", () => {
           return html` <div @click=${this.onClick}><button></button></div> `;
         }
 
-        @eventOptions({ passive: true })
+        @eventOptions({passive: true})
         onClick(e: Event) {
           try {
             e.preventDefault();
@@ -656,7 +657,7 @@ suite("decorators", () => {
       const c = new C();
       container.appendChild(c);
       await c.updateComplete;
-      const button = c.shadowRoot!.querySelector("button")!;
+      const button = c.shadowRoot!.querySelector('button')!;
       button.click();
       assert.isFalse(c.defaultPrevented);
     });

@@ -1,17 +1,17 @@
-import { html, LitElement } from "../lib/lit-element.js";
-import { property } from "../lib/decorators.js";
+import {html, LitElement} from '../lib/lit-element.js';
+import {property} from '../lib/decorators.js';
 
 class TSElement extends LitElement {
-  @property() message = "Hi";
+  @property() message = 'Hi';
 
   @property({
-    attribute: "more-info",
+    attribute: 'more-info',
     converter: (value: string | null) => `[${value}]`,
   })
-  extra = "";
+  extra = '';
 
   render() {
-    const { message, extra } = this;
+    const {message, extra} = this;
     return html`
       <style>
         :host {
@@ -21,4 +21,4 @@ class TSElement extends LitElement {
     `;
   }
 }
-customElements.define("ts-element", TSElement);
+customElements.define('ts-element', TSElement);

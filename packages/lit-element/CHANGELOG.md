@@ -17,14 +17,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## Unreleased
-
-## [2.4.0] - 2020-08-19
+## [3.0.0] - Unreleased
 
 ### Changed
-* Removed build support for TypeScript 3.4.
-* Decorators are no longer exported from the `lit-element` module. Instead import any decorators you use from `lit-element/decorators/*`.
-* `lit-html` has been updated to 2.x. Note, shady-render support has been removed. Import the shady-render package to support Shady DOM.
+* [Breaking] Removed build support for TypeScript 3.4.
+* [Breaking] Decorators are no longer exported from the `lit-element` module. Instead import any decorators you use from `lit-element/decorators/*`.
+* [Breaking] `lit-html` has been updated to 2.x. Note, shady-render support has been removed. Import the shady-render package to support Shady DOM.
+
+## [2.4.0] - 2020-08-19
 
 ### Changed
 * Set type in package.json to "module" ([#974](https://github.com/Polymer/lit-element/pull/974))

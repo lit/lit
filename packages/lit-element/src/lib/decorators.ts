@@ -19,9 +19,9 @@
  * not an arrow function.
  */
 
-import { LitElement } from "./lit-element.js";
+import {LitElement} from './lit-element.js';
 
-import { PropertyDeclaration, UpdatingElement } from "./updating-element.js";
+import {PropertyDeclaration, UpdatingElement} from './updating-element.js';
 
 export type Constructor<T> = {
   // tslint:disable-next-line:no-any
@@ -30,16 +30,16 @@ export type Constructor<T> = {
 
 // From the TC39 Decorators proposal
 interface ClassDescriptor {
-  kind: "class";
+  kind: 'class';
   elements: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
 }
 
 // From the TC39 Decorators proposal
 interface ClassElement {
-  kind: "field" | "method";
+  kind: 'field' | 'method';
   key: PropertyKey;
-  placement: "static" | "prototype" | "own";
+  placement: 'static' | 'prototype' | 'own';
   initializer?: Function;
   extras?: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
@@ -64,7 +64,7 @@ const standardCustomElement = (
   tagName: string,
   descriptor: ClassDescriptor
 ) => {
-  const { kind, elements } = descriptor;
+  const {kind, elements} = descriptor;
   return {
     kind,
     elements,
@@ -92,7 +92,7 @@ const standardCustomElement = (
 export const customElement = (tagName: string) => (
   classOrDescriptor: Constructor<HTMLElement> | ClassDescriptor
 ) =>
-  typeof classOrDescriptor === "function"
+  typeof classOrDescriptor === 'function'
     ? legacyCustomElement(tagName, classOrDescriptor)
     : standardCustomElement(tagName, classOrDescriptor);
 
@@ -104,9 +104,9 @@ const standardProperty = (
   // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
   // stomp over the user's accessor.
   if (
-    element.kind === "method" &&
+    element.kind === 'method' &&
     element.descriptor &&
-    !("value" in element.descriptor)
+    !('value' in element.descriptor)
   ) {
     return {
       ...element,
@@ -119,9 +119,9 @@ const standardProperty = (
     // must return some kind of descriptor, so return a descriptor for an
     // unused prototype field. The finisher calls createProperty().
     return {
-      kind: "field",
+      kind: 'field',
       key: Symbol(),
-      placement: "own",
+      placement: 'own',
       descriptor: {},
       // When @babel/plugin-proposal-decorators implements initializers,
       // do this instead of the initializer below. See:
@@ -132,8 +132,8 @@ const standardProperty = (
       //     initializer: descriptor.initializer,
       //   }
       // ],
-      initializer(this: { [key: string]: unknown }) {
-        if (typeof element.initializer === "function") {
+      initializer(this: {[key: string]: unknown}) {
+        if (typeof element.initializer === 'function') {
           this[element.key as string] = element.initializer.call(this);
         }
       },
@@ -197,7 +197,7 @@ export interface InternalPropertyDeclaration<Type = unknown> {
  * @category Decorator
  */
 export function internalProperty(options?: InternalPropertyDeclaration) {
-  return property({ attribute: false, hasChanged: options?.hasChanged });
+  return property({attribute: false, hasChanged: options?.hasChanged});
 }
 
 /**
@@ -241,18 +241,18 @@ export function query(selector: string, cache?: boolean) {
       configurable: true,
     };
     if (cache) {
-      const key = typeof name === "symbol" ? Symbol() : `__${name}`;
+      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
       descriptor.get = function (this: LitElement) {
         if (
-          ((this as unknown) as { [key: string]: Element | null })[
+          ((this as unknown) as {[key: string]: Element | null})[
             key as string
           ] === undefined
         ) {
-          ((this as unknown) as { [key: string]: Element | null })[
+          ((this as unknown) as {[key: string]: Element | null})[
             key as string
           ] = this.renderRoot.querySelector(selector);
         }
-        return ((this as unknown) as { [key: string]: Element | null })[
+        return ((this as unknown) as {[key: string]: Element | null})[
           key as string
         ];
       };
@@ -377,8 +377,8 @@ const standardQuery = (
   descriptor: PropertyDescriptor,
   element: ClassElement
 ) => ({
-  kind: "method",
-  placement: "prototype",
+  kind: 'method',
+  placement: 'prototype',
   key: element.key,
   descriptor,
 });
@@ -447,8 +447,7 @@ export function eventOptions(options: AddEventListenerOptions) {
       : standardEventOptions(
           options,
           protoOrDescriptor as ClassElement
-        )) as // tslint:disable-next-line:no-any decorator
-  any;
+        )) as any; // tslint:disable-next-line:no-any decorator
 }
 
 // x-browser support for matches
@@ -485,9 +484,9 @@ const legacyMatches =
  * @category Decorator
  */
 export function queryAssignedNodes(
-  slotName = "",
+  slotName = '',
   flatten = false,
-  selector = ""
+  selector = ''
 ) {
   return (
     protoOrDescriptor: Object | ClassElement,
@@ -497,11 +496,10 @@ export function queryAssignedNodes(
     const descriptor = {
       get(this: LitElement) {
         const slotSelector = `slot${
-          slotName ? `[name=${slotName}]` : ":not([name])"
+          slotName ? `[name=${slotName}]` : ':not([name])'
         }`;
         const slot = this.renderRoot.querySelector(slotSelector);
-        let nodes =
-          slot && (slot as HTMLSlotElement).assignedNodes({ flatten });
+        let nodes = slot && (slot as HTMLSlotElement).assignedNodes({flatten});
         if (nodes && selector) {
           nodes = nodes.filter((node) =>
             node.nodeType === Node.ELEMENT_NODE && (node as Element).matches

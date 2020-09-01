@@ -1,5 +1,5 @@
 interface ShadyCSS {
-  styleElement(host: Element, overrideProps?: { [key: string]: string }): void;
+  styleElement(host: Element, overrideProps?: {[key: string]: string}): void;
   getComputedStyleValue(element: Element, property: string): string;
   ScopingShim:
     | undefined
@@ -25,7 +25,7 @@ interface ShadowRoot {
   adoptedStyleSheets: CSSStyleSheet[];
 }
 
-declare var ShadowRoot: { prototype: ShadowRoot; new (): ShadowRoot };
+declare var ShadowRoot: {prototype: ShadowRoot; new (): ShadowRoot};
 
 interface CSSStyleSheet {
   replaceSync(cssText: string): void;

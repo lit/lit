@@ -151,7 +151,7 @@ export const defaultConverter: ComplexAttributeConverter = {
   toAttribute(value: unknown, type?: unknown): unknown {
     switch (type) {
       case Boolean:
-        return value ? "" : null;
+        return value ? '' : null;
       case Object:
       case Array:
         // if the value is `null` or `undefined` pass this through
@@ -212,7 +212,7 @@ type UpdateState =
  * https://github.com/google/closure-compiler/issues/3177 and others) so we use
  * this hack to bypass any rewriting by the compiler.
  */
-const finalized = "finalized";
+const finalized = 'finalized';
 
 /**
  * Base element class which manages element properties and attributes. When
@@ -280,7 +280,7 @@ export abstract class UpdatingElement extends HTMLElement {
   private static _ensureClassProperties() {
     // ensure private storage for property declarations.
     if (
-      !this.hasOwnProperty(JSCompiler_renameProperty("_classProperties", this))
+      !this.hasOwnProperty(JSCompiler_renameProperty('_classProperties', this))
     ) {
       this._classProperties = new Map();
       // NOTE: Workaround IE11 not supporting Map constructor argument.
@@ -334,7 +334,7 @@ export abstract class UpdatingElement extends HTMLElement {
     if (options.noAccessor || this.prototype.hasOwnProperty(name)) {
       return;
     }
-    const key = typeof name === "symbol" ? Symbol() : `__${name}`;
+    const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
     const descriptor = this.getPropertyDescriptor(name, key, options);
     if (descriptor !== undefined) {
       Object.defineProperty(this.prototype, name, descriptor);
@@ -373,13 +373,13 @@ export abstract class UpdatingElement extends HTMLElement {
     return {
       // tslint:disable-next-line:no-any no symbol in index
       get(): any {
-        return (this as { [key: string]: unknown })[key as string];
+        return (this as {[key: string]: unknown})[key as string];
       },
       set(this: UpdatingElement, value: unknown) {
-        const oldValue = ((this as {}) as { [key: string]: unknown })[
+        const oldValue = ((this as {}) as {[key: string]: unknown})[
           name as string
         ];
-        ((this as {}) as { [key: string]: unknown })[key as string] = value;
+        ((this as {}) as {[key: string]: unknown})[key as string] = value;
         ((this as unknown) as UpdatingElement).requestUpdateInternal(
           name,
           oldValue,
@@ -429,12 +429,12 @@ export abstract class UpdatingElement extends HTMLElement {
     // Note, only process "own" properties since this element will inherit
     // any properties defined on the superClass, and finalization ensures
     // the entire prototype chain is finalized.
-    if (this.hasOwnProperty(JSCompiler_renameProperty("properties", this))) {
+    if (this.hasOwnProperty(JSCompiler_renameProperty('properties', this))) {
       const props = this.properties;
       // support symbols in properties (IE11 does not support this)
       const propKeys = [
         ...Object.getOwnPropertyNames(props),
-        ...(typeof Object.getOwnPropertySymbols === "function"
+        ...(typeof Object.getOwnPropertySymbols === 'function'
           ? Object.getOwnPropertySymbols(props)
           : []),
       ];
@@ -459,9 +459,9 @@ export abstract class UpdatingElement extends HTMLElement {
     const attribute = options.attribute;
     return attribute === false
       ? undefined
-      : typeof attribute === "string"
+      : typeof attribute === 'string'
       ? attribute
-      : typeof name === "string"
+      : typeof name === 'string'
       ? name.toLowerCase()
       : undefined;
   }
@@ -493,7 +493,7 @@ export abstract class UpdatingElement extends HTMLElement {
     const type = options.type;
     const converter = options.converter || defaultConverter;
     const fromAttribute =
-      typeof converter === "function" ? converter : converter.fromAttribute;
+      typeof converter === 'function' ? converter : converter.fromAttribute;
     return fromAttribute ? fromAttribute(value, type) : value;
   }
 

@@ -15,8 +15,8 @@ found at http://polymer.github.io/PATENTS.txt
 export const supportsAdoptingStyleSheets =
   window.ShadowRoot &&
   (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
-  "adoptedStyleSheets" in Document.prototype &&
-  "replace" in CSSStyleSheet.prototype;
+  'adoptedStyleSheets' in Document.prototype &&
+  'replace' in CSSStyleSheet.prototype;
 
 const constructionToken = Symbol();
 
@@ -28,7 +28,7 @@ export class CSSResult {
   constructor(cssText: string, safeToken: symbol) {
     if (safeToken !== constructionToken) {
       throw new Error(
-        "CSSResult is not constructable. Use `unsafeCSS` or `css` instead."
+        'CSSResult is not constructable. Use `unsafeCSS` or `css` instead.'
       );
     }
 
@@ -70,7 +70,7 @@ export const unsafeCSS = (value: unknown) => {
 const textFromCSSResult = (value: CSSResult | number) => {
   if (value instanceof CSSResult) {
     return value.cssText;
-  } else if (typeof value === "number") {
+  } else if (typeof value === 'number') {
     return value;
   } else {
     throw new Error(

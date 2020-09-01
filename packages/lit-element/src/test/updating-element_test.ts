@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { customElement, property } from "../lib/decorators.js";
+import {customElement, property} from '../lib/decorators.js';
 import {
   ComplexAttributeConverter,
   defaultConverter,
@@ -20,17 +20,17 @@ import {
   PropertyDeclarations,
   PropertyValues,
   UpdatingElement,
-} from "../lib/updating-element.js";
-import { generateElementName } from "./test-helpers.js";
+} from '../lib/updating-element.js';
+import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // tslint:disable:no-any ok in tests
 
-suite("UpdatingElement", () => {
+suite('UpdatingElement', () => {
   let container: HTMLElement;
 
   setup(() => {
-    container = document.createElement("div");
+    container = document.createElement('div');
     document.body.appendChild(container);
   });
 
@@ -40,7 +40,7 @@ suite("UpdatingElement", () => {
     }
   });
 
-  test("`requestUpdate` waits until update", async () => {
+  test('`requestUpdate` waits until update', async () => {
     class E extends UpdatingElement {
       updateCount = 0;
       updated() {
@@ -58,7 +58,7 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 3);
   });
 
-  test("`updateComplete` waits for `requestUpdate` but does not trigger update, async", async () => {
+  test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
     class E extends UpdatingElement {
       updateCount = 0;
       updated() {
@@ -79,7 +79,7 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 2);
   });
 
-  test("`shouldUpdate` controls update", async () => {
+  test('`shouldUpdate` controls update', async () => {
     class E extends UpdatingElement {
       needsUpdate = true;
       updateCount = 0;
@@ -107,7 +107,7 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 3);
   });
 
-  test("property options", async () => {
+  test('property options', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
     const fromAttribute = (value: any) => parseInt(value);
@@ -115,24 +115,24 @@ suite("UpdatingElement", () => {
     class E extends UpdatingElement {
       static get properties() {
         return {
-          noAttr: { attribute: false },
-          atTr: { attribute: true },
-          customAttr: { attribute: "custom", reflect: true },
-          hasChanged: { hasChanged },
-          fromAttribute: { converter: fromAttribute },
-          toAttribute: { reflect: true, converter: { toAttribute } },
+          noAttr: {attribute: false},
+          atTr: {attribute: true},
+          customAttr: {attribute: 'custom', reflect: true},
+          hasChanged: {hasChanged},
+          fromAttribute: {converter: fromAttribute},
+          toAttribute: {reflect: true, converter: {toAttribute}},
           all: {
-            attribute: "all-attr",
+            attribute: 'all-attr',
             hasChanged,
-            converter: { fromAttribute, toAttribute },
+            converter: {fromAttribute, toAttribute},
             reflect: true,
           },
         };
       }
 
-      noAttr = "noAttr";
-      atTr = "attr";
-      customAttr = "customAttr";
+      noAttr = 'noAttr';
+      atTr = 'attr';
+      customAttr = 'customAttr';
       hasChanged = 10;
       fromAttribute = 1;
       toAttribute = 1;
@@ -150,39 +150,39 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr");
-    assert.equal(el.customAttr, "customAttr");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr');
+    assert.equal(el.customAttr, 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute("toattribute"), "1-attr");
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute("all-attr"), "10-attr");
-    el.setAttribute("noattr", "noAttr2");
-    el.setAttribute("attr", "attr2");
-    el.setAttribute("custom", "customAttr2");
-    el.setAttribute("fromattribute", "2attr");
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    el.setAttribute('noattr', 'noAttr2');
+    el.setAttribute('attr', 'attr2');
+    el.setAttribute('custom', 'customAttr2');
+    el.setAttribute('fromattribute', '2attr');
     el.toAttribute = 2;
     el.all = 5;
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr2");
-    assert.equal(el.customAttr, "customAttr2");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr2');
+    assert.equal(el.customAttr, 'customAttr2');
     assert.equal(el.fromAttribute, 2);
     assert.equal(el.toAttribute, 2);
-    assert.equal(el.getAttribute("toattribute"), "2-attr");
+    assert.equal(el.getAttribute('toattribute'), '2-attr');
     assert.equal(el.all, 5);
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.updateCount, 3);
     assert.equal(el.all, 15);
-    assert.equal(el.getAttribute("all-attr"), "15-attr");
-    el.setAttribute("all-attr", "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '15-attr');
+    el.setAttribute('all-attr', '16-attr');
     await el.updateComplete;
     assert.equal(el.updateCount, 4);
-    assert.equal(el.getAttribute("all-attr"), "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '16-attr');
     assert.equal(el.all, 16);
     el.hasChanged = 5;
     await el.updateComplete;
@@ -192,7 +192,7 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.hasChanged, 15);
     assert.equal(el.updateCount, 5);
-    el.setAttribute("all-attr", "5-attr");
+    el.setAttribute('all-attr', '5-attr');
     await el.updateComplete;
     assert.equal(el.all, 5);
     assert.equal(el.updateCount, 5);
@@ -202,14 +202,14 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test("property option `converter` can use `type` info", async () => {
-    const FooType = { name: "FooType" };
+  test('property option `converter` can use `type` info', async () => {
+    const FooType = {name: 'FooType'};
     // Make test work on IE where these are undefined.
-    if (!("name" in String)) {
-      (String as any).name = (String as any).name || "String";
+    if (!('name' in String)) {
+      (String as any).name = (String as any).name || 'String';
     }
-    if (!("name" in Number)) {
-      (Number as any).name = (Number as any).name || "Number";
+    if (!('name' in Number)) {
+      (Number as any).name = (Number as any).name || 'Number';
     }
 
     const converter: ComplexAttributeConverter = {
@@ -224,9 +224,9 @@ suite("UpdatingElement", () => {
     class E extends UpdatingElement {
       static get properties() {
         return {
-          num: { type: Number, converter, reflect: true },
-          str: { type: String, converter, reflect: true },
-          foo: { type: FooType, converter, reflect: true },
+          num: {type: Number, converter, reflect: true},
+          str: {type: String, converter, reflect: true},
+          foo: {type: FooType, converter, reflect: true},
         };
       }
 
@@ -239,55 +239,55 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     el.num = 5;
-    el.str = "hi";
-    el.foo = "zoink";
+    el.str = 'hi';
+    el.foo = 'zoink';
     await el.updateComplete;
-    assert.equal(el.getAttribute("num"), "toAttribute: Number");
-    assert.equal(el.getAttribute("str"), "toAttribute: String");
-    assert.equal(el.getAttribute("foo"), "toAttribute: FooType");
-    el.removeAttribute("num");
-    el.removeAttribute("str");
-    el.removeAttribute("foo");
+    assert.equal(el.getAttribute('num'), 'toAttribute: Number');
+    assert.equal(el.getAttribute('str'), 'toAttribute: String');
+    assert.equal(el.getAttribute('foo'), 'toAttribute: FooType');
+    el.removeAttribute('num');
+    el.removeAttribute('str');
+    el.removeAttribute('foo');
     await el.updateComplete;
-    assert.equal(el.num, "fromAttribute: Number");
-    assert.equal(el.str, "fromAttribute: String");
-    assert.equal(el.foo, "fromAttribute: FooType");
-    assert.equal(el.getAttribute("num"), null);
-    assert.equal(el.getAttribute("str"), null);
-    assert.equal(el.getAttribute("foo"), null);
+    assert.equal(el.num, 'fromAttribute: Number');
+    assert.equal(el.str, 'fromAttribute: String');
+    assert.equal(el.foo, 'fromAttribute: FooType');
+    assert.equal(el.getAttribute('num'), null);
+    assert.equal(el.getAttribute('str'), null);
+    assert.equal(el.getAttribute('foo'), null);
     el.num = 0;
-    el.str = "";
+    el.str = '';
     el.foo = {};
     await el.updateComplete;
-    assert.equal(el.getAttribute("num"), "toAttribute: Number");
-    assert.equal(el.getAttribute("str"), "toAttribute: String");
-    assert.equal(el.getAttribute("foo"), "toAttribute: FooType");
+    assert.equal(el.getAttribute('num'), 'toAttribute: Number');
+    assert.equal(el.getAttribute('str'), 'toAttribute: String');
+    assert.equal(el.getAttribute('foo'), 'toAttribute: FooType');
   });
 
-  test("property/attribute values when attributes removed", async () => {
+  test('property/attribute values when attributes removed', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {
-          bool: { type: Boolean },
-          num: { type: Number },
-          str: { type: String },
-          obj: { type: Object },
-          arr: { type: Array },
-          reflectBool: { type: Boolean, reflect: true },
-          reflectNum: { type: Number, reflect: true },
-          reflectStr: { type: String, reflect: true },
-          reflectObj: { type: Object, reflect: true },
-          reflectArr: { type: Array, reflect: true },
-          defaultBool: { type: Boolean },
-          defaultNum: { type: Number },
-          defaultStr: { type: String },
-          defaultObj: { type: Object },
-          defaultArr: { type: Array },
-          defaultReflectBool: { type: Boolean, reflect: true },
-          defaultReflectNum: { type: Number, reflect: true },
-          defaultReflectStr: { type: String, reflect: true },
-          defaultReflectObj: { type: Object, reflect: true },
-          defaultReflectArr: { type: Array, reflect: true },
+          bool: {type: Boolean},
+          num: {type: Number},
+          str: {type: String},
+          obj: {type: Object},
+          arr: {type: Array},
+          reflectBool: {type: Boolean, reflect: true},
+          reflectNum: {type: Number, reflect: true},
+          reflectStr: {type: String, reflect: true},
+          reflectObj: {type: Object, reflect: true},
+          reflectArr: {type: Array, reflect: true},
+          defaultBool: {type: Boolean},
+          defaultNum: {type: Number},
+          defaultStr: {type: String},
+          defaultObj: {type: Object},
+          defaultArr: {type: Array},
+          defaultReflectBool: {type: Boolean, reflect: true},
+          defaultReflectNum: {type: Number, reflect: true},
+          defaultReflectStr: {type: String, reflect: true},
+          defaultReflectObj: {type: Object, reflect: true},
+          defaultReflectArr: {type: Array, reflect: true},
         };
       }
 
@@ -303,13 +303,13 @@ suite("UpdatingElement", () => {
       reflectArr?: any;
       defaultBool = false;
       defaultNum = 0;
-      defaultStr = "";
-      defaultObj = { defaultObj: false };
+      defaultStr = '';
+      defaultObj = {defaultObj: false};
       defaultArr = [1];
       defaultReflectBool = false;
       defaultReflectNum = 0;
-      defaultReflectStr = "defaultReflectStr";
-      defaultReflectObj = { defaultReflectObj: true };
+      defaultReflectStr = 'defaultReflectStr';
+      defaultReflectObj = {defaultReflectObj: true};
       defaultReflectArr = [1, 2];
     }
     const name = generateElementName();
@@ -324,44 +324,44 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.bool, true);
     assert.equal(el.num, 2);
-    assert.equal(el.str, "str");
-    assert.deepEqual(el.obj, { obj: true });
+    assert.equal(el.str, 'str');
+    assert.deepEqual(el.obj, {obj: true});
     assert.deepEqual(el.arr, [1]);
     assert.equal(el.reflectBool, true);
     assert.equal(el.reflectNum, 3);
-    assert.equal(el.reflectStr, "reflectStr");
-    assert.deepEqual(el.reflectObj, { reflectObj: true });
+    assert.equal(el.reflectStr, 'reflectStr');
+    assert.deepEqual(el.reflectObj, {reflectObj: true});
     assert.deepEqual(el.reflectArr, [1, 2]);
     assert.equal(el.defaultBool, true);
     assert.equal(el.defaultNum, 4);
-    assert.equal(el.defaultStr, "defaultStr");
-    assert.deepEqual(el.defaultObj, { defaultObj: true });
+    assert.equal(el.defaultStr, 'defaultStr');
+    assert.deepEqual(el.defaultObj, {defaultObj: true});
     assert.deepEqual(el.defaultArr, [1, 2, 3]);
     assert.equal(el.defaultReflectBool, false);
     assert.equal(el.defaultReflectNum, 0);
-    assert.equal(el.defaultReflectStr, "defaultReflectStr");
-    assert.deepEqual(el.defaultReflectObj, { defaultReflectObj: true });
+    assert.equal(el.defaultReflectStr, 'defaultReflectStr');
+    assert.deepEqual(el.defaultReflectObj, {defaultReflectObj: true});
     assert.deepEqual(el.defaultReflectArr, [1, 2]);
-    el.removeAttribute("bool");
-    el.removeAttribute("num");
-    el.removeAttribute("str");
-    el.removeAttribute("obj");
-    el.removeAttribute("arr");
-    el.removeAttribute("reflectbool");
-    el.removeAttribute("reflectnum");
-    el.removeAttribute("reflectstr");
-    el.removeAttribute("reflectobj");
-    el.removeAttribute("reflectarr");
-    el.removeAttribute("defaultbool");
-    el.removeAttribute("defaultnum");
-    el.removeAttribute("defaultstr");
-    el.removeAttribute("defaultobj");
-    el.removeAttribute("defaultarr");
-    el.removeAttribute("defaultreflectbool");
-    el.removeAttribute("defaultreflectnum");
-    el.removeAttribute("defaultreflectstr");
-    el.removeAttribute("defaultreflectobj");
-    el.removeAttribute("defaultreflectarr");
+    el.removeAttribute('bool');
+    el.removeAttribute('num');
+    el.removeAttribute('str');
+    el.removeAttribute('obj');
+    el.removeAttribute('arr');
+    el.removeAttribute('reflectbool');
+    el.removeAttribute('reflectnum');
+    el.removeAttribute('reflectstr');
+    el.removeAttribute('reflectobj');
+    el.removeAttribute('reflectarr');
+    el.removeAttribute('defaultbool');
+    el.removeAttribute('defaultnum');
+    el.removeAttribute('defaultstr');
+    el.removeAttribute('defaultobj');
+    el.removeAttribute('defaultarr');
+    el.removeAttribute('defaultreflectbool');
+    el.removeAttribute('defaultreflectnum');
+    el.removeAttribute('defaultreflectstr');
+    el.removeAttribute('defaultreflectobj');
+    el.removeAttribute('defaultreflectarr');
     await el.updateComplete;
     assert.equal(el.bool, false);
     assert.equal(el.num, null);
@@ -389,11 +389,11 @@ suite("UpdatingElement", () => {
     class E extends UpdatingElement {
       static get properties() {
         return {
-          bool: { type: Boolean, reflect: true },
-          num: { type: Number, reflect: true },
-          str: { type: String, reflect: true },
-          obj: { type: Object, reflect: true },
-          arr: { type: Array, reflect: true },
+          bool: {type: Boolean, reflect: true},
+          num: {type: Number, reflect: true},
+          str: {type: String, reflect: true},
+          obj: {type: Object, reflect: true},
+          arr: {type: Array, reflect: true},
         };
       }
 
@@ -416,17 +416,17 @@ suite("UpdatingElement", () => {
     el.obj = null;
     el.arr = null;
     await el.updateComplete;
-    assert.isFalse(el.hasAttribute("bool"));
-    assert.isFalse(el.hasAttribute("num"));
-    assert.isFalse(el.hasAttribute("str"));
-    assert.isFalse(el.hasAttribute("obj"));
-    assert.isFalse(el.hasAttribute("arr"));
+    assert.isFalse(el.hasAttribute('bool'));
+    assert.isFalse(el.hasAttribute('num'));
+    assert.isFalse(el.hasAttribute('str'));
+    assert.isFalse(el.hasAttribute('obj'));
+    assert.isFalse(el.hasAttribute('arr'));
   });
 
-  test("if a `reflect: true` returns `undefined`, the attribute does not change", async () => {
+  test('if a `reflect: true` returns `undefined`, the attribute does not change', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: { reflect: true }, obj: { type: Object, reflect: true } };
+        return {foo: {reflect: true}, obj: {type: Object, reflect: true}};
       }
 
       foo?: any;
@@ -437,45 +437,44 @@ suite("UpdatingElement", () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    el.setAttribute("foo", "foo");
-    el.setAttribute("obj", '{"obj": 1}');
-    assert.equal(el.foo, "foo");
-    assert.deepEqual(el.obj, { obj: 1 });
+    el.setAttribute('foo', 'foo');
+    el.setAttribute('obj', '{"obj": 1}');
+    assert.equal(el.foo, 'foo');
+    assert.deepEqual(el.obj, {obj: 1});
     await el.updateComplete;
-    el.foo = "foo2";
-    el.obj = { obj: 2 };
+    el.foo = 'foo2';
+    el.obj = {obj: 2};
     await el.updateComplete;
-    assert.equal(el.getAttribute("foo"), "foo2");
-    assert.equal(el.getAttribute("obj"), '{"obj":2}');
+    assert.equal(el.getAttribute('foo'), 'foo2');
+    assert.equal(el.getAttribute('obj'), '{"obj":2}');
     el.foo = undefined;
     el.obj = undefined;
     await el.updateComplete;
-    assert.equal(el.getAttribute("foo"), "foo2");
-    assert.equal(el.getAttribute("obj"), '{"obj":2}');
-    el.foo = "foo3";
-    el.obj = { obj: 3 };
+    assert.equal(el.getAttribute('foo'), 'foo2');
+    assert.equal(el.getAttribute('obj'), '{"obj":2}');
+    el.foo = 'foo3';
+    el.obj = {obj: 3};
     await el.updateComplete;
-    assert.equal(el.getAttribute("foo"), "foo3");
-    assert.equal(el.getAttribute("obj"), '{"obj":3}');
+    assert.equal(el.getAttribute('foo'), 'foo3');
+    assert.equal(el.getAttribute('obj'), '{"obj":3}');
   });
 
-  test("property options via decorator", async () => {
+  test('property options via decorator', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends UpdatingElement {
-      @property({ attribute: false }) noAttr = "noAttr";
-      @property({ attribute: true }) atTr = "attr";
-      @property({ attribute: "custom", reflect: true }) customAttr =
-        "customAttr";
-      @property({ hasChanged }) hasChanged = 10;
-      @property({ converter: fromAttribute }) fromAttribute = 1;
-      @property({ reflect: true, converter: { toAttribute } }) toAttribute = 1;
+      @property({attribute: false}) noAttr = 'noAttr';
+      @property({attribute: true}) atTr = 'attr';
+      @property({attribute: 'custom', reflect: true}) customAttr = 'customAttr';
+      @property({hasChanged}) hasChanged = 10;
+      @property({converter: fromAttribute}) fromAttribute = 1;
+      @property({reflect: true, converter: {toAttribute}}) toAttribute = 1;
       @property({
-        attribute: "all-attr",
+        attribute: 'all-attr',
         hasChanged,
-        converter: { fromAttribute, toAttribute },
+        converter: {fromAttribute, toAttribute},
         reflect: true,
       })
       all = 10;
@@ -492,39 +491,39 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr");
-    assert.equal(el.customAttr, "customAttr");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr');
+    assert.equal(el.customAttr, 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute("toattribute"), "1-attr");
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute("all-attr"), "10-attr");
-    el.setAttribute("noattr", "noAttr2");
-    el.setAttribute("attr", "attr2");
-    el.setAttribute("custom", "customAttr2");
-    el.setAttribute("fromattribute", "2attr");
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    el.setAttribute('noattr', 'noAttr2');
+    el.setAttribute('attr', 'attr2');
+    el.setAttribute('custom', 'customAttr2');
+    el.setAttribute('fromattribute', '2attr');
     el.toAttribute = 2;
     el.all = 5;
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr2");
-    assert.equal(el.customAttr, "customAttr2");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr2');
+    assert.equal(el.customAttr, 'customAttr2');
     assert.equal(el.fromAttribute, 2);
     assert.equal(el.toAttribute, 2);
-    assert.equal(el.getAttribute("toattribute"), "2-attr");
+    assert.equal(el.getAttribute('toattribute'), '2-attr');
     assert.equal(el.all, 5);
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.updateCount, 3);
     assert.equal(el.all, 15);
-    assert.equal(el.getAttribute("all-attr"), "15-attr");
-    el.setAttribute("all-attr", "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '15-attr');
+    el.setAttribute('all-attr', '16-attr');
     await el.updateComplete;
     assert.equal(el.updateCount, 4);
-    assert.equal(el.getAttribute("all-attr"), "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '16-attr');
     assert.equal(el.all, 16);
     el.hasChanged = 5;
     await el.updateComplete;
@@ -534,7 +533,7 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.hasChanged, 15);
     assert.equal(el.updateCount, 5);
-    el.setAttribute("all-attr", "5-attr");
+    el.setAttribute('all-attr', '5-attr');
     await el.updateComplete;
     assert.equal(el.all, 5);
     assert.equal(el.updateCount, 5);
@@ -544,10 +543,10 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test("property options via decorator do not modify superclass", async () => {
+  test('property options via decorator do not modify superclass', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: { type: Number, reflect: true } };
+        return {foo: {type: Number, reflect: true}};
       }
 
       foo = 1;
@@ -557,7 +556,7 @@ suite("UpdatingElement", () => {
     const el1 = new E();
 
     class F extends E {
-      @property({ type: Number }) foo = 2;
+      @property({type: Number}) foo = 2;
     }
 
     customElements.define(generateElementName(), F);
@@ -569,24 +568,24 @@ suite("UpdatingElement", () => {
     await el1.updateComplete;
     await el2.updateComplete;
     await el3.updateComplete;
-    assert.isTrue(el1.hasAttribute("foo"));
-    assert.isTrue(el2.hasAttribute("foo"));
-    assert.isFalse(el3.hasAttribute("foo"));
+    assert.isTrue(el1.hasAttribute('foo'));
+    assert.isTrue(el2.hasAttribute('foo'));
+    assert.isFalse(el3.hasAttribute('foo'));
   });
 
-  test("can mix property options via decorator and via getter", async () => {
+  test('can mix property options via decorator and via getter', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends UpdatingElement {
-      @property({ hasChanged }) hasChanged = 10;
-      @property({ converter: fromAttribute }) fromAttribute = 1;
-      @property({ reflect: true, converter: { toAttribute } }) toAttribute = 1;
+      @property({hasChanged}) hasChanged = 10;
+      @property({converter: fromAttribute}) fromAttribute = 1;
+      @property({reflect: true, converter: {toAttribute}}) toAttribute = 1;
       @property({
-        attribute: "all-attr",
+        attribute: 'all-attr',
         hasChanged,
-        converter: { fromAttribute, toAttribute },
+        converter: {fromAttribute, toAttribute},
         reflect: true,
       })
       all = 10;
@@ -595,9 +594,9 @@ suite("UpdatingElement", () => {
 
       static get properties() {
         return {
-          noAttr: { attribute: false },
-          atTr: { attribute: true },
-          customAttr: { attribute: "custom", reflect: true },
+          noAttr: {attribute: false},
+          atTr: {attribute: true},
+          customAttr: {attribute: 'custom', reflect: true},
         };
       }
 
@@ -607,9 +606,9 @@ suite("UpdatingElement", () => {
 
       constructor() {
         super();
-        this.noAttr = "noAttr";
-        this.atTr = "attr";
-        this.customAttr = "customAttr";
+        this.noAttr = 'noAttr';
+        this.atTr = 'attr';
+        this.customAttr = 'customAttr';
       }
 
       update(changed: PropertyValues) {
@@ -622,39 +621,39 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr");
-    assert.equal(el.customAttr, "customAttr");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr');
+    assert.equal(el.customAttr, 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute("toattribute"), "1-attr");
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute("all-attr"), "10-attr");
-    el.setAttribute("noattr", "noAttr2");
-    el.setAttribute("attr", "attr2");
-    el.setAttribute("custom", "customAttr2");
-    el.setAttribute("fromattribute", "2attr");
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    el.setAttribute('noattr', 'noAttr2');
+    el.setAttribute('attr', 'attr2');
+    el.setAttribute('custom', 'customAttr2');
+    el.setAttribute('fromattribute', '2attr');
     el.toAttribute = 2;
     el.all = 5;
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr2");
-    assert.equal(el.customAttr, "customAttr2");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr2');
+    assert.equal(el.customAttr, 'customAttr2');
     assert.equal(el.fromAttribute, 2);
     assert.equal(el.toAttribute, 2);
-    assert.equal(el.getAttribute("toattribute"), "2-attr");
+    assert.equal(el.getAttribute('toattribute'), '2-attr');
     assert.equal(el.all, 5);
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.updateCount, 3);
     assert.equal(el.all, 15);
-    assert.equal(el.getAttribute("all-attr"), "15-attr");
-    el.setAttribute("all-attr", "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '15-attr');
+    el.setAttribute('all-attr', '16-attr');
     await el.updateComplete;
     assert.equal(el.updateCount, 4);
-    assert.equal(el.getAttribute("all-attr"), "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '16-attr');
     assert.equal(el.all, 16);
     el.hasChanged = 5;
     await el.updateComplete;
@@ -664,7 +663,7 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.hasChanged, 15);
     assert.equal(el.updateCount, 5);
-    el.setAttribute("all-attr", "5-attr");
+    el.setAttribute('all-attr', '5-attr');
     await el.updateComplete;
     assert.equal(el.all, 5);
     assert.equal(el.updateCount, 5);
@@ -674,37 +673,37 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test("attributes deserialize from html", async () => {
+  test('attributes deserialize from html', async () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttributeOnly = (value: any) =>
-      typeof value === "string" && value.indexOf(`-attr`) > 0
+      typeof value === 'string' && value.indexOf(`-attr`) > 0
         ? value
         : `${value}-attr`;
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends UpdatingElement {
       static get properties() {
         return {
-          noAttr: { attribute: false },
-          atTr: { attribute: true },
-          customAttr: { attribute: "custom", reflect: true },
-          fromAttribute: { converter: fromAttribute },
+          noAttr: {attribute: false},
+          atTr: {attribute: true},
+          customAttr: {attribute: 'custom', reflect: true},
+          fromAttribute: {converter: fromAttribute},
           toAttribute: {
             reflect: true,
-            converter: { toAttribute: toAttributeOnly },
+            converter: {toAttribute: toAttributeOnly},
           },
           all: {
-            attribute: "all-attr",
-            converter: { fromAttribute, toAttribute },
+            attribute: 'all-attr',
+            converter: {fromAttribute, toAttribute},
             reflect: true,
           },
-          obj: { type: Object },
-          arr: { type: Array },
+          obj: {type: Object},
+          arr: {type: Array},
         };
       }
 
-      noAttr = "noAttr";
-      atTr = "attr";
-      customAttr = "customAttr";
+      noAttr = 'noAttr';
+      atTr = 'attr';
+      customAttr = 'customAttr';
       fromAttribute = 1;
       toAttribute: string | number = 1;
       all = 10;
@@ -724,27 +723,27 @@ suite("UpdatingElement", () => {
       arr="[1, 2, 3, 4]"></${name}>`;
     const el = container.firstChild as E;
     await el.updateComplete;
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.getAttribute("noattr"), "1");
-    assert.equal(el.atTr, "2");
-    assert.equal(el.customAttr, "3");
-    assert.equal(el.getAttribute("custom"), "3");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.getAttribute('noattr'), '1');
+    assert.equal(el.atTr, '2');
+    assert.equal(el.customAttr, '3');
+    assert.equal(el.getAttribute('custom'), '3');
     assert.equal(el.fromAttribute, 6);
-    assert.equal(el.toAttribute, "7");
-    assert.equal(el.getAttribute("toattribute"), "7-attr");
+    assert.equal(el.toAttribute, '7');
+    assert.equal(el.getAttribute('toattribute'), '7-attr');
     assert.equal(el.all, 11);
-    assert.equal(el.getAttribute("all-attr"), "11-attr");
-    assert.deepEqual(el.obj, { foo: true, bar: 5, baz: "hi" });
+    assert.equal(el.getAttribute('all-attr'), '11-attr');
+    assert.deepEqual(el.obj, {foo: true, bar: 5, baz: 'hi'});
     assert.deepEqual(el.arr, [1, 2, 3, 4]);
   });
 
   if ((Object as Partial<typeof Object>).getOwnPropertySymbols) {
-    test("properties defined using symbols", async () => {
+    test('properties defined using symbols', async () => {
       const zug = Symbol();
 
       class E extends UpdatingElement {
         static get properties() {
-          return { foo: {}, [zug]: {} };
+          return {foo: {}, [zug]: {}};
         }
         updateCount = 0;
         foo = 5;
@@ -774,14 +773,14 @@ suite("UpdatingElement", () => {
       assert.equal(el[zug], 66);
     });
 
-    test("properties as symbols can set property options", async () => {
+    test('properties as symbols can set property options', async () => {
       const zug = Symbol();
 
       class E extends UpdatingElement {
         static get properties() {
           return {
             [zug]: {
-              attribute: "zug",
+              attribute: 'zug',
               reflect: true,
               converter: (value: string) => Number(value) + 100,
             },
@@ -798,19 +797,19 @@ suite("UpdatingElement", () => {
       container.appendChild(el);
       await el.updateComplete;
       assert.equal(el[zug], 5);
-      assert.equal(el.getAttribute("zug"), "5");
+      assert.equal(el.getAttribute('zug'), '5');
       el[zug] = 6;
       await el.updateComplete;
       assert.equal(el[zug], 6);
-      assert.equal(el.getAttribute("zug"), "6");
-      el.setAttribute("zug", "7");
+      assert.equal(el.getAttribute('zug'), '6');
+      el.setAttribute('zug', '7');
       await el.updateComplete;
-      assert.equal(el.getAttribute("zug"), "7");
+      assert.equal(el.getAttribute('zug'), '7');
       assert.equal(el[zug], 107);
     });
   }
 
-  test("property options compose when subclassing", async () => {
+  test('property options compose when subclassing', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
     const fromAttribute = (value: any) => parseInt(value);
@@ -818,16 +817,16 @@ suite("UpdatingElement", () => {
     class E extends UpdatingElement {
       static get properties(): PropertyDeclarations {
         return {
-          noAttr: { attribute: false },
-          atTr: { attribute: true },
+          noAttr: {attribute: false},
+          atTr: {attribute: true},
           customAttr: {},
           hasChanged: {},
         };
       }
 
-      noAttr = "noAttr";
-      atTr = "attr";
-      customAttr = "customAttr";
+      noAttr = 'noAttr';
+      atTr = 'attr';
+      customAttr = 'customAttr';
       hasChanged = 10;
 
       updateCount = 0;
@@ -842,8 +841,8 @@ suite("UpdatingElement", () => {
     class F extends E {
       static get properties(): PropertyDeclarations {
         return {
-          customAttr: { attribute: "custom", reflect: true },
-          hasChanged: { hasChanged },
+          customAttr: {attribute: 'custom', reflect: true},
+          hasChanged: {hasChanged},
           fromAttribute: {},
           toAttribute: {},
         };
@@ -857,12 +856,12 @@ suite("UpdatingElement", () => {
     class G extends F {
       static get properties(): PropertyDeclarations {
         return {
-          fromAttribute: { converter: fromAttribute },
-          toAttribute: { reflect: true, converter: { toAttribute } },
+          fromAttribute: {converter: fromAttribute},
+          toAttribute: {reflect: true, converter: {toAttribute}},
           all: {
-            attribute: "all-attr",
+            attribute: 'all-attr',
             hasChanged,
-            converter: { fromAttribute, toAttribute },
+            converter: {fromAttribute, toAttribute},
             reflect: true,
           },
         };
@@ -875,39 +874,39 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr");
-    assert.equal(el.customAttr, "customAttr");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr');
+    assert.equal(el.customAttr, 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute("toattribute"), "1-attr");
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute("all-attr"), "10-attr");
-    el.setAttribute("noattr", "noAttr2");
-    el.setAttribute("attr", "attr2");
-    el.setAttribute("custom", "customAttr2");
-    el.setAttribute("fromattribute", "2attr");
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    el.setAttribute('noattr', 'noAttr2');
+    el.setAttribute('attr', 'attr2');
+    el.setAttribute('custom', 'customAttr2');
+    el.setAttribute('fromattribute', '2attr');
     el.toAttribute = 2;
     el.all = 5;
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
-    assert.equal(el.noAttr, "noAttr");
-    assert.equal(el.atTr, "attr2");
-    assert.equal(el.customAttr, "customAttr2");
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr2');
+    assert.equal(el.customAttr, 'customAttr2');
     assert.equal(el.fromAttribute, 2);
     assert.equal(el.toAttribute, 2);
-    assert.equal(el.getAttribute("toattribute"), "2-attr");
+    assert.equal(el.getAttribute('toattribute'), '2-attr');
     assert.equal(el.all, 5);
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.updateCount, 3);
     assert.equal(el.all, 15);
-    assert.equal(el.getAttribute("all-attr"), "15-attr");
-    el.setAttribute("all-attr", "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '15-attr');
+    el.setAttribute('all-attr', '16-attr');
     await el.updateComplete;
     assert.equal(el.updateCount, 4);
-    assert.equal(el.getAttribute("all-attr"), "16-attr");
+    assert.equal(el.getAttribute('all-attr'), '16-attr');
     assert.equal(el.all, 16);
     el.hasChanged = 5;
     await el.updateComplete;
@@ -917,7 +916,7 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.hasChanged, 15);
     assert.equal(el.updateCount, 5);
-    el.setAttribute("all-attr", "5-attr");
+    el.setAttribute('all-attr', '5-attr');
     await el.updateComplete;
     assert.equal(el.all, 5);
     assert.equal(el.updateCount, 5);
@@ -927,27 +926,27 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test("superclass properties not affected by subclass", async () => {
+  test('superclass properties not affected by subclass', async () => {
     class E extends UpdatingElement {
       static get properties(): PropertyDeclarations {
         return {
-          foo: { attribute: "zug", reflect: true },
-          bar: { reflect: true },
+          foo: {attribute: 'zug', reflect: true},
+          bar: {reflect: true},
         };
       }
 
       foo = 5;
-      bar = "bar";
+      bar = 'bar';
     }
     customElements.define(generateElementName(), E);
 
     class F extends E {
       static get properties(): PropertyDeclarations {
-        return { foo: { attribute: false }, nug: {} };
+        return {foo: {attribute: false}, nug: {}};
       }
 
       foo = 6;
-      bar = "subbar";
+      bar = 'subbar';
       nug = 5;
     }
     customElements.define(generateElementName(), F);
@@ -960,28 +959,28 @@ suite("UpdatingElement", () => {
     await sub.updateComplete;
 
     assert.equal(el.foo, 5);
-    assert.equal(el.getAttribute("zug"), "5");
-    assert.isFalse(el.hasAttribute("foo"));
-    assert.equal(el.bar, "bar");
-    assert.equal(el.getAttribute("bar"), "bar");
+    assert.equal(el.getAttribute('zug'), '5');
+    assert.isFalse(el.hasAttribute('foo'));
+    assert.equal(el.bar, 'bar');
+    assert.equal(el.getAttribute('bar'), 'bar');
     assert.isUndefined((el as any).nug);
 
     assert.equal(sub.foo, 6);
-    assert.isFalse(sub.hasAttribute("zug"));
-    assert.isFalse(sub.hasAttribute("foo"));
-    assert.equal(sub.bar, "subbar");
-    assert.equal(sub.getAttribute("bar"), "subbar");
+    assert.isFalse(sub.hasAttribute('zug'));
+    assert.isFalse(sub.hasAttribute('foo'));
+    assert.equal(sub.bar, 'subbar');
+    assert.equal(sub.getAttribute('bar'), 'subbar');
     assert.equal(sub.nug, 5);
   });
 
-  test("Attributes reflect", async () => {
-    const suffix = "-reflected";
+  test('Attributes reflect', async () => {
+    const suffix = '-reflected';
     class E extends UpdatingElement {
       static get properties() {
         return {
           foo: {
             reflect: true,
-            converter: { toAttribute: (value: any) => `${value}${suffix}` },
+            converter: {toAttribute: (value: any) => `${value}${suffix}`},
           },
         };
       }
@@ -992,16 +991,16 @@ suite("UpdatingElement", () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.getAttribute("foo"), `0${suffix}`);
+    assert.equal(el.getAttribute('foo'), `0${suffix}`);
     el.foo = 5;
     await el.updateComplete;
-    assert.equal(el.getAttribute("foo"), `5${suffix}`);
+    assert.equal(el.getAttribute('foo'), `5${suffix}`);
   });
 
-  test("Attributes reflect with type: Boolean", async () => {
+  test('Attributes reflect with type: Boolean', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { bar: { type: Boolean, reflect: true } };
+        return {bar: {type: Boolean, reflect: true}};
       }
 
       bar = true;
@@ -1010,23 +1009,23 @@ suite("UpdatingElement", () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.getAttribute("bar"), "");
+    assert.equal(el.getAttribute('bar'), '');
     el.bar = false;
     await el.updateComplete;
-    assert.equal(el.hasAttribute("bar"), false);
+    assert.equal(el.hasAttribute('bar'), false);
     el.bar = true;
     await el.updateComplete;
-    assert.equal(el.getAttribute("bar"), "");
+    assert.equal(el.getAttribute('bar'), '');
   });
 
-  test("updates when properties change", async () => {
+  test('updates when properties change', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
 
-      foo = "one";
-      updatedText = "";
+      foo = 'one';
+      updatedText = '';
 
       updated() {
         this.updatedText = `${this.foo}`;
@@ -1036,23 +1035,23 @@ suite("UpdatingElement", () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.updatedText, "one");
-    el.foo = "changed";
+    assert.equal(el.updatedText, 'one');
+    el.foo = 'changed';
     await el.updateComplete;
-    assert.equal(el.updatedText, "changed");
+    assert.equal(el.updatedText, 'changed');
   });
 
-  test("updates when properties and attributes change", async () => {
+  test('updates when properties and attributes change', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { value: {}, attrValue: {} };
+        return {value: {}, attrValue: {}};
       }
 
-      value = "1";
-      attrValue = "attr";
+      value = '1';
+      attrValue = 'attr';
 
-      updateCountValue = "";
-      updateCountAttrValue = "";
+      updateCountValue = '';
+      updateCountAttrValue = '';
 
       update(props: PropertyValues) {
         super.update(props);
@@ -1064,35 +1063,35 @@ suite("UpdatingElement", () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.updateCountValue, "1");
-    assert.equal(el.updateCountAttrValue, "attr");
-    el.value = "2";
+    assert.equal(el.updateCountValue, '1');
+    assert.equal(el.updateCountAttrValue, 'attr');
+    el.value = '2';
     await el.updateComplete;
-    assert.equal(el.updateCountValue, "2");
-    assert.equal(el.updateCountAttrValue, "attr");
-    el.attrValue = "attr2";
+    assert.equal(el.updateCountValue, '2');
+    assert.equal(el.updateCountAttrValue, 'attr');
+    el.attrValue = 'attr2';
     await el.updateComplete;
-    assert.equal(el.updateCountValue, "2");
-    assert.equal(el.updateCountAttrValue, "attr2");
-    el.setAttribute("attrvalue", "attr3");
+    assert.equal(el.updateCountValue, '2');
+    assert.equal(el.updateCountAttrValue, 'attr2');
+    el.setAttribute('attrvalue', 'attr3');
     await el.updateComplete;
-    assert.equal(el.updateCountValue, "2");
-    assert.equal(el.updateCountAttrValue, "attr3");
-    el.value = "3";
-    el.setAttribute("attrvalue", "attr4");
+    assert.equal(el.updateCountValue, '2');
+    assert.equal(el.updateCountAttrValue, 'attr3');
+    el.value = '3';
+    el.setAttribute('attrvalue', 'attr4');
     await el.updateComplete;
-    assert.equal(el.updateCountValue, "3");
-    assert.equal(el.updateCountAttrValue, "attr4");
+    assert.equal(el.updateCountValue, '3');
+    assert.equal(el.updateCountAttrValue, 'attr4');
   });
 
-  test("updates changes when attributes change", async () => {
+  test('updates changes when attributes change', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
 
-      foo = "one";
-      updatedText = "";
+      foo = 'one';
+      updatedText = '';
 
       updated() {
         this.updatedText = `${this.foo}`;
@@ -1102,20 +1101,20 @@ suite("UpdatingElement", () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.updatedText, "one");
-    el.setAttribute("foo", "changed");
+    assert.equal(el.updatedText, 'one');
+    el.setAttribute('foo', 'changed');
     await el.updateComplete;
-    assert.equal(el.updatedText, "changed");
+    assert.equal(el.updatedText, 'changed');
   });
 
-  test("User defined accessor can trigger update", async () => {
+  test('User defined accessor can trigger update', async () => {
     class E extends UpdatingElement {
       __bar?: number;
 
-      updatedText = "";
+      updatedText = '';
 
       static get properties() {
-        return { foo: {}, bar: {} };
+        return {foo: {}, bar: {}};
       }
 
       foo = 0;
@@ -1127,7 +1126,7 @@ suite("UpdatingElement", () => {
       set bar(value) {
         const old = this.bar;
         this.__bar = Number(value);
-        this.requestUpdate("bar", old);
+        this.requestUpdate('bar', old);
       }
 
       updated() {
@@ -1137,14 +1136,14 @@ suite("UpdatingElement", () => {
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
-    el.setAttribute("bar", "20");
+    el.setAttribute('bar', '20');
     await el.updateComplete;
     assert.equal(el.bar, 20);
     assert.equal(el.__bar, 20);
-    assert.equal(el.updatedText, "020");
+    assert.equal(el.updatedText, '020');
   });
 
-  test("User defined accessor can use property options via `requestUpdate`", async () => {
+  test('User defined accessor can use property options via `requestUpdate`', async () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     const hasChanged = (value: any, old: any) => isNaN(old) || value > old;
@@ -1155,9 +1154,9 @@ suite("UpdatingElement", () => {
       static get properties() {
         return {
           bar: {
-            attribute: "attr-bar",
+            attribute: 'attr-bar',
             reflect: true,
-            converter: { fromAttribute, toAttribute },
+            converter: {fromAttribute, toAttribute},
             hasChanged,
           },
         };
@@ -1180,7 +1179,7 @@ suite("UpdatingElement", () => {
       set bar(value) {
         const old = this.bar;
         this.__bar = Number(value);
-        this.requestUpdate("bar", old);
+        this.requestUpdate('bar', old);
       }
     }
     customElements.define(generateElementName(), E);
@@ -1189,30 +1188,30 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
     assert.equal(el.bar, 5);
-    assert.equal(el.getAttribute("attr-bar"), `5-attr`);
-    el.setAttribute("attr-bar", "7");
+    assert.equal(el.getAttribute('attr-bar'), `5-attr`);
+    el.setAttribute('attr-bar', '7');
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
     assert.equal(el.bar, 7);
-    assert.equal(el.getAttribute("attr-bar"), `7`);
+    assert.equal(el.getAttribute('attr-bar'), `7`);
     el.bar = 4;
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
     assert.equal(el.bar, 4);
-    assert.equal(el.getAttribute("attr-bar"), `7`);
-    el.setAttribute("attr-bar", "3");
+    assert.equal(el.getAttribute('attr-bar'), `7`);
+    el.setAttribute('attr-bar', '3');
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
     assert.equal(el.bar, 3);
-    assert.equal(el.getAttribute("attr-bar"), `3`);
+    assert.equal(el.getAttribute('attr-bar'), `3`);
   });
 
-  test("User defined accessor not overwritten by subclass, but subclass property options respected", async () => {
+  test('User defined accessor not overwritten by subclass, but subclass property options respected', async () => {
     class E extends UpdatingElement {
       __foo?: number;
 
       static get properties(): PropertyDeclarations {
-        return { bar: { hasChanged: () => false }, foo: {} };
+        return {bar: {hasChanged: () => false}, foo: {}};
       }
 
       get foo() {
@@ -1222,14 +1221,14 @@ suite("UpdatingElement", () => {
       set foo(value) {
         const old = this.foo;
         this.__foo = Number(value);
-        this.requestUpdate("foo", old);
+        this.requestUpdate('foo', old);
       }
     }
     class F extends E {
       __bar?: string;
 
       static get properties(): PropertyDeclarations {
-        return { bar: {}, foo: { reflect: true } };
+        return {bar: {}, foo: {reflect: true}};
       }
 
       get bar() {
@@ -1239,7 +1238,7 @@ suite("UpdatingElement", () => {
       set bar(value) {
         const old = this.foo;
         this.__bar = value;
-        this.requestUpdate("bar", old);
+        this.requestUpdate('bar', old);
       }
     }
 
@@ -1252,7 +1251,7 @@ suite("UpdatingElement", () => {
 
     class G extends F {
       static get properties(): PropertyDeclarations {
-        return { bar: { hasChanged, reflect: true }, foo: { hasChanged } };
+        return {bar: {hasChanged, reflect: true}, foo: {hasChanged}};
       }
     }
 
@@ -1264,16 +1263,16 @@ suite("UpdatingElement", () => {
     assert.equal(changed, 1);
     assert.equal(el.foo, 20);
     assert.equal(el.__foo, 20);
-    assert.isFalse(el.hasAttribute("foo"));
-    el.bar = "hi";
+    assert.isFalse(el.hasAttribute('foo'));
+    el.bar = 'hi';
     await el.updateComplete;
     assert.equal(changed, 2);
-    assert.equal(el.bar, "hi");
-    assert.equal(el.__bar, "hi");
-    assert.isTrue(el.hasAttribute("bar"));
+    assert.equal(el.bar, 'hi');
+    assert.equal(el.__bar, 'hi');
+    assert.isTrue(el.hasAttribute('bar'));
   });
 
-  test("`firstUpdated` called when element first updates", async () => {
+  test('`firstUpdated` called when element first updates', async () => {
     class E extends UpdatingElement {
       @property() foo = 1;
 
@@ -1296,7 +1295,7 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     const testMap = new Map();
-    testMap.set("foo", undefined);
+    testMap.set('foo', undefined);
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.wasUpdatedCount, 1);
     assert.equal(el.wasFirstUpdated, 1);
@@ -1308,7 +1307,7 @@ suite("UpdatingElement", () => {
     assert.equal(el.wasFirstUpdated, 1);
   });
 
-  test("`firstUpdated` called when element first updates even if first `shouldUpdate` returned false", async () => {
+  test('`firstUpdated` called when element first updates even if first `shouldUpdate` returned false', async () => {
     class E extends UpdatingElement {
       @property() foo = 1;
 
@@ -1352,57 +1351,57 @@ suite("UpdatingElement", () => {
     assert.equal(el.wasFirstUpdated, 1);
   });
 
-  test("update lifecycle order", async () => {
+  test('update lifecycle order', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: { type: Number } };
+        return {foo: {type: Number}};
       }
 
       info: Array<string> = [];
 
       shouldUpdate() {
-        this.info.push("shouldUpdate");
+        this.info.push('shouldUpdate');
         return true;
       }
 
       update(props: PropertyValues) {
-        this.info.push("before-update");
+        this.info.push('before-update');
         super.update(props);
-        this.info.push("after-update");
+        this.info.push('after-update');
       }
 
       firstUpdated() {
-        this.info.push("firstUpdated");
+        this.info.push('firstUpdated');
       }
 
       updated() {
-        this.info.push("updated");
+        this.info.push('updated');
       }
     }
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    el.info.push("updateComplete");
+    el.info.push('updateComplete');
     assert.deepEqual(el.info, [
-      "shouldUpdate",
-      "before-update",
-      "after-update",
-      "firstUpdated",
-      "updated",
-      "updateComplete",
+      'shouldUpdate',
+      'before-update',
+      'after-update',
+      'firstUpdated',
+      'updated',
+      'updateComplete',
     ]);
   });
 
-  test("setting properties in update does not trigger update", async () => {
+  test('setting properties in update does not trigger update', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       promiseFulfilled = false;
       foo = 0;
       updateCount = 0;
-      updatedText = "";
+      updatedText = '';
 
       update(props: PropertyValues) {
         this.updateCount++;
@@ -1420,23 +1419,23 @@ suite("UpdatingElement", () => {
     await el.updateComplete;
     assert.equal(el.foo, 1);
     assert.equal(el.updateCount, 1);
-    assert.equal(el.updatedText, "1");
+    assert.equal(el.updatedText, '1');
     el.foo = 5;
     await el.updateComplete;
     assert.equal(el.foo, 6);
     assert.equal(el.updateCount, 2);
-    assert.equal(el.updatedText, "6");
+    assert.equal(el.updatedText, '6');
   });
 
-  test("setting properties in update after calling `super.update` *does* trigger update", async () => {
+  test('setting properties in update after calling `super.update` *does* trigger update', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       promiseFulfilled = false;
       foo = 0;
       updateCount = 0;
-      updatedText = "";
+      updatedText = '';
 
       update(props: PropertyValues) {
         this.updateCount++;
@@ -1456,13 +1455,13 @@ suite("UpdatingElement", () => {
     while (!(await el.updateComplete)) {}
     assert.equal(el.foo, 1);
     assert.equal(el.updateCount, 2);
-    assert.equal(el.updatedText, "1");
+    assert.equal(el.updatedText, '1');
   });
 
-  test("setting properties in update reflects to attribute and is included in `changedProperties`", async () => {
+  test('setting properties in update reflects to attribute and is included in `changedProperties`', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {}, bar: {}, zot: { reflect: true } };
+        return {foo: {}, bar: {}, zot: {reflect: true}};
       }
 
       changedProperties: PropertyValues | undefined = undefined;
@@ -1478,10 +1477,10 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     await el.updateComplete;
     const testMap = new Map();
-    testMap.set("zot", undefined);
+    testMap.set('zot', undefined);
     assert.deepEqual(el.changedProperties, testMap);
     assert.isNaN(el.zot);
-    assert.equal(el.getAttribute("zot"), "NaN");
+    assert.equal(el.getAttribute('zot'), 'NaN');
     el.bar = 1;
     el.foo = 1;
     await el.updateComplete;
@@ -1489,39 +1488,39 @@ suite("UpdatingElement", () => {
     assert.equal(el.bar, 1);
     assert.equal(el.zot, 2);
     testMap.clear();
-    testMap.set("foo", undefined);
-    testMap.set("bar", undefined);
-    testMap.set("zot", NaN);
+    testMap.set('foo', undefined);
+    testMap.set('bar', undefined);
+    testMap.set('zot', NaN);
     assert.deepEqual(el.changedProperties, testMap);
-    assert.equal(el.getAttribute("zot"), "2");
+    assert.equal(el.getAttribute('zot'), '2');
     el.bar = 2;
     await el.updateComplete;
     assert.equal(el.bar, 2);
     assert.equal(el.zot, 3);
     testMap.clear();
-    testMap.set("bar", 1);
-    testMap.set("zot", 2);
+    testMap.set('bar', 1);
+    testMap.set('zot', 2);
     assert.deepEqual(el.changedProperties, testMap);
-    assert.equal(el.getAttribute("zot"), "3");
+    assert.equal(el.getAttribute('zot'), '3');
   });
 
   // Note, on older browsers (e.g. old Safari/Chrome), native properties
   // cannot have default values. These will be overwritten by instance values.
-  test("can make properties for native accessors", async () => {
+  test('can make properties for native accessors', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {
-          id: { reflect: true },
-          name: { reflect: true },
-          title: { reflect: true },
+          id: {reflect: true},
+          name: {reflect: true},
+          title: {reflect: true},
           foo: {},
         };
       }
 
-      updatedText = "";
+      updatedText = '';
 
       name: string | undefined;
-      foo = "";
+      foo = '';
 
       changedProperties: PropertyValues | undefined = undefined;
 
@@ -1539,41 +1538,41 @@ suite("UpdatingElement", () => {
     const el = new E() as any;
     container.appendChild(el);
     await el.updateComplete;
-    el.foo = "foo";
-    el.id = "id";
-    el.title = "title";
+    el.foo = 'foo';
+    el.id = 'id';
+    el.title = 'title';
     await el.updateComplete;
-    assert.equal(el.updatedText, "id-title-foo");
+    assert.equal(el.updatedText, 'id-title-foo');
     assert.equal((window as any).id, el);
-    assert.equal(el.getAttribute("id"), "id");
-    el.id = "id2";
+    assert.equal(el.getAttribute('id'), 'id');
+    el.id = 'id2';
     await el.updateComplete;
-    assert.equal(el.updatedText, "id2-title-foo");
+    assert.equal(el.updatedText, 'id2-title-foo');
     assert.equal((window as any).id2, el);
-    assert.equal(el.getAttribute("id"), "id2");
+    assert.equal(el.getAttribute('id'), 'id2');
   });
 
-  test("user accessors", async () => {
+  test('user accessors', async () => {
     class E extends UpdatingElement {
       _updateCount = 0;
-      updatedText = "";
+      updatedText = '';
       _foo?: String;
       _bar?: String;
       static get properties() {
         return {
-          foo: { type: String, reflect: true },
-          bar: { type: String, reflect: true },
+          foo: {type: String, reflect: true},
+          bar: {type: String, reflect: true},
         };
       }
       constructor() {
         super();
-        this.foo = "defaultFoo";
-        this.bar = "defaultBar";
+        this.foo = 'defaultFoo';
+        this.bar = 'defaultBar';
       }
       set foo(value: string) {
         const old = this._foo;
         this._foo = value;
-        this.requestUpdate("foo", old);
+        this.requestUpdate('foo', old);
       }
       get foo() {
         return this._foo as string;
@@ -1581,7 +1580,7 @@ suite("UpdatingElement", () => {
       set bar(value: string) {
         const old = this._bar;
         this._bar = value;
-        this.requestUpdate("bar", old);
+        this.requestUpdate('bar', old);
       }
       get bar() {
         return this._bar as string;
@@ -1597,44 +1596,44 @@ suite("UpdatingElement", () => {
     customElements.define(generateElementName(), E);
 
     const el = new E();
-    el.foo = "foo1";
+    el.foo = 'foo1';
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.foo, "foo1");
-    assert.equal(el.bar, "defaultBar");
-    assert.equal(el.getAttribute("foo"), "foo1");
-    assert.equal(el.getAttribute("bar"), "defaultBar");
-    assert.equal(el.updatedText, "foo1-defaultBar");
+    assert.equal(el.foo, 'foo1');
+    assert.equal(el.bar, 'defaultBar');
+    assert.equal(el.getAttribute('foo'), 'foo1');
+    assert.equal(el.getAttribute('bar'), 'defaultBar');
+    assert.equal(el.updatedText, 'foo1-defaultBar');
     assert.equal(el._updateCount, 1);
 
-    el.foo = "foo2";
-    el.bar = "bar";
+    el.foo = 'foo2';
+    el.bar = 'bar';
     await el.updateComplete;
-    assert.equal(el.foo, "foo2");
-    assert.equal(el.bar, "bar");
-    assert.equal(el.getAttribute("foo"), "foo2");
-    assert.equal(el.getAttribute("bar"), "bar");
-    assert.equal(el.updatedText, "foo2-bar");
+    assert.equal(el.foo, 'foo2');
+    assert.equal(el.bar, 'bar');
+    assert.equal(el.getAttribute('foo'), 'foo2');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.equal(el.updatedText, 'foo2-bar');
     assert.equal(el._updateCount, 2);
 
-    el.foo = "foo3";
+    el.foo = 'foo3';
     await el.updateComplete;
-    assert.equal(el.foo, "foo3");
-    assert.equal(el.getAttribute("foo"), "foo3");
-    assert.equal(el.getAttribute("bar"), "bar");
-    assert.equal(el.updatedText, "foo3-bar");
+    assert.equal(el.foo, 'foo3');
+    assert.equal(el.getAttribute('foo'), 'foo3');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.equal(el.updatedText, 'foo3-bar');
     assert.equal(el._updateCount, 3);
   });
 
-  test("user accessors can be extended", async () => {
+  test('user accessors can be extended', async () => {
     // Sup implements an accessor that clamps to a maximum in the setter
     class Sup extends UpdatingElement {
       _supSetCount?: number;
       _oldFoo?: any;
       _foo?: number;
-      updatedText = "";
+      updatedText = '';
       static get properties() {
-        return { foo: { type: Number } };
+        return {foo: {type: Number}};
       }
       constructor() {
         super();
@@ -1644,13 +1643,13 @@ suite("UpdatingElement", () => {
         this._supSetCount = (this._supSetCount || 0) + 1;
         const old = this.foo;
         this._foo = Math.min(v, 10);
-        this.requestUpdate("foo", old);
+        this.requestUpdate('foo', old);
       }
       get foo(): number {
         return this._foo as number;
       }
       update(changedProperties: PropertyValues) {
-        this._oldFoo = changedProperties.get("foo");
+        this._oldFoo = changedProperties.get('foo');
         super.update(changedProperties);
       }
       updated() {
@@ -1663,7 +1662,7 @@ suite("UpdatingElement", () => {
     class Sub extends Sup {
       _subSetCount?: number;
       static get properties() {
-        return { foo: { type: Number } };
+        return {foo: {type: Number}};
       }
       set foo(v: number) {
         this._subSetCount = (this._subSetCount || 0) + 1;
@@ -1682,28 +1681,28 @@ suite("UpdatingElement", () => {
     assert.equal(sup.foo, 0);
     assert.equal(sup._oldFoo, undefined);
     assert.equal(sup._supSetCount, 1);
-    assert.equal(sup.updatedText, "0");
+    assert.equal(sup.updatedText, '0');
 
     sup.foo = 5;
     await sup.updateComplete;
     assert.equal(sup.foo, 5);
     assert.equal(sup._oldFoo, 0);
     assert.equal(sup._supSetCount, 2);
-    assert.equal(sup.updatedText, "5");
+    assert.equal(sup.updatedText, '5');
 
     sup.foo = 20;
     await sup.updateComplete;
     assert.equal(sup.foo, 10); // (user getter implements a max of 10)
     assert.equal(sup._oldFoo, 5);
     assert.equal(sup._supSetCount, 3);
-    assert.equal(sup.updatedText, "10");
+    assert.equal(sup.updatedText, '10');
 
     sup.foo = 5;
     await sup.updateComplete;
     assert.equal(sup.foo, 5);
     assert.equal(sup._oldFoo, 10);
     assert.equal(sup._supSetCount, 4);
-    assert.equal(sup.updatedText, "5");
+    assert.equal(sup.updatedText, '5');
 
     const sub = new Sub();
     container.appendChild(sub);
@@ -1712,7 +1711,7 @@ suite("UpdatingElement", () => {
     assert.equal(sub._oldFoo, undefined);
     assert.equal(sub._supSetCount, 1);
     assert.equal(sub._subSetCount, 1);
-    assert.equal(sub.updatedText, "0");
+    assert.equal(sub.updatedText, '0');
 
     sub.foo = 5;
     await sub.updateComplete;
@@ -1720,7 +1719,7 @@ suite("UpdatingElement", () => {
     assert.equal(sub._oldFoo, 0);
     assert.equal(sub._supSetCount, 2);
     assert.equal(sub._subSetCount, 2);
-    assert.equal(sub.updatedText, "5");
+    assert.equal(sub.updatedText, '5');
 
     sub.foo = 7.5;
     await sub.updateComplete;
@@ -1728,7 +1727,7 @@ suite("UpdatingElement", () => {
     assert.equal(sub._oldFoo, 5);
     assert.equal(sub._supSetCount, 3);
     assert.equal(sub._subSetCount, 3);
-    assert.equal(sub.updatedText, "7");
+    assert.equal(sub.updatedText, '7');
 
     sub.foo = 20;
     await sub.updateComplete;
@@ -1736,18 +1735,18 @@ suite("UpdatingElement", () => {
     assert.equal(sub._oldFoo, 7);
     assert.equal(sub._supSetCount, 4);
     assert.equal(sub._subSetCount, 4);
-    assert.equal(sub.updatedText, "10");
+    assert.equal(sub.updatedText, '10');
   });
 
-  test("Using `noAccessor` to set property options for extended user accessors", async () => {
+  test('Using `noAccessor` to set property options for extended user accessors', async () => {
     // Sup implements an accessor that clamps to a maximum in the setter
     class Sup extends UpdatingElement {
       _supSetCount?: number;
       _oldFoo?: any;
       _foo?: number;
-      updatedText = "";
+      updatedText = '';
       static get properties() {
-        return { foo: { type: Number } };
+        return {foo: {type: Number}};
       }
       constructor() {
         super();
@@ -1757,13 +1756,13 @@ suite("UpdatingElement", () => {
         this._supSetCount = (this._supSetCount || 0) + 1;
         const old = this.foo;
         this._foo = Math.min(v, 10);
-        this.requestUpdate("foo", old);
+        this.requestUpdate('foo', old);
       }
       get foo(): number {
         return this._foo as number;
       }
       update(changedProperties: PropertyValues) {
-        this._oldFoo = changedProperties.get("foo");
+        this._oldFoo = changedProperties.get('foo');
         super.update(changedProperties);
       }
       updated() {
@@ -1775,7 +1774,7 @@ suite("UpdatingElement", () => {
     // Sub implements an accessor that rounds down in the getter
     class Sub extends Sup {
       static get properties() {
-        return { foo: { type: Number, reflect: true, noAccessor: true } };
+        return {foo: {type: Number, reflect: true, noAccessor: true}};
       }
     }
     customElements.define(generateElementName(), Sub);
@@ -1786,18 +1785,18 @@ suite("UpdatingElement", () => {
     assert.equal(sub.foo, 0);
     assert.equal(sub._oldFoo, undefined);
     assert.equal(sub._supSetCount, 1);
-    assert.equal(sub.updatedText, "0");
+    assert.equal(sub.updatedText, '0');
 
     sub.foo = 5;
     await sub.updateComplete;
     assert.equal(sub.foo, 5);
     assert.equal(sub._oldFoo, 0);
     assert.equal(sub._supSetCount, 2);
-    assert.equal(sub.updatedText, "5");
-    assert.equal(sub.getAttribute("foo"), "5");
+    assert.equal(sub.updatedText, '5');
+    assert.equal(sub.getAttribute('foo'), '5');
   });
 
-  test("can provide a default property declaration", async () => {
+  test('can provide a default property declaration', async () => {
     const SpecialNumber = {};
 
     const myPropertyDeclaration = {
@@ -1833,24 +1832,24 @@ suite("UpdatingElement", () => {
 
       @property() foo = 5;
 
-      @property({ type: String }) bar?: string = "bar";
+      @property({type: String}) bar?: string = 'bar';
     }
 
     const el = new E();
     container.appendChild(el);
-    el.setAttribute("foo", "10");
-    el.setAttribute("bar", "attrBar");
+    el.setAttribute('foo', '10');
+    el.setAttribute('bar', 'attrBar');
     await el.updateComplete;
     assert.equal(el.foo, 20);
-    assert.equal(el.bar, "attrBar");
+    assert.equal(el.bar, 'attrBar');
     el.foo = 5;
     el.bar = undefined;
     await el.updateComplete;
-    assert.equal(el.getAttribute("foo"), "5");
-    assert.isFalse(el.hasAttribute("bar"));
+    assert.equal(el.getAttribute('foo'), '5');
+    assert.isFalse(el.hasAttribute('bar'));
   });
 
-  test("can customize property options and accessor creation", async () => {
+  test('can customize property options and accessor creation', async () => {
     interface MyPropertyDeclaration<TypeHint = unknown>
       extends PropertyDeclaration {
       validator?: (value: any) => TypeHint;
@@ -1878,13 +1877,13 @@ suite("UpdatingElement", () => {
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {
-            const oldValue = ((this as unknown) as { [key: string]: unknown })[
+            const oldValue = ((this as unknown) as {[key: string]: unknown})[
               name as string
             ];
             if (options.validator) {
               value = options.validator(value);
             }
-            ((this as unknown) as { [key: string]: unknown })[
+            ((this as unknown) as {[key: string]: unknown})[
               key as string
             ] = value;
             ((this as unknown) as UpdatingElement).requestUpdate(
@@ -1906,7 +1905,7 @@ suite("UpdatingElement", () => {
             key
           ) as MyPropertyDeclaration;
           const observer = options.observer;
-          if (typeof observer === "function") {
+          if (typeof observer === 'function') {
             observer.call(this, value);
           }
         });
@@ -1919,7 +1918,7 @@ suite("UpdatingElement", () => {
       })
       foo = 5;
 
-      @property({}) bar = "bar";
+      @property({}) bar = 'bar';
 
       // tslint:disable-next-line:no-any
       _observedZot?: any;
@@ -1930,12 +1929,12 @@ suite("UpdatingElement", () => {
       // use regular decorator and cast to type
       @property({
         observer: function (this: E, oldValue: string) {
-          this._observedZot = { value: this.zot, oldValue };
+          this._observedZot = {value: this.zot, oldValue};
         },
       } as PropertyDeclaration)
-      zot = "";
+      zot = '';
 
-      zot2 = "";
+      zot2 = '';
 
       foo2 = 5;
 
@@ -1945,7 +1944,7 @@ suite("UpdatingElement", () => {
           // object cast as type
           zot2: {
             observer: function (this: E, oldValue: string) {
-              this._observedZot2 = { value: this.zot2, oldValue };
+              this._observedZot2 = {value: this.zot2, oldValue};
             },
           } as PropertyDeclaration,
           // object satisfying defined custom type.
@@ -1964,22 +1963,22 @@ suite("UpdatingElement", () => {
     el.foo2 = 20;
     assert.equal(el.foo, 10);
     assert.equal(el.foo2, 10);
-    assert.deepEqual(el._observedZot, { value: "", oldValue: undefined });
-    assert.deepEqual(el._observedZot2, { value: "", oldValue: undefined });
+    assert.deepEqual(el._observedZot, {value: '', oldValue: undefined});
+    assert.deepEqual(el._observedZot2, {value: '', oldValue: undefined});
     el.foo = -5;
     el.foo2 = -5;
     assert.equal(el.foo, 0);
     assert.equal(el.foo2, 0);
-    el.bar = "bar2";
-    assert.equal(el.bar, "bar2");
-    el.zot = "zot";
-    el.zot2 = "zot";
+    el.bar = 'bar2';
+    assert.equal(el.bar, 'bar2');
+    el.zot = 'zot';
+    el.zot2 = 'zot';
     await el.updateComplete;
-    assert.deepEqual(el._observedZot, { value: "zot", oldValue: "" });
-    assert.deepEqual(el._observedZot2, { value: "zot", oldValue: "" });
+    assert.deepEqual(el._observedZot, {value: 'zot', oldValue: ''});
+    assert.deepEqual(el._observedZot2, {value: 'zot', oldValue: ''});
   });
 
-  test("can customize properties to update synchronously", async () => {
+  test('can customize properties to update synchronously', async () => {
     interface MyPropertyDeclaration extends PropertyDeclaration {
       sync: boolean;
     }
@@ -2035,10 +2034,10 @@ suite("UpdatingElement", () => {
       } as PropertyDeclaration)
       foo = 5;
 
-      @property({ type: Number, sync: true } as PropertyDeclaration)
+      @property({type: Number, sync: true} as PropertyDeclaration)
       zug = this.foo;
 
-      @property({}) bar = "bar";
+      @property({}) bar = 'bar';
     }
 
     const el = new E();
@@ -2052,7 +2051,7 @@ suite("UpdatingElement", () => {
     el.foo = 3;
     await el.updateComplete;
     assert.equal(el.updateCount, 5);
-    el.bar = "bar2";
+    el.bar = 'bar2';
     assert.equal(el.updateCount, 5);
     await el.updateComplete;
     assert.equal(el.updateCount, 6);
@@ -2062,26 +2061,26 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 8);
   });
 
-  test("attribute-based property storage", async () => {
+  test('attribute-based property storage', async () => {
     class E extends UpdatingElement {
       _updateCount = 0;
-      updatedText = "";
+      updatedText = '';
       static get properties() {
-        return { foo: { type: String }, bar: { type: String } };
+        return {foo: {type: String}, bar: {type: String}};
       }
       set foo(value: string | null) {
-        this.setAttribute("foo", value as string);
+        this.setAttribute('foo', value as string);
         this.requestUpdate();
       }
       get foo() {
-        return this.getAttribute("foo") || "defaultFoo";
+        return this.getAttribute('foo') || 'defaultFoo';
       }
       set bar(value: string | null) {
-        this.setAttribute("bar", value as string);
+        this.setAttribute('bar', value as string);
         this.requestUpdate();
       }
       get bar() {
-        return this.getAttribute("bar") || "defaultBar";
+        return this.getAttribute('bar') || 'defaultBar';
       }
       update(changedProperties: PropertyValues) {
         this._updateCount++;
@@ -2094,51 +2093,51 @@ suite("UpdatingElement", () => {
     customElements.define(generateElementName(), E);
 
     const el = new E();
-    el.foo = "foo1";
+    el.foo = 'foo1';
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.foo, "foo1");
-    assert.equal(el.bar, "defaultBar");
-    assert.equal(el.updatedText, "foo1-defaultBar");
+    assert.equal(el.foo, 'foo1');
+    assert.equal(el.bar, 'defaultBar');
+    assert.equal(el.updatedText, 'foo1-defaultBar');
     assert.equal(el._updateCount, 1);
 
-    el.foo = "foo2";
-    el.bar = "bar";
+    el.foo = 'foo2';
+    el.bar = 'bar';
     await el.updateComplete;
-    assert.equal(el.foo, "foo2");
-    assert.equal(el.bar, "bar");
-    assert.equal(el.getAttribute("foo"), "foo2");
-    assert.equal(el.getAttribute("bar"), "bar");
-    assert.equal(el.updatedText, "foo2-bar");
+    assert.equal(el.foo, 'foo2');
+    assert.equal(el.bar, 'bar');
+    assert.equal(el.getAttribute('foo'), 'foo2');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.equal(el.updatedText, 'foo2-bar');
     assert.equal(el._updateCount, 2);
 
-    el.foo = "foo3";
+    el.foo = 'foo3';
     await el.updateComplete;
-    assert.equal(el.foo, "foo3");
-    assert.equal(el.getAttribute("foo"), "foo3");
-    assert.equal(el.getAttribute("bar"), "bar");
-    assert.equal(el.updatedText, "foo3-bar");
+    assert.equal(el.foo, 'foo3');
+    assert.equal(el.getAttribute('foo'), 'foo3');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.equal(el.updatedText, 'foo3-bar');
     assert.equal(el._updateCount, 3);
   });
 
-  test("attributeChangedCallback-based updating", async () => {
+  test('attributeChangedCallback-based updating', async () => {
     class E extends UpdatingElement {
       _updateCount = 0;
-      updatedText = "";
+      updatedText = '';
       static get properties() {
-        return { foo: { type: String }, bar: { type: String } };
+        return {foo: {type: String}, bar: {type: String}};
       }
       set foo(value: string | null) {
-        this.setAttribute("foo", value as string);
+        this.setAttribute('foo', value as string);
       }
       get foo() {
-        return this.getAttribute("foo") || "defaultFoo";
+        return this.getAttribute('foo') || 'defaultFoo';
       }
       set bar(value: string | null) {
-        this.setAttribute("bar", value as string);
+        this.setAttribute('bar', value as string);
       }
       get bar() {
-        return this.getAttribute("bar") || "defaultBar";
+        return this.getAttribute('bar') || 'defaultBar';
       }
       attributeChangedCallback(name: string, old: string, value: string) {
         super.attributeChangedCallback(name, old, value);
@@ -2155,37 +2154,37 @@ suite("UpdatingElement", () => {
     customElements.define(generateElementName(), E);
 
     const el = new E();
-    el.foo = "foo1";
+    el.foo = 'foo1';
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el.foo, "foo1");
-    assert.equal(el.bar, "defaultBar");
-    assert.equal(el.updatedText, "foo1-defaultBar");
+    assert.equal(el.foo, 'foo1');
+    assert.equal(el.bar, 'defaultBar');
+    assert.equal(el.updatedText, 'foo1-defaultBar');
     assert.equal(el._updateCount, 1);
 
-    el.foo = "foo2";
-    el.bar = "bar";
+    el.foo = 'foo2';
+    el.bar = 'bar';
     await el.updateComplete;
-    assert.equal(el.foo, "foo2");
-    assert.equal(el.bar, "bar");
-    assert.equal(el.getAttribute("foo"), "foo2");
-    assert.equal(el.getAttribute("bar"), "bar");
-    assert.equal(el.updatedText, "foo2-bar");
+    assert.equal(el.foo, 'foo2');
+    assert.equal(el.bar, 'bar');
+    assert.equal(el.getAttribute('foo'), 'foo2');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.equal(el.updatedText, 'foo2-bar');
     assert.equal(el._updateCount, 2);
 
-    el.foo = "foo3";
+    el.foo = 'foo3';
     await el.updateComplete;
-    assert.equal(el.foo, "foo3");
-    assert.equal(el.getAttribute("foo"), "foo3");
-    assert.equal(el.getAttribute("bar"), "bar");
-    assert.equal(el.updatedText, "foo3-bar");
+    assert.equal(el.foo, 'foo3');
+    assert.equal(el.getAttribute('foo'), 'foo3');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.equal(el.updatedText, 'foo3-bar');
     assert.equal(el._updateCount, 3);
   });
 
-  test("setting properties in `updated` does trigger update and does not block updateComplete", async () => {
+  test('setting properties in `updated` does trigger update and does not block updateComplete', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       foo = 0;
       updateCount = 0;
@@ -2217,10 +2216,10 @@ suite("UpdatingElement", () => {
     assert.isTrue(result);
   });
 
-  test("setting properties in `updated` can await until updateComplete returns true", async () => {
+  test('setting properties in `updated` can await until updateComplete returns true', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       foo = 0;
       updateCount = 0;
@@ -2243,10 +2242,10 @@ suite("UpdatingElement", () => {
     assert.equal(el.foo, 10);
   });
 
-  test("`updateComplete` can block properties set in `updated`", async () => {
+  test('`updateComplete` can block properties set in `updated`', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       foo = 1;
       updateCount = 0;
@@ -2276,10 +2275,10 @@ suite("UpdatingElement", () => {
     assert.equal(el.updateCount, 10);
   });
 
-  test("can await promise in `updateComplete`", async () => {
+  test('can await promise in `updateComplete`', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       promiseFulfilled = false;
 
@@ -2305,10 +2304,10 @@ suite("UpdatingElement", () => {
     assert.isTrue(el.promiseFulfilled);
   });
 
-  test("`requestUpdate` resolved at `updateComplete` time", async () => {
+  test('`requestUpdate` resolved at `updateComplete` time', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       promiseFulfilled = false;
 
@@ -2338,14 +2337,14 @@ suite("UpdatingElement", () => {
     assert.isTrue(el.promiseFulfilled);
   });
 
-  test("can await sub-element `updateComplete`", async () => {
+  test('can await sub-element `updateComplete`', async () => {
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {} };
+        return {foo: {}};
       }
       promiseFulfilled = false;
-      foo = "hi";
-      updatedText = "";
+      foo = 'hi';
+      updatedText = '';
 
       get updateComplete() {
         return super.updateComplete.then(
@@ -2363,20 +2362,20 @@ suite("UpdatingElement", () => {
         this.updatedText = this.foo;
       }
     }
-    customElements.define("x-1224", E);
+    customElements.define('x-1224', E);
 
     class F extends UpdatingElement {
       inner: E | null = null;
 
       firstUpdated() {
-        this.attachShadow({ mode: "open" });
-        this.inner = document.createElement("x-1224") as E;
+        this.attachShadow({mode: 'open'});
+        this.inner = document.createElement('x-1224') as E;
         this.shadowRoot!.appendChild(this.inner);
       }
 
       get updateComplete() {
         return super.updateComplete.then(() => {
-          this.inner!.foo = "yo";
+          this.inner!.foo = 'yo';
           return this.inner!.updateComplete;
         });
       }
@@ -2386,35 +2385,35 @@ suite("UpdatingElement", () => {
     container.appendChild(el);
     const result = await el.updateComplete;
     assert.isTrue(result);
-    assert.equal(el.inner!.updatedText, "yo");
+    assert.equal(el.inner!.updatedText, 'yo');
     assert.isTrue(el.inner!.promiseFulfilled);
   });
 
-  test("properties set before upgrade are applied", async () => {
+  test('properties set before upgrade are applied', async () => {
     const name = generateElementName();
     const el = document.createElement(name);
     container.appendChild(el);
-    (el as any).foo = "hi";
+    (el as any).foo = 'hi';
     (el as any).bar = false;
     const objectValue = {};
     (el as any).zug = objectValue;
     class E extends UpdatingElement {
       static get properties() {
-        return { foo: {}, bar: {}, zug: {} };
+        return {foo: {}, bar: {}, zug: {}};
       }
 
-      foo = "";
+      foo = '';
       bar = true;
       zug = null;
     }
     customElements.define(name, E);
     await (el as UpdatingElement).updateComplete;
-    assert.equal((el as any).foo, "hi");
+    assert.equal((el as any).foo, 'hi');
     assert.equal((el as any).bar, false);
     assert.equal((el as any).zug, objectValue);
   });
 
-  test("can override performUpdate()", async () => {
+  test('can override performUpdate()', async () => {
     let resolve: (() => void) | undefined;
 
     class A extends UpdatingElement {
@@ -2454,7 +2453,7 @@ suite("UpdatingElement", () => {
     assert.isTrue(a.updateCalled);
   });
 
-  test("overriding performUpdate() allows nested invalidations", async () => {
+  test('overriding performUpdate() allows nested invalidations', async () => {
     class A extends UpdatingElement {
       performUpdateCalledCount = 0;
       updatedCalledCount = 0;
@@ -2492,7 +2491,7 @@ suite("UpdatingElement", () => {
     assert.equal(a.performUpdateCalledCount, 2);
   });
 
-  test("update does not occur before element is connected", async () => {
+  test('update does not occur before element is connected', async () => {
     class A extends UpdatingElement {
       updatedCalledCount = 0;
 
@@ -2511,7 +2510,7 @@ suite("UpdatingElement", () => {
     assert.equal(a.updatedCalledCount, 1);
   });
 
-  test("early access of updateComplete waits until first update", async () => {
+  test('early access of updateComplete waits until first update', async () => {
     class A extends UpdatingElement {
       didUpdate = false;
 
@@ -2533,33 +2532,33 @@ suite("UpdatingElement", () => {
     assert.isTrue(updated);
   });
 
-  test("property reflects after setting attribute in same update cycle", async () => {
+  test('property reflects after setting attribute in same update cycle', async () => {
     class A extends UpdatingElement {
       foo?: boolean;
       bar?: string;
 
       static get properties() {
         return {
-          foo: { type: Boolean, reflect: true },
-          bar: { type: String, reflect: true },
+          foo: {type: Boolean, reflect: true},
+          bar: {type: String, reflect: true},
         };
       }
     }
     customElements.define(generateElementName(), A);
     const a = new A();
     container.appendChild(a);
-    a.setAttribute("foo", "");
-    a.removeAttribute("foo");
+    a.setAttribute('foo', '');
+    a.removeAttribute('foo');
     a.foo = true;
     await a.updateComplete;
-    assert.isTrue(a.hasAttribute("foo"));
-    a.setAttribute("bar", "hi");
-    a.bar = "yo";
+    assert.isTrue(a.hasAttribute('foo'));
+    a.setAttribute('bar', 'hi');
+    a.bar = 'yo';
     await a.updateComplete;
-    assert.equal(a.getAttribute("bar"), "yo");
+    assert.equal(a.getAttribute('bar'), 'yo');
   });
 
-  test("exceptions in `update` do not prevent further updates", async () => {
+  test('exceptions in `update` do not prevent further updates', async () => {
     let shouldThrow = false;
     class A extends UpdatingElement {
       @property() foo = 5;
@@ -2567,7 +2566,7 @@ suite("UpdatingElement", () => {
 
       update(changedProperties: Map<PropertyKey, unknown>) {
         if (shouldThrow) {
-          throw new Error("test error");
+          throw new Error('test error');
         }
         super.update(changedProperties);
       }
@@ -2599,7 +2598,7 @@ suite("UpdatingElement", () => {
     assert.equal(a.updatedFoo, 20);
   });
 
-  test("exceptions in `update` prevent `firstUpdated` and `updated` from being called", async () => {
+  test('exceptions in `update` prevent `firstUpdated` and `updated` from being called', async () => {
     let shouldThrow = false;
     class A extends UpdatingElement {
       firstUpdatedCalled = false;
@@ -2607,7 +2606,7 @@ suite("UpdatingElement", () => {
 
       update(changedProperties: Map<PropertyKey, unknown>) {
         if (shouldThrow) {
-          throw new Error("test error");
+          throw new Error('test error');
         }
         super.update(changedProperties);
       }
@@ -2639,7 +2638,7 @@ suite("UpdatingElement", () => {
     assert.isTrue(a.updatedCalled);
   });
 
-  test("exceptions in `shouldUpdate` do not prevent further updates", async () => {
+  test('exceptions in `shouldUpdate` do not prevent further updates', async () => {
     let shouldThrow = false;
     class A extends UpdatingElement {
       @property() foo = 5;
@@ -2647,7 +2646,7 @@ suite("UpdatingElement", () => {
 
       shouldUpdate(changedProperties: Map<PropertyKey, unknown>) {
         if (shouldThrow) {
-          throw new Error("test error");
+          throw new Error('test error');
         }
         return super.shouldUpdate(changedProperties);
       }
@@ -2679,7 +2678,7 @@ suite("UpdatingElement", () => {
     assert.equal(a.updatedFoo, 20);
   });
 
-  test("exceptions in `updated` do not prevent further or re-entrant updates", async () => {
+  test('exceptions in `updated` do not prevent further or re-entrant updates', async () => {
     let shouldThrow = false;
     let enqueue = false;
     class A extends UpdatingElement {
@@ -2695,7 +2694,7 @@ suite("UpdatingElement", () => {
         }
         if (shouldThrow) {
           shouldThrow = false;
-          throw new Error("test error");
+          throw new Error('test error');
         }
         this.changedProps = _changedProperties;
         this.updatedFoo = this.foo;
@@ -2720,12 +2719,12 @@ suite("UpdatingElement", () => {
       threw = true;
     }
     assert.isTrue(threw);
-    assert.isFalse(a.changedProps.has("foo"));
+    assert.isFalse(a.changedProps.has('foo'));
     assert.equal(a.foo, 10);
     assert.equal(a.updatedFoo, 5);
     a.foo = 20;
     await a.updateComplete;
-    assert.equal(a.changedProps.get("foo"), 10);
+    assert.equal(a.changedProps.get('foo'), 10);
     assert.equal(a.foo, 20);
     assert.equal(a.updatedFoo, 20);
     enqueue = true;
@@ -2738,12 +2737,12 @@ suite("UpdatingElement", () => {
       threw = true;
     }
     assert.isTrue(threw);
-    assert.equal(a.changedProps.get("foo"), 50);
+    assert.equal(a.changedProps.get('foo'), 50);
     assert.equal(a.foo, 51);
     assert.equal(a.updatedFoo, 51);
   });
 
-  test("exceptions in `performUpdate` do not prevent further updates", async () => {
+  test('exceptions in `performUpdate` do not prevent further updates', async () => {
     let shouldThrow = false;
     class A extends UpdatingElement {
       @property() foo = 5;

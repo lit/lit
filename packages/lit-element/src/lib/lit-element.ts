@@ -54,18 +54,14 @@
  *
  * @packageDocumentation
  */
-import { PropertyValues, UpdatingElement } from "./updating-element.js";
+import {PropertyValues, UpdatingElement} from './updating-element.js';
 // TODO(sorvell) Add shady-render package.
-import { render, RenderOptions } from "lit-html";
+import {render, RenderOptions} from 'lit-html';
 
-export * from "./updating-element.js";
-export { html, svg, TemplateResult } from "lit-html";
-import {
-  supportsAdoptingStyleSheets,
-  CSSResult,
-  unsafeCSS,
-} from "./css-tag.js";
-export * from "./css-tag.js";
+export * from './updating-element.js';
+export {html, svg, TemplateResult} from 'lit-html';
+import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './css-tag.js';
+export * from './css-tag.js';
 
 declare global {
   interface Window {
@@ -76,8 +72,8 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
-(window["litElementVersions"] || (window["litElementVersions"] = [])).push(
-  "2.4.0"
+(window['litElementVersions'] || (window['litElementVersions'] = [])).push(
+  '2.4.0'
 );
 
 export type CSSResultOrNative = CSSResult | CSSStyleSheet;
@@ -107,7 +103,7 @@ export class LitElement extends UpdatingElement {
    * Note this property name is a string to prevent breaking Closure JS Compiler
    * optimizations. See updating-element.ts for more information.
    */
-  protected static ["finalized"] = true;
+  protected static ['finalized'] = true;
 
   /**
    * Reference to the underlying library method used to render the element's
@@ -146,7 +142,7 @@ export class LitElement extends UpdatingElement {
   /** @nocollapse */
   private static _getUniqueStyles() {
     // Only gather styles once per class
-    if (this.hasOwnProperty(JSCompiler_renameProperty("_styles", this))) {
+    if (this.hasOwnProperty(JSCompiler_renameProperty('_styles', this))) {
       return;
     }
     // Take care not to call `this.getStyles()` multiple times since this
@@ -198,7 +194,7 @@ export class LitElement extends UpdatingElement {
         // is a crash.
         const cssText = Array.prototype.slice
           .call(s.cssRules)
-          .reduce((css, rule) => css + rule.cssText, "");
+          .reduce((css, rule) => css + rule.cssText, '');
         return unsafeCSS(cssText);
       }
       return s;
@@ -240,7 +236,7 @@ export class LitElement extends UpdatingElement {
    * @returns {Element|DocumentFragment} Returns a node into which to render.
    */
   protected createRenderRoot(): Element | ShadowRoot {
-    return this.attachShadow({ mode: "open" });
+    return this.attachShadow({mode: 'open'});
   }
 
   /**
@@ -304,7 +300,7 @@ export class LitElement extends UpdatingElement {
       (this.constructor as typeof LitElement).render(
         templateResult,
         this.renderRoot,
-        { eventContext: this }
+        {eventContext: this}
       );
     }
     // When native Shadow DOM is used but adoptedStyles are not supported,
@@ -313,7 +309,7 @@ export class LitElement extends UpdatingElement {
     if (this._needsShimAdoptedStyleSheets) {
       this._needsShimAdoptedStyleSheets = false;
       (this.constructor as typeof LitElement)._styles!.forEach((s) => {
-        const style = document.createElement("style");
+        const style = document.createElement('style');
         style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
       });
