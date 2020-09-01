@@ -169,7 +169,15 @@ export const defaultConverter: ComplexAttributeConverter = {
         return value === null ? null : Number(value);
       case Object:
       case Array:
-        return JSON.parse(value!);
+        // Do *not* generate exception when invalid JSON is set as elements
+        // don't normally complain on being mis-configured.
+        // TODO(sorvell): Do generate exception in *dev mode*.
+        try {
+          value = JSON.parse(value!);
+        } catch (e) {
+          value = null;
+        }
+        return value;
     }
     return value;
   },
@@ -322,9 +330,8 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
     // Note, since this can be called by the `@property` decorator which
-    // is called before `finalize`, we ensure storage exists for property
-    // metadata.
-    this._ensureClassProperties();
+    // is called before `finalize`, we ensure finalization has been kicked off.
+    this.finalize();
     this._classProperties!.set(name, options);
     // Do not generate an accessor if the prototype already has one, since
     // it would be lost otherwise and that would never be the user's intention;
@@ -416,12 +423,15 @@ export abstract class UpdatingElement extends HTMLElement {
    * @nocollapse
    */
   protected static finalize() {
+    if (this.hasOwnProperty(finalized)) {
+      return;
+    }
+    this[finalized] = true;
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this);
     if (!superCtor.hasOwnProperty(finalized)) {
       superCtor.finalize();
     }
-    this[finalized] = true;
     this._ensureClassProperties();
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
