@@ -103,12 +103,6 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    }
    ```
 
-   You'll also need this directory to exist:
-
-   ```bash
-   mkdir xliff
-   ```
-
 3. Create an `index.ts`, and declare a localizable template using the `msg`
    function. The first argument is a unique identifier for this template, and
    the second is a string or lit-html template.
