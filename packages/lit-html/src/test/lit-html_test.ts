@@ -714,12 +714,11 @@ suite('lit-html', () => {
     });
 
     test('renders multi-expression attribute without quotes', () => {
-      render(
-        html`<div foo=${'Foo'}${'Bar'}></div>`,
-        container
+      render(html`<div foo="${'Foo'}${'Bar'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="FooBar"></div>'
       );
-      assert.equal(stripExpressionComments(container.innerHTML),
-              '<div foo="FooBar"></div>');
     });
 
     test('renders to attributes with attribute-like values', () => {
@@ -974,7 +973,6 @@ suite('lit-html', () => {
       assert.equal(stripExpressionComments(container.innerHTML), '');
       render(t(), container);
       assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
-
 
       const elementNodes: Node[] = [];
       let mutationRecords: MutationRecord[] = observer.takeRecords();
