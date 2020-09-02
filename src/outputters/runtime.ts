@@ -63,6 +63,16 @@ export async function runtimeOutput(
       )
     );
   }
+  const outputDir = config.resolve(runtimeConfig.outputDir);
+  try {
+    fsExtra.ensureDirSync(outputDir);
+  } catch (e) {
+    throw new KnownError(
+      `Error creating TypeScript locales directory: ${outputDir}\n` +
+        `Do you have write permission?\n` +
+        e.message
+    );
+  }
   for (const locale of config.targetLocales) {
     const translations = translationMap.get(locale) || [];
     const ts = generateLocaleModule(
@@ -71,16 +81,12 @@ export async function runtimeOutput(
       messages,
       config.patches || {}
     );
-    const filename = pathLib.join(
-      config.resolve(runtimeConfig.outputDir),
-      `${locale}.ts`
-    );
+    const filename = pathLib.join(outputDir, `${locale}.ts`);
     writes.push(
       fsExtra.writeFile(filename, ts, 'utf8').catch((e) => {
         throw new KnownError(
           `Error writing TypeScript file: ${filename}\n` +
-            `Does the parent directory exist, ` +
-            `and do you have write permission?\n` +
+            `Do you have write permission?\n` +
             e.message
         );
       })

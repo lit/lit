@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `allLocales` using the locale codes from your config file. Use for keeping
   your config file and client config in sync.
 
+### Changed
+
+- When writing TypeScript, XLIFF, and XLB files, parent directories will now be
+  created automatically, instead of erroring.
+
 ## [0.3.0] - 2020-08-25
 
 ### Changed

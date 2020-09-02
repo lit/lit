@@ -310,15 +310,10 @@ class Transformer {
               : content.untranslatable
           )
           .join('');
-        // TODO(aomarks) While a well-behaving translation tool/process would
-        // not allow the modification of placeholder contents, we don't have any
-        // guarantee of that. By parsing and the contents of translated
-        // placeholders and injecting them into the output JavaScript here, we
-        // are vulnerable to bugs or even attacks resulting from corruption or
-        // manipulation of placeholder contents. We should validate that the set
-        // of translated placeholders is exactly equal to the set of original
-        // source placeholders (order can change, but contents can't).
-        // See https://github.com/PolymerLabs/lit-localize/issues/49
+        // Note that we assume localized placeholder contents have already been
+        // validated against the source code to confirm that HTML and template
+        // literal expressions have not been corrupted or manipulated during
+        // localization (though moving their position is OK).
         template = parseStringAsTemplateLiteral(templateLiteralBody);
       }
       // TODO(aomarks) Emit a warning that a translation was missing.

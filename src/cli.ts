@@ -17,7 +17,11 @@ import {extractMessagesFromProgram} from './program-analysis';
 import {runtimeOutput} from './outputters/runtime';
 import {transformOutput} from './outputters/transform';
 import {makeFormatter} from './formatters';
-import {ProgramMessage, Message} from './messages';
+import {
+  ProgramMessage,
+  Message,
+  validateLocalizedPlaceholders,
+} from './messages';
 import {KnownError, throwUnreachable} from './error';
 import {Config, readConfigFileAndWriteSchema} from './config';
 import {Locale} from './locales';
@@ -90,6 +94,26 @@ async function runAndThrow(config: Config) {
   const translationMap = new Map<Locale, Message[]>();
   for (const bundle of await formatter.readTranslations()) {
     translationMap.set(bundle.locale, bundle.messages);
+  }
+  const placeholderErrors = validateLocalizedPlaceholders(
+    messages,
+    translationMap
+  );
+  if (placeholderErrors.length > 0) {
+    // TODO(aomarks) It might be more friendly to replace these invalid
+    // localized templates with the source ones, show the errors and return
+    // non-zero, but still continue with the rest of the process so that at
+    // least some of the app can work during development.
+
+    // TODO(aomarks) It would also be nice to track the filename and line
+    // numbers for each localized template as they appeared in the interchange
+    // (e.g. XLIFF) file, so that users can debug more easily.
+    throw new KnownError(
+      'One or more localized templates contain a set of placeholders ' +
+        '(HTML or template literal expressions) that do not exactly match ' +
+        'the source code, aborting. Details:\n\n' +
+        placeholderErrors.join('\n')
+    );
   }
   await formatter.writeOutput(messages, translationMap);
 

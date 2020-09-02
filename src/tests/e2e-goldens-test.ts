@@ -45,7 +45,8 @@ import {formatDirDiff} from './format-dir-diff';
 export function e2eGoldensTest(
   name: string,
   args: string[],
-  expectedExitCode = 0
+  expectedExitCode = 0,
+  expectedStdOutErr = ''
 ) {
   const root = path.resolve(__dirname, '..', '..', 'testdata', name);
   const inputDir = path.join(root, 'input');
@@ -62,8 +63,31 @@ export function e2eGoldensTest(
       process.chdir(oldCwd);
     });
 
-    const exitCode = await runAndLog(['node', 'lit-localize', ...args]);
+    const realStdoutWrite = process.stdout.write;
+    const realStderrWrite = process.stderr.write;
+    let stdOutErr = '';
+    process.stdout.write = (buffer: string) => {
+      stdOutErr += buffer;
+      return true;
+    };
+    process.stderr.write = (buffer: string) => {
+      stdOutErr += buffer;
+      return true;
+    };
+
+    let exitCode;
+    try {
+      exitCode = await runAndLog(['node', 'lit-localize', ...args]);
+    } finally {
+      process.stdout.write = realStdoutWrite;
+      process.stderr.write = realStderrWrite;
+    }
+
     t.is(exitCode, expectedExitCode);
+    t.assert(
+      stdOutErr.includes(expectedStdOutErr),
+      `stdout/stderr did not include expected value, got: ${stdOutErr}`
+    );
 
     // Format emitted TypeScript to make test output more readable.
     execFileSync('npx', [
