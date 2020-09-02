@@ -566,7 +566,7 @@ export class NodePart {
   private __commitText(value: unknown): void {
     const node = this.__startNode.nextSibling;
     // If `value` isn't already a string, we explicitly convert it here
-    value = value ??= '';
+    value ??= '';
     // TODO(justinfagnani): Can we just check if this.__value is primitive?
     if (
       node !== null &&
@@ -652,7 +652,7 @@ export class AttributePart {
   __resolveValue(value: unknown, _i: number) {
     // TODO (justinfagnani): invoke directives here, which will need
     // _i to revive directive state
-    return (value ??= '');
+    return value ?? '';
   }
 
   /**
