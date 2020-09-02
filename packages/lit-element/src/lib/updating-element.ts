@@ -690,7 +690,7 @@ export abstract class UpdatingElement extends HTMLElement {
   /**
    * Requests an update which is processed asynchronously. This should
    * be called when an element should update based on some state not triggered
-   * by setting a property. In this case, pass no arguments. It should also be
+   * by setting a reactive property. In this case, pass no arguments. It should also be
    * called when manually implementing a property setter. In this case, pass the
    * property `name` and `oldValue` to ensure that any configured property
    * options are honored. Returns the `updateComplete` Promise which is resolved
