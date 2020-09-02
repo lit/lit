@@ -29,7 +29,7 @@ function checkAnalysis(
   t: ExecutionContext,
   inputTs: string,
   expectedMessages: Array<
-    Pick<ProgramMessage, 'contents' | 'params'> &
+    Pick<ProgramMessage, 'name' | 'contents' | 'params'> &
       Partial<Pick<ProgramMessage, 'descStack'>>
   >,
   expectedErrors: string[] = []
@@ -53,12 +53,14 @@ function checkAnalysis(
     expectedErrors
   );
   t.deepEqual(
-    messages.map(({contents, params, descStack}) => ({
+    messages.map(({name, contents, params, descStack}) => ({
+      name,
       contents,
       params,
       descStack,
     })),
-    expectedMessages.map(({contents, params, descStack}) => ({
+    expectedMessages.map(({name, contents, params, descStack}) => ({
+      name,
       contents,
       params,
       descStack: descStack ?? [],
@@ -78,6 +80,7 @@ test('string message', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: ['Hello World'],
     },
   ]);
@@ -90,6 +93,7 @@ test('HTML message', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: [
         {untranslatable: '<b>'},
         'Hello World',
@@ -106,6 +110,7 @@ test('HTML message with comment', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: [
         {untranslatable: '<b><!-- greeting -->'},
         'Hello World',
@@ -122,6 +127,7 @@ test('parameterized string message', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: ['Hello ', {untranslatable: '${name}'}],
       params: ['name'],
     },
@@ -135,6 +141,7 @@ test('parameterized HTML message', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: [
         {untranslatable: '<b>'},
         'Hello ',
@@ -153,6 +160,7 @@ test('immediate description', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: ['Hello World'],
       descStack: ['Greeting'],
     },
@@ -172,6 +180,7 @@ test('inherited description', (t) => {
   `;
   checkAnalysis(t, src, [
     {
+      name: 'greeting',
       contents: ['Hello World'],
       descStack: ['Greeter', 'Greeting'],
     },
@@ -264,7 +273,12 @@ test('error: different message contents', (t) => {
   checkAnalysis(
     t,
     src,
-    [{contents: ['Hello World']}],
+    [
+      {
+        name: 'greeting',
+        contents: ['Hello World'],
+      },
+    ],
     [
       '__DUMMY__.ts(4,5): error TS2324: Message ids must have the same default text wherever they are used',
     ]
