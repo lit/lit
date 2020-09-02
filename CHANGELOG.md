@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **[BREAKING]** Published module paths have changed:
+  `lib_client/index.js` -> `lit-localize.js`
+  `lib_client/localized-element.js` -> `localized-element.js`
+
 - When writing TypeScript, XLIFF, and XLB files, parent directories will now be
   created automatically, instead of erroring.
 

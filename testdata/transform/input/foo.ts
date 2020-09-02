@@ -3,8 +3,8 @@ import {
   msg,
   configureTransformLocalization,
   LOCALE_STATUS_EVENT,
-} from '../../../lib_client/index.js';
-import {Localized} from '../../../lib_client/localized-element.js';
+} from '../../../lit-localize.js';
+import {Localized} from '../../../localized-element.js';
 
 const {getLocale} = configureTransformLocalization({sourceLocale: 'en'});
 console.log(`Locale is ${getLocale()}`);

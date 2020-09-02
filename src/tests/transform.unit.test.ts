@@ -17,7 +17,7 @@ import * as prettier from 'prettier';
 import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment';
 
 const cache = new CompilerHostCache();
-const IMPORT_MSG = `import { msg } from "./lib_client/index.js";\n`;
+const IMPORT_MSG = `import { msg } from "./lit-localize.js";\n`;
 const IMPORT_LIT_HTML = `import { html } from "lit-html";\n`;
 
 /**
@@ -303,7 +303,7 @@ test('import * as litLocalize', (t) => {
   checkTransform(
     t,
     `
-    import * as litLocalize from './lib_client/index.js';
+    import * as litLocalize from './lit-localize.js';
     litLocalize.msg("foo", "Hello World");
   `,
     '"Hello World";',
@@ -315,7 +315,7 @@ test('import {msg as foo}', (t) => {
   checkTransform(
     t,
     `
-    import {msg as foo} from './lib_client/index.js';
+    import {msg as foo} from './lit-localize.js';
     foo("foo", "Hello World");
   `,
     '"Hello World";',
@@ -337,7 +337,7 @@ test('exclude different msg function', (t) => {
 test('configureTransformLocalization() -> {getLocale: () => "es-419"}', (t) => {
   checkTransform(
     t,
-    `import {configureTransformLocalization} from './lib_client/index.js';
+    `import {configureTransformLocalization} from './lit-localize.js';
      const {getLocale} = configureTransformLocalization({
        sourceLocale: 'en',
      });
@@ -353,7 +353,7 @@ test('configureLocalization() throws', (t) => {
     () =>
       checkTransform(
         t,
-        `import {configureLocalization} from './lib_client/index.js';
+        `import {configureLocalization} from './lit-localize.js';
          configureLocalization({
            sourceLocale: 'en',
            targetLocales: ['es-419'],
@@ -369,7 +369,7 @@ test('configureLocalization() throws', (t) => {
 test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
   checkTransform(
     t,
-    `import {LOCALE_STATUS_EVENT} from './lib_client/index.js';
+    `import {LOCALE_STATUS_EVENT} from './lit-localize.js';
      window.addEventListener(LOCALE_STATUS_EVENT, () => console.log('ok'));`,
     `window.addEventListener('lit-localize-status', () => console.log('ok'));`
   );
@@ -378,7 +378,7 @@ test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
 test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
   checkTransform(
     t,
-    `import * as litLocalize from './lib_client/index.js';
+    `import * as litLocalize from './lit-localize.js';
      window.addEventListener(litLocalize.LOCALE_STATUS_EVENT, () => console.log('ok'));`,
     `window.addEventListener('lit-localize-status', () => console.log('ok'));`
   );
@@ -387,7 +387,7 @@ test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
 test('re-assigned LOCALE_STATUS_EVENT', (t) => {
   checkTransform(
     t,
-    `import {LOCALE_STATUS_EVENT} from './lib_client/index.js';
+    `import {LOCALE_STATUS_EVENT} from './lit-localize.js';
      const event = LOCALE_STATUS_EVENT;
      window.addEventListener(event, () => console.log('ok'));`,
     `const event = 'lit-localize-status';
@@ -415,8 +415,8 @@ test('Localized(LitElement) -> LitElement', (t) => {
   checkTransform(
     t,
     `import {LitElement, html} from 'lit-element';
-     import {Localized} from './lib_client/localized-element.js';
-     import {msg} from './lib_client/index.js';
+     import {Localized} from './localized-element.js';
+     import {msg} from './lit-localize.js';
      class MyElement extends Localized(LitElement) {
        render() {
          return html\`<b>\${msg('greeting', 'Hello World!')}</b>\`;

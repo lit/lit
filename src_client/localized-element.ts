@@ -10,7 +10,7 @@
  */
 
 import {LitElement} from 'lit-element';
-import {LOCALE_STATUS_EVENT} from './index.js';
+import {LOCALE_STATUS_EVENT} from './lit-localize.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T> = new (...args: any[]) => T;
