@@ -573,6 +573,36 @@ suite('UpdatingElement', () => {
     assert.isFalse(el3.hasAttribute('foo'));
   });
 
+  test('can mix properties superclass with decorator on subclass', async () => {
+    class E extends UpdatingElement {
+      static get properties() {
+        return {
+          foo: {},
+        };
+      }
+
+      foo: string;
+
+      constructor() {
+        super();
+        this.foo = 'foo';
+      }
+    }
+
+    class F extends E {
+      @property() bar = 'bar';
+    }
+    customElements.define(generateElementName(), F);
+    const el = new F();
+    container.appendChild(el);
+    await el.updateComplete;
+    el.setAttribute('foo', 'foo2');
+    el.setAttribute('bar', 'bar2');
+    await el.updateComplete;
+    assert.equal(el.foo, 'foo2');
+    assert.equal(el.bar, 'bar2');
+  });
+
   test('can mix property options via decorator and via getter', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
@@ -735,6 +765,40 @@ suite('UpdatingElement', () => {
     assert.equal(el.getAttribute('all-attr'), '11-attr');
     assert.deepEqual(el.obj, {foo: true, bar: 5, baz: 'hi'});
     assert.deepEqual(el.arr, [1, 2, 3, 4]);
+  });
+
+  test('deserializing from invalid values does not produce exception', async () => {
+    class E extends UpdatingElement {
+      static get properties() {
+        return {
+          obj: {type: Object, reflect: true},
+          arr: {type: Array, reflect: true},
+          prop: {reflect: true},
+        };
+      }
+
+      obj?: any;
+      arr?: any;
+      prop?: string;
+    }
+    const name = generateElementName();
+    let error = false;
+    const listener = () => {
+      error = true;
+    };
+    window.addEventListener('error', listener);
+    customElements.define(name, E);
+    container.innerHTML = `<${name}
+      obj='{foo: true}'
+      arr="[1, 2, 3, 4]"
+      prop="prop"></${name}>`;
+    const el = container.firstChild as E;
+    await el.updateComplete;
+    assert.isFalse(error);
+    assert.equal(el.obj, undefined);
+    assert.equal(el.prop, 'prop');
+    assert.deepEqual(el.arr, [1, 2, 3, 4]);
+    window.removeEventListener('error', listener);
   });
 
   if ((Object as Partial<typeof Object>).getOwnPropertySymbols) {

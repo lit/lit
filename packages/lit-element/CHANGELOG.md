@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Breaking] Decorators are no longer exported from the `lit-element` module. Instead import any decorators you use from `lit-element/decorators/*`.
 * [Breaking] `lit-html` has been updated to 2.x. Note, shady-render support has been removed. Import the shady-render package to support Shady DOM.
 
+### Fixed
+* Fixes exceptions when parsing attributes from JSON ([#722](https://github.com/Polymer/lit-element/issues/722)).
+* Fixes issue with combining `static get properties` on an undefined superclass with `@property` on a subclasss ([#890]https://github.com/Polymer/lit-element/issues/890));
+
 ## [2.4.0] - 2020-08-19
 
 ### Changed
@@ -31,13 +35,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 * Adds a `cache: boolean` argument to the `@query` decorator as a performance optimization for properties whose queried element is not expected to change. If cache is set to true, element DOM is queried when the property is first accessed, and the value is cached so it can be immediately returned on all subsequent property accesses. ([#1013](https://github.com/Polymer/lit-element/issues/1013))
-
 * Adds a `selector: string` argument to the `@queryAssignedNodes` decorator as a convenience to filter the assigned nodes by the given selector ([#1016](https://github.com/Polymer/lit-element/issues/1016)).
-
 * The `requestUpdateInternal(name, oldValue, options)` method has been added. This method is sometimes useful to call in a custom property setter to optimize performance. It is slightly more efficient than `requestUpdate` since it does not return the `updateComplete` property which can be overridden to do work.
-
 * The protected `performUpdate()` method may now be called to syncronously "flush" a pending update, for example via a property setter. Note, performing a synchronous update only updates the element and not any potentially pending descendants in the element's local DOM ([#959](https://github.com/Polymer/lit-element/issues/959)).
-
 * Constructible stylesheets may now be provided directly as styles, in addition to using the `css` tagged template function ([#853](https://github.com/Polymer/lit-element/issues/853)).
 
 ### Fixed

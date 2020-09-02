@@ -151,27 +151,40 @@ export const defaultConverter: ComplexAttributeConverter = {
   toAttribute(value: unknown, type?: unknown): unknown {
     switch (type) {
       case Boolean:
-        return value ? '' : null;
+        value = value ? '' : null;
+        break;
       case Object:
       case Array:
         // if the value is `null` or `undefined` pass this through
         // to allow removing/no change behavior.
-        return value == null ? value : JSON.stringify(value);
+        value = value == null ? value : JSON.stringify(value);
+        break;
     }
     return value;
   },
 
   fromAttribute(value: string | null, type?: unknown) {
+    let fromValue: unknown = value;
     switch (type) {
       case Boolean:
-        return value !== null;
+        fromValue = value !== null;
+        break;
       case Number:
-        return value === null ? null : Number(value);
+        fromValue = value === null ? null : Number(value);
+        break;
       case Object:
       case Array:
-        return JSON.parse(value!);
+        // Do *not* generate exception when invalid JSON is set as elements
+        // don't normally complain on being mis-configured.
+        // TODO(sorvell): Do generate exception in *dev mode*.
+        try {
+          fromValue = JSON.parse(value!);
+        } catch (e) {
+          fromValue = null;
+        }
+        break;
     }
-    return value;
+    return fromValue;
   },
 };
 
@@ -322,9 +335,8 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
     // Note, since this can be called by the `@property` decorator which
-    // is called before `finalize`, we ensure storage exists for property
-    // metadata.
-    this._ensureClassProperties();
+    // is called before `finalize`, we ensure finalization has been kicked off.
+    this.finalize();
     this._classProperties!.set(name, options);
     // Do not generate an accessor if the prototype already has one, since
     // it would be lost otherwise and that would never be the user's intention;
@@ -416,12 +428,12 @@ export abstract class UpdatingElement extends HTMLElement {
    * @nocollapse
    */
   protected static finalize() {
-    // finalize any superclasses
-    const superCtor = Object.getPrototypeOf(this);
-    if (!superCtor.hasOwnProperty(finalized)) {
-      superCtor.finalize();
+    if (this.hasOwnProperty(finalized)) {
+      return;
     }
     this[finalized] = true;
+    // finalize any superclasses
+    Object.getPrototypeOf(this).finalize();
     this._ensureClassProperties();
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
