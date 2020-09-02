@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Breaking] Removed build support for TypeScript 3.4.
 * [Breaking] Decorators are no longer exported from the `lit-element` module. Instead import any decorators you use from `lit-element/decorators/*`.
 * [Breaking] `lit-html` has been updated to 2.x. Note, shady-render support has been removed. Import the shady-render package to support Shady DOM.
+* [Breaking] For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
+
+### Removed
+* [Breaking] Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.
 
 ### Fixed
 * Fixes exceptions when parsing attributes from JSON ([#722](https://github.com/Polymer/lit-element/issues/722)).

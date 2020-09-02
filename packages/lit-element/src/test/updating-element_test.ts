@@ -40,24 +40,6 @@ suite('UpdatingElement', () => {
     }
   });
 
-  test('`requestUpdate` waits until update', async () => {
-    class E extends UpdatingElement {
-      updateCount = 0;
-      updated() {
-        this.updateCount++;
-      }
-    }
-    customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
-    await el.requestUpdate();
-    assert.equal(el.updateCount, 1);
-    await el.requestUpdate();
-    assert.equal(el.updateCount, 2);
-    await el.requestUpdate();
-    assert.equal(el.updateCount, 3);
-  });
-
   test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
     class E extends UpdatingElement {
       updateCount = 0;
@@ -98,12 +80,15 @@ suite('UpdatingElement', () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
     el.needsUpdate = false;
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     assert.equal(el.updateCount, 1);
     el.needsUpdate = true;
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     assert.equal(el.updateCount, 2);
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     assert.equal(el.updateCount, 3);
   });
 
@@ -1363,10 +1348,12 @@ suite('UpdatingElement', () => {
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.wasUpdatedCount, 1);
     assert.equal(el.wasFirstUpdated, 1);
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     assert.equal(el.wasUpdatedCount, 2);
     assert.equal(el.wasFirstUpdated, 1);
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     assert.equal(el.wasUpdatedCount, 3);
     assert.equal(el.wasFirstUpdated, 1);
   });
@@ -1403,13 +1390,15 @@ suite('UpdatingElement', () => {
     assert.equal(el.triedToUpdatedCount, 1);
     assert.equal(el.wasUpdatedCount, 0);
     assert.equal(el.wasFirstUpdated, 0);
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     const testMap = new Map();
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.triedToUpdatedCount, 2);
     assert.equal(el.wasUpdatedCount, 1);
     assert.equal(el.wasFirstUpdated, 1);
-    await el.requestUpdate();
+    el.requestUpdate();
+    await el.updateComplete;
     assert.equal(el.triedToUpdatedCount, 3);
     assert.equal(el.wasUpdatedCount, 2);
     assert.equal(el.wasFirstUpdated, 1);
@@ -2368,39 +2357,6 @@ suite('UpdatingElement', () => {
     assert.isTrue(el.promiseFulfilled);
   });
 
-  test('`requestUpdate` resolved at `updateComplete` time', async () => {
-    class E extends UpdatingElement {
-      static get properties() {
-        return {foo: {}};
-      }
-      promiseFulfilled = false;
-
-      get updateComplete() {
-        return (async () => {
-          return (
-            (await super.updateComplete) &&
-            (await new Promise((resolve) => {
-              setTimeout(() => {
-                this.promiseFulfilled = true;
-                resolve(true);
-              }, 1);
-            }))
-          );
-        })();
-      }
-    }
-    customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
-    let result = await el.updateComplete;
-    assert.isTrue(result);
-    assert.isTrue(el.promiseFulfilled);
-    el.promiseFulfilled = false;
-    result = (await el.requestUpdate()) as boolean;
-    assert.isTrue(result);
-    assert.isTrue(el.promiseFulfilled);
-  });
-
   test('can await sub-element `updateComplete`', async () => {
     class E extends UpdatingElement {
       static get properties() {
@@ -2697,7 +2653,8 @@ suite('UpdatingElement', () => {
     assert.isFalse(a.firstUpdatedCalled);
     assert.isFalse(a.updatedCalled);
     shouldThrow = false;
-    await a.requestUpdate();
+    a.requestUpdate();
+    await a.updateComplete;
     assert.isTrue(a.firstUpdatedCalled);
     assert.isTrue(a.updatedCalled);
   });

@@ -392,7 +392,7 @@ export abstract class UpdatingElement extends HTMLElement {
           name as string
         ];
         ((this as {}) as {[key: string]: unknown})[key as string] = value;
-        ((this as unknown) as UpdatingElement).requestUpdateInternal(
+        ((this as unknown) as UpdatingElement).requestUpdate(
           name,
           oldValue,
           options
@@ -568,7 +568,7 @@ export abstract class UpdatingElement extends HTMLElement {
     this._saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
-    this.requestUpdateInternal();
+    this.requestUpdate();
   }
 
   /**
@@ -700,11 +700,19 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   /**
-   * This protected version of `requestUpdate` does not access or return the
-   * `updateComplete` promise. This promise can be overridden and is therefore
-   * not free to access.
+   * Requests an update which is processed asynchronously. This should
+   * be called when an element should update based on some state not triggered
+   * by setting a reactive property. In this case, pass no arguments. It should also be
+   * called when manually implementing a property setter. In this case, pass the
+   * property `name` and `oldValue` to ensure that any configured property
+   * options are honored. Returns the `updateComplete` Promise which is resolved
+   * when the update completes.
+   *
+   * @param name {PropertyKey} (optional) name of requesting property
+   * @param oldValue {any} (optional) old value of requesting property
+   * @returns {Promise} A Promise that is resolved when the update completes.
    */
-  protected requestUpdateInternal(
+  requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
@@ -745,24 +753,6 @@ export abstract class UpdatingElement extends HTMLElement {
     if (!this._hasRequestedUpdate && shouldRequestUpdate) {
       this._updatePromise = this._enqueueUpdate();
     }
-  }
-
-  /**
-   * Requests an update which is processed asynchronously. This should
-   * be called when an element should update based on some state not triggered
-   * by setting a property. In this case, pass no arguments. It should also be
-   * called when manually implementing a property setter. In this case, pass the
-   * property `name` and `oldValue` to ensure that any configured property
-   * options are honored. Returns the `updateComplete` Promise which is resolved
-   * when the update completes.
-   *
-   * @param name {PropertyKey} (optional) name of requesting property
-   * @param oldValue {any} (optional) old value of requesting property
-   * @returns {Promise} A Promise that is resolved when the update completes.
-   */
-  requestUpdate(name?: PropertyKey, oldValue?: unknown) {
-    this.requestUpdateInternal(name, oldValue);
-    return this.updateComplete;
   }
 
   /**
