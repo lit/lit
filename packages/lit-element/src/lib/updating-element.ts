@@ -151,35 +151,40 @@ export const defaultConverter: ComplexAttributeConverter = {
   toAttribute(value: unknown, type?: unknown): unknown {
     switch (type) {
       case Boolean:
-        return value ? '' : null;
+        value = value ? '' : null;
+        break;
       case Object:
       case Array:
         // if the value is `null` or `undefined` pass this through
         // to allow removing/no change behavior.
-        return value == null ? value : JSON.stringify(value);
+        value = value == null ? value : JSON.stringify(value);
+        break;
     }
     return value;
   },
 
   fromAttribute(value: string | null, type?: unknown) {
+    let fromValue: unknown = value;
     switch (type) {
       case Boolean:
-        return value !== null;
+        fromValue = value !== null;
+        break;
       case Number:
-        return value === null ? null : Number(value);
+        fromValue = value === null ? null : Number(value);
+        break;
       case Object:
       case Array:
         // Do *not* generate exception when invalid JSON is set as elements
         // don't normally complain on being mis-configured.
         // TODO(sorvell): Do generate exception in *dev mode*.
         try {
-          value = JSON.parse(value!);
+          fromValue = JSON.parse(value!);
         } catch (e) {
-          value = null;
+          fromValue = null;
         }
-        return value;
+        break;
     }
-    return value;
+    return fromValue;
   },
 };
 
@@ -428,10 +433,7 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     this[finalized] = true;
     // finalize any superclasses
-    const superCtor = Object.getPrototypeOf(this);
-    if (!superCtor.hasOwnProperty(finalized)) {
-      superCtor.finalize();
-    }
+    Object.getPrototypeOf(this).finalize();
     this._ensureClassProperties();
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
