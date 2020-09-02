@@ -9,3 +9,8 @@
 /packages/*/index.d.ts.map
 
 /packages/lit-html/directives
+
+/packages/lit-element/demo/**/*.d.ts
+/packages/lit-element/demo/**/*.d.ts.map
+/packages/lit-element/demo/**/*.js
+/packages/lit-element/demo/**/*.js.map

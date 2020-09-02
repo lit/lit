@@ -1,0 +1,75 @@
+{
+  "name": "lit-element",
+  "version": "3.0.0-pre.0",
+  "description": "A simple base class for creating fast, lightweight web components",
+  "license": "BSD-3-Clause",
+  "homepage": "https://lit-element.polymer-project.org/",
+  "repository": "Polymer/lit-element",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    "/lib/",
+    "/src/",
+    "!/src/demo/",
+    "!/src/test/",
+    "/lit-element.d.ts",
+    "/lit-element.d.ts.map",
+    "/lit-element.js",
+    "/lit-element.js.map",
+    "/ts3.4/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
+    "test": "wtr test/*test.js --node-resolve --root-dir ../../",
+    "test:watch": "wtr test/*test.js --node-resolve --root-dir ../../ --watch",
+    "checksize": "rollup -c ; cat lit-element.bundled.js | wc -c ; rm lit-element.bundled.js",
+    "format": "prettier src/* --write",
+    "lint": "tslint --project ./",
+    "prepublishOnly": "node check-version-tracker.cjs && npm run lint && npm test",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+    "release": "np --any-branch --yolo"
+  },
+  "author": "The Polymer Authors",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/plugin-proposal-class-properties": "^7.2.3",
+    "@babel/plugin-proposal-decorators": "^7.2.3",
+    "@babel/plugin-transform-typescript": "^7.2.0",
+    "@types/chai": "^4.0.1",
+    "@esm-bundle/chai": "^4.1.5",
+    "@types/mocha": "^8.0.3",
+    "@web/test-runner": "^0.7.11",
+    "mocha": "^8.1.1",
+    "prettier": "^2.0.5",
+    "rollup": "^2.26.4",
+    "rollup-plugin-filesize": "^9.0.2",
+    "rollup-plugin-terser": "^7.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "terser": "^5.2.1",
+    "typescript": "^4.0.2",
+    "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/webcomponentsjs": "^2.2.3",
+    "chai": "^4.0.2",
+    "clang-format": "^1.2.4",
+    "downlevel-dts": "^0.6.0",
+    "lit-element-benchmarks": "^0.1.0",
+    "np": "^5.2.1",
+    "tachometer": "^0.4.16",
+    "tslint": "^5.20.1",
+    "typedoc": "^0.17.0-3"
+  },
+  "dependencies": {
+    "lit-html": "^2.0.0-pre.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
