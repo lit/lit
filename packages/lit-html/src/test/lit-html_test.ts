@@ -1488,7 +1488,7 @@ suite('lit-html', () => {
       );
     });
 
-    test.only('renders a property', () => {
+    test.skip('renders a property', () => {
       render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),'<div a="b"></div>'

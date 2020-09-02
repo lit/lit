@@ -466,7 +466,7 @@ class AttributesTemplate {
     el.innerHTML = `<div ${__strings.join(marker)}></div>`;
     console.log(el.innerHTML);
     for (const {name, value} of el.content.firstElementChild!.attributes) {
-      const [, prefix, n] = /([.?@])?(.*)/.exec(name)!;
+      const [, , n] = /([.?@])?(.*)/.exec(name)!;
       // const type = prefix === '.' ? PROP
       this.__attrs.push({
         name: n,
@@ -919,9 +919,23 @@ export class EventPart extends AttributePart {
 
 export class SpreadPart {
   __value: unknown;
+  __directive?: Directive;
+
   constructor(public __element: Element) {}
 
   __setValue(value: unknown): void {
+    const directive = (value as DirectiveResult)._$litDirective$;
+    if (directive !== undefined) {
+      if (this.__directive?.constructor !== directive) {
+        this.__directive = new directive(this);
+        // TODO (justinfagnani): clear?
+      }
+      value = this.__directive.update(this, (value as DirectiveResult).values);
+    }
+    if (value === nothing) {
+      // ?
+      return;
+    }
     if ((value as TemplateResult)._$litType$ !== ATTR_RESULT) {
       throw new Error('only Attributes can be set here');
     }
