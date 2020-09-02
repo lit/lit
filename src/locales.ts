@@ -27,19 +27,6 @@ export function isLocale(x: string): x is Locale {
 const templateLit = (str: string) =>
   '`' + escapeStringToEmbedInTemplateLiteral(str) + '`';
 
-const sortLocales = (a: string, b: string): number => {
-  // We sort longer codes first so that if a regular expression for matching
-  // locales is created from this array, it will greedily match longer codes
-  // over their shorter prefixes (for example /(es-419|es)/ is good, but
-  // /(es|es-419)/ is bad, because in the latter case, when matching "es-419",
-  // the matching group would incorrectly evaluate to "es").
-  if (a.length !== b.length) {
-    return b.length - a.length;
-  }
-  // Then lexicographically, just for determinism.
-  return a.localeCompare(b);
-};
-
 /**
  * Generate a TypeScript module that exports a project's source and target
  * locale codes, and write it to the given file path.
@@ -50,11 +37,11 @@ export async function writeLocaleCodesModule(
   filePath: string
 ) {
   const targetLocalesArrayContents = [...targetLocales]
-    .sort(sortLocales)
+    .sort((a, b) => a.localeCompare(b))
     .map(templateLit)
     .join(',\n  ');
   const allLocalesArrayContents = [sourceLocale, ...targetLocales]
-    .sort(sortLocales)
+    .sort((a, b) => a.localeCompare(b))
     .map(templateLit)
     .join(',\n  ');
   const tsSrc = `// Do not modify this file by hand!
@@ -67,15 +54,14 @@ export const sourceLocale = ${templateLit(sourceLocale)};
 
 /**
  * The other locale codes that this application is localized into. Sorted
- * longest first, then lexicographically.
+ * lexicographically.
  */
 export const targetLocales = [
   ${targetLocalesArrayContents},
 ] as const;
 
 /**
- * All valid project locale codes. Sorted longest first, then
- * lexicographically.
+ * All valid project locale codes. Sorted lexicographically.
  */
 export const allLocales = [
   ${allLocalesArrayContents},
