@@ -44,6 +44,39 @@ export function compileTsFragment(
   cache: CompilerHostCache,
   transformers?: (program: ts.Program) => ts.CustomTransformers
 ): CompileResult {
+  let outputCode = '';
+  const {program} = createTsProgramFromFragment(
+    inputCode,
+    options,
+    cache,
+    (code: string) => (outputCode = code)
+  );
+  const emitResult = program.emit(
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    transformers ? transformers(program) : undefined
+  );
+  return {
+    code: outputCode,
+    diagnostics: emitResult.diagnostics.concat(
+      ts.getPreEmitDiagnostics(program)
+    ),
+  };
+}
+
+/**
+ * Create a TypeScript program from a fragment of TypeScript source code. If
+ * this program is compiled, output for the fragment will be passed to
+ * `writeFileCallback`.
+ */
+export function createTsProgramFromFragment(
+  inputCode: string,
+  options: ts.CompilerOptions,
+  cache: CompilerHostCache,
+  writeFileCallback: (code: string) => void
+): {host: ts.CompilerHost; program: ts.Program} {
   const dummyTsFilename = '__DUMMY__.ts';
   const dummyJsFilename = '__DUMMY__.js';
   const dummySourceFile = ts.createSourceFile(
@@ -109,27 +142,14 @@ export function compileTsFragment(
     return file;
   };
 
-  let outputCode = '';
   host.writeFile = (name, data) => {
     if (name === dummyJsFilename) {
-      outputCode = data;
+      writeFileCallback(data);
     } else {
       throw new Error('Did not expect to write file other than dummy JS');
     }
   };
 
   const program = ts.createProgram([dummyTsFilename], options, host);
-  const emitResult = program.emit(
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    transformers ? transformers(program) : undefined
-  );
-  return {
-    code: outputCode,
-    diagnostics: emitResult.diagnostics.concat(
-      ts.getPreEmitDiagnostics(program)
-    ),
-  };
+  return {program, host};
 }
