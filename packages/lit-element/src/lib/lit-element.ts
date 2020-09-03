@@ -55,12 +55,11 @@
  * @packageDocumentation
  */
 import {PropertyValues, UpdatingElement} from './updating-element.js';
-// TODO(sorvell) Add shady-render package.
 import {render, RenderOptions} from 'lit-html';
+import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './css-tag.js';
 
 export * from './updating-element.js';
 export {html, svg, TemplateResult} from 'lit-html';
-import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './css-tag.js';
 export * from './css-tag.js';
 
 declare global {
@@ -126,58 +125,42 @@ export class LitElement extends UpdatingElement {
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
   static styles?: CSSResultOrNative | CSSResultArray;
-
-  private static _styles: Array<CSSResultOrNative | CSSResult> | undefined;
+  private static elementStyles?: CSSResultArray;
 
   /**
-   * Return the array of styles to apply to the element.
+   * Takes the styles the user supplied via the `static styles` property and
+   * returns the array of styles to apply to the element.
    * Override this method to integrate into a style management system.
+   *
+   * Styles are deduplicated preserving the _last_ instance in the list. This
+   * is a performance optimization to avoid duplicated styles that can occur
+   * especially when composing via subclassing. The last item is kept to try
+   * to preserve the cascade order with the assumption that it's most important
+   * that last added styles override previous styles.
    *
    * @nocollapse
    */
-  static getStyles(): CSSResultOrNative | CSSResultArray | undefined {
-    return this.styles;
-  }
-
-  /** @nocollapse */
-  private static _getUniqueStyles() {
-    // Only gather styles once per class
-    if (this.hasOwnProperty(JSCompiler_renameProperty('_styles', this))) {
-      return;
-    }
-    // Take care not to call `this.getStyles()` multiple times since this
-    // generates new CSSResults each time.
-    // TODO(sorvell): Since we do not cache CSSResults by input, any
-    // shared styles will generate new stylesheet objects, which is wasteful.
-    // This should be addressed when a browser ships constructable
-    // stylesheets.
-    const userStyles = this.getStyles();
-
-    if (Array.isArray(userStyles)) {
-      // De-duplicate styles preserving the _last_ instance in the set.
-      // This is a performance optimization to avoid duplicated styles that can
-      // occur especially when composing via subclassing.
-      // The last item is kept to try to preserve the cascade order with the
-      // assumption that it's most important that last added styles override
-      // previous styles.
+  protected static getStyles(
+    styles?: CSSResultOrNative | CSSResultArray
+  ): CSSResultArray {
+    const elementStyles = [];
+    if (Array.isArray(styles)) {
       const addStyles = (
-        styles: CSSResultArray,
+        stylesList: CSSResultArray,
         set: Set<CSSResultOrNative>
       ): Set<CSSResultOrNative> =>
-        styles.reduceRight(
+        stylesList.reduceRight(
           (set: Set<CSSResultOrNative>, s) =>
             // Note: On IE set.add() does not return the set
             Array.isArray(s) ? addStyles(s, set) : (set.add(s), set),
           set
         );
       // Array.from does not work on Set in IE, otherwise return
-      // Array.from(addStyles(userStyles, new Set<CSSResult>())).reverse()
-      const set = addStyles(userStyles, new Set<CSSResultOrNative>());
-      const styles: CSSResultOrNative[] = [];
-      set.forEach((v) => styles.unshift(v));
-      this._styles = styles;
-    } else {
-      this._styles = userStyles === undefined ? [] : [userStyles];
+      // Array.from(addStyles(styles, new Set<CSSResult>())).reverse()
+      const set = addStyles(styles, new Set<CSSResultOrNative>());
+      set.forEach((v) => elementStyles.unshift(v));
+    } else if (styles !== undefined) {
+      elementStyles.push(styles);
     }
 
     // Ensure that there are no invalid CSSStyleSheet instances here. They are
@@ -186,7 +169,7 @@ export class LitElement extends UpdatingElement {
     //     this is impossible to check except via .replaceSync or use
     // (2) the ShadyCSS polyfill is enabled (:. supportsAdoptingStyleSheets is
     //     false)
-    this._styles = this._styles.map((s) => {
+    return elementStyles.map((s) => {
       if (s instanceof CSSStyleSheet && !supportsAdoptingStyleSheets) {
         // Flatten the cssText from the passed constructible stylesheet (or
         // undetectable non-constructible stylesheet). The user might have
@@ -201,7 +184,12 @@ export class LitElement extends UpdatingElement {
     });
   }
 
-  private _needsShimAdoptedStyleSheets?: boolean;
+  protected static finalize() {
+    if (!this.hasFinalized) {
+      this.elementStyles = this.getStyles(this.styles);
+      super.finalize();
+    }
+  }
 
   /**
    * Node or ShadowRoot into which element DOM should be rendered. Defaults
@@ -216,16 +204,10 @@ export class LitElement extends UpdatingElement {
    */
   protected initialize() {
     super.initialize();
-    (this.constructor as typeof LitElement)._getUniqueStyles();
     (this as {
       renderRoot: Element | DocumentFragment;
     }).renderRoot = this.createRenderRoot();
-    // Note, if renderRoot is not a shadowRoot, styles would/could apply to the
-    // element's getRootNode(). While this could be done, we're choosing not to
-    // support this now since it would require different logic around de-duping.
-    if (window.ShadowRoot && this.renderRoot instanceof window.ShadowRoot) {
-      this.adoptStyles();
-    }
+    this.adoptStyles((this.constructor as typeof LitElement).elementStyles!);
   }
 
   /**
@@ -240,46 +222,31 @@ export class LitElement extends UpdatingElement {
   }
 
   /**
-   * Applies styling to the element shadowRoot using the [[`styles`]]
-   * property. Styling will apply using `shadowRoot.adoptedStyleSheets` where
-   * available and will fallback otherwise. When Shadow DOM is polyfilled,
-   * ShadyCSS scopes styles and adds them to the document. When Shadow DOM
-   * is available but `adoptedStyleSheets` is not, styles are appended to the
-   * end of the `shadowRoot` to [mimic spec
-   * behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
+   * Applies the given styles to the element. Styling is applied to the element
+   * only if the `renderRoot` is a `shadowRoot`. If the `rendeRoot` is not
+   * a `shadowRoot`, this method may be overridden to apply styling in another
+   * way. Styling will apply using `shadowRoot.adoptedStyleSheets` where
+   * available and will fallback otherwise. When Shadow DOM is available but
+   * `adoptedStyleSheets` is not, styles are appended to the the `shadowRoot`
+   * to [mimic spec behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
    */
-  protected adoptStyles() {
-    const styles = (this.constructor as typeof LitElement)._styles!;
-    if (styles.length === 0) {
+  protected adoptStyles(styles: CSSResultArray) {
+    // Note, if renderRoot is not a shadowRoot, styles would/could apply to the
+    // element's getRootNode(). While this could be done, we're choosing not to
+    // support this now since it would require different logic around de-duping.
+    if (!(this.renderRoot instanceof window.ShadowRoot)) {
       return;
     }
-    // There are three separate cases here based on Shadow DOM support.
-    // (1) shadowRoot polyfilled: use ShadyCSS
-    // (2) shadowRoot.adoptedStyleSheets available: use it
-    // (3) shadowRoot.adoptedStyleSheets polyfilled: append styles after
-    // rendering
-    if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
-      window.ShadyCSS.ScopingShim!.prepareAdoptedCssText(
-        styles.map((s) => (s as CSSResult).cssText),
-        this.localName
-      );
-    } else if (supportsAdoptingStyleSheets) {
+    if (supportsAdoptingStyleSheets) {
       (this.renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
-        s instanceof CSSStyleSheet ? s : s.styleSheet!
+        s instanceof CSSStyleSheet ? s : (s as CSSResult).styleSheet!
       );
     } else {
-      // This must be done after rendering so the actual style insertion is done
-      // in `update`.
-      this._needsShimAdoptedStyleSheets = true;
-    }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    // Note, first update/render handles styleElement so we only call this if
-    // connected after first update.
-    if (this.hasUpdated && window.ShadyCSS !== undefined) {
-      window.ShadyCSS.styleElement(this);
+      styles.forEach((s) => {
+        const style = document.createElement('style');
+        style.textContent = (s as CSSResult).cssText;
+        this.renderRoot.appendChild(style);
+      });
     }
   }
 
@@ -287,7 +254,7 @@ export class LitElement extends UpdatingElement {
    * Updates the element. This method reflects property values to attributes
    * and calls `render` to render DOM via lit-html. Setting properties inside
    * this method will *not* trigger another update.
-   * @param _changedProperties Map of changed properties with old values
+   * @param changedProperties Map of changed properties with old values
    */
   protected update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
@@ -302,17 +269,6 @@ export class LitElement extends UpdatingElement {
         this.renderRoot,
         {eventContext: this}
       );
-    }
-    // When native Shadow DOM is used but adoptedStyles are not supported,
-    // insert styling after rendering to ensure adoptedStyles have highest
-    // priority.
-    if (this._needsShimAdoptedStyleSheets) {
-      this._needsShimAdoptedStyleSheets = false;
-      (this.constructor as typeof LitElement)._styles!.forEach((s) => {
-        const style = document.createElement('style');
-        style.textContent = (s as CSSResult).cssText;
-        this.renderRoot.appendChild(style);
-      });
     }
   }
 
