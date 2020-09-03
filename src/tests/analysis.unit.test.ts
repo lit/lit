@@ -75,7 +75,7 @@ test('irrelevant code', (t) => {
 
 test('string message', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('greeting', 'Hello World');
   `;
   checkAnalysis(t, src, [
@@ -88,7 +88,7 @@ test('string message', (t) => {
 
 test('HTML message', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('greeting', html\`<b>Hello World</b>\`);
   `;
   checkAnalysis(t, src, [
@@ -105,7 +105,7 @@ test('HTML message', (t) => {
 
 test('HTML message with comment', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('greeting', html\`<b><!-- greeting -->Hello World</b>\`);
   `;
   checkAnalysis(t, src, [
@@ -122,7 +122,7 @@ test('HTML message with comment', (t) => {
 
 test('parameterized string message', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('greeting', (name: string) => \`Hello \${name}\`, "friend");
   `;
   checkAnalysis(t, src, [
@@ -136,7 +136,7 @@ test('parameterized string message', (t) => {
 
 test('parameterized HTML message', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('greeting', (name: string) => html\`<b>Hello \${name}</b>\`, "friend");
   `;
   checkAnalysis(t, src, [
@@ -154,7 +154,7 @@ test('parameterized HTML message', (t) => {
 
 test('immediate description', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     // msgdesc: Greeting
     msg('greeting', 'Hello World');
   `;
@@ -169,7 +169,7 @@ test('immediate description', (t) => {
 
 test('inherited description', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     // msgdesc: Greeter
     class XGreeter extends HTMLElement {
       render() {
@@ -199,7 +199,7 @@ test('different msg function', (t) => {
 
 test('error: message id cannot be empty', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('', 'Hello World');
   `;
   checkAnalysis(
@@ -214,7 +214,7 @@ test('error: message id cannot be empty', (t) => {
 
 test('error: message id must be static', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     const id = 'greeting';
     msg(id, 'Hello World');
     msg(\`\${id}\`, 'Hello World');
@@ -232,7 +232,7 @@ test('error: message id must be static', (t) => {
 
 test('error: placeholders must use function', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     const foo = 'foo';
     msg('greeting', \`Hello \${name}\`);
     msg('greeting', html\`<b>Hello \${name}</b>\`);
@@ -250,7 +250,7 @@ test('error: placeholders must use function', (t) => {
 
 test('error: placeholders must only reference function parameters', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     const foo = 'foo';
     msg('greeting', (name) => \`Hello \${name} \${foo}\`, 'Friend');
   `;
@@ -266,7 +266,7 @@ test('error: placeholders must only reference function parameters', (t) => {
 
 test('error: different message contents', (t) => {
   const src = `
-    import {msg} from './lib_client/index.js';
+    import {msg} from './lit-localize.js';
     msg('greeting', 'Hello World');
     msg('greeting', 'Hello Friend');
   `;

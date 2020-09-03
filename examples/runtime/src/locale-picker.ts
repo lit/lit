@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
 import {getLocale, setLocaleFromUrl} from './localization.js';
-import {Localized} from 'lit-localize/lib_client/localized-element.js';
+import {Localized} from 'lit-localize/localized-element.js';
 
 const locales = ['en', 'es-419', 'zh_CN'] as const;
 

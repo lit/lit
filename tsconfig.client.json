@@ -10,11 +10,12 @@
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
     "rootDir": "src_client/",
-    "outDir": "lib_client/",
+    "outDir": ".",
     "declaration": true,
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "lib_client/.tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuildinfo.client"
   },
-  "include": ["src_client/**/*"]
+  "include": ["src_client/**/*"],
+  "exclude": []
 }

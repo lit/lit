@@ -10,3 +10,5 @@ testdata/
 ava.config.js
 scripts/
 examples/
+.tsbuildinfo*
+tsconfig.*
