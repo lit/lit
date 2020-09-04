@@ -760,6 +760,11 @@ suite('UpdatingElement', () => {
             reflect: true,
             converter: {toAttribute: toAttributeOnly},
           },
+          toAttributeNumber: {
+            type: Number,
+            reflect: true,
+            converter: {toAttribute: (value: number) => value + ' '},
+          },
           all: {
             attribute: 'all-attr',
             converter: {fromAttribute, toAttribute},
@@ -775,6 +780,7 @@ suite('UpdatingElement', () => {
       customAttr = 'customAttr';
       fromAttribute = 1;
       toAttribute: string | number = 1;
+      toAttributeNumber = 0;
       all = 10;
       obj?: any;
       arr?: any;
@@ -787,6 +793,7 @@ suite('UpdatingElement', () => {
       custom="3"
       fromAttribute="6-attr"
       toAttribute="7"
+      toAttributeNumber="8"
       all-attr="11-attr"
       obj='{"foo": true, "bar": 5, "baz": "hi"}'
       arr="[1, 2, 3, 4]"></${name}>`;
@@ -799,6 +806,7 @@ suite('UpdatingElement', () => {
     assert.equal(el.getAttribute('custom'), '3');
     assert.equal(el.fromAttribute, 6);
     assert.equal(el.toAttribute, '7');
+    assert.strictEqual(el.toAttributeNumber, 8);
     assert.equal(el.getAttribute('toattribute'), '7-attr');
     assert.equal(el.all, 11);
     assert.equal(el.getAttribute('all-attr'), '11-attr');

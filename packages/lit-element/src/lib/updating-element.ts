@@ -275,30 +275,6 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   /**
-   * Ensures the private `_classProperties` property metadata is created.
-   * In addition to `finalize` this is also called in `createProperty` to
-   * ensure the `@property` decorator can add property metadata.
-   */
-  /** @nocollapse */
-  private static _ensureClassProperties() {
-    // ensure private storage for property declarations.
-    if (
-      !this.hasOwnProperty(JSCompiler_renameProperty('_classProperties', this))
-    ) {
-      this._classProperties = new Map();
-      // NOTE: Workaround IE11 not supporting Map constructor argument.
-      const superProperties: PropertyDeclarationMap = Object.getPrototypeOf(
-        this
-      )._classProperties;
-      if (superProperties !== undefined) {
-        superProperties.forEach((v: PropertyDeclaration, k: PropertyKey) =>
-          this._classProperties!.set(k, v)
-        );
-      }
-    }
-  }
-
-  /**
    * Creates a property accessor on the element prototype if one does not exist
    * and stores a PropertyDeclaration for the property with the given options.
    * The property setter calls the property's `hasChanged` property option
@@ -333,13 +309,12 @@ export abstract class UpdatingElement extends HTMLElement {
     // Instead, we expect users to call `requestUpdate` themselves from
     // user-defined accessors. Note that if the super has an accessor we will
     // still overwrite it
-    if (options.noAccessor || this.prototype.hasOwnProperty(name)) {
-      return;
-    }
-    const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-    const descriptor = this.getPropertyDescriptor(name, key, options);
-    if (descriptor !== undefined) {
-      Object.defineProperty(this.prototype, name, descriptor);
+    if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
+      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+      const descriptor = this.getPropertyDescriptor(name, key, options);
+      if (descriptor !== undefined) {
+        Object.defineProperty(this.prototype, name, descriptor);
+      }
     }
   }
 
@@ -406,10 +381,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * @final
    */
   protected static getPropertyOptions(name: PropertyKey) {
-    return (
-      (this._classProperties && this._classProperties.get(name)) ||
-      defaultPropertyDeclaration
-    );
+    return this._classProperties!.get(name) || defaultPropertyDeclaration;
   }
 
   protected static get hasFinalized() {
@@ -427,8 +399,9 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     this[finalized] = true;
     // finalize any superclasses
-    Object.getPrototypeOf(this).finalize();
-    this._ensureClassProperties();
+    const superProto = Object.getPrototypeOf(this);
+    superProto.finalize();
+    this._classProperties = new Map(superProto._classProperties);
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
     // make any properties
@@ -440,7 +413,7 @@ export abstract class UpdatingElement extends HTMLElement {
       // support symbols in properties (IE11 does not support this)
       const propKeys = [
         ...Object.getOwnPropertyNames(props),
-        ...Object.getOwnPropertySymbols(props)
+        ...Object.getOwnPropertySymbols(props),
       ];
       // This for/of is ok because propKeys is an array
       for (const p of propKeys) {
@@ -583,8 +556,11 @@ export abstract class UpdatingElement extends HTMLElement {
     value: unknown,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
-    const ctor = this.constructor as typeof UpdatingElement;
-    const attr = ctor.attributeNameForProperty(name, options);
+    const attr = (this
+      .constructor as typeof UpdatingElement).attributeNameForProperty(
+      name,
+      options
+    );
     if (attr !== undefined && options.reflect) {
       const converter = options.converter;
       const toAttribute =
@@ -622,12 +598,16 @@ export abstract class UpdatingElement extends HTMLElement {
       const options = ctor.getPropertyOptions(propName);
       // mark state reflecting
       this._reflectingProperty = propName;
-      const converter = options.converter || defaultConverter;
+      const converter = options.converter;
       const fromAttribute =
-        typeof converter === 'function' ? converter : converter.fromAttribute;
+        (converter &&
+          (typeof converter === 'function'
+            ? converter
+            : converter.fromAttribute)) ||
+        defaultConverter.fromAttribute;
       this[propName as keyof this] =
         // tslint:disable-next-line:no-any
-        (fromAttribute ? fromAttribute(value, options.type) : value) as any;
+        fromAttribute!(value, options.type) as any;
       // mark state not reflecting
       this._reflectingProperty = null;
     }
@@ -654,8 +634,9 @@ export abstract class UpdatingElement extends HTMLElement {
     let shouldRequestUpdate = true;
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
-      const ctor = this.constructor as typeof UpdatingElement;
-      options = options || ctor.getPropertyOptions(name);
+      options =
+        options ||
+        (this.constructor as typeof UpdatingElement).getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
         if (!this._changedProperties.has(name)) {
