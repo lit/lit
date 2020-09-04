@@ -417,7 +417,10 @@ suite('Static get styles', () => {
         margin: ${spacer * 2}px;
       }
     `;
-    assert.equal(result.cssText.replace(/\s/g, ''), 'div{margin:4px;}');
+    assert.equal(
+      (result as CSSResult).cssText.replace(/\s/g, ''),
+      'div{margin:4px;}'
+    );
   });
 
   test('`CSSResult` cannot be constructed', async () => {
@@ -675,7 +678,7 @@ suite('Static get styles', () => {
                 border: 3px solid blue;
               }
             `,
-          ] as any;
+          ];
         }
 
         render() {
@@ -699,7 +702,7 @@ suite('Static get styles', () => {
                 border: 4px solid blue;
               }
             `,
-          ] as any;
+          ];
         }
 
         render() {

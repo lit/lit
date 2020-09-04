@@ -18,6 +18,13 @@ export const supportsAdoptingStyleSheets =
   'adoptedStyleSheets' in Document.prototype &&
   'replace' in CSSStyleSheet.prototype;
 
+export type CSSResultOrNative = CSSResult | CSSStyleSheet;
+
+export interface CSSResultArray
+  extends Array<CSSResultOrNative | CSSResultArray> {}
+
+export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
+
 const constructionToken = Symbol();
 
 export class CSSResult {
@@ -61,7 +68,7 @@ export const unsafeCSS = (value: unknown) => {
   return new CSSResult(String(value), constructionToken);
 };
 
-const textFromCSSResult = (value: CSSResult | number) => {
+const textFromCSSResult = (value: CSSResultGroup | number) => {
   if (value instanceof CSSResult) {
     return value.cssText;
   } else if (typeof value === 'number') {
@@ -84,8 +91,8 @@ const cssResultCache = new Map<string, CSSResult>();
  */
 export const css = (
   strings: TemplateStringsArray,
-  ...values: (CSSResult | number)[]
-) => {
+  ...values: (CSSResultGroup | number)[]
+): CSSResultGroup => {
   const cssText = values.reduce(
     (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
     strings[0]

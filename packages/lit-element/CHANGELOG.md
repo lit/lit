@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0] - Unreleased
 
 ### Changed
+* [Breaking] The type of the `css` function has been changed to `CSSResultGroup` and is now the same as `LitElement.styles`. This avoids the need to cast the `styles` property to `any` when a subclass sets `styles` to an Array and its super class set a single value (or visa versa).
 * For efficiency, the `css` function now maintains a cache and will used a cached value if available when the same style text is requested.
 * [Breaking] LitElement's `adoptStyles` method is now always called. Previously it was called only if the element's `renderRoot` was a shadowRoot. The default implementation only applies styling to the element's shadowRoot and does nothing if the `renderRoot` is not a shadowRoot. This method may be overridden to customize this behavior.
 * [Breaking] LitElement's `static getStyles` method now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.

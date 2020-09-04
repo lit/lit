@@ -56,7 +56,13 @@
  */
 import {PropertyValues, UpdatingElement} from './updating-element.js';
 import {render, RenderOptions} from 'lit-html';
-import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './css-tag.js';
+import {
+  supportsAdoptingStyleSheets,
+  CSSResult,
+  CSSResultGroup,
+  CSSResultOrNative,
+  unsafeCSS,
+} from './css-tag.js';
 
 export * from './updating-element.js';
 export {html, svg, TemplateResult} from 'lit-html';
@@ -75,12 +81,7 @@ declare global {
   '2.4.0'
 );
 
-export type CSSResultOrNative = CSSResult | CSSStyleSheet;
-
 type CSSResultFlatArray = CSSResultOrNative[];
-
-export interface CSSResultArray
-  extends Array<CSSResultOrNative | CSSResultArray> {}
 
 /**
  * Sentinal value used to avoid calling lit-html's render function when
@@ -139,7 +140,7 @@ export class LitElement extends UpdatingElement {
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
-  static styles?: CSSResultOrNative | CSSResultArray;
+  static styles?: CSSResultGroup;
   private static _elementStyles?: CSSResultFlatArray;
 
   /**
@@ -155,9 +156,7 @@ export class LitElement extends UpdatingElement {
    *
    * @nocollapse
    */
-  protected static getStyles(
-    styles?: CSSResultOrNative | CSSResultArray
-  ): CSSResultFlatArray {
+  protected static getStyles(styles?: CSSResultGroup): CSSResultFlatArray {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
