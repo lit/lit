@@ -182,9 +182,7 @@ export type DirectiveClass = {new (part: Part): Directive};
  * This utility type extracts the signature of a directive class's render()
  * method so we can use it for the type of the generated directive function.
  */
-type DirectiveProps<C extends DirectiveClass> = Parameters<
-  InstanceType<C>['render']
->;
+export type DirectiveProps<C extends Directive> = Parameters<C['render']>;
 
 /**
  * A generated directive function doesn't evaluate the directive, but just
@@ -192,7 +190,7 @@ type DirectiveProps<C extends DirectiveClass> = Parameters<
  */
 type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
   _$litDirective$: C;
-  values: DirectiveProps<C>;
+  values: DirectiveProps<InstanceType<C>>;
 };
 
 /**
@@ -200,7 +198,7 @@ type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
  * function has the same parameters as the directive's render() method.
  */
 export const directive = <C extends DirectiveClass>(c: C) => (
-  ...values: DirectiveProps<C>
+  ...values: DirectiveProps<InstanceType<C>>
 ): DirectiveResult<C> => ({
   _$litDirective$: c,
   values,
@@ -248,6 +246,17 @@ export abstract class Directive {
   update(_part: Part, props: Array<unknown>): unknown {
     return this.render(...props);
   }
+
+  /**
+   * An optional lifecycle method that is called when a directive, or the
+   * template it's attached to, is disconnected from the render tree.
+   *
+   * Note: this is different from being connected to or disconnected from
+   * the document. disconnectedCallback is called even when a directive is
+   * disconnected from a render tree that itself is not connected to the
+   * document.
+   */
+  disconnectedCallback?(): void;
 }
 
 class Template {
@@ -463,6 +472,12 @@ class TemplateInstance {
     this.__template = template;
   }
 
+  __disconnect() {
+    for (const part of this.__parts) {
+      part?.__disconnect();
+    }
+  }
+
   // This method is separate from the constructor because we need to return a
   // DocumentFragment and we don't want to hold onto it with an instance field.
   __clone(options: RenderOptions | undefined) {
@@ -557,7 +572,8 @@ export type Part =
   | NodePart
   | AttributePart
   | PropertyPart
-  | BooleanAttributePart;
+  | BooleanAttributePart
+  | EventPart;
 
 export class NodePart {
   __value: unknown;
@@ -568,6 +584,13 @@ export class NodePart {
     public __endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
+
+  __disconnect() {
+    this.__directive?.disconnectedCallback?.();
+    if (this.__value instanceof TemplateInstance) {
+      (this.__value as TemplateInstance).__disconnect();
+    }
+  }
 
   __setValue(value: unknown): void {
     if (isPrimitive(value)) {
@@ -581,8 +604,8 @@ export class NodePart {
     } else if ((value as Node).nodeType !== undefined) {
       this.__commitNode(value as Node);
     } else if (value === nothing) {
-      this.__value = nothing;
       this.__clear();
+      this.__value = nothing;
     } else if (value !== noChange) {
       // Fallback, will render the string representation
       this.__commitText(value);
@@ -642,10 +665,10 @@ export class NodePart {
       templateCache.set(strings, (template = new Template(result)));
     }
     if (
-      this.__value != null &&
-      (this.__value as TemplateInstance).__template === template
+      this.__value instanceof TemplateInstance &&
+      this.__value.__template === template
     ) {
-      (this.__value as TemplateInstance).__update(values);
+      this.__value.__update(values);
     } else {
       const instance = new TemplateInstance(template!);
       const fragment = instance.__clone(this.options);
@@ -656,6 +679,9 @@ export class NodePart {
   }
 
   __clear(start: ChildNode | null = this.__startNode.nextSibling) {
+    if (this.__value instanceof TemplateInstance) {
+      this.__value.__disconnect();
+    }
     while (start && start !== this.__endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -690,6 +716,15 @@ export class AttributePart {
       this.__strings = strings;
     } else {
       this.__value = nothing;
+    }
+  }
+
+  __disconnect() {
+    if (this.__directives === undefined) {
+      return;
+    }
+    for (const directive of this.__directives) {
+      directive.disconnectedCallback?.();
     }
   }
 

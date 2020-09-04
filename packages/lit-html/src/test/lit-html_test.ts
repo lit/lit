@@ -1469,4 +1469,81 @@ suite('lit-html', () => {
       assert.isOk(event);
     });
   });
+
+  class DisconnectingDirective extends Directive {
+    log!: Array<string>;
+
+    render(log: Array<string>) {
+      this.log = log;
+      return 'hello';
+    }
+
+    disconnectedCallback() {
+      this.log.push('disconnected');
+    }
+  }
+  const disconnectingDirective = directive(DisconnectingDirective);
+
+  // TODO (justinfagnani): dynamic directives are not handled correctly in
+  // general. We may not even want to support them. TBD.
+  test.skip('directives can be disconnected from NodeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(html`${x ? disconnectingDirective(log) : nothing}`, container);
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives are disconnected when their template is', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(x ? html`${disconnectingDirective(log)}` : nothing, container);
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives are disconnected when their nested template is', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives can be disconnected from AttributeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('deeply nested directives can be disconnected from AttributeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x
+          ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
+          : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
 });
