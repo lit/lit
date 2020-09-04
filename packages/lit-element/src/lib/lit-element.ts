@@ -77,6 +77,8 @@ declare global {
 
 export type CSSResultOrNative = CSSResult | CSSStyleSheet;
 
+type CSSResultFlatArray = CSSResultOrNative[];
+
 export interface CSSResultArray
   extends Array<CSSResultOrNative | CSSResultArray> {}
 
@@ -85,6 +87,19 @@ export interface CSSResultArray
  * subclasses do not implement `render`
  */
 const renderNotImplemented = {};
+
+const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
+  let cssText = '';
+  for (const rule of sheet.cssRules) {
+    cssText += rule.cssText;
+  }
+  return unsafeCSS(cssText);
+};
+
+const getCompatibleStyle = supportsAdoptingStyleSheets
+  ? (s: CSSResultOrNative) => s
+  : (s: CSSResultOrNative) =>
+      s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -125,7 +140,7 @@ export class LitElement extends UpdatingElement {
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
   static styles?: CSSResultOrNative | CSSResultArray;
-  private static elementStyles?: CSSResultArray;
+  private static _elementStyles?: CSSResultFlatArray;
 
   /**
    * Takes the styles the user supplied via the `static styles` property and
@@ -142,51 +157,26 @@ export class LitElement extends UpdatingElement {
    */
   protected static getStyles(
     styles?: CSSResultOrNative | CSSResultArray
-  ): CSSResultArray {
+  ): CSSResultFlatArray {
     const elementStyles = [];
     if (Array.isArray(styles)) {
-      const addStyles = (
-        stylesList: CSSResultArray,
-        set: Set<CSSResultOrNative>
-      ): Set<CSSResultOrNative> =>
-        stylesList.reduceRight(
-          (set: Set<CSSResultOrNative>, s) =>
-            // Note: On IE set.add() does not return the set
-            Array.isArray(s) ? addStyles(s, set) : (set.add(s), set),
-          set
-        );
-      // Array.from does not work on Set in IE, otherwise return
-      // Array.from(addStyles(styles, new Set<CSSResult>())).reverse()
-      const set = addStyles(styles, new Set<CSSResultOrNative>());
-      set.forEach((v) => elementStyles.unshift(v));
-    } else if (styles !== undefined) {
-      elementStyles.push(styles);
-    }
-
-    // Ensure that there are no invalid CSSStyleSheet instances here. They are
-    // invalid in two conditions.
-    // (1) the sheet is non-constructible (`sheet` of a HTMLStyleElement), but
-    //     this is impossible to check except via .replaceSync or use
-    // (2) the ShadyCSS polyfill is enabled (:. supportsAdoptingStyleSheets is
-    //     false)
-    return elementStyles.map((s) => {
-      if (s instanceof CSSStyleSheet && !supportsAdoptingStyleSheets) {
-        // Flatten the cssText from the passed constructible stylesheet (or
-        // undetectable non-constructible stylesheet). The user might have
-        // expected to update their stylesheets over time, but the alternative
-        // is a crash.
-        const cssText = Array.prototype.slice
-          .call(s.cssRules)
-          .reduce((css, rule) => css + rule.cssText, '');
-        return unsafeCSS(cssText);
+      // Dedupe the flattened array in reverse order to preserve the last items.
+      // TODO(sorvell): casting to Array<unknown> works around TS error that
+      // appears to come from trying to flatten a type CSSResultArray.
+      const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
+      // Then preserve original order by adding the set items in reverse order.
+      for (const s of set) {
+        elementStyles.unshift(getCompatibleStyle(s as CSSResultOrNative));
       }
-      return s;
-    });
+    } else if (styles !== undefined) {
+      elementStyles.push(getCompatibleStyle(styles));
+    }
+    return elementStyles;
   }
 
   protected static finalize() {
     if (!this.hasFinalized) {
-      this.elementStyles = this.getStyles(this.styles);
+      this._elementStyles = this.getStyles(this.styles);
       super.finalize();
     }
   }
@@ -207,7 +197,7 @@ export class LitElement extends UpdatingElement {
     (this as {
       renderRoot: Element | DocumentFragment;
     }).renderRoot = this.createRenderRoot();
-    this.adoptStyles((this.constructor as typeof LitElement).elementStyles!);
+    this.adoptStyles((this.constructor as typeof LitElement)._elementStyles!);
   }
 
   /**
@@ -230,7 +220,7 @@ export class LitElement extends UpdatingElement {
    * `adoptedStyleSheets` is not, styles are appended to the the `shadowRoot`
    * to [mimic spec behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
    */
-  protected adoptStyles(styles: CSSResultArray) {
+  protected adoptStyles(styles: CSSResultFlatArray) {
     // Note, if renderRoot is not a shadowRoot, styles would/could apply to the
     // element's getRootNode(). While this could be done, we're choosing not to
     // support this now since it would require different logic around de-duping.
@@ -239,7 +229,7 @@ export class LitElement extends UpdatingElement {
     }
     if (supportsAdoptingStyleSheets) {
       (this.renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
-        s instanceof CSSStyleSheet ? s : (s as CSSResult).styleSheet!
+        s instanceof CSSStyleSheet ? s : s.styleSheet!
       );
     } else {
       styles.forEach((s) => {
