@@ -408,7 +408,7 @@ suite('UpdatingElement', () => {
     assert.isFalse(el.hasAttribute('arr'));
   });
 
-  test('if a `reflect: true` returns `undefined`, the attribute does not change', async () => {
+  test('if a `reflect: true` returns `undefined`, the attribute is removed', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {foo: {reflect: true}, obj: {type: Object, reflect: true}};
@@ -435,13 +435,67 @@ suite('UpdatingElement', () => {
     el.foo = undefined;
     el.obj = undefined;
     await el.updateComplete;
-    assert.equal(el.getAttribute('foo'), 'foo2');
-    assert.equal(el.getAttribute('obj'), '{"obj":2}');
+    assert.equal(el.getAttribute('foo'), null);
+    assert.equal(el.getAttribute('obj'), null);
     el.foo = 'foo3';
     el.obj = {obj: 3};
     await el.updateComplete;
     assert.equal(el.getAttribute('foo'), 'foo3');
     assert.equal(el.getAttribute('obj'), '{"obj":3}');
+  });
+
+  test('property reflects when set in response to another propety changing via its attribute being set', async () => {
+    class E extends UpdatingElement {
+      static get properties() {
+        return {
+          prop: {type: Boolean, noAccessor: true, reflect: true},
+          secondary: {type: Number, reflect: true},
+          tertiary: {type: Number, reflect: true},
+        };
+      }
+
+      _prop = false;
+      secondary = 0;
+      tertiary = 0;
+      propCount = 0;
+
+      get prop() {
+        return this._prop;
+      }
+
+      set prop(val) {
+        this.propCount++;
+        const oldVal = this._prop;
+        if (oldVal !== val) {
+          this._prop = val;
+          this.secondary += 1;
+          this.tertiary += 1;
+          this.requestUpdate('prop', oldVal);
+        }
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.propCount, 0);
+    assert.equal(el.getAttribute('secondary'), '0');
+    assert.equal(el.getAttribute('tertiary'), '0');
+    el.prop = true;
+    await el.updateComplete;
+    assert.equal(el.propCount, 1);
+    assert.equal(el.getAttribute('secondary'), '1');
+    assert.equal(el.getAttribute('tertiary'), '1');
+    el.prop = false;
+    await el.updateComplete;
+    assert.equal(el.propCount, 2);
+    assert.equal(el.getAttribute('secondary'), '2');
+    assert.equal(el.getAttribute('tertiary'), '2');
+    el.setAttribute('prop', '');
+    await el.updateComplete;
+    assert.equal(el.propCount, 3);
+    assert.equal(el.getAttribute('secondary'), '3');
+    assert.equal(el.getAttribute('tertiary'), '3');
   });
 
   test('property options via decorator', async () => {

@@ -209,16 +209,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-const STATE_HAS_UPDATED = 1;
-const STATE_UPDATE_REQUESTED = 1 << 2;
-const STATE_IS_REFLECTING_TO_ATTRIBUTE = 1 << 3;
-const STATE_IS_REFLECTING_TO_PROPERTY = 1 << 4;
-type UpdateState =
-  | typeof STATE_HAS_UPDATED
-  | typeof STATE_UPDATE_REQUESTED
-  | typeof STATE_IS_REFLECTING_TO_ATTRIBUTE
-  | typeof STATE_IS_REFLECTING_TO_PROPERTY;
-
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -275,7 +265,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
     this._classProperties!.forEach((v, p) => {
-      const attr = this._attributeNameForProperty(p, v);
+      const attr = this.attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this._attributeToPropertyMap.set(attr, p);
         attributes.push(attr);
@@ -450,9 +440,7 @@ export abstract class UpdatingElement extends HTMLElement {
       // support symbols in properties (IE11 does not support this)
       const propKeys = [
         ...Object.getOwnPropertyNames(props),
-        ...(typeof Object.getOwnPropertySymbols === 'function'
-          ? Object.getOwnPropertySymbols(props)
-          : []),
+        ...Object.getOwnPropertySymbols(props)
       ];
       // This for/of is ok because propKeys is an array
       for (const p of propKeys) {
@@ -468,7 +456,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * Returns the property name for the given attribute `name`.
    * @nocollapse
    */
-  private static _attributeNameForProperty(
+  protected static attributeNameForProperty(
     name: PropertyKey,
     options: PropertyDeclaration
   ) {
@@ -482,66 +470,13 @@ export abstract class UpdatingElement extends HTMLElement {
       : undefined;
   }
 
-  /**
-   * Returns true if a property should request an update.
-   * Called when a property value is set and uses the `hasChanged`
-   * option for the property if present or a strict identity check.
-   * @nocollapse
-   */
-  private static _valueHasChanged(
-    value: unknown,
-    old: unknown,
-    hasChanged: HasChanged = notEqual
-  ) {
-    return hasChanged(value, old);
-  }
-
-  /**
-   * Returns the property value for the given attribute value.
-   * Called via the `attributeChangedCallback` and uses the property's
-   * `converter` or `converter.fromAttribute` property option.
-   * @nocollapse
-   */
-  private static _propertyValueFromAttribute(
-    value: string | null,
-    options: PropertyDeclaration
-  ) {
-    const type = options.type;
-    const converter = options.converter || defaultConverter;
-    const fromAttribute =
-      typeof converter === 'function' ? converter : converter.fromAttribute;
-    return fromAttribute ? fromAttribute(value, type) : value;
-  }
-
-  /**
-   * Returns the attribute value for the given property value. If this
-   * returns undefined, the property will *not* be reflected to an attribute.
-   * If this returns null, the attribute will be removed, otherwise the
-   * attribute will be set to the value.
-   * This uses the property's `reflect` and `type.toAttribute` property options.
-   * @nocollapse
-   */
-  private static _propertyValueToAttribute(
-    value: unknown,
-    options: PropertyDeclaration
-  ) {
-    if (options.reflect === undefined) {
-      return;
-    }
-    const type = options.type;
-    const converter = options.converter;
-    const toAttribute =
-      (converter && (converter as ComplexAttributeConverter).toAttribute) ||
-      defaultConverter.toAttribute;
-    return toAttribute!(value, type);
-  }
-
-  private _updateState!: UpdateState;
   private _instanceProperties?: PropertyValues;
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
-  private _enableUpdatingResolver: (() => void) | undefined;
+
+  protected isUpdatePending = false;
+  protected hasUpdated = false;
 
   /**
    * Map with keys for any properties that have changed since the last
@@ -554,6 +489,11 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   private _reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
 
+  /**
+   * Name of currently reflecting property
+   */
+  private _reflectingProperty: PropertyKey | null = null;
+
   constructor() {
     super();
     this.initialize();
@@ -564,10 +504,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * registered properties.
    */
   protected initialize() {
-    this._updateState = 0;
-    this._updatePromise = new Promise(
-      (res) => (this._enableUpdatingResolver = res)
-    );
+    this._updatePromise = new Promise((res) => (this.enableUpdating = res));
     this._changedProperties = new Map();
     this._saveInstanceProperties();
     // ensures first update will be caught by an early access of
@@ -621,12 +558,7 @@ export abstract class UpdatingElement extends HTMLElement {
     this.enableUpdating();
   }
 
-  protected enableUpdating() {
-    if (this._enableUpdatingResolver !== undefined) {
-      this._enableUpdatingResolver();
-      this._enableUpdatingResolver = undefined;
-    }
-  }
+  protected enableUpdating() {}
 
   /**
    * Allows for `super.disconnectedCallback()` in extensions while
@@ -640,12 +572,10 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   attributeChangedCallback(
     name: string,
-    old: string | null,
+    _old: string | null,
     value: string | null
   ) {
-    if (old !== value) {
-      this._attributeToProperty(name, value);
-    }
+    this._attributeToProperty(name, value);
   }
 
   private _propertyToAttribute(
@@ -654,13 +584,13 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
     const ctor = this.constructor as typeof UpdatingElement;
-    const attr = ctor._attributeNameForProperty(name, options);
-    if (attr !== undefined) {
-      const attrValue = ctor._propertyValueToAttribute(value, options);
-      // an undefined value does not change the attribute.
-      if (attrValue === undefined) {
-        return;
-      }
+    const attr = ctor.attributeNameForProperty(name, options);
+    if (attr !== undefined && options.reflect) {
+      const converter = options.converter;
+      const toAttribute =
+        (converter && (converter as ComplexAttributeConverter).toAttribute) ||
+        defaultConverter.toAttribute;
+      const attrValue = toAttribute!(value, options.type);
       // Track if the property is being reflected to avoid
       // setting the property again via `attributeChangedCallback`. Note:
       // 1. this takes advantage of the fact that the callback is synchronous.
@@ -669,37 +599,37 @@ export abstract class UpdatingElement extends HTMLElement {
       // in `update` this should not be possible (or an extreme corner case
       // that we'd like to discover).
       // mark state reflecting
-      this._updateState = this._updateState | STATE_IS_REFLECTING_TO_ATTRIBUTE;
+      this._reflectingProperty = name;
       if (attrValue == null) {
         this.removeAttribute(attr);
       } else {
         this.setAttribute(attr, attrValue as string);
       }
       // mark state not reflecting
-      this._updateState = this._updateState & ~STATE_IS_REFLECTING_TO_ATTRIBUTE;
+      this._reflectingProperty = null;
     }
   }
 
   private _attributeToProperty(name: string, value: string | null) {
-    // Use tracking info to avoid deserializing attribute value if it was
-    // just set from a property setter.
-    if (this._updateState & STATE_IS_REFLECTING_TO_ATTRIBUTE) {
-      return;
-    }
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
     // tslint:disable-next-line:no-unnecessary-type-assertion
     const propName = (ctor._attributeToPropertyMap as AttributeMap).get(name);
-    if (propName !== undefined) {
+    // Use tracking info to avoid reflecting a property value to an attribute
+    // if it was just set because the attribute changed.
+    if (propName !== undefined && this._reflectingProperty !== propName) {
       const options = ctor.getPropertyOptions(propName);
       // mark state reflecting
-      this._updateState = this._updateState | STATE_IS_REFLECTING_TO_PROPERTY;
+      this._reflectingProperty = propName;
+      const converter = options.converter || defaultConverter;
+      const fromAttribute =
+        typeof converter === 'function' ? converter : converter.fromAttribute;
       this[propName as keyof this] =
         // tslint:disable-next-line:no-any
-        ctor._propertyValueFromAttribute(value, options) as any;
+        (fromAttribute ? fromAttribute(value, options.type) : value) as any;
       // mark state not reflecting
-      this._updateState = this._updateState & ~STATE_IS_REFLECTING_TO_PROPERTY;
+      this._reflectingProperty = null;
     }
   }
 
@@ -726,13 +656,8 @@ export abstract class UpdatingElement extends HTMLElement {
     if (name !== undefined) {
       const ctor = this.constructor as typeof UpdatingElement;
       options = options || ctor.getPropertyOptions(name);
-      if (
-        ctor._valueHasChanged(
-          this[name as keyof this],
-          oldValue,
-          options.hasChanged
-        )
-      ) {
+      const hasChanged = options.hasChanged || notEqual;
+      if (hasChanged(this[name as keyof this], oldValue)) {
         if (!this._changedProperties.has(name)) {
           this._changedProperties.set(name, oldValue);
         }
@@ -740,10 +665,7 @@ export abstract class UpdatingElement extends HTMLElement {
         // Note, it's important that every change has a chance to add the
         // property to `_reflectingProperties`. This ensures setting
         // attribute + property reflects correctly.
-        if (
-          options.reflect === true &&
-          !(this._updateState & STATE_IS_REFLECTING_TO_PROPERTY)
-        ) {
+        if (options.reflect === true && this._reflectingProperty !== name) {
           if (this._reflectingProperties === undefined) {
             this._reflectingProperties = new Map();
           }
@@ -754,7 +676,7 @@ export abstract class UpdatingElement extends HTMLElement {
         shouldRequestUpdate = false;
       }
     }
-    if (!this._hasRequestedUpdate && shouldRequestUpdate) {
+    if (!this.isUpdatePending && shouldRequestUpdate) {
       this._updatePromise = this._enqueueUpdate();
     }
   }
@@ -763,7 +685,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * Sets up the element to asynchronously update.
    */
   private async _enqueueUpdate() {
-    this._updateState = this._updateState | STATE_UPDATE_REQUESTED;
+    this.isUpdatePending = true;
     try {
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
@@ -779,15 +701,7 @@ export abstract class UpdatingElement extends HTMLElement {
     if (result != null) {
       await result;
     }
-    return !this._hasRequestedUpdate;
-  }
-
-  private get _hasRequestedUpdate() {
-    return this._updateState & STATE_UPDATE_REQUESTED;
-  }
-
-  protected get hasUpdated() {
-    return this._updateState & STATE_HAS_UPDATED;
+    return !this.isUpdatePending;
   }
 
   /**
@@ -810,7 +724,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Abort any update if one is not pending when this is called.
     // This can happen if `performUpdate` is called early to "flush"
     // the update.
-    if (!this._hasRequestedUpdate) {
+    if (!this.isUpdatePending) {
       return;
     }
     // Mixin instance properties once, if they exist.
@@ -834,9 +748,10 @@ export abstract class UpdatingElement extends HTMLElement {
       this._markUpdated();
       throw e;
     }
+    // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      if (!(this._updateState & STATE_HAS_UPDATED)) {
-        this._updateState = this._updateState | STATE_HAS_UPDATED;
+      if (!this.hasUpdated) {
+        this.hasUpdated = true;
         this.firstUpdated(changedProperties);
       }
       this.updated(changedProperties);
@@ -845,7 +760,7 @@ export abstract class UpdatingElement extends HTMLElement {
 
   private _markUpdated() {
     this._changedProperties = new Map();
-    this._updateState = this._updateState & ~STATE_UPDATE_REQUESTED;
+    this.isUpdatePending = false;
   }
 
   /**
@@ -855,16 +770,16 @@ export abstract class UpdatingElement extends HTMLElement {
    * a property was set inside `updated()`. If the Promise is rejected, an
    * exception was thrown during the update.
    *
-   * To await additional asynchronous work, override the `_getUpdateComplete`
+   * To await additional asynchronous work, override the `getUpdateComplete`
    * method. For example, it is sometimes useful to await a rendered element
    * before fulfilling this Promise. To do this, first await
-   * `super._getUpdateComplete()`, then any subsequent state.
+   * `super.getUpdateComplete()`, then any subsequent state.
    *
    * @returns {Promise} The Promise returns a boolean that indicates if the
    * update resolved without triggering another update.
    */
   get updateComplete() {
-    return this._getUpdateComplete();
+    return this.getUpdateComplete();
   }
 
   /**
@@ -877,13 +792,13 @@ export abstract class UpdatingElement extends HTMLElement {
    * This method should be overridden instead. For example:
    *
    *   class MyElement extends LitElement {
-   *     async _getUpdateComplete() {
-   *       await super._getUpdateComplete();
+   *     async getUpdateComplete() {
+   *       await super.getUpdateComplete();
    *       await this._myChild.updateComplete;
    *     }
    *   }
    */
-  protected _getUpdateComplete() {
+  protected getUpdateComplete() {
     return this._updatePromise;
   }
 
@@ -907,10 +822,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * @param _changedProperties Map of changed properties with old values
    */
   protected update(_changedProperties: PropertyValues) {
-    if (
-      this._reflectingProperties !== undefined &&
-      this._reflectingProperties.size > 0
-    ) {
+    if (this._reflectingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
       // loops expecting arrays
       this._reflectingProperties.forEach((v, k) =>
