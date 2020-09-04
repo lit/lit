@@ -168,6 +168,21 @@ export const noChange = {};
 export const nothing = {};
 
 /**
+ * Wraps a string so that it behaves like part of the static template
+ * strings instead of a dynamic value.
+ *
+ * This is a very unsafe operation and may break templates if changes
+ * the structure of a template. Do not pass user input to this function
+ * without sanitizing it.
+ */
+export const unsafeStatic = (value: string) => ({
+  _$litStatic$: true,
+  value,
+});
+
+type StaticValue = ReturnType<typeof unsafeStatic>;
+
+/**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
  * and _not_ accounting for the specific template tag used. This means that
  * template tags cannot be dynamic - the must statically be one of html, svg,
@@ -254,8 +269,9 @@ class Template {
   private __strings: TemplateStringsArray;
   __element: HTMLTemplateElement;
   __parts: Array<TemplatePart> = [];
+  __hasStatics = false;
 
-  constructor({strings, _$litType$: type}: TemplateResult) {
+  constructor({strings, _$litType$: type, values}: TemplateResult) {
     walker.currentNode = (this.__element = d.createElement('template')).content;
 
     // Insert makers into the template HTML to represent the position of
@@ -341,8 +357,13 @@ class Template {
         }
       }
 
-      // console.assert(!(attrNameEnd !== -1 && regex === textRegex));
-      if (attrNameEnd !== -1) {
+      if (
+        values[i] != null &&
+        (values[i] as StaticValue)._$litStatic$ !== undefined
+      ) {
+        html += s + (values[i] as StaticValue).value;
+        this.__hasStatics = true;
+      } else if (attrNameEnd !== -1) {
         attrNames.push(attrName!);
         html +=
           s.slice(0, attrNameEnd) + '$lit$' + s.slice(attrNameEnd) + marker;
@@ -458,9 +479,11 @@ class Template {
 class TemplateInstance {
   __template: Template;
   __parts: Array<Part | undefined> = [];
+  __hasStatics;
 
   constructor(template: Template) {
     this.__template = template;
+    this.__hasStatics = template.__hasStatics;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -504,6 +527,11 @@ class TemplateInstance {
 
   __update(values: Array<unknown>) {
     let i = 0;
+    if (this.__hasStatics) {
+      values = values.filter(
+        (v) => (v as StaticValue)._$litStatic$ === undefined
+      );
+    }
     for (const part of this.__parts) {
       if (part === undefined) {
         i++;

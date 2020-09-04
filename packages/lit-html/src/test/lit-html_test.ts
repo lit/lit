@@ -22,6 +22,7 @@ import {
   render,
   svg,
   TemplateResult,
+  unsafeStatic,
 } from '../lib/lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -1114,6 +1115,41 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+  });
+
+  suite('static', () => {
+    test('static text binding', () => {
+      render(html`${unsafeStatic('<p>Hello</p>')}`, container);
+      // If this were a dynamic binding, the tags would be escaped
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<p>Hello</p>'
+      );
+    });
+
+    test('static attribute binding', () => {
+      render(html`<div class="${unsafeStatic('cool')}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div class="cool"></div>'
+      );
+      // TODO: test that this is actually static. It's not currently possible with
+      // the public API
+    });
+
+    test('static tag binding', () => {
+      const tagName = unsafeStatic('div');
+      render(html`<${tagName}></${tagName}>`, container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+    });
+
+    test('dynamic binding after static text binding', () => {
+      render(html`${unsafeStatic('<p>Hello</p>')}${'<p>World</p>'}`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<p>Hello</p>&lt;p&gt;World&lt;/p&gt;'
+      );
     });
   });
 
