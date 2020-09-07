@@ -443,7 +443,7 @@ export abstract class UpdatingElement extends HTMLElement {
       : undefined;
   }
 
-  private _instanceProperties?: PropertyValues;
+  private _instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
@@ -503,26 +503,11 @@ export abstract class UpdatingElement extends HTMLElement {
     (this.constructor as typeof UpdatingElement)._classProperties!.forEach(
       (_v, p) => {
         if (this.hasOwnProperty(p)) {
-          const value = this[p as keyof this];
+          this._instanceProperties!.set(p, this[p as keyof this]);
           delete this[p as keyof this];
-          if (!this._instanceProperties) {
-            this._instanceProperties = new Map();
-          }
-          this._instanceProperties.set(p, value);
         }
       }
     );
-  }
-
-  /**
-   * Applies previously saved instance properties.
-   */
-  private _applyInstanceProperties() {
-    // Use forEach so this works even if for/of loops are compiled to for loops
-    // expecting arrays
-    // tslint:disable-next-line:no-any
-    this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
-    this._instanceProperties = undefined;
   }
 
   connectedCallback() {
@@ -713,7 +698,11 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // Mixin instance properties once, if they exist.
     if (this._instanceProperties) {
-      this._applyInstanceProperties();
+      // Use forEach so this works even if for/of loops are compiled to for loops
+      // expecting arrays
+      // tslint:disable-next-line:no-any
+      this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
+      this._instanceProperties = undefined;
     }
     let shouldUpdate = false;
     const changedProperties = this._changedProperties;
