@@ -289,6 +289,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.performTask();
       }
 
+      onUpdated() {
+        this.performTask();
+      }
+
       async performTask() {
         const deps = this.depsCallback();
         if (this.depsDirty(deps)) {
@@ -296,7 +300,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           const key = ++this.key;
           const value = await this.task(...deps);
           // If this is the most recent task call, process this value.
-          if (this.key = key) {
+          if (this.key === key) {
             this.value = value;
             this.isPending = false;
             this.requestUpdate();
@@ -361,36 +365,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       render() {
         this.time = this.fetchTask.value;
         return html`
-          <section><button counter="1">+</button> / <button counter="1">-</button> : ${this.counter1.count}</section>
-          <section><button counter="2">+</button> / <button counter="2">-</button> : ${this.counter2.count}</section>
-          <section><button counter="3">+</button> / <button counter="3">-</button> : ${this.counter3.count}</section>
+          <section><button @click=${this.onIncrement} .counter=${this.counter1}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter1}>-</button> : ${this.counter1.count}</section>
+          <section><button @click=${this.onIncrement} .counter=${this.counter2}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter2}>-</button> : ${this.counter2.count}</section>
+          <section><button @click=${this.onIncrement} .counter=${this.counter3}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter3}>-</button> : ${this.counter3.count}</section>
           <section>${this.message || ''}</section>
           <hr>
-          <input value="${this.userInfo.value}">
+          <input @input=${this.onInput} .value=${this.userInfo.value.name}>
           <section><my-inner></my-inner></section>
           <section><my-inner></my-inner></section>
           <section>seconds: ${this.time}</section>
         `;
       }
 
-      firstUpdated() {
-        const buttons = this.renderRoot.querySelectorAll('button');
-        for (let i=0; i < buttons.length; i+=2) {
-          buttons[i].addEventListener('click', (e) => this.onIncrement(e));
-          buttons[i+1].addEventListener('click', (e) => this.onDecrement(e));
-        }
-
-        this.renderRoot.querySelector('input').addEventListener('input', (e) => {
-          this.userInfo.value = {name: e.target.value};
-        })
+      onInput(e) {
+        this.userInfo.value = {name: e.target.value};
       }
 
       onIncrement(e) {
-        this['counter' + e.target.getAttribute('counter')].count++;
+        e.target.counter.count++;
       }
 
       onDecrement(e) {
-        this['counter' + e.target.getAttribute('counter')].count--;
+        e.target.counter.count--;
       }
 
     }
