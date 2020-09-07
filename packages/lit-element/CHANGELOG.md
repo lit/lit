@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0] - Unreleased
 
 ### Changed
+* [Breaking] For consistency and simplicity, when a property is set, its value now always reflects to its associated attribute if it has `reflect: true`. Previously, if the property was set because its associated attribute changed, its attribute was not updated (e.g. old: attribute => property => stop; new: attribute => property => attribute). If the property's `toAttribute` and `fromAttribute` converters do not present complimentary values, it's now possible to set an attribute to one value and have it immediately update to another value. Note, when an attribute value is set because a reflecting property changed, the attribute value is still prevented from immediately reflecting back to the property (property => attribute => stop). This is done so that values which deserialize to new values, like Objects and Arrays, do not result in property changes.
 * [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 * [Breaking] When a propery declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
 * [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice is should very rarely be ([#699]https://github.com/Polymer/lit-element/issues/699).

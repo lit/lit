@@ -458,11 +458,6 @@ export abstract class UpdatingElement extends HTMLElement {
   private _changedProperties!: PropertyValues;
 
   /**
-   * Map with keys of properties that should be reflected when updated.
-   */
-  private _reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
-
-  /**
    * Name of currently reflecting property
    */
   private _reflectingProperty: PropertyKey | null = null;
@@ -623,23 +618,11 @@ export abstract class UpdatingElement extends HTMLElement {
         options ||
         (this.constructor as typeof UpdatingElement).getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
-      if (hasChanged(this[name as keyof this], oldValue)) {
-        if (!this._changedProperties.has(name)) {
-          this._changedProperties.set(name, oldValue);
-        }
-        // Add to reflecting properties set.
-        // Note, it's important that every change has a chance to add the
-        // property to `_reflectingProperties`. This ensures setting
-        // attribute + property reflects correctly.
-        if (options.reflect === true && this._reflectingProperty !== name) {
-          if (this._reflectingProperties === undefined) {
-            this._reflectingProperties = new Map();
-          }
-          this._reflectingProperties.set(name, options);
-        }
-      } else {
+      if (!hasChanged(this[name as keyof this], oldValue)) {
         // Abort the request if the property should not be considered changed.
         shouldRequestUpdate = false;
+      } else if (!this._changedProperties.has(name)) {
+        this._changedProperties.set(name, oldValue);
       }
     }
     if (!this.isUpdatePending && shouldRequestUpdate) {
@@ -789,17 +772,18 @@ export abstract class UpdatingElement extends HTMLElement {
    * Setting properties inside this method will *not* trigger
    * another update.
    *
-   * @param _changedProperties Map of changed properties with old values
+   * @param changedProperties Map of changed properties with old values
    */
-  protected update(_changedProperties: PropertyValues) {
-    if (this._reflectingProperties !== undefined) {
-      // Use forEach so this works even if for/of loops are compiled to for
-      // loops expecting arrays
-      this._reflectingProperties.forEach((v, k) =>
-        this._propertyToAttribute(k, this[k as keyof this], v)
-      );
-      this._reflectingProperties = undefined;
-    }
+  protected update(changedProperties: PropertyValues) {
+    // Use forEach so this works even if for/of loops are compiled to for
+    // loops expecting arrays
+    changedProperties.forEach((_v, k) =>
+      this._propertyToAttribute(
+        k,
+        this[k as keyof this],
+        (this.constructor as typeof UpdatingElement).getPropertyOptions(k)
+      )
+    );
     this._markUpdated();
   }
 
