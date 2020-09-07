@@ -234,7 +234,7 @@ export class LitElement extends UpdatingElement {
     } else {
       styles.forEach((s) => {
         const style = document.createElement('style');
-        style.textContent = (s as CSSResult).cssText;
+        style.textContent = (getCompatibleStyle(s) as CSSResult).cssText;
         this.renderRoot.appendChild(style);
       });
     }

@@ -529,6 +529,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Ensure first connection completes an update. Updates cannot complete
     // before connection.
     this.enableUpdating();
+    this.onConnected();
   }
 
   protected enableUpdating() {}
@@ -538,7 +539,9 @@ export abstract class UpdatingElement extends HTMLElement {
    * reserving the possibility of making non-breaking feature additions
    * when disconnecting at some point in the future.
    */
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this.onDisconnected();
+  }
 
   /**
    * Synchronizes property values when attributes change.
@@ -717,6 +720,7 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
+        this.onUpdate(changedProperties);
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -736,6 +740,7 @@ export abstract class UpdatingElement extends HTMLElement {
         this.firstUpdated(changedProperties);
       }
       this.updated(changedProperties);
+      this.onUpdated(changedProperties);
     }
   }
 
@@ -835,4 +840,10 @@ export abstract class UpdatingElement extends HTMLElement {
    * @param _changedProperties Map of changed properties with old values
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
+
+  controllers?: Set<unknown>;
+  onConnected() {}
+  onDisconnected() {}
+  onUpdate(_changedProperties: PropertyValues) {}
+  onUpdated(_changedProperties: PropertyValues) {}
 }

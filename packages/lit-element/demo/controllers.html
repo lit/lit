@@ -1,0 +1,401 @@
+<!DOCTYPE html><!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>lit-element demo</title>
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+</head>
+<body>
+    <style type="element-theme">
+      :host {
+        display: inline-block;
+        border: 1px dashed darkgray;
+        padding: 4px;
+      }
+    </style>
+    <my-element>Hi</my-element>
+    <my-inner>Hi</my-inner>
+  <script type="module">
+    import { LitElement, html, css, notEqual } from '../lib/lit-element.js';
+    import {supportsAdoptingStyleSheets} from '../lib/css-tag.js';
+    import {UpdatingController} from '../lib/updating-controller.js';
+
+    const logger = (Base) => {
+      return class extends Base {
+
+        onConnected() {
+          console.group(`${this.constructor.name}: connected`);
+          super.onConnected();
+          console.groupEnd();
+        }
+
+        onDisconnected() {
+          console.group(`${this.constructor.name}: disconnected`);
+          super.onDisconnected();
+          console.groupEnd();
+        }
+
+        onUpdate() {
+          console.group(`${this.constructor.name}: update`);
+          super.onUpdate();
+          console.groupEnd();
+        }
+
+        onUpdated() {
+          console.group(`${this.constructor.name}: updated`);
+          super.onUpdated();
+          console.groupEnd();
+        }
+      }
+    }
+
+    class MyLogger extends logger(UpdatingController) {}
+
+    class MyListener extends UpdatingController {
+
+      constructor(host, type) {
+        super(host);
+        this.type = type;
+      }
+
+      onConnected() {
+        if (!this.element.hasUpdated) {
+          this.element.addEventListener(this.type, (e) => this.onListen(e))
+        }
+        super.onConnected();
+      }
+
+      onListen(e) {
+        console.info(this.constructor.name, e.type);
+        this.element.message = e.type;
+        this.requestUpdate();
+      }
+
+    }
+
+    class MyHelper extends UpdatingController {
+
+      constructor(host) {
+        super(host);
+        new MyListener(this, 'click');
+        new MyListener(this, 'mousedown');
+        new MyListener(this, 'mouseup');
+        this.logger = new MyLogger(this);
+      }
+
+    }
+
+    class MyCounter extends UpdatingController {
+
+      _count = 0;
+
+      constructor(host) {
+        super(host);
+        this.helper = new MyHelper(this);
+      }
+
+      get count() {
+        return this._count;
+      }
+
+      set count(value) {
+        this._count = value;
+        this.requestUpdate();
+      }
+
+    }
+
+    const addEvent = 'add-context';
+    const removeEvent = 'remove-context';
+
+    class Provider extends UpdatingController {
+
+        consumers = new Set();
+        key = null;
+        _value = null;
+
+        constructor(host, value) {
+          super(host);
+          this.value = value;
+          this.element.addEventListener(addEvent, (e) => this.onAddContext(e));
+          this.element.addEventListener(removeEvent, (e) => this.onRemoveContext(e));
+        }
+
+        onAddContext(e) {
+          const consumer = e.detail;
+          if (this.key !== consumer.key) {
+            return;
+          }
+          this.consumers.add(consumer);
+          consumer.value = this.value;
+          consumer.provider = this;
+          e.stopPropagation();
+        }
+
+        onRemoveContext(e) {
+          const consumer = e.detail;
+          if (this.key !== consumer.key) {
+            return;
+          }
+          this.consumers.delete(consumer);
+          consumer.provider = null;
+          e.stopPropagation();
+        }
+
+        get value() {
+          return this._value;
+        }
+
+        set value(value) {
+          this._value = value;
+          for (const consumer of this.consumers) {
+            consumer.value = this.value;
+          }
+        }
+
+      }
+
+      class Consumer extends UpdatingController {
+
+        _value = null;
+        provider = null;
+        key = null;
+
+        onConnected() {
+          this.element.dispatchEvent(new CustomEvent(addEvent, {detail: this, composed: true, bubbles: true}));
+        }
+
+        onDisconnected() {
+          if (this.provider) {
+            this.provider.element.dispatchEvent(new CustomEvent(removeEvent, {detail: this}));
+          }
+        }
+
+        get value() {
+          return this._value;
+        }
+
+        set value(value) {
+          this._value = value;
+          this.requestUpdate();
+        }
+
+      }
+
+    const createContext = (initialValue, key, ProviderBase = Provider, ConsumerBase = Consumer) => {
+
+      const provider = class Provider extends ProviderBase {
+        constructor(host, value) {
+          super(host, value || initialValue);
+        }
+        key = key;
+      }
+
+      const consumer = class Consumer extends ConsumerBase {
+        constructor(host) {
+          super(host);
+          this.value = initialValue;
+        }
+        key = key;
+      }
+
+
+      return {provider, consumer};
+    }
+
+    const UserContext = createContext({name: 'Bob'}, 'user');
+
+    const themeMoniker = 'element-theme';
+    const allThemeMoniker = 'all';
+    const sheetFromStyle = (style) => {
+      let sheet;
+      if (supportsAdoptingStyleSheets) {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(style.textContent);
+      } else {
+        const type = style.type;
+        style.type = '';
+        sheet = style.sheet;
+        style.type = type;
+      }
+      return sheet;
+    }
+    let documentThemes;
+    const getDocumentThemes = () => {
+      if (!documentThemes) {
+        documentThemes = {};
+        const styles = document.querySelectorAll(`style[type=${themeMoniker}`);
+        for (const style of styles) {
+          const name = style.getAttribute('for') || allThemeMoniker;
+          documentThemes[name] = documentThemes[name] || [];
+          documentThemes[name].push(sheetFromStyle(style));
+        }
+      }
+      return documentThemes;
+    }
+    const getThemesForElement = (name, themes) => [...themes[allThemeMoniker], ...themes[name] || []];
+
+    const ThemeContext = createContext(null, 'theme',
+
+      class ThemeProvider extends Provider  {
+
+        constructor(host, value) {
+          super(host, {...getDocumentThemes(), ...value});
+        }
+
+      },
+
+      class ThemeConsumer extends Consumer {
+
+        constructor(host) {
+          super(host);
+          this.value = getDocumentThemes();
+        }
+
+        requestUpdate() {
+          if (!this.value) {
+            return;
+          }
+          const styles = [
+            ...this.element.constructor._elementStyles,
+            ...getThemesForElement(this.element.localName, this.value)
+          ];
+          // TODO(sorvell): when polyfill is in use, does not replace styles.
+          this.element.adoptStyles(styles);
+        }
+      }
+    );
+
+    class AsyncTask extends UpdatingController {
+
+      constructor(host, task, depsCallback, value = null) {
+        super(host);
+        this.previousDeps = [];
+        this.isPending = false;
+        this.value = value;
+        this.task = task;
+        this.key = 0;
+        this.depsCallback = depsCallback;
+      }
+
+      onUpdate() {
+        this.performTask();
+      }
+
+      async performTask() {
+        const deps = this.depsCallback();
+        if (this.depsDirty(deps)) {
+          this.isPending = true;
+          const key = ++this.key;
+          const value = await this.task(...deps);
+          // If this is the most recent task call, process this value.
+          if (this.key = key) {
+            this.value = value;
+            this.isPending = false;
+            this.requestUpdate();
+          }
+        }
+      }
+
+      depsDirty(deps) {
+        let i = 0;
+        const previousDeps = this.previousDeps;
+        this.previousDeps = deps;
+        for (const dep of deps) {
+          if (notEqual(dep, previousDeps[i])) {
+            return true;
+          }
+          i++;
+        }
+        return false;
+      }
+    }
+
+    class Inner extends LitElement {
+      constructor() {
+        super();
+        this.userInfo = new UserContext.consumer(this);
+        new ThemeContext.consumer(this);
+      }
+
+      static styles = css`:host { margin: 2px; }`;
+
+      render() {
+        const name = this.userInfo.value?.name;
+        const insideSelf = this.getRootNode().host?.localName === this.localName;
+        return html`${name}${!insideSelf ? html`${name ? ', ' : ''} <my-inner></my-inner>` : ''}`;
+      }
+    }
+    customElements.define('my-inner', Inner);
+
+    class MyElement extends LitElement {
+
+      constructor() {
+        super();
+        this.time = 0;
+        this.counter1 = new MyCounter(this);
+        this.counter2 = new MyCounter(this);
+        this.counter3 = new MyCounter(this);
+        this.userInfo = new UserContext.provider(this);
+        this.fetchTask = new AsyncTask(this, time =>
+          new Promise(resolve => setTimeout(() => resolve(++time), 1000)), () => [this.time], 0);
+        new ThemeContext.consumer(this);
+        new ThemeContext.provider(this, {
+          ['my-inner']: [
+            css`
+            :host {
+              background: steelblue;
+              color: beige;
+            }`
+          ]
+        });
+      }
+
+      render() {
+        this.time = this.fetchTask.value;
+        return html`
+          <section><button counter="1">+</button> / <button counter="1">-</button> : ${this.counter1.count}</section>
+          <section><button counter="2">+</button> / <button counter="2">-</button> : ${this.counter2.count}</section>
+          <section><button counter="3">+</button> / <button counter="3">-</button> : ${this.counter3.count}</section>
+          <section>${this.message || ''}</section>
+          <hr>
+          <input value="${this.userInfo.value}">
+          <section><my-inner></my-inner></section>
+          <section><my-inner></my-inner></section>
+          <section>seconds: ${this.time}</section>
+        `;
+      }
+
+      firstUpdated() {
+        const buttons = this.renderRoot.querySelectorAll('button');
+        for (let i=0; i < buttons.length; i+=2) {
+          buttons[i].addEventListener('click', (e) => this.onIncrement(e));
+          buttons[i+1].addEventListener('click', (e) => this.onDecrement(e));
+        }
+
+        this.renderRoot.querySelector('input').addEventListener('input', (e) => {
+          this.userInfo.value = {name: e.target.value};
+        })
+      }
+
+      onIncrement(e) {
+        this['counter' + e.target.getAttribute('counter')].count++;
+      }
+
+      onDecrement(e) {
+        this['counter' + e.target.getAttribute('counter')].count--;
+      }
+
+    }
+
+    customElements.define('my-element', MyElement);
+
+  </script>
+</body></html>
