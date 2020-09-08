@@ -1,5 +1,5 @@
 import {html} from 'lit-html';
-import {msg} from '../../../lib_client/index.js';
+import {msg} from '../../../lit-localize.js';
 
 msg('extra-expression', `Hello World`);
 msg('missing-expression', (name: string) => `Hello ${name}`, 'Friend');

@@ -38,3 +38,6 @@ jobs:
 
       - name: Check test output eslint
         run: npm run test:check-eslint
+
+      - name: Karma browser tests
+        run: npx karma start --single-run
