@@ -11,7 +11,7 @@
 
 module.exports = (config) => {
   config.set({
-    files: [{pattern: 'lib_client/**/*.test.js', type: 'module'}],
+    files: [{pattern: 'tests/**/*.test.js', type: 'module'}],
     plugins: [
       require('@open-wc/karma-esm'),
       require('karma-chai'),

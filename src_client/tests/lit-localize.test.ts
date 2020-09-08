@@ -18,7 +18,7 @@ import {
   LocaleModule,
   LOCALE_STATUS_EVENT,
   LocaleStatusEventDetail,
-} from '../index.js';
+} from '../lit-localize.js';
 import {Localized} from '../localized-element.js';
 import {Deferred} from './deferred.js';
 import {html, render} from 'lit-html';
