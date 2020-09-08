@@ -172,6 +172,9 @@ let loadLocale: ((locale: string) => Promise<LocaleModule>) | undefined;
 let configured = false;
 let templates: TemplateMap | undefined;
 let loading = new Deferred<void>();
+// The loading promise must be initially resolved, because that's what we should
+// return if the user immediately calls setLocale(sourceLocale).
+loading.resolve();
 let requestId = 0;
 
 /**
@@ -243,14 +246,14 @@ const getLocale: (() => string) & {
  * Throws if the given locale is not contained by the configured `sourceLocale`
  * or `targetLocales`.
  */
-const setLocale: ((newLocale: string) => void) & {
+const setLocale: ((newLocale: string) => Promise<void>) & {
   _LIT_LOCALIZE_SET_LOCALE_?: never;
 } = (newLocale: string) => {
-  if (!configured || !validLocales || !loadLocale) {
-    throw new Error('Must call configureLocalization before setLocale');
-  }
-  if (newLocale === loadingLocale ?? activeLocale) {
+  if (newLocale === (loadingLocale ?? activeLocale)) {
     return loading.promise;
+  }
+  if (!validLocales || !loadLocale) {
+    throw new Error('Internal error');
   }
   if (!validLocales.has(newLocale)) {
     throw new Error('Invalid locale code');
@@ -262,39 +265,38 @@ const setLocale: ((newLocale: string) => void) & {
     loading = new Deferred();
   }
   dispatchStatusEvent({status: 'loading', loadingLocale: newLocale});
-  if (newLocale === sourceLocale) {
-    activeLocale = newLocale;
-    loadingLocale = undefined;
-    templates = undefined;
-    loading.resolve();
-    dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
-  } else {
-    loadLocale(newLocale).then(
-      (mod) => {
-        if (requestId === thisRequestId) {
-          activeLocale = newLocale;
-          loadingLocale = undefined;
-          templates = mod.templates;
-          loading.resolve();
-          dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
-        }
-        // Else another locale was requested in the meantime. Don't resolve or
-        // reject, because the newer load call is going to use the same promise.
-        // Note the user can call getLocale() after the promise resolves if they
-        // need to check if the locale is still the one they expected to load.
-      },
-      (err) => {
-        if (requestId === thisRequestId) {
-          loading.reject(err);
-          dispatchStatusEvent({
-            status: 'error',
-            errorLocale: newLocale,
-            errorMessage: err.toString(),
-          });
-        }
+  const localePromise: Promise<Partial<LocaleModule>> =
+    newLocale === sourceLocale
+      ? // We could switch to the source locale syncronously, but we prefer to
+        // queue it on a microtask so that switching locales is consistently
+        // asynchronous.
+        Promise.resolve({templates: undefined})
+      : loadLocale(newLocale);
+  localePromise.then(
+    (mod) => {
+      if (requestId === thisRequestId) {
+        activeLocale = newLocale;
+        loadingLocale = undefined;
+        templates = mod.templates;
+        dispatchStatusEvent({status: 'ready', readyLocale: newLocale});
+        loading.resolve();
       }
-    );
-  }
+      // Else another locale was requested in the meantime. Don't resolve or
+      // reject, because the newer load call is going to use the same promise.
+      // Note the user can call getLocale() after the promise resolves if they
+      // need to check if the locale is still the one they expected to load.
+    },
+    (err) => {
+      if (requestId === thisRequestId) {
+        dispatchStatusEvent({
+          status: 'error',
+          errorLocale: newLocale,
+          errorMessage: err.toString(),
+        });
+        loading.reject(err);
+      }
+    }
+  );
   return loading.promise;
 };
 
