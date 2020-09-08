@@ -25,7 +25,7 @@ import {UpdatingElement, PropertyValues, connectCallback, updateCallback} from '
  * into its lifecycle. The controller can perform tasks when its associated
  * element is connected or disconnected by implementing the `onConnected` and
  * `onDisconnected` methods. It can prompt the element to update by calling
- * `requestUpdating`, and it can perform tasks as the element updates by
+ * `requestUpdate`, and it can perform tasks as the element updates by
  * implementing `onUpdate` and `onUpdated`. Controllers can contain other
  * controllers. Controllers have an `element` property which is the element
  * to which the controller is attached and a `host` property which is either
