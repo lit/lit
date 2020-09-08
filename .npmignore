@@ -10,3 +10,6 @@ lib_client/tests/
 testdata/
 ava.config.js
 scripts/
+examples/
+.tsbuildinfo*
+tsconfig.*

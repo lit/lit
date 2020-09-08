@@ -162,6 +162,16 @@ export class XliffFormatter implements Formatter {
     sourceMessages: ProgramMessage[],
     translations: Map<Locale, Message[]>
   ): Promise<void> {
+    const xliffDir = this.config.resolve(this.xliffConfig.xliffDir);
+    try {
+      await fsExtra.ensureDir(xliffDir);
+    } catch (e) {
+      throw new KnownError(
+        `Error creating XLIFF directory: ${xliffDir}\n` +
+          `Do you have write permission?\n` +
+          e.message
+      );
+    }
     const writes: Array<Promise<void>> = [];
     for (const targetLocale of this.config.targetLocales) {
       const xmlStr = this.encodeLocale(
@@ -169,11 +179,16 @@ export class XliffFormatter implements Formatter {
         targetLocale,
         translations.get(targetLocale) || []
       );
-      const path = pathLib.join(
-        this.config.resolve(this.xliffConfig.xliffDir),
-        `${targetLocale}.xlf`
+      const path = pathLib.join(xliffDir, `${targetLocale}.xlf`);
+      writes.push(
+        fsExtra.writeFile(path, xmlStr, 'utf8').catch((e) => {
+          throw new KnownError(
+            `Error creating XLIFF file: ${path}\n` +
+              `Do you have write permission?\n` +
+              e.message
+          );
+        })
       );
-      writes.push(fsExtra.writeFile(path, xmlStr, 'utf8'));
     }
     await Promise.all(writes);
   }

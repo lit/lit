@@ -1,5 +1,5 @@
 import {html} from 'lit-html';
-import {msg} from '../../../lib_client/index.js';
+import {msg} from '../../../lit-localize.js';
 
 msg('string', 'Hello World!');
 

@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- **[BREAKING]** Published module paths have changed:
+  `lib_client/index.js` -> `lit-localize.js`
+  `lib_client/localized-element.js` -> `localized-element.js`
+
+- When writing TypeScript, XLIFF, and XLB files, parent directories will now be
+  created automatically, instead of erroring.
 
 ## [0.3.0] - 2020-08-25
 

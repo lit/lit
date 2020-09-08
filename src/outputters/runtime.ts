@@ -15,7 +15,7 @@ import {Locale} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
-import * as fs from 'fs';
+import * as fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 
 /**
@@ -41,6 +41,16 @@ export function runtimeOutput(
   config: Config,
   runtimeConfig: RuntimeOutputConfig
 ) {
+  const outputDir = config.resolve(runtimeConfig.outputDir);
+  try {
+    fsExtra.ensureDirSync(outputDir);
+  } catch (e) {
+    throw new KnownError(
+      `Error creating TypeScript locales directory: ${outputDir}\n` +
+        `Do you have write permission?\n` +
+        e.message
+    );
+  }
   for (const locale of config.targetLocales) {
     const translations = translationMap.get(locale) || [];
     const ts = generateLocaleModule(
@@ -49,17 +59,13 @@ export function runtimeOutput(
       messages,
       config.patches || {}
     );
-    const filename = pathLib.join(
-      config.resolve(runtimeConfig.outputDir),
-      `${locale}.ts`
-    );
+    const filename = pathLib.join(outputDir, `${locale}.ts`);
     try {
-      fs.writeFileSync(filename, ts);
+      fsExtra.writeFileSync(filename, ts, 'utf8');
     } catch (e) {
       throw new KnownError(
-        `Error writing TypeScript file: ${filename}\n` +
-          `Does the parent directory exist, ` +
-          `and do you have write permission?\n` +
+        `Error writing TypeScript locale file: ${filename}\n` +
+          `Do you have write permission?\n` +
           e.message
       );
     }

@@ -12,9 +12,9 @@
   "bin": {
     "lit-localize": "bin/lit-localize.js"
   },
-  "main": "lib_client/index.js",
+  "main": "index.js",
   "scripts": {
-    "clean": "rimraf 'lib/*' 'lib/.*' 'lib_client/*' 'lib_client/.*' 'testdata/*/output'",
+    "clean": "rimraf 'lib/*' 'lib/.*' 'lit-localize.js' 'localized-element.js' '*.d.ts' '*.map' '.tsbuildinfo*' 'testdata/*/output'",
     "build": "npm run clean && npm run generate-json-schema && tsc && tsc --project tsconfig.client.json",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/config.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && ava --verbose && npm run test:check-tsc && npm run test:check-eslint && npx karma start --single-run",
