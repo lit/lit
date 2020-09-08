@@ -10,7 +10,7 @@
  */
 
 import {Message} from '../messages';
-import {Locale} from '../locales';
+import {Locale, writeLocaleCodesModule} from '../locales';
 import {Config} from '../config';
 import * as ts from 'typescript';
 import {isLitTemplate, isMsgCall, isStaticString} from '../program-analysis';
@@ -23,17 +23,37 @@ import * as pathLib from 'path';
  */
 export interface TransformOutputConfig {
   mode: 'transform';
+
+  /**
+   * Optional filepath for a generated TypeScript module that exports
+   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
+   * from your config file. Use to keep your config file and client config in
+   * sync. For example:
+   *
+   *   export const sourceLocale = 'en';
+   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
+   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
+   */
+  localeCodesModule?: string;
 }
 
 /**
  * Compile and emit the given TypeScript program using the lit-localize
  * transformer.
  */
-export function transformOutput(
+export async function transformOutput(
   translationsByLocale: Map<Locale, Message[]>,
   config: Config,
+  transformConfig: TransformOutputConfig,
   program: ts.Program
 ) {
+  if (transformConfig.localeCodesModule) {
+    await writeLocaleCodesModule(
+      config.sourceLocale,
+      config.targetLocales,
+      transformConfig.localeCodesModule
+    );
+  }
   // TODO(aomarks) It doesn't seem that it's possible for a TypeScript
   // transformer to emit a new file, so we just have to emit for each locale.
   // Need to do some more investigation into the best way to integrate this

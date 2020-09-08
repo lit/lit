@@ -1,11 +1,10 @@
 import {LitElement, html} from 'lit-element';
 import {getLocale, setLocaleFromUrl} from './localization.js';
+import {allLocales} from './locale-codes.js';
 import {Localized} from 'lit-localize/localized-element.js';
 
-const locales = ['en', 'es-419', 'zh_CN'] as const;
-
 const localeNames: {
-  [L in typeof locales[number]]: string;
+  [L in typeof allLocales[number]]: string;
 } = {
   en: 'English',
   'es-419': 'Español (Latinoamérica)‎',
@@ -19,7 +18,7 @@ export class LocalePicker extends Localized(LitElement) {
   render() {
     return html`
       <select @change=${this.localeChanged}>
-        ${locales.map(
+        ${allLocales.map(
           (locale) =>
             html`<option value=${locale} ?selected=${locale === getLocale()}>
               ${localeNames[locale]}

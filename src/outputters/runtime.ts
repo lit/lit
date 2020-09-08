@@ -11,7 +11,7 @@
 
 import {Message, ProgramMessage, Placeholder} from '../messages';
 import {applyPatches, Patches} from '../patches';
-import {Locale} from '../locales';
+import {Locale, writeLocaleCodesModule} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
@@ -30,17 +30,39 @@ export interface RuntimeOutputConfig {
    * module that exports the translations in that locale keyed by message ID.
    */
   outputDir: string;
+
+  /**
+   * Optional filepath for a generated TypeScript module that exports
+   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
+   * from your config file. Use to keep your config file and client config in
+   * sync. For example:
+   *
+   *   export const sourceLocale = 'en';
+   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
+   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
+   */
+  localeCodesModule?: string;
 }
 
 /**
  * Write output for the `runtime` output mode.
  */
-export function runtimeOutput(
+export async function runtimeOutput(
   messages: ProgramMessage[],
   translationMap: Map<Locale, Message[]>,
   config: Config,
   runtimeConfig: RuntimeOutputConfig
 ) {
+  const writes = [];
+  if (runtimeConfig.localeCodesModule) {
+    writes.push(
+      writeLocaleCodesModule(
+        config.sourceLocale,
+        config.targetLocales,
+        runtimeConfig.localeCodesModule
+      )
+    );
+  }
   const outputDir = config.resolve(runtimeConfig.outputDir);
   try {
     fsExtra.ensureDirSync(outputDir);
@@ -60,16 +82,17 @@ export function runtimeOutput(
       config.patches || {}
     );
     const filename = pathLib.join(outputDir, `${locale}.ts`);
-    try {
-      fsExtra.writeFileSync(filename, ts, 'utf8');
-    } catch (e) {
-      throw new KnownError(
-        `Error writing TypeScript locale file: ${filename}\n` +
-          `Do you have write permission?\n` +
-          e.message
-      );
-    }
+    writes.push(
+      fsExtra.writeFile(filename, ts, 'utf8').catch((e) => {
+        throw new KnownError(
+          `Error writing TypeScript file: ${filename}\n` +
+            `Do you have write permission?\n` +
+            e.message
+        );
+      })
+    );
   }
+  await Promise.all(writes);
 }
 
 /**

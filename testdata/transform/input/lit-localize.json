@@ -4,7 +4,8 @@
   "targetLocales": ["es-419", "zh_CN"],
   "tsConfig": "tsconfig.json",
   "output": {
-    "mode": "transform"
+    "mode": "transform",
+    "localeCodesModule": "locale-codes.ts"
   },
   "interchange": {
     "format": "xliff",
