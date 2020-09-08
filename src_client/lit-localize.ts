@@ -83,6 +83,8 @@ export interface LocaleModule {
  */
 export const LOCALE_STATUS_EVENT = 'lit-localize-status';
 
+// Mifiring eslint rule
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare global {
   interface WindowEventMap {
     [LOCALE_STATUS_EVENT]: CustomEvent<LocaleStatusEventDetail>;

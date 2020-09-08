@@ -67,16 +67,19 @@ function checkTransform(
   }));
 
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
+  // TypeScript >= 4 will add an empty export statement if there are no imports
+  // or exports to ensure this is a module. We don't care about checking this.
+  const unformattedActual = (result.code || '').replace('export {};', '');
   let formattedActual;
   try {
-    formattedActual = prettier.format(result.code || '', {
+    formattedActual = prettier.format(unformattedActual, {
       parser: 'typescript',
     });
   } catch {
     // We might emit invalid TypeScript in a failing test. Rather than fail with
     // a Prettier parse exception, it's more useful to see a diff.
     formattedExpected = expectedJs;
-    formattedActual = result.code;
+    formattedActual = unformattedActual;
   }
   t.is(formattedActual, formattedExpected);
   t.deepEqual(result.diagnostics, []);

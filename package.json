@@ -1,6 +1,6 @@
 {
   "name": "lit-localize",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Localization for lit-html",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
@@ -37,7 +37,7 @@
     "minimist": "^1.2.5",
     "parse5": "^6.0.0",
     "source-map-support": "^0.5.19",
-    "typescript": "^3.8.3",
+    "typescript": "^4.0.2",
     "xmldom": "^0.3.0"
   },
   "devDependencies": {
@@ -53,8 +53,8 @@
     "@types/parse5": "^5.0.2",
     "@types/prettier": "^2.0.1",
     "@types/xmldom": "^0.1.29",
-    "@typescript-eslint/eslint-plugin": "^3.3.0",
-    "@typescript-eslint/parser": "^3.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
     "ava": "^3.8.1",
     "chai": "^4.2.0",
     "chokidar-cli": "^2.1.0",
@@ -69,6 +69,6 @@
     "mocha": "^8.1.1",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
-    "typescript-json-schema": "^0.42.0"
+    "typescript-json-schema": "^0.43.0"
   }
 }

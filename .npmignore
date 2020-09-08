@@ -13,3 +13,4 @@ scripts/
 examples/
 .tsbuildinfo*
 tsconfig.*
+tests/
