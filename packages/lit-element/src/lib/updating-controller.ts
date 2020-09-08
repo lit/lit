@@ -36,6 +36,7 @@ export class UpdatingController {
 
   element!: UpdatingElement;
   host!: UpdatingController | UpdatingElement;
+  isActive = false;
   connectedCallbacks: Set<connectCallback> = new Set();
   disconnectedCallbacks: Set<connectCallback> = new Set();
   updateCallbacks: Set<updateCallback> = new Set();
@@ -58,6 +59,7 @@ export class UpdatingController {
   }
 
   addController(element: UpdatingElement, host: UpdatingController | UpdatingElement, controller: UpdatingController) {
+    this.isActive = true;
     controller.element = element;
     controller.host = host;
     host.connectedCallbacks.add(controller._onConnected);
@@ -71,6 +73,7 @@ export class UpdatingController {
     if (!host) {
       return;
     }
+    controller.isActive = false;
     controller.onDisconnected();
     controller.element = undefined;
     controller.host = undefined;
@@ -83,7 +86,9 @@ export class UpdatingController {
   }
 
   requestUpdate() {
-    this.host.requestUpdate();
+    if (this.isActive) {
+      this.host.requestUpdate();
+    }
   }
 
   /**

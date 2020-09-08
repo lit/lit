@@ -26,6 +26,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     import { LitElement, html, css, notEqual } from '../lib/lit-element.js';
     import {supportsAdoptingStyleSheets} from '../lib/css-tag.js';
     import {UpdatingController} from '../lib/updating-controller.js';
+    import {directive, Directive} from '../node_modules/lit-html/index.js';
 
     const logger = (Base) => {
       return class extends Base {
@@ -314,7 +315,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           const key = ++this.key;
           const value = await this.task(...deps);
           // If this is the most recent task call, process this value.
-          if (this.key === key) {
+          if (this.key === key && this.host) {
             this.value = value;
             this.isPending = false;
             this.requestUpdate();
@@ -335,6 +336,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return false;
       }
     }
+
+    const updateDirective = directive(
+      class UpdateObserver extends Directive {
+        constructor(element) {
+          super();
+          this.updateListener = undefined;
+          this.updateCount = 0;
+        }
+
+        render(element) {
+          if (this.updateListener === undefined) {
+            this.updateListener = () => {
+              this.updateCount++;
+            }
+            element.updateCallbacks.add(this.updateListener);
+          }
+          return html`directive update count: ${this.updateCount}`;
+        }
+      }
+    );
 
     class Inner extends LitElement {
       constructor() {
@@ -379,15 +400,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       render() {
         this.time = this.fetchTask.value;
         return html`
-          <section><button @click=${this.onIncrement} .counter=${this.counter1}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter1}>-</button> : ${this.counter1.count}</section>
-          <section><button @click=${this.onIncrement} .counter=${this.counter2}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter2}>-</button> : ${this.counter2.count}</section>
-          <section><button @click=${this.onIncrement} .counter=${this.counter3}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter3}>-</button> : ${this.counter3.count}</section>
+          <section><button @click=${this.onIncrement} .counter=${this.counter1}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter1}>-</button> : ${this.counter1?.count}</section>
+          <section><button @click=${this.onIncrement} .counter=${this.counter2}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter2}>-</button> : ${this.counter2?.count}</section>
+          <section><button @click=${this.onIncrement} .counter=${this.counter3}>+</button> / <button @click=${this.onDecrement} .counter=${this.counter3}>-</button> : ${this.counter3?.count}</section>
           <section>${this.message || ''}</section>
           <hr>
           <input @input=${this.onInput} .value=${this.userInfo.value.name}>
           <section><my-inner></my-inner></section>
           <section><my-inner></my-inner></section>
           <section>seconds: ${this.time}</section>
+          <section>${updateDirective(this)}</section>
         `;
       }
 
@@ -396,11 +418,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       onIncrement(e) {
-        e.target.counter.count++;
+        e.target.counter && e.target.counter.count++;
       }
 
       onDecrement(e) {
-        e.target.counter.count--;
+        e.target.counter && e.target.counter.count--;
       }
 
     }
