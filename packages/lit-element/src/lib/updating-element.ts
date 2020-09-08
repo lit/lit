@@ -209,6 +209,9 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
+export type connectCallback = () => void;
+export type updateCallback = (changedProperties: PropertyValues) => void;
+
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -514,7 +517,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Ensure first connection completes an update. Updates cannot complete
     // before connection.
     this.enableUpdating();
-    this.onConnected();
+    this.connectedCallbacks.forEach(cb => cb());
   }
 
   protected enableUpdating() {}
@@ -525,7 +528,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.onDisconnected();
+    this.disconnectedCallbacks.forEach(cb => cb());
   }
 
   /**
@@ -709,7 +712,7 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.onUpdate(changedProperties);
+        this.updateCallbacks.forEach(cb => cb(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -729,7 +732,7 @@ export abstract class UpdatingElement extends HTMLElement {
         this.firstUpdated(changedProperties);
       }
       this.updated(changedProperties);
-      this.onUpdated(changedProperties);
+      this.updatedCallbacks.forEach(cb => cb(changedProperties));
     }
   }
 
@@ -830,9 +833,9 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 
-  controllers?: Set<unknown>;
-  onConnected() {}
-  onDisconnected() {}
-  onUpdate(_changedProperties: PropertyValues) {}
-  onUpdated(_changedProperties: PropertyValues) {}
+  connectedCallbacks: Set<connectCallback> = new Set();
+  disconnectedCallbacks: Set<connectCallback> = new Set();
+  updateCallbacks: Set<updateCallback> = new Set();
+  updatedCallbacks: Set<updateCallback> = new Set();
+
 }

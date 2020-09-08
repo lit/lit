@@ -62,12 +62,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       constructor(host, type) {
         super(host);
+        this.hasListener = false;
         this.type = type;
+        this.listener = (e) => this.onListen(e);
       }
 
+
       onConnected() {
-        if (!this.element.hasUpdated) {
-          this.element.addEventListener(this.type, (e) => this.onListen(e))
+        if (!this.hasListener) {
+          this.hasListener = true;
+          this.element.addEventListener(this.type, this.listener);
+        }
+        super.onConnected();
+      }
+
+      onDisconnected() {
+        if (this.hasListener) {
+          this.hasListener = false;
+          this.element.removeEventListener(this.type, this.listener);
         }
         super.onConnected();
       }
@@ -84,9 +96,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       constructor(host) {
         super(host);
-        new MyListener(this, 'click');
-        new MyListener(this, 'mousedown');
-        new MyListener(this, 'mouseup');
+        this.listeners = [
+          new MyListener(this, 'click'),
+          new MyListener(this, 'mousedown'),
+          new MyListener(this, 'mouseup')
+        ];
         this.logger = new MyLogger(this);
       }
 

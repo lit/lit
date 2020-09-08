@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {UpdatingElement, PropertyValues} from './updating-element';
+import {UpdatingElement, PropertyValues, connectCallback, updateCallback} from './updating-element';
 
 /**
  * Use this module if you want to create your own base class extending
@@ -33,45 +33,53 @@ import {UpdatingElement, PropertyValues} from './updating-element';
  * @noInheritDoc
  */
 export class UpdatingController {
-  controllers: Set<UpdatingController> = new Set();
-  element: UpdatingElement;
 
-  constructor(public host: UpdatingController | UpdatingElement) {
-    this.element =
-      this.host instanceof UpdatingElement
-        ? (this.host as UpdatingElement)
-        : (this.host as UpdatingController).element;
-    this._ensureElementSupportsControllers();
-    (this.host.controllers as Set<UpdatingController>).add(this);
+  element!: UpdatingElement;
+  host!: UpdatingController | UpdatingElement;
+  connectedCallbacks: Set<connectCallback> = new Set();
+  disconnectedCallbacks: Set<connectCallback> = new Set();
+  updateCallbacks: Set<updateCallback> = new Set();
+  updatedCallbacks: Set<updateCallback> = new Set();
+  private _onConnected: connectCallback;
+  private _onDisconnected: connectCallback;
+  private _onUpdate: updateCallback;
+  private _onUpdated: updateCallback;
+
+  constructor(host: UpdatingController | UpdatingElement) {
+    const element =
+      host instanceof UpdatingElement
+        ? host
+        : host.element;
+    this._onConnected = () => this.onConnected();
+    this._onDisconnected = () => this.onDisconnected();
+    this._onUpdate = (changedProperties: PropertyValues) => this.onUpdate(changedProperties);
+    this._onUpdated = (changedProperties: PropertyValues) => this.onUpdated(changedProperties);
+    this.addController(element, host, this);
   }
 
-  /**
-   * Installs controller support into the controller's element. This is done
-   * lazily by the controller to minimize the amount of code needed in
-   * UpdatingElement.
-   */
-  private _ensureElementSupportsControllers() {
-    const element = this.element;
-    if ((element as any)._supportsUpdatingControllers) {
+  addController(element: UpdatingElement, host: UpdatingController | UpdatingElement, controller: UpdatingController) {
+    controller.element = element;
+    controller.host = host;
+    host.connectedCallbacks.add(controller._onConnected);
+    host.disconnectedCallbacks.add(controller._onDisconnected);
+    host.updateCallbacks.add(controller._onUpdate);
+    host.updatedCallbacks.add(controller._onUpdated);
+  }
+
+  removeController(controller: any) {
+    const host = controller.host;
+    if (!host) {
       return;
     }
-    const controller = this;
-    Object.assign(element, {
-      _supportsUpdatingControllers: true,
-      controllers: new Set(),
-      onConnected() {
-        controller.runControllers(element.onConnected, arguments, element);
-      },
-      onDisconnected() {
-        controller.runControllers(element.onDisconnected, arguments, element);
-      },
-      onUpdate(_changedProperties: PropertyValues) {
-        controller.runControllers(element.onUpdate, arguments, element);
-      },
-      onUpdated(_changedProperties: PropertyValues) {
-        controller.runControllers(element.onUpdated, arguments, element);
-      },
-    });
+    controller.onDisconnected();
+    controller.element = undefined;
+    controller.host = undefined;
+    if (host) {
+      host.connectedCallbacks.delete(controller._onConnected);
+      host.disconnectedCallbacks.delete(controller._onDisconnected);
+      host.updateCallbacks.delete(controller._onUpdate);
+      host.updatedCallbacks.delete(controller._onUpdated);
+    }
   }
 
   requestUpdate() {
@@ -79,55 +87,33 @@ export class UpdatingController {
   }
 
   /**
-   * Runs the given method on the set of controllers managed by this controller
-   * or its element.
-   * @param method
-   * @param args
-   * @param context
-   */
-  runControllers(
-    method: Function,
-    args: IArguments = arguments,
-    context: UpdatingElement | UpdatingController = this
-  ) {
-    for (const controller of context.controllers!) {
-      const fn = (controller as UpdatingController)[
-        method.name as keyof UpdatingController
-      ] as Function;
-      if (fn) {
-        fn.call(controller, ...args);
-      }
-    }
-  }
-
-  /**
    * Runs when the controller's element updates, before the element itself
    * updates.
-   * @param _changedProperties
+   * @param changedProperties
    */
-  onUpdate(_changedProperties: PropertyValues) {
-    this.runControllers(this.onUpdate, arguments);
+  onUpdate(changedProperties: PropertyValues) {
+    this.updateCallbacks.forEach(cb => cb(changedProperties));
   }
 
   /**
    * Runs after the controller's element updates after its `updated` method.
-   * @param _changedProperties
+   * @param changedProperties
    */
-  onUpdated(_changedProperties: PropertyValues) {
-    this.runControllers(this.onUpdated, arguments);
+  onUpdated(changedProperties: PropertyValues) {
+    this.updatedCallbacks.forEach(cb => cb(changedProperties));
   }
 
   /**
    * Runs after the controller's element is connected.
    */
   onConnected() {
-    this.runControllers(this.onConnected);
+    this.connectedCallbacks.forEach(cb => cb());
   }
 
   /**
    * Runs after the controller's element is disconnected.
    */
   onDisconnected() {
-    this.runControllers(this.onDisconnected);
+    this.disconnectedCallbacks.forEach(cb => cb());
   }
 }
