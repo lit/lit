@@ -21,7 +21,7 @@ import {UpdatingElement, PropertyValues, connectCallback, updateCallback} from '
  */
 
 /**
- * Base controller class which can interact with an UpdatingElemrnt by hooking
+ * Base controller class which can interact with an UpdatingElement by hooking
  * into its lifecycle. The controller can perform tasks when it associated
  * element is connected or disconnected by implementing the `onConnected` and
  * `onDisconnected` methods. It can prompt the element to update by calling
