@@ -16,9 +16,9 @@ import {
   directive,
   TemplateResult,
   NodePart,
-  NodePartState,
   Directive,
 } from '../lit-html.js';
+import {detachNodePart, restoreNodePart, NodePartState} from '../parts.js';
 
 /**
  * Enables fast switching between multiple templates by caching the DOM nodes
@@ -55,7 +55,7 @@ export const cache = directive(
         this.value !== undefined &&
         this.value.strings !== (v as TemplateResult).strings
       ) {
-        this.templateCache.set(this.value.strings, part.detach());
+        this.templateCache.set(this.value.strings, detachNodePart(part));
       }
 
       // If the new value is a TemplateResult, try to restore it from cache
@@ -64,7 +64,7 @@ export const cache = directive(
           (v as TemplateResult).strings
         );
         if (cachedTemplate !== undefined) {
-          part.restore(cachedTemplate);
+          restoreNodePart(part,cachedTemplate);
         }
       }
       return this.render(v);

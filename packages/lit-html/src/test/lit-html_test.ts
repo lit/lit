@@ -16,11 +16,9 @@ import {
   Directive,
   directive,
   html,
-  insert,
   noChange,
   NodePart,
   nothing,
-  remove,
   render,
   svg,
   TemplateResult,
@@ -629,242 +627,193 @@ suite('lit-html', () => {
       );
     });
 
-    test('removes the first element from an array', () => {
-      // prettier-ignore
-      const renderItem = (i: number) => html`<li>${i}</li>`;
-      // prettier-ignore
-      const t = (items: any) => html`<ul>${items}</ul>`;
+    // test('removes the first element from an array', () => {
+    //   // prettier-ignore
+    //   const renderItem = (i: number) => html`<li>${i}</li>`;
+    //   // prettier-ignore
+    //   const t = (items: any) => html`<ul>${items}</ul>`;
 
-      // Initial render with 3 template results:
-      render(t([1, 2, 3].map(renderItem)), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Initial render with 3 template results:
+    //   render(t([1, 2, 3].map(renderItem)), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const liElements = container.querySelectorAll('li');
-      const li2 = liElements.item(1);
+    //   const liElements = container.querySelectorAll('li');
+    //   const li2 = liElements.item(1);
 
-      // Update that removes the first item:
-      render(t([remove, renderItem(2), renderItem(3)]), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>2</li><li>3</li></ul>'
-      );
+    //   // Update that removes the first item:
+    //   render(t([remove, renderItem(2), renderItem(3)]), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>2</li><li>3</li></ul>'
+    //   );
 
-      const updatedLiElements = container.querySelectorAll('li');
-      const updatedLi2 = updatedLiElements.item(0);
+    //   const updatedLiElements = container.querySelectorAll('li');
+    //   const updatedLi2 = updatedLiElements.item(0);
 
-      assert.strictEqual(updatedLi2, li2);
-    });
+    //   assert.strictEqual(updatedLi2, li2);
+    // });
 
-    test('removes the second element from an array', () => {
-      // prettier-ignore
-      const renderItem = (i: number) => html`<li>${i}</li>`;
-      // prettier-ignore
-      const t = (items: any) => html`<ul>${items}</ul>`;
+    // test('removes the second element from an array', () => {
+    //   // prettier-ignore
+    //   const renderItem = (i: number) => html`<li>${i}</li>`;
+    //   // prettier-ignore
+    //   const t = (items: any) => html`<ul>${items}</ul>`;
 
-      // Initial render with 3 template results:
-      render(t([1, 2, 3].map(renderItem)), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Initial render with 3 template results:
+    //   render(t([1, 2, 3].map(renderItem)), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const liElements = container.querySelectorAll('li');
-      const li3 = liElements.item(2);
+    //   const liElements = container.querySelectorAll('li');
+    //   const li3 = liElements.item(2);
 
-      // Update that removes the first item:
-      render(t([renderItem(1), remove, renderItem(3)]), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>3</li></ul>'
-      );
+    //   // Update that removes the first item:
+    //   render(t([renderItem(1), remove, renderItem(3)]), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>3</li></ul>'
+    //   );
 
-      const updatedLiElements = container.querySelectorAll('li');
-      const updatedLi3 = updatedLiElements.item(1);
+    //   const updatedLiElements = container.querySelectorAll('li');
+    //   const updatedLi3 = updatedLiElements.item(1);
 
-      assert.strictEqual(updatedLi3, li3);
-    });
+    //   assert.strictEqual(updatedLi3, li3);
+    // });
 
-    test('inserts to the head of an array', () => {
-      // prettier-ignore
-      const renderItem = (i: number) => html`<li>${i}</li>`;
-      // prettier-ignore
-      const t = (items: any) =>html`<ul>${items}</ul>`;
+    // test('inserts to the head of an array', () => {
+    //   // prettier-ignore
+    //   const renderItem = (i: number) => html`<li>${i}</li>`;
+    //   // prettier-ignore
+    //   const t = (items: any) =>html`<ul>${items}</ul>`;
 
-      // Initial render with 3 template results:
-      render(t([1, 2, 3].map(renderItem)), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Initial render with 3 template results:
+    //   render(t([1, 2, 3].map(renderItem)), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const liElements = container.querySelectorAll('li');
-      const li1 = liElements.item(0);
+    //   const liElements = container.querySelectorAll('li');
+    //   const li1 = liElements.item(0);
 
-      // Update that inserts a new item
-      render(
-        t([insert(renderItem(0)), renderItem(1), renderItem(2), renderItem(3)]),
-        container
-      );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>0</li><li>1</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Update that inserts a new item
+    //   render(
+    //     t([insert(renderItem(0)), renderItem(1), renderItem(2), renderItem(3)]),
+    //     container
+    //   );
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>0</li><li>1</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const updatedLiElements = container.querySelectorAll('li');
-      const updatedLi1 = updatedLiElements.item(1);
+    //   const updatedLiElements = container.querySelectorAll('li');
+    //   const updatedLi1 = updatedLiElements.item(1);
 
-      assert.strictEqual(updatedLi1, li1);
-    });
+    //   assert.strictEqual(updatedLi1, li1);
+    // });
 
-    test('inserts in the middle an array', () => {
-      // prettier-ignore
-      const renderItem = (i: number) => html`<li>${i}</li>`;
-      // prettier-ignore
-      const t = (items: any) =>html`<ul>${items}</ul>`;
+    // test('inserts in the middle an array', () => {
+    //   // prettier-ignore
+    //   const renderItem = (i: number) => html`<li>${i}</li>`;
+    //   // prettier-ignore
+    //   const t = (items: any) =>html`<ul>${items}</ul>`;
 
-      // Initial render with 3 template results:
-      render(t([1, 2, 3].map(renderItem)), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Initial render with 3 template results:
+    //   render(t([1, 2, 3].map(renderItem)), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const liElements = container.querySelectorAll('li');
-      const li1 = liElements.item(0);
-      const li2 = liElements.item(1);
+    //   const liElements = container.querySelectorAll('li');
+    //   const li1 = liElements.item(0);
+    //   const li2 = liElements.item(1);
 
-      // Update that inserts a new item
-      render(
-        t([
-          renderItem(1),
-          insert(renderItem(1.5)),
-          renderItem(2),
-          renderItem(3),
-        ]),
-        container
-      );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>1.5</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Update that inserts a new item
+    //   render(
+    //     t([
+    //       renderItem(1),
+    //       insert(renderItem(1.5)),
+    //       renderItem(2),
+    //       renderItem(3),
+    //     ]),
+    //     container
+    //   );
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>1.5</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const updatedLiElements = container.querySelectorAll('li');
-      const updatedLi1 = updatedLiElements.item(0);
-      const updatedLi2 = updatedLiElements.item(2);
+    //   const updatedLiElements = container.querySelectorAll('li');
+    //   const updatedLi1 = updatedLiElements.item(0);
+    //   const updatedLi2 = updatedLiElements.item(2);
 
-      assert.strictEqual(updatedLi1, li1);
-      assert.strictEqual(updatedLi2, li2);
+    //   assert.strictEqual(updatedLi1, li1);
+    //   assert.strictEqual(updatedLi2, li2);
 
-      // Now make sure we didn't cross any markers and can update items
-      render(
-        t([renderItem(1), renderItem(4), renderItem(2), renderItem(3)]),
-        container
-      );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>4</li><li>2</li><li>3</li></ul>'
-      );
-      render(
-        t([renderItem(5), renderItem(4), renderItem(2), renderItem(3)]),
-        container
-      );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>5</li><li>4</li><li>2</li><li>3</li></ul>'
-      );
-      render(
-        t([renderItem(5), renderItem(4), renderItem(6), renderItem(3)]),
-        container
-      );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>5</li><li>4</li><li>6</li><li>3</li></ul>'
-      );
-    });
+    //   // Now make sure we didn't cross any markers and can update items
+    //   render(
+    //     t([renderItem(1), renderItem(4), renderItem(2), renderItem(3)]),
+    //     container
+    //   );
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>4</li><li>2</li><li>3</li></ul>'
+    //   );
+    //   render(
+    //     t([renderItem(5), renderItem(4), renderItem(2), renderItem(3)]),
+    //     container
+    //   );
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>5</li><li>4</li><li>2</li><li>3</li></ul>'
+    //   );
+    //   render(
+    //     t([renderItem(5), renderItem(4), renderItem(6), renderItem(3)]),
+    //     container
+    //   );
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>5</li><li>4</li><li>6</li><li>3</li></ul>'
+    //   );
+    // });
 
-    test('inserts to the end of an array', () => {
-      // prettier-ignore
-      const renderItem = (i: number) => html`<li>${i}</li>`;
-      // prettier-ignore
-      const t = (items: any) =>html`<ul>${items}</ul>`;
+    // test('inserts to the end of an array', () => {
+    //   // prettier-ignore
+    //   const renderItem = (i: number) => html`<li>${i}</li>`;
+    //   // prettier-ignore
+    //   const t = (items: any) =>html`<ul>${items}</ul>`;
 
-      // Initial render with 3 template results:
-      render(t([1, 2, 3].map(renderItem)), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li></ul>'
-      );
+    //   // Initial render with 3 template results:
+    //   render(t([1, 2, 3].map(renderItem)), container);
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>2</li><li>3</li></ul>'
+    //   );
 
-      const liElements = container.querySelectorAll('li');
-      const li3 = liElements.item(2);
+    //   const liElements = container.querySelectorAll('li');
+    //   const li3 = liElements.item(2);
 
-      // Update that inserts a new item
-      render(
-        t([renderItem(1), renderItem(2), renderItem(3), insert(renderItem(4))]),
-        container
-      );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>'
-      );
+    //   // Update that inserts a new item
+    //   render(
+    //     t([renderItem(1), renderItem(2), renderItem(3), insert(renderItem(4))]),
+    //     container
+    //   );
+    //   assert.equal(
+    //     stripExpressionComments(container.innerHTML),
+    //     '<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>'
+    //   );
 
-      const updatedLiElements = container.querySelectorAll('li');
-      const updatedLi3 = updatedLiElements.item(2);
+    //   const updatedLiElements = container.querySelectorAll('li');
+    //   const updatedLi3 = updatedLiElements.item(2);
 
-      assert.strictEqual(updatedLi3, li3);
-    });
-
-    test('swap', () => {
-      // This is really a test of detach()/restore(), but we're making sure
-      // they're sufficient for array item swaps.
-
-      class SwapDirective extends Directive {
-        render(items: Array<number>) {
-          return items.map((i) => html`<li>${i}</li>`);
-        }
-        update(part: NodePart, [items]: Parameters<this['render']>) {
-          if (part.__value !== undefined) {
-            // this is the second render, let's swap some parts
-            const parts = part.__value as Array<NodePart>;
-            const state1 = parts[1].detach();
-            const state2 = parts[2].detach();
-            parts[1].restore(state2);
-            parts[2].restore(state1);
-            return noChange;
-          } else {
-            return this.render(items);
-          }
-        }
-      }
-      const swap = directive(SwapDirective);
-
-      const go = (items: any) =>
-        // prettier-ignore
-        render(html`<ul>${swap(items)}</ul>`, container);
-
-      // Initial render with 4 template results:
-      go([1, 2, 3, 4]);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>'
-      );
-      const liElementsBefore = container.querySelectorAll('li');
-
-      go([1, 2, 3, 4]);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>1</li><li>3</li><li>2</li><li>4</li></ul>'
-      );
-      const liElementsAfter = container.querySelectorAll('li');
-
-      assert.strictEqual(liElementsBefore[0], liElementsAfter[0]);
-      assert.strictEqual(liElementsBefore[1], liElementsAfter[2]);
-      assert.strictEqual(liElementsBefore[2], liElementsAfter[1]);
-      assert.strictEqual(liElementsBefore[3], liElementsAfter[3]);
-    });
+    //   assert.strictEqual(updatedLi3, li3);
+    // });
   });
 
   suite('svg', () => {

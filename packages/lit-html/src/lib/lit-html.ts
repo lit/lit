@@ -173,25 +173,6 @@ export const noChange = {};
 export const nothing = {};
 
 /**
- * A sentinel value that signals to remove an item from a list.
- */
-export const remove = {};
-
-type InsertValue = {
-  _$litInsert$: true;
-  value: unknown;
-};
-
-/**
- * A wrapper that signals to insert a new value into a list, rather than write
- * over the current existing value.
- */
-export const insert = (value: unknown): InsertValue => ({
-  _$litInsert$: true,
-  value,
-});
-
-/**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
  * and _not_ accounting for the specific template tag used. This means that
  * template tags cannot be dynamic - the must statically be one of html, svg,
@@ -583,19 +564,6 @@ export type Part =
   | PropertyPart
   | BooleanAttributePart;
 
-/**
- * The state of a NodePart, which can be detached and reattached.
- */
-export type NodePartState = {};
-
-/**
- * The private interface for NodePartState, which should be kept opaque.
- */
-type NodePartStateInternal = {
-  __value: unknown;
-  __fragment: DocumentFragment;
-};
-
 export class NodePart {
   __value: unknown;
   protected __directive?: Directive;
@@ -605,28 +573,6 @@ export class NodePart {
     public __endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
-
-  detach(): NodePartState {
-    const fragment = document.createDocumentFragment();
-    const state: NodePartStateInternal = {
-      __value: this.__value,
-      __fragment: fragment,
-    };
-    let start = this.__startNode.nextSibling;
-    let nextNode;
-    while (start !== this.__endNode) {
-      nextNode = start!.nextSibling;
-      fragment.append(start!);
-      start = nextNode;
-    }
-    this.__value = nothing;
-    return state;
-  }
-
-  restore(state: NodePartState) {
-    this.__commitNode((state as NodePartStateInternal).__fragment);
-    this.__value = (state as NodePartStateInternal).__value;
-  }
 
   __setValue(value: unknown): void {
     if (isPrimitive(value)) {
@@ -716,7 +662,7 @@ export class NodePart {
   }
 
   private __commitIterable(value: Iterable<unknown>): void {
-    // For an Iterable, we create a new NodePart per item, then set its
+    // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
     // of TemplateResults that will be commonly returned from expressions like:
@@ -731,75 +677,44 @@ export class NodePart {
       this.__clear();
     }
 
-    // Previous item parts. Lets us keep track of how many items we've stamped
-    // so we can clear leftover items from a previous render
+    // Lets us keep track of how many items we stamped so we can clear leftover
+    // items from a previous render
     const itemParts = this.__value as NodePart[];
     let partIndex = 0;
     let itemPart: NodePart | undefined;
-    let marker: ChildNode;
-    let previousMarker: ChildNode;
-    let item: unknown;
-    let insert;
+    let marker: Comment;
+    let previousMarker!: Comment;
 
-    for (item of value) {
+    for (const item of value) {
       // Try to reuse an existing part
       itemPart = itemParts[partIndex];
 
-      if ((insert = (item as InsertValue)._$litInsert$ === true)) {
-        item = (item as InsertValue).value;
-      }
-
       // If no existing part, create a new one
       if (itemPart === undefined) {
-        if (item === remove) {
-          continue;
-        }
         if (partIndex === 0) {
-          // TODO (justinfagnani): use this.__startNode?
+          // TODO: use this.__startNode?
           this.__insert((previousMarker = createMarker()));
         }
+        this.__insert((marker = createMarker()));
         itemParts.push(
           (itemPart = new NodePart(
-            previousMarker!,
-            this.__insert(createMarker()),
+            previousMarker,
+            (previousMarker = marker),
             this.options
           ))
         );
-      } else if (insert) {
-        // Make an end marker for the new part. Insert it first because we need
-        // to use it in __insert().
-        // We try to use the start marker of the next part if there is one.
-        marker =
-          itemPart?.__startNode ??
-          this.__insert(createMarker(), this.__startNode.nextSibling);
-        itemParts.splice(
-          partIndex,
-          0,
-          (itemPart = new NodePart(
-            this.__insert(createMarker(), marker),
-            marker,
-            this.options
-          ))
-        );
-      }
-      if (item === remove) {
-        itemPart!.__clear();
-        if (previousMarker! === itemPart.__startNode) {
-          itemParts[partIndex].__endNode = itemPart.__endNode;
-        }
-        itemPart.__startNode.remove();
       } else {
-        itemPart.__setValue(item);
+        previousMarker = itemPart.__endNode as Comment;
       }
-      previousMarker = itemPart.__endNode as Comment;
+      itemPart.__setValue(item);
       partIndex++;
     }
 
     if (partIndex < itemParts.length) {
-      // Truncate the parts array so __value reflects the current state
+      // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
-      this.__clear(itemPart?.__endNode!.nextSibling);
+      this.__clear(itemPart && itemPart.__endNode!.nextSibling);
     }
   }
 
