@@ -4,7 +4,7 @@
   "description": "A simple base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
   "homepage": "https://lit-element.polymer-project.org/",
-  "repository": "Polymer/lit-element",
+  "repository": "Polymer/lit-html",
   "type": "module",
   "main": "index.js",
   "module": "index.js",

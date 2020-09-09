@@ -69,11 +69,11 @@ export class UpdatingController {
   }
 
   removeController(controller: any) {
-    const host = controller.host;
-    if (!host) {
+    if (!controller.isActive) {
       return;
     }
     controller.isActive = false;
+    const host = controller.host;
     controller.onDisconnected();
     controller.element = undefined;
     controller.host = undefined;
