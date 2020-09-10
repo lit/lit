@@ -9,10 +9,14 @@
   }
   customElements.define("x-greeter", XGreeter);
 
-  performance.mark("start");
-  for (let i = 0; i < 1000; i++) {
-    const el = document.createElement("x-greeter");
-    document.body.appendChild(el);
-  }
-  performance.measure("render", "start");
+  (async () => {
+    performance.mark("start");
+    for (let i = 0; i < 1000; i++) {
+      const el = document.createElement("x-greeter");
+      document.body.appendChild(el);
+    }
+    // Wait for LitElement render microtasks to complete.
+    await Promise.resolve(null);
+    performance.measure("render", "start");
+  })();
 </script>

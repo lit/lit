@@ -4,7 +4,6 @@
   "timeout": 0,
   "benchmarks": [
     {
-      "name": "stub1",
       "url": "lit-html/stub1/stub1.html",
       "browser": {
         "name": "chrome",
@@ -16,12 +15,12 @@
       },
       "expand": [
         {
-          "name": "local"
+          "name": "this-change"
         },
         {
-          "name": "lit-next",
+          "name": "tip-of-tree",
           "packageVersions": {
-            "label": "lit-next",
+            "label": "tip-of-tree",
             "dependencies": {
               "lit-html": {
                 "kind": "git",
@@ -49,9 +48,9 @@
           }
         },
         {
-          "name": "npm",
+          "name": "previous-release",
           "packageVersions": {
-            "label": "npm",
+            "label": "previous-release",
             "dependencies": {
               "lit-html": "^1.0.0",
               "lit-element": "^2.0.0"

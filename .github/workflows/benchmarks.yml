@@ -36,8 +36,8 @@ jobs:
         with:
           report-id: lit-html-stub1
           path: packages/benchmarks/lit-html/stub1/results.json
-          pr-bench-name: local
-          base-bench-name: lit-next
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
 
       - name: Benchmark lit-element/stub1
         run: |
@@ -51,5 +51,5 @@ jobs:
         with:
           report-id: lit-element-stub1
           path: packages/benchmarks/lit-element/stub1/results.json
-          pr-bench-name: local
-          base-bench-name: lit-next
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree

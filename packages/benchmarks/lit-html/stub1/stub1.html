@@ -2,13 +2,9 @@
 <script type="module">
   import { html, render } from "lit-html";
 
-  (async () => {
-    performance.mark("start");
-    for (let i = 0; i < 1000; i++) {
-      render(html`<p>Hello World</p>`, document.body);
-    }
-    // Wait for LitElement render microtasks to complete.
-    await Promise.resolve(null);
-    performance.measure("render", "start");
-  })();
+  performance.mark("start");
+  for (let i = 0; i < 1000; i++) {
+    render(html`<p>Hello World</p>`, document.body);
+  }
+  performance.measure("render", "start");
 </script>
