@@ -1,0 +1,50 @@
+name: Benchmarks
+
+on: [pull_request]
+
+jobs:
+  benchmarks:
+    name: benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Lerna bootstrap
+        run: npm run bootstrap
+
+      - name: Build
+        run: npm run build
+
+      - name: Benchmark lit-html/stub1
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/stub1/tachometer.json \
+            --json-file lit-html/stub1/results.json
+
+      - name: Report lit-html-stub1
+        uses: andrewiggins/tachometer-reporter-action@v1
+        with:
+          report-id: lit-html-stub1
+          path: packages/benchmarks/lit-html/stub1/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      - name: Benchmark lit-element/stub1
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-element/stub1/tachometer.json \
+            --json-file lit-element/stub1/results.json
+
+      - name: Report lit-element-stub1
+        uses: andrewiggins/tachometer-reporter-action@v1
+        with:
+          report-id: lit-element-stub1
+          path: packages/benchmarks/lit-element/stub1/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
