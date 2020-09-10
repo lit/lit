@@ -539,14 +539,14 @@ export abstract class UpdatingElement extends HTMLElement {
   private _propertyToAttribute(
     name: PropertyKey,
     value: unknown,
-    options: PropertyDeclaration = defaultPropertyDeclaration
+    options: PropertyDeclaration
   ) {
     const attr = (this
       .constructor as typeof UpdatingElement).attributeNameForProperty(
       name,
       options
     );
-    if (attr !== undefined && options.reflect) {
+    if (attr !== undefined) {
       const converter = options.converter;
       const toAttribute =
         (converter && (converter as ComplexAttributeConverter).toAttribute) ||
@@ -782,13 +782,16 @@ export abstract class UpdatingElement extends HTMLElement {
   protected update(changedProperties: PropertyValues) {
     // Use forEach so this works even if for/of loops are compiled to for
     // loops expecting arrays
-    changedProperties.forEach((_v, k) =>
-      this._propertyToAttribute(
-        k,
-        this[k as keyof this],
-        (this.constructor as typeof UpdatingElement).getPropertyOptions(k)
-      )
-    );
+    changedProperties.forEach((_v, k) => {
+      const options = (this.constructor as typeof UpdatingElement).getPropertyOptions(k);
+      if (options.reflect) {
+        this._propertyToAttribute(
+            k,
+            this[k as keyof this],
+            options
+          )
+      }
+    });
     this._markUpdated();
   }
 
