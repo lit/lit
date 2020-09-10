@@ -155,7 +155,7 @@ export class LitElement extends UpdatingElement {
    *
    * @nocollapse
    */
-  protected static getStyles(
+  protected static finalizeStyles(
     styles?: CSSResultOrNative | CSSResultArray
   ): CSSResultFlatArray {
     const elementStyles = [];
@@ -176,7 +176,7 @@ export class LitElement extends UpdatingElement {
 
   protected static finalize() {
     if (!this.hasFinalized) {
-      this._elementStyles = this.getStyles(this.styles);
+      this._elementStyles = this.finalizeStyles(this.styles);
       super.finalize();
     }
   }
