@@ -18,6 +18,25 @@ import copy from 'rollup-plugin-copy';
 import * as pathLib from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 
+// In CHECKSIZE mode we:
+// 1) Don't emit any files.
+// 2) Don't include copyright header comments.
+// 3) Don't include the "//# sourceMappingURL" comment.
+const CHECKSIZE = !!process.env.CHECKSIZE;
+if (CHECKSIZE) {
+  console.log('NOTE: In CHECKSIZE mode, no output!');
+}
+
+const skipBundleOutput = {
+  generateBundle(options, bundles) {
+    // Deleting all bundles from this object prevents them from being written,
+    // see https://rollupjs.org/guide/en/#generatebundle.
+    for (const name in bundles) {
+      delete bundles[name];
+    }
+  },
+};
+
 const entryPoints = ['lit-html', 'directives/if-defined'];
 
 export default {
@@ -25,8 +44,10 @@ export default {
   output: {
     dir: './',
     format: 'esm',
+    // Preserve existing module structure (e.g. preserve the "directives/"
+    // directory).
     preserveModules: true,
-    sourcemap: true,
+    sourcemap: !CHECKSIZE,
   },
   plugins: [
     // This plugin automatically composes the existing TypeScript -> raw JS
@@ -41,10 +62,9 @@ export default {
         passes: 2,
       },
       output: {
-        comments: 'some', // preserves @license and @preserve
+        // "some" preserves @license and @preserve comments
+        comments: CHECKSIZE ? false : 'some',
         inline_script: false,
-        // TODO (justinfagnani): benchmark
-        // wrap_func_args: false,
       },
       mangle: {
         properties: {
@@ -52,15 +72,20 @@ export default {
         },
       },
     }),
-    copy({
-      targets: entryPoints.map((name) => ({
-        src: `development/${name}.d.ts`,
-        dest: pathLib.dirname(name),
-      })),
-    }),
     filesize({
       showMinifiedSize: false,
       showBrotliSize: true,
     }),
+    ...(CHECKSIZE
+      ? [skipBundleOutput]
+      : [
+          // Place a copy of each d.ts file adjacent to its minified module.
+          copy({
+            targets: entryPoints.map((name) => ({
+              src: `development/${name}.d.ts`,
+              dest: pathLib.dirname(name),
+            })),
+          }),
+        ]),
   ],
 };
