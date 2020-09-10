@@ -1,0 +1,63 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 30,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "url": "lit-element/stub1/stub1.html",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": {
+        "mode": "performance",
+        "entryName": "render"
+      },
+      "expand": [
+        {
+          "name": "local"
+        },
+        {
+          "name": "lit-next",
+          "packageVersions": {
+            "label": "lit-next",
+            "dependencies": {
+              "lit-html": {
+                "kind": "git",
+                "repo": "https://github.com/Polymer/lit-html.git",
+                "ref": "lit-next",
+                "subdir": "packages/lit-html",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap",
+                  "npm run build"
+                ]
+              },
+              "lit-element": {
+                "kind": "git",
+                "repo": "https://github.com/Polymer/lit-html.git",
+                "ref": "lit-next",
+                "subdir": "packages/lit-element",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap",
+                  "npm run build"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "npm",
+          "packageVersions": {
+            "label": "npm",
+            "dependencies": {
+              "lit-html": "^1.0.0",
+              "lit-element": "^2.0.0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

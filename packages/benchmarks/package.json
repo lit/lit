@@ -1,0 +1,14 @@
+{
+  "name": "lit-benchmarks",
+  "version": "1.0.0",
+  "description": "Benchmarks for lit",
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/lit-html",
+  "author": "The Polymer Project Authors",
+  "scripts": {},
+  "dependencies": {
+    "lit-element": "^3.0.0-pre.0",
+    "lit-html": "^2.0.0-pre.0",
+    "tachometer": "^0.5.3-pre.0"
+  }
+}
