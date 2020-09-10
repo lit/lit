@@ -13,23 +13,35 @@
  */
 
 import filesize from 'rollup-plugin-filesize';
-import { terser } from 'rollup-plugin-terser';
+import {terser} from 'rollup-plugin-terser';
+import copy from 'rollup-plugin-copy';
+import * as pathLib from 'path';
+import sourcemaps from 'rollup-plugin-sourcemaps';
+
+const entryPoints = ['lit-html', 'directives/if-defined'];
 
 export default {
-  input: 'lib/lit-html.js',
+  input: entryPoints.map((name) => `development/${name}.js`),
   output: {
-    file: 'lit-html.bundled.js',
+    dir: './',
     format: 'esm',
+    preserveModules: true,
+    sourcemap: true,
   },
   plugins: [
+    // This plugin automatically composes the existing TypeScript -> raw JS
+    // sourcemap with the raw JS -> minified JS one that we're generating here.
+    sourcemaps(),
     terser({
       warnings: true,
       ecma: 2017,
       compress: {
         unsafe: true,
+        // An extra pass can squeeze out an extra byte or two.
+        passes: 2,
       },
       output: {
-        comments: false,
+        comments: 'some', // preserves @license and @preserve
         inline_script: false,
         // TODO (justinfagnani): benchmark
         // wrap_func_args: false,
@@ -40,9 +52,15 @@ export default {
         },
       },
     }),
+    copy({
+      targets: entryPoints.map((name) => ({
+        src: `development/${name}.d.ts`,
+        dest: pathLib.dirname(name),
+      })),
+    }),
     filesize({
       showMinifiedSize: false,
       showBrotliSize: true,
-    })
-  ]
-}
+    }),
+  ],
+};

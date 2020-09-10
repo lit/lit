@@ -22,7 +22,7 @@ import {
   render,
   svg,
   TemplateResult,
-} from '../lib/lit-html.js';
+} from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
