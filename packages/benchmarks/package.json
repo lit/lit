@@ -1,5 +1,6 @@
 {
   "name": "lit-benchmarks",
+  "private": true,
   "version": "1.0.0",
   "description": "Benchmarks for lit",
   "license": "BSD-3-Clause",
