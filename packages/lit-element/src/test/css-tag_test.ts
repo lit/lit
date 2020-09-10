@@ -24,6 +24,14 @@ suite('Styling', () => {
       assert.strictEqual(style1, style2);
     });
 
+    test('CSSResults always produce the same stylesheet', () => {
+      const makeStyle = () => css`foo`;
+      const style1 = makeStyle();
+      assert.equal(style1.styleSheet, style1.styleSheet);
+      const style2 = makeStyle();
+      assert.equal(style1.styleSheet, style2.styleSheet);
+    });
+
     test('caches CSSResults with same-valued expressions', () => {
       const makeStyle = () => css`foo ${1}`;
       const style1 = makeStyle();

@@ -511,6 +511,11 @@ export abstract class UpdatingElement extends HTMLElement {
     this.enableUpdating();
   }
 
+  /**
+   * Note, this method should be considered final and not overridden. It is
+   * overridden on the element instance with a function that triggers the first
+   * update.
+   */
   protected enableUpdating() {}
 
   /**
