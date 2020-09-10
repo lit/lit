@@ -829,9 +829,9 @@ suite('Static get styles', () => {
     customElements.define(
       base,
       class extends LitElement {
-        static getStyles(styles: CSSResultArray) {
+        static finalizeStyles(styles: CSSResultArray) {
           getStylesCounter++;
-          return super.getStyles(styles);
+          return super.finalizeStyles(styles);
         }
 
         static get styles() {
