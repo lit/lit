@@ -45,7 +45,7 @@ jobs:
         uses: andrewiggins/tachometer-reporter-action@v1
         with:
           report-id: lit-html-kitchen-sink-update
-          path: packages/benchmarks/kitchen-sink/results-update.json
+          path: packages/benchmarks/lit-html/kitchen-sink/results-update.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
@@ -56,7 +56,7 @@ jobs:
             --config lit-html/kitchen-sink/tachometer-update-nop.json \
             --json-file lit-html/kitchen-sink/results-update-nop.json
 
-      - name: Report lit-html-kitchen-sink-render
+      - name: Report lit-html-kitchen-sink-update-nop
         uses: andrewiggins/tachometer-reporter-action@v1
         with:
           report-id: lit-html-kitchen-sink-render
