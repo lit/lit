@@ -27,8 +27,10 @@
     "clean": "rm -rf lit-html.{js,js.map,d.ts} directives/ development/",
     "build:watch": "tsc --watch",
     "prepare": "npm run build",
-    "test": "wtr \"development/**/*_test.js\" --node-resolve",
-    "test:watch": "wtr \"development/**/*_test.js\" --node-resolve --watch",
+    "test": "npm run test:dev && npm run test:prod",
+    "test:dev": "wtr \"development/**/*_test.js\" --node-resolve",
+    "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
+    "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "check-version": "node check-version-tracker.js"
@@ -37,8 +39,10 @@
   "dependencies": {},
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
+    "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-replace": "^2.3.3",
     "@types/mocha": "^8.0.3",
+    "@web/dev-server-rollup": "^0.2.6",
     "@web/test-runner": "^0.7.15",
     "@web/test-runner-playwright": "^0.5.4",
     "mocha": "^8.1.3",
