@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "format": "prettier lit-html/* lit-element/* --write",
     "lint": "tslint --project ./",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
@@ -18,6 +19,7 @@
     "tachometer": "^0.5.3-pre.0"
   },
   "devDependencies": {
+    "prettier": "^2.1.1",
     "typescript": "^4.0.2"
   }
 }
