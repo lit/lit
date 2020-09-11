@@ -31,7 +31,9 @@
  *   - value: object
  * - EventPart
  *   - value: function
- *
+ * - Comment binding
+ *   - value: string
+ * 
  * Available query params:
  * - width: number of items in each map/repeat per item
  * - depth: number of levels of item recursion
@@ -97,7 +99,7 @@ interface Data {
  *   create unique (non-dirty checking) values
  * @param id Id for item, unique amongst its peers
  * @param parent Parent moniker (to create unique text for each item)
- * @param currentDepth Current depth, used to stop recursion.
+ * @param currentDepth Current depth, used to stop recursion at REPEAT_DEPTH.
  */
 const generateData = (
   updateId = 0,
@@ -133,6 +135,15 @@ const generateData = (
   };
 };
 
+/**
+ * Renders a lit-html template for the given data model; will recursively
+ * create child items using either repeat or map, alternating between items.
+ * 
+ * The goal here is to try to exercise each feature of lit-html at least once,
+ * hence kitchen-sink. 
+ * 
+ * @param data Data model for item
+ */
 const renderItem: any = (data: Data) => html`
   <div class="${classMap(data.classes)} static" style=${styleMap(data.style)}>
     ${data.text}
