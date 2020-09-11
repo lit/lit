@@ -4,15 +4,17 @@
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "lit-html/kitchen-sink/index.html?width=4&depth=4&updateCount=10&updateData=true",
+      "url": "lit-html/kitchen-sink/index.html?nopUpdateCount=0",
       "browser": {
         "name": "chrome",
         "headless": true
       },
-      "measurement": {
-        "mode": "performance",
-        "entryName": "render"
-      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "update"
+        }
+      ],
       "expand": [
         {
           "name": "this-change"
