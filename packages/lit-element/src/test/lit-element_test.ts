@@ -14,7 +14,7 @@
 
 import {html, LitElement} from '../lib/lit-element.js';
 import {property} from '../lib/decorators.js';
-import {stripExpressionComments} from 'lit-html/test/test-utils/strip-markers.js';
+import {stripExpressionComments} from 'lit-html/development/test/test-utils/strip-markers.js';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
