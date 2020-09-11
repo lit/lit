@@ -1449,7 +1449,7 @@ suite('lit-html', () => {
         }
         // TODO (justinfagnani): make this work on SpreadPart
         update(part: AttributePart) {
-          part.__element.dispatchEvent(
+          part.element.dispatchEvent(
             new CustomEvent('test-event', {
               bubbles: true,
             })
