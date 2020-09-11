@@ -59,7 +59,7 @@ jobs:
       - name: Report lit-html-kitchen-sink-update-nop
         uses: andrewiggins/tachometer-reporter-action@v1
         with:
-          report-id: lit-html-kitchen-sink-render
+          report-id: lit-html-kitchen-sink-update-nop
           path: packages/benchmarks/lit-html/kitchen-sink/results-update-nop.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
