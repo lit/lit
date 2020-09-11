@@ -265,7 +265,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
     this._classProperties!.forEach((v, p) => {
-      const attr = this.attributeNameForProperty(p, v);
+      const attr = this._attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this._attributeToPropertyMap.set(attr, p);
         attributes.push(attr);
@@ -384,18 +384,15 @@ export abstract class UpdatingElement extends HTMLElement {
     return this._classProperties!.get(name) || defaultPropertyDeclaration;
   }
 
-  protected static get hasFinalized() {
-    return this.hasOwnProperty(finalized);
-  }
-
   /**
    * Creates property accessors for registered properties and ensures
-   * any superclasses are also finalized.
+   * any superclasses are also finalized. Returns true if the element was
+   * finalized.
    * @nocollapse
    */
   protected static finalize() {
-    if (this.hasFinalized) {
-      return;
+    if (this.hasOwnProperty(finalized)) {
+      return false;
     }
     this[finalized] = true;
     // finalize any superclasses
@@ -423,13 +420,14 @@ export abstract class UpdatingElement extends HTMLElement {
         this.createProperty(p, (props as any)[p]);
       }
     }
+    return true;
   }
 
   /**
    * Returns the property name for the given attribute `name`.
    * @nocollapse
    */
-  protected static attributeNameForProperty(
+  private static _attributeNameForProperty(
     name: PropertyKey,
     options: PropertyDeclaration
   ) {
@@ -542,14 +540,13 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration
   ) {
     const attr = (this
-      .constructor as typeof UpdatingElement).attributeNameForProperty(
+      .constructor as typeof UpdatingElement)._attributeNameForProperty(
       name,
       options
     );
     if (attr !== undefined) {
-      const converter = options.converter;
       const toAttribute =
-        (converter && (converter as ComplexAttributeConverter).toAttribute) ||
+        (options.converter as ComplexAttributeConverter)?.toAttribute ??
         defaultConverter.toAttribute;
       const attrValue = toAttribute!(value, options.type);
       // Track if the property is being reflected to avoid
@@ -581,15 +578,10 @@ export abstract class UpdatingElement extends HTMLElement {
     // if it was just set because the attribute changed.
     if (propName !== undefined && this._reflectingProperty !== propName) {
       const options = ctor.getPropertyOptions(propName);
+      const converter = options.converter;
+      const fromAttribute = (converter as ComplexAttributeConverter)?.fromAttribute! ?? ((typeof converter === 'function' ? converter as (value: string | null, type?: unknown) => unknown : null) ?? defaultConverter.fromAttribute);
       // mark state reflecting
       this._reflectingProperty = propName;
-      const converter = options.converter;
-      const fromAttribute =
-        (converter &&
-          (typeof converter === 'function'
-            ? converter
-            : converter.fromAttribute)) ||
-        defaultConverter.fromAttribute;
       this[propName as keyof this] =
         // tslint:disable-next-line:no-any
         fromAttribute!(value, options.type) as any;
