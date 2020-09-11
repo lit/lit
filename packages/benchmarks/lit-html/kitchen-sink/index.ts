@@ -48,7 +48,10 @@
 
 import {html, render, nothing} from 'lit-html';
 
-import { repeat } from "lit-html/lib/directives/repeat.js";
+// TODO(kschaaf) use real repeat once landed
+// import { repeat } from "lit-html/lib/directives/repeat.js";	
+const repeat = (items: any[], _kfn: (i: any) => any, tfn: (i: any) => any) =>	
+  items.map((i) => tfn(i));	
 
 // TODO(kschaaf) use real classMap once landed
 // import { classMap } from "lit-html/lib/directives/class-map.js";
