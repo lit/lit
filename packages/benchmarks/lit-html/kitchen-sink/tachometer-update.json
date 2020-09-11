@@ -4,7 +4,7 @@
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "lit-html/stub1/stub1.html",
+      "url": "lit-html/kitchen-sink/index.html?width=4&depth=4&updateCount=10&updateData=true",
       "browser": {
         "name": "chrome",
         "headless": true

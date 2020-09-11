@@ -6,10 +6,18 @@
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
   "author": "The Polymer Project Authors",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "lint": "tslint --project ./",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
+  },
   "dependencies": {
     "lit-element": "^3.0.0-pre.0",
     "lit-html": "^2.0.0-pre.0",
     "tachometer": "^0.5.3-pre.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.2"
   }
 }
