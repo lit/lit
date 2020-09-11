@@ -19,18 +19,48 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Benchmark lit-html/stub1
+      - name: Benchmark lit-html/kitchen-sink-render
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config lit-html/stub1/tachometer.json \
-            --json-file lit-html/stub1/results.json
+            --config lit-html/kitchen-sink/tachometer-render.json \
+            --json-file lit-html/kitchen-sink/results-render.json
 
-      - name: Report lit-html-stub1
+      - name: Report lit-html-kitchen-sink-render
         uses: andrewiggins/tachometer-reporter-action@v1
         with:
-          report-id: lit-html-stub1
-          path: packages/benchmarks/lit-html/stub1/results.json
+          report-id: lit-html-kitchen-sink-render
+          path: packages/benchmarks/lit-html/kitchen-sink/results-render.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      - name: Benchmark lit-html/kitchen-sink-update
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/kitchen-sink/tachometer-update.json \
+            --json-file lit-html/kitchen-sink/results-update.json
+
+      - name: Report lit-html-kitchen-sink-update
+        uses: andrewiggins/tachometer-reporter-action@v1
+        with:
+          report-id: lit-html-kitchen-sink-update
+          path: packages/benchmarks/kitchen-sink/results-update.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      - name: Benchmark lit-html/kitchen-sink-update-nop
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/kitchen-sink/tachometer-update-nop.json \
+            --json-file lit-html/kitchen-sink/results-update-nop.json
+
+      - name: Report lit-html-kitchen-sink-render
+        uses: andrewiggins/tachometer-reporter-action@v1
+        with:
+          report-id: lit-html-kitchen-sink-render
+          path: packages/benchmarks/lit-html/kitchen-sink/results-update-nop.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
