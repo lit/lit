@@ -33,12 +33,17 @@
  *   - value: function
  * - Comment binding
  *   - value: string
- * 
+ *
  * Available query params:
  * - width: number of items in each map/repeat per item
  * - depth: number of levels of item recursion
- * - updateCount: number of times to update after initial render
- * - updateData: boolean, false to reuse same data each update, true to regenerate
+ * - updateCount: number of times to update with changed data after initial render
+ * - nopUpdateCount: number of times to update with unchanged data after initial render
+ *
+ * The following performance measurements are recorded:
+ * - `render` - time for initial render
+ * - `update` - time for running through `updateCount` updates
+ * - `nop-update` - time for running through `nopUpdateCount` nop-updates
  */
 
 import {html, render, nothing} from 'lit-html';
@@ -73,10 +78,10 @@ const params = document.location.search
   );
 
 // Configurable params
-const REPEAT_WIDTH = params.width || 10;
-const REPEAT_DEPTH = params.depth || 4;
-const UPDATE_COUNT = params.updateCount || 0;
-const UPDATE_DATA = params.updateData;
+const width = params.width ?? 4;
+const depth = params.depth ?? 4;
+const updateCount = params.updateCount ?? 10;
+const nopUpdateCount = params.nopUpdateCount ?? 10;
 
 // Data model
 interface Data {
@@ -126,8 +131,8 @@ const generateData = (
       'border-right-width': '0px',
     },
     handler: () => {},
-    ...(currentDepth < REPEAT_DEPTH && {
-      childData: new Array(REPEAT_WIDTH)
+    ...(currentDepth < depth && {
+      childData: new Array(width)
         .fill(0)
         .map((_, i) => generateData(updateId, i, moniker, currentDepth + 1)),
       useRepeat: !(id % 2),
@@ -138,10 +143,10 @@ const generateData = (
 /**
  * Renders a lit-html template for the given data model; will recursively
  * create child items using either repeat or map, alternating between items.
- * 
+ *
  * The goal here is to try to exercise each feature of lit-html at least once,
- * hence kitchen-sink. 
- * 
+ * hence kitchen-sink.
+ *
  * @param data Data model for item
  */
 const renderItem: any = (data: Data) => html`
@@ -182,24 +187,32 @@ const renderItem: any = (data: Data) => html`
 let data = generateData(0);
 
 // Initial render
-performance.mark('render-start');
+performance.mark('render');
 render(renderItem(data), document.body);
-performance.measure('render', 'render-start');
+performance.measure('render', 'render');
 
 // Update
-performance.mark('update-start');
-for (let i = 0; i < UPDATE_COUNT; i++) {
-  if (UPDATE_DATA) {
-    data = generateData(i + 1);
-  }
+performance.mark('update');
+for (let i = 0; i < updateCount; i++) {
+  data = generateData(i + 1);
   render(renderItem(data), document.body);
 }
-performance.measure('update', 'update-start');
+performance.measure('update', 'update');
+
+// No-op update
+performance.mark('nop-update');
+for (let i = 0; i < nopUpdateCount; i++) {
+  render(renderItem(data), document.body);
+}
+performance.measure('nop-update', 'nop-update');
 
 // Log
 console.log(
-  `render: ${performance.getEntriesByName('render')[0].duration.toFixed(3)}ms`
+  Object.entries({width, depth, updateCount, nopUpdateCount})
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(', ')
 );
-console.log(
-  `update: ${performance.getEntriesByName('update')[0].duration.toFixed(3)}ms`
-);
+console.log('===');
+performance
+  .getEntriesByType('measure')
+  .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
