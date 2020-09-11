@@ -14,16 +14,62 @@
 
 import {
   directive,
-  NodePart,
   Directive,
-  Part,
-  EventPart,
-  BooleanAttributePart,
   AttributePart,
-  PropertyPart,
   noChange,
   nothing,
+  PartInfo,
+  NODE_PART,
+  EVENT_PART,
+  PROPERTY_PART,
+  BOOLEAN_ATTRIBUTE_PART,
+  ATTRIBUTE_PART,
 } from '../lit-html.js';
+
+class LiveDirective extends Directive {
+  constructor(part: PartInfo) {
+    super();
+    if (part.type === EVENT_PART || part.type === NODE_PART) {
+      throw new Error(
+        'The `live` directive is not allowed on text or event bindings'
+      );
+    }
+    if (part.strings !== undefined) {
+      throw new Error('`live` bindings can only contain a single expression');
+    }
+  }
+
+  render(value: unknown) {
+    return value;
+  }
+
+  update(part: AttributePart, [value]: Parameters<this['render']>) {
+    const element = part.element;
+    const name = part.name;
+
+    // TODO (justinfagnani): This is essentially implementing a getLiveValue()
+    // method for each part type. Should that be moved into the AttributePart
+    // interface?
+    if (part.type === PROPERTY_PART) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (value === (element as any)[name]) {
+        return noChange;
+      }
+    } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
+      if (value == element.hasAttribute(name)) {
+        return noChange;
+      }
+    } else if (part.type === ATTRIBUTE_PART) {
+      if (element.getAttribute(name) === String(value)) {
+        return noChange;
+      }
+    }
+    // Setting the part's value to nothing causes its dirty-check to fail so
+    // that it always sets the value
+    part.__value = nothing;
+    return value;
+  }
+}
 
 /**
  * Checks binding values against live DOM values, instead of previously bound
@@ -47,51 +93,4 @@ import {
  * you use `live()` with an attribute binding, make sure that only strings are
  * passed in, or the binding will update every render.
  */
-
-class LiveDirective extends Directive {
-  constructor(part: Part) {
-    super();
-    if (part instanceof EventPart || part instanceof NodePart) {
-      throw new Error(
-        'The `live` directive is not allowed on text or event bindings'
-      );
-    }
-    if ((part as AttributePart).__strings !== undefined) {
-      throw new Error('`live` bindings can only contain a single expression');
-    }
-  }
-
-  render(value: unknown) {
-    return value;
-  }
-
-  update(part: AttributePart, [value]: Parameters<this['render']>) {
-    const element = part.__element;
-    const name = part.name;
-
-    // TODO (justinfagnani): This is essentially implementing a getLiveValue()
-    // method for each part type. Should that be moved into the AttributePart
-    // interface?
-    // TODO (justinfagnani): find alternative to instanceof
-    if (part instanceof PropertyPart) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (value === (element as any)[name]) {
-        return noChange;
-      }
-    } else if (part instanceof BooleanAttributePart) {
-      if (value == element.hasAttribute(name)) {
-        return noChange;
-      }
-    } else if (part instanceof AttributePart) {
-      if (element.getAttribute(name) === String(value)) {
-        return noChange;
-      }
-    }
-    // Setting the part's value to nothing causes its dirty-check to fail so
-    // that it always sets the value
-    part.__value = nothing;
-    return value;
-  }
-}
-
 export const live = directive(LiveDirective);
