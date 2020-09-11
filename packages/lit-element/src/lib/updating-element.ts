@@ -549,10 +549,9 @@ export abstract class UpdatingElement extends HTMLElement {
       name,
       options
     );
-    if (attr !== undefined && options.reflect) {
-      const converter = options.converter;
+    if (attr !== undefined && options.reflect === true) {
       const toAttribute =
-        (converter && (converter as ComplexAttributeConverter).toAttribute) ||
+        (options.converter as ComplexAttributeConverter)?.toAttribute ??
         defaultConverter.toAttribute;
       const attrValue = toAttribute!(value, options.type);
       // Track if the property is being reflected to avoid
@@ -584,15 +583,10 @@ export abstract class UpdatingElement extends HTMLElement {
     // if it was just set because the attribute changed.
     if (propName !== undefined && this._reflectingProperty !== propName) {
       const options = ctor.getPropertyOptions(propName);
+      const converter = options.converter;
+      const fromAttribute = (converter as ComplexAttributeConverter)?.fromAttribute! ?? ((typeof converter === 'function' ? converter as (value: string | null, type?: unknown) => unknown : null) ?? defaultConverter.fromAttribute);
       // mark state reflecting
       this._reflectingProperty = propName;
-      const converter = options.converter;
-      const fromAttribute =
-        (converter &&
-          (typeof converter === 'function'
-            ? converter
-            : converter.fromAttribute)) ||
-        defaultConverter.fromAttribute;
       this[propName as keyof this] =
         // tslint:disable-next-line:no-any
         fromAttribute!(value, options.type) as any;
