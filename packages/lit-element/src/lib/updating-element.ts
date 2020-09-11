@@ -265,7 +265,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
     this._classProperties!.forEach((v, p) => {
-      const attr = this.attributeNameForProperty(p, v);
+      const attr = this._attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this._attributeToPropertyMap.set(attr, p);
         attributes.push(attr);
@@ -429,7 +429,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * Returns the property name for the given attribute `name`.
    * @nocollapse
    */
-  protected static attributeNameForProperty(
+  private static _attributeNameForProperty(
     name: PropertyKey,
     options: PropertyDeclaration
   ) {
@@ -547,7 +547,7 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
     const attr = (this
-      .constructor as typeof UpdatingElement).attributeNameForProperty(
+      .constructor as typeof UpdatingElement)._attributeNameForProperty(
       name,
       options
     );
