@@ -15,10 +15,10 @@
 import {
   AttributePart,
   directive,
-  PropertyPart,
   Directive,
   noChange,
-  Part,
+  PartInfo,
+  ATTRIBUTE_PART,
 } from '../lit-html.js';
 
 // IE11 doesn't support classList on SVG elements, so we emulate it with a Set
@@ -67,82 +67,81 @@ export interface ClassInfo {
  * `{foo: bar}` applies the class `foo` if the value of `bar` is truthy.
  * @param classInfo {ClassInfo}
  */
-export const classMap = directive(
-  class ClassMap extends Directive {
-    /**
-     * Stores the ClassInfo object applied to a given AttributePart.
-     * Used to unset existing values when a new ClassInfo object is applied.
-     */
-    previousClasses?: Set<string>;
+class ClassMap extends Directive {
+  /**
+   * Stores the ClassInfo object applied to a given AttributePart.
+   * Used to unset existing values when a new ClassInfo object is applied.
+   */
+  previousClasses?: Set<string>;
 
-    constructor(part: Part) {
-      super();
-      if (
-        !(part instanceof AttributePart) ||
-        part instanceof PropertyPart ||
-        part.name !== 'class' ||
-        (part.__strings !== undefined && part.__strings.length > 2)
-      ) {
-        throw new Error(
-          'The `classMap` directive must be used in the `class` attribute ' +
-            'and must be the only part in the attribute.'
-        );
-      }
-    }
-
-    render(classInfo: ClassInfo) {
-      return Array.from(Object.entries(classInfo))
-        .filter(([_, enabled]) => enabled)
-        .map(([name, _]) => name)
-        .join(' ');
-    }
-
-    update(part: AttributePart, [classInfo]: [ClassInfo]) {
-      // Remember dynamic classes on the first render
-      if (this.previousClasses === undefined) {
-        this.previousClasses = new Set();
-        for (const name in classInfo) {
-          if (classInfo[name]) {
-            this.previousClasses.add(name);
-          }
-        }
-        return this.render(classInfo);
-      }
-
-      const element = part.element;
-      const classList = (element.classList || new ClassList(element)) as
-        | DOMTokenList
-        | ClassList;
-
-      // Remove old classes that no longer apply
-      // We use forEach() instead of for-of so that re don't require down-level
-      // iteration.
-      this.previousClasses.forEach((name) => {
-        if (!(name in classInfo)) {
-          classList.remove(name);
-          this.previousClasses!.delete(name);
-        }
-      });
-
-      // Add or remove classes based on their classMap value
-      for (const name in classInfo) {
-        const value = classInfo[name];
-        if (value != this.previousClasses.has(name)) {
-          // We explicitly want a loose truthy check of `value` because it seems
-          // more convenient that '' and 0 are skipped.
-          if (value) {
-            classList.add(name);
-            this.previousClasses.add(name);
-          } else {
-            classList.remove(name);
-            this.previousClasses.delete(name);
-          }
-        }
-      }
-      if (typeof (classList as ClassList).commit === 'function') {
-        (classList as ClassList).commit();
-      }
-      return noChange;
+  constructor(part: PartInfo) {
+    super();
+    if (
+      part.type !== ATTRIBUTE_PART ||
+      part.name !== 'class' ||
+      (part.strings !== undefined && part.strings.length > 2)
+    ) {
+      throw new Error(
+        'The `classMap` directive must be used in the `class` attribute ' +
+          'and must be the only part in the attribute.'
+      );
     }
   }
-);
+
+  render(classInfo: ClassInfo) {
+    return Array.from(Object.entries(classInfo))
+      .filter(([_, enabled]) => enabled)
+      .map(([name, _]) => name)
+      .join(' ');
+  }
+
+  update(part: AttributePart, [classInfo]: [ClassInfo]) {
+    // Remember dynamic classes on the first render
+    if (this.previousClasses === undefined) {
+      this.previousClasses = new Set();
+      for (const name in classInfo) {
+        if (classInfo[name]) {
+          this.previousClasses.add(name);
+        }
+      }
+      return this.render(classInfo);
+    }
+
+    const element = part.element;
+    const classList = (element.classList || new ClassList(element)) as
+      | DOMTokenList
+      | ClassList;
+
+    // Remove old classes that no longer apply
+    // We use forEach() instead of for-of so that re don't require down-level
+    // iteration.
+    this.previousClasses.forEach((name) => {
+      if (!(name in classInfo)) {
+        classList.remove(name);
+        this.previousClasses!.delete(name);
+      }
+    });
+
+    // Add or remove classes based on their classMap value
+    for (const name in classInfo) {
+      const value = classInfo[name];
+      if (value != this.previousClasses.has(name)) {
+        // We explicitly want a loose truthy check of `value` because it seems
+        // more convenient that '' and 0 are skipped.
+        if (value) {
+          classList.add(name);
+          this.previousClasses.add(name);
+        } else {
+          classList.remove(name);
+          this.previousClasses.delete(name);
+        }
+      }
+    }
+    if (typeof (classList as ClassList).commit === 'function') {
+      (classList as ClassList).commit();
+    }
+    return noChange;
+  }
+}
+
+export const classMap = directive(ClassMap);
