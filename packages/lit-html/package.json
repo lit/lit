@@ -25,7 +25,8 @@
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
     "clean": "rm -rf lit-html.{js,js.map,d.ts} directives/ development/",
-    "build:watch": "tsc --watch",
+    "build:ts": "tsc",
+    "build:ts:watch": "tsc --watch",
     "dev": "scripts/dev.sh",
     "prepare": "npm run build",
     "test": "npm run test:dev && npm run test:prod",
