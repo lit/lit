@@ -13,9 +13,9 @@ npm run build
 
 cd packages/benchmarks
 # Choose a benchmark to run
-npm run benchmarks:lit-html-kitchen-sink
-npm run benchmarks:lit-html-kitchen-sink-render
-npm run benchmarks:lit-html-kitchen-sink-update
-npm run benchmarks:lit-html-kitchen-sink-nop-update
-npm run benchmarks:lit-element-stub1
+npm run benchmark:lit-html:kitchen-sink
+npm run benchmark:lit-html:kitchen-sink-render
+npm run benchmark:lit-html:kitchen-sink-update
+npm run benchmark:lit-html:kitchen-sink-nop-update
+npm run benchmark:lit-element:stub1
 ```
