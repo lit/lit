@@ -384,18 +384,15 @@ export abstract class UpdatingElement extends HTMLElement {
     return this._classProperties!.get(name) || defaultPropertyDeclaration;
   }
 
-  protected static get hasFinalized() {
-    return this.hasOwnProperty(finalized);
-  }
-
   /**
    * Creates property accessors for registered properties and ensures
-   * any superclasses are also finalized.
+   * any superclasses are also finalized. Returns true if the element was
+   * finalized.
    * @nocollapse
    */
   protected static finalize() {
-    if (this.hasFinalized) {
-      return;
+    if (this.hasOwnProperty(finalized)) {
+      return false;
     }
     this[finalized] = true;
     // finalize any superclasses
@@ -423,6 +420,7 @@ export abstract class UpdatingElement extends HTMLElement {
         this.createProperty(p, (props as any)[p]);
       }
     }
+    return true;
   }
 
   /**
