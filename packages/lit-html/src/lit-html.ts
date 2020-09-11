@@ -12,6 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+const DEV_MODE = true;
+
+if (DEV_MODE) {
+  console.warn('lit-html is in dev mode. Not recommended for production!');
+}
+
 // Added to an attribute name to mark the attribute as bound so we can find
 // it easily.
 const boundAttributeSuffix = '$lit$';
