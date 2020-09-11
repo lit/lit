@@ -20,10 +20,8 @@ import {
   render,
 } from '../lib/lit-html.js';
 import {assert} from '@esm-bundle/chai';
-import {
-  stripExpressionComments,
-} from './test-utils/strip-markers.js';
-import { detachNodePart, restoreNodePart } from '../lib/parts.js';
+import {stripExpressionComments} from './test-utils/strip-markers.js';
+import {detachNodePart, restoreNodePart} from '../lib/parts.js';
 
 suite('lit-html', () => {
   let container: HTMLDivElement;

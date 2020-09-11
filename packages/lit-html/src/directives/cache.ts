@@ -12,12 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  directive,
-  TemplateResult,
-  NodePart,
-  Directive,
-} from '../lit-html.js';
+import {directive, TemplateResult, NodePart, Directive} from '../lit-html.js';
 import {detachNodePart, restoreNodePart, NodePartState} from '../parts.js';
 
 /**
@@ -64,7 +59,7 @@ export const cache = directive(
           (v as TemplateResult).strings
         );
         if (cachedTemplate !== undefined) {
-          restoreNodePart(part,cachedTemplate);
+          restoreNodePart(part, cachedTemplate);
         }
       }
       return this.render(v);
