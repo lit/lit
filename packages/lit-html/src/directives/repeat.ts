@@ -13,7 +13,7 @@
  */
 
 import {directive, NodePart, Directive, noChange, PartInfo} from '../lit-html.js';
-import { assertNodeMakers, createAndInsertPart, insertPartBefore, removePart, updatePart } from '../parts.js';
+import {createAndInsertPart, insertPartBefore, removePart, updatePart} from '../parts.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
 export type ItemTemplate<T> = (item: T, index: number) => unknown;
@@ -91,11 +91,9 @@ class RepeatDirective extends Directive {
     ]
   ) {
 
-    console.log('Repeat.update', containerPart.__endNode);
-
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    const oldParts = containerPart.__value as Array<NodePart|null>;
+    let oldParts = containerPart.__value as Array<NodePart|null>;
     if (!oldParts) {
       return this.render(items, keyFnOrTemplate, template);
     }
@@ -336,58 +334,35 @@ class RepeatDirective extends Directive {
 
     while (oldHead <= oldTail && newHead <= newTail) {
       if (oldParts[oldHead] === null) {
-        console.log('A');
         // `null` means old part at head has already been used
         // below; skip
         oldHead++;
       } else if (oldParts[oldTail] === null) {
-        console.log('B');
         // `null` means old part at tail has already been used
         // below; skip
         oldTail--;
       } else if (oldKeys[oldHead] === newKeys[newHead]) {
-        console.log('B');
         // Old head matches new head; update in place
         newParts[newHead] =
             updatePart(oldParts[oldHead]!, newValues[newHead]);
         oldHead++;
         newHead++;
       } else if (oldKeys[oldTail] === newKeys[newTail]) {
-        console.log('C');
         // Old tail matches new tail; update in place
         newParts[newTail] =
             updatePart(oldParts[oldTail]!, newValues[newTail]);
         oldTail--;
         newTail--;
       } else if (oldKeys[oldHead] === newKeys[newTail]) {
-        console.log('D');
-        // Old head matches new tail; update and move to new tail
         newParts[newTail] =
             updatePart(oldParts[oldHead]!, newValues[newTail]);
-        console.log('X');
-        assertNodeMakers(oldParts[oldHead]!);
         insertPartBefore(
             containerPart,
             oldParts[oldHead]!,
             newParts[newTail + 1]);
-        assertNodeMakers(oldParts[oldHead]!);
-        console.log('Y', {
-          oldHead: {
-            value: (oldParts[oldHead]!.__value as any).__parts[0].__value,
-            startNode: oldParts[oldHead]!.__startNode,
-            endNode: oldParts[oldHead]!.__endNode,
-          },
-          newHead: {
-            value: (oldParts[oldHead + 1]!.__value as any).__parts[0].__value,
-            startNode: oldParts[oldHead + 1]!.__startNode,
-            endNode: oldParts[oldHead + 1]!.__endNode,
-          },
-        });
-        assertNodeMakers(oldParts[oldHead + 1]!);
         oldHead++;
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
-        console.log('E');
         // Old tail matches new head; update and move to new head
         newParts[newHead] =
             updatePart(oldParts[oldTail]!, newValues[newHead]);
@@ -396,7 +371,6 @@ class RepeatDirective extends Directive {
         oldTail--;
         newHead++;
       } else {
-        console.log('F');
         if (newKeyToIndexMap === undefined) {
           // Lazily generate key-to-index maps, used for removals &
           // moves below
@@ -460,6 +434,7 @@ class RepeatDirective extends Directive {
     // keyListCache.set(containerPart, newKeys);
 
     this.itemKeys = newKeys;
+    containerPart.__value = newParts;
     return noChange;
   }
 }

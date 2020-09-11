@@ -59,39 +59,37 @@ export const updatePart = (part: NodePart, value: unknown) => {
   return part;
 };
 
-export const assertNodeMakers = (part: NodePart) => {
-  let start = part.__startNode;
-  let end = part.__endNode;
+// export const assertNodeMakers = (part: NodePart, v?: unknown) => {
+//   let start = part.__startNode;
+//   let end = part.__endNode;
 
-  if (start === null) {
-    throw new Error('invalid startNode');
-  }
-  if (end === null) {
-    return; // fine?
-  }
-  while (start !== end) {
-    if (start.nextSibling === null) {
-      throw new Error('endNode not a sucessor sibling of startNode');
-    }
-    start = start.nextSibling
-  }
-};
+//   if (start === null) {
+//     throw new Error(`invalid startNode - ${v}`);
+//   }
+//   if (end === null) {
+//     return; // fine?
+//   }
+//   while (start !== end) {
+//     if (start.nextSibling === null) {
+//       throw new Error(`endNode not a sucessor sibling of startNode - ${v}`);
+//     }
+//     start = start.nextSibling
+//   }
+// };
 
 export const insertPartBefore = (
   containerPart: NodePart,
   part: NodePart,
   refPart?: NodePart
 ) => {
-  console.log('insertPartBefore');
   const container = containerPart.__startNode.parentNode!;
 
   const refNode = refPart ? refPart.__startNode : containerPart.__endNode;
-
+  
   const endNode = part.__endNode!.nextSibling;
 
   if (endNode !== refNode) {
-    assertNodeMakers(part);
-    // console.log({startNode: part.__startNode, endNode, refNode});
+    // assertNodeMakers(part);
     reparentNodes(container, part.__startNode, endNode, refNode);
   }
 };

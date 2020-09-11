@@ -72,7 +72,7 @@ suite('repeat', () => {
       assertItemIdentity(children1, children2, [0, 1, 2]);
     });
 
-    test.only('shuffles are stable', () => {
+    test('shuffles are stable', () => {
       let items = [0, 1, 2];
       const t = () => html`${repeat(items, (i) => i, (i: number) => html`
             <li>item: ${i}</li>`)}`;

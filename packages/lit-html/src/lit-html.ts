@@ -38,7 +38,7 @@ const nodeMarker = `<${markerMatch}>`;
 const d = document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
-const createMarker = () => d.createComment('');
+const createMarker = (v = '') => d.createComment(v);
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
@@ -688,29 +688,20 @@ export class NodePart {
     const itemParts = this.__value as NodePart[];
     let partIndex = 0;
     let itemPart: NodePart | undefined;
-    let marker: Comment;
-    let previousMarker!: Comment;
 
     for (const item of value) {
-      // Try to reuse an existing part
-      itemPart = itemParts[partIndex];
-
-      // If no existing part, create a new one
-      if (itemPart === undefined) {
-        if (partIndex === 0) {
-          // TODO: use this.__startNode?
-          this.__insert((previousMarker = createMarker()));
-        }
-        this.__insert((marker = createMarker()));
+      if (partIndex === itemParts.length) {
+        // If no existing part, create a new one
         itemParts.push(
           (itemPart = new NodePart(
-            previousMarker,
-            (previousMarker = marker),
+            this.__insert(createMarker()),
+            this.__insert(createMarker()),
             this.options
           ))
         );
       } else {
-        previousMarker = itemPart.__endNode as Comment;
+        // Reuse an existing part
+        itemPart = itemParts[partIndex];
       }
       itemPart.__setValue(item);
       partIndex++;
@@ -720,7 +711,7 @@ export class NodePart {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
-      this.__clear(itemPart && itemPart.__endNode!.nextSibling);
+      this.__clear(itemPart?.__endNode!.nextSibling);
     }
   }
 
