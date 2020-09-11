@@ -93,6 +93,11 @@ export default {
       mangle: {
         properties: {
           regex: /^__/,
+          // TODO A test in lit-html_test.ts calls
+          // `part.__element.dispatchEvent`, but when testing the production
+          // output, this will fail since `__element` is renamed. Is there
+          // another way to write this test, or should this property be public?
+          reserved: '__element',
         },
       },
     }),
