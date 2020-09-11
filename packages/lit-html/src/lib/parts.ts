@@ -1,4 +1,4 @@
-import { NodePart, nothing } from './lit-html.js';
+import {NodePart, nothing} from './lit-html.js';
 
 /**
  * The state of a NodePart, which can be detached and reattached.
@@ -85,7 +85,7 @@ export const insertPartBefore = (
   const container = containerPart.__startNode.parentNode!;
 
   const refNode = refPart ? refPart.__startNode : containerPart.__endNode;
-  
+
   const endNode = part.__endNode!.nextSibling;
 
   if (endNode !== refNode) {
@@ -107,27 +107,31 @@ export const removePart = (part: NodePart) => {
  * into another container (could be the same container), before `before`. If
  * `before` is null, it appends the nodes to the container.
  */
-export const reparentNodes =
-    (container: Node,
-     start: Node|null,
-     end: Node|null = null,
-     before: Node|null = null): void => {
-      while (start !== end) {
-        const n = start!.nextSibling;
-        container.insertBefore(start!, before);
-        start = n;
-      }
-    };
+export const reparentNodes = (
+  container: Node,
+  start: Node | null,
+  end: Node | null = null,
+  before: Node | null = null
+): void => {
+  while (start !== end) {
+    const n = start!.nextSibling;
+    container.insertBefore(start!, before);
+    start = n;
+  }
+};
 
 /**
  * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
  * `container`.
  */
-export const removeNodes =
-  (container: Node, start: Node|null, end: Node|null = null): void => {
-    while (start !== end) {
-      const n = start!.nextSibling;
-      container.removeChild(start!);
-      start = n;
-    }
-  };
+export const removeNodes = (
+  container: Node,
+  start: Node | null,
+  end: Node | null = null
+): void => {
+  while (start !== end) {
+    const n = start!.nextSibling;
+    container.removeChild(start!);
+    start = n;
+  }
+};

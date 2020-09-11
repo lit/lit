@@ -13,7 +13,12 @@
  */
 
 import {directive, NodePart, Part, Directive, noChange} from '../lit-html.js';
-import {createAndInsertPart, insertPartBefore, removePart, updatePart } from '../parts.js';
+import {
+  createAndInsertPart,
+  insertPartBefore,
+  removePart,
+  updatePart,
+} from '../parts.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
 export type ItemTemplate<T> = (item: T, index: number) => unknown;
@@ -50,7 +55,6 @@ const generateMap = (list: unknown[], start: number, end: number) => {
  */
 
 class RepeatDirective extends Directive {
-
   itemKeys?: unknown[];
 
   constructor(part: Part) {
@@ -90,10 +94,9 @@ class RepeatDirective extends Directive {
       ItemTemplate<T>
     ]
   ) {
-
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    let oldParts = containerPart.__value as Array<NodePart|null>;
+    let oldParts = containerPart.__value as Array<NodePart | null>;
     if (!oldParts) {
       return this.render(items, keyFnOrTemplate, template);
     }
@@ -105,7 +108,7 @@ class RepeatDirective extends Directive {
       keyFn = keyFnOrTemplate as KeyFn<T>;
     }
 
-    const oldKeys = this.itemKeys ??= [];
+    const oldKeys = (this.itemKeys ??= []);
 
     // New part list will be built up as we go (either reused from
     // old parts or created for new keys in this update). This is
@@ -119,7 +122,7 @@ class RepeatDirective extends Directive {
     let index = 0;
     for (const item of items) {
       newKeys[index] = keyFn ? keyFn(item, index) : index;
-      newValues[index] = template !(item, index);
+      newValues[index] = template!(item, index);
       index++;
     }
 
@@ -343,31 +346,27 @@ class RepeatDirective extends Directive {
         oldTail--;
       } else if (oldKeys[oldHead] === newKeys[newHead]) {
         // Old head matches new head; update in place
-        newParts[newHead] =
-            updatePart(oldParts[oldHead]!, newValues[newHead]);
+        newParts[newHead] = updatePart(oldParts[oldHead]!, newValues[newHead]);
         oldHead++;
         newHead++;
       } else if (oldKeys[oldTail] === newKeys[newTail]) {
         // Old tail matches new tail; update in place
-        newParts[newTail] =
-            updatePart(oldParts[oldTail]!, newValues[newTail]);
+        newParts[newTail] = updatePart(oldParts[oldTail]!, newValues[newTail]);
         oldTail--;
         newTail--;
       } else if (oldKeys[oldHead] === newKeys[newTail]) {
-        newParts[newTail] =
-            updatePart(oldParts[oldHead]!, newValues[newTail]);
+        newParts[newTail] = updatePart(oldParts[oldHead]!, newValues[newTail]);
         insertPartBefore(
-            containerPart,
-            oldParts[oldHead]!,
-            newParts[newTail + 1]);
+          containerPart,
+          oldParts[oldHead]!,
+          newParts[newTail + 1]
+        );
         oldHead++;
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
         // Old tail matches new head; update and move to new head
-        newParts[newHead] =
-            updatePart(oldParts[oldTail]!, newValues[newHead]);
-        insertPartBefore(
-            containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
+        newParts[newHead] = updatePart(oldParts[oldTail]!, newValues[newHead]);
+        insertPartBefore(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
         oldTail--;
         newHead++;
       } else {
@@ -390,21 +389,20 @@ class RepeatDirective extends Directive {
           // moves; see if we have an old part we can reuse and move
           // into place
           const oldIndex = oldKeyToIndexMap.get(newKeys[newHead]);
-          const oldPart =
-              oldIndex !== undefined ? oldParts[oldIndex] : null;
+          const oldPart = oldIndex !== undefined ? oldParts[oldIndex] : null;
           if (oldPart === null) {
             // No old part for this value; create a new one and
             // insert it
             const newPart = createAndInsertPart(
-                containerPart, oldParts[oldHead]!);
+              containerPart,
+              oldParts[oldHead]!
+            );
             updatePart(newPart, newValues[newHead]);
             newParts[newHead] = newPart;
           } else {
             // Reuse old part
-            newParts[newHead] =
-                updatePart(oldPart, newValues[newHead]);
-            insertPartBefore(
-                containerPart, oldPart, oldParts[oldHead]!);
+            newParts[newHead] = updatePart(oldPart, newValues[newHead]);
+            insertPartBefore(containerPart, oldPart, oldParts[oldHead]!);
             // This marks the old part as having been used, so that
             // it will be skipped in the first two checks above
             oldParts[oldIndex as number] = null;
@@ -417,8 +415,7 @@ class RepeatDirective extends Directive {
     while (newHead <= newTail) {
       // For all remaining additions, we insert before last new
       // tail, since old pointers are no longer valid
-      const newPart =
-          createAndInsertPart(containerPart, newParts[newTail + 1]);
+      const newPart = createAndInsertPart(containerPart, newParts[newTail + 1]);
       updatePart(newPart, newValues[newHead]);
       newParts[newHead++] = newPart;
     }
