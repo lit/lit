@@ -12,7 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement, UpdatingElement, PropertyValues, PropertyDeclaration} from '../../lib/lit-element.js';
+import {
+  html,
+  LitElement,
+  UpdatingElement,
+  PropertyValues,
+  PropertyDeclaration,
+} from '../../lib/lit-element.js';
 import {property} from '../../lib/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -452,5 +458,4 @@ suite('@property', () => {
     assert.deepEqual(el._observedZot, {value: 'zot', oldValue: ''});
     assert.deepEqual(el._observedZot2, {value: 'zot', oldValue: ''});
   });
-
 });

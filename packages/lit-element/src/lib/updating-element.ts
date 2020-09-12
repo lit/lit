@@ -584,7 +584,12 @@ export abstract class UpdatingElement extends HTMLElement {
     if (propName !== undefined && this._reflectingProperty !== propName) {
       const options = ctor.getPropertyOptions(propName);
       const converter = options.converter;
-      const fromAttribute = (converter as ComplexAttributeConverter)?.fromAttribute! ?? ((typeof converter === 'function' ? converter as (value: string | null, type?: unknown) => unknown : null) ?? defaultConverter.fromAttribute);
+      const fromAttribute =
+        (converter as ComplexAttributeConverter)?.fromAttribute! ??
+        (typeof converter === 'function'
+          ? (converter as (value: string | null, type?: unknown) => unknown)
+          : null) ??
+        defaultConverter.fromAttribute;
       // mark state reflecting
       this._reflectingProperty = propName;
       this[propName as keyof this] =

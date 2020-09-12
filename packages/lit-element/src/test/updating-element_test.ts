@@ -1814,8 +1814,8 @@ suite('UpdatingElement', () => {
         foo2: {
           type: Number,
           validator: (value: number) => Math.min(10, Math.max(value, 0)),
-        }
-      }
+        },
+      };
     }
     customElements.define(generateElementName(), E);
 
@@ -1896,7 +1896,7 @@ suite('UpdatingElement', () => {
           reflect: true,
         },
         zug: {type: Number, sync: true},
-        bar: {}
+        bar: {},
       };
 
       foo = 5;

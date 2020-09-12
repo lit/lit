@@ -55,11 +55,17 @@ suite('@queryAll', () => {
 
   test('returns elements when they exists', () => {
     assert.lengthOf(el.divs, 2);
-    assert.deepEqual(Array.from(el.divs), Array.from(el.renderRoot.querySelectorAll('div')));
+    assert.deepEqual(
+      Array.from(el.divs),
+      Array.from(el.renderRoot.querySelectorAll('div'))
+    );
   });
 
   test('returns empty NodeList when no match', () => {
     assert.lengthOf(el.spans, 0);
-    assert.deepEqual(Array.from(el.spans), Array.from(el.renderRoot.querySelectorAll('span')));
+    assert.deepEqual(
+      Array.from(el.spans),
+      Array.from(el.renderRoot.querySelectorAll('span'))
+    );
   });
 });
