@@ -1,5 +1,5 @@
 import {html, LitElement} from '../lib/lit-element.js';
-import {property} from '../lib/decorators.js';
+import {property} from '../lib/decorators/property.js';
 
 class TSElement extends LitElement {
   @property() message = 'Hi';
