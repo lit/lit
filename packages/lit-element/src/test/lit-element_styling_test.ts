@@ -17,6 +17,7 @@ import {
   html as htmlWithStyles,
   LitElement,
   unsafeCSS,
+  CSSResultArray,
 } from '../lib/lit-element.js';
 
 import {
@@ -828,9 +829,9 @@ suite('Static get styles', () => {
     customElements.define(
       base,
       class extends LitElement {
-        static getStyles() {
+        static finalizeStyles(styles: CSSResultArray) {
           getStylesCounter++;
-          return super.getStyles();
+          return super.finalizeStyles(styles);
         }
 
         static get styles() {
