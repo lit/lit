@@ -12,6 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+const DEV_MODE = true;
+
+if (DEV_MODE) {
+  console.warn('lit-html is in dev mode. Not recommended for production!');
+}
+
 // Added to an attribute name to mark the attribute as bound so we can find
 // it easily.
 const boundAttributeSuffix = '$lit$';
@@ -665,7 +671,7 @@ export class NodePart {
 }
 
 export class AttributePart {
-  readonly __element: HTMLElement;
+  readonly element: HTMLElement;
   readonly name: string;
 
   /**
@@ -683,7 +689,7 @@ export class AttributePart {
     strings: ReadonlyArray<string>,
     _options?: RenderOptions
   ) {
-    this.__element = element;
+    this.element = element;
     this.name = name;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this.__value = new Array(strings.length - 1).fill(nothing);
@@ -791,25 +797,25 @@ export class AttributePart {
    */
   __commitValue(value: unknown) {
     if (value === nothing) {
-      this.__element.removeAttribute(this.name);
+      this.element.removeAttribute(this.name);
     } else {
-      this.__element.setAttribute(this.name, value as string);
+      this.element.setAttribute(this.name, value as string);
     }
   }
 }
 
 export class PropertyPart extends AttributePart {
   __commitValue(value: unknown) {
-    (this.__element as any)[this.name] = value === nothing ? undefined : value;
+    (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
 
 export class BooleanAttributePart extends AttributePart {
   __commitValue(value: unknown) {
     if (value && value !== nothing) {
-      this.__element.setAttribute(this.name, '');
+      this.element.setAttribute(this.name, '');
     } else {
-      this.__element.removeAttribute(this.name);
+      this.element.removeAttribute(this.name);
     }
   }
 }
@@ -858,7 +864,7 @@ export class EventPart extends AttributePart {
       (oldListener === nothing || shouldRemoveListener);
 
     if (shouldRemoveListener) {
-      this.__element.removeEventListener(
+      this.element.removeEventListener(
         this.name,
         this,
         oldListener as EventListenerWithOptions
@@ -868,7 +874,7 @@ export class EventPart extends AttributePart {
       // Beware: IE11 and Chrome 41 don't like using the listener as the
       // options object. Figure out how to deal w/ this in IE11 - maybe
       // patch addEventListener?
-      this.__element.addEventListener(
+      this.element.addEventListener(
         this.name,
         this,
         newListener as EventListenerWithOptions
@@ -881,7 +887,7 @@ export class EventPart extends AttributePart {
     if (typeof this.__value === 'function') {
       // TODO (justinfagnani): do we need to default to this.__element?
       // It'll always be the same as `e.currentTarget`.
-      this.__value.call(this.__eventContext ?? this.__element, event);
+      this.__value.call(this.__eventContext ?? this.element, event);
     } else {
       (this.__value as EventListenerObject).handleEvent(event);
     }
