@@ -175,10 +175,11 @@ export class LitElement extends UpdatingElement {
   }
 
   protected static finalize() {
-    if (!this.hasFinalized) {
+    const wasFinalized = super.finalize();
+    if (wasFinalized) {
       this._elementStyles = this.finalizeStyles(this.styles);
-      super.finalize();
     }
+    return wasFinalized;
   }
 
   /**
