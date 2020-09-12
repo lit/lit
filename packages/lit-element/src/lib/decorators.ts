@@ -19,11 +19,11 @@
  * not an arrow function.
  */
 
-export * from './customElement.js';
-export * from './property.js';
-export * from './internalProperty.js';
-export * from './eventOptions.js';
-export * from './query.js';
-export * from './queryAll.js';
-export * from './queryAsync.js';
-export * from './queryAssignedNodes.js';
+export * from './decorators/customElement.js';
+export * from './decorators/property.js';
+export * from './decorators/internalProperty.js';
+export * from './decorators/eventOptions.js';
+export * from './decorators/query.js';
+export * from './decorators/queryAll.js';
+export * from './decorators/queryAsync.js';
+export * from './decorators/queryAssignedNodes.js';
