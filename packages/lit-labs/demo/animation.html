@@ -1,0 +1,153 @@
+<!DOCTYPE html><!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>animation demo</title>
+</head>
+<body>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+    main {
+      padding: 0 16px;
+    }
+  </style>
+    <style type="element-theme" for="my-element">
+      :host {
+        min-width: 200px;
+      }
+    </style>
+    <style type="element-theme">
+      :host {
+        display: inline-block;
+        border: 2px dotted black;
+        padding: 4px;
+      }
+    </style>
+    <h2>Elements that use animation</h2>
+    <main>
+      <my-element></my-element>
+    </main>
+  <script type="module">
+    import { LitElement, html, css } from '../node_modules/lit-element/index.js';
+    import {animateFlip} from '../lib/directives/animate-flip.js';
+
+    class MyElement extends LitElement {
+
+      static properties = {
+        animated: {}
+      }
+
+      constructor() {
+        super();
+        this.animated = false;
+      }
+
+      static styles = [
+        css`
+          .shifted {
+            left: 50vw;
+            top: 50vh;
+            opacity: .25;
+          }
+
+          .animation-container {
+            min-height: 50px;
+          }
+
+          .box {
+            display: inline-block;
+            position: relative;
+            border: 2px solid black;
+            background: #03dac6;
+            font-weight: 800;
+            padding: 8px;
+            margin: 4px;
+          }
+
+          .positioned-box {
+            position: absolute;
+          }
+
+          .animation-container2 {
+            min-height: 200px;
+          }
+
+          .animation-list {
+            display: inline-flex;
+            flex-direction: column;
+          }
+
+          .animation-list.ordered {
+            flex-direction: row;
+          }
+
+          .animation-list.ordered > :nth-of-type(1) {
+            order: 4;
+          }
+
+          .animation-list.ordered > :nth-of-type(2) {
+            order: 3;
+          }
+
+          .animation-list.ordered > :nth-of-type(3) {
+            order: 2;
+          }
+
+          .animation-list.ordered > :nth-of-type(4) {
+            order: 1;
+          }
+
+          .from-top-left {
+            transform-origin: 0 0;
+          }
+
+          .big {
+            /*transform: scale(4);*/
+            height: 176px;
+            width: 176px;
+            top: -132px;
+          }
+        `
+      ];
+
+      render() {
+        return html`
+          <button @click=${this.animate}>Move</button>
+          <section class="animation-container">
+            <div ...=${animateFlip(this)} class="box positioned-box ${this.animated ? 'shifted' : ''}"">Hello!</div>
+          </section>
+          <section class="animation-container2">
+            <section class="animation-list ${this.animated ? 'ordered' : ''}">
+              <div class="box" ...=${animateFlip(this)}>Item 1</div>
+              <div class="box" ...=${animateFlip(this)}>Item 2</div>
+              <div class="box" ...=${animateFlip(this)}>Item 3</div>
+              <div class="box"  ...=${animateFlip(this)}>Item 4</div>
+            </section>
+          </section>
+          <section>
+            <div class="box from-top-left ${this.animated ? 'big' : ''}"  ...=${animateFlip(this)}>Hi</div>
+          </section>
+        `;
+      }
+
+      animate() {
+        this.animated = !this.animated;
+      }
+
+    }
+
+    customElements.define('my-element', MyElement);
+
+  </script>
+</body></html>
