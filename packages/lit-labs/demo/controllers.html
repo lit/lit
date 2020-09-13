@@ -1,0 +1,235 @@
+<!DOCTYPE html><!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>controllers demo</title>
+</head>
+<body>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+    main {
+      padding: 0 16px;
+    }
+  </style>
+    <style type="element-theme" for="my-element">
+      :host {
+        min-width: 200px;
+      }
+    </style>
+    <style type="element-theme">
+      :host {
+        display: inline-block;
+        border: 2px dotted black;
+        padding: 4px;
+      }
+    </style>
+    <h2>Elements that use Controllers</h2>
+    <main>
+      <my-element></my-element>
+      <my-inner></my-inner>
+    </main>
+  <script type="module">
+    import { LitElement, html, css } from '../node_modules/lit-element/index.js';
+    import {UpdatingController} from '../node_modules/lit-element/lib/updating-controller.js';
+    import {directive, Directive} from '../node_modules/lit-html/index.js';
+    import {createContext} from '../lib/controllers/context.js';
+    import {ThemeContext} from '../lib/controllers/theme.js';
+    import {AsyncTask} from '../lib/controllers/async-task.js';
+
+    class MyListener extends UpdatingController {
+
+      constructor(host, types) {
+        super(host);
+        this.hasListeners = false;
+        this._message = '';
+        this.types = types;
+        this.clearDelay = 1000;
+        this.listener = (e) => this.onEvent(e);
+      }
+
+      get message() {
+        return this._message;
+      }
+
+      set message(value) {
+        this._message = value;
+        this.requestUpdate();
+      }
+
+      onConnected() {
+        if (!this.hasListeners) {
+          this.hasListener = true;
+          for (const type of this.types) {
+            this.element.addEventListener(type, this.listener);
+          }
+        }
+        super.onConnected();
+      }
+
+      onDisconnected() {
+        if (this.hasListeners) {
+          this.hasListeners = false;
+          for (const type of this.types) {
+            this.element.removeEventListener(type, this.listener);
+          }
+        }
+        super.onConnected();
+      }
+
+      renderListenerMessage() {
+        return this.message;
+      }
+
+      onEvent(e) {
+        this.message = e.type;
+        if (this.clearDelay > 0) {
+          clearTimeout(this.clearTimeout);
+          this.clearTimeout = setTimeout(() => this.message = '', this.clearDelay);
+        }
+      }
+
+    }
+
+    class MyCounter extends UpdatingController {
+
+      _count = 0;
+
+      constructor(host) {
+        super(host);
+        this.listener = new MyListener(this, ['mousedown', 'mouseup']),
+        this._onIncrement = () => this.onIncrement();
+        this._onDecrement = () => this.onDecrement();
+      }
+
+      get count() {
+        return this._count;
+      }
+
+      set count(value) {
+        this._count = value;
+        this.requestUpdate();
+      }
+
+      renderCounter() {
+        return html`<button @click=${this._onIncrement}>+</button> / <button @click=${this._onDecrement}>-</button> : ${this.count}`;
+      }
+
+      renderListenerMessage() {
+        return this.listener.renderListenerMessage();
+      }
+
+      onIncrement() {
+        this.count++;
+      }
+
+      onDecrement() {
+        this.count--;
+      }
+
+    }
+
+    const UserContext = createContext({name: 'Bob'}, 'user');
+
+    const updateDirective = directive(
+      class UpdateObserver extends Directive {
+        constructor(element) {
+          super();
+          this.updateListener = undefined;
+          this.updateCount = 0;
+        }
+
+        render(element) {
+          if (this.updateListener === undefined) {
+            this.updateListener = () => {
+              this.updateCount++;
+            }
+            element.updateCallbacks.add(this.updateListener);
+          }
+          return html`directive update count: ${this.updateCount}`;
+        }
+      }
+    );
+
+    class Inner extends LitElement {
+      constructor() {
+        super();
+        this.userInfo = new UserContext.consumer(this);
+        new ThemeContext.consumer(this);
+      }
+
+      static styles = css`:host { margin: 2px; }`;
+
+      render() {
+        const name = this.userInfo.value?.name;
+        const insideSelf = this.getRootNode().host?.localName === this.localName;
+        return html`${name}${!insideSelf ? html`${name ? ', ' : ''} <my-inner></my-inner>` : ''}`;
+      }
+    }
+    customElements.define('my-inner', Inner);
+
+    class MyElement extends LitElement {
+
+      static properties = {
+        moved: {}
+      }
+
+      constructor() {
+        super();
+        this.time = 0;
+        this.moved = false;
+        this.counter1 = new MyCounter(this);
+        this.counter2 = new MyCounter(this);
+        this.counter3 = new MyCounter(this);
+        this.userInfo = new UserContext.provider(this);
+        this.fetchTask = new AsyncTask(this, time =>
+          new Promise(resolve => setTimeout(() => resolve(++time), 1000)), () => [this.time], 0);
+        new ThemeContext.consumer(this);
+        new ThemeContext.provider(this, {
+          ['my-inner']: [
+            css`
+            :host {
+              display: inline-block;
+              background: #3700b3;
+              color: white;
+              font-weight: 800;
+            }`
+          ]
+        });
+      }
+
+      render() {
+        this.time = this.fetchTask.value;
+        return html`
+          <section>${this.counter1.renderCounter()}</section>
+          <section>${this.counter2.renderCounter()}</section>
+          <section>event: ${this.counter1.renderListenerMessage()}</section>
+          <hr>
+          <input @input=${this.onInput} .value=${this.userInfo.value.name}>
+          <section><my-inner></my-inner></section>
+          <section><my-inner></my-inner></section>
+          <section>seconds: ${this.time}</section>
+          <section>${updateDirective(this)}</section>
+        `;
+      }
+
+      onInput(e) {
+        this.userInfo.value = {name: e.target.value};
+      }
+
+    }
+
+    customElements.define('my-element', MyElement);
+
+  </script>
+</body></html>
