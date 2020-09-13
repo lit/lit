@@ -15,8 +15,8 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {html, svg, render} from '../../lib/lit-html.js';
-import {ClassInfo, classMap} from '../../lib/directives/class-map.js';
+import {html, svg, render} from '../../lit-html.js';
+import {ClassInfo, classMap} from '../../directives/class-map.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('classMap directive', () => {
