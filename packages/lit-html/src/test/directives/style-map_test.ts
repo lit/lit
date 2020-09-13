@@ -22,7 +22,7 @@ const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;
 const testIfSupportsCSSVariables = (test: any) =>
-    isIE || isChrome41 ? test.skip : test;
+  isIE || isChrome41 ? test.skip : test;
 
 suite('styleMap', () => {
   let container: HTMLDivElement;
@@ -33,8 +33,9 @@ suite('styleMap', () => {
 
   function renderStyleMapStatic(cssInfo: StyleInfo) {
     render(
-        html`<div style="height: 1px; ${styleMap(cssInfo)} color: red"></div>`,
-        container);
+      html`<div style="height: 1px; ${styleMap(cssInfo)} color: red"></div>`,
+      container
+    );
   }
 
   setup(() => {
@@ -109,8 +110,9 @@ suite('styleMap', () => {
   test('throws when used in attribute with more than 1 part', () => {
     assert.throws(() => {
       render(
-          html`<div style="${'height: 2px;'} ${styleMap({})}"></div>`,
-          container);
+        html`<div style="${'height: 2px;'} ${styleMap({})}"></div>`,
+        container
+      );
     });
   });
 

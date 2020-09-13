@@ -23,7 +23,7 @@ import {
 
 /**
  * A key-value set of CSS properties and values.
- * 
+ *
  * The key should be either a valid CSS property name string, like
  * `'background-color'`, or a valid JavaScript camel case property name
  * for CSSStyleDeclaration like `backgroundColor`.
@@ -44,8 +44,8 @@ class StyleMap extends Directive {
     ) {
       throw new Error(
         'The `styleMap` directive must be used in the `style` attribute ' +
-        'and must be the only part in the attribute.'
-        );
+          'and must be the only part in the attribute.'
+      );
     }
   }
 
@@ -61,7 +61,7 @@ class StyleMap extends Directive {
     if (this.previousStyleProperties === undefined) {
       // Write static styles once
       style.cssText = part.strings?.join(' ') ?? '';
-      this.previousStyleProperties = new Set()
+      this.previousStyleProperties = new Set();
     }
 
     // Remove old properties that no longer exist in styleInfo
