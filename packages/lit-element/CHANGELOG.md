@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Breaking] For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
 * For efficiency, the `css` function now maintains a cache and will used a cached value if available when the same style text is requested.
 
+### Added
+* UpdatingElement adds support for sets of lifecycle callbacks for connected, disconnected, update, and updated. To use, add/remove callback functions to/from the sets: `connectedCallbacks`, `disconnectedCallbacks`, `updateCallbacks`, `updatedCallbacks`. Note, the callbacks are called after UpdatingElement processes the associated callback except in the case of the update callback which is called before `UpdatingElement.update`.
+
+* Added `UpdatingController`, a primitive to enable sharing reusable code between elements. `UpdatingController` is a base class used to implement controllers which integrate with an `UpdatingElement`. An `UpdatingController` can listen for its element's lifecycle callbacks for connected, disconnected, update, and updated via `on` prefixed methods (e.g. `onConnected` or `onUpdate`). In addition, a controller can provoke its associated element to update by calling `requestUpdate`. Controllers can be composed inside other controllers. Typically an `UpdatingController` is instantiated in an element's (or controller's) constructor, for example, `this.myController = new MyController(this);`.
+
 ### Removed
 * [Breaking] Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.
 
