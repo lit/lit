@@ -38,7 +38,11 @@ const skipBundleOutput = {
   },
 };
 
-const entryPoints = ['lit-html', 'directives/if-defined'];
+const entryPoints = [
+  'lit-html',
+  'directives/if-defined',
+  'directives/class-map',
+];
 
 export default {
   input: entryPoints.map((name) => `development/${name}.js`),
