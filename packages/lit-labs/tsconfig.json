@@ -7,7 +7,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "./",
+    "outDir": "./lib",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -20,7 +20,7 @@
     "experimentalDecorators": true
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts", "env.d.ts"
   ],
   "exclude": []
 }

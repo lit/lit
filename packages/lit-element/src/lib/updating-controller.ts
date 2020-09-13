@@ -25,6 +25,8 @@ import {
  * @packageDocumentation
  */
 
+ export type UpdatingHost = UpdatingController | UpdatingElement;
+
 /**
  * Base controller class which can interact with an UpdatingElement by hooking
  * into its lifecycle. The controller can perform tasks when its associated
@@ -45,12 +47,13 @@ export class UpdatingController {
   disconnectedCallbacks: Set<connectCallback> = new Set();
   updateCallbacks: Set<updateCallback> = new Set();
   updatedCallbacks: Set<updateCallback> = new Set();
-  private _onConnected: connectCallback;
-  private _onDisconnected: connectCallback;
-  private _onUpdate: updateCallback;
-  private _onUpdated: updateCallback;
+  // TODO(sorvell): These are private but not marked so they can be used via a mixin.
+  _onConnected: connectCallback;
+  _onDisconnected: connectCallback;
+  _onUpdate: updateCallback;
+  _onUpdated: updateCallback;
 
-  constructor(host: UpdatingController | UpdatingElement) {
+  constructor(host: UpdatingHost) {
     const element = host instanceof UpdatingElement ? host : host.element;
     this._onConnected = () => this.onConnected();
     this._onDisconnected = () => this.onDisconnected();
@@ -63,7 +66,7 @@ export class UpdatingController {
 
   addController(
     element: UpdatingElement,
-    host: UpdatingController | UpdatingElement,
+    host: UpdatingHost,
     controller: UpdatingController
   ) {
     controller.isActive = true;
