@@ -42,6 +42,7 @@ const entryPoints = [
   'lit-html',
   'directives/if-defined',
   'directives/class-map',
+  'directives/style-map',
 ];
 
 export default {
