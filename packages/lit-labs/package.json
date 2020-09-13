@@ -54,6 +54,7 @@
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
+    "lit-element": "^3.0.0-pre.0",
     "lit-html": "^2.0.0-pre.0"
   },
   "publishConfig": {
