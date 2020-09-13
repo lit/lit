@@ -1,0 +1,62 @@
+{
+  "name": "lit-labs",
+  "version": "0.0.0",
+  "description": "An experimental playground for Lit helpers and tools. Your mileage may vary.",
+  "license": "BSD-3-Clause",
+  "homepage": "https://lit-element.polymer-project.org/",
+  "repository": "lit-html",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    "/lib/",
+    "/src/",
+    "!/src/demo/",
+    "!/src/test/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "wtr test/*_test.js test/**/*_test.js --node-resolve --root-dir ../../",
+    "test:watch": "wtr test/*_test.js test/**/*_test.js --node-resolve --root-dir ../../ --watch",
+    "checksize": "rollup -c ; cat bundled.js | wc -c ; rm bundled.js",
+    "format": "prettier src/* --write",
+    "lint": "tslint --project ./",
+    "prepublishOnly": "node check-version-tracker.cjs && npm run lint && npm test",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+    "release": "np --any-branch --yolo"
+  },
+  "author": "The Polymer Authors",
+  "devDependencies": {
+    "@esm-bundle/chai": "^4.1.5",
+    "@rollup/plugin-alias": "^3.1.1",
+    "@rollup/plugin-replace": "^2.3.3",
+    "@types/mocha": "^8.0.3",
+    "@web/dev-server-rollup": "^0.2.6",
+    "@web/test-runner": "^0.7.15",
+    "@web/test-runner-playwright": "^0.5.4",
+    "chokidar-cli": "^2.1.0",
+    "concurrently": "^5.3.0",
+    "mocha": "^8.1.3",
+    "prettier": "^2.1.1",
+    "rollup": "^2.26.9",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-filesize": "^9.0.2",
+    "rollup-plugin-sourcemaps": "^0.6.2",
+    "rollup-plugin-terser": "^7.0.1",
+    "terser": "^5.2.1",
+    "typescript": "^4.0.2",
+    "rollup-plugin-node-resolve": "^5.2.0"
+  },
+  "dependencies": {
+    "lit-html": "^2.0.0-pre.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
