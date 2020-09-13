@@ -59,24 +59,6 @@ export const updatePart = (part: NodePart, value: unknown) => {
   return part;
 };
 
-// export const assertNodeMakers = (part: NodePart, v?: unknown) => {
-//   let start = part.__startNode;
-//   let end = part.__endNode;
-
-//   if (start === null) {
-//     throw new Error(`invalid startNode - ${v}`);
-//   }
-//   if (end === null) {
-//     return; // fine?
-//   }
-//   while (start !== end) {
-//     if (start.nextSibling === null) {
-//       throw new Error(`endNode not a sucessor sibling of startNode - ${v}`);
-//     }
-//     start = start.nextSibling
-//   }
-// };
-
 export const insertPartBefore = (
   containerPart: NodePart,
   part: NodePart,
@@ -96,7 +78,6 @@ export const insertPartBefore = (
 
 export const removePart = (part: NodePart) => {
   removeNodes(
-    part.__startNode.parentNode!,
     part.__startNode,
     part.__endNode!.nextSibling
   );
@@ -125,13 +106,12 @@ export const reparentNodes = (
  * `container`.
  */
 export const removeNodes = (
-  container: Node,
-  start: Node | null,
-  end: Node | null = null
+  start: ChildNode | null,
+  end: ChildNode | null = null
 ): void => {
   while (start !== end) {
     const n = start!.nextSibling;
-    container.removeChild(start!);
+    start!.remove();
     start = n;
   }
 };
