@@ -18,7 +18,7 @@ import {
   LitElement,
   unsafeCSS,
   CSSResultArray,
-} from '../lib/lit-element.js';
+} from '../lit-element.js';
 
 import {
   generateElementName,

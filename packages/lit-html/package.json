@@ -30,7 +30,7 @@
     "dev": "scripts/dev.sh",
     "prepare": "npm run build",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "wtr \"development/**/*_test.js\" --node-resolve",
+    "test:dev": "wtr 'development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
