@@ -18,10 +18,10 @@ import {
   noChange,
   NodePart,
   render,
-} from '../lib/lit-html.js';
+} from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
-import {detachNodePart, restoreNodePart} from '../lib/parts.js';
+import {detachNodePart, restoreNodePart} from '../parts.js';
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -33,6 +33,9 @@ suite('lit-html', () => {
   test('detach / restore', () => {
     // Make sure detach()/restore() are sufficient for array item swaps.
 
+    // This test directive swaps the 2nd and 3rd array elements on the second
+    // render. This exercizes using detach() and restore() to move part DOM
+    // and values between parts.
     class SwapDirective extends Directive {
       render(items: Array<number>) {
         return items.map((i) => html`<li>${i}</li>`);

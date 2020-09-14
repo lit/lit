@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, render} from '../../lib/lit-html.js';
-import {cache} from '../../lib/directives/cache.js';
+import {html, render} from '../../lit-html.js';
+import {cache} from '../../directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 

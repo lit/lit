@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, NodePart, PartInfo, Directive, noChange} from '../lit-html.js';
+import {directive, NodePart, Part, Directive, noChange} from '../lit-html.js';
 import {
   createAndInsertPart,
   insertPartBefore,
@@ -57,7 +57,7 @@ const generateMap = (list: unknown[], start: number, end: number) => {
 class RepeatDirective extends Directive {
   itemKeys?: unknown[];
 
-  constructor(part: PartInfo) {
+  constructor(part: Part) {
     super();
     if (!(part instanceof NodePart)) {
       throw new Error('repeat can only be used in text bindings');
