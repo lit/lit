@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 * [Breaking] When a propery declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
-* [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice is should very rarely be ([#699]https://github.com/Polymer/lit-element/issues/699).
+* [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice is should very rarely be ([#699](https://github.com/Polymer/lit-element/issues/699)).
 * [Breaking] LitElement's `adoptStyles` method is now always called. Previously it was called only if the element's `renderRoot` was a shadowRoot. The default implementation only applies styling to the element's shadowRoot and does nothing if the `renderRoot` is not a shadowRoot. This method may be overridden to customize this behavior.
 * [Breaking] LitElement's `static getStyles` method has been renamed to `static finalizeStules` and now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.
 * [Breaking] Removed build support for TypeScript 3.4.
