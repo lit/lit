@@ -27,6 +27,7 @@
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
     "clean": "rm -rf lit-element.{js,js.map,d.ts} lib/ development/",
+    "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
@@ -58,6 +59,7 @@
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.2.3",
     "chai": "^4.0.2",
+    "chokidar-cli": "^2.1.0",
     "clang-format": "^1.2.4",
     "downlevel-dts": "^0.6.0",
     "lit-element-benchmarks": "^0.1.0",
