@@ -15,7 +15,7 @@ export class AnimateFlipDirective extends Directive {
   reversing = false;
   options: KeyframeAnimationOptions = {
     duration: 333,
-    easing: `cubic-bezier(0.42, 0, 0.58, 1)`,
+    easing: `ease-in-out`,
   };
 
   constructor(part: Part) {

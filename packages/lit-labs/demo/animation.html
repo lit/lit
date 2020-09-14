@@ -45,7 +45,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     class MyElement extends LitElement {
 
       static properties = {
-        useLayout: {}
+        useLayout: {},
+        animating: {}
       }
 
       constructor() {
@@ -122,21 +123,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ];
 
       render() {
+        const options = {
+          duration: 333,
+          easing: 'ease-in-out'
+        }
         return html`
-          <button @click=${this.animate}>Animate</button>
+          <button @click=${this.animate}>${this.animating ? 'Stop' : 'Go'}</button>
           <section class="animation-container">
-            <div ...=${animateFlip(this)} class="box positioned-box ${this.useLayout ? 'shifted' : ''}"">Hello!</div>
+            <div ...=${animateFlip(this, options)} class="box positioned-box ${this.useLayout ? 'shifted' : ''}"">Hello!</div>
           </section>
           <section class="animation-container2">
             <section class="animation-list ${this.useLayout ? 'ordered' : ''}">
-              <div class="box" ...=${animateFlip(this)}>Item 1</div>
-              <div class="box" ...=${animateFlip(this)}>Item 2</div>
-              <div class="box" ...=${animateFlip(this)}>Item 3</div>
-              <div class="box"  ...=${animateFlip(this)}>Item 4</div>
+              <div class="box" ...=${animateFlip(this, options)}>Item 1</div>
+              <div class="box" ...=${animateFlip(this, options)}>Item 2</div>
+              <div class="box" ...=${animateFlip(this, options)}>Item 3</div>
+              <div class="box"  ...=${animateFlip(this, options)}>Item 4</div>
             </section>
           </section>
           <section>
-            <div class="box from-top-left ${this.useLayout ? 'big' : ''}"  ...=${animateFlip(this, undefined, () => this.animationDone())}>Hi</div>
+            <div class="box from-top-left ${this.useLayout ? 'big' : ''}"  ...=${animateFlip(this, options, () => this.animationDone())}>Hi</div>
           </section>
         `;
       }
