@@ -16,24 +16,24 @@ type NodePartStateInternal = {
 export const detachNodePart = (part: NodePart): NodePartState => {
   const fragment = document.createDocumentFragment();
   const state: NodePartStateInternal = {
-    __value: part.__value,
+    __value: part._value,
     __fragment: fragment,
   };
-  let start = part.__startNode.nextSibling;
+  let start = part._startNode.nextSibling;
   let nextNode;
-  while (start !== part.__endNode) {
+  while (start !== part._endNode) {
     nextNode = start!.nextSibling;
     fragment.append(start!);
     start = nextNode;
   }
-  part.__value = nothing;
+  part._value = nothing;
   return state;
 };
 
 export const restoreNodePart = (part: NodePart, state: NodePartState) => {
   // TODO (justinfagnani): make an interal-only interface
-  (part as any).__commitNode((state as NodePartStateInternal).__fragment);
-  part.__value = (state as NodePartStateInternal).__value;
+  (part as any)._commitNode((state as NodePartStateInternal).__fragment);
+  part._value = (state as NodePartStateInternal).__value;
 };
 
 const createMarker = () => document.createComment('');
@@ -42,10 +42,10 @@ export const createAndInsertPart = (
   containerPart: NodePart,
   refPart?: NodePart
 ): NodePart => {
-  const container = containerPart.__startNode.parentNode as Node;
+  const container = containerPart._startNode.parentNode as Node;
 
   const endNode =
-    refPart === undefined ? containerPart.__endNode : refPart.__startNode;
+    refPart === undefined ? containerPart._endNode : refPart._startNode;
 
   const startNode = container.insertBefore(createMarker(), endNode);
 
@@ -55,33 +55,33 @@ export const createAndInsertPart = (
 };
 
 export const setPartValue = (part: NodePart, value: unknown) => {
-  part.__setValue(value);
+  part._setValue(value);
   return part;
 };
 
-export const getPartValue = (part: NodePart) => part.__value;
+export const getPartValue = (part: NodePart) => part._value;
 
 export const insertPartBefore = (
   containerPart: NodePart,
   part: NodePart,
   refPart?: NodePart
 ) => {
-  const container = containerPart.__startNode.parentNode!;
+  const container = containerPart._startNode.parentNode!;
 
-  const refNode = refPart ? refPart.__startNode : containerPart.__endNode;
+  const refNode = refPart ? refPart._startNode : containerPart._endNode;
 
-  const endNode = part.__endNode!.nextSibling;
+  const endNode = part._endNode!.nextSibling;
 
   if (endNode !== refNode) {
     // assertNodeMakers(part);
-    reparentNodes(container, part.__startNode, endNode, refNode);
+    reparentNodes(container, part._startNode, endNode, refNode);
   }
 };
 
 export const removePart = (part: NodePart) => {
   removeNodes(
-    part.__startNode,
-    part.__endNode!.nextSibling
+    part._startNode,
+    part._endNode!.nextSibling
   );
 };
 

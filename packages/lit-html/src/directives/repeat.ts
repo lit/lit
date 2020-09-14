@@ -432,7 +432,8 @@ class RepeatDirective extends Directive {
     // keyListCache.set(containerPart, newKeys);
 
     this.itemKeys = newKeys;
-    containerPart.__value = newParts;
+    // Directly set part value, bypassing it's dirty-checking
+    containerPart._value = newParts;
     return noChange;
   }
 }

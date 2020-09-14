@@ -6,7 +6,8 @@ export declare type NodePartState = {};
 export declare const detachNodePart: (part: NodePart) => NodePartState;
 export declare const restoreNodePart: (part: NodePart, state: NodePartState) => void;
 export declare const createAndInsertPart: (containerPart: NodePart, refPart?: NodePart | undefined) => NodePart;
-export declare const updatePart: (part: NodePart, value: unknown) => NodePart;
+export declare const setPartValue: (part: NodePart, value: unknown) => NodePart;
+export declare const getPartValue: (part: NodePart) => unknown;
 export declare const insertPartBefore: (containerPart: NodePart, part: NodePart, refPart?: NodePart | undefined) => void;
 export declare const removePart: (part: NodePart) => void;
 /**

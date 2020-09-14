@@ -242,7 +242,7 @@ export const render = (
     container.append(marker);
     (container as any).$lit$ = part = new NodePart(marker, null, options);
   }
-  part.__setValue(value);
+  part._setValue(value);
 };
 
 const walker = d.createTreeWalker(d);
@@ -521,10 +521,10 @@ class TemplateInstance {
         continue;
       }
       if ((part as AttributePart).__strings !== undefined) {
-        (part as AttributePart).__setValue(values, i);
+        (part as AttributePart)._setValue(values, i);
         i += (part as AttributePart).__strings!.length - 1;
       } else {
-        (part as NodePart).__setValue(values[i++]);
+        (part as NodePart)._setValue(values[i++]);
       }
     }
   }
@@ -571,18 +571,18 @@ export type Part =
   | BooleanAttributePart;
 
 export class NodePart {
-  __value: unknown;
+  _value: unknown;
   protected __directive?: Directive;
 
   constructor(
-    public __startNode: ChildNode,
-    public __endNode: ChildNode | null,
+    public _startNode: ChildNode,
+    public _endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
 
-  __setValue(value: unknown): void {
+  _setValue(value: unknown): void {
     if (isPrimitive(value)) {
-      if (value !== this.__value) {
+      if (value !== this._value) {
         this.__commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -590,11 +590,11 @@ export class NodePart {
     } else if ((value as DirectiveResult)._$litDirective$ !== undefined) {
       this.__commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
-      this.__commitNode(value as Node);
+      this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this.__commitIterable(value);
     } else if (value === nothing) {
-      this.__value = nothing;
+      this._value = nothing;
       this.__clear();
     } else if (value !== noChange) {
       // Fallback, will render the string representation
@@ -602,8 +602,8 @@ export class NodePart {
     }
   }
 
-  private __insert<T extends Node>(node: T, ref = this.__endNode) {
-    return this.__startNode.parentNode!.insertBefore(node, ref);
+  private __insert<T extends Node>(node: T, ref = this._endNode) {
+    return this._startNode.parentNode!.insertBefore(node, ref);
   }
 
   private __commitDirective(value: DirectiveResult) {
@@ -615,18 +615,18 @@ export class NodePart {
     // TODO (justinfagnani): To support nested directives, we'd need to
     // resolve the directive result's values. We may want to offer another
     // way of composing directives.
-    this.__setValue(this.__directive.update(this, value.values));
+    this._setValue(this.__directive.update(this, value.values));
   }
 
-  private __commitNode(value: Node): void {
-    if (this.__value !== value) {
+  private _commitNode(value: Node): void {
+    if (this._value !== value) {
       this.__clear();
-      this.__value = this.__insert(value);
+      this._value = this.__insert(value);
     }
   }
 
   private __commitText(value: unknown): void {
-    const node = this.__startNode.nextSibling;
+    const node = this._startNode.nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
@@ -634,17 +634,17 @@ export class NodePart {
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this.__endNode === null
+      (this._endNode === null
         ? node.nextSibling === null
-        : node === this.__endNode.previousSibling)
+        : node === this._endNode.previousSibling)
     ) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this.__commitNode(new Text(value as string));
+      this._commitNode(new Text(value as string));
     }
-    this.__value = value;
+    this._value = value;
   }
 
   private __commitTemplateResult(result: TemplateResult): void {
@@ -654,16 +654,16 @@ export class NodePart {
       templateCache.set(strings, (template = new Template(result)));
     }
     if (
-      this.__value != null &&
-      (this.__value as TemplateInstance).__template === template
+      this._value != null &&
+      (this._value as TemplateInstance).__template === template
     ) {
-      (this.__value as TemplateInstance).__update(values);
+      (this._value as TemplateInstance).__update(values);
     } else {
       const instance = new TemplateInstance(template!);
       const fragment = instance.__clone(this.options);
       instance.__update(values);
-      this.__commitNode(fragment);
-      this.__value = instance;
+      this._commitNode(fragment);
+      this._value = instance;
     }
   }
 
@@ -678,14 +678,14 @@ export class NodePart {
     // iterable and value will contain the NodeParts from the previous
     // render. If value is not an array, clear this part and make a new
     // array for NodeParts.
-    if (!isArray(this.__value)) {
-      this.__value = [];
+    if (!isArray(this._value)) {
+      this._value = [];
       this.__clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this.__value as NodePart[];
+    const itemParts = this._value as NodePart[];
     let partIndex = 0;
     let itemPart: NodePart | undefined;
 
@@ -703,7 +703,7 @@ export class NodePart {
         // Reuse an existing part
         itemPart = itemParts[partIndex];
       }
-      itemPart.__setValue(item);
+      itemPart._setValue(item);
       partIndex++;
     }
 
@@ -711,12 +711,12 @@ export class NodePart {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
-      this.__clear(itemPart?.__endNode!.nextSibling);
+      this.__clear(itemPart?._endNode!.nextSibling);
     }
   }
 
-  __clear(start: ChildNode | null = this.__startNode.nextSibling) {
-    while (start && start !== this.__endNode) {
+  __clear(start: ChildNode | null = this._startNode.nextSibling) {
+    while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       start!.remove();
       start = n;
@@ -795,9 +795,9 @@ export class AttributePart {
    * @param from the index to start reading values from. `undefined` for
    *   single-valued parts
    */
-  __setValue(value: unknown): void;
-  __setValue(value: Array<unknown>, from: number): void;
-  __setValue(value: unknown | Array<unknown>, from?: number) {
+  _setValue(value: unknown): void;
+  _setValue(value: Array<unknown>, from: number): void;
+  _setValue(value: unknown | Array<unknown>, from?: number) {
     const strings = this.__strings;
 
     if (strings === undefined) {
@@ -896,7 +896,7 @@ export class EventPart extends AttributePart {
     this.__eventContext = args[3]?.eventContext;
   }
 
-  __setValue(newListener: unknown) {
+  _setValue(newListener: unknown) {
     newListener ??= nothing;
     const oldListener = this.__value;
 
