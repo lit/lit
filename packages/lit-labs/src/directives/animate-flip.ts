@@ -8,6 +8,7 @@ export class AnimateFlipDirective extends Directive {
   element!: Element;
   inElement!: Element;
   outElement!: Element;
+  onDone?: () => void;
   animation?: Animation;
   previousRect?: ClientRect;
   previousOpacity?: number;
@@ -45,10 +46,11 @@ export class AnimateFlipDirective extends Directive {
     this.host = undefined;
   }
 
-  render(element: LitElement, options?: KeyframeAnimationOptions, inElement?: Element, outElement?: Element) {
+  render(element: LitElement, options?: KeyframeAnimationOptions, onDone?: () => void, inElement?: Element, outElement?: Element) {
     if (this.host === undefined) {
       this.connect(element, options);
     }
+    this.onDone = onDone;
     this.inElement = inElement || this.element;
     this.outElement = outElement || this.element;
     return nothing;
@@ -69,7 +71,7 @@ export class AnimateFlipDirective extends Directive {
     this.previousOpacity = Number(style.getPropertyValue('opacity') || '1');
   }
 
-  animate() {
+  async animate() {
     if (
       (this.animation && this.animation.playState === 'running') ||
       this.previousRect === undefined
@@ -104,7 +106,7 @@ export class AnimateFlipDirective extends Directive {
     if (transform === '' && opacity === '') {
       return;
     }
-    const startFrame: {transform?: string; opacity?: string} = {};
+    const startFrame: {transformOrigin: string, transform?: string; opacity?: string} = {transformOrigin: 'top left'};
     if (transform) {
       startFrame.transform = transform;
     }
@@ -112,7 +114,11 @@ export class AnimateFlipDirective extends Directive {
       startFrame.opacity = opacity;
     }
     //console.log('animate!', startFrame);
-    this.animation = this.element.animate([startFrame, {}], this.options);
+    this.animation = this.element.animate([startFrame, {transformOrigin: 'top left'}], this.options);
+    if (this.onDone) {
+      await this.animation.finished;
+      this.onDone();
+    }
   }
 }
 

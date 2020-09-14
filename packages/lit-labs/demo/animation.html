@@ -45,12 +45,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     class MyElement extends LitElement {
 
       static properties = {
-        animated: {}
+        useLayout: {}
       }
 
       constructor() {
         super();
-        this.animated = false;
+        this.animating = false;
+        this.useLayout = false;
       }
 
       static styles = [
@@ -113,7 +114,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
 
           .big {
-            /*transform: scale(4);*/
             height: 176px;
             width: 176px;
             top: -132px;
@@ -123,12 +123,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       render() {
         return html`
-          <button @click=${this.animate}>Move</button>
+          <button @click=${this.animate}>Animate</button>
           <section class="animation-container">
-            <div ...=${animateFlip(this)} class="box positioned-box ${this.animated ? 'shifted' : ''}"">Hello!</div>
+            <div ...=${animateFlip(this)} class="box positioned-box ${this.useLayout ? 'shifted' : ''}"">Hello!</div>
           </section>
           <section class="animation-container2">
-            <section class="animation-list ${this.animated ? 'ordered' : ''}">
+            <section class="animation-list ${this.useLayout ? 'ordered' : ''}">
               <div class="box" ...=${animateFlip(this)}>Item 1</div>
               <div class="box" ...=${animateFlip(this)}>Item 2</div>
               <div class="box" ...=${animateFlip(this)}>Item 3</div>
@@ -136,13 +136,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </section>
           </section>
           <section>
-            <div class="box from-top-left ${this.animated ? 'big' : ''}"  ...=${animateFlip(this)}>Hi</div>
+            <div class="box from-top-left ${this.useLayout ? 'big' : ''}"  ...=${animateFlip(this, undefined, () => this.animationDone())}>Hi</div>
           </section>
         `;
       }
 
       animate() {
-        this.animated = !this.animated;
+        this.animating = !this.animating;
+        this.toggleLayoutIfAnimating();
+      }
+
+      toggleLayoutIfAnimating() {
+        if (this.animating) {
+          this.useLayout = !this.useLayout;
+        }
+      }
+      animationDone() {
+        console.log('animation done');
+        setTimeout(() => this.toggleLayoutIfAnimating(), 333);
       }
 
     }
