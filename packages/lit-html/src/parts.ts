@@ -54,10 +54,12 @@ export const createAndInsertPart = (
   return newPart;
 };
 
-export const updatePart = (part: NodePart, value: unknown) => {
+export const setPartValue = (part: NodePart, value: unknown) => {
   part.__setValue(value);
   return part;
 };
+
+export const getPartValue = (part: NodePart) => part.__value;
 
 export const insertPartBefore = (
   containerPart: NodePart,
