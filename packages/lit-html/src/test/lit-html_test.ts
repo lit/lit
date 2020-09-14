@@ -626,7 +626,6 @@ suite('lit-html', () => {
         '<div>foo</div>'
       );
     });
-
   });
 
   suite('svg', () => {

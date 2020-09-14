@@ -44,14 +44,12 @@ export const createAndInsertPart = (
 ): NodePart => {
   const container = containerPart._startNode.parentNode as Node;
 
-  const endNode =
+  const refNode =
     refPart === undefined ? containerPart._endNode : refPart._startNode;
 
-  const startNode = container.insertBefore(createMarker(), endNode);
-
-  container.insertBefore(createMarker(), endNode);
-  const newPart = new NodePart(startNode, endNode, containerPart.options);
-  return newPart;
+  const startNode = container.insertBefore(createMarker(), refNode);
+  const endNode = container.insertBefore(createMarker(), refNode);
+  return new NodePart(startNode, endNode, containerPart.options);
 };
 
 export const setPartValue = (part: NodePart, value: unknown) => {
@@ -79,10 +77,7 @@ export const insertPartBefore = (
 };
 
 export const removePart = (part: NodePart) => {
-  removeNodes(
-    part._startNode,
-    part._endNode!.nextSibling
-  );
+  removeNodes(part._startNode, part._endNode!.nextSibling);
 };
 
 /**
@@ -90,7 +85,7 @@ export const removePart = (part: NodePart) => {
  * into another container (could be the same container), before `before`. If
  * `before` is null, it appends the nodes to the container.
  */
-export const reparentNodes = (
+const reparentNodes = (
   container: Node,
   start: Node | null,
   end: Node | null = null,
@@ -107,7 +102,7 @@ export const reparentNodes = (
  * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
  * `container`.
  */
-export const removeNodes = (
+const removeNodes = (
   start: ChildNode | null,
   end: ChildNode | null = null
 ): void => {

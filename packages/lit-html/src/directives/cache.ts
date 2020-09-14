@@ -35,11 +35,6 @@ export const cache = directive(
     value?: TemplateResult;
 
     render(v: unknown) {
-      if ((v as TemplateResult)._$litType$ !== undefined) {
-        this.value = v as TemplateResult;
-      } else {
-        this.value = undefined;
-      }
       return v;
     }
 
@@ -61,6 +56,9 @@ export const cache = directive(
         if (cachedTemplate !== undefined) {
           restoreNodePart(part, cachedTemplate);
         }
+        this.value = v as TemplateResult;
+      } else {
+        this.value = undefined;
       }
       return this.render(v);
     }

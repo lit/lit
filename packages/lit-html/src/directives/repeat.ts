@@ -65,7 +65,7 @@ class RepeatDirective extends Directive {
     }
   }
 
-  render<T>(
+  _getValuesAndKeys<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
     template?: ItemTemplate<T>
@@ -76,15 +76,26 @@ class RepeatDirective extends Directive {
     } else if (keyFnOrTemplate !== undefined) {
       keyFn = keyFnOrTemplate as KeyFn<T>;
     }
-    this.itemKeys = [];
+    const keys = [];
     const values = [];
     let index = 0;
     for (const item of items) {
-      this.itemKeys[index] = keyFn ? keyFn(item, index) : index;
+      keys[index] = keyFn ? keyFn(item, index) : index;
       values[index] = template!(item, index);
       index++;
     }
-    return values;
+    return {
+      values,
+      keys,
+    };
+  }
+
+  render<T>(
+    items: Iterable<T>,
+    keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
+    template?: ItemTemplate<T>
+  ) {
+    return this._getValuesAndKeys(items, keyFnOrTemplate, template).values;
   }
 
   update<T>(
@@ -98,15 +109,15 @@ class RepeatDirective extends Directive {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
     let oldParts = getPartValue(containerPart) as Array<NodePart | null>;
-    if (!oldParts) {
-      return this.render(items, keyFnOrTemplate, template);
-    }
+    const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
+      items,
+      keyFnOrTemplate,
+      template
+    );
 
-    let keyFn: KeyFn<T> | undefined;
-    if (template === undefined) {
-      template = keyFnOrTemplate;
-    } else if (keyFnOrTemplate !== undefined) {
-      keyFn = keyFnOrTemplate as KeyFn<T>;
+    if (!oldParts) {
+      this.itemKeys = newKeys;
+      return newValues;
     }
 
     const oldKeys = (this.itemKeys ??= []);
@@ -115,17 +126,6 @@ class RepeatDirective extends Directive {
     // old parts or created for new keys in this update). This is
     // saved in the above cache at the end of the update.
     const newParts: NodePart[] = [];
-
-    // New value list is eagerly generated from items along with a
-    // parallel array indicating its key.
-    const newValues: unknown[] = [];
-    const newKeys: unknown[] = [];
-    let index = 0;
-    for (const item of items) {
-      newKeys[index] = keyFn ? keyFn(item, index) : index;
-      newValues[index] = template!(item, index);
-      index++;
-    }
 
     // Maps from key to index for current and previous update; these
     // are generated lazily only when needed as a performance
@@ -347,16 +347,26 @@ class RepeatDirective extends Directive {
         oldTail--;
       } else if (oldKeys[oldHead] === newKeys[newHead]) {
         // Old head matches new head; update in place
-        newParts[newHead] = setPartValue(oldParts[oldHead]!, newValues[newHead]);
+        newParts[newHead] = setPartValue(
+          oldParts[oldHead]!,
+          newValues[newHead]
+        );
         oldHead++;
         newHead++;
       } else if (oldKeys[oldTail] === newKeys[newTail]) {
         // Old tail matches new tail; update in place
-        newParts[newTail] = setPartValue(oldParts[oldTail]!, newValues[newTail]);
+        newParts[newTail] = setPartValue(
+          oldParts[oldTail]!,
+          newValues[newTail]
+        );
         oldTail--;
         newTail--;
       } else if (oldKeys[oldHead] === newKeys[newTail]) {
-        newParts[newTail] = setPartValue(oldParts[oldHead]!, newValues[newTail]);
+        // Old head matches new tail; update and move to new tail
+        newParts[newTail] = setPartValue(
+          oldParts[oldHead]!,
+          newValues[newTail]
+        );
         insertPartBefore(
           containerPart,
           oldParts[oldHead]!,
@@ -366,7 +376,10 @@ class RepeatDirective extends Directive {
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
         // Old tail matches new head; update and move to new head
-        newParts[newHead] = setPartValue(oldParts[oldTail]!, newValues[newHead]);
+        newParts[newHead] = setPartValue(
+          oldParts[oldTail]!,
+          newValues[newHead]
+        );
         insertPartBefore(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
         oldTail--;
         newHead++;
@@ -427,10 +440,8 @@ class RepeatDirective extends Directive {
         removePart(oldPart);
       }
     }
-    // Save order of new parts for next round
-    // partListCache.set(containerPart, newParts);
-    // keyListCache.set(containerPart, newKeys);
 
+    // Save order of new parts for next round
     this.itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
     containerPart._value = newParts;
