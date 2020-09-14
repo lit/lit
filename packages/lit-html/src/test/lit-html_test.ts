@@ -22,6 +22,7 @@ import {
   render,
   svg,
   TemplateResult,
+  RenderOptions
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -39,8 +40,8 @@ suite('lit-html', () => {
     container = document.createElement('div');
   });
 
-  const assertRender = (r: TemplateResult, expected: string) => {
-    render(r, container);
+  const assertRender = (r: TemplateResult, expected: string, options?: RenderOptions) => {
+    render(r, container, options);
     assert.equal(stripExpressionComments(container.innerHTML), expected);
   };
 
@@ -391,6 +392,16 @@ suite('lit-html', () => {
 
     test('text after comment', () => {
       assertRender(html`<!-- -->${'A'}`, '<!-- -->A');
+    });
+
+    test('renders after existing content', () => {
+      container.appendChild(document.createElement('div'));
+      assertRender(html`<span></span>`, '<div></div><span></span>');
+    });
+
+    test('renders before `refNode`, if specified', () => {
+      container.appendChild(document.createElement('div'));
+      assertRender(html`<span></span>`, '<span></span><div></div>', {refNode: container.firstChild});
     });
   });
 

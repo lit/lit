@@ -258,7 +258,7 @@ export class LitElement extends UpdatingElement {
       (this.constructor as typeof LitElement).render(
         templateResult,
         this.renderRoot,
-        {eventContext: this}
+        {eventContext: this, refNode: this.renderRoot.firstChild}
       );
     }
   }

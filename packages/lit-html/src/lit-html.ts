@@ -218,6 +218,10 @@ export interface RenderOptions {
    * useful to set this to the host component rendering a template.
    */
   readonly eventContext?: EventTarget;
+  /**
+   * A DOM node before which to render content in the container.
+   */
+  readonly refNode?: ChildNode|null;
 }
 
 /**
@@ -233,9 +237,10 @@ export const render = (
 ) => {
   let part: NodePart = (container as any).$lit$;
   if (part === undefined) {
-    const marker = createMarker();
-    container.append(marker);
-    (container as any).$lit$ = part = new NodePart(marker, null, options);
+    const start = createMarker();
+    const end = options?.refNode || null;
+    container.insertBefore(start, end);
+    (container as any).$lit$ = part = new NodePart(start, end, options);
   }
   part.__setValue(value);
 };
