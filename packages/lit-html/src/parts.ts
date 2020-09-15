@@ -71,7 +71,6 @@ export const insertPartBefore = (
   const endNode = part._endNode!.nextSibling;
 
   if (endNode !== refNode) {
-    // assertNodeMakers(part);
     reparentNodes(container, part._startNode, endNode, refNode);
   }
 };

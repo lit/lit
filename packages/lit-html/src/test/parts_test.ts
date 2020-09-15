@@ -21,7 +21,12 @@ import {
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
-import {detachNodePart, restoreNodePart} from '../parts.js';
+import {
+  createAndInsertPart,
+  detachNodePart,
+  removePart,
+  restoreNodePart,
+} from '../parts.js';
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -79,5 +84,31 @@ suite('lit-html', () => {
     assert.strictEqual(liElementsBefore[1], liElementsAfter[2]);
     assert.strictEqual(liElementsBefore[2], liElementsAfter[1]);
     assert.strictEqual(liElementsBefore[3], liElementsAfter[3]);
+  });
+
+  test('createAndInsertPart', () => {
+    class TestDirective extends Directive {
+      render(v: unknown) {
+        return v;
+      }
+
+      update(part: NodePart, [v]: Parameters<this['render']>) {
+        // Create two parts and remove the first, then the second to make sure
+        // that removing the first doesn't move the second's markers. This
+        // fails if the parts accidentally share a marker.
+        const childPart2 = createAndInsertPart(part);
+        const childPart1 = createAndInsertPart(part, childPart2);
+        removePart(childPart1);
+        removePart(childPart2);
+        return v;
+      }
+    }
+    const testDirective = directive(TestDirective);
+
+    const go = (v: unknown) =>
+      render(html`<div>${testDirective(v)}</div>`, container);
+
+    go('A');
+    assert.equal(stripExpressionComments(container.innerHTML), '<div>A</div>');
   });
 });
