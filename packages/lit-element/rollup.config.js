@@ -47,6 +47,7 @@ const entryPoints = [
 
 export default {
   input: entryPoints.map((name) => `development/${name}.js`),
+  external: ['lit-html'],
   output: {
     dir: './',
     format: 'esm',
