@@ -1,6 +1,7 @@
 {
   "packages": [
-    "packages/*"
+    "packages/lit-html",
+    "packages/lit-element"
   ],
   "version": "independent"
 }
