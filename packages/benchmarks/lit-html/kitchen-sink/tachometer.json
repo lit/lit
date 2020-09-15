@@ -1,0 +1,73 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 30,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "url": "lit-html/kitchen-sink/index.html",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        },
+        {
+          "mode": "performance",
+          "entryName": "nop-update"
+        }
+      ],
+      "expand": [
+        {
+          "name": "this-change"
+        },
+        {
+          "name": "tip-of-tree",
+          "packageVersions": {
+            "label": "tip-of-tree",
+            "dependencies": {
+              "lit-html": {
+                "kind": "git",
+                "repo": "https://github.com/Polymer/lit-html.git",
+                "ref": "lit-next",
+                "subdir": "packages/lit-html",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap",
+                  "npm run build"
+                ]
+              },
+              "lit-element": {
+                "kind": "git",
+                "repo": "https://github.com/Polymer/lit-html.git",
+                "ref": "lit-next",
+                "subdir": "packages/lit-element",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap",
+                  "npm run build"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "previous-release",
+          "packageVersions": {
+            "label": "previous-release",
+            "dependencies": {
+              "lit-html": "^1.0.0",
+              "lit-element": "^2.0.0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

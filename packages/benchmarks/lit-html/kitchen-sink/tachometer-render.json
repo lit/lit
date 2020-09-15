@@ -4,15 +4,17 @@
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "lit-html/stub1/stub1.html",
+      "url": "lit-html/kitchen-sink/index.html?updateCount=0&nopUpdateCount=0",
       "browser": {
         "name": "chrome",
         "headless": true
       },
-      "measurement": {
-        "mode": "performance",
-        "entryName": "render"
-      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ],
       "expand": [
         {
           "name": "this-change"
