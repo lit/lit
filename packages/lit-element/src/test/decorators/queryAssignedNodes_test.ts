@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../../lib/lit-element.js';
+import {html, LitElement} from '../../lit-element.js';
 import {queryAssignedNodes} from '../../lib/decorators/queryAssignedNodes.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';

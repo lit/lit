@@ -18,7 +18,7 @@ import {
   UpdatingElement,
   PropertyValues,
   PropertyDeclaration,
-} from '../../lib/lit-element.js';
+} from '../../lit-element.js';
 import {property} from '../../lib/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
