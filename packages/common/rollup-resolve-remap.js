@@ -33,10 +33,10 @@ module.exports = function resolveRemap({ root, remap }) {
       const resolved = await this.resolve(importee, importer, {
         skipSelf: true,
       });
-      if (!resolved || !resolved.id) {
+      if (!resolved?.id) {
         return null;
       }
-      const { id: fullResolvedPath } = resolved;
+      const fullResolvedPath = resolved.id;
       const rootRelativePath = pathLib.relative(root, fullResolvedPath);
       for (const { from, to } of remap) {
         if (rootRelativePath.startsWith(from)) {

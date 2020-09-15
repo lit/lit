@@ -64,7 +64,7 @@ export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
 if (DEV_MODE) {
-  console.log('lit-element is in dev mode. Not recommended for production!')
+  console.warn('lit-element is in dev mode. Not recommended for production!')
 }
 
 declare global {
