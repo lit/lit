@@ -13,13 +13,13 @@ jobs:
         with:
           node-version: 14
 
-      - uses: microsoft/playwright-github-action@v1
-
       - name: NPM install
         run: npm ci
 
       - name: Lerna bootstrap
         run: npm run bootstrap
+
+      - uses: microsoft/playwright-github-action@v1
 
       - name: Build
         run: npm run build
