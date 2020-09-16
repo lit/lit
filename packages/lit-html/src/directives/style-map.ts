@@ -21,6 +21,8 @@ import {
   ATTRIBUTE_PART,
 } from '../lit-html.js';
 
+const VENDOR_PREFIX = /^(webkit|moz|ms|o)[A-Z]/;
+
 /**
  * A key-value set of CSS properties and values.
  *
@@ -51,8 +53,28 @@ class StyleMap extends Directive {
 
   render(styleInfo: StyleInfo) {
     return Object.entries(styleInfo)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join('; ');
+      .reduce((style, [prop, value]) => {
+        if (value === null) {
+          return style;
+        }
+        // Convert property names from camel-case to dash-case, i.e.:
+        //  `backgroundColor` -> `background-color`
+        // Vendor-prefixed names need an extra `-` appended to front:
+        //  `webkitAppearance` -> `-webkit-appearance`
+        // Exception is any property name containing a dash, including
+        // custom properties; we assume these are already dash-cased i.e.:
+        //  `--my-button-color` --> `--my-button-color`
+        // Note that prefixed
+        if (prop.indexOf('-') === -1) {
+          if (VENDOR_PREFIX.test(prop)) {
+            prop = '-' + prop;
+          }
+          prop = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+          return style + `${prop}: ${value}; `;
+        }
+        return style + `${prop}:${value}; `;
+      }, '')
+      .trim();
   }
 
   update(part: AttributePart, [styleInfo]: Parameters<this['render']>) {
@@ -62,6 +84,10 @@ class StyleMap extends Directive {
       // Write static styles once
       style.cssText = part.strings?.join(' ') ?? '';
       this.previousStyleProperties = new Set();
+      for (const name in styleInfo) {
+        this.previousStyleProperties.add(name);
+      }
+      return this.render(styleInfo);
     }
 
     // Remove old properties that no longer exist in styleInfo

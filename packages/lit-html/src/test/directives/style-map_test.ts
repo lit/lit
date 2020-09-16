@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, render} from '../../lit-html.js';
+import {AttributePart, directive, html, render} from '../../lit-html.js';
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -40,6 +40,37 @@ suite('styleMap', () => {
 
   setup(() => {
     container = document.createElement('div');
+  });
+
+  test('render() only properties', () => {
+    // Get the StyleMapDirective class indirectly, since it's not exported
+    const result = styleMap({});
+    const StyleMapDirective = result._$litDirective$;
+
+    // Extend StyleMapDirective so we can test its render() method
+    class TestStyleMapDirective extends StyleMapDirective {
+      update(_part: AttributePart, [styleInfo]: Parameters<this['render']>) {
+        return this.render(styleInfo);
+      }
+    }
+    const testStyleMap = directive(TestStyleMapDirective);
+    render(
+      html`<div
+        style=${testStyleMap({
+          color: 'red',
+          backgroundColor: 'blue',
+          webkitAppearance: 'none',
+          ['padding-left']: '4px',
+        })}
+      ></div>`,
+      container
+    );
+    const div = container.firstElementChild as HTMLDivElement;
+    const style = div.style;
+    assert.equal(style.color, 'red');
+    assert.equal(style.backgroundColor, 'blue');
+    assert.equal(style.webkitAppearance, 'none');
+    assert.equal(style.paddingLeft, '4px');
   });
 
   test('adds and updates properties', () => {
