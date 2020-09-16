@@ -238,7 +238,7 @@ export const render = (
   let part: NodePart = (container as any).$lit$;
   if (part === undefined) {
     const start = createMarker();
-    const end = options?.refNode || null;
+    const end = options?.refNode ?? null;
     container.insertBefore(start, end);
     (container as any).$lit$ = part = new NodePart(start, end, options);
   }
