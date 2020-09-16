@@ -12,6 +12,10 @@ npm run bootstrap
 npm run build
 
 cd packages/benchmarks
-npx tachometer lit-html/stub1/stub1.html
-npx tachometer lit-element/stub1/stub1.html
+# Choose a benchmark to run
+npm run benchmark:lit-html:kitchen-sink
+npm run benchmark:lit-html:kitchen-sink-render
+npm run benchmark:lit-html:kitchen-sink-update
+npm run benchmark:lit-html:kitchen-sink-nop-update
+npm run benchmark:lit-element:stub1
 ```
