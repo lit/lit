@@ -3,6 +3,17 @@ import { fromRollup } from "@web/dev-server-rollup";
 import { resolveRemap } from "./rollup-resolve-remap.js";
 import { prodResolveRemapConfig, devResolveRemapConfig } from "./wtr-config.js";
 
+const removeDevModeLogging = {
+  name: "remove-dev-mode-logging",
+  transform(context) {
+    if (context.response.is("js")) {
+      return {
+        body: context.body.replace(/console\.warn\(.*in dev mode.*\);/, ""),
+      };
+    }
+  },
+};
+
 const plugins = [];
 if (process.env.TEST_PROD_BUILD) {
   console.log("Using production builds");
@@ -10,6 +21,7 @@ if (process.env.TEST_PROD_BUILD) {
 } else {
   console.log("Using development builds");
   plugins.push(fromRollup(resolveRemap)(devResolveRemapConfig));
+  plugins.push(removeDevModeLogging);
 }
 
 export default {
