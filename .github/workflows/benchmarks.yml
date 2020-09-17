@@ -14,7 +14,10 @@ jobs:
         run: npm ci
 
       - name: Lerna bootstrap
-        run: npm run bootstrap
+        # Don't install concurrently because if multiple playwright postinstall
+        # scripts are running at the same time, they will frequently collide and
+        # crash. See https://github.com/microsoft/playwright/issues/3912.
+        run: npm run bootstrap -- --concurrency=1
 
       - name: Build
         run: npm run build
