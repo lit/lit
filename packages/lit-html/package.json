@@ -28,7 +28,6 @@
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "dev": "scripts/dev.sh",
-    "prepare": "npm run build",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "wtr 'development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
