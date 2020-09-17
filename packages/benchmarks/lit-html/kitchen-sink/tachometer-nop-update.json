@@ -31,7 +31,7 @@
                 "subdir": "packages/lit-html",
                 "setupCommands": [
                   "npm ci",
-                  "npm run bootstrap",
+                  "npm run bootstrap -- --concurrency=1",
                   "npm run build"
                 ]
               },
@@ -42,7 +42,7 @@
                 "subdir": "packages/lit-element",
                 "setupCommands": [
                   "npm ci",
-                  "npm run bootstrap",
+                  "npm run bootstrap -- --concurrency=1",
                   "npm run build"
                 ]
               }
