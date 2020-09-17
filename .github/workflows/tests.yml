@@ -41,10 +41,7 @@ jobs:
 
       - name: Lerna bootstrap
         if: steps.cache.outputs.cache-hit != 'true'
-        # Don't install concurrently because if multiple playwright postinstall
-        # scripts are running at the same time, they will frequently collide and
-        # crash. See https://github.com/microsoft/playwright/issues/3912.
-        run: npm run bootstrap -- --concurrency=1
+        run: npm run bootstrap
 
       - name: Build
         run: npm run build

@@ -8,16 +8,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      # Note this is the way to set an environment variable that lives across
+      # all steps
+      # (https://docs.github.com/en/actions/reference/environment-variables#about-environment-variables).
+      - name: Set environment variables
+        run: echo "::set-env name=PLAYWRIGHT_BROWSERS_PATH::$HOME/.playwright"
+
+      # Cache all of our node_modules/ directories and playwright browser
+      # binaries to save ~30 seconds of install time.
+      - name: Restore node_modules/playwright
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: NPM install
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Lerna bootstrap
-        # Don't install concurrently because if multiple playwright postinstall
-        # scripts are running at the same time, they will frequently collide and
-        # crash. See https://github.com/microsoft/playwright/issues/3912.
-        run: npm run bootstrap -- --concurrency=1
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run bootstrap
 
       - name: Build
         run: npm run build
