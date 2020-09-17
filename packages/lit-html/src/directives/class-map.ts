@@ -21,39 +21,6 @@ import {
   ATTRIBUTE_PART,
 } from '../lit-html.js';
 
-// IE11 doesn't support classList on SVG elements, so we emulate it with a Set
-// TODO (justinfagnani): Can we move this to the IE compat patch?
-class ClassList {
-  element: Element;
-  classes: Set<string> = new Set();
-  changed = false;
-
-  constructor(element: Element) {
-    this.element = element;
-    const classList = (element.getAttribute('class') || '').split(/\s+/);
-    for (const cls of classList) {
-      this.classes.add(cls);
-    }
-  }
-  add(cls: string) {
-    this.classes.add(cls);
-    this.changed = true;
-  }
-
-  remove(cls: string) {
-    this.classes.delete(cls);
-    this.changed = true;
-  }
-
-  commit() {
-    if (this.changed) {
-      let classString = '';
-      this.classes.forEach((cls) => (classString += cls + ' '));
-      this.element.setAttribute('class', classString);
-    }
-  }
-}
-
 /**
  * A key-value set of class names to truthy values.
  */
@@ -83,9 +50,8 @@ class ClassMap extends Directive {
   }
 
   render(classInfo: ClassInfo) {
-    return Array.from(Object.entries(classInfo))
-      .filter(([_, enabled]) => enabled)
-      .map(([name, _]) => name)
+    return Object.keys(classInfo)
+      .filter((key) => classInfo[key])
       .join(' ');
   }
 
@@ -101,13 +67,10 @@ class ClassMap extends Directive {
       return this.render(classInfo);
     }
 
-    const element = part.element;
-    const classList = (element.classList || new ClassList(element)) as
-      | DOMTokenList
-      | ClassList;
+    const classList = part.element.classList;
 
     // Remove old classes that no longer apply
-    // We use forEach() instead of for-of so that re don't require down-level
+    // We use forEach() instead of for-of so that we don't require down-level
     // iteration.
     this.previousClasses.forEach((name) => {
       if (!(name in classInfo)) {
@@ -118,10 +81,10 @@ class ClassMap extends Directive {
 
     // Add or remove classes based on their classMap value
     for (const name in classInfo) {
-      const value = classInfo[name];
-      if (value != this.previousClasses.has(name)) {
-        // We explicitly want a loose truthy check of `value` because it seems
-        // more convenient that '' and 0 are skipped.
+      // We explicitly want a loose truthy check of `value` because it seems
+      // more convenient that '' and 0 are skipped.
+      const value = !!classInfo[name];
+      if (value !== this.previousClasses.has(name)) {
         if (value) {
           classList.add(name);
           this.previousClasses.add(name);
@@ -130,9 +93,6 @@ class ClassMap extends Directive {
           this.previousClasses.delete(name);
         }
       }
-    }
-    if (typeof (classList as ClassList).commit === 'function') {
-      (classList as ClassList).commit();
     }
     return noChange;
   }

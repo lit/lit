@@ -806,7 +806,9 @@ export class AttributePart {
       // or check length.
       let directive: Directive = (this.__directives ??= [])[i];
       if (directive?.constructor !== directiveCtor) {
-        directive = this.__directives[i] = new directiveCtor(this);
+        directive = this.__directives[i] = new directiveCtor(
+          this as AttributePartInfo
+        );
       }
       // TODO (justinfagnani): To support nested directives, we'd need to
       // resolve the directive result's values. We may want to offer another

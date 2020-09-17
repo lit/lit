@@ -52,29 +52,27 @@ class StyleMap extends Directive {
   }
 
   render(styleInfo: StyleInfo) {
-    return Object.entries(styleInfo)
-      .reduce((style, [prop, value]) => {
-        if (value === null) {
-          return style;
+    return Object.keys(styleInfo).reduce((style, prop) => {
+      const value = styleInfo[prop];
+      if (value === null) {
+        return style;
+      }
+      // Convert property names from camel-case to dash-case, i.e.:
+      //  `backgroundColor` -> `background-color`
+      // Vendor-prefixed names need an extra `-` appended to front:
+      //  `webkitAppearance` -> `-webkit-appearance`
+      // Exception is any property name containing a dash, including
+      // custom properties; we assume these are already dash-cased i.e.:
+      //  `--my-button-color` --> `--my-button-color`
+      // Note that prefixed
+      if (prop.indexOf('-') === -1) {
+        if (VENDOR_PREFIX.test(prop)) {
+          prop = '-' + prop;
         }
-        // Convert property names from camel-case to dash-case, i.e.:
-        //  `backgroundColor` -> `background-color`
-        // Vendor-prefixed names need an extra `-` appended to front:
-        //  `webkitAppearance` -> `-webkit-appearance`
-        // Exception is any property name containing a dash, including
-        // custom properties; we assume these are already dash-cased i.e.:
-        //  `--my-button-color` --> `--my-button-color`
-        // Note that prefixed
-        if (prop.indexOf('-') === -1) {
-          if (VENDOR_PREFIX.test(prop)) {
-            prop = '-' + prop;
-          }
-          prop = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
-          return style + `${prop}: ${value}; `;
-        }
-        return style + `${prop}:${value}; `;
-      }, '')
-      .trim();
+        prop = prop.replace(/[A-Z]/g, '-$&').toLowerCase();
+      }
+      return style + `${prop}:${value};`;
+    }, '');
   }
 
   update(part: AttributePart, [styleInfo]: Parameters<this['render']>) {
