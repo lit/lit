@@ -12,16 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-const pathLib = require("path");
+import * as pathLib from "path";
+import { fileURLToPath } from "url";
 
-const packagesDir = pathLib.resolve(__dirname, "..");
+const packagesDir = pathLib.resolve(
+  pathLib.dirname(fileURLToPath(import.meta.url)),
+  ".."
+);
 
 /**
  * rollup-resolve-remap config that remaps any lit-html or lit-element imports
  * to their minified production versions (works for both bare and path module
  * specifiers).
  */
-module.exports.prodResolveRemapConfig = {
+export const prodResolveRemapConfig = {
   root: packagesDir,
   remap: [
     // The development/test/ directories are special, there are no production
@@ -39,7 +43,7 @@ module.exports.prodResolveRemapConfig = {
  * rollup-resolve-remap config that remaps any lit-html or lit-element imports
  * to the un-minified development versions.
  */
-module.exports.devResolveRemapConfig = {
+export const devResolveRemapConfig = {
   root: packagesDir,
   remap: [
     // Don't remap external dependencies.

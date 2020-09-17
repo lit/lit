@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "name": "tests",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:dev && npm run test:prod",
+    "test:dev": "npx wtr",
+    "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
+    "test:watch": "npm run test:dev -- --watch"
+  },
+  "devDependencies": {
+    "@web/dev-server-rollup": "^0.2.7",
+    "@web/test-runner": "^0.7.24",
+    "@web/test-runner-playwright": "^0.5.6"
+  }
+}
