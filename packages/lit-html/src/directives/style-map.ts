@@ -73,8 +73,6 @@ class StyleMap extends Directive {
     const {style} = part.element as HTMLElement;
 
     if (this.previousStyleProperties === undefined) {
-      // Write static styles once
-      style.cssText = part.strings?.join(' ') ?? '';
       this.previousStyleProperties = new Set();
       for (const name in styleInfo) {
         this.previousStyleProperties.add(name);
