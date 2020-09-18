@@ -616,6 +616,9 @@ export class NodePart {
   ) {}
 
   _setValue(value: unknown): void {
+    // TODO (justinfagnani): when setting a non-directive over a directive,
+    // we don't yet clear this.__directive.
+    // See https://github.com/Polymer/lit-html/issues/1286
     if (isPrimitive(value)) {
       if (value !== this._value) {
         this.__commitText(value);
