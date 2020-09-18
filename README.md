@@ -12,6 +12,7 @@ following links for details on the changes being made:
 
 * [`lit-html`](./packages/lit-html)
 * [`lit-element`](./packages/lit-element)
+* [`tests`](./packages/tests)
 * [`benchmarks`](./packages/benchmarks)
 
 ## Development guide
