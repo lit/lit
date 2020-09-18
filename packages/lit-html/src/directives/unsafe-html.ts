@@ -62,7 +62,7 @@ export class UnsafeHTML extends Directive {
       return this.templateResult;
     }
     this.value = value;
-    const strings = ([String(value)] as unknown) as TemplateStringsArray;
+    const strings = ([value] as unknown) as TemplateStringsArray;
     (strings as any).raw = strings;
     // WARNING: impersonating a TemplateResult like this is extremely
     // dangerous. Third-party directives should not do this.
