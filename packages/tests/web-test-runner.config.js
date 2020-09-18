@@ -3,6 +3,8 @@ import { fromRollup } from "@web/dev-server-rollup";
 import { resolveRemap } from "./rollup-resolve-remap.js";
 import { prodResolveRemapConfig, devResolveRemapConfig } from "./wtr-config.js";
 
+// TODO Replace this with log filter feature when/if added to wtr
+// https://github.com/modernweb-dev/web/issues/595
 const removeDevModeLogging = {
   name: "remove-dev-mode-logging",
   transform(context) {
