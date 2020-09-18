@@ -22,6 +22,7 @@ import {
   render,
   svg,
   TemplateResult,
+  RenderOptions,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -39,8 +40,12 @@ suite('lit-html', () => {
     container = document.createElement('div');
   });
 
-  const assertRender = (r: TemplateResult, expected: string) => {
-    render(r, container);
+  const assertRender = (
+    r: TemplateResult,
+    expected: string,
+    options?: RenderOptions
+  ) => {
+    render(r, container, options);
     assert.equal(stripExpressionComments(container.innerHTML), expected);
   };
 
@@ -391,6 +396,92 @@ suite('lit-html', () => {
 
     test('text after comment', () => {
       assertRender(html`<!-- -->${'A'}`, '<!-- -->A');
+    });
+
+    test('renders after existing content', () => {
+      container.appendChild(document.createElement('div'));
+      assertRender(html`<span></span>`, '<div></div><span></span>');
+    });
+
+    test('renders/updates before `renderBefore`, if specified', () => {
+      const renderBefore = container.appendChild(document.createElement('div'));
+      const template = html`<span></span>`;
+      assertRender(template, '<span></span><div></div>', {
+        renderBefore,
+      });
+      // Ensure re-render updates rather than re-rendering.
+      let containerChildNodes = Array.from(container.childNodes);
+      assertRender(template, '<span></span><div></div>', {
+        renderBefore,
+      });
+      assert.sameMembers(Array.from(container.childNodes), containerChildNodes);
+    });
+
+    test('renders/updates same template before different `renderBefore` nodes', () => {
+      const renderBefore1 = container.appendChild(
+        document.createElement('div')
+      );
+      const renderBefore2 = container.appendChild(
+        document.createElement('div')
+      );
+      const template = html`<span></span>`;
+      assertRender(template, '<span></span><div></div><div></div>', {
+        renderBefore: renderBefore1,
+      });
+      const renderedNode1 = container.querySelector('span');
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore2,
+        }
+      );
+      const renderedNode2 = container.querySelector('span:last-of-type');
+      // Ensure updates are handled as expected.
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore1,
+        }
+      );
+      assert.equal(container.querySelector('span'), renderedNode1);
+      assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore2,
+        }
+      );
+      assert.equal(container.querySelector('span'), renderedNode1);
+      assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
+    });
+
+    test('renders/updates when specifying `renderBefore` node or not', () => {
+      const template = html`<span></span>`;
+      const renderBefore = container.appendChild(document.createElement('div'));
+      assertRender(template, '<div></div><span></span>');
+      const containerRenderedNode = container.querySelector('span');
+      assertRender(template, '<span></span><div></div><span></span>', {
+        renderBefore,
+      });
+      const beforeRenderedNode = container.querySelector('span');
+      // Ensure re-render updates rather than re-rendering.
+      assertRender(template, '<span></span><div></div><span></span>');
+      assert.equal(
+        container.querySelector('span:last-of-type'),
+        containerRenderedNode
+      );
+      assert.equal(container.querySelector('span'), beforeRenderedNode);
+      assertRender(template, '<span></span><div></div><span></span>', {
+        renderBefore,
+      });
+      assert.equal(
+        container.querySelector('span:last-of-type'),
+        containerRenderedNode
+      );
+      assert.equal(container.querySelector('span'), beforeRenderedNode);
     });
   });
 

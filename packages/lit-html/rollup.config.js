@@ -45,6 +45,7 @@ const entryPoints = [
   'directives/if-defined',
   'directives/repeat',
   'directives/style-map',
+  'directives/template-content',
   'directives/unsafe-html',
   'directives/unsafe-svg',
   'lit-html',
