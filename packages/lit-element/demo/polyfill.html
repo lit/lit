@@ -9,12 +9,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 --><html><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>lit-element demo</title>
-  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <title>polyfill demo</title>
+  <script>
+    if (!window.location.search.includes('native')) {
+      window.ShadyDOM = {force: true};
+      window.customElements = window.customElements || {}
+      window.customElements.forcePolyfill = true;
+    }
+  </script>
+  <!-- <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script> -->
+  <script type="module" src="../development/lib/lit-element-polyfill.js"></script>
   <script type="module" src = "../development/demo/ts-element.js"></script>
 </head>
 <body>
-    <my-element bar="5" whales="5" foobar="17">Hi</my-element>
+    <my-element bar="5" whales="1" foobar="17">Hi</my-element>
     <hr>
     <ts-element message="Yo" more-info="person"></ts-element>
 
@@ -58,32 +66,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       }
 
-      static get styles() {
-        return [css`h4 { color: orange;} `];
-      }
+      static styles = css`
+        :host([hidden]) {
+          display: none;
+        }
+
+        .count {
+          color: green;
+        }
+
+        .content {
+          border: 1px solid black;
+          padding: 8px;
+        }
+
+        h4 { color: orange;}
+      `;
 
       render() {
-        const {foo, bar, whales, fooBar, nug} = this;
+        let {foo, bar, whales, fooBar, nug} = this;
+        whales = 2 + whales % 8;
         return html`
           <style>
             :host {
               display: block;
-            }
-
-            :host([hidden]) {
-              display: none;
-            }
-
-            .count {
-              color: green;
-            }
-
-            .content {
-              border: 1px solid black;
+              background: bisque;
               padding: 8px;
+              margin: 8px;
+              border: 4px dotted black;
             }
           </style>
-          <h4 on-click="${(e) => console.log(this, e.target)}">Foo: ${foo}, Bar: ${bar}</h4>
+          <h4 @click="${(e) => console.log(this, e.target)}">Foo: ${foo}, Bar: ${bar}</h4>
           <div class="content">
             <slot></slot>
           </div>
@@ -91,7 +104,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             whales: ${'🐳'.repeat(whales)}
           </div>
           <ul>
-          ${nug.map(n => html`<li>${n}</li>`)}
+          ${new Array(whales).fill(0).map((n,i) => html`<li>${i}: 🐳</li>`)}
           </ul>
           <x-inner></x-inner>
         `;
@@ -114,11 +127,5 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     customElements.define('my-element', MyElement);
-
-    (async () => {
-      const x = document.querySelector('my-element');
-      await x.updateComplete;
-      console.log('updateComplete!', x.shadowRoot.querySelector('x-inner').shadowRoot.textContent, x.whales);
-    })();
   </script>
 </body></html>

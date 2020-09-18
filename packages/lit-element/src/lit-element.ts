@@ -56,15 +56,19 @@
  */
 import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
 import {render, RenderOptions} from 'lit-html';
-import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './lib/css-tag.js';
+import {
+  supportsAdoptingStyleSheets,
+  CSSResult,
+  unsafeCSS,
+} from './lib/css-tag.js';
 
 export * from './lib/updating-element.js';
-export {html, svg, TemplateResult} from 'lit-html';
+export {html, svg} from 'lit-html';
 export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
 if (DEV_MODE) {
-  console.warn('lit-element is in dev mode. Not recommended for production!')
+  console.warn('lit-element is in dev mode. Not recommended for production!');
 }
 
 declare global {
@@ -82,7 +86,7 @@ declare global {
 
 export type CSSResultOrNative = CSSResult | CSSStyleSheet;
 
-type CSSResultFlatArray = CSSResultOrNative[];
+export type CSSResultFlatArray = CSSResultOrNative[];
 
 export interface CSSResultArray
   extends Array<CSSResultOrNative | CSSResultArray> {}
@@ -93,7 +97,7 @@ export interface CSSResultArray
  */
 const renderNotImplemented = {};
 
-const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
+export const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
   let cssText = '';
   for (const rule of sheet.cssRules) {
     cssText += rule.cssText;

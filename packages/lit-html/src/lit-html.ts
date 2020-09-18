@@ -239,7 +239,7 @@ export const render = (
   let part: NodePart = (container as any).$lit$;
   if (part === undefined) {
     const marker = createMarker();
-    container.append(marker);
+    container.appendChild(marker);
     (container as any).$lit$ = part = new NodePart(marker, null, options);
   }
   part._setValue(value);
@@ -261,14 +261,12 @@ export abstract class Directive {
   }
 }
 
-class Template {
+export class Template {
   private __strings: TemplateStringsArray;
   __element: HTMLTemplateElement;
   __parts: Array<TemplatePart> = [];
 
   constructor({strings, _$litType$: type}: TemplateResult) {
-    walker.currentNode = (this.__element = d.createElement('template')).content;
-
     // Insert makers into the template HTML to represent the position of
     // bindings. The following code scans the template strings to determine the
     // syntactic position of the bindings. They can be in text position, where
@@ -367,7 +365,9 @@ class Template {
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
-    this.__element.innerHTML = html + this.__strings[l];
+    walker.currentNode = (this.__element = this._createElement(
+      html + this.__strings[l]
+    )).content;
 
     if (type === SVG_RESULT) {
       const content = this.__element.content;
@@ -431,11 +431,15 @@ class Template {
             // We can't use empty text nodes as markers because they're
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
-              (node as Element).append(strings[i] || createMarker());
+              (node as Element).appendChild(
+                new Text(strings[i]) || createMarker()
+              );
               this.__parts.push({__type: NODE_PART, __index: ++nodeIndex});
               bindingIndex++;
             }
-            (node as Element).append(strings[lastIndex] || createMarker());
+            (node as Element).appendChild(
+              new Text(strings[lastIndex]) || createMarker()
+            );
           }
         }
       } else if (node.nodeType === 8) {
@@ -459,6 +463,12 @@ class Template {
       }
       nodeIndex++;
     }
+  }
+
+  _createElement(html: string) {
+    const template = d.createElement('template');
+    template.innerHTML = html;
+    return template;
   }
 }
 
@@ -647,12 +657,17 @@ export class NodePart {
     this._value = value;
   }
 
-  private __commitTemplateResult(result: TemplateResult): void {
-    const {strings, values} = result;
+  private _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
     let template = templateCache.get(strings);
     if (template === undefined) {
       templateCache.set(strings, (template = new Template(result)));
     }
+    return template;
+  }
+
+  private __commitTemplateResult(result: TemplateResult): void {
+    const {strings, values} = result;
+    const template = this._getTemplate(strings, result);
     if (
       this._value != null &&
       (this._value as TemplateInstance).__template === template

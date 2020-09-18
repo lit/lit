@@ -17,42 +17,107 @@
  *
  * @packageDocumentation
  */
-import {LitElement, CSSResultArray, CSSResult} from '../lit-element.js';
-import {UpdatingElement} from './updating-element.js';
-// TODO(sorvell) Add shady-render package.
-import {render, RenderOptions} from 'lit-html';
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+import {
+  LitElement,
+  CSSResultFlatArray,
+  CSSResultOrNative,
+  cssResultFromStyleSheet,
+} from '../lit-element.js';
+import {
+  shadyRender,
+  needsPolyfill,
+  cssForScope,
+} from 'lit-html/shady-render.js';
+import {RenderOptions} from 'lit-html';
 export * from '../lit-element.js';
 
-if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
-  LitElement.render = (
-    result: unknown,
-    container: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ) => {
-    console.log('Note, this should be shady-render.');
-    render(result, container, options);
-  };
+if (needsPolyfill) {
+  console.log(
+    '%c Making LitElement compatible with ShadyDOM/CSS.',
+    'color: lightgreen; font-style: italic'
+  );
 
-  const baseConnectedCallback = UpdatingElement.prototype.connectedCallback;
-  LitElement.prototype.connectedCallback = function (this: LitElement) {
-    baseConnectedCallback.call(this);
-    // Note, first update/render handles styleElement so we only call this if
-    // connected after first update.
-    if (this.hasUpdated) {
-      window.ShadyCSS!.styleElement(this);
-    }
-  };
+  const SCOPE_KEY = '__localName';
+  interface PolyfilledLitElement extends LitElement {
+    __baseConnectedCallback: () => void;
+  }
 
-  (LitElement.prototype as any).adoptStyles = function (
-    this: LitElement,
-    styles: CSSResultArray
-  ) {
-    if (!(window.ShadowRoot && this.renderRoot instanceof window.ShadowRoot)) {
+  type LitElementConstructor = typeof LitElement;
+  interface PolyfilledLitElementConstructor extends LitElementConstructor {
+    [SCOPE_KEY]: string;
+  }
+  /**
+   * LitElement patches:
+   * * render: uses shadyRender
+   * * adoptStyles: populates scopeData for the element
+   * * connectedCallback: applies ShadyCSS custom properties shimming
+   */
+
+  /**
+   * Patch `render` to be `shady-render`
+   */
+  Object.defineProperty(LitElement, 'render', {
+    value: function (
+      this: PolyfilledLitElementConstructor,
+      result: unknown,
+      container: HTMLElement | DocumentFragment,
+      options: RenderOptions
+    ) {
+      shadyRender(result, container, options, this[SCOPE_KEY]);
+    },
+    enumerable: true,
+    configurable: true,
+  });
+
+  /**
+   * Patch to initialize the `scopeData` for the element.
+   * The scope data includes:
+   * * name: element name
+   * * css: array of cssText to apply
+   * * isStyled: boolean indicating if styling has been applied
+   */
+  // TODO(sorvell): This could be done in `render` by reading `elementStyles`
+  // if there were a way to get the element name
+  // (patch define or have LitElement pass it?).
+  function adoptStyles(this: PolyfilledLitElement, styles: CSSResultFlatArray) {
+    if (this.constructor.hasOwnProperty(SCOPE_KEY)) {
       return;
     }
-    window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
-      styles.map((s) => (s as CSSResult).cssText),
-      this.localName
-    );
-  };
+    const name = ((this.constructor as PolyfilledLitElementConstructor)[
+      SCOPE_KEY
+    ] = this.localName);
+    const css = cssForScope(name);
+    if (css !== undefined) {
+      css.push(
+        ...styles.map(
+          (v: CSSResultOrNative) =>
+            (v instanceof CSSStyleSheet ? cssResultFromStyleSheet(v) : v)
+              .cssText
+        )
+      );
+    }
+  }
+
+  /**
+   * Patch connectedCallback to apply ShadyCSS custom properties shimming.
+   */
+  function connectedCallback(this: PolyfilledLitElement) {
+    this.__baseConnectedCallback();
+    window.ShadyCSS!.styleElement(this);
+  }
+
+  Object.defineProperties(LitElement.prototype, {
+    adoptStyles: {value: adoptStyles, enumerable: true, configurable: true},
+    connectedCallback: {
+      value: connectedCallback,
+      enumerable: true,
+      configurable: true,
+    },
+    __baseConnectedCallback: {
+      value: LitElement.prototype.connectedCallback,
+      enumerable: true,
+      configurable: true,
+    },
+  });
 }

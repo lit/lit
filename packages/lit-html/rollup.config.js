@@ -41,6 +41,7 @@ const skipBundleOutput = {
 const entryPoints = [
   'lit-html',
   'parts',
+  'shady-render',
   'directives/cache',
   'directives/if-defined',
   'directives/repeat',
