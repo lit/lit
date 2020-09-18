@@ -1,4 +1,4 @@
-import {html, LitElement} from '../lib/lit-element.js';
+import {html, LitElement} from '../lit-element.js';
 import {property} from '../lib/decorators/property.js';
 
 class TSElement extends LitElement {

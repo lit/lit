@@ -38,7 +38,18 @@ const skipBundleOutput = {
   },
 };
 
-const entryPoints = ['lit-html', 'directives/if-defined'];
+const entryPoints = [
+  'lit-html',
+  'parts',
+  'directives/cache',
+  'directives/if-defined',
+  'directives/repeat',
+];
+
+// Shared name cache
+// Ideally we'd share this only between lit-html.js and parts.js and force
+// directives to use the public APIs.
+const nameCache = {};
 
 export default {
   input: entryPoints.map((name) => `development/${name}.js`),
@@ -90,9 +101,13 @@ export default {
         comments: CHECKSIZE ? false : 'some',
         inline_script: false,
       },
+      // This is NOT working for some reason
+      nameCache,
       mangle: {
         properties: {
           regex: /^__/,
+          // Set to true to mangle to readable names
+          debug: false,
         },
       },
     }),

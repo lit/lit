@@ -7,7 +7,6 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "./development/",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -16,11 +15,11 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "allowSyntheticDefaultImports": true
   },
   "include": [
-    "src/**/*.ts"
+    "lit-element/**/*.ts",
+    "lit-html/**/*.ts"
   ],
   "exclude": []
 }

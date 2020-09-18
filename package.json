@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap --concurrency=1",
     "build": "lerna run build",
     "test": "lerna run test"
   },

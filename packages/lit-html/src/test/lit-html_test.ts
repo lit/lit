@@ -500,7 +500,8 @@ suite('lit-html', () => {
     });
 
     test('renders forms as elements', () => {
-      // forms are both Node and iterable
+      // Forms are both a Node and iterable, so make sure they are rendered as
+      // a Node.
 
       const form = document.createElement('form');
       const inputOne = document.createElement('input');
@@ -516,6 +517,124 @@ suite('lit-html', () => {
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<form><input name="one"><input name="two"></form>'
+      );
+    });
+  });
+
+  suite('arrays & iterables', () => {
+    test('renders arrays', () => {
+      render(html`<div>${[1, 2, 3]}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+    });
+
+    test('renders arrays of nested templates', () => {
+      render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+    });
+
+    test('renders an array of elements', () => {
+      const children = [
+        document.createElement('p'),
+        document.createElement('a'),
+        document.createElement('span'),
+      ];
+      render(html`<div>${children}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><a></a><span></span></div>'
+      );
+    });
+
+    test('updates when called multiple times with arrays', () => {
+      const ul = (list: string[]) => {
+        // prettier-ignore
+        const items = list.map((item) => html`<li>${item}</li>`);
+        // prettier-ignore
+        return html`<ul>${items}</ul>`;
+      };
+      render(ul(['a', 'b', 'c']), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<ul><li>a</li><li>b</li><li>c</li></ul>'
+      );
+      render(ul(['x', 'y']), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<ul><li>x</li><li>y</li></ul>'
+      );
+    });
+
+    test('updates arrays', () => {
+      let items = [1, 2, 3];
+      const t = () => html`<div>${items}</div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+
+      items = [3, 2, 1];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>321</div>'
+      );
+    });
+
+    test('updates arrays that shrink then grow', () => {
+      let items: number[];
+      const t = () => html`<div>${items}</div>`;
+
+      items = [1, 2, 3];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+
+      items = [4];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>4</div>'
+      );
+
+      items = [5, 6, 7];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>567</div>'
+      );
+    });
+
+    test('updates an array of elements', () => {
+      let children: any = [
+        document.createElement('p'),
+        document.createElement('a'),
+        document.createElement('span'),
+      ];
+      const t = () => html`<div>${children}</div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><a></a><span></span></div>'
+      );
+
+      children = null;
+      render(t(), container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
+      children = document.createTextNode('foo');
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>foo</div>'
       );
     });
   });

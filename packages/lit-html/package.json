@@ -28,9 +28,8 @@
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "dev": "scripts/dev.sh",
-    "prepare": "npm run build",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "wtr \"development/**/*_test.js\" --node-resolve",
+    "test:dev": "wtr 'development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
@@ -41,7 +40,6 @@
   "dependencies": {},
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
-    "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-replace": "^2.3.3",
     "@types/mocha": "^8.0.3",
     "@web/dev-server-rollup": "^0.2.6",
