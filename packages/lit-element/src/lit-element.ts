@@ -198,6 +198,13 @@ export class LitElement extends UpdatingElement {
   readonly renderRoot!: HTMLElement | DocumentFragment;
 
   /**
+   * Node before which to render content. This is used when shimming
+   * `adoptedStyleSheets` and a style element may need to exist in the
+   * shadowRoot after Lit rendered content.
+   */
+  private _renderBeforeNode?: HTMLElement;
+
+  /**
    * Performs element initialization. By default this calls
    * [[`createRenderRoot`]] to create the element [[`renderRoot`]] node and
    * captures any pre-set values for registered properties.
@@ -246,6 +253,7 @@ export class LitElement extends UpdatingElement {
         const style = document.createElement('style');
         style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
+        this._renderBeforeNode ??= style;
       });
     }
   }
@@ -267,7 +275,7 @@ export class LitElement extends UpdatingElement {
       (this.constructor as typeof LitElement).render(
         templateResult,
         this.renderRoot,
-        {eventContext: this, renderBefore: this.renderRoot.firstChild}
+        {eventContext: this, renderBefore: this._renderBeforeNode}
       );
     }
   }

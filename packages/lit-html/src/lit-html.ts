@@ -266,12 +266,13 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ) => {
-  let part: NodePart = (options?.renderBefore ?? (container as any)).$lit$;
+  const partOwnerNode = options?.renderBefore ?? container;
+  let part: NodePart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
-    const end = options?.renderBefore ?? null;
-    (container as any).$lit$ = part = new NodePart(
-      container.insertBefore(createMarker(), end),
-      end,
+    const endNode = options?.renderBefore ?? null;
+    (partOwnerNode as any).$lit$ = part = new NodePart(
+      container.insertBefore(createMarker(), endNode),
+      endNode,
       options
     );
   }
