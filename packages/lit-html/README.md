@@ -42,7 +42,6 @@ these and other minor breaking changes.
   * `asyncAppend`
   * `asyncReplace`
   * `templateContent`
-  * `unsafeSvg`
   * `until`
 
 ## 🚨 Migrating directives
