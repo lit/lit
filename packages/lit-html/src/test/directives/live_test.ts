@@ -13,7 +13,7 @@
  */
 
 import {live} from '../../directives/live.js';
-import {html, nothing, render} from '../../lit-html.js';
+import {html, noChange, nothing, render} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -72,6 +72,16 @@ suite('live directive', () => {
       assert.equal(el.x, 'a');
       assert.equal(el._setCount, 1);
     });
+
+    test('noChange works', () => {
+      const go = (x: unknown) =>
+        render(html`<input .value="${live(x)}" />}`, container);
+      go('a');
+      const el = container.firstElementChild as HTMLInputElement;
+      el.value = 'b';
+      go(noChange);
+      assert.equal(el.value, 'b');
+    });
   });
 
   suite('attributes', () => {
@@ -122,6 +132,16 @@ suite('live directive', () => {
     el.className = 'b';
     go(nothing);
     assert.isFalse(el.hasAttribute('class'));
+  });
+
+  test('noChange works', () => {
+    const go = (x: any) =>
+      render(html`<div class="${live(x)}">}</div>`, container);
+    go('a');
+    const el = container.firstElementChild as HTMLDivElement;
+    el.className = 'b';
+    go(noChange);
+    assert.equal(el.getAttribute('class'), 'b');
   });
 
   test('does not set a non-changed attribute with a non-string value', async () => {

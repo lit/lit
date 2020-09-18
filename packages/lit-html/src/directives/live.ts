@@ -48,6 +48,9 @@ class LiveDirective extends Directive {
   }
 
   update(part: AttributePart, [value]: Parameters<this['render']>) {
+    if (value === noChange) {
+      return value;
+    }
     const element = part.element;
     const name = part.name;
 
