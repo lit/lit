@@ -122,10 +122,14 @@ const HTML_RESULT = 1;
 const SVG_RESULT = 2;
 
 /** TemplatePart types */
-const ATTRIBUTE_PART = 1;
-const NODE_PART = 2;
-const ELEMENT_PART = 3;
-const COMMENT_PART = 4;
+// TODO (justinfagnani): since these are exported, consider shorter names,
+// like just `ATTRIBUTE`.
+export const ATTRIBUTE_PART = 1;
+export const NODE_PART = 2;
+export const PROPERTY_PART = 3;
+export const BOOLEAN_ATTRIBUTE_PART = 4;
+const ELEMENT_PART = 5;
+const COMMENT_PART = 6;
 
 type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
@@ -187,7 +191,29 @@ export const nothing = {};
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
 
-export type DirectiveClass = {new (part: Part): Directive};
+export type NodePartInfo = {
+  readonly type: typeof NODE_PART;
+};
+
+export type AttributePartInfo = {
+  readonly type:
+    | typeof ATTRIBUTE_PART
+    | typeof PROPERTY_PART
+    | typeof BOOLEAN_ATTRIBUTE_PART;
+  strings?: ReadonlyArray<string>;
+  name: string;
+  tagName: string;
+};
+
+/**
+ * Information about the part a directive is bound to.
+ *
+ * This is useful for checking that a directive is attached to a valid part,
+ * such as with directive that can only be used on attribute bindings.
+ */
+export type PartInfo = NodePartInfo | AttributePartInfo;
+
+export type DirectiveClass = {new (part: PartInfo): Directive};
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -520,9 +546,9 @@ class TemplateInstance {
         i++;
         continue;
       }
-      if ((part as AttributePart).__strings !== undefined) {
+      if ((part as AttributePart).strings !== undefined) {
         (part as AttributePart)._setValue(values, i);
-        i += (part as AttributePart).__strings!.length - 1;
+        i += (part as AttributePart).strings!.length - 1;
       } else {
         (part as NodePart)._setValue(values[i++]);
       }
@@ -571,6 +597,7 @@ export type Part =
   | BooleanAttributePart;
 
 export class NodePart {
+  readonly type = NODE_PART;
   _value: unknown;
   protected __directive?: Directive;
 
@@ -610,7 +637,7 @@ export class NodePart {
     const directive = value._$litDirective$;
     if (this.__directive?.constructor !== directive) {
       this.__clear();
-      this.__directive = new directive(this);
+      this.__directive = new directive(this as NodePartInfo);
     }
     // TODO (justinfagnani): To support nested directives, we'd need to
     // resolve the directive result's values. We may want to offer another
@@ -728,6 +755,10 @@ export class NodePart {
 }
 
 export class AttributePart {
+  readonly type = ATTRIBUTE_PART as
+    | typeof ATTRIBUTE_PART
+    | typeof PROPERTY_PART
+    | typeof BOOLEAN_ATTRIBUTE_PART;
   readonly element: HTMLElement;
   readonly name: string;
 
@@ -736,9 +767,13 @@ export class AttributePart {
    * static strings of the interpolation. For single-value, complete bindings,
    * this is undefined.
    */
-  readonly __strings?: ReadonlyArray<string>;
+  readonly strings?: ReadonlyArray<string>;
   __value: unknown | Array<unknown> = nothing;
   private __directives?: Array<Directive>;
+
+  get tagName() {
+    return this.element.tagName;
+  }
 
   constructor(
     element: HTMLElement,
@@ -750,7 +785,7 @@ export class AttributePart {
     this.name = name;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this.__value = new Array(strings.length - 1).fill(nothing);
-      this.__strings = strings;
+      this.strings = strings;
     } else {
       this.__value = nothing;
     }
@@ -771,7 +806,9 @@ export class AttributePart {
       // or check length.
       let directive: Directive = (this.__directives ??= [])[i];
       if (directive?.constructor !== directiveCtor) {
-        directive = this.__directives[i] = new directiveCtor(this);
+        directive = this.__directives[i] = new directiveCtor(
+          this as AttributePartInfo
+        );
       }
       // TODO (justinfagnani): To support nested directives, we'd need to
       // resolve the directive result's values. We may want to offer another
@@ -801,7 +838,7 @@ export class AttributePart {
   _setValue(value: unknown): void;
   _setValue(value: Array<unknown>, from: number): void;
   _setValue(value: unknown | Array<unknown>, from?: number) {
-    const strings = this.__strings;
+    const strings = this.strings;
 
     if (strings === undefined) {
       // Single-value binding case
@@ -862,12 +899,16 @@ export class AttributePart {
 }
 
 export class PropertyPart extends AttributePart {
+  readonly type = PROPERTY_PART;
+
   __commitValue(value: unknown) {
     (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
 
 export class BooleanAttributePart extends AttributePart {
+  readonly type = BOOLEAN_ATTRIBUTE_PART;
+
   __commitValue(value: unknown) {
     if (value && value !== nothing) {
       this.element.setAttribute(this.name, '');
