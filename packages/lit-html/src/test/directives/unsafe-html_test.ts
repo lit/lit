@@ -71,8 +71,6 @@ suite('unsafeHTML directive', () => {
   test('throws on non-string values', () => {
     const value = ['aaa'];
     const t = () => html`<div>${unsafeHTML(value as any)}</div>`;
-
-    // Initial render
     assert.throws(() => render(t(), container));
   });
 

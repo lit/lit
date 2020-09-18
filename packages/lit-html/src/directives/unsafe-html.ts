@@ -24,6 +24,58 @@ import {
 
 const HTML_RESULT = 1;
 
+export class UnsafeHTML extends Directive {
+  static directiveName = 'unsafeHTML';
+  static resultType = HTML_RESULT;
+
+  value: unknown = nothing;
+  templateResult?: TemplateResult;
+
+  constructor(part: PartInfo) {
+    super();
+    if (part.type !== NODE_PART) {
+      throw new Error(
+        `${
+          (this.constructor as typeof UnsafeHTML).directiveName
+        }() can only be used in text bindings`
+      );
+    }
+  }
+
+  render(value: string) {
+    // TODO: add tests for nothing and noChange
+    if (value === nothing) {
+      this.templateResult = undefined;
+      return (this.value = value);
+    }
+    if (value === noChange) {
+      return value;
+    }
+    if (typeof value != 'string') {
+      throw new Error(
+        `${
+          (this.constructor as typeof UnsafeHTML).directiveName
+        }() called with a non-string value`
+      );
+    }
+    if (value === this.value) {
+      return this.templateResult;
+    }
+    this.value = value;
+    const strings = ([String(value)] as unknown) as TemplateStringsArray;
+    (strings as any).raw = strings;
+    // WARNING: impersonating a TemplateResult like this is extremely
+    // dangerous. Third-party directives should not do this.
+    return (this.templateResult = {
+      // Cast to a known set of integers that satisfy ResultType so that we
+      // don't have to export ResultType and possibly encourage this pattern.
+      _$litType$: (this.constructor as typeof UnsafeHTML).resultType as 1 | 2,
+      strings,
+      values: [],
+    });
+  }
+}
+
 /**
  * Renders the result as HTML, rather than text.
  *
@@ -31,43 +83,4 @@ const HTML_RESULT = 1;
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeHTML = directive(
-  class UnsafeHTML extends Directive {
-    value: unknown = nothing;
-    templateResult?: TemplateResult;
-
-    constructor(part: PartInfo) {
-      super();
-      if (part.type !== NODE_PART) {
-        throw new Error('unsafeHTML can only be used in text bindings');
-      }
-    }
-
-    render(value: string) {
-      // TODO: add tests for nothing and noChange
-      if (value === nothing) {
-        this.templateResult = undefined;
-        return (this.value = value);
-      }
-      if (value === noChange) {
-        return value;
-      }
-      if (typeof value != 'string') {
-        throw new Error('unsafeHTML() called with a non-string value');
-      }
-      if (value === this.value) {
-        return this.templateResult;
-      }
-      this.value = value;
-      const strings = ([String(value)] as unknown) as TemplateStringsArray;
-      (strings as any).raw = strings;
-      // WARNING: impersonating a TemplateResult like this is extremely
-      // dangerous. Third-party directives should not do this.
-      return (this.templateResult = {
-        _$litType$: HTML_RESULT,
-        strings,
-        values: [],
-      });
-    }
-  }
-);
+export const unsafeHTML = directive(UnsafeHTML);
