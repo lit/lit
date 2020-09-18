@@ -59,6 +59,8 @@ import {render, RenderOptions} from 'lit-html';
 import {
   supportsAdoptingStyleSheets,
   CSSResult,
+  CSSResultGroup,
+  CSSResultOrNative,
   unsafeCSS,
 } from './lib/css-tag.js';
 
@@ -83,8 +85,6 @@ declare global {
 (window['litElementVersions'] || (window['litElementVersions'] = [])).push(
   '2.4.0'
 );
-
-export type CSSResultOrNative = CSSResult | CSSStyleSheet;
 
 type CSSResultFlatArray = CSSResultOrNative[];
 
@@ -148,7 +148,7 @@ export class LitElement extends UpdatingElement {
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
-  static styles?: CSSResultOrNative | CSSResultArray;
+  static styles?: CSSResultGroup;
   private static _elementStyles?: CSSResultFlatArray;
 
   /**
@@ -164,9 +164,7 @@ export class LitElement extends UpdatingElement {
    *
    * @nocollapse
    */
-  protected static finalizeStyles(
-    styles?: CSSResultOrNative | CSSResultArray
-  ): CSSResultFlatArray {
+  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.

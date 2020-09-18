@@ -384,6 +384,10 @@ export abstract class UpdatingElement extends HTMLElement {
     return this._classProperties!.get(name) || defaultPropertyDeclaration;
   }
 
+  protected static get hasFinalized() {
+    return this.hasOwnProperty(finalized);
+  }
+
   /**
    * Creates property accessors for registered properties and ensures
    * any superclasses are also finalized. Returns true if the element was
