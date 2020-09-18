@@ -209,6 +209,8 @@ type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
 /**
  * Creates a user-facing directive function from a Directive class. This
  * function has the same parameters as the directive's render() method.
+ * 
+ * WARNING: The directive API is experimental and subject to change.
  */
 export const directive = <C extends DirectiveClass>(c: C) => (
   ...values: DirectiveProps<C>
@@ -254,6 +256,13 @@ const walker = d.createTreeWalker(d);
 // Interfaces and type aliases can be interleaved freely.
 //
 
+/**
+ * Base class for creating custom directives. Users should extend this class,
+ * implement `render` and/or `update`, and then pass their subclass to
+ * `directive`.
+ * 
+ * WARNING: The directive API is experimental and subject to change.
+ */
 export abstract class Directive {
   abstract render(...props: Array<unknown>): unknown;
   update(_part: Part, props: Array<unknown>): unknown {
