@@ -109,9 +109,8 @@ suite('guard', () => {
 
     const guardedTemplate = () => {
       callCount += 1;
-      return html`<ul>
-        ${items.map((i) => html`<li>${i}</li>`)}
-      </ul>`;
+      // prettier-ignore
+      return html`<ul>${items.map((i) => html`<li>${i}</li>`)}</ul>`;
     };
 
     renderGuarded([items], guardedTemplate);
@@ -143,9 +142,8 @@ suite('guard', () => {
 
     const guardedTemplate = () => {
       callCount += 1;
-      return html`<ul>
-        ${items.map((i) => html`<li>${i}</li>`)}
-      </ul>`;
+      // prettier-ignore
+      return html`<ul>${items.map((i) => html`<li>${i}</li>`)}</ul>`;
     };
 
     renderGuarded(items, guardedTemplate);
