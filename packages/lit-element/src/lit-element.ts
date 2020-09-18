@@ -54,7 +54,7 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from './updating-element.js';
+import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
 import {render, RenderOptions} from 'lit-html';
 import {
   supportsAdoptingStyleSheets,
@@ -62,11 +62,16 @@ import {
   CSSResultGroup,
   CSSResultOrNative,
   unsafeCSS,
-} from './css-tag.js';
+} from './lib/css-tag.js';
 
-export * from './updating-element.js';
+export * from './lib/updating-element.js';
 export {html, svg, TemplateResult} from 'lit-html';
-export * from './css-tag.js';
+export * from './lib/css-tag.js';
+
+const DEV_MODE = true;
+if (DEV_MODE) {
+  console.warn('lit-element is in dev mode. Not recommended for production!');
+}
 
 declare global {
   interface Window {
@@ -82,6 +87,9 @@ declare global {
 );
 
 type CSSResultFlatArray = CSSResultOrNative[];
+
+export interface CSSResultArray
+  extends Array<CSSResultOrNative | CSSResultArray> {}
 
 /**
  * Sentinal value used to avoid calling lit-html's render function when
@@ -156,7 +164,7 @@ export class LitElement extends UpdatingElement {
    *
    * @nocollapse
    */
-  protected static getStyles(styles?: CSSResultGroup): CSSResultFlatArray {
+  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
@@ -174,10 +182,11 @@ export class LitElement extends UpdatingElement {
   }
 
   protected static finalize() {
-    if (!this.hasFinalized) {
-      this._elementStyles = this.getStyles(this.styles);
-      super.finalize();
+    const wasFinalized = super.finalize();
+    if (wasFinalized) {
+      this._elementStyles = this.finalizeStyles(this.styles);
     }
+    return wasFinalized;
   }
 
   /**
@@ -185,6 +194,13 @@ export class LitElement extends UpdatingElement {
    * to an open shadowRoot.
    */
   readonly renderRoot!: HTMLElement | DocumentFragment;
+
+  /**
+   * Node before which to render content. This is used when shimming
+   * `adoptedStyleSheets` and a style element may need to exist in the
+   * shadowRoot after Lit rendered content.
+   */
+  private _renderBeforeNode?: HTMLElement;
 
   /**
    * Performs element initialization. By default this calls
@@ -235,6 +251,7 @@ export class LitElement extends UpdatingElement {
         const style = document.createElement('style');
         style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
+        this._renderBeforeNode ??= style;
       });
     }
   }
@@ -256,7 +273,7 @@ export class LitElement extends UpdatingElement {
       (this.constructor as typeof LitElement).render(
         templateResult,
         this.renderRoot,
-        {eventContext: this}
+        {eventContext: this, renderBefore: this._renderBeforeNode}
       );
     }
   }

@@ -29,6 +29,7 @@ const constructionToken = Symbol();
 
 export class CSSResult {
   readonly cssText: string;
+  private _styleSheet?: CSSStyleSheet;
 
   constructor(cssText: string, safeToken: symbol) {
     if (safeToken !== constructionToken) {
@@ -42,14 +43,13 @@ export class CSSResult {
   // Note, this is a getter so that it's lazy. In practice, this means
   // stylesheets are not created until the first element instance is made.
   get styleSheet(): CSSStyleSheet | undefined {
-    let sheet: CSSStyleSheet | undefined;
     // Note, if `supportsAdoptingStyleSheets` is true then we assume
     // CSSStyleSheet is constructable.
-    if (supportsAdoptingStyleSheets) {
-      sheet = new CSSStyleSheet();
-      sheet.replaceSync(this.cssText);
+    if (supportsAdoptingStyleSheets && this._styleSheet === undefined) {
+      this._styleSheet = new CSSStyleSheet();
+      this._styleSheet.replaceSync(this.cssText);
     }
-    return sheet;
+    return this._styleSheet;
   }
 
   toString(): string {

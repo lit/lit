@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {css} from '../lib/css-tag.js';
+import {css, CSSResult} from '../lib/css-tag.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {
@@ -22,6 +22,14 @@ suite('Styling', () => {
       const style1 = makeStyle();
       const style2 = makeStyle();
       assert.strictEqual(style1, style2);
+    });
+
+    test('CSSResults always produce the same stylesheet', () => {
+      const makeStyle = () => css`foo`;
+      const style1 = makeStyle();
+      assert.equal((style1 as CSSResult).styleSheet, (style1 as CSSResult).styleSheet);
+      const style2 = makeStyle();
+      assert.equal((style1 as CSSResult).styleSheet, (style2 as CSSResult).styleSheet);
     });
 
     test('caches CSSResults with same-valued expressions', () => {
