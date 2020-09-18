@@ -12,11 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {unsafeHTML} from '../../lib/directives/unsafe-html.js';
-import {render, html} from '../../lib/lit-html.js';
+import {unsafeHTML} from '../../directives/unsafe-html.js';
+import {render, html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -69,18 +68,12 @@ suite('unsafeHTML directive', () => {
     assert.strictEqual(text, text2);
   });
 
-  test('does not dirty check complex values', () => {
+  test('throws on non-string values', () => {
     const value = ['aaa'];
-    const t = () => html`<div>${unsafeHTML(value)}</div>`;
+    const t = () => html`<div>${unsafeHTML(value as any)}</div>`;
 
     // Initial render
-    render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>aaa</div>');
-
-    // Re-render with the same value, but a different deep property
-    value[0] = 'bbb';
-    render(t(), container);
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bbb</div>');
+    assert.throws(() => render(t(), container));
   });
 
   test('renders after other values', () => {

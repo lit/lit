@@ -12,16 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// import {isPrimitive} from '../lib/parts.js';
 import {
   directive,
-  NodePart,
-  Part,
   Directive,
   nothing,
   TemplateResult,
   noChange,
+  PartInfo,
+  NODE_PART,
 } from '../lit-html.js';
+
+const HTML_RESULT = 1;
 
 /**
  * Renders the result as HTML, rather than text.
@@ -35,15 +36,14 @@ export const unsafeHTML = directive(
     value: unknown = nothing;
     templateResult?: TemplateResult;
 
-    constructor(part: Part) {
+    constructor(part: PartInfo) {
       super();
-      // TODO (justinfagnani): We probably don't want to use instanceof
-      if (!(part instanceof NodePart)) {
+      if (part.type !== NODE_PART) {
         throw new Error('unsafeHTML can only be used in text bindings');
       }
     }
 
-    render(value: unknown) {
+    render(value: string) {
       // TODO: add tests for nothing and noChange
       if (value === nothing) {
         this.templateResult = undefined;
@@ -52,22 +52,22 @@ export const unsafeHTML = directive(
       if (value === noChange) {
         return value;
       }
-      if (isPrimitive(value) && value === this.value) {
+      if (typeof value != 'string') {
+        throw new Error('unsafeHTML() called with a non-string value');
+      }
+      if (value === this.value) {
         return this.templateResult;
       }
       this.value = value;
       const strings = ([String(value)] as unknown) as TemplateStringsArray;
       (strings as any).raw = strings;
+      // WARNING: impersonating a TemplateResult like this is extremely
+      // dangerous. Third-party directives should not do this.
       return (this.templateResult = {
-        _$litType$: 1,
+        _$litType$: HTML_RESULT,
         strings,
         values: [],
       });
     }
   }
 );
-
-// https://tc39.github.io/ecma262/#sec-typeof-operator
-type Primitive = null | undefined | boolean | number | string | symbol | bigint;
-const isPrimitive = (value: unknown): value is Primitive =>
-  value === null || (typeof value != 'object' && typeof value != 'function');
