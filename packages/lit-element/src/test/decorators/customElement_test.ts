@@ -12,4 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from './lib/lit-html.js';
+import {customElement} from '../../lib/decorators/customElement.js';
+import {generateElementName} from '../test-helpers.js';
+import {assert} from '@esm-bundle/chai';
+
+suite('@customElement', () => {
+  test('defines an element', () => {
+    const tagName = generateElementName();
+    @customElement(tagName)
+    class C0 extends HTMLElement {}
+    const DefinedC = customElements.get(tagName);
+    assert.strictEqual(DefinedC, C0);
+  });
+});
