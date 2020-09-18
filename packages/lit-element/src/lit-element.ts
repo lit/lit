@@ -56,7 +56,11 @@
  */
 import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
 import {render, RenderOptions} from 'lit-html';
-import {supportsAdoptingStyleSheets, CSSResult, unsafeCSS} from './lib/css-tag.js';
+import {
+  supportsAdoptingStyleSheets,
+  CSSResult,
+  unsafeCSS,
+} from './lib/css-tag.js';
 
 export * from './lib/updating-element.js';
 export {html, svg, TemplateResult} from 'lit-html';
@@ -64,7 +68,7 @@ export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
 if (DEV_MODE) {
-  console.warn('lit-element is in dev mode. Not recommended for production!')
+  console.warn('lit-element is in dev mode. Not recommended for production!');
 }
 
 declare global {
@@ -263,7 +267,7 @@ export class LitElement extends UpdatingElement {
       (this.constructor as typeof LitElement).render(
         templateResult,
         this.renderRoot,
-        {eventContext: this, refNode: this.renderRoot.firstChild}
+        {eventContext: this, renderBefore: this.renderRoot.firstChild}
       );
     }
   }

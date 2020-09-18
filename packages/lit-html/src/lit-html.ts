@@ -226,7 +226,7 @@ export interface RenderOptions {
   /**
    * A DOM node before which to render content in the container.
    */
-  readonly refNode?: ChildNode|null;
+  readonly renderBefore?: ChildNode | null;
 }
 
 /**
@@ -240,12 +240,14 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ) => {
-  let part: NodePart = (container as any).$lit$;
+  let part: NodePart = (options?.renderBefore ?? (container as any)).$lit$;
   if (part === undefined) {
-    const start = createMarker();
-    const end = options?.refNode ?? null;
-    container.insertBefore(start, end);
-    (container as any).$lit$ = part = new NodePart(start, end, options);
+    const end = options?.renderBefore ?? null;
+    (container as any).$lit$ = part = new NodePart(
+      container.insertBefore(createMarker(), end),
+      end,
+      options
+    );
   }
   part._setValue(value);
 };

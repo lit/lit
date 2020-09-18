@@ -22,7 +22,7 @@ import {
   render,
   svg,
   TemplateResult,
-  RenderOptions
+  RenderOptions,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -40,7 +40,11 @@ suite('lit-html', () => {
     container = document.createElement('div');
   });
 
-  const assertRender = (r: TemplateResult, expected: string, options?: RenderOptions) => {
+  const assertRender = (
+    r: TemplateResult,
+    expected: string,
+    options?: RenderOptions
+  ) => {
     render(r, container, options);
     assert.equal(stripExpressionComments(container.innerHTML), expected);
   };
@@ -399,9 +403,26 @@ suite('lit-html', () => {
       assertRender(html`<span></span>`, '<div></div><span></span>');
     });
 
-    test('renders before `refNode`, if specified', () => {
+    test('renders before `renderBefore`, if specified', () => {
       container.appendChild(document.createElement('div'));
-      assertRender(html`<span></span>`, '<span></span><div></div>', {refNode: container.firstChild});
+      assertRender(html`<span></span>`, '<span></span><div></div>', {
+        renderBefore: container.firstChild,
+      });
+    });
+
+    test('renders same template before different `renderBefore` nodes', () => {
+      container.appendChild(document.createElement('div'));
+      container.appendChild(document.createElement('div'));
+      assertRender(html`<span></span>`, '<span></span><div></div><div></div>', {
+        renderBefore: container.firstChild,
+      });
+      assertRender(
+        html`<span></span>`,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: container.lastChild,
+        }
+      );
     });
   });
 
