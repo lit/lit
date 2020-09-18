@@ -3,10 +3,12 @@
 /packages/*/node_modules/
 /packages/*/lib/
 /packages/*/test/
+/packages/*/development/
 /packages/*/index.js
 /packages/*/index.js.map
 /packages/*/index.d.ts
 /packages/*/index.d.ts.map
+/packages/*/*.tgz
 
 /packages/lit-html/directives
 
@@ -14,3 +16,5 @@
 /packages/lit-element/demo/**/*.d.ts.map
 /packages/lit-element/demo/**/*.js
 /packages/lit-element/demo/**/*.js.map
+
+/lerna-debug.log

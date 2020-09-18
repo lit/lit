@@ -12,6 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+const DEV_MODE = true;
+
+if (DEV_MODE) {
+  console.warn('lit-html is in dev mode. Not recommended for production!');
+}
+
 // Added to an attribute name to mark the attribute as bound so we can find
 // it easily.
 const boundAttributeSuffix = '$lit$';
@@ -32,12 +38,16 @@ const nodeMarker = `<${markerMatch}>`;
 const d = document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
-const createMarker = () => d.createComment('');
+const createMarker = (v = '') => d.createComment(v);
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 const isPrimitive = (value: unknown): value is Primitive =>
   value === null || (typeof value != 'object' && typeof value != 'function');
+const isArray = Array.isArray;
+const isIterable = (value: unknown): value is Iterable<unknown> =>
+  isArray(value) ||
+  (value && typeof (value as any)[Symbol.iterator] === 'function');
 
 // TODO (justinfagnani): can we get away with `\s`?
 const SPACE_CHAR = `[ \t\n\f\r]`;
@@ -68,6 +78,7 @@ const commentRegex = /-->/g;
  * Comments not started with <!--, like </{, can be ended by a single `>`
  */
 const comment2Regex = />/g;
+
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
  * position. It either matches a `>` or an attribute.
@@ -111,10 +122,14 @@ const HTML_RESULT = 1;
 const SVG_RESULT = 2;
 
 /** TemplatePart types */
-const ATTRIBUTE_PART = 1;
-const NODE_PART = 2;
-const ELEMENT_PART = 3;
-const COMMENT_PART = 4;
+// TODO (justinfagnani): since these are exported, consider shorter names,
+// like just `ATTRIBUTE`.
+export const ATTRIBUTE_PART = 1;
+export const NODE_PART = 2;
+export const PROPERTY_PART = 3;
+export const BOOLEAN_ATTRIBUTE_PART = 4;
+const ELEMENT_PART = 5;
+const COMMENT_PART = 6;
 
 type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
@@ -176,7 +191,29 @@ export const nothing = {};
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
 
-export type DirectiveClass = {new (part: Part): Directive};
+export type NodePartInfo = {
+  readonly type: typeof NODE_PART;
+};
+
+export type AttributePartInfo = {
+  readonly type:
+    | typeof ATTRIBUTE_PART
+    | typeof PROPERTY_PART
+    | typeof BOOLEAN_ATTRIBUTE_PART;
+  strings?: ReadonlyArray<string>;
+  name: string;
+  tagName: string;
+};
+
+/**
+ * Information about the part a directive is bound to.
+ *
+ * This is useful for checking that a directive is attached to a valid part,
+ * such as with directive that can only be used on attribute bindings.
+ */
+export type PartInfo = NodePartInfo | AttributePartInfo;
+
+export type DirectiveClass = {new (part: PartInfo): Directive};
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -210,6 +247,10 @@ export interface RenderOptions {
    * useful to set this to the host component rendering a template.
    */
   readonly eventContext?: EventTarget;
+  /**
+   * A DOM node before which to render content in the container.
+   */
+  readonly renderBefore?: ChildNode | null;
 }
 
 /**
@@ -223,13 +264,17 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ) => {
-  let part: NodePart = (container as any).$lit$;
+  const partOwnerNode = options?.renderBefore ?? container;
+  let part: NodePart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
-    const marker = createMarker();
-    container.append(marker);
-    (container as any).$lit$ = part = new NodePart(marker, null, options);
+    const endNode = options?.renderBefore ?? null;
+    (partOwnerNode as any).$lit$ = part = new NodePart(
+      container.insertBefore(createMarker(), endNode),
+      endNode,
+      options
+    );
   }
-  part.__setValue(value);
+  part._setValue(value);
 };
 
 const walker = d.createTreeWalker(d);
@@ -524,11 +569,11 @@ class TemplateInstance {
         i++;
         continue;
       }
-      if ((part as AttributePart).__strings !== undefined) {
-        (part as AttributePart).__setValue(values, i);
-        i += (part as AttributePart).__strings!.length - 1;
+      if ((part as AttributePart).strings !== undefined) {
+        (part as AttributePart)._setValue(values, i);
+        i += (part as AttributePart).strings!.length - 1;
       } else {
-        (part as NodePart).__setValue(values[i++]);
+        (part as NodePart)._setValue(values[i++]);
       }
     }
   }
@@ -576,25 +621,26 @@ export type Part =
   | EventPart;
 
 export class NodePart {
-  __value: unknown;
+  readonly type = NODE_PART;
+  _value: unknown;
   protected __directive?: Directive;
 
   constructor(
-    public __startNode: ChildNode,
-    public __endNode: ChildNode | null,
+    public _startNode: ChildNode,
+    public _endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
 
   __disconnect() {
     this.__directive?.disconnectedCallback?.();
-    if (this.__value instanceof TemplateInstance) {
-      (this.__value as TemplateInstance).__disconnect();
+    if (this._value instanceof TemplateInstance) {
+      (this._value as TemplateInstance).__disconnect();
     }
   }
 
-  __setValue(value: unknown): void {
+  _setValue(value: unknown): void {
     if (isPrimitive(value)) {
-      if (value !== this.__value) {
+      if (value !== this._value) {
         this.__commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -602,60 +648,61 @@ export class NodePart {
     } else if ((value as DirectiveResult)._$litDirective$ !== undefined) {
       this.__commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
-      this.__commitNode(value as Node);
+      this._commitNode(value as Node);
+    } else if (isIterable(value)) {
+      this.__commitIterable(value);
     } else if (value === nothing) {
       this.__clear();
-      this.__value = nothing;
+      this._value = nothing;
     } else if (value !== noChange) {
       // Fallback, will render the string representation
       this.__commitText(value);
     }
   }
 
-  private __insert(node: Node) {
-    this.__startNode.parentNode!.insertBefore(node, this.__endNode);
+  private __insert<T extends Node>(node: T, ref = this._endNode) {
+    return this._startNode.parentNode!.insertBefore(node, ref);
   }
 
   private __commitDirective(value: DirectiveResult) {
     const directive = value._$litDirective$;
     if (this.__directive?.constructor !== directive) {
       this.__clear();
-      this.__directive = new directive(this);
+      this.__directive = new directive(this as NodePartInfo);
     }
     // TODO (justinfagnani): To support nested directives, we'd need to
     // resolve the directive result's values. We may want to offer another
     // way of composing directives.
-    this.__setValue(this.__directive.update(this, value.values));
+    this._setValue(this.__directive.update(this, value.values));
   }
 
-  private __commitNode(value: Node): void {
-    if (this.__value !== value) {
+  private _commitNode(value: Node): void {
+    if (this._value !== value) {
       this.__clear();
-      // For internal calls to __commitNode, this value is overwritten. Can we
-      // avoid this?
-      this.__insert((this.__value = value));
+      this._value = this.__insert(value);
     }
   }
 
   private __commitText(value: unknown): void {
-    const node = this.__startNode.nextSibling;
-    // If `value` isn't already a string, we explicitly convert it here
+    const node = this._startNode.nextSibling;
+    // Make sure undefined and null render as an empty string
+    // TODO: use `nothing` to clear the node?
     value ??= '';
     // TODO(justinfagnani): Can we just check if this.__value is primitive?
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this.__endNode === null
+      (this._endNode === null
         ? node.nextSibling === null
-        : node === this.__endNode.previousSibling)
+        : node === this._endNode.previousSibling)
     ) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this.__commitNode(new Text(value as string));
+      this._commitNode(new Text(value as string));
     }
-    this.__value = value;
+    this._value = value;
   }
 
   private __commitTemplateResult(result: TemplateResult): void {
@@ -665,24 +712,75 @@ export class NodePart {
       templateCache.set(strings, (template = new Template(result)));
     }
     if (
-      this.__value instanceof TemplateInstance &&
-      this.__value.__template === template
+      this._value instanceof TemplateInstance &&
+      this._value.__template === template
     ) {
-      this.__value.__update(values);
+      this._value.__update(values);
     } else {
       const instance = new TemplateInstance(template!);
       const fragment = instance.__clone(this.options);
       instance.__update(values);
-      this.__commitNode(fragment);
-      this.__value = instance;
+      this._commitNode(fragment);
+      this._value = instance;
     }
   }
 
-  __clear(start: ChildNode | null = this.__startNode.nextSibling) {
-    if (this.__value instanceof TemplateInstance) {
-      this.__value.__disconnect();
+  private __commitIterable(value: Iterable<unknown>): void {
+    // For an Iterable, we create a new InstancePart per item, then set its
+    // value to the item. This is a little bit of overhead for every item in
+    // an Iterable, but it lets us recurse easily and efficiently update Arrays
+    // of TemplateResults that will be commonly returned from expressions like:
+    // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
+
+    // If value is an array, then the previous render was of an
+    // iterable and value will contain the NodeParts from the previous
+    // render. If value is not an array, clear this part and make a new
+    // array for NodeParts.
+    if (!isArray(this._value)) {
+      this._value = [];
+      this.__clear();
     }
-    while (start && start !== this.__endNode) {
+
+    // Lets us keep track of how many items we stamped so we can clear leftover
+    // items from a previous render
+    const itemParts = this._value as NodePart[];
+    let partIndex = 0;
+    let itemPart: NodePart | undefined;
+
+    for (const item of value) {
+      if (partIndex === itemParts.length) {
+        // If no existing part, create a new one
+        // TODO (justinfagnani): test perf impact of always creating two parts
+        // instead of sharing parts between nodes
+        // https://github.com/Polymer/lit-html/issues/1266
+        itemParts.push(
+          (itemPart = new NodePart(
+            this.__insert(createMarker()),
+            this.__insert(createMarker()),
+            this.options
+          ))
+        );
+      } else {
+        // Reuse an existing part
+        itemPart = itemParts[partIndex];
+      }
+      itemPart._setValue(item);
+      partIndex++;
+    }
+
+    if (partIndex < itemParts.length) {
+      // Truncate the parts array so _value reflects the current state
+      itemParts.length = partIndex;
+      // itemParts always have end nodes
+      this.__clear(itemPart?._endNode!.nextSibling);
+    }
+  }
+
+  __clear(start: ChildNode | null = this._startNode.nextSibling) {
+    if (this._value instanceof TemplateInstance) {
+      this._value.__disconnect();
+    }
+    while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       start!.remove();
       start = n;
@@ -691,7 +789,11 @@ export class NodePart {
 }
 
 export class AttributePart {
-  readonly __element: HTMLElement;
+  readonly type = ATTRIBUTE_PART as
+    | typeof ATTRIBUTE_PART
+    | typeof PROPERTY_PART
+    | typeof BOOLEAN_ATTRIBUTE_PART;
+  readonly element: HTMLElement;
   readonly name: string;
 
   /**
@@ -699,9 +801,13 @@ export class AttributePart {
    * static strings of the interpolation. For single-value, complete bindings,
    * this is undefined.
    */
-  readonly __strings?: ReadonlyArray<string>;
+  readonly strings?: ReadonlyArray<string>;
   __value: unknown | Array<unknown> = nothing;
   private __directives?: Array<Directive>;
+
+  get tagName() {
+    return this.element.tagName;
+  }
 
   constructor(
     element: HTMLElement,
@@ -709,11 +815,11 @@ export class AttributePart {
     strings: ReadonlyArray<string>,
     _options?: RenderOptions
   ) {
-    this.__element = element;
+    this.element = element;
     this.name = name;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this.__value = new Array(strings.length - 1).fill(nothing);
-      this.__strings = strings;
+      this.strings = strings;
     } else {
       this.__value = nothing;
     }
@@ -743,7 +849,9 @@ export class AttributePart {
       // or check length.
       let directive: Directive = (this.__directives ??= [])[i];
       if (directive?.constructor !== directiveCtor) {
-        directive = this.__directives[i] = new directiveCtor(this);
+        directive = this.__directives[i] = new directiveCtor(
+          this as AttributePartInfo
+        );
       }
       // TODO (justinfagnani): To support nested directives, we'd need to
       // resolve the directive result's values. We may want to offer another
@@ -770,10 +878,10 @@ export class AttributePart {
    * @param from the index to start reading values from. `undefined` for
    *   single-valued parts
    */
-  __setValue(value: unknown): void;
-  __setValue(value: Array<unknown>, from: number): void;
-  __setValue(value: unknown | Array<unknown>, from?: number) {
-    const strings = this.__strings;
+  _setValue(value: unknown): void;
+  _setValue(value: Array<unknown>, from: number): void;
+  _setValue(value: unknown | Array<unknown>, from?: number) {
+    const strings = this.strings;
 
     if (strings === undefined) {
       // Single-value binding case
@@ -826,25 +934,29 @@ export class AttributePart {
    */
   __commitValue(value: unknown) {
     if (value === nothing) {
-      this.__element.removeAttribute(this.name);
+      this.element.removeAttribute(this.name);
     } else {
-      this.__element.setAttribute(this.name, value as string);
+      this.element.setAttribute(this.name, value as string);
     }
   }
 }
 
 export class PropertyPart extends AttributePart {
+  readonly type = PROPERTY_PART;
+
   __commitValue(value: unknown) {
-    (this.__element as any)[this.name] = value === nothing ? undefined : value;
+    (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
 
 export class BooleanAttributePart extends AttributePart {
+  readonly type = BOOLEAN_ATTRIBUTE_PART;
+
   __commitValue(value: unknown) {
     if (value && value !== nothing) {
-      this.__element.setAttribute(this.name, '');
+      this.element.setAttribute(this.name, '');
     } else {
-      this.__element.removeAttribute(this.name);
+      this.element.removeAttribute(this.name);
     }
   }
 }
@@ -871,7 +983,7 @@ export class EventPart extends AttributePart {
     this.__eventContext = args[3]?.eventContext;
   }
 
-  __setValue(newListener: unknown) {
+  _setValue(newListener: unknown) {
     newListener ??= nothing;
     const oldListener = this.__value;
 
@@ -893,7 +1005,7 @@ export class EventPart extends AttributePart {
       (oldListener === nothing || shouldRemoveListener);
 
     if (shouldRemoveListener) {
-      this.__element.removeEventListener(
+      this.element.removeEventListener(
         this.name,
         this,
         oldListener as EventListenerWithOptions
@@ -903,7 +1015,7 @@ export class EventPart extends AttributePart {
       // Beware: IE11 and Chrome 41 don't like using the listener as the
       // options object. Figure out how to deal w/ this in IE11 - maybe
       // patch addEventListener?
-      this.__element.addEventListener(
+      this.element.addEventListener(
         this.name,
         this,
         newListener as EventListenerWithOptions
@@ -916,7 +1028,7 @@ export class EventPart extends AttributePart {
     if (typeof this.__value === 'function') {
       // TODO (justinfagnani): do we need to default to this.__element?
       // It'll always be the same as `e.currentTarget`.
-      this.__value.call(this.__eventContext ?? this.__element, event);
+      this.__value.call(this.__eventContext ?? this.element, event);
     } else {
       (this.__value as EventListenerObject).handleEvent(event);
     }
@@ -926,7 +1038,4 @@ export class EventPart extends AttributePart {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(
-  (globalThis as any)['litHtmlVersions'] ||
-  ((globalThis as any)['litHtmlVersions'] = [])
-).push('1.3.0');
+((globalThis as any)['litHtmlVersions'] ??= []).push('1.3.0');

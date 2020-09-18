@@ -2,7 +2,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "test": "lerna run test"
+    "test": "lerna run test --scope=tests"
   },
   "dependencies": {
     "lerna": "^3.22.1"

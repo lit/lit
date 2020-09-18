@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -12,4 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from './lib/lit-element.js';
+import {nothing} from '../lit-html.js';
+
+/**
+ * For AttributeParts, sets the attribute if the value is defined and removes
+ * the attribute if the value is undefined.
+ *
+ * For other part types, this directive is a no-op.
+ */
+export const ifDefined = (value: unknown) => value ?? nothing;
