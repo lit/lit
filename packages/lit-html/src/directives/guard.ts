@@ -12,36 +12,30 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  directive,
-  Directive,
-  noChange,
-  nothing,
-  Part
-} from '../lit-html.js';
+import {directive, Directive, noChange, Part} from '../lit-html.js';
+
+// A sentinal that indicates guard() hasn't rendered anything yet
+const initialValue = {};
 
 class Guard extends Directive {
-  previousValue: unknown = nothing;
+  previousValue: unknown = initialValue;
 
   render(_value: unknown, f: () => unknown) {
     return f();
   }
 
   update(_part: Part, [value, f]: Parameters<this['render']>) {
-    console.log('update', value);
     if (Array.isArray(value)) {
       // Dirty-check arrays by item
-      if (Array.isArray(this.previousValue) &&
-          this.previousValue.length === value.length &&
-          value.every((v, i) => v === (this.previousValue as Array<unknown>)[i])) {
-        console.log('A');
+      if (
+        Array.isArray(this.previousValue) &&
+        this.previousValue.length === value.length &&
+        value.every((v, i) => v === (this.previousValue as Array<unknown>)[i])
+      ) {
         return noChange;
       }
-    } else if (
-        this.previousValue === value &&
-        (value !== undefined || this.previousValue !== nothing)) {
+    } else if (this.previousValue === value) {
       // Dirty-check non-arrays by identity
-      console.log('B');
       return noChange;
     }
 
@@ -49,7 +43,6 @@ class Guard extends Directive {
     // what the previous values were.
     this.previousValue = Array.isArray(value) ? Array.from(value) : value;
     const r = this.render(value, f);
-    console.log('R', ((r as any).values as any)[0]);
     return r;
   }
 }
@@ -57,6 +50,12 @@ class Guard extends Directive {
 /**
  * Prevents re-render of a template function until a single value or an array of
  * values changes.
+ *
+ * Values are checked against previous values with strict equality (`===`), and
+ * so the check won't detect nested property changes inside objects or arrays.
+ * Arrays values have each item checked against the previous value at the same
+ * index with strict equality. Nested arrays are also checked only by strict
+ * equality.
  *
  * Example:
  *
@@ -67,7 +66,7 @@ class Guard extends Directive {
  *   </div>
  * ```
  *
- * In this case, the template only renders if either `user.id` or `company.id`
+ * In this case, the template only rerenders if either `user.id` or `company.id`
  * changes.
  *
  * guard() is useful with immutable data patterns, by preventing expensive work

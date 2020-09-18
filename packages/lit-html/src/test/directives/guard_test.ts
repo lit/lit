@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, render} from '../../lit-html.js';
+import {html, nothing, render} from '../../lit-html.js';
 import {guard} from '../../directives/guard.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
@@ -42,17 +42,23 @@ suite('guard', () => {
     renderCount += 1;
     renderGuarded('foo', guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Template 1</div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div>Template 1</div>'
+    );
 
     renderCount += 1;
     renderGuarded('foo', guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Template 1</div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div>Template 1</div>'
+    );
 
     renderCount += 1;
     renderGuarded('bar', guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML), '<div>Template 3</div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div>Template 3</div>'
+    );
 
     assert.equal(callCount, 2);
   });
@@ -77,31 +83,56 @@ suite('guard', () => {
     assert.equal(callCount, 1);
   });
 
+  test('renders with nothing the first time', () => {
+    let callCount = 0;
+    let renderCount = 0;
+
+    const guardedTemplate = () => {
+      callCount += 1;
+      return html`${renderCount}`;
+    };
+
+    renderCount += 1;
+    renderGuarded(nothing, guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+    renderCount += 1;
+    renderGuarded(nothing, guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+    assert.equal(callCount, 1);
+  });
+
   test('dirty checks array values', () => {
     let callCount = 0;
     let items = ['foo', 'bar'];
 
     const guardedTemplate = () => {
       callCount += 1;
-      return html`<ul>${items.map((i) => html`<li>${i}</li>`)}</ul>`;
+      return html`<ul>
+        ${items.map((i) => html`<li>${i}</li>`)}
+      </ul>`;
     };
 
     renderGuarded([items], guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><ul><li>foo</li><li>bar</li></ul></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><ul><li>foo</li><li>bar</li></ul></div>'
+    );
 
     items.push('baz');
     renderGuarded([items], guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><ul><li>foo</li><li>bar</li></ul></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><ul><li>foo</li><li>bar</li></ul></div>'
+    );
 
     items = [...items];
     renderGuarded([items], guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>'
+    );
 
     assert.equal(callCount, 2);
   });
@@ -112,24 +143,29 @@ suite('guard', () => {
 
     const guardedTemplate = () => {
       callCount += 1;
-      return html`<ul>${items.map((i) => html`<li>${i}</li>`)}</ul>`;
+      return html`<ul>
+        ${items.map((i) => html`<li>${i}</li>`)}
+      </ul>`;
     };
 
     renderGuarded(items, guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><ul><li>foo</li><li>bar</li></ul></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><ul><li>foo</li><li>bar</li></ul></div>'
+    );
 
     renderGuarded(['foo', 'bar'], guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><ul><li>foo</li><li>bar</li></ul></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><ul><li>foo</li><li>bar</li></ul></div>'
+    );
 
     items.push('baz');
     renderGuarded(items, guardedTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><ul><li>foo</li><li>bar</li><li>baz</li></ul></div>'
+    );
 
     assert.equal(callCount, 2);
   });
