@@ -52,7 +52,7 @@ change improves ergonomics around making stateful directives while providing a
 clear pattern for SSR-compatible directives: only `render` will be called on the
 server, while `update` will not be.
 
-**⚠️ WARNING: The directive and part API changes are experimental and subject to
+**⚠️ WARNING: The directive and part API changes are in progress and subject to
 change in future pre-releases.**
 
 <details>
@@ -68,8 +68,8 @@ change in future pre-releases.**
 | How part validation is done | `instanceof` check on `part` in every render | `part.type` check in constructor
 
 ### Example directive migration
-Below is an example of a fictional directive, and how to migrate it to the new
-API:
+Below is an example of a lit-html 1.x directive, and how to migrate it to the
+new API:
 
 1.x Directive API:
 ```js
@@ -101,7 +101,7 @@ export const renderCounter = directive((initialValue) => (part) => {
 
 2.0 Directive API:
 ```js
-import {directive, Directive, NODE_PART} from 'lit-html';
+import {directive, Directive, NODE_PART, html} from 'lit-html';
 
 // Class-based directive API
 export const renderCounter = directive(class extends Directive {
