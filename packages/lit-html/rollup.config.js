@@ -41,9 +41,12 @@ const skipBundleOutput = {
 const entryPoints = [
   'lit-html',
   'parts',
+  'directives/if-defined',
   'directives/cache',
+  'directives/class-map',
   'directives/if-defined',
   'directives/repeat',
+  'directives/style-map',
 ];
 
 // Shared name cache
