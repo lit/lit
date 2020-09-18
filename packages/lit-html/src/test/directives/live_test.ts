@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {live} from '../../lib/directives/live.js';
-import {html, render} from '../../lib/lit-html.js';
+import {live} from '../../directives/live.js';
+import {html, nothing, render} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -112,6 +112,16 @@ suite('live directive', () => {
       assert.equal(el.getAttribute('x'), 'b');
       assert.equal(mutationCount, 1);
     });
+  });
+
+  test('removes an attribute with nothing', () => {
+    const go = (x: any) =>
+      render(html`<div class="${live(x)}">}</div>`, container);
+    go('a');
+    const el = container.firstElementChild as HTMLDivElement;
+    el.className = 'b';
+    go(nothing);
+    assert.isFalse(el.hasAttribute('class'));
   });
 
   test('does not set a non-changed attribute with a non-string value', async () => {
