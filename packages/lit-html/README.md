@@ -1,8 +1,9 @@
 # lit-html 2.0 Pre-release
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
-[![Build Status](https://travis-ci.org/Polymer/lit-html.svg?branch=master)](https://travis-ci.org/Polymer/lit-html)
-[![Published on npm](https://img.shields.io/npm/v/lit-html.svg)](https://www.npmjs.com/package/lit-html)
+[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next
+)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/lit-html/next-major)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
 
@@ -21,12 +22,14 @@ for unexpected changes not noted below or in the changelog.
 
 While `lit-html` 2.0 is intended to be a backward-compatible change for the
 majority of 1.x users, please be aware of the following notable breaking
-changes, and see the full [changelog](CHANGELOG.md#200---unreleased) for more
-details:
+changes:
   * New `directive` and `Part` API (see below for migration info)
   * `render()` no longer clears its container on first render
   * Custom `templateFactory`, `TemplateProcessor`, and custom tag functions are no
     longer supported
+
+See the full [changelog](CHANGELOG.md#200---unreleased) for more details on
+these and other minor breaking changes.
 
 ## 🚨 Known issues/limitations
 
@@ -49,6 +52,9 @@ While the API for _using_ directives should be 100% backward-compatible with
 change improves ergonomics around making stateful directives while providing a
 clear pattern for SSR-compatible directives: only `render` will be called on the
 server, while `update` will not be.
+
+**⚠️ WARNING: The directive and part API changes are experimental and subject to
+change in future pre-releases.**
 
 <details>
 <summary>Expand here for details on migrating directives.</summary>
@@ -88,9 +94,9 @@ export const renderCounter = directive((initialValue) => (part) => {
     value++;
   }
   // Store state
-  part.setValue(value);
+  previousState.set(part, value);
   // Update part with new rendering
-  previousState.set(part, html`<p>${value}</p>`);
+  part.setValue(html`<p>${value}</p>`);
 });
 ```
 
@@ -128,6 +134,8 @@ export const renderCounter = directive(class extends Directive {
 </details>
 
 <hr>
+
+# lit-html
 
 ## Overview
 
