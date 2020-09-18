@@ -21,8 +21,6 @@ import {
   ATTRIBUTE_PART,
 } from '../lit-html.js';
 
-const VENDOR_PREFIX = /^(webkit|moz|ms|o)[A-Z]/;
-
 /**
  * A key-value set of CSS properties and values.
  *
@@ -64,13 +62,9 @@ class StyleMap extends Directive {
       // Exception is any property name containing a dash, including
       // custom properties; we assume these are already dash-cased i.e.:
       //  `--my-button-color` --> `--my-button-color`
-      // Note that prefixed
-      if (prop.indexOf('-') === -1) {
-        if (VENDOR_PREFIX.test(prop)) {
-          prop = '-' + prop;
-        }
-        prop = prop.replace(/[A-Z]/g, '-$&').toLowerCase();
-      }
+      prop = prop
+        .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
+        .toLowerCase();
       return style + `${prop}:${value};`;
     }, '');
   }
