@@ -43,6 +43,7 @@ const entryPoints = [
   'directives/class-map',
   'directives/guard',
   'directives/if-defined',
+  'directives/live',
   'directives/repeat',
   'directives/style-map',
   'directives/template-content',
