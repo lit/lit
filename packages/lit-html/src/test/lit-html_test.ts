@@ -20,10 +20,11 @@ import {
   NodePart,
   nothing,
   render,
+  RenderOptions,
   svg,
   TemplateResult,
   unsafeStatic,
-} from '../lib/lit-html.js';
+} from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -40,8 +41,12 @@ suite('lit-html', () => {
     container = document.createElement('div');
   });
 
-  const assertRender = (r: TemplateResult, expected: string) => {
-    render(r, container);
+  const assertRender = (
+    r: TemplateResult,
+    expected: string,
+    options?: RenderOptions
+  ) => {
+    render(r, container, options);
     assert.equal(stripExpressionComments(container.innerHTML), expected);
   };
 
@@ -393,6 +398,92 @@ suite('lit-html', () => {
     test('text after comment', () => {
       assertRender(html`<!-- -->${'A'}`, '<!-- -->A');
     });
+
+    test('renders after existing content', () => {
+      container.appendChild(document.createElement('div'));
+      assertRender(html`<span></span>`, '<div></div><span></span>');
+    });
+
+    test('renders/updates before `renderBefore`, if specified', () => {
+      const renderBefore = container.appendChild(document.createElement('div'));
+      const template = html`<span></span>`;
+      assertRender(template, '<span></span><div></div>', {
+        renderBefore,
+      });
+      // Ensure re-render updates rather than re-rendering.
+      let containerChildNodes = Array.from(container.childNodes);
+      assertRender(template, '<span></span><div></div>', {
+        renderBefore,
+      });
+      assert.sameMembers(Array.from(container.childNodes), containerChildNodes);
+    });
+
+    test('renders/updates same template before different `renderBefore` nodes', () => {
+      const renderBefore1 = container.appendChild(
+        document.createElement('div')
+      );
+      const renderBefore2 = container.appendChild(
+        document.createElement('div')
+      );
+      const template = html`<span></span>`;
+      assertRender(template, '<span></span><div></div><div></div>', {
+        renderBefore: renderBefore1,
+      });
+      const renderedNode1 = container.querySelector('span');
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore2,
+        }
+      );
+      const renderedNode2 = container.querySelector('span:last-of-type');
+      // Ensure updates are handled as expected.
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore1,
+        }
+      );
+      assert.equal(container.querySelector('span'), renderedNode1);
+      assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore2,
+        }
+      );
+      assert.equal(container.querySelector('span'), renderedNode1);
+      assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
+    });
+
+    test('renders/updates when specifying `renderBefore` node or not', () => {
+      const template = html`<span></span>`;
+      const renderBefore = container.appendChild(document.createElement('div'));
+      assertRender(template, '<div></div><span></span>');
+      const containerRenderedNode = container.querySelector('span');
+      assertRender(template, '<span></span><div></div><span></span>', {
+        renderBefore,
+      });
+      const beforeRenderedNode = container.querySelector('span');
+      // Ensure re-render updates rather than re-rendering.
+      assertRender(template, '<span></span><div></div><span></span>');
+      assert.equal(
+        container.querySelector('span:last-of-type'),
+        containerRenderedNode
+      );
+      assert.equal(container.querySelector('span'), beforeRenderedNode);
+      assertRender(template, '<span></span><div></div><span></span>', {
+        renderBefore,
+      });
+      assert.equal(
+        container.querySelector('span:last-of-type'),
+        containerRenderedNode
+      );
+      assert.equal(container.querySelector('span'), beforeRenderedNode);
+    });
   });
 
   suite('text', () => {
@@ -490,7 +581,8 @@ suite('lit-html', () => {
     });
 
     test('renders forms as elements', () => {
-      // forms are both Node and iterable
+      // Forms are both a Node and iterable, so make sure they are rendered as
+      // a Node.
 
       const form = document.createElement('form');
       const inputOne = document.createElement('input');
@@ -506,6 +598,124 @@ suite('lit-html', () => {
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<form><input name="one"><input name="two"></form>'
+      );
+    });
+  });
+
+  suite('arrays & iterables', () => {
+    test('renders arrays', () => {
+      render(html`<div>${[1, 2, 3]}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+    });
+
+    test('renders arrays of nested templates', () => {
+      render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+    });
+
+    test('renders an array of elements', () => {
+      const children = [
+        document.createElement('p'),
+        document.createElement('a'),
+        document.createElement('span'),
+      ];
+      render(html`<div>${children}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><a></a><span></span></div>'
+      );
+    });
+
+    test('updates when called multiple times with arrays', () => {
+      const ul = (list: string[]) => {
+        // prettier-ignore
+        const items = list.map((item) => html`<li>${item}</li>`);
+        // prettier-ignore
+        return html`<ul>${items}</ul>`;
+      };
+      render(ul(['a', 'b', 'c']), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<ul><li>a</li><li>b</li><li>c</li></ul>'
+      );
+      render(ul(['x', 'y']), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<ul><li>x</li><li>y</li></ul>'
+      );
+    });
+
+    test('updates arrays', () => {
+      let items = [1, 2, 3];
+      const t = () => html`<div>${items}</div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+
+      items = [3, 2, 1];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>321</div>'
+      );
+    });
+
+    test('updates arrays that shrink then grow', () => {
+      let items: number[];
+      const t = () => html`<div>${items}</div>`;
+
+      items = [1, 2, 3];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+
+      items = [4];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>4</div>'
+      );
+
+      items = [5, 6, 7];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>567</div>'
+      );
+    });
+
+    test('updates an array of elements', () => {
+      let children: any = [
+        document.createElement('p'),
+        document.createElement('a'),
+        document.createElement('span'),
+      ];
+      const t = () => html`<div>${children}</div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><a></a><span></span></div>'
+      );
+
+      children = null;
+      render(t(), container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
+      children = document.createTextNode('foo');
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>foo</div>'
       );
     });
   });
@@ -1485,7 +1695,7 @@ suite('lit-html', () => {
         }
         // TODO (justinfagnani): make this work on SpreadPart
         update(part: AttributePart) {
-          part.__element.dispatchEvent(
+          part.element.dispatchEvent(
             new CustomEvent('test-event', {
               bubbles: true,
             })
