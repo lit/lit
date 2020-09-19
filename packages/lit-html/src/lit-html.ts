@@ -128,8 +128,9 @@ export const ATTRIBUTE_PART = 1;
 export const NODE_PART = 2;
 export const PROPERTY_PART = 3;
 export const BOOLEAN_ATTRIBUTE_PART = 4;
-const ELEMENT_PART = 5;
-const COMMENT_PART = 6;
+export const EVENT_PART = 5;
+const ELEMENT_PART = 6;
+const COMMENT_PART = 7;
 
 type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
@@ -199,7 +200,8 @@ export type AttributePartInfo = {
   readonly type:
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
-    | typeof BOOLEAN_ATTRIBUTE_PART;
+    | typeof BOOLEAN_ATTRIBUTE_PART
+    | typeof EVENT_PART;
   strings?: ReadonlyArray<string>;
   name: string;
   tagName: string;
@@ -219,7 +221,7 @@ export type DirectiveClass = {new (part: PartInfo): Directive};
  * This utility type extracts the signature of a directive class's render()
  * method so we can use it for the type of the generated directive function.
  */
-type DirectiveProps<C extends DirectiveClass> = Parameters<
+export type DirectiveParameters<C extends DirectiveClass> = Parameters<
   InstanceType<C>['render']
 >;
 
@@ -229,7 +231,7 @@ type DirectiveProps<C extends DirectiveClass> = Parameters<
  */
 type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
   _$litDirective$: C;
-  values: DirectiveProps<C>;
+  values: DirectiveParameters<C>;
 };
 
 /**
@@ -240,7 +242,7 @@ type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
  * change in future pre-releases.
  */
 export const directive = <C extends DirectiveClass>(c: C) => (
-  ...values: DirectiveProps<C>
+  ...values: DirectiveParameters<C>
 ): DirectiveResult<C> => ({
   _$litDirective$: c,
   values,
@@ -679,7 +681,7 @@ export class NodePart {
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
-    // TODO(justinfagnani): Can we just check if this.__value is primitive?
+    // TODO(justinfagnani): Can we just check if this._value is primitive?
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
@@ -780,7 +782,8 @@ export class AttributePart {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
-    | typeof BOOLEAN_ATTRIBUTE_PART;
+    | typeof BOOLEAN_ATTRIBUTE_PART
+    | typeof EVENT_PART;
   readonly element: HTMLElement;
   readonly name: string;
 
@@ -790,7 +793,7 @@ export class AttributePart {
    * this is undefined.
    */
   readonly strings?: ReadonlyArray<string>;
-  __value: unknown | Array<unknown> = nothing;
+  _value: unknown | Array<unknown> = nothing;
   private __directives?: Array<Directive>;
 
   get tagName() {
@@ -806,10 +809,10 @@ export class AttributePart {
     this.element = element;
     this.name = name;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this.__value = new Array(strings.length - 1).fill(nothing);
+      this._value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
     } else {
-      this.__value = nothing;
+      this._value = nothing;
     }
   }
 
@@ -865,11 +868,14 @@ export class AttributePart {
     if (strings === undefined) {
       // Single-value binding case
       const v = this.__resolveValue(value, 0);
+      // Only dirty-check primitives and `nothing`:
+      // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
+      // `nothing`. `v === this._value` is the dirty-check.
       if (
-        !((isPrimitive(v) || v === nothing) && v === this.__value) &&
+        !((isPrimitive(v) || v === nothing) && v === this._value) &&
         v !== noChange
       ) {
-        this.__commitValue((this.__value = v));
+        this.__commitValue((this._value = v));
       }
     } else {
       // Interpolation case
@@ -887,16 +893,16 @@ export class AttributePart {
         v = this.__resolveValue((value as Array<unknown>)[from! + i], i);
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
-          v = (this.__value as Array<unknown>)[i];
+          v = (this._value as Array<unknown>)[i];
         } else {
           remove = remove || v === nothing;
           change =
             change ||
             !(
               (isPrimitive(v) || v === nothing) &&
-              v === (this.__value as Array<unknown>)[i]
+              v === (this._value as Array<unknown>)[i]
             );
-          (this.__value as Array<unknown>)[i] = v;
+          (this._value as Array<unknown>)[i] = v;
         }
         attributeValue +=
           (typeof v === 'string' ? v : String(v)) + strings[i + 1];
@@ -955,6 +961,7 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  * to add and remove the part as a listener when the event options change.
  */
 export class EventPart extends AttributePart {
+  readonly type = EVENT_PART;
   __eventContext?: unknown;
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
@@ -964,7 +971,7 @@ export class EventPart extends AttributePart {
 
   _setValue(newListener: unknown) {
     newListener ??= nothing;
-    const oldListener = this.__value;
+    const oldListener = this._value;
 
     // If the new value is nothing or any options change we have to remove the
     // part as a listener.
@@ -1000,16 +1007,16 @@ export class EventPart extends AttributePart {
         newListener as EventListenerWithOptions
       );
     }
-    this.__value = newListener;
+    this._value = newListener;
   }
 
   handleEvent(event: Event) {
-    if (typeof this.__value === 'function') {
+    if (typeof this._value === 'function') {
       // TODO (justinfagnani): do we need to default to this.__element?
       // It'll always be the same as `e.currentTarget`.
-      this.__value.call(this.__eventContext ?? this.element, event);
+      this._value.call(this.__eventContext ?? this.element, event);
     } else {
-      (this.__value as EventListenerObject).handleEvent(event);
+      (this._value as EventListenerObject).handleEvent(event);
     }
   }
 }
