@@ -15,10 +15,12 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true
   },
   "include": [
     "lit-element/**/*.ts",
+    "updating-element/**/*.ts",
     "lit-html/**/*.ts"
   ],
   "exclude": []

@@ -1,18 +1,28 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
-  "sampleSize": 30,
+  "sampleSize": 50,
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "lit-element/stub1/stub1.html",
+      "url": "lit-element/list/index.html",
       "browser": {
         "name": "chrome",
         "headless": true
       },
-      "measurement": {
-        "mode": "performance",
-        "entryName": "render"
-      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update-no-reflect"
+        }
+      ],
       "expand": [
         {
           "name": "this-change"
@@ -29,7 +39,7 @@
                 "subdir": "packages/lit-html",
                 "setupCommands": [
                   "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
+                  "npm run bootstrap",
                   "npm run build"
                 ]
               },
@@ -40,7 +50,7 @@
                 "subdir": "packages/lit-element",
                 "setupCommands": [
                   "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
+                  "npm run bootstrap",
                   "npm run build"
                 ]
               }
