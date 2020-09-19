@@ -42,7 +42,17 @@ const entryPoints = [
   'lit-element',
   'lib/updating-element',
   'lib/css-tag',
+  'lib/lit-element-polyfill',
   'lib/decorators',
+  'lib/decorators/base',
+  'lib/decorators/customElement',
+  'lib/decorators/eventOptions',
+  'lib/decorators/internalProperty',
+  'lib/decorators/property',
+  'lib/decorators/query',
+  'lib/decorators/queryAll',
+  'lib/decorators/queryAssignedNodes',
+  'lib/decorators/queryAsync'
 ];
 
 export default {
