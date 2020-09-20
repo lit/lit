@@ -2,6 +2,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "format": "lerna run format",
     "test": "cd packages/tests && npm test",
     "benchmarks": "cd packages/benchmarks && npm run benchmarks"
   },
