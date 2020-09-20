@@ -10,7 +10,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "format": "prettier lit-html/* lit-element/* --write",
-    "lint": "tslint --project ./",
+    "lint": "eslint \"**/*.{js,ts}\"",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/stub1/tachometer.json",
     "benchmark:lit-html:kitchen-sink": "tach --config lit-html/kitchen-sink/tachometer.json",
