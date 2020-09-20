@@ -168,7 +168,7 @@ const renderItem: any = (data: Data) => html`
   </div>
   `;
 
-let data = generateData(0);
+const data = generateData(0);
 
 // Named functions are use to run the measurements so that they can be selected
 // in the DevTools profile flame chart.
