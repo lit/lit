@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "format": "prettier lit-html/* lit-element/* --write",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
     "lint": "tslint --project ./",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/stub1/tachometer.json",

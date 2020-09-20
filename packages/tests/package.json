@@ -3,6 +3,7 @@
   "name": "tests",
   "type": "module",
   "scripts": {
+    "format": "prettier \"*{cjs,html,js,json,md,ts}\" --write",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "npx wtr",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
