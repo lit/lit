@@ -47,7 +47,7 @@
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "format": "prettier src/* --write",
-    "lint": "eslint \"**/*.{js,ts}\"",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "check-version": "node scripts/check-version-tracker.js",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",

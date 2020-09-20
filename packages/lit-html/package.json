@@ -51,7 +51,7 @@
     "test:prod": "MODE=prod npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
-    "lint": "eslint \"**/*.{js,ts}\"",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "check-version": "node scripts/check-version-tracker.js",
     "prepublishOnly": "npm run check-version"
