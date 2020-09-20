@@ -25,5 +25,22 @@
     "@typescript-eslint/no-unused-vars": ["warn", {
       "argsIgnorePattern": "^_"
     }]
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "check-version-tracker.cjs",
+        "rollup.config.js"
+      ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": ["**/test/**/*"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
 }
