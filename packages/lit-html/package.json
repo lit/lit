@@ -34,7 +34,7 @@
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "check-version": "node check-version-tracker.js"
+    "check-version": "node check-version-tracker.cjs"
   },
   "author": "The Polymer Authors",
   "dependencies": {},

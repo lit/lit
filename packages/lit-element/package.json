@@ -38,10 +38,11 @@
     "checksize": "rollup -c --environment=CHECKSIZE",
     "format": "prettier src/* --write",
     "lint": "tslint --project ./",
-    "prepublishOnly": "node check-version-tracker.cjs && npm run lint && npm test",
+    "prepublishOnly": "npm run check-version && npm run lint && npm test",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
-    "release": "np --any-branch --yolo"
+    "release": "np --any-branch --yolo",
+    "check-version": "node check-version-tracker.cjs"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
