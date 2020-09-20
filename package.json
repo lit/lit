@@ -7,5 +7,9 @@
   },
   "dependencies": {
     "lerna": "^3.22.1"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "bracketSpacing": false
   }
 }
