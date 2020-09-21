@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@web/dev-server-rollup": "^0.2.7",
-    "@web/test-runner": "^0.7.24",
+    "@web/test-runner": "^0.7.25",
     "@web/test-runner-playwright": "^0.5.6"
   }
 }

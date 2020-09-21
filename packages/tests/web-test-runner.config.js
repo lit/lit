@@ -27,12 +27,10 @@ if (process.env.TEST_PROD_BUILD) {
 }
 
 export default {
-  rootDir: "../../",
+  rootDir: "../",
   files: [
-    // TODO when https://github.com/modernweb-dev/web/issues/593 is fixed, we
-    // can delete these symlinks and simply use a relative path.
-    "lit-html/development/**/*_test.js",
-    "lit-element/development/**/*_test.js",
+    "../lit-html/development/**/*_test.js",
+    "../lit-element/development/**/*_test.js",
   ],
   nodeResolve: true,
   browsers: [
