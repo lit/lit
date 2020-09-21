@@ -5,6 +5,7 @@ interface ShadyCSS {
     | undefined
     | {
         prepareAdoptedCssText(cssText: string[], name: string): void;
+        prepareTemplateDom(template: HTMLTemplateElement, name: string): void;
         prepareTemplate(template: HTMLTemplateElement, name: string): void;
       };
   nativeShadow: boolean;

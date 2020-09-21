@@ -17,7 +17,6 @@
  *
  * @packageDocumentation
  */
-import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
 import {
   LitElement,
   CSSResultFlatArray,

@@ -133,7 +133,7 @@ if (needsPolyfill) {
   function _createElement(this: PolyfilledTemplate, html: string) {
     //console.log('patched _createElement:', name);
     const template = this._baseCreateElement(html);
-    window.ShadyCSS!.prepareTemplateDom(template, currentScope);
+    window.ShadyCSS!.ScopingShim!.prepareTemplateDom(template, currentScope);
     const css = cssForScope(currentScope);
     if (css !== undefined) {
       // Remove styles and store their textContent.

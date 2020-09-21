@@ -86,7 +86,7 @@ declare global {
   '2.4.0'
 );
 
-type CSSResultFlatArray = CSSResultOrNative[];
+export type CSSResultFlatArray = CSSResultOrNative[];
 
 export interface CSSResultArray
   extends Array<CSSResultOrNative | CSSResultArray> {}
