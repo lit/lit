@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## [3.0.0] - Unreleased
+## [3.0.0-pre.1] - 2020-09-21
 
 ### Changed
 * [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
