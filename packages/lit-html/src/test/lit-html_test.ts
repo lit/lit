@@ -756,8 +756,13 @@ suite('lit-html', () => {
       );
     });
 
-    test('renders interpolation to an attribute', () => {
+    test('renders interpolation to an unquoted attribute', () => {
       render(html`<div foo="A${'B'}C"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+      render(html`<div foo="${'A'}B${'C'}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'

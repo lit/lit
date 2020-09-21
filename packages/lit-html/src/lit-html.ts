@@ -350,12 +350,6 @@ class Template {
         regex.lastIndex = lastIndex;
         match = regex.exec(s);
         if (match === null) {
-          // TODO (justinfagnani): add test coverage from spread parts
-          // If we're not in a quoted attribute value, make sure we clear
-          // the attrNameEnd marker
-          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {
-            attrNameEnd = -1;
-          }
           break;
         }
         lastIndex = regex.lastIndex;
@@ -377,7 +371,6 @@ class Template {
         } else if (regex === tagRegex) {
           if (match[0] === '>') {
             regex = textRegex;
-            attrNameEnd = -1;
           } else {
             attrNameEnd = regex.lastIndex - match[2].length;
             attrName = match[1];
@@ -389,7 +382,6 @@ class Template {
                 : singleQuoteAttr;
           }
         } else if (regex === doubleQuoteAttr || regex === singleQuoteAttr) {
-          attrNameEnd = -1;
           regex = tagRegex;
         } else if (regex === commentRegex || regex === comment2Regex) {
           regex = textRegex;
@@ -400,18 +392,13 @@ class Template {
         }
       }
 
-      if (DEV_MODE) {
-        // We should never be in both text position (regex === textRegex) and
-        // attribute position (attrNameEnd !== -1).
-        console.assert(!(attrNameEnd !== -1 && regex === textRegex));
-      }
-      if (attrNameEnd !== -1) {
-        attrNames.push(attrName!);
-        html +=
-          s.slice(0, attrNameEnd) + '$lit$' + s.slice(attrNameEnd) + marker;
-      } else {
-        html += regex === textRegex ? s + nodeMarker : s + marker;
-      }
+      html +=
+        regex === textRegex
+          ? s + nodeMarker
+          : (attrNameEnd !== -1
+              ? (attrNames.push(attrName!),
+                s.slice(0, attrNameEnd) + '$lit$' + s.slice(attrNameEnd))
+              : s) + marker;
     }
 
     // TODO (justinfagnani): if regex is not textRegex log a warning for a
