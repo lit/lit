@@ -133,6 +133,13 @@ export default {
               dest: pathLib.dirname(name),
             })),
           }),
+          // Copy the tests.
+          copy({
+            targets: [{
+              src: `src/test/*_test.html`,
+              dest: ['development/test', 'test'],
+            }]
+          }),
         ]),
   ],
 };
