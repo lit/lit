@@ -57,17 +57,32 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
-      - name: Benchmark lit-element/stub1
+      - name: Benchmark lit-element/list
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config lit-element/stub1/tachometer.json \
-            --json-file lit-element/stub1/results.json
+            --config lit-element/list/tachometer.json \
+            --json-file lit-element/list/results.json
 
-      - name: Report lit-element-stub1
+      - name: Report lit-element-list
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: lit-element-stub1
-          path: packages/benchmarks/lit-element/stub1/results.json
+          report-id: lit-element-list
+          path: packages/benchmarks/lit-element/list/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      - name: Benchmark updating-element/list
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config updating-element/list/tachometer.json \
+            --json-file updating-element/list/results.json
+
+      - name: Report updating-element-list
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: updating-element-list
+          path: packages/benchmarks/updating-element/list/results.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
