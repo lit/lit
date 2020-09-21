@@ -12,7 +12,7 @@
     "format": "prettier lit-html/* lit-element/* --write",
     "lint": "tslint --project ./",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
-    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/list/tachometer.json  && tach --config updating-element/tachometer.json",
+    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/list/tachometer.json  && tach --config updating-element/list/tachometer.json",
     "benchmark:lit-html:kitchen-sink": "tach --config lit-html/kitchen-sink/tachometer.json",
     "benchmark:lit-html:kitchen-sink-render": "tach --config lit-html/kitchen-sink/tachometer-render.json",
     "benchmark:lit-html:kitchen-sink-update": "tach --config lit-html/kitchen-sink/tachometer-update.json",
