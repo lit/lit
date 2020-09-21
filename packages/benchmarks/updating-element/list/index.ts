@@ -141,77 +141,83 @@ export class XApp extends UpdatingElement {
   }
 }
 
-const container = document.createElement('div');
-document.body.appendChild(container);
-let el: XApp;
+(async () => {
 
-const create = () => {
-  const el = document.createElement('x-app') as XApp;
-  return container.appendChild(el) as XApp;
-};
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  let el: XApp;
 
-const destroy = () => {
-  container.innerHTML = '';
-};
+  const create = () => {
+    const el = document.createElement('x-app') as XApp;
+    return container.appendChild(el) as XApp;
+  };
 
-const updateComplete = async () => new Promise(r => requestAnimationFrame(r));
+  const destroy = () => {
+    container.innerHTML = '';
+  };
 
-const benchmark = params.benchmark;
-const getTestStartName = (name: string) => `${name}start`;
-let test;
+  const updateComplete = () => new Promise(r => requestAnimationFrame(r));
 
-// Named functions are use to run the measurements so that they can be selected
-// in the DevTools profile flame chart.
+  const benchmark = params.benchmark;
+  const getTestStartName = (name: string) => `${name}-start`;
 
-// Initial Render
-const render = async () => {
-  test = 'render';
-  if (benchmark === test || !benchmark) {
-    performance.mark(getTestStartName(test));
-    create();
-    await updateComplete();
-    performance.measure(test, getTestStartName(test));
-    destroy();
-  }
-}
-render();
+  // Named functions are use to run the measurements so that they can be
+  // selected in the DevTools profile flame chart.
 
-// Update: toggle data
-const update = async () => {
-  const updateCount = 6;
-  test = 'update';
-  if (benchmark === test || !benchmark) {
-    el = create();
-    performance.mark(getTestStartName(test));
-    for (let i = 0; i < updateCount; i++) {
-      el.items = i % 2 ? otherData : data;
+  // Initial Render
+  const render = async () => {
+    const test = 'render';
+    if (benchmark === test || !benchmark) {
+      const start = getTestStartName(test);
+      performance.mark(start);
+      create();
       await updateComplete();
+      performance.measure(test, start);
+      destroy();
     }
-    performance.measure(test, getTestStartName(test));
-    destroy();
   }
-}
-update();
+  await render();
 
-const updateReflect = async () => {
-  test = 'update-reflect';
-  if (benchmark === test || !benchmark) {
+  // Update: toggle data
+  const update = async () => {
     const updateCount = 6;
-    el = create();
-    performance.mark(getTestStartName(test));
-    (propertyOptions as any).reflect = true;
-    for (let i = 0; i < updateCount; i++) {
-      el.items = i % 2 ? otherData : data;
-      await updateComplete();
+    const test = 'update';
+    if (benchmark === test || !benchmark) {
+      el = create();
+      const start = getTestStartName(test);
+      performance.mark(start);
+      for (let i = 0; i < updateCount; i++) {
+        el.items = i % 2 ? otherData : data;
+        await updateComplete();
+      }
+      performance.measure(test, start);
+      destroy();
     }
-    (propertyOptions as any).reflect = false;
-    performance.measure(test, getTestStartName(test));
-    destroy();
   }
-}
-updateReflect();
+  await update();
 
-// Log
-performance
-  .getEntriesByType('measure')
-  .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
+  const updateReflect = async () => {
+    const test = 'update-reflect';
+    if (benchmark === test || !benchmark) {
+      const updateCount = 6;
+      el = create();
+      const start = getTestStartName(test);
+      performance.mark(start);
+      (propertyOptions as any).reflect = true;
+      for (let i = 0; i < updateCount; i++) {
+        el.items = i % 2 ? otherData : data;
+        await updateComplete();
+      }
+      (propertyOptions as any).reflect = false;
+      performance.measure(test, start);
+      destroy();
+    }
+  }
+  await updateReflect();
+
+  // Log
+  performance
+    .getEntriesByType('measure')
+    .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
+
+})();
