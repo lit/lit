@@ -20,12 +20,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.0-pre.1] - 2020-09-21
 
 ### Changed
-* [Breaking] `render()` does no longer clears the container it's rendered to. It now appends to the container be default.
+* [Breaking] `render()` no longer clears the container it's rendered to. It now appends to the container by default.
 * [Breaking] Expressions in comments are not rendered or updated.
 * [Breaking] Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
-* [Breaking] Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that ```html`<div class=${['a', 'b']}>``` will render `<div class="a,b">` instead of `<div class="a,b">`. To get the old behavior, use `array.join(' ')`.
+* [Breaking] Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that ```html`<div class=${['a', 'b']}>``` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
 * Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. ```html`<div id=${a}-${b}>```
-* [Breaking] The directive and part APIs are significantly different.
+* [Breaking] The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
 
 ### Added
 * Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
