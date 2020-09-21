@@ -215,14 +215,15 @@ export class XApp extends MonitorUpdate {
   };
 
   const benchmark = params.benchmark;
+  const start = 'start';
 
   // Initial Render
   let test = 'render';
   if (benchmark === test || !benchmark) {
-    performance.mark(test);
+    performance.mark(`${test}${start}`);
     create();
     await updateComplete();
-    performance.measure(test, test);
+    performance.measure(test, `${test}${start}`);
     destroy();
   }
 
@@ -231,26 +232,26 @@ export class XApp extends MonitorUpdate {
   test = 'update';
   if (benchmark === test || !benchmark) {
     el = create();
-    performance.mark(test);
+    performance.mark(`${test}${start}`);
     for (let i = 0; i < updateCount; i++) {
       el.items = i % 2 ? otherData : data;
       await updateComplete();
     }
-    performance.measure(test, test);
+    performance.measure(test, `${test}${start}`);
     destroy();
   }
 
   test = 'update-reflect';
   if (benchmark === test || !benchmark) {
     el = create();
-    performance.mark(test);
+    performance.mark(`${test}${start}`);
     (propertyOptions as any).reflect = true;
     for (let i = 0; i < updateCount; i++) {
       el.items = i % 2 ? otherData : data;
       await updateComplete();
     }
     (propertyOptions as any).reflect = false;
-    performance.measure(test, test);
+    performance.measure(test, `${test}${start}`);
     destroy();
   }
 
