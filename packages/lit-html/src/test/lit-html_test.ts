@@ -93,7 +93,7 @@ suite('lit-html', () => {
       );
     });
 
-    test('text child of element with unquoted attribute', () => {
+    test('text child of element with quoted attribute', () => {
       assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
     });
 
@@ -303,11 +303,11 @@ suite('lit-html', () => {
       );
     });
 
-    test('text after quoted attribute', () => {
+    test('text after quoted bound attribute', () => {
       assertRender(html`<div a="${'A'}">${'A'}</div>`, '<div a="A">A</div>');
     });
 
-    test('text after unquoted attribute', () => {
+    test('text after unquoted bound attribute', () => {
       assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
     });
 
@@ -747,6 +747,14 @@ suite('lit-html', () => {
       );
     });
 
+    test('renders to an unquoted attribute after an unbound unquoted attribute', () => {
+      render(html`<div foo="bar" baz=${'qux'}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar" baz="qux"></div>'
+      );
+    });
+
     test('renders interpolation to an attribute', () => {
       render(html`<div foo="A${'B'}C"></div>`, container);
       assert.equal(
@@ -953,7 +961,7 @@ suite('lit-html', () => {
     });
 
     test('renders an array to an attribute', () => {
-      render(html`<div foo=${[1, 2, 3] as any}></div>`, container);
+      render(html`<div foo=${['1', '2', '3'] as any}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="1,2,3"></div>'

@@ -237,7 +237,7 @@ type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
 /**
  * Creates a user-facing directive function from a Directive class. This
  * function has the same parameters as the directive's render() method.
- * 
+ *
  * WARNING: The directive and part API changes are in progress and subject to
  * change in future pre-releases.
  */
@@ -297,7 +297,7 @@ const walker = d.createTreeWalker(d);
  * Base class for creating custom directives. Users should extend this class,
  * implement `render` and/or `update`, and then pass their subclass to
  * `directive`.
- * 
+ *
  * WARNING: The directive and part API changes are in progress and subject to
  * change in future pre-releases.
  */
@@ -377,6 +377,7 @@ class Template {
         } else if (regex === tagRegex) {
           if (match[0] === '>') {
             regex = textRegex;
+            attrNameEnd = -1;
           } else {
             attrNameEnd = regex.lastIndex - match[2].length;
             attrName = match[1];
@@ -399,7 +400,11 @@ class Template {
         }
       }
 
-      // console.assert(!(attrNameEnd !== -1 && regex === textRegex));
+      if (DEV_MODE) {
+        // We should never be in both text position (regex === textRegex) and
+        // attribute position (attrNameEnd !== -1).
+        console.assert(!(attrNameEnd !== -1 && regex === textRegex));
+      }
       if (attrNameEnd !== -1) {
         attrNames.push(attrName!);
         html +=
