@@ -59,6 +59,8 @@ import {render, RenderOptions} from 'lit-html';
 import {
   supportsAdoptingStyleSheets,
   CSSResult,
+  CSSResultGroup,
+  CSSResultOrNative,
   unsafeCSS,
 } from './lib/css-tag.js';
 
@@ -84,9 +86,7 @@ declare global {
   '2.4.0'
 );
 
-export type CSSResultOrNative = CSSResult | CSSStyleSheet;
-
-export type CSSResultFlatArray = CSSResultOrNative[];
+type CSSResultFlatArray = CSSResultOrNative[];
 
 export interface CSSResultArray
   extends Array<CSSResultOrNative | CSSResultArray> {}
@@ -148,7 +148,7 @@ export class LitElement extends UpdatingElement {
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
-  static styles?: CSSResultOrNative | CSSResultArray;
+  static styles?: CSSResultGroup;
   private static _elementStyles?: CSSResultFlatArray;
 
   /**
@@ -164,9 +164,7 @@ export class LitElement extends UpdatingElement {
    *
    * @nocollapse
    */
-  protected static finalizeStyles(
-    styles?: CSSResultOrNative | CSSResultArray
-  ): CSSResultFlatArray {
+  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
@@ -196,6 +194,13 @@ export class LitElement extends UpdatingElement {
    * to an open shadowRoot.
    */
   readonly renderRoot!: HTMLElement | DocumentFragment;
+
+  /**
+   * Node before which to render content. This is used when shimming
+   * `adoptedStyleSheets` and a style element may need to exist in the
+   * shadowRoot after Lit rendered content.
+   */
+  private _renderBeforeNode?: HTMLElement;
 
   /**
    * Performs element initialization. By default this calls
@@ -246,6 +251,7 @@ export class LitElement extends UpdatingElement {
         const style = document.createElement('style');
         style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
+        this._renderBeforeNode ??= style;
       });
     }
   }
@@ -267,7 +273,7 @@ export class LitElement extends UpdatingElement {
       (this.constructor as typeof LitElement).render(
         templateResult,
         this.renderRoot,
-        {eventContext: this}
+        {eventContext: this, renderBefore: this._renderBeforeNode}
       );
     }
   }

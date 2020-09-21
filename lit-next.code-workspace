@@ -9,6 +9,14 @@
 			"path": "packages/lit-element"
 		},
 		{
+			"name": "tests",
+			"path": "packages/tests"
+		},
+		{
+			"name": "benchmarks",
+			"path": "packages/benchmarks"
+		},
+		{
 			"name": "lit-next",
 			"path": "."
 		}

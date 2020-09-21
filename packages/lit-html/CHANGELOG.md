@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Multiple bindings in an attribute value don't need to be in quotes
 
 ### Added
+* Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
 
 ### Fixed
 * All usage of `instanceof` has been removed, making rendering more likely to

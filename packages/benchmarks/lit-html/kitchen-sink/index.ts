@@ -187,24 +187,24 @@ const renderItem: any = (data: Data) => html`
 let data = generateData(0);
 
 // Initial render
-performance.mark('render');
+performance.mark('render-start');
 render(renderItem(data), document.body);
-performance.measure('render', 'render');
+performance.measure('render', 'render-start');
 
 // Update
-performance.mark('update');
+performance.mark('update-start');
 for (let i = 0; i < updateCount; i++) {
   data = generateData(i + 1);
   render(renderItem(data), document.body);
 }
-performance.measure('update', 'update');
+performance.measure('update', 'update-start');
 
 // No-op update
-performance.mark('nop-update');
+performance.mark('nop-update-start');
 for (let i = 0; i < nopUpdateCount; i++) {
   render(renderItem(data), document.body);
 }
-performance.measure('nop-update', 'nop-update');
+performance.measure('nop-update', 'nop-update-start');
 
 // Log
 console.log(
