@@ -67,7 +67,6 @@ import {
 export function queryAsync(selector: string) {
   return (
     protoOrDescriptor: Object | ClassElement,
-    // tslint:disable-next-line:no-any decorator
     name?: PropertyKey
   ): any => {
     const descriptor = {

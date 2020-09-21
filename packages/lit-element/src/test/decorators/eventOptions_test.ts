@@ -17,8 +17,6 @@ import {eventOptions} from '../../lib/decorators/eventOptions.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 let hasOptions;
 const supportsOptions = (function () {
   if (hasOptions !== undefined) {

@@ -142,7 +142,6 @@ type AttributeMap = Map<string, PropertyKey>;
  * Map of changed properties with old values. Takes an optional generic
  * interface corresponding to the declared element properties.
  */
-// tslint:disable-next-line:no-any
 export type PropertyValues<T = any> = keyof T extends PropertyKey
   ? Map<keyof T, unknown>
   : never;
@@ -348,7 +347,6 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration
   ) {
     return {
-      // tslint:disable-next-line:no-any no symbol in index
       get(): any {
         return (this as {[key: string]: unknown})[key as string];
       },
@@ -416,7 +414,6 @@ export abstract class UpdatingElement extends HTMLElement {
       for (const p of propKeys) {
         // note, use of `any` is due to TypeSript lack of support for symbol in
         // index types
-        // tslint:disable-next-line:no-any no symbol in index
         this.createProperty(p, (props as any)[p]);
       }
     }
@@ -577,7 +574,6 @@ export abstract class UpdatingElement extends HTMLElement {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
-    // tslint:disable-next-line:no-unnecessary-type-assertion
     const propName = (ctor._attributeToPropertyMap as AttributeMap).get(name);
     // Use tracking info to avoid reflecting a property value to an attribute
     // if it was just set because the attribute changed.
@@ -593,7 +589,6 @@ export abstract class UpdatingElement extends HTMLElement {
       // mark state reflecting
       this._reflectingProperty = propName;
       this[propName as keyof this] =
-        // tslint:disable-next-line:no-any
         fromAttribute!(value, options.type) as any;
       // mark state not reflecting
       this._reflectingProperty = null;
@@ -699,7 +694,6 @@ export abstract class UpdatingElement extends HTMLElement {
     if (this._instanceProperties) {
       // Use forEach so this works even if for/of loops are compiled to for loops
       // expecting arrays
-      // tslint:disable-next-line:no-any
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
     }

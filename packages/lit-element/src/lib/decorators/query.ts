@@ -56,7 +56,6 @@ import {
 export function query(selector: string, cache?: boolean) {
   return (
     protoOrDescriptor: Object | ClassElement,
-    // tslint:disable-next-line:no-any decorator
     name?: PropertyKey
   ): any => {
     const descriptor = {

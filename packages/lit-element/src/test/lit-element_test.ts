@@ -16,8 +16,6 @@ import {html, LitElement} from '../lit-element.js';
 import {generateElementName, stripExpressionComments} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('LitElement', () => {
   let container: HTMLElement;
 

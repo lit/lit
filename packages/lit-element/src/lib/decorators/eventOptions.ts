@@ -38,7 +38,6 @@ const standardEventOptions = (
 };
 
 const legacyEventOptions =
-  // tslint:disable-next-line:no-any legacy decorator
   (options: AddEventListenerOptions, proto: any, name: PropertyKey) => {
     Object.assign(proto[name], options);
   };
@@ -86,5 +85,5 @@ export function eventOptions(options: AddEventListenerOptions) {
       : standardEventOptions(
           options,
           protoOrDescriptor as ClassElement
-        )) as any; // tslint:disable-next-line:no-any decorator
+        )) as any;
 }

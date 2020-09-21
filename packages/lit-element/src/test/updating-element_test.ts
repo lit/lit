@@ -23,8 +23,6 @@ import {
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('UpdatingElement', () => {
   let container: HTMLElement;
 
@@ -1783,9 +1781,7 @@ suite('UpdatingElement', () => {
       foo = 5;
       bar = 'bar';
 
-      // tslint:disable-next-line:no-any
       _observedZot?: any;
-      // tslint:disable-next-line:no-any
       _observedZot2?: any;
 
       zot = '';
