@@ -98,7 +98,8 @@ suite('lit-html', () => {
     });
 
     test('text child of element with unquoted attribute', () => {
-      assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
+      // prettier-ignore
+      assertRender(html`<div a=b>${'d'}</div>`, '<div a="b">d</div>');
     });
 
     test('renders parts with whitespace after them', () => {
