@@ -1,10 +1,21 @@
+/**
+ * @license
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
 import {
   html,
   LitElement,
   css,
-  PropertyDeclaration,
-  PropertyValues,
-  UpdatingElement,
+  PropertyDeclaration
 } from 'lit-element';
 import {property, customElement} from 'lit-element/lib/decorators.js';
 
@@ -38,56 +49,8 @@ const otherData = generateData(500).slice(250);
 
 const propertyOptions: PropertyDeclaration = {};
 
-let updates: Promise<unknown>[] = [];
-const updateComplete = async () => {
-  const waitFor = updates;
-  updates = [];
-  // console.log('updateComplete', waitFor.length);
-  await Promise.all(waitFor);
-  if (updates.length) {
-    await updateComplete();
-  } else {
-    // await new Promise(r => setTimeout(r, 1000));
-  }
-};
-
-// Make compatible with previous version
-if (Boolean((UpdatingElement.prototype as any).requestUpdateInternal)) {
-  UpdatingElement.prototype.requestUpdate = (UpdatingElement.prototype as any).requestUpdateInternal;
-}
-
-class MonitorUpdate extends LitElement {
-  // Make compatible with previous version
-  requestUpdateInternal(
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration
-  ) {
-    this.requestUpdate(name, oldValue, options);
-  }
-
-  requestUpdate(
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration
-  ) {
-    const pending = (this as any)._hasRequestedUpdate;
-    super.requestUpdate(name, oldValue, options);
-    if (!pending && this.hasUpdated) {
-      updates.push(this.updateComplete);
-    }
-  }
-
-  update(changedProperties: PropertyValues) {
-    if (!this.hasUpdated) {
-      updates.push(this.updateComplete);
-    }
-    super.update(changedProperties);
-  }
-}
-
 @customElement('x-thing')
-export class XThing extends MonitorUpdate {
+export class XThing extends LitElement {
   static styles = css`
     .container {
       box-sizing: border-box;
@@ -136,7 +99,7 @@ export class XThing extends MonitorUpdate {
 }
 
 @customElement('x-item')
-export class XItem extends MonitorUpdate {
+export class XItem extends LitElement {
   static styles = css`
     .item {
       display: flex;
@@ -189,7 +152,7 @@ export class XItem extends MonitorUpdate {
 }
 
 @customElement('x-app')
-export class XApp extends MonitorUpdate {
+export class XApp extends LitElement {
   @property()
   items = data;
 
@@ -200,63 +163,77 @@ export class XApp extends MonitorUpdate {
   }
 }
 
-(async () => {
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  let el: XApp;
+const container = document.createElement('div');
+document.body.appendChild(container);
+let el: XApp;
 
-  const create = () => {
-    const el = document.createElement('x-app') as XApp;
-    return container.appendChild(el) as XApp;
-  };
+const create = () => {
+  const el = document.createElement('x-app') as XApp;
+  return container.appendChild(el) as XApp;
+};
 
-  const destroy = () => {
-    container.innerHTML = '';
-  };
+const destroy = () => {
+  container.innerHTML = '';
+};
 
-  const benchmark = params.benchmark;
-  const start = 'start';
+const updateComplete = async () => new Promise(r => requestAnimationFrame(r));
 
-  // Initial Render
-  let test = 'render';
+const benchmark = params.benchmark;
+const getTestStartName = (name: string) => `${name}start`;
+let test;
+
+// Named functions are use to run the measurements so that they can be selected
+// in the DevTools profile flame chart.
+
+// Initial Render
+const render = async () => {
+  test = 'render';
   if (benchmark === test || !benchmark) {
-    performance.mark(`${test}${start}`);
+    performance.mark(getTestStartName(test));
     create();
     await updateComplete();
-    performance.measure(test, `${test}${start}`);
+    performance.measure(test, getTestStartName(test));
     destroy();
   }
+}
+render();
 
-  // Update: toggle data
+// Update: toggle data
+const update = async () => {
   const updateCount = 6;
   test = 'update';
   if (benchmark === test || !benchmark) {
     el = create();
-    performance.mark(`${test}${start}`);
+    performance.mark(getTestStartName(test));
     for (let i = 0; i < updateCount; i++) {
       el.items = i % 2 ? otherData : data;
       await updateComplete();
     }
-    performance.measure(test, `${test}${start}`);
+    performance.measure(test, getTestStartName(test));
     destroy();
   }
+}
+update();
 
+const updateReflect = async () => {
   test = 'update-reflect';
   if (benchmark === test || !benchmark) {
+    const updateCount = 6;
     el = create();
-    performance.mark(`${test}${start}`);
+    performance.mark(getTestStartName(test));
     (propertyOptions as any).reflect = true;
     for (let i = 0; i < updateCount; i++) {
       el.items = i % 2 ? otherData : data;
       await updateComplete();
     }
     (propertyOptions as any).reflect = false;
-    performance.measure(test, `${test}${start}`);
+    performance.measure(test, getTestStartName(test));
     destroy();
   }
+}
+updateReflect();
 
-  // Log
-  performance
-    .getEntriesByType('measure')
-    .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
-})();
+// Log
+performance
+  .getEntriesByType('measure')
+  .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
