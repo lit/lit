@@ -736,18 +736,21 @@ suite('lit-html', () => {
     });
 
     test('renders to an unquoted attribute', () => {
-      render(html`<div foo=${'bar'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar"></div>'
+      assertRender(html`<div foo=${'bar'}></div>`, '<div foo="bar"></div>');
+      assertRender(
+        html`<div foo=${'bar'}/baz></div>`,
+        '<div foo="bar/baz"></div>'
       );
     });
 
     test('renders to an unquoted attribute after an unbound unquoted attribute', () => {
-      render(html`<div foo="bar" baz=${'qux'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
+      assertRender(
+        html`<div foo=bar baz=${'qux'}></div>`,
         '<div foo="bar" baz="qux"></div>'
+      );
+      assertRender(
+        html`<div foo=a/b baz=${'qux'}></div>`,
+        '<div foo="a/b" baz="qux"></div>'
       );
     });
 
