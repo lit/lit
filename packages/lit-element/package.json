@@ -71,7 +71,7 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
-    "lit-html": "^2.0.0-pre.0"
+    "lit-html": "^2.0.0-pre.2"
   },
   "publishConfig": {
     "access": "public"
