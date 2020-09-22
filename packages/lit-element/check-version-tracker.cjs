@@ -19,8 +19,10 @@ const version = require(path.join(__dirname, 'package.json')).version;
 const ts = fs.readFileSync(path.join(__dirname, 'src', 'lit-element.ts'));
 if (!ts.includes(version)) {
   console.log(
-      `\nExpected lit-element.ts to contain current version "${version}"`);
+    `\nExpected lit-element.ts to contain current version "${version}"`
+  );
   console.log(
-      `Don't forget to update the version tracker string before release!`);
+    `Don't forget to update the version tracker string before release!`
+  );
   process.exit(1);
 }
