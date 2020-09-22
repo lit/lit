@@ -337,9 +337,6 @@ class Template {
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
-
-    // If we're in attribute value position, this will be the index of the end
-    // of the attribute name.
     let attrNameIndex = 0;
 
     // When we're inside a raw text tag (not it's text content), the regex
@@ -353,8 +350,9 @@ class Template {
 
     for (let i = 0; i < l; i++) {
       const s = strings[i];
-      // The index of the end of the last attribute. When this is !== -1 at
-      // end of a string, it means we're in a quoted attribute position.
+      // The index of the end of the last attribute name. When this is
+      // positive at end of a string, it means we're in an attribute value
+      // position and need to rewrite the attribute name.
       let attrNameEndIndex = -1;
       let attrName: string | undefined;
       let lastIndex = 0;
@@ -434,7 +432,7 @@ class Template {
       if (DEV_MODE) {
         // If we have a attrNameEndIndex, which indicates that we should
         // rewrite the attribute name, assert that we're in a valid attribute
-        // position - either in a tag, or a quoated attribute value.
+        // position - either in a tag, or a quoted attribute value.
         console.assert(
           attrNameEndIndex === -1 ||
             regex === tagEndRegex ||
