@@ -54,6 +54,14 @@ jobs:
         run: npm run test
 
   tests-sauce:
+    # We can't run Sauce tests on PRs from forked repos, since they don't have
+    # access to secrets.
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
+
     runs-on: ubuntu-latest
 
     steps:
