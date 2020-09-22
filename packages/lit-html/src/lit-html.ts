@@ -104,7 +104,7 @@ const comment2Regex = />/g;
  *    * (') then any non-(')
  */
 const tagRegex = new RegExp(
-  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|$))`,
+  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))`,
   'g'
 );
 const singleQuoteAttr = /'/g;
@@ -350,6 +350,9 @@ class Template {
         regex.lastIndex = lastIndex;
         match = regex.exec(s);
         if (match === null) {
+          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {	
+            attrNameEnd = -1;	
+          }
           break;
         }
         lastIndex = regex.lastIndex;

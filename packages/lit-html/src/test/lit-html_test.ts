@@ -325,10 +325,20 @@ suite('lit-html', () => {
     //   );
     // });
 
-    // test('inside start tag after unquoted attribute', () => {
-    //   // prettier-ignore
-    //   assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
-    // });
+    test('inside start tag after quoted attribute', () => {
+      // prettier-ignore
+      assertRender(html`<div a="b" ${'c'}></div>`, '<div a="b"></div>');
+    });
+
+    test('inside start tag after unquoted attribute', () => {
+      // prettier-ignore
+      assertRender(html`<div a=b ${'c'}></div>`, '<div a="b"></div>');
+    });
+
+    test('inside start tag', () => {
+      // prettier-ignore
+      assertRender(html`<div ${'a'}></div>`, '<div></div>');
+    });
 
     // test('inside start tag after quoted attribute', () => {
     //   // prettier-ignore
@@ -741,6 +751,7 @@ suite('lit-html', () => {
     });
 
     test('renders to an unquoted attribute', () => {
+      // prettier-ignore
       render(html`<div foo=${'bar'}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -749,6 +760,7 @@ suite('lit-html', () => {
     });
 
     test('renders to an unquoted attribute after an unbound unquoted attribute', () => {
+      // prettier-ignore
       render(html`<div foo="bar" baz=${'qux'}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -757,12 +769,13 @@ suite('lit-html', () => {
     });
 
     test('renders interpolation to an unquoted attribute', () => {
-      render(html`<div foo="A${'B'}C"></div>`, container);
+      // prettier-ignore
+      render(html`<div foo=A${'B'}C></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'
       );
-      render(html`<div foo="${'A'}B${'C'}"></div>`, container);
+      render(html`<div foo=${'A'}B${'C'}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'
