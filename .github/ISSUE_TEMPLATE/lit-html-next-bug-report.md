@@ -1,6 +1,6 @@
 ---
 name: lit-html lit-next preview bug report
-about: Create a report to help us improve
+about: Use this template to report an issue with the lit-html PREVIEW release (lit-html@next-major)
 title: '[lit-html] '
 labels: 'lit-next'
 assignees: ''
@@ -14,6 +14,10 @@ Please read our contribution guidelines:
 
 # Description
 A clear and concise description of what the bug is.
+
+# lit-html version
+
+<!-- Check window.litHtmlVersions or npm ls lit-html -->
 
 # Steps to Reproduce
 
@@ -42,6 +46,4 @@ https://stackblitz.com/edit/lit-html-next
 - [ ] Chrome
 - [ ] Firefox
 - [ ] Edge
-- [ ] Safari 11
-- [ ] Safari 10
-- [ ] IE 11
+- [ ] Safari
