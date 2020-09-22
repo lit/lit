@@ -1072,4 +1072,4 @@ export class EventPart extends AttributePart {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-((globalThis as any)['litHtmlVersions'] ??= []).push('1.3.0');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.2');
