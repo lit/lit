@@ -329,6 +329,7 @@ class Template {
     let nodeIndex = 0;
     let bindingIndex = 0;
     let attrNameIndex = 0;
+    let rawTextTag: RegExp | undefined;
 
     // The current parsing state, represented as a reference to one of the
     // regexes
@@ -350,8 +351,8 @@ class Template {
         regex.lastIndex = lastIndex;
         match = regex.exec(s);
         if (match === null) {
-          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {	
-            attrNameEnd = -1;	
+          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {
+            attrNameEnd = -1;
           }
           break;
         }
@@ -363,17 +364,21 @@ class Template {
             regex = comment2Regex;
           } else if (match[2] !== undefined) {
             if (rawTextElement.test(match[2])) {
-              regex = new RegExp(`<\/${match[2]}`, 'g');
-            } else {
-              regex = tagRegex;
+              // Record if we encounter a raw-text element. We'll switch to
+              // this regex at the end of the tag
+              rawTextTag = new RegExp(`<\/${match[2]}`, 'g');
             }
+            regex = tagRegex;
           } else if (match[3] !== undefined) {
             // dynamic tag name
             regex = tagRegex;
           }
         } else if (regex === tagRegex) {
           if (match[0] === '>') {
-            regex = textRegex;
+            // End of a tag. If we had started a raw-text element, use that
+            // regex
+            regex = rawTextTag ?? textRegex;
+            attrNameEnd = -1;
           } else {
             attrNameEnd = regex.lastIndex - match[2].length;
             attrName = match[1];
@@ -392,6 +397,7 @@ class Template {
           // Not one of the five state regexes, so it must be the dynamically
           // created raw text regex and we're at the close of that element.
           regex = tagRegex;
+          rawTextTag = undefined;
         }
       }
 
