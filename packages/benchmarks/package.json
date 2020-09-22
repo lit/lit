@@ -20,8 +20,8 @@
     "benchmark:lit-element:stub1": "tach --config lit-element/stub1/tachometer.json"
   },
   "dependencies": {
-    "lit-element": "^3.0.0-pre.0",
-    "lit-html": "^2.0.0-pre.0",
+    "lit-element": "^3.0.0-pre.1",
+    "lit-html": "^2.0.0-pre.1",
     "tachometer": "^0.5.3"
   },
   "devDependencies": {

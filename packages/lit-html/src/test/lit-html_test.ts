@@ -767,6 +767,19 @@ suite('lit-html', () => {
       );
     });
 
+    test('renders interpolation to an unquoted attribute', () => {
+      render(html`<div foo=A${'B'}C></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+      render(html`<div foo=${'A'}B${'C'}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+    });
+
     test('renders multiple bindings in an attribute', () => {
       render(html`<div foo="a${'b'}c${'d'}e"></div>`, container);
       assert.equal(
