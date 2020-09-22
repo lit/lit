@@ -28,7 +28,7 @@ changes:
   * Custom `templateFactory`, `TemplateProcessor`, and custom tag functions are no
     longer supported
 
-See the full [changelog](CHANGELOG.md#200-pre1---2020-09-21) for more details on
+See the full [changelog](CHANGELOG.md) for more details on
 these and other minor breaking changes.
 
 ## 🚨 Known issues/limitations

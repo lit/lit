@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "2.0.0-pre.1",
+  "version": "2.0.0-pre.2",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "homepage": "https://lit-html.polymer-project.org/",
@@ -34,7 +34,8 @@
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "check-version": "node check-version-tracker.js"
+    "check-version": "node scripts/check-version-tracker.js",
+    "prepublishOnly": "npm run check-version"
   },
   "author": "The Polymer Authors",
   "dependencies": {},
