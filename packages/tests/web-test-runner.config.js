@@ -32,7 +32,7 @@ function getPlugins() {
     removeDevModeLoggingPlugin,
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin,
+    legacyPlugin(),
   ];
 }
 
@@ -117,11 +117,21 @@ function parseBrowser(browser) {
     // Note this is the syntax used by WCT. Might as well use the same one.
     const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
     if (!match) {
-      throw new Error(
-        `Invalid Sauce browser string, ` +
-          `expected format "sauce:os/browser@version", ` +
-          `got: "${browser}"`
-      );
+      throw new Error(`
+
+Invalid Sauce browser string.
+Expected format "sauce:os/browser@version".
+Provided string was "${browser}".
+
+Valid examples:
+
+  sauce:macOS 10.15/safari@13
+  sauce:Windows 10/MicrosoftEdge@18
+  sauce:Windows 7/internet explorer@11
+  sauce:Linux/chrome@latest-3
+  sauce:Linux/firefox@68
+
+See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
     }
     const [_, platformName, browserName, browserVersion] = match;
     return [
