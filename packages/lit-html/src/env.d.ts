@@ -1,35 +1,18 @@
 interface ShadyCSS {
-  styleElement(host: Element, overrideProps?: {[key: string]: string}): void;
-  getComputedStyleValue(element: Element, property: string): string;
-  ScopingShim:
-    | undefined
-    | {
-        prepareAdoptedCssText(cssText: string[], name: string): void;
-        prepareTemplateDom(template: HTMLTemplateElement, name: string): void;
-        prepareTemplate(template: HTMLTemplateElement, name: string): void;
-      };
+  nativeCss: boolean;
   nativeShadow: boolean;
+  ScopingShim: undefined|{
+    prepareTemplateDom(template: Element, elementName: string): void;
+    prepareAdoptedCssText(cssTextArray: string[], elementName: string): void;
+    prepareTemplate(template: Element, elementName: string): void;
+  };
 }
 
 interface ShadyDOM {
   inUse: boolean;
-  flush: () => void;
 }
 
 interface Window {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
-  ShadowRoot: typeof ShadowRoot;
-}
-
-// Augment existing types with styling API
-interface ShadowRoot {
-  adoptedStyleSheets: CSSStyleSheet[];
-}
-
-declare var ShadowRoot: {prototype: ShadowRoot; new (): ShadowRoot};
-
-interface CSSStyleSheet {
-  replaceSync(cssText: string): void;
-  replace(cssText: string): Promise<unknown>;
 }

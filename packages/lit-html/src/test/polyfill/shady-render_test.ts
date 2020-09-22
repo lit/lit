@@ -12,17 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {shadyRender} from '../shady-render.js';
-import {html} from '../lit-html.js';
+import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
-// import {renderShadowRoot} from '../test-utils/shadow-root.js';
-
-const renderShadowRoot = (result: unknown, element: Element) => {
-  if (!element.shadowRoot) {
-    element.attachShadow({mode: 'open'});
-  }
-  shadyRender(result, element.shadowRoot!, {}, element.localName);
-};
+import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

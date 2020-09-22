@@ -136,8 +136,8 @@ export default {
           // Copy the tests.
           copy({
             targets: [{
-              src: `src/test/*_test.html`,
-              dest: ['development/test', 'test'],
+              src: `src/test/polyfill/*_test.html`,
+              dest: ['development/test/polyfill', 'test/polyfill'],
             }]
           }),
         ]),

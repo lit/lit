@@ -20,7 +20,7 @@
 
 // TODO(sorvell) Add shady-render package.
 import {
-  render,
+  render as litRender,
   RenderOptions,
   NodePart,
   TemplateResult,
@@ -51,15 +51,15 @@ export const cssForScope = (name: string) => {
  * * manage `scopeData` during calls into lit-html.
  * * Once per scope, apply gathered css via ShadyCSS.
  */
-export let shadyRender = (
+export const render = (
   result: unknown,
   container: HTMLElement | DocumentFragment,
-  options: RenderOptions,
-  name: string
+  options?: RenderOptions,
+  name: string = ''
 ) => {
   const previousScope = currentScope;
   currentScope = name;
-  render(result, container, options);
+  litRender(result, container, options);
   ensureStyles(currentScope);
   currentScope = previousScope;
 };
