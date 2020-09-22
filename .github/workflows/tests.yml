@@ -47,4 +47,8 @@ jobs:
         run: npm run build
 
       - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:ci
         run: npm run test

@@ -2,7 +2,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "test": "lerna run test --scope=tests",
+    "test": "cd packages/tests && npm test",
     "benchmarks": "cd packages/benchmarks && npm run benchmarks"
   },
   "dependencies": {
