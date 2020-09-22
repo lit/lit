@@ -11,9 +11,5 @@
   },
   "devDependencies": {
     "prettier": "^2.1.2"
-  },
-  "prettier": {
-    "singleQuote": true,
-    "bracketSpacing": false
   }
 }
