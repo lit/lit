@@ -44,6 +44,7 @@
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-replace": "^2.3.3",
     "@types/mocha": "^8.0.3",
+    "@types/trusted-types": "^1.0.6",
     "@web/dev-server-rollup": "^0.2.6",
     "@web/test-runner": "^0.7.15",
     "@web/test-runner-playwright": "^0.5.4",

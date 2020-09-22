@@ -33,4 +33,11 @@ export default {
     },
   },
   plugins,
+  middleware: [
+    (ctx, next) => {
+      ctx.response.append(
+          'Content-Security-Policy', `require-trusted-types-for 'script';`)
+      return next();
+    }
+  ]
 };

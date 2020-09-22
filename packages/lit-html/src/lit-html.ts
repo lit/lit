@@ -182,7 +182,9 @@ export const nothing = {};
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
 
-export type DirectiveClass = {new (part: Part): Directive};
+export type DirectiveClass = {
+  new (part: Part): Directive;
+};
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -211,6 +213,21 @@ export const directive = <C extends DirectiveClass>(c: C) => (
   _$litDirective$: c,
   values,
 });
+
+const policy = (() => {
+  let policy = {
+    createHTML(html: string) {
+      return html;
+    },
+  };
+  if (window.trustedTypes) {
+    policy = (window.trustedTypes.createPolicy(
+      'lit-html',
+      policy
+    ) as unknown) as typeof policy;
+  }
+  return policy;
+})();
 
 export interface RenderOptions {
   /**
@@ -362,7 +379,7 @@ class Template {
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
-    this.__element.innerHTML = html + this.__strings[l];
+    this.__element.innerHTML = policy.createHTML(html + this.__strings[l]);
 
     if (type === SVG_RESULT) {
       const content = this.__element.content;
