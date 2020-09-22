@@ -388,7 +388,7 @@ class Template {
             if (rawTextElement.test(match[TAG_NAME])) {
               // Record if we encounter a raw-text element. We'll switch to
               // this regex at the end of the tag
-              rawTextEndRegex = new RegExp(`<\/${match[TAG_NAME]}`, 'g');
+              rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
             }
             regex = tagEndRegex;
           } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
