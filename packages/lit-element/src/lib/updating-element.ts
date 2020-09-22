@@ -581,6 +581,7 @@ export abstract class UpdatingElement extends HTMLElement {
       const options = ctor.getPropertyOptions(propName);
       const converter = options.converter;
       const fromAttribute =
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         (converter as ComplexAttributeConverter)?.fromAttribute! ??
         (typeof converter === 'function'
           ? (converter as (value: string | null, type?: unknown) => unknown)
