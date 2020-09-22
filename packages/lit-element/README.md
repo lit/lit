@@ -24,14 +24,14 @@ majority of 2.x users, please be aware of the following notable breaking
 changes:
   * This `LitElement` pre-release uses the `lit-html` pre-release as well.
     Please see the `lit-html` pre-release [README](../lit-html/README.md) and
-    [changelog](../lit-html/CHANGELOG.md#200---2020-09-21) for information on
+    [changelog](../lit-html/CHANGELOG.md#200-pre1---2020-09-21) for information on
     any breaking changes to `lit-html` features in your components.
   * Decorators are no longer exported from the top-level `lit-element` module.
     Instead, import any decorators you use from `lit-element/decorators/*`.
   * `requestUpdate()` no longer returns a Promise. Instead await the
     `updateComplete` Promise.
 
-See the full [changelog](CHANGELOG.md#300---2020-09-21) for more details on
+See the full [changelog](CHANGELOG.md#300-pre1---2020-09-21) for more details on
 these and other minor breaking changes.
 
 ## 🚨 Known issues/limitations
