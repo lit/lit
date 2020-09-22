@@ -13,8 +13,7 @@
  */
 
 import {html, LitElement} from '../lit-element.js';
-import {stripExpressionComments} from 'lit-html/development/test/test-utils/strip-markers.js';
-import {generateElementName} from './test-helpers.js';
+import {generateElementName, stripExpressionComments} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // tslint:disable:no-any ok in tests
