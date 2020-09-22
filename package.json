@@ -38,9 +38,7 @@
     ],
     "rules": {
       "@typescript-eslint/ban-types": "off",
-      "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/indent": "off",
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
@@ -51,12 +49,8 @@
           "argsIgnorePattern": "^_"
         }
       ],
-      "@typescript-eslint/no-use-before-define": "off",
-      "@typescript-eslint/triple-slash-reference": "off",
       "no-empty": "off",
-      "no-extra-boolean-cast": "off",
-      "no-prototype-builtins": "off",
-      "no-unexpected-multiline": "off"
+      "no-prototype-builtins": "off"
     },
     "overrides": [
       {
