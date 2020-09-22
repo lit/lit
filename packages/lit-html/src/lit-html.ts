@@ -328,7 +328,14 @@ class Template {
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
+
+    // If we're in attribute value position, this will be the index of the end
+    // of the attribute name.
     let attrNameIndex = 0;
+
+    // When we're inside a raw text tag (not it's text content), the regex
+    // will still be tagRegex so we can find attributes, but will switch to
+    // this regex when the tag ends.
     let rawTextTag: RegExp | undefined;
 
     // The current parsing state, represented as a reference to one of the
@@ -401,6 +408,12 @@ class Template {
         }
       }
 
+      if (DEV_MODE) {
+        // We should never have both an attribute and be in text position.
+        // This which makes the regex === textRegex check safe.
+        console.assert(!(regex === textRegex && attrNameEnd !== -1), 
+          'unexpected parse state');
+      }
       html +=
         regex === textRegex
           ? s + nodeMarker
