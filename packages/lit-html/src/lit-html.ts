@@ -72,12 +72,16 @@ const NAME_CHAR = `[^\0-\x1F\x7F-\x9F "'>=/]`;
  * End of text is: `<` followed by:
  *   (comment start) or (tag) or (dynamic tag binding)
  */
-const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
-const commentRegex = /-->/g;
+const textEndRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+const COMMENT_START = 1;
+const TAG_NAME = 2;
+const DYNAMIC_TAG_NAME = 3;
+
+const commentEndRegex = /-->/g;
 /**
  * Comments not started with <!--, like </{, can be ended by a single `>`
  */
-const comment2Regex = />/g;
+const comment2EndRegex = />/g;
 
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
@@ -103,12 +107,17 @@ const comment2Regex = />/g;
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
-const tagRegex = new RegExp(
+const tagEndRegex = new RegExp(
   `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))`,
   'g'
 );
-const singleQuoteAttr = /'/g;
-const doubleQuoteAttr = /"/g;
+const ENTIRE_MATCH = 0;
+const ATTRIBUTE_NAME = 1;
+const SPACES_AND_EQUALS = 2;
+const QUOTE_CHAR = 3;
+
+const singleQuoteAttrEndRegex = /'/g;
+const doubleQuoteAttrEndRegex = /"/g;
 /**
  * Matches the raw text elements.
  *
@@ -336,17 +345,17 @@ class Template {
     // When we're inside a raw text tag (not it's text content), the regex
     // will still be tagRegex so we can find attributes, but will switch to
     // this regex when the tag ends.
-    let rawTextTag: RegExp | undefined;
+    let rawTextEndRegex: RegExp | undefined;
 
     // The current parsing state, represented as a reference to one of the
     // regexes
-    let regex = textRegex;
+    let regex = textEndRegex;
 
     for (let i = 0; i < l; i++) {
       const s = strings[i];
       // The index of the end of the last attribute. When this is !== -1 at
       // end of a string, it means we're in a quoted attribute position.
-      let attrNameEnd = -1;
+      let attrNameEndIndex = -1;
       let attrName: string | undefined;
       let lastIndex = 0;
       let match: RegExpExecArray | null;
@@ -358,68 +367,95 @@ class Template {
         regex.lastIndex = lastIndex;
         match = regex.exec(s);
         if (match === null) {
-          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {
-            attrNameEnd = -1;
+          // If the current regex doesn't match we've come to a binding inside
+          // that state and must break and insert a marker
+          if (regex === tagEndRegex) {
+            // When tagEndRegex doesn't match we must have a binding in
+            // attribute-name position, since tagEndRegex does match static
+            // attribute names and end-of-tag. We need to clear
+            // attrNameEndIndex which may have been set by a previous
+            // tagEndRegex match.
+            attrNameEndIndex = -1;
           }
           break;
         }
         lastIndex = regex.lastIndex;
-        if (regex === textRegex) {
-          if (match[1] === '!--') {
-            regex = commentRegex;
-          } else if (match[1] !== undefined) {
-            regex = comment2Regex;
-          } else if (match[2] !== undefined) {
-            if (rawTextElement.test(match[2])) {
+        if (regex === textEndRegex) {
+          if (match[COMMENT_START] === '!--') {
+            regex = commentEndRegex;
+          } else if (match[COMMENT_START] !== undefined) {
+            // We started a weird comment, like </{
+            regex = comment2EndRegex;
+          } else if (match[TAG_NAME] !== undefined) {
+            if (rawTextElement.test(match[TAG_NAME])) {
               // Record if we encounter a raw-text element. We'll switch to
               // this regex at the end of the tag
-              rawTextTag = new RegExp(`<\/${match[2]}`, 'g');
+              rawTextEndRegex = new RegExp(`<\/${match[TAG_NAME]}`, 'g');
             }
-            regex = tagRegex;
-          } else if (match[3] !== undefined) {
+            regex = tagEndRegex;
+          } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
             // dynamic tag name
-            regex = tagRegex;
+            regex = tagEndRegex;
           }
-        } else if (regex === tagRegex) {
-          if (match[0] === '>') {
+        } else if (regex === tagEndRegex) {
+          if (match[ENTIRE_MATCH] === '>') {
             // End of a tag. If we had started a raw-text element, use that
             // regex
-            regex = rawTextTag ?? textRegex;
-            attrNameEnd = -1;
+            regex = rawTextEndRegex ?? textEndRegex;
+            // We may be ending an unquoted attribute value, so make sure we
+            // clear any pending attrNameEndIndex
+            attrNameEndIndex = -1;
           } else {
-            attrNameEnd = regex.lastIndex - match[2].length;
-            attrName = match[1];
+            attrNameEndIndex =
+              regex.lastIndex - match[SPACES_AND_EQUALS].length;
+            attrName = match[ATTRIBUTE_NAME];
             regex =
-              match[3] === undefined
-                ? tagRegex
-                : match[3] === '"'
-                ? doubleQuoteAttr
-                : singleQuoteAttr;
+              match[QUOTE_CHAR] === undefined
+                ? tagEndRegex
+                : match[QUOTE_CHAR] === '"'
+                ? doubleQuoteAttrEndRegex
+                : singleQuoteAttrEndRegex;
           }
-        } else if (regex === doubleQuoteAttr || regex === singleQuoteAttr) {
-          regex = tagRegex;
-        } else if (regex === commentRegex || regex === comment2Regex) {
-          regex = textRegex;
+        } else if (
+          regex === doubleQuoteAttrEndRegex ||
+          regex === singleQuoteAttrEndRegex
+        ) {
+          regex = tagEndRegex;
+        } else if (regex === commentEndRegex || regex === comment2EndRegex) {
+          regex = textEndRegex;
         } else {
           // Not one of the five state regexes, so it must be the dynamically
           // created raw text regex and we're at the close of that element.
-          regex = tagRegex;
-          rawTextTag = undefined;
+          regex = tagEndRegex;
+          rawTextEndRegex = undefined;
         }
       }
 
       if (DEV_MODE) {
-        // We should never have both an attribute and be in text position.
-        // This which makes the regex === textRegex check safe.
-        console.assert(!(regex === textRegex && attrNameEnd !== -1), 
-          'unexpected parse state');
+        // If we have a attrNameEndIndex, which indicates that we should
+        // rewrite the attribute name, assert that we're in a valid attribute
+        // position - either in a tag, or a quoated attribute value.
+        console.assert(
+          attrNameEndIndex === -1 ||
+            regex === tagEndRegex ||
+            regex === singleQuoteAttrEndRegex ||
+            regex === doubleQuoteAttrEndRegex,
+          'unexpected parse state B'
+        );
       }
+
+      // If we're in text position, and not in a raw text element
+      // (regex === textEndRegex), we insert a comment marker. Otherwise, we
+      // insert a plain maker. If we have a attrNameEndIndex, it means we need
+      // to rewrite the attribute name to add a bound attribute suffix.
       html +=
-        regex === textRegex
+        regex === textEndRegex
           ? s + nodeMarker
-          : (attrNameEnd !== -1
+          : (attrNameEndIndex !== -1
               ? (attrNames.push(attrName!),
-                s.slice(0, attrNameEnd) + '$lit$' + s.slice(attrNameEnd))
+                s.slice(0, attrNameEndIndex) +
+                  boundAttributeSuffix +
+                  s.slice(attrNameEndIndex))
               : s) + marker;
     }
 
