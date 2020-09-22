@@ -38,17 +38,16 @@ function getPlugins() {
 
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
-  default: ["chromium", "firefox", "webkit"],
+  local: ["chromium", "firefox", "webkit"],
 
   // Browsers to test during automated continuous integration.
+  //
   // https://saucelabs.com/platform/supported-browsers-devices
-  // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
-  ci: [
-    "chromium",
-    "firefox",
-    "webkit",
-    // Many browser configurations don't yet work with @web/test-runner-saucelabs.
-    // See https://github.com/modernweb-dev/web/issues/472.
+  // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator
+  //
+  // Many browser configurations don't yet work with @web/test-runner-saucelabs.
+  // See https://github.com/modernweb-dev/web/issues/472.
+  sauce: [
     "sauce:Windows 10/firefox@68", // Current ESR
     //"sauce:Windows 10/chrome@latest-3", // Fails with no error message
     //"sauce:macOS 10.15/safari@latest", // Timeout on "elements with custom properties can move between elements"
@@ -58,7 +57,7 @@ const browserPresets = {
 };
 
 function getBrowsers() {
-  return (process.env.BROWSERS || "preset:default")
+  return (process.env.BROWSERS || "preset:local")
     .split(",")
     .map(parseBrowser)
     .flat();
@@ -93,7 +92,7 @@ function makeSauceLauncherOnce() {
  *
  *   - "preset:name"
  *     Expand one of the preset sets of browsers
- *     E.g. "preset:default", "preset:ci"
+ *     E.g. "preset:local", "preset:sauce"
  */
 function parseBrowser(browser) {
   browser = browser.trim();
