@@ -471,8 +471,10 @@ class Template {
     if (type === SVG_RESULT) {
       const content = this.__element.content;
       const svgElement = content.firstChild!;
-      svgElement.remove();
-      content.append(...svgElement.childNodes);
+      svgElement.parentNode?.removeChild(svgElement);
+      for (const child of svgElement.childNodes) {
+        content.appendChild(child);
+      }
     }
 
     // Walk the template to find binding markers and create TemplateParts
@@ -530,11 +532,11 @@ class Template {
             // We can't use empty text nodes as markers because they're
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
-              (node as Element).append(strings[i] || createMarker());
+              (node as Element).appendChild(strings[i] ? document.createTextNode(strings[i]) : createMarker());
               this.__parts.push({__type: NODE_PART, __index: ++nodeIndex});
               bindingIndex++;
             }
-            (node as Element).append(strings[lastIndex] || createMarker());
+            (node as Element).appendChild(strings[lastIndex] ? document.createTextNode(strings[lastIndex]) : createMarker());
           }
         }
       } else if (node.nodeType === 8) {
@@ -824,7 +826,7 @@ export class NodePart {
   __clear(start: ChildNode | null = this._startNode.nextSibling) {
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
-      start!.remove();
+      start!.parentNode?.removeChild(start);
       start = n;
     }
   }

@@ -23,7 +23,7 @@ export const detachNodePart = (part: NodePart): NodePartState => {
   let nextNode;
   while (start !== part._endNode) {
     nextNode = start!.nextSibling;
-    fragment.append(start!);
+    fragment.appendChild(start!);
     start = nextNode;
   }
   part._value = nothing;
@@ -107,7 +107,7 @@ const removeNodes = (
 ): void => {
   while (start !== end) {
     const n = start!.nextSibling;
-    start!.remove();
+    start!.parentNode?.removeChild(start!);
     start = n;
   }
 };
