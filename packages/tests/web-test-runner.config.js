@@ -52,7 +52,7 @@ const browserPresets = {
     //"sauce:Windows 10/chrome@latest-3", // Fails with no error message
     //"sauce:macOS 10.15/safari@latest", // Timeout on "elements with custom properties can move between elements"
     //"sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    //"sauce:Windows 7/internet explorer@11", // Browser start timeout
+    "sauce:Windows 7/internet explorer@11",
   ],
 };
 
