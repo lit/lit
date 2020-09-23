@@ -60,27 +60,46 @@ export const render = (
   const previousScope = currentScope;
   currentScope = name;
   litRender(result, container, options);
-  ensureStyles(currentScope);
+  ensureStyles(container, currentScope);
   currentScope = previousScope;
 };
 
-const ensureStyles = (name: string) => {
-  if (isScopeStyled(name)) {
+// const renderedContainers: WeakSet<Node> = new WeakSet();
+
+const ensureStyles = (
+  container: HTMLElement | DocumentFragment,
+  name: string
+) => {
+  if (
+    isScopeStyled(name) ||
+    !(
+      container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
+      !!(container as ShadowRoot).host
+    )
+  ) {
     return;
   }
   const css = cssForScope(name);
   styledScopes.add(name);
   // Remove stored data
   scopeCss.delete(name);
+  const template = document.createElement('template');
   if (css && css.length) {
+    // Note, this must be a style element to be compatible with apply shim
+    // const style = document.createElement('style');
+    // style.textContent = css.join('\n');
+    // template.content.appendChild(style);
     window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(css, name);
-    // TODO(sorvell): ShadyCSS requires a template but we're not using
-    // it so just provide an empty template.
-    window.ShadyCSS!.ScopingShim!.prepareTemplate(
-      document.createElement('template'),
-      name
-    );
   }
+  // TODO(sorvell): ShadyCSS requires a template but we're not using
+  // it so just provide an empty template.
+  window.ShadyCSS!.ScopingShim!.prepareTemplateStyles(template, name);
+
+  // TODO(sorvell): Do we need to call styleElement here?
+  // if (!renderedContainers.has(container)) {
+  //   renderedContainers.add(container);
+  //   window.ShadyCSS!.styleElement((container as ShadowRoot).host);
+  // }
 };
 
 /**
@@ -105,9 +124,9 @@ if (needsPolyfill) {
    */
   function _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
     //console.log('patched _getTemplate:', name);
-    let templateCache = scopedTemplateCache.get(name);
+    let templateCache = scopedTemplateCache.get(currentScope);
     if (templateCache === undefined) {
-      scopedTemplateCache.set(name, (templateCache = new Map()));
+      scopedTemplateCache.set(currentScope, (templateCache = new Map()));
     }
     let template = templateCache.get(strings);
     if (template === undefined) {
