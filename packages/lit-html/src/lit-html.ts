@@ -293,7 +293,11 @@ export const render = (
   part._setValue(value);
 };
 
-const walker = d.createTreeWalker(d);
+const filter = function() {
+  return NodeFilter.FILTER_ACCEPT;
+};
+filter.acceptNode = filter;
+const walker = d.createTreeWalker(d, NodeFilter.SHOW_ALL, filter, false);
 
 //
 // Classes only below here, const variable declarations only above here...
