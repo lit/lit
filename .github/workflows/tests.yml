@@ -3,7 +3,7 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  tests:
+  tests-local:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,4 +47,66 @@ jobs:
         run: npm run build
 
       - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:local
+        run: npm run test
+
+  tests-sauce:
+    # We can't run Sauce tests on PRs from forked repos, since they don't have
+    # access to secrets.
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      # Note this is the way to set an environment variable that lives across
+      # all steps
+      # (https://docs.github.com/en/actions/reference/environment-variables#about-environment-variables).
+      - name: Set environment variables
+        run: echo "::set-env name=PLAYWRIGHT_BROWSERS_PATH::$HOME/.playwright"
+
+      # Cache all of our node_modules/ directories and playwright browser
+      # binaries to save ~30 seconds of install time.
+      - name: Restore node_modules/playwright
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      # Installs system dependencies needed for playwright. Not sure how to
+      # cache this.
+      - uses: microsoft/playwright-github-action@v1
+
+      - name: NPM install
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Lerna bootstrap
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm run bootstrap
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:sauce
         run: npm run test

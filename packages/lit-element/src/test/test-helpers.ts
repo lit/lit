@@ -22,3 +22,6 @@ export const getComputedStyleValue = (element: Element, property: string) =>
   window.ShadyCSS
     ? window.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
+
+export const stripExpressionComments = (html: string) =>
+  html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
