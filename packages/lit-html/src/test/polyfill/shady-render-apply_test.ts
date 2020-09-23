@@ -23,7 +23,7 @@ import {assert} from '@esm-bundle/chai';
 
 // TODO(sorvell): fix test.skips
 const testIfUsingNativeCSSVariables = (test: any) =>
-  (window.ShadyCSS && !window.ShadyCSS.nativeCss) ? test.skip : test.only;
+  window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test.only;
 
 suite('shady-render @apply', () => {
   test('styles with css custom properties using @apply render', function () {
