@@ -24,7 +24,7 @@ import {
   cssResultFromStyleSheet,
 } from '../lit-element.js';
 import {
-  shadyRender,
+  render,
   needsPolyfill,
   cssForScope,
 } from 'lit-html/shady-render.js';
@@ -48,7 +48,7 @@ if (needsPolyfill) {
   }
   /**
    * LitElement patches:
-   * * render: uses shadyRender
+   * * render: uses shady-render
    * * adoptStyles: populates scopeData for the element
    * * connectedCallback: applies ShadyCSS custom properties shimming
    */
@@ -63,7 +63,7 @@ if (needsPolyfill) {
       container: HTMLElement | DocumentFragment,
       options: RenderOptions
     ) {
-      shadyRender(result, container, options, this[SCOPE_KEY]);
+      render(result, container, options, this[SCOPE_KEY]);
     },
     enumerable: true,
     configurable: true,
