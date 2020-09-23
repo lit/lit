@@ -81,9 +81,8 @@ declare global {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
 (window['litElementVersions'] || (window['litElementVersions'] = [])).push(
-  '3.0.0-pre.1'
+  '__DEV_VERSION_NUMBER__'
 );
 
 type CSSResultFlatArray = CSSResultOrNative[];

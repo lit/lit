@@ -20,6 +20,8 @@ import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
 
+import * as packageJson from './package.json';
+
 // In CHECKSIZE mode we:
 // 1) Don't emit any files.
 // 2) Don't include copyright header comments.
@@ -160,6 +162,10 @@ export default [
       // itself.
       replace({
         'const DEV_MODE = true': 'const DEV_MODE = false',
+      }),
+      // Inject package version number
+      replace({
+        __DEV_VERSION_NUMBER__: packageJson.version,
       }),
       // This plugin automatically composes the existing TypeScript -> raw JS
       // sourcemap with the raw JS -> minified JS one that we're generating here.
