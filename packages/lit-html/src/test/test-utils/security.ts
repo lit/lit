@@ -26,11 +26,13 @@ function getPolicy() {
   let policy = {
     createHTML(rawHtml: string) {
       return rawHtml;
-    }
+    },
   };
   if (window.trustedTypes !== undefined) {
-    policy = window.trustedTypes.createPolicy('unsafehtml-test', policy) as
-        unknown as typeof policy;
+    policy = (window.trustedTypes.createPolicy(
+      'unsafehtml-test',
+      policy
+    ) as unknown) as typeof policy;
   }
   return policy;
 }

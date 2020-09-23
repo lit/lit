@@ -20,9 +20,7 @@ suite('shady-render without Shadow DOM or Custom Elements', () => {
   test('shady-render renders content', () => {
     const container = document.createElement('scope-1');
     document.body.appendChild(container);
-    const result = html`
-      <div>Rendered content.</div>
-    `;
+    const result = html` <div>Rendered content.</div> `;
     render(result, container, {}, 'scope-1');
     const div = container.querySelector('div');
     assert.equal(div!.textContent, 'Rendered content.');

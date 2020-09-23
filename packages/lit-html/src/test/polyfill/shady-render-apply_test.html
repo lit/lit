@@ -1,9 +1,9 @@
 <html>
   <head>
-    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css">
+    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
     <script>
       window.ShadyDOM = {force: true};
-      window.customElements = window.customElements || {}
+      window.customElements = window.customElements || {};
       window.customElements.forcePolyfill = true;
     </script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
@@ -12,13 +12,17 @@
   <body>
     <script type="module">
       // TODO(sorvell): node resolution doesn't seem to be working here.
-      import { mocha, sessionFinished, sessionFailed } from '../../../../node_modules/@web/test-runner-mocha/dist/standalone.js';
+      import {
+        mocha,
+        sessionFinished,
+        sessionFailed,
+      } from '../../../../node_modules/@web/test-runner-mocha/dist/standalone.js';
       // import { mocha, sessionFinished, sessionFailed } from '@web/test-runner-mocha';
 
       (async () => {
         try {
           // setup mocha
-          mocha.setup({ ui: 'tdd' });
+          mocha.setup({ui: 'tdd'});
 
           // or import your test file
           await import('./shady-render-apply_test.js');

@@ -19,73 +19,83 @@ import {assert} from '@esm-bundle/chai';
 
 // TODO(sorvell): fix test.skips
 suite('shady-render scoping shim', () => {
-  setup(function() {
-    if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse ||
-        typeof window.ShadyCSS === 'undefined' ||
-        window.ShadyCSS.nativeShadow ||
-        window.ShadyCSS.ScopingShim === undefined) {
+  setup(function () {
+    if (
+      typeof window.ShadyDOM === 'undefined' ||
+      !window.ShadyDOM.inUse ||
+      typeof window.ShadyCSS === 'undefined' ||
+      window.ShadyCSS.nativeShadow ||
+      window.ShadyCSS.ScopingShim === undefined
+    ) {
       this.skip();
       return;
     }
   });
 
-  let testName;
-
-  testName = 'scoped styles are applied for non-TemplateResult values';
-  test.skip(testName, function() {
+  test('scoped styles are applied for non-TemplateResult values', function () {
     const container = document.createElement('scope-1');
     window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
-        [':host { border-top: 2px solid black; }'], 'scope-1');
+      [':host { border-top: 2px solid black; }'],
+      'scope-1'
+    );
     document.body.appendChild(container);
     renderShadowRoot(undefined, container);
     assert.equal(
-        getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-        '2px');
+      getComputedStyle(container).getPropertyValue('border-top-width').trim(),
+      '2px'
+    );
     document.body.removeChild(container);
   });
 
-  testName = 'adopted CSS remains when rendering a TemplateResult after an ' +
-      'initial non-TemplateResult';
-  test.skip(testName, function() {
+  test('adopted CSS remains when rendering a TemplateResult after an initial non-TemplateResult', function () {
     const container = document.createElement('scope-2');
     window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
-        [':host { border-top: 2px solid black; } button { font-size: 7px; } '],
-        'scope-2');
+      [':host { border-top: 2px solid black; } button { font-size: 7px; } '],
+      'scope-2'
+    );
     document.body.appendChild(container);
     renderShadowRoot(undefined, container);
     assert.equal(
-        getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-        '2px');
+      getComputedStyle(container).getPropertyValue('border-top-width').trim(),
+      '2px'
+    );
     renderShadowRoot(html`<button>This is a button.</button>`, container);
     assert.equal(
-        getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-        '2px');
+      getComputedStyle(container).getPropertyValue('border-top-width').trim(),
+      '2px'
+    );
     assert.equal(
-        getComputedStyle(container.shadowRoot!.querySelector('button')!)
-            .getPropertyValue('font-size')
-            .trim(),
-        '7px');
+      getComputedStyle(container.shadowRoot!.querySelector('button')!)
+        .getPropertyValue('font-size')
+        .trim(),
+      '7px'
+    );
     document.body.removeChild(container);
   });
 
-  testName = 'Styles inserted in the initial render through NodeParts are ' +
-      'scoped.';
-  test.skip(testName, function() {
+  // TODO(sorvell): No longer supported. Only styles in TemplateResults are
+  // identified.
+  test.skip('Styles inserted in the initial render through NodeParts are scoped.', function () {
     const style = document.createElement('style');
     style.innerHTML = policy.createHTML(
-        ':host { border-top: 2px solid black; } button { font-size: 7px; }');
+      ':host { border-top: 2px solid black; } button { font-size: 7px; }'
+    );
     const container = document.createElement('scope-3');
     document.body.appendChild(container);
     renderShadowRoot(
-        html`${style}<button>This is a button.</button>`, container);
+      html`${style}<button>This is a button.</button>`,
+      container
+    );
     assert.equal(
-        getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-        '2px');
+      getComputedStyle(container).getPropertyValue('border-top-width').trim(),
+      '2px'
+    );
     assert.equal(
-        getComputedStyle(container.shadowRoot!.querySelector('button')!)
-            .getPropertyValue('font-size')
-            .trim(),
-        '7px');
+      getComputedStyle(container.shadowRoot!.querySelector('button')!)
+        .getPropertyValue('font-size')
+        .trim(),
+      '7px'
+    );
     document.body.removeChild(container);
   });
 });
