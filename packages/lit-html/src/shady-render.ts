@@ -59,24 +59,41 @@ export const render = (
 ) => {
   const previousScope = currentScope;
   currentScope = name;
-  litRender(result, container, options);
-  ensureStyles(container, currentScope);
+  // TODO(sorvell): goes with `styleElement` call below.
+  //const hasRendered = !!(container as any).$lit$;
+  const renderingIntoShadowRoot = container instanceof ShadowRoot;
+
+  // Note, in first scope render, render into a fragment and move to container
+  // to preserve outer => inner ordering important for @apply production
+  // before consumption.
+  const renderContainer = renderingIntoShadowRoot && !isScopeStyled(name)
+    ? document.createDocumentFragment()
+    : container;
+  litRender(result, renderContainer, options);
+
+  // Ensure scoping if rendering into ShadowRoot
+  if (renderingIntoShadowRoot) {
+    ensureStyles(currentScope);
+  }
   currentScope = previousScope;
+  if (renderContainer !== container) {
+    (container as any).$lit$ = (renderContainer as any).$lit$;
+    container.insertBefore(renderContainer, options?.renderBefore || null);
+  }
+
+  // TODO(sorvell): Decide if we need to call `styleElement` or not.
+  // Previously this was called here under these conditions;
+  // however, this was incomplete since you must call styleElement with
+  // any dynamic changes. Therefore, we'd like to push this to a user concern
+  // if possible.
+  //
+  // if (!hasRendered && renderingIntoShadowRoot) {
+  //   window.ShadyCSS!.styleElement((container as ShadowRoot).host);
+  // }
 };
 
-// const renderedContainers: WeakSet<Node> = new WeakSet();
-
-const ensureStyles = (
-  container: HTMLElement | DocumentFragment,
-  name: string
-) => {
-  if (
-    isScopeStyled(name) ||
-    !(
-      container.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ &&
-      !!(container as ShadowRoot).host
-    )
-  ) {
+const ensureStyles = (name: string) => {
+  if (isScopeStyled(name)) {
     return;
   }
   const css = cssForScope(name);
@@ -85,21 +102,11 @@ const ensureStyles = (
   scopeCss.delete(name);
   const template = document.createElement('template');
   if (css && css.length) {
-    // Note, this must be a style element to be compatible with apply shim
-    // const style = document.createElement('style');
-    // style.textContent = css.join('\n');
-    // template.content.appendChild(style);
     window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(css, name);
   }
   // TODO(sorvell): ShadyCSS requires a template but we're not using
   // it so just provide an empty template.
   window.ShadyCSS!.ScopingShim!.prepareTemplateStyles(template, name);
-
-  // TODO(sorvell): Do we need to call styleElement here?
-  // if (!renderedContainers.has(container)) {
-  //   renderedContainers.add(container);
-  //   window.ShadyCSS!.styleElement((container as ShadowRoot).host);
-  // }
 };
 
 /**
@@ -130,7 +137,7 @@ if (needsPolyfill) {
     }
     let template = templateCache.get(strings);
     if (template === undefined) {
-      templateCache.set(strings, (template = new Template(result)));
+      templateCache.set(strings, (template = new ShadyTemplate(result)));
     }
     return template;
   }
@@ -141,42 +148,27 @@ if (needsPolyfill) {
     configurable: true,
   });
 
-  interface PolyfilledTemplate extends Template {
-    _baseCreateElement: (html: string) => HTMLTemplateElement;
-  }
-
-  /**
-   * Patch Template._createElement to extract style elements from the template
-   * and store all style.textContent in the shady scope data.
-   */
-  function _createElement(this: PolyfilledTemplate, html: string) {
-    //console.log('patched _createElement:', name);
-    const template = this._baseCreateElement(html);
-    window.ShadyCSS!.ScopingShim!.prepareTemplateDom(template, currentScope);
-    const css = cssForScope(currentScope);
-    if (css !== undefined) {
-      // Remove styles and store their textContent.
-      const styles = template.content.querySelectorAll('style');
-      css?.push(
-        ...Array.from(styles).map((style) => {
-          style.parentNode?.removeChild(style);
-          return style.textContent!;
-        })
-      );
+  class ShadyTemplate extends Template {
+    /**
+     * Override to extract style elements from the template
+     * and store all style.textContent in the shady scope data.
+     */
+    _createElement(html: string) {
+      //console.log('patched _createElement:', name);
+      const template = super._createElement(html);
+      window.ShadyCSS!.ScopingShim!.prepareTemplateDom(template, currentScope);
+      const css = cssForScope(currentScope);
+      if (css !== undefined) {
+        // Remove styles and store their textContent.
+        const styles = template.content.querySelectorAll('style');
+        css?.push(
+          ...Array.from(styles).map((style) => {
+            style.parentNode?.removeChild(style);
+            return style.textContent!;
+          })
+        );
+      }
+      return template;
     }
-    return template;
   }
-
-  Object.defineProperties(Template.prototype, {
-    _baseCreateElement: {
-      value: Template.prototype._createElement,
-      enumerable: true,
-      configurable: true,
-    },
-    _createElement: {
-      value: _createElement,
-      enumerable: true,
-      configurable: true,
-    },
-  });
 }

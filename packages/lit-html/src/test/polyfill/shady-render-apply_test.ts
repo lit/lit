@@ -21,9 +21,8 @@ import {assert} from '@esm-bundle/chai';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// TODO(sorvell): fix test.skips
 const testIfUsingNativeCSSVariables = (test: any) =>
-  window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test.only;
+  window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test;
 
 suite('shady-render @apply', () => {
   test('styles with css custom properties using @apply render', function () {
@@ -83,7 +82,7 @@ suite('shady-render @apply', () => {
     document.body.removeChild(container);
   });
 
-  test.skip('styles with css custom properties using @apply render in different contexts', async () => {
+  test('styles with css custom properties using @apply render in different contexts', async () => {
     const applyUserContent = htmlWithApply`
         <style>
           div {
@@ -101,6 +100,7 @@ suite('shady-render @apply', () => {
       const applyUser = document.createElement('apply-user');
       document.body.appendChild(applyUser);
       renderShadowRoot(applyUserContent, applyUser);
+      window.ShadyCSS!.styleElement(applyUser);
       const applyUserDiv = applyUser.shadowRoot!.querySelector('div');
       const applyUserStyle = getComputedStyle(applyUserDiv!);
       assert.equal(
@@ -131,11 +131,14 @@ suite('shady-render @apply', () => {
       const applyProducer = document.createElement('apply-producer');
       document.body.appendChild(applyProducer);
       renderShadowRoot(producerContent, applyProducer);
+      window.ShadyCSS!.styleElement(applyProducer);
       const usersInProducer = applyProducer.shadowRoot!.querySelectorAll(
         'apply-user'
       );
       renderShadowRoot(applyUserContent, usersInProducer[0]);
+      window.ShadyCSS!.styleElement(usersInProducer[0]);
       renderShadowRoot(applyUserContent, usersInProducer[1]);
+      window.ShadyCSS!.styleElement(usersInProducer[1]);
       const userInProducerStyle1 = getComputedStyle(
         usersInProducer[0].shadowRoot!.querySelector('div')!
       );
@@ -167,9 +170,6 @@ suite('shady-render @apply', () => {
     testApplyProducer();
   });
 
-  // TODO(sorvell): relies on the template actually having the right styles in
-  // it?
-
   // TODO(sorvell): remove skip when this ShadyCSS PR is merged:
   // https://github.com/webcomponents/shadycss/pull/227.
   testIfUsingNativeCSSVariables(test)(
@@ -186,7 +186,6 @@ suite('shady-render @apply', () => {
             </style>
             <div>Testing...</div>`;
           renderShadowRoot(result, this);
-          // window.ShadyCSS!.styleElement(this);
         }
       }
       customElements.define('apply-user-ce1', E);
@@ -214,8 +213,6 @@ suite('shady-render @apply', () => {
       const applyProducer = document.createElement('apply-producer-ce');
       document.body.appendChild(applyProducer);
       renderShadowRoot(producerContent, applyProducer);
-      // window.ShadyCSS!.styleElement(applyProducer);
-      // window.ShadyCSS!.styleSubtree(applyProducer);
       const user1 = applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
       const userInProducerStyle1 = getComputedStyle(
         user1.shadowRoot!.querySelector('div')!

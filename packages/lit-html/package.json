@@ -33,7 +33,7 @@
     "build:ts:watch": "tsc --watch",
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/!(shady*.js)_test.(html)'",
+    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/!(shady*.js)_test.(js|html)'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",

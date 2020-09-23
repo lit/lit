@@ -198,11 +198,10 @@ suite('shady-render', () => {
     document.body.removeChild(container);
   });
 
-  test.skip('parts around styles with parts render/update', () => {
+  test('parts around styles with parts render/update', () => {
     const container = document.createElement('scope-3a');
     document.body.appendChild(container);
     const renderTemplate = (
-      border: string,
       a: string,
       b: string,
       c: string
@@ -211,7 +210,7 @@ suite('shady-render', () => {
         <div id="a">${a}</div>
         <style>
           div {
-            border: ${border};
+            border: 1px solid black;
           }
         </style>
         <div id="b">${b}</div>
@@ -220,7 +219,7 @@ suite('shady-render', () => {
         <style></style> `;
       renderShadowRoot(result, container);
     };
-    renderTemplate('1px solid black', 'a', 'b', 'c');
+    renderTemplate('a', 'b', 'c');
     const shadowRoot = container.shadowRoot!;
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b`);
@@ -230,7 +229,7 @@ suite('shady-render', () => {
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
       '1px'
     );
-    renderTemplate('2px solid black', 'a1', 'b1', 'c1');
+    renderTemplate('a1', 'b1', 'c1');
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a1`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b1`);
     assert.equal(shadowRoot.querySelector('#c')!.textContent, `c1`);
@@ -242,11 +241,10 @@ suite('shady-render', () => {
     document.body.removeChild(container);
   });
 
-  test.skip('parts around styles with parts render/update when stamped into muliple containers', () => {
+  test('parts around styles with parts render/update when stamped into muliple containers', () => {
     const container = document.createElement('scope-3b');
     document.body.appendChild(container);
     const renderTemplate = (
-      border: string,
       a: string,
       b: string,
       c: string,
@@ -256,7 +254,7 @@ suite('shady-render', () => {
         <div id="a">${a}</div>
         <style>
           div {
-            border: ${border};
+            border: 1px solid black;
           }
         </style>
         <div id="b">${b}</div>
@@ -267,14 +265,13 @@ suite('shady-render', () => {
     };
     // create a dummy element first
     renderTemplate(
-      '1px solid black',
       '',
       '',
       '',
       document.createElement('scope-3b')
     );
     // then test the 2nd element made for this scope
-    renderTemplate('1px solid black', 'a', 'b', 'c');
+    renderTemplate('a', 'b', 'c');
     const shadowRoot = container.shadowRoot!;
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b`);
@@ -284,7 +281,7 @@ suite('shady-render', () => {
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
       '1px'
     );
-    renderTemplate('2px solid black', 'a1', 'b1', 'c1');
+    renderTemplate('a1', 'b1', 'c1');
     assert.equal(shadowRoot.querySelector('#a')!.textContent, `a1`);
     assert.equal(shadowRoot.querySelector('#b')!.textContent, `b1`);
     assert.equal(shadowRoot.querySelector('#c')!.textContent, `c1`);
@@ -329,6 +326,7 @@ suite('shady-render', () => {
     document.body.removeChild(container2);
   });
 
+  // TODO(sorvell): This will only be supported via static bindings.
   test.skip('part values render into styles once per scope', function () {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
       this.skip();

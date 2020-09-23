@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.0-pre.3] - 2020-09-21
 
 ### Changed
+* [Breaking] The `shady-render` module has a couple of breaking changes. (1) Bindings in style elements are no longer supported. Previously these could not change and in the future they may be supported via static bindings. (2) `ShadyCSS.styleElement` is no longer called automatically. This must be called whenever dynamic changes that affect styling are made that involve css custom property shimming (older browsers) or changes to custom properties used via the deprecated `@apply` feature. It was previously called only on first render, and it is now up to the user to decide when this should be called.
 * [Breaking] `render()` no longer clears the container it's rendered to. It now appends to the container by default.
 * [Breaking] Expressions in comments are not rendered or updated.
 * [Breaking] Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.

@@ -17,7 +17,6 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
-// TODO(sorvell): fix test.skips
 suite('shady-render scoping shim', () => {
   setup(function () {
     if (
