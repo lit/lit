@@ -1,11 +1,17 @@
 interface ShadyCSS {
   nativeCss: boolean;
   nativeShadow: boolean;
-  ScopingShim: undefined|{
-    prepareTemplateDom(template: Element, elementName: string): void;
-    prepareAdoptedCssText(cssTextArray: string[], elementName: string): void;
-    prepareTemplate(template: Element, elementName: string): void;
-  };
+  styleElement(host: Element, overrideProps?: {[key: string]: string}): void;
+  ScopingShim:
+    | undefined
+    | {
+        prepareTemplateDom(template: Element, elementName: string): void;
+        prepareAdoptedCssText(
+          cssTextArray: string[],
+          elementName: string
+        ): void;
+        prepareTemplateStyles(template: Element, elementName: string): void;
+      };
 }
 
 interface ShadyDOM {
