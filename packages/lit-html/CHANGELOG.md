@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## [2.0.0-pre.2] - 2020-09-21
+## [2.0.0-pre.3] - 2020-09-21
 
 ### Changed
 * [Breaking] `render()` no longer clears the container it's rendered to. It now appends to the container by default.
