@@ -33,6 +33,47 @@ import {
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
 
+(function (arr) {
+  arr.forEach(function (item) {
+    if (item.hasOwnProperty('remove')) {
+      return;
+    }
+    Object.defineProperty(item, 'remove', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: function remove() {
+        this.parentNode.removeChild(this);
+      }
+    });
+  });
+})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+
+// Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/append()/append().md
+(function (arr) {
+  arr.forEach(function (item) {
+    if (item.hasOwnProperty('append')) {
+      return;
+    }
+    Object.defineProperty(item, 'append', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: function append() {
+        var argArr = Array.prototype.slice.call(arguments),
+          docFrag = document.createDocumentFragment();
+        
+        argArr.forEach(function (argItem) {
+          var isNode = argItem instanceof Node;
+          docFrag.appendChild(isNode ? argItem : document.createTextNode(String(argItem)));
+        });
+        
+        this.appendChild(docFrag);
+      }
+    });
+  });
+})([Element.prototype, Document.prototype, DocumentFragment.prototype]);
+
 suite('lit-html', () => {
   let container: HTMLDivElement;
 
@@ -95,18 +136,20 @@ suite('lit-html', () => {
 
     test('text child of element with unbound quoted attribute', () => {
       assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
-      assertRender(
-        html`<script a="b">${'d'}</script>`,
-        '<script a="b">d</script>'
-      );
+
+      render(html`<script a="b" type="foo">${'d'}</script>`, container);
+      assert.include(
+        ['<script a="b" type="foo">d</script>', '<script type="foo" a="b">d</script>'],
+        stripExpressionComments(container.innerHTML));
     });
 
     test('text child of element with unbound unquoted attribute', () => {
       assertRender(html`<div a=b>${'d'}</div>`, '<div a="b">d</div>');
-      assertRender(
-        html`<script a=b>${'d'}</script>`,
-        '<script a="b">d</script>'
-      );
+
+      render(html`<script a=b type="foo">${'d'}</script>`, container);
+      assert.include(
+        ['<script a="b" type="foo">d</script>', '<script type="foo" a="b">d</script>'],
+        stripExpressionComments(container.innerHTML));
     });
 
     test('renders parts with whitespace after them', () => {
@@ -160,46 +203,46 @@ suite('lit-html', () => {
       // <textarea> since comments aren't parsed and we have to search the text
       // anyway.
       assertRender(
-        html`<script>i < j ${'A'}</script>`,
-        '<script>i < j A</script>'
+        html`<script type="foo">i < j ${'A'}</script>`,
+        '<script type="foo">i < j A</script>'
       );
     });
 
     test('text in raw text element after >', () => {
       assertRender(
-        html`<script>i > j ${'A'}</script>`,
-        '<script>i > j A</script>'
+        html`<script type="foo">i > j ${'A'}</script>`,
+        '<script type="foo">i > j A</script>'
       );
     });
 
     test('text in raw text element inside tag-like string', () => {
       assertRender(
-        html`<script>"<div a=${'A'}></div>";</script>`,
-        '<script>"<div a=A></div>";</script>'
+        html`<script type="foo">"<div a=${'A'}></div>";</script>`,
+        '<script type="foo">"<div a=A></div>";</script>'
       );
     });
 
     test('renders inside <script>: only node', () => {
-      assertRender(html`<script>${'foo'}</script>`, '<script>foo</script>');
+      assertRender(html`<script type="foo">${'foo'}</script>`, '<script type="foo">foo</script>');
     });
 
     test('renders inside <script>: first node', () => {
-      assertRender(html`<script>${'foo'}A</script>`, '<script>fooA</script>');
+      assertRender(html`<script type="foo">${'foo'}A</script>`, '<script type="foo">fooA</script>');
     });
 
     test('renders inside <script>: last node', () => {
-      assertRender(html`<script>A${'foo'}</script>`, '<script>Afoo</script>');
+      assertRender(html`<script type="foo">A${'foo'}</script>`, '<script type="foo">Afoo</script>');
     });
 
     test('renders inside <script>: multiple bindings', () => {
       assertRender(
-        html`<script>A${'foo'}B${'bar'}C</script>`,
-        '<script>AfooBbarC</script>'
+        html`<script type="foo">A${'foo'}B${'bar'}C</script>`,
+        '<script type="foo">AfooBbarC</script>'
       );
     });
 
     test('renders inside <script>: attribute-like', () => {
-      assertRender(html`<script>a=${'foo'}</script>`, '<script>a=foo</script>');
+      assertRender(html`<script type="foo">a=${'foo'}</script>`, '<script type="foo">a=foo</script>');
     });
 
     test('text after script element', () => {
@@ -212,15 +255,15 @@ suite('lit-html', () => {
 
     test('text inside raw text element, after different raw tag', () => {
       assertRender(
-        html`<script><style></style>"<div a=${'A'}></div>"</script>`,
-        '<script><style></style>"<div a=A></div>"</script>'
+        html`<script type="foo"><style></style>"<div a=${'A'}></div>"</script>`,
+        '<script type="foo"><style></style>"<div a=A></div>"</script>'
       );
     });
 
     test('text inside raw text element, after different raw end tag', () => {
       assertRender(
-        html`<script></style>"<div a=${'A'}></div>"</script>`,
-        '<script></style>"<div a=A></div>"</script>'
+        html`<script type="foo"></style>"<div a=${'A'}></div>"</script>`,
+        '<script type="foo"></style>"<div a=A></div>"</script>'
       );
     });
 
@@ -282,16 +325,16 @@ suite('lit-html', () => {
     test('text after quoted bound attribute', () => {
       assertRender(html`<div a="${'A'}">${'A'}</div>`, '<div a="A">A</div>');
       assertRender(
-        html`<script a="${'A'}">${'A'}</script>`,
-        '<script a="A">A</script>'
+        html`<script type="foo" a="${'A'}">${'A'}</script>`,
+        '<script type="foo" a="A">A</script>'
       );
     });
 
     test('text after unquoted bound attribute', () => {
       assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
       assertRender(
-        html`<script a=${'A'}>${'A'}</script>`,
-        '<script a="A">A</script>'
+        html`<script type="foo" a=${'A'}>${'A'}</script>`,
+        '<script type="foo" a="A">A</script>'
       );
     });
 

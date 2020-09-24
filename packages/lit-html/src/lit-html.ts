@@ -293,7 +293,10 @@ export const render = (
   part._setValue(value);
 };
 
-const walker = d.createTreeWalker(d);
+const walker = d.createTreeWalker(d,
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false);
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -459,7 +462,7 @@ class Template {
 
     // TODO (justinfagnani): if regex is not textRegex log a warning for a
     // malformed template in dev mode.
-
+    
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
     this.__element.innerHTML = html + this.__strings[l];
@@ -479,13 +482,23 @@ class Template {
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
           const {attributes} = node as Element;
+          const attrsToRemove = [];
           for (let i = 0; i < attributes.length; i++) {
-            const {name, value} = attributes[i];
+            // This is the name of the attribute we're iterating over, but not
+            // _neccessarily_ the name of the attribute we will create a part
+            // for. They can be different in browsers that don't iterate on
+            // attributes in source order. In that case the attrNames array
+            // contains the attribute name we'll process next. We only need the
+            // attribute name here to know if we should process a bound attribute
+            // on this element.
+            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
-              i--;
-              (node as Element).removeAttribute(name);
+              const realName = attrNames[attrNameIndex++];
+              // Lowercase for case-sensitive SVG attributes like viewBox
+              const value = (node as Element).getAttribute(realName.toLowerCase() + boundAttributeSuffix)!;
+              attrsToRemove.push(name);
               const statics = value.split(marker);
-              const m = /([.?@])?(.*)/.exec(attrNames[attrNameIndex++])!;
+              const m = /([.?@])?(.*)/.exec(realName)!;
               this.__parts.push({
                 __type: ATTRIBUTE_PART,
                 __index: nodeIndex,
@@ -502,13 +515,15 @@ class Template {
               });
               bindingIndex += statics.length - 1;
             } else if (name === marker) {
-              (node as Element).removeAttribute(name);
-              i--;
+              attrsToRemove.push(name);
               this.__parts.push({
                 __type: ELEMENT_PART,
                 __index: nodeIndex,
               });
             }
+          }
+          for (const name of attrsToRemove) {
+            (node as Element).removeAttribute(name);
           }
         }
         // TODO (justinfagnani): benchmark the regex against testing for each
@@ -741,7 +756,7 @@ export class NodePart {
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this._commitNode(new Text(value as string));
+      this._commitNode(document.createTextNode(value as string));
     }
     this._value = value;
   }
