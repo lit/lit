@@ -15,7 +15,7 @@ const params = document.location.search
 const defaults = {
   method: 'repeat' as keyof typeof methods,
   itemType: 'li' as keyof typeof itemTemplates,
-  initialCount: 2000,
+  initialCount: 1000,
   removeCount: 0,
   moveCount: 0,
   addCount: 0,
@@ -38,12 +38,12 @@ const preset: {[index: string]: (Partial<typeof defaults>)} = {
   remove: {removeCount: 10, from: 100, loopCount: 50},
   removeMirror: {removeCount: 10, from: 100, mirror: true, loopCount: 10},
   reverse: {reverse: true},
-  swapOne: {swapCount: 1, from: 100, to: 1800, loopCount: 100},
-  swapMany: {swapCount: 10, from: 100, to: 1800},
-  moveForwardOne: {moveCount: 1, from: 100, to: 1800, loopCount: 100},
-  moveForwardMany: {moveCount: 10, from: 100, to: 1800},
-  moveBackwardOne: {moveCount: 1, from: 1800, to: 100, loopCount: 100},
-  moveBackwardMany: {moveCount: 10, from: 1800, to: 100},
+  swapOne: {swapCount: 1, from: 100, to: 800, loopCount: 100},
+  swapMany: {swapCount: 10, from: 100, to: 800},
+  moveForwardOne: {moveCount: 1, from: 100, to: 800, loopCount: 100},
+  moveForwardMany: {moveCount: 10, from: 100, to: 800},
+  moveBackwardOne: {moveCount: 1, from: 800, to: 100, loopCount: 100},
+  moveBackwardMany: {moveCount: 10, from: 800, to: 100},
   shuffle: {shuffle: true, loopCount: 5},
 };
 
@@ -94,6 +94,10 @@ for (const [step, values] of Object.entries(routine)) {
     performance.mark('update-start');
   } else {
     
+    // TODO(kschaaf): Accumulate measurements around just the render
+    // once/if https://github.com/Polymer/tachometer/issues/196 is resolved
+    performance.mark(`${step}-start`);
+
     for (let i=0; i<s.loopCount; i++) {
 
       if (s.replace) {
@@ -173,10 +177,13 @@ for (const [step, values] of Object.entries(routine)) {
         }
       }
 
-      performance.mark(`${step}-start`);
+      // TODO(kschaaf): Accumulate measurements around just the render
+      // once/if https://github.com/Polymer/tachometer/issues/196 is resolved
+      // performance.mark(`${step}-start`);
       render(renderTemplate(items, renderItem), container);
-      performance.measure(step, `${step}-start`);
+      // performance.measure(step, `${step}-start`);
     }
+    performance.measure(step, `${step}-start`);
   }
 }
 performance.measure('update', `update-start`)
