@@ -104,7 +104,7 @@ jobs:
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config lit-html/repeat/tachometer.json \
+            --config lit-html/repeat/tachometer-full.json \
             --json-file lit-html/repeat/results-full.json
 
       - name: Report lit-html-repeat-full
