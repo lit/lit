@@ -126,6 +126,13 @@ export default {
               dest: pathLib.dirname(name),
             })),
           }),
+          // Copy the tests.
+          copy({
+            targets: [{
+              src: `src/test/polyfill/*_test.html`,
+              dest: ['development/test/polyfill', 'test/polyfill'],
+            }]
+          }),
         ]),
   ],
 };

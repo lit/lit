@@ -22,12 +22,9 @@ import {
   CSSResultFlatArray,
   CSSResultOrNative,
   cssResultFromStyleSheet,
+  PropertyValues,
 } from '../lit-element.js';
-import {
-  render,
-  needsPolyfill,
-  cssForScope,
-} from 'lit-html/shady-render.js';
+import {render, needsPolyfill, cssForScope} from 'lit-html/shady-render.js';
 import {RenderOptions} from 'lit-html';
 export * from '../lit-element.js';
 
@@ -40,6 +37,7 @@ if (needsPolyfill) {
   const SCOPE_KEY = '__localName';
   interface PolyfilledLitElement extends LitElement {
     __baseConnectedCallback: () => void;
+    __baseUpdate: (changedProperties: PropertyValues) => void;
   }
 
   type LitElementConstructor = typeof LitElement;
@@ -86,9 +84,9 @@ if (needsPolyfill) {
     const name = ((this.constructor as PolyfilledLitElementConstructor)[
       SCOPE_KEY
     ] = this.localName);
-    const css = cssForScope(name);
-    if (css !== undefined) {
-      css.push(
+    const scopeCss = cssForScope(name);
+    if (scopeCss !== undefined) {
+      scopeCss.adoptedCss.push(
         ...styles.map(
           (v: CSSResultOrNative) =>
             (v instanceof CSSStyleSheet ? cssResultFromStyleSheet(v) : v)
@@ -103,7 +101,27 @@ if (needsPolyfill) {
    */
   function connectedCallback(this: PolyfilledLitElement) {
     this.__baseConnectedCallback();
-    window.ShadyCSS!.styleElement(this);
+    // Note, must do first update separately so that we're ensured
+    // that rendering has completed before calling this.
+    if (this.hasUpdated) {
+      window.ShadyCSS!.styleElement(this);
+    }
+  }
+
+  /**
+   * Patch update to apply ShadyCSS custom properties shimming for first update.
+   */
+  function update(
+    this: PolyfilledLitElement,
+    changedProperties: PropertyValues
+  ) {
+    const isFirstUpdate = !this.hasUpdated;
+    this.__baseUpdate(changedProperties);
+    // Note, must do first update here so rendering has completed before
+    // calling this and styles are correct by updated/firstUpdated.
+    if (isFirstUpdate) {
+      window.ShadyCSS!.styleElement(this);
+    }
   }
 
   Object.defineProperties(LitElement.prototype, {
@@ -111,11 +129,25 @@ if (needsPolyfill) {
     connectedCallback: {
       value: connectedCallback,
       enumerable: true,
+      writable: true,
       configurable: true,
     },
     __baseConnectedCallback: {
       value: LitElement.prototype.connectedCallback,
       enumerable: true,
+      writable: true,
+      configurable: true,
+    },
+    update: {
+      value: update,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    },
+    __baseUpdate: {
+      value: (LitElement.prototype as any).update,
+      enumerable: true,
+      writable: true,
       configurable: true,
     },
   });

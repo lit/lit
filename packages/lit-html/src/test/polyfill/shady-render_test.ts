@@ -201,11 +201,7 @@ suite('shady-render', () => {
   test('parts around styles with parts render/update', () => {
     const container = document.createElement('scope-3a');
     document.body.appendChild(container);
-    const renderTemplate = (
-      a: string,
-      b: string,
-      c: string
-    ) => {
+    const renderTemplate = (a: string, b: string, c: string) => {
       const result = html`<style></style>
         <div id="a">${a}</div>
         <style>
@@ -264,12 +260,7 @@ suite('shady-render', () => {
       renderShadowRoot(result, host);
     };
     // create a dummy element first
-    renderTemplate(
-      '',
-      '',
-      '',
-      document.createElement('scope-3b')
-    );
+    renderTemplate('', '', '', document.createElement('scope-3b'));
     // then test the 2nd element made for this scope
     renderTemplate('a', 'b', 'c');
     const shadowRoot = container.shadowRoot!;

@@ -526,12 +526,14 @@ export class Template {
             // We can't use empty text nodes as markers because they're
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
+              // TODO(sorvell): replace with `append` when supported by ShadyDOM
               (node as Element).appendChild(
                 new Text(strings[i]) || createMarker()
               );
               this.__parts.push({__type: NODE_PART, __index: ++nodeIndex});
               bindingIndex++;
             }
+            // TODO(sorvell): replace with `append` when supported by ShadyDOM
             (node as Element).appendChild(
               new Text(strings[lastIndex]) || createMarker()
             );
@@ -835,7 +837,9 @@ export class NodePart {
   __clear(start: ChildNode | null = this._startNode.nextSibling) {
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
-      start!.remove();
+      // TODO(sorvell): replace with remove when supported by ShadyDOM
+      //start!.remove();
+      start!.parentNode?.removeChild(start);
       start = n;
     }
   }

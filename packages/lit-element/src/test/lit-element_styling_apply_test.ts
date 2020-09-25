@@ -14,7 +14,10 @@
 
 import '@webcomponents/shadycss/apply-shim.min.js';
 
-import {html as htmlWithStyles, LitElement} from '../lit-element.js';
+import {
+  html as htmlWithStyles,
+  LitElement,
+} from '../lib/lit-element-polyfill.js';
 
 import {
   generateElementName,
@@ -24,7 +27,7 @@ import {
 import {assert} from '@esm-bundle/chai';
 
 // TODO(sorvell): Enable when polyfill support is available.
-suite.skip('Styling @apply', () => {
+suite('Styling @apply', () => {
   let container: HTMLElement;
 
   setup(() => {

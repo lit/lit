@@ -27,24 +27,33 @@ import {
   Template,
 } from './lit-html.js';
 
+type ScopeCSS = {css: string[]; adoptedCss: string[]};
+
 const styledScopes: Set<string> = new Set();
-const scopeCss: Map<string, string[]> = new Map();
+const scopeCssStore: Map<string, ScopeCSS> = new Map();
 let currentScope: string;
 
-export const needsPolyfill =
-  window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow;
+export const needsPolyfill = !!(
+  window.ShadyCSS !== undefined &&
+  (!window.ShadyCSS.nativeShadow || window.ShadyCSS.ApplyShim)
+);
 export const isScopeStyled = (name: string | undefined) =>
   needsPolyfill && name !== undefined ? styledScopes.has(name) : true;
+
 export const cssForScope = (name: string) => {
   if (isScopeStyled(name)) {
     return;
   }
-  let css = scopeCss.get(name);
-  if (css === undefined) {
-    scopeCss.set(name, (css = []));
+  let scopeCss = scopeCssStore.get(name);
+  if (scopeCss === undefined) {
+    scopeCssStore.set(name, (scopeCss = {css: [], adoptedCss: []}));
   }
-  return css;
+  return scopeCss;
 };
+
+interface ShadyTemplateResult extends TemplateResult {
+  __renderIntoShadowRoot?: boolean;
+}
 
 /**
  * Patch `render` to:
@@ -62,17 +71,28 @@ export const render = (
   // TODO(sorvell): goes with `styleElement` call below.
   //const hasRendered = !!(container as any).$lit$;
   const renderingIntoShadowRoot = container instanceof ShadowRoot;
+  const renderingTemplateResult = !!(result as any)?._$litType$;
+  // If result is a TemplateResult decorate it so that when the template
+  // is created, styling can be shimmed.
+  if (renderingTemplateResult) {
+    (result as ShadyTemplateResult).__renderIntoShadowRoot = renderingIntoShadowRoot;
+  }
 
   // Note, in first scope render, render into a fragment and move to container
   // to preserve outer => inner ordering important for @apply production
   // before consumption.
-  const renderContainer = renderingIntoShadowRoot && !isScopeStyled(name)
-    ? document.createDocumentFragment()
-    : container;
+  // *** This must be done here to support rendering non-templateResults
+  // into shadowRoots.
+  const renderContainer =
+    renderingIntoShadowRoot && !isScopeStyled(name)
+      ? document.createDocumentFragment()
+      : container;
   litRender(result, renderContainer, options);
 
-  // Ensure scoping if rendering into ShadowRoot
-  if (renderingIntoShadowRoot) {
+  // Ensure styles are scoped if a TemplateResult is *not* being rendered.
+  // Note, if a TemplateResult *is* being rendered, scoping is done
+  // in `Template._createElement`, before Template parts are created.
+  if (renderingIntoShadowRoot && !renderingTemplateResult) {
     ensureStyles(currentScope);
   }
   currentScope = previousScope;
@@ -92,22 +112,97 @@ export const render = (
   // }
 };
 
-const ensureStyles = (name: string) => {
+const ensureStyles = (name: string, template?: HTMLTemplateElement) => {
   if (isScopeStyled(name)) {
     return;
   }
-  const css = cssForScope(name);
+  template =
+    template ??
+    addStyleToTemplate(
+      document.createElement('template'),
+      cssForScope(currentScope)
+    );
+  // Mark this scope as styled.
   styledScopes.add(name);
   // Remove stored data
-  scopeCss.delete(name);
-  const template = document.createElement('template');
-  if (css && css.length) {
-    window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(css, name);
-  }
-  // TODO(sorvell): ShadyCSS requires a template but we're not using
-  // it so just provide an empty template.
-  window.ShadyCSS!.ScopingShim!.prepareTemplateStyles(template, name);
+  scopeCssStore.delete(name);
+  window.ShadyCSS!.prepareTemplateStyles(template, name);
 };
+
+const addStyleToTemplate = (
+  template: HTMLTemplateElement,
+  scopeCss?: ScopeCSS
+) => {
+  if (scopeCss !== undefined) {
+    const style = document.createElement('style');
+    style.textContent = [...scopeCss.css, ...scopeCss!.adoptedCss].join('\n');
+    // Place aggregate style into template. Note, ShadyCSS will remove it
+    // if polyfilled ShadowDOM is used.
+    if (style !== undefined) {
+      template.content.insertBefore(style, template.content.firstChild);
+    }
+  }
+  return template;
+};
+
+const scopedTemplateCache = new Map<
+  string,
+  Map<TemplateStringsArray, Template>
+>();
+
+/**
+ * Patch NodePart._getTemplate to look up templates in a cache bucketed
+ * by element name.
+ */
+function _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
+  //console.log('patched _getTemplate:', name);
+  let templateCache = scopedTemplateCache.get(currentScope);
+  if (templateCache === undefined) {
+    scopedTemplateCache.set(currentScope, (templateCache = new Map()));
+  }
+  let template = templateCache.get(strings);
+  if (template === undefined) {
+    templateCache.set(strings, (template = new ShadyTemplate(result)));
+  }
+  return template;
+}
+
+let currentResult: ShadyTemplateResult;
+class ShadyTemplate extends Template {
+  constructor(result: TemplateResult) {
+    // TODO(sorvell): Decide if Template should store the result to avoid this.
+    // We need the `result` in `_createElement` which is called directly
+    // from the constructor. Since we can't access this before super, uce
+    // a side channel to store the data.
+    currentResult = result;
+    super(result);
+  }
+  /**
+   * Override to extract style elements from the template
+   * and store all style.textContent in the shady scope data.
+   */
+  _createElement(html: string) {
+    //console.log('patched _createElement:', name);
+    const template = super._createElement(html);
+    window.ShadyCSS!.prepareTemplateDom(template, currentScope);
+    const scopeCss = cssForScope(currentScope);
+    if (scopeCss !== undefined) {
+      // Remove styles and store their textContent.
+      const styles = template.content.querySelectorAll('style');
+      scopeCss.css.push(
+        ...Array.from(styles).map((style) => {
+          style.parentNode?.removeChild(style);
+          return style.textContent!;
+        })
+      );
+      // Apply styles if this is the result rendering into shadowRoot.
+      if (currentResult.__renderIntoShadowRoot) {
+        ensureStyles(currentScope, addStyleToTemplate(template, scopeCss));
+      }
+    }
+    return template;
+  }
+}
 
 /**
  * lit-html patches. These properties cannot be renamed.
@@ -120,55 +215,9 @@ if (needsPolyfill) {
     'color: lightgreen; font-style: italic'
   );
 
-  const scopedTemplateCache = new Map<
-    string,
-    Map<TemplateStringsArray, Template>
-  >();
-
-  /**
-   * Patch NodePart._getTemplate to look up templates in a cache bucketed
-   * by element name.
-   */
-  function _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
-    //console.log('patched _getTemplate:', name);
-    let templateCache = scopedTemplateCache.get(currentScope);
-    if (templateCache === undefined) {
-      scopedTemplateCache.set(currentScope, (templateCache = new Map()));
-    }
-    let template = templateCache.get(strings);
-    if (template === undefined) {
-      templateCache.set(strings, (template = new ShadyTemplate(result)));
-    }
-    return template;
-  }
-
   Object.defineProperty(NodePart.prototype, '_getTemplate', {
     value: _getTemplate,
     enumerable: true,
     configurable: true,
   });
-
-  class ShadyTemplate extends Template {
-    /**
-     * Override to extract style elements from the template
-     * and store all style.textContent in the shady scope data.
-     */
-    _createElement(html: string) {
-      //console.log('patched _createElement:', name);
-      const template = super._createElement(html);
-      window.ShadyCSS!.ScopingShim!.prepareTemplateDom(template, currentScope);
-      const css = cssForScope(currentScope);
-      if (css !== undefined) {
-        // Remove styles and store their textContent.
-        const styles = template.content.querySelectorAll('style');
-        css?.push(
-          ...Array.from(styles).map((style) => {
-            style.parentNode?.removeChild(style);
-            return style.textContent!;
-          })
-        );
-      }
-      return template;
-    }
-  }
 }

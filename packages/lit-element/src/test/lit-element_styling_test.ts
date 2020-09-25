@@ -64,7 +64,9 @@ suite('Styling', () => {
     assert.equal(getComputedStyleValue(div!, 'border-top-width').trim(), '2px');
   });
 
-  test('shared styling rendered into shadowRoot is styled', async () => {
+  // TODO(sorvell): To be compatible with shady-render style elements cannot
+  // be node values.
+  test.skip('shared styling rendered into shadowRoot is styled', async () => {
     const style = htmlWithStyles`<style>
       div {
         border: 4px solid blue;
@@ -457,33 +459,29 @@ suite('Static get styles', () => {
     assert.equal(getComputedStyleValue(div!, 'border-top-width').trim(), '2px');
   });
 
-  // TODO Why does this fail in Firefox and Safari?
-  const isChrome = window.navigator.userAgent.indexOf('Chrome') > 0;
-  (isChrome ? test : test.skip)(
-    'styles in render compose with `static get styles`',
-    async () => {
-      const name = generateElementName();
-      customElements.define(
-        name,
-        class extends LitElement {
-          static get styles() {
-            return [
-              css`
-                div {
-                  border: 2px solid blue;
-                }
-              `,
-              css`
-                span {
-                  display: block;
-                  border: 3px solid blue;
-                }
-              `,
-            ];
-          }
+  test('styles in render compose with `static get styles`', async () => {
+    const name = generateElementName();
+    customElements.define(
+      name,
+      class extends LitElement {
+        static get styles() {
+          return [
+            css`
+              div {
+                border: 2px solid blue;
+              }
+            `,
+            css`
+              span {
+                display: block;
+                border: 3px solid blue;
+              }
+            `,
+          ];
+        }
 
-          render() {
-            return htmlWithStyles`
+        render() {
+          return htmlWithStyles`
         <style>
           div {
             padding: 4px;
@@ -495,25 +493,21 @@ suite('Static get styles', () => {
         </style>
         <div>Testing1</div>
         <span>Testing2</span>`;
-          }
         }
-      );
-      const el = document.createElement(name);
-      container.appendChild(el);
-      await (el as LitElement).updateComplete;
-      const div = el.shadowRoot!.querySelector('div');
-      assert.equal(
-        getComputedStyleValue(div!, 'border-top-width').trim(),
-        '2px'
-      );
-      assert.equal(getComputedStyleValue(div!, 'padding-top').trim(), '4px');
-      const span = el.shadowRoot!.querySelector('span');
-      assert.equal(
-        getComputedStyleValue(span!, 'border-top-width').trim(),
-        '3px'
-      );
-    }
-  );
+      }
+    );
+    const el = document.createElement(name);
+    container.appendChild(el);
+    await (el as LitElement).updateComplete;
+    const div = el.shadowRoot!.querySelector('div');
+    assert.equal(getComputedStyleValue(div!, 'border-top-width').trim(), '2px');
+    assert.equal(getComputedStyleValue(div!, 'padding-top').trim(), '4px');
+    const span = el.shadowRoot!.querySelector('span');
+    assert.equal(
+      getComputedStyleValue(span!, 'border-top-width').trim(),
+      '3px'
+    );
+  });
 
   test('`static get styles` applies last instance of style', async () => {
     const name = generateElementName();
@@ -1073,7 +1067,9 @@ suite('ShadyDOM', () => {
     }
   });
 
-  test('properties in styles render with initial value and cannot be changed', async () => {
+  // TODO(sorvell): Bindings in styles are no longer supported.
+  // This will be supported via static bindings only.
+  test.skip('properties in styles render with initial value and cannot be changed', async () => {
     let border = `6px solid blue`;
     const name = generateElementName();
     customElements.define(
