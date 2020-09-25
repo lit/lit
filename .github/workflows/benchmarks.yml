@@ -86,7 +86,6 @@ jobs:
 
       # lit-html:repeat
       - name: Benchmark lit-html/repeat
-        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
         run: |
           cd packages/benchmarks
           npx tachometer \
@@ -94,7 +93,6 @@ jobs:
             --json-file lit-html/repeat/results.json
 
       - name: Report lit-html-repeat
-        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-html-repeat
@@ -102,23 +100,25 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
-      # lit-html:repeat-full
-      - name: Benchmark lit-html/repeat-full
-        if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
-        run: |
-          cd packages/benchmarks
-          npx tachometer \
-            --config lit-html/repeat/tachometer-full.json \
-            --json-file lit-html/repeat/results-full.json
+      # TODO(kschaaf): re-enable this once we work out a good way to trigger
+      # optional benchmarks for a PR
+      # # lit-html:repeat-full
+      # - name: Benchmark lit-html/repeat-full
+      #   if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
+      #   run: |
+      #     cd packages/benchmarks
+      #     npx tachometer \
+      #       --config lit-html/repeat/tachometer-full.json \
+      #       --json-file lit-html/repeat/results-full.json
 
-      - name: Report lit-html-repeat-full
-        if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-html-repeat-full
-          path: packages/benchmarks/lit-html/repeat/results-full.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+      # - name: Report lit-html-repeat-full
+      #   if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
+      #   uses: andrewiggins/tachometer-reporter-action@v2
+      #   with:
+      #     report-id: lit-html-repeat-full
+      #     path: packages/benchmarks/lit-html/repeat/results-full.json
+      #     pr-bench-name: this-change
+      #     base-bench-name: tip-of-tree
 
       # lit-element:stub1
       - name: Benchmark lit-element/stub1
