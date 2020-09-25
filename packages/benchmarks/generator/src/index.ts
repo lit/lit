@@ -137,6 +137,7 @@ for (let i=0; i<${opts.updateCount}; i++) {
 performance.mark('updates-end');
 performance.measure('render', 'initial-render-start', 'initial-render-end');
 performance.measure('update', 'initial-render-end', 'updates-end');
+performance.measure('time', 'initial-render-start', 'updates-end');
 ${
   opts.measure === 'memory' ?
     `window.tachometerResult = performance.memory.usedJSHeapSize/1024;` :

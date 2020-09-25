@@ -1,7 +1,7 @@
 
 /*
 Benchmark generated via the following invocation:
-node generator/build/index.js -r lit-html,lit-html@tot=generator/scripts/package-versions-tot.json,lit-html@release=generator/scripts/package-versions-release.json -n template-heavy -o lit-html/template-heavy -u 10 -q
+node generator/build/index.js -r lit-html,lit-html@tot=generator/scripts/package-versions-tot.json,lit-html@release=generator/scripts/package-versions-release.json -n template-heavy -o lit-html/template-heavy -u 10 -q -m render,update
 
 Parameters:
   renderers: lit-html
@@ -1075,6 +1075,7 @@ for (let i=0; i<10; i++) {
 performance.mark('updates-end');
 performance.measure('render', 'initial-render-start', 'initial-render-end');
 performance.measure('update', 'initial-render-end', 'updates-end');
+performance.measure('time', 'initial-render-start', 'updates-end');
 window.tachometerResult = performance.getEntriesByName('render')[0].duration +
       performance.getEntriesByName('update')[0].duration;
 document.title = window.tachometerResult.toFixed(2) + 'ms';

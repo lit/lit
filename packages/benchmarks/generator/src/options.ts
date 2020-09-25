@@ -149,8 +149,8 @@ const optionsDesc = {
     type: String,
     typeLabel: `{underline comma-separated}`,
     alias: 'm',
-    description: 'What value to report. Accepts `time`, `memory`, or a custom expression.',
-    defaultValue: 'render,update',
+    description: 'What value to report. Accepts `time`, `memory`, or a list of performance.measure names.',
+    defaultValue: 'time',
     noReport: false,
   },
   generateIndex: {
