@@ -1,3 +1,4 @@
+---
 name: LitElement lit-next preview bug report
 about: Use this template to report an issue with the LitElement PREVIEW release (lit-element@next-major)
 title: '[lit-element] '
