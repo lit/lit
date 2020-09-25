@@ -6,10 +6,26 @@
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
   "author": "The Polymer Project Authors",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "format": "prettier lit-html/* lit-element/* --write",
+    "lint": "tslint --project ./",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/stub1/tachometer.json",
+    "benchmark:lit-html:kitchen-sink": "tach --config lit-html/kitchen-sink/tachometer.json",
+    "benchmark:lit-html:kitchen-sink-render": "tach --config lit-html/kitchen-sink/tachometer-render.json",
+    "benchmark:lit-html:kitchen-sink-update": "tach --config lit-html/kitchen-sink/tachometer-update.json",
+    "benchmark:lit-html:kitchen-sink-nop-update": "tach --config lit-html/kitchen-sink/tachometer-nop-update.json",
+    "benchmark:lit-element:stub1": "tach --config lit-element/stub1/tachometer.json"
+  },
   "dependencies": {
-    "lit-element": "^3.0.0-pre.0",
-    "lit-html": "^2.0.0-pre.0",
-    "tachometer": "^0.5.3-pre.0"
+    "lit-element": "^3.0.0-pre.1",
+    "lit-html": "^2.0.0-pre.1",
+    "tachometer": "^0.5.3"
+  },
+  "devDependencies": {
+    "prettier": "^2.1.1",
+    "typescript": "^4.0.2"
   }
 }

@@ -4,15 +4,25 @@
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "lit-html/stub1/stub1.html",
+      "url": "lit-html/kitchen-sink/index.html",
       "browser": {
         "name": "chrome",
         "headless": true
       },
-      "measurement": {
-        "mode": "performance",
-        "entryName": "render"
-      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        },
+        {
+          "mode": "performance",
+          "entryName": "nop-update"
+        }
+      ],
       "expand": [
         {
           "name": "this-change"
@@ -29,7 +39,7 @@
                 "subdir": "packages/lit-html",
                 "setupCommands": [
                   "npm ci",
-                  "npm run bootstrap",
+                  "npm run bootstrap -- --concurrency=1",
                   "npm run build"
                 ]
               },
@@ -40,7 +50,7 @@
                 "subdir": "packages/lit-element",
                 "setupCommands": [
                   "npm ci",
-                  "npm run bootstrap",
+                  "npm run bootstrap -- --concurrency=1",
                   "npm run build"
                 ]
               }

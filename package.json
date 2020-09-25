@@ -2,7 +2,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "test": "lerna run test"
+    "test": "cd packages/tests && npm test",
+    "benchmarks": "cd packages/benchmarks && npm run benchmarks"
   },
   "dependencies": {
     "lerna": "^3.22.1"

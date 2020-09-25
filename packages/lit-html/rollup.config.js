@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import filesize from 'rollup-plugin-filesize';
+import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import * as pathLib from 'path';
@@ -38,7 +38,25 @@ const skipBundleOutput = {
   },
 };
 
-const entryPoints = ['lit-html', 'directives/if-defined'];
+const entryPoints = [
+  'directives/cache',
+  'directives/class-map',
+  'directives/guard',
+  'directives/if-defined',
+  'directives/live',
+  'directives/repeat',
+  'directives/style-map',
+  'directives/template-content',
+  'directives/unsafe-html',
+  'directives/unsafe-svg',
+  'lit-html',
+  'parts',
+];
+
+// Shared name cache
+// Ideally we'd share this only between lit-html.js and parts.js and force
+// directives to use the public APIs.
+const nameCache = {};
 
 export default {
   input: entryPoints.map((name) => `development/${name}.js`),
@@ -90,16 +108,17 @@ export default {
         comments: CHECKSIZE ? false : 'some',
         inline_script: false,
       },
+      // This is NOT working for some reason
+      nameCache,
       mangle: {
         properties: {
           regex: /^__/,
+          // Set to true to mangle to readable names
+          debug: false,
         },
       },
     }),
-    filesize({
-      showMinifiedSize: false,
-      showBrotliSize: true,
-    }),
+    summary(),
     ...(CHECKSIZE
       ? [skipBundleOutput]
       : [

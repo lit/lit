@@ -7,7 +7,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "./",
+    "outDir": "./development/",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

@@ -17,19 +17,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## [3.0.0] - Unreleased
+## [3.0.0-pre.1] - 2020-09-21
 
 ### Changed
 * [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
-* [Breaking] When a propery declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
-* [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice is should very rarely be ([#699]https://github.com/Polymer/lit-element/issues/699).
+* [Breaking] When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
+* [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice it should very rarely be ([#699](https://github.com/Polymer/lit-element/issues/699)).
 * [Breaking] LitElement's `adoptStyles` method is now always called. Previously it was called only if the element's `renderRoot` was a shadowRoot. The default implementation only applies styling to the element's shadowRoot and does nothing if the `renderRoot` is not a shadowRoot. This method may be overridden to customize this behavior.
-* [Breaking] LitElement's `static getStyles` method has been renamed to `static finalizeStules` and now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.
+* [Breaking] LitElement's `static getStyles` method has been renamed to `static finalizeStyles` and now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.
 * [Breaking] Removed build support for TypeScript 3.4.
-* [Breaking] Decorators are no longer exported from the `lit-element` module. Instead import any decorators you use from `lit-element/decorators/*`.
+* [Breaking] Decorators are no longer exported from the `lit-element` module. Instead, import any decorators you use from `lit-element/decorators/*`.
 * [Breaking] `lit-html` has been updated to 2.x. Note, shady-render support has been removed. Import the `lit-element-polyfill` module to support Shady DOM.
 * [Breaking] For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
-* For efficiency, the `css` function now maintains a cache and will used a cached value if available when the same style text is requested.
+* [Breaking] The type of the `css` function has been changed to `CSSResultGroup` and is now the same as `LitElement.styles`. This avoids the need to cast the `styles` property to `any` when a subclass sets `styles` to an Array and its super class set a single value (or visa versa).
+* For efficiency, the `css` function now maintains a cache and will use a cached value if available when the same style text is requested.
 
 ### Added
 * UpdatingElement adds support for sets of lifecycle callbacks for connected, disconnected, update, and updated. To use, add/remove callback functions to/from the sets: `connectedCallbacks`, `disconnectedCallbacks`, `updateCallbacks`, `updatedCallbacks`. Note, the callbacks are called after UpdatingElement processes the associated callback except in the case of the update callback which is called before `UpdatingElement.update`.

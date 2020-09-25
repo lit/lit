@@ -1,11 +1,53 @@
+# LitElement 3.0 Pre-release
+
+[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next
+)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/lit-element/next-major)](https://www.npmjs.com/package/lit-html)
+[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
+[![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
+
+## 🚨 About this pre-release
+
+This is a major version pre-release of LitElement 3.0. See issue
+[#1077](https://github.com/Polymer/lit-element/issues/1077) for the full list of
+changes planned/considered for this release.
+
+This pre-release is not yet feature complete or API stable. Please note the
+breaking changes, known issues, and limitations below, and use at your risk
+until the stable release is available. Issues are welcome
+for unexpected changes not noted below or in the changelog.
+
+## 🚨 Breaking changes
+
+While `LitElement` 3.0 is intended to be a mostly backward-compatible change for the
+majority of 2.x users, please be aware of the following notable breaking
+changes:
+  * This `LitElement` pre-release uses the `lit-html` pre-release as well.
+    Please see the `lit-html` pre-release [README](../lit-html/README.md) and
+    [changelog](../lit-html/CHANGELOG.md#200-pre1---2020-09-21) for information on
+    any breaking changes to `lit-html` features in your components.
+  * Decorators are no longer exported from the top-level `lit-element` module.
+    Instead, import any decorators you use from `lit-element/decorators/*`.
+  * `requestUpdate()` no longer returns a Promise. Instead await the
+    `updateComplete` Promise.
+
+See the full [changelog](CHANGELOG.md#300-pre1---2020-09-21) for more details on
+these and other minor breaking changes.
+
+## 🚨 Known issues/limitations
+
+* **Browser support**: This pre-release should run on modern browsers, however a
+  change to factor legacy browser support (IE11, etc.) into an opt-in package is
+  ongoing. As such, this release will not run on some older browsers. This is a
+  temporary state.
+* **lit-html limitations**: Some features of `lit-html` are still in progress.
+  Please refer to the pre-release [README](../lit-html/README.md) for a list of
+  known `lit-html` issues.
+
+<hr>
+
 # LitElement
 A simple base class for creating fast, lightweight web components with [lit-html](https://lit-html.polymer-project.org/).
-
-[![Build Status](https://travis-ci.org/Polymer/lit-element.svg?branch=master)](https://travis-ci.org/Polymer/lit-element)
-[![Published on npm](https://img.shields.io/npm/v/lit-element.svg)](https://www.npmjs.com/package/lit-element)
-[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/lit-element)
-[![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
 
 ## Documentation
 

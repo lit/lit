@@ -8,29 +8,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      # Note this is the way to set an environment variable that lives across
+      # all steps
+      # (https://docs.github.com/en/actions/reference/environment-variables#about-environment-variables).
+      - name: Set environment variables
+        run: echo "::set-env name=PLAYWRIGHT_BROWSERS_PATH::$HOME/.playwright"
+
+      # Cache all of our node_modules/ directories and playwright browser
+      # binaries to save ~30 seconds of install time.
+      - name: Restore node_modules/playwright
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: NPM install
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Lerna bootstrap
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
 
       - name: Build
         run: npm run build
 
-      - name: Benchmark lit-html/stub1
+      - name: Benchmark lit-html/kitchen-sink
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config lit-html/stub1/tachometer.json \
-            --json-file lit-html/stub1/results.json
+            --config lit-html/kitchen-sink/tachometer.json \
+            --json-file lit-html/kitchen-sink/results.json
 
-      - name: Report lit-html-stub1
-        uses: andrewiggins/tachometer-reporter-action@v1
+      - name: Report lit-html-kitchen-sink
+        uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: lit-html-stub1
-          path: packages/benchmarks/lit-html/stub1/results.json
+          report-id: lit-html-kitchen-sink
+          path: packages/benchmarks/lit-html/kitchen-sink/results.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
@@ -42,7 +65,7 @@ jobs:
             --json-file lit-element/stub1/results.json
 
       - name: Report lit-element-stub1
-        uses: andrewiggins/tachometer-reporter-action@v1
+        uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-element-stub1
           path: packages/benchmarks/lit-element/stub1/results.json

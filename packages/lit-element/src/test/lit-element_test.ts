@@ -12,9 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../lib/lit-element.js';
-import {stripExpressionComments} from 'lit-html/development/test/test-utils/strip-markers.js';
-import {generateElementName} from './test-helpers.js';
+import {html, LitElement} from '../lit-element.js';
+import {generateElementName, stripExpressionComments} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // tslint:disable:no-any ok in tests

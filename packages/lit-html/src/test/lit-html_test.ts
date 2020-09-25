@@ -22,6 +22,7 @@ import {
   render,
   svg,
   TemplateResult,
+  RenderOptions,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -39,8 +40,12 @@ suite('lit-html', () => {
     container = document.createElement('div');
   });
 
-  const assertRender = (r: TemplateResult, expected: string) => {
-    render(r, container);
+  const assertRender = (
+    r: TemplateResult,
+    expected: string,
+    options?: RenderOptions
+  ) => {
+    render(r, container, options);
     assert.equal(stripExpressionComments(container.innerHTML), expected);
   };
 
@@ -88,16 +93,23 @@ suite('lit-html', () => {
       );
     });
 
-    test('text child of element with unquoted attribute', () => {
+    test('text child of element with unbound quoted attribute', () => {
       assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
+      assertRender(
+        html`<script a="b">${'d'}</script>`,
+        '<script a="b">d</script>'
+      );
     });
 
-    test('text child of element with unquoted attribute', () => {
-      assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
+    test('text child of element with unbound unquoted attribute', () => {
+      assertRender(html`<div a=b>${'d'}</div>`, '<div a="b">d</div>');
+      assertRender(
+        html`<script a=b>${'d'}</script>`,
+        '<script a="b">d</script>'
+      );
     });
 
     test('renders parts with whitespace after them', () => {
-      // prettier-ignore
       assertRender(html`<div>${'foo'} </div>`, '<div>foo </div>');
     });
 
@@ -110,13 +122,14 @@ suite('lit-html', () => {
     });
 
     test('renders templates with comments', () => {
-      // prettier-ignore
-      assertRender(html`
+      assertRender(
+        html`
         <div>
           <!-- this is a comment -->
           <h1 class="${'foo'}">title</h1>
           <p>${'foo'}</p>
-        </div>`, `
+        </div>`,
+        `
         <div>
           <!-- this is a comment -->
           <h1 class="foo">title</h1>
@@ -126,11 +139,7 @@ suite('lit-html', () => {
     });
 
     test('text after element', () => {
-      // prettier-ignore
-      assertRender(
-        html`<div></div>${'A'}`,
-        '<div></div>A'
-      );
+      assertRender(html`<div></div>${'A'}`, '<div></div>A');
     });
 
     test('renders next templates with preceding elements', () => {
@@ -150,7 +159,6 @@ suite('lit-html', () => {
       // It doesn't matter much what marker we use in <script>, <style> and
       // <textarea> since comments aren't parsed and we have to search the text
       // anyway.
-      // prettier-ignore
       assertRender(
         html`<script>i < j ${'A'}</script>`,
         '<script>i < j A</script>'
@@ -158,7 +166,6 @@ suite('lit-html', () => {
     });
 
     test('text in raw text element after >', () => {
-      // prettier-ignore
       assertRender(
         html`<script>i > j ${'A'}</script>`,
         '<script>i > j A</script>'
@@ -166,7 +173,6 @@ suite('lit-html', () => {
     });
 
     test('text in raw text element inside tag-like string', () => {
-      // prettier-ignore
       assertRender(
         html`<script>"<div a=${'A'}></div>";</script>`,
         '<script>"<div a=A></div>";</script>'
@@ -174,49 +180,37 @@ suite('lit-html', () => {
     });
 
     test('renders inside <script>: only node', () => {
-      // prettier-ignore
       assertRender(html`<script>${'foo'}</script>`, '<script>foo</script>');
     });
 
     test('renders inside <script>: first node', () => {
-      // prettier-ignore
-      assertRender(html`<script>${'foo'}A</script>`,'<script>fooA</script>');
+      assertRender(html`<script>${'foo'}A</script>`, '<script>fooA</script>');
     });
 
     test('renders inside <script>: last node', () => {
-      // prettier-ignore
-      assertRender(html`<script>A${'foo'}</script>`,'<script>Afoo</script>');
+      assertRender(html`<script>A${'foo'}</script>`, '<script>Afoo</script>');
     });
 
     test('renders inside <script>: multiple bindings', () => {
-      // prettier-ignore
       assertRender(
         html`<script>A${'foo'}B${'bar'}C</script>`,
-        '<script>AfooBbarC</script>');
-    });
-
-    test('renders inside <script>: attribute-like', () => {
-      // prettier-ignore
-      assertRender(
-        html`<script>a=${'foo'}</script>`,
-        '<script>a=foo</script>');
-    });
-
-    test('text after script element', () => {
-      // prettier-ignore
-      assertRender(
-        html`<script></script>${'A'}`,
-        '<script></script>A'
+        '<script>AfooBbarC</script>'
       );
     });
 
+    test('renders inside <script>: attribute-like', () => {
+      assertRender(html`<script>a=${'foo'}</script>`, '<script>a=foo</script>');
+    });
+
+    test('text after script element', () => {
+      assertRender(html`<script></script>${'A'}`, '<script></script>A');
+    });
+
     test('text after style element', () => {
-      // prettier-ignore
       assertRender(html`<style></style>${'A'}`, '<style></style>A');
     });
 
     test('text inside raw text element, after different raw tag', () => {
-      // prettier-ignore
       assertRender(
         html`<script><style></style>"<div a=${'A'}></div>"</script>`,
         '<script><style></style>"<div a=A></div>"</script>'
@@ -224,7 +218,6 @@ suite('lit-html', () => {
     });
 
     test('text inside raw text element, after different raw end tag', () => {
-      // prettier-ignore
       assertRender(
         html`<script></style>"<div a=${'A'}></div>"</script>`,
         '<script></style>"<div a=A></div>"</script>'
@@ -232,12 +225,10 @@ suite('lit-html', () => {
     });
 
     test('renders inside raw-like element', () => {
-      // prettier-ignore
       assertRender(html`<scriptx>${'foo'}</scriptx>`, '<scriptx>foo</scriptx>');
     });
 
     test('attribute after raw text element', () => {
-      // prettier-ignore
       assertRender(
         html`<script></script><div a=${'A'}></div>`,
         '<script></script><div a="A"></div>'
@@ -245,25 +236,18 @@ suite('lit-html', () => {
     });
 
     test('unquoted attribute', () => {
-      // prettier-ignore
       assertRender(html`<div a=${'A'}></div>`, '<div a="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc=${'A'}></div>`, '<div abc="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc = ${'A'}></div>`, '<div abc="A"></div>');
     });
 
     test('quoted attribute', () => {
-      // prettier-ignore
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
     });
 
     test('second quoted attribute', () => {
-      // prettier-ignore
       assertRender(
         html`<div a="b" c="${'A'}"></div>`,
         '<div a="b" c="A"></div>'
@@ -271,7 +255,6 @@ suite('lit-html', () => {
     });
 
     test('two quoted attributes', () => {
-      // prettier-ignore
       assertRender(
         html`<div a="${'A'}" b="${'A'}"></div>`,
         '<div a="A" b="A"></div>'
@@ -279,7 +262,6 @@ suite('lit-html', () => {
     });
 
     test('two unquoted attributes', () => {
-      // prettier-ignore
       assertRender(
         html`<div a=${'A'} b=${'A'}></div>`,
         '<div a="A" b="A"></div>'
@@ -291,19 +273,26 @@ suite('lit-html', () => {
     });
 
     test('quoted attribute with markup', () => {
-      // prettier-ignore
       assertRender(
         html`<div a="<table>${'A'}"></div>`,
         '<div a="<table>A"></div>'
       );
     });
 
-    test('text after quoted attribute', () => {
+    test('text after quoted bound attribute', () => {
       assertRender(html`<div a="${'A'}">${'A'}</div>`, '<div a="A">A</div>');
+      assertRender(
+        html`<script a="${'A'}">${'A'}</script>`,
+        '<script a="A">A</script>'
+      );
     });
 
-    test('text after unquoted attribute', () => {
+    test('text after unquoted bound attribute', () => {
       assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
+      assertRender(
+        html`<script a=${'A'}>${'A'}</script>`,
+        '<script a="A">A</script>'
+      );
     });
 
     // test('inside start tag', () => {
@@ -319,13 +308,27 @@ suite('lit-html', () => {
     //   );
     // });
 
-    // test('inside start tag after unquoted attribute', () => {
-    //   // prettier-ignore
-    //   assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
-    // });
+    test('inside start tag after quoted attribute', () => {
+      assertRender(html`<div a="b" ${'c'}></div>`, '<div a="b"></div>');
+      assertRender(
+        html`<script a="b" ${'c'}></script>`,
+        '<script a="b"></script>'
+      );
+    });
+
+    test('inside start tag after unquoted attribute', () => {
+      assertRender(html`<div a=b ${'c'}></div>`, '<div a="b"></div>');
+      assertRender(
+        html`<script a=b ${'c'}></script>`,
+        '<script a="b"></script>'
+      );
+    });
+
+    test('inside start tag', () => {
+      assertRender(html`<div ${'a'}></div>`, '<div></div>');
+    });
 
     // test('inside start tag after quoted attribute', () => {
-    //   // prettier-ignore
     //   assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
     // });
 
@@ -391,6 +394,92 @@ suite('lit-html', () => {
 
     test('text after comment', () => {
       assertRender(html`<!-- -->${'A'}`, '<!-- -->A');
+    });
+
+    test('renders after existing content', () => {
+      container.appendChild(document.createElement('div'));
+      assertRender(html`<span></span>`, '<div></div><span></span>');
+    });
+
+    test('renders/updates before `renderBefore`, if specified', () => {
+      const renderBefore = container.appendChild(document.createElement('div'));
+      const template = html`<span></span>`;
+      assertRender(template, '<span></span><div></div>', {
+        renderBefore,
+      });
+      // Ensure re-render updates rather than re-rendering.
+      let containerChildNodes = Array.from(container.childNodes);
+      assertRender(template, '<span></span><div></div>', {
+        renderBefore,
+      });
+      assert.sameMembers(Array.from(container.childNodes), containerChildNodes);
+    });
+
+    test('renders/updates same template before different `renderBefore` nodes', () => {
+      const renderBefore1 = container.appendChild(
+        document.createElement('div')
+      );
+      const renderBefore2 = container.appendChild(
+        document.createElement('div')
+      );
+      const template = html`<span></span>`;
+      assertRender(template, '<span></span><div></div><div></div>', {
+        renderBefore: renderBefore1,
+      });
+      const renderedNode1 = container.querySelector('span');
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore2,
+        }
+      );
+      const renderedNode2 = container.querySelector('span:last-of-type');
+      // Ensure updates are handled as expected.
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore1,
+        }
+      );
+      assert.equal(container.querySelector('span'), renderedNode1);
+      assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
+      assertRender(
+        template,
+        '<span></span><div></div><span></span><div></div>',
+        {
+          renderBefore: renderBefore2,
+        }
+      );
+      assert.equal(container.querySelector('span'), renderedNode1);
+      assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
+    });
+
+    test('renders/updates when specifying `renderBefore` node or not', () => {
+      const template = html`<span></span>`;
+      const renderBefore = container.appendChild(document.createElement('div'));
+      assertRender(template, '<div></div><span></span>');
+      const containerRenderedNode = container.querySelector('span');
+      assertRender(template, '<span></span><div></div><span></span>', {
+        renderBefore,
+      });
+      const beforeRenderedNode = container.querySelector('span');
+      // Ensure re-render updates rather than re-rendering.
+      assertRender(template, '<span></span><div></div><span></span>');
+      assert.equal(
+        container.querySelector('span:last-of-type'),
+        containerRenderedNode
+      );
+      assert.equal(container.querySelector('span'), beforeRenderedNode);
+      assertRender(template, '<span></span><div></div><span></span>', {
+        renderBefore,
+      });
+      assert.equal(
+        container.querySelector('span:last-of-type'),
+        containerRenderedNode
+      );
+      assert.equal(container.querySelector('span'), beforeRenderedNode);
     });
   });
 
@@ -489,7 +578,8 @@ suite('lit-html', () => {
     });
 
     test('renders forms as elements', () => {
-      // forms are both Node and iterable
+      // Forms are both a Node and iterable, so make sure they are rendered as
+      // a Node.
 
       const form = document.createElement('form');
       const inputOne = document.createElement('input');
@@ -505,6 +595,122 @@ suite('lit-html', () => {
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<form><input name="one"><input name="two"></form>'
+      );
+    });
+  });
+
+  suite('arrays & iterables', () => {
+    test('renders arrays', () => {
+      render(html`<div>${[1, 2, 3]}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+    });
+
+    test('renders arrays of nested templates', () => {
+      render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+    });
+
+    test('renders an array of elements', () => {
+      const children = [
+        document.createElement('p'),
+        document.createElement('a'),
+        document.createElement('span'),
+      ];
+      render(html`<div>${children}</div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><a></a><span></span></div>'
+      );
+    });
+
+    test('updates when called multiple times with arrays', () => {
+      const ul = (list: string[]) => {
+        const items = list.map((item) => html`<li>${item}</li>`);
+        return html`<ul>${items}</ul>`;
+      };
+      render(ul(['a', 'b', 'c']), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<ul><li>a</li><li>b</li><li>c</li></ul>'
+      );
+      render(ul(['x', 'y']), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<ul><li>x</li><li>y</li></ul>'
+      );
+    });
+
+    test('updates arrays', () => {
+      let items = [1, 2, 3];
+      const t = () => html`<div>${items}</div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+
+      items = [3, 2, 1];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>321</div>'
+      );
+    });
+
+    test('updates arrays that shrink then grow', () => {
+      let items: number[];
+      const t = () => html`<div>${items}</div>`;
+
+      items = [1, 2, 3];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>123</div>'
+      );
+
+      items = [4];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>4</div>'
+      );
+
+      items = [5, 6, 7];
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>567</div>'
+      );
+    });
+
+    test('updates an array of elements', () => {
+      let children: any = [
+        document.createElement('p'),
+        document.createElement('a'),
+        document.createElement('span'),
+      ];
+      const t = () => html`<div>${children}</div>`;
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div><p></p><a></a><span></span></div>'
+      );
+
+      children = null;
+      render(t(), container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
+      children = document.createTextNode('foo');
+      render(t(), container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>foo</div>'
       );
     });
   });
@@ -530,15 +736,44 @@ suite('lit-html', () => {
     });
 
     test('renders to an unquoted attribute', () => {
-      render(html`<div foo=${'bar'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar"></div>'
+      assertRender(html`<div foo=${'bar'}></div>`, '<div foo="bar"></div>');
+      assertRender(
+        html`<div foo=${'bar'}/baz></div>`,
+        '<div foo="bar/baz"></div>'
       );
     });
 
-    test('renders interpolation to an attribute', () => {
-      render(html`<div foo="A${'B'}C"></div>`, container);
+    test('renders to an unquoted attribute after an unbound unquoted attribute', () => {
+      assertRender(
+        html`<div foo=bar baz=${'qux'}></div>`,
+        '<div foo="bar" baz="qux"></div>'
+      );
+      assertRender(
+        html`<div foo=a/b baz=${'qux'}></div>`,
+        '<div foo="a/b" baz="qux"></div>'
+      );
+    });
+
+    test('renders interpolation to an unquoted attribute', () => {
+      render(html`<div foo=A${'B'}C></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+      render(html`<div foo=${'A'}B${'C'}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+    });
+
+    test('renders interpolation to an unquoted attribute', () => {
+      render(html`<div foo=A${'B'}C></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+      render(html`<div foo=${'A'}B${'C'}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'
@@ -743,7 +978,7 @@ suite('lit-html', () => {
     });
 
     test('renders an array to an attribute', () => {
-      render(html`<div foo=${[1, 2, 3] as any}></div>`, container);
+      render(html`<div foo=${['1', '2', '3'] as any}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="1,2,3"></div>'
@@ -759,7 +994,6 @@ suite('lit-html', () => {
     });
 
     test('renders to an attribute after a node', () => {
-      // prettier-ignore
       render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -1290,7 +1524,6 @@ suite('lit-html', () => {
 
     test('updates an element', () => {
       let child: any = document.createElement('p');
-      // prettier-ignore
       const t = () => html`<div>${child}<div></div></div>`;
       render(t(), container);
       assert.equal(
