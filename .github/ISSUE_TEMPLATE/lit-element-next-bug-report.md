@@ -9,16 +9,21 @@ assignees: ''
 <!--
 Please read our contribution guidelines:
   https://github.com/Polymer/lit-html/blob/master/CONTRIBUTING.md#filing-issues
+  
+Before filing a new issue, please check whether it's been reported already. Issues for the next major versions will have the label lit-next.
 -->
 
 # Description
 A clear and concise description of what the bug is.
 
-# Lit version
+# Lit versions
 
 <!-- 
 Run this command from your code or in the console:
 console.log(`lit-element: ${window.litElementVersions} lit-html: ${window.litHtmlVersions}`);  
+
+Or run the following command on the command line:
+npm ls lit-html lit-element
 -->
 
 # Steps to Reproduce
