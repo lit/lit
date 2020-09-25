@@ -93,15 +93,6 @@ export const getRenderers = (opts: {pretty: boolean}): {[key: string]: TemplateR
     },
   };
 
-  const litRendererV1: TemplateRenderer = {
-    ...litRenderer,
-    startBenchmark() {
-      return `
-  import {html, render as litRender} from 'lit-html-v1';
-  `;
-    },
-  };
-
   const idomRenderer: TemplateRenderer = {
     legacyScripts: ['../node_modules/incremental-dom/dist/incremental-dom-min.js'],
     startBenchmark() {
@@ -256,7 +247,6 @@ export const getRenderers = (opts: {pretty: boolean}): {[key: string]: TemplateR
   // Map of renderers (not inlined to allow for easy extension)
   return {
     'lit-html': litRenderer,
-    'lit-html-v1': litRendererV1,
     'idom': idomRenderer,
     'idom-statics': idomKeyedStaticsRenderer,
     'react': reactRenderer,

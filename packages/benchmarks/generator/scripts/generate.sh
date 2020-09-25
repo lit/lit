@@ -20,4 +20,4 @@ if [ ! -d "generator/build" ]; then
 fi
 
 echo "Generating lit-html/template-heavy"
-node generator/build/index.js  -r lit-html,lit-html@tot=generator/scripts/package-versions-tot.json,lit-html@release=generator/scripts/package-versions-release.json -n template-heavy -o lit-html/template-heavy -u 10
+node generator/build/index.js  -r lit-html,lit-html@tot=generator/scripts/package-versions-tot.json,lit-html@release=generator/scripts/package-versions-release.json -n template-heavy -o lit-html/template-heavy -u 10 -q

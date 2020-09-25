@@ -170,8 +170,8 @@ const optionsDesc = {
   output: {
     type: String,
     alias: 'o',
-    description: 'Folder to output generated benchmarks into. Defaults to `./generated`. ',
-    defaultValue: 'generated',
+    description: 'Folder to output generated benchmarks into. Defaults to `./lit-html/generated`. ',
+    defaultValue: 'generator/generated',
     noReport: true,
   },
   shortname: {
