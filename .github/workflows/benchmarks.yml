@@ -100,8 +100,7 @@ jobs:
           base-bench-name: tip-of-tree
 
       - name: Benchmark lit-html/repeat-full
-        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
-                 contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
+        if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
         run: |
           cd packages/benchmarks
           npx tachometer \
