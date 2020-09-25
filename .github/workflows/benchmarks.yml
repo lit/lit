@@ -94,6 +94,7 @@ jobs:
             --json-file lit-html/repeat/results.json
 
       - name: Report lit-html-repeat
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-html-repeat
