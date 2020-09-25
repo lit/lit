@@ -20,6 +20,8 @@
     "benchmark:lit-html:kitchen-sink-update": "tach --config lit-html/kitchen-sink/tachometer-update.json",
     "benchmark:lit-html:kitchen-sink-nop-update": "tach --config lit-html/kitchen-sink/tachometer-nop-update.json",
     "benchmark:lit-html:template-heavy": "tach --config lit-html/template-heavy/tachometer.json",
+    "benchmark:lit-html:repeat": "tach --config lit-html/repeat/tachometer.json",
+    "benchmark:lit-html:repeat-full": "tach --config lit-html/repeat/tachometer-full.json",
     "benchmark:lit-element:stub1": "tach --config lit-element/stub1/tachometer.json"
   },
   "dependencies": {

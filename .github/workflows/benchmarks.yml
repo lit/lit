@@ -43,6 +43,8 @@ jobs:
         run: npm run build
 
       - name: Benchmark lit-html/kitchen-sink
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-kitchen-sink]') }}
         run: |
           cd packages/benchmarks
           npx tachometer \
@@ -50,6 +52,8 @@ jobs:
             --json-file lit-html/kitchen-sink/results.json
 
       - name: Report lit-html-kitchen-sink
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-kitchen-sink]') }}
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-html-kitchen-sink
@@ -58,6 +62,8 @@ jobs:
           base-bench-name: tip-of-tree
 
       - name: Benchmark lit-html/template-heavy
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-template-heavy]') }}
         run: |
           cd packages/benchmarks
           npx tachometer \
@@ -65,6 +71,8 @@ jobs:
             --json-file lit-html/template-heavy/results.json
 
       - name: Report lit-html-template-heavy
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-template-heavy]') }}
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-html-template-heavy
@@ -72,7 +80,46 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
+      - name: Benchmark lit-html/repeat
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat]') }}
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/repeat/tachometer.json \
+            --json-file lit-html/repeat/results.json
+
+      - name: Report lit-html-repeat
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat]') }}
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-html-repeat
+          path: packages/benchmarks/lit-html/repeat/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      - name: Benchmark lit-html/repeat-full
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/repeat/tachometer.json \
+            --json-file lit-html/repeat/results-full.json
+
+      - name: Report lit-html-repeat-full
+        if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-html-repeat-full
+          path: packages/benchmarks/lit-html/repeat/results-full.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
       - name: Benchmark lit-element/stub1
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-element-stub1]') }}
         run: |
           cd packages/benchmarks
           npx tachometer \
@@ -80,6 +127,8 @@ jobs:
             --json-file lit-element/stub1/results.json
 
       - name: Report lit-element-stub1
+        if: ${{ !contains(github.event.pull_request.body, '[benchmarks:whitelist]') ||
+                 contains(github.event.pull_request.body, '[benchmarks:lit-element-stub1]') }}
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-element-stub1
