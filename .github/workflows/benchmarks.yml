@@ -57,6 +57,21 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
+      - name: Benchmark lit-html/template-heavy
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/template-heavy/tachometer.json \
+            --json-file lit-html/template-heavy/results.json
+
+      - name: Report lit-html-template-heavy
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-html-template-heavy
+          path: packages/benchmarks/lit-html/template-heavy/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
       - name: Benchmark lit-element/stub1
         run: |
           cd packages/benchmarks

@@ -4,3 +4,11 @@
 /**/*.d.ts.map
 /**/*.js
 /**/*.js.map
+
+/**/.DS_Store
+
+!generator/types/deoptigate.d.ts
+generator/build
+generated
+
+!lit-html/template-heavy/template-heavy.js
