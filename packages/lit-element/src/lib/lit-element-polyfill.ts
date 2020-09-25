@@ -19,7 +19,7 @@
  */
 
 interface RenderOptions {
-  renderBefore?: ChildNode | null;
+  readonly renderBefore?: ChildNode | null;
   scope?: string;
 }
 

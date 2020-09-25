@@ -20,7 +20,7 @@
 
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
-  readonly scope?: string;
+  scope?: string;
 }
 
 interface ShadyTemplateResult {
