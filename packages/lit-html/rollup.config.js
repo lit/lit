@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import filesize from 'rollup-plugin-filesize';
+import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import * as pathLib from 'path';
@@ -119,10 +119,7 @@ export default {
         },
       },
     }),
-    filesize({
-      showMinifiedSize: false,
-      showBrotliSize: true,
-    }),
+    summary(),
     ...(CHECKSIZE
       ? [skipBundleOutput]
       : [
