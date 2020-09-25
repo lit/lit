@@ -13,15 +13,23 @@ type NodePartStateInternal = {
   __fragment: DocumentFragment;
 };
 
+/**
+ * Package private members of NodePart.
+ */
+type NodePartInternal = {
+  __startNode: NodePart['__startNode'];
+  __endNode: NodePart['__endNode'];
+};
+
 export const detachNodePart = (part: NodePart): NodePartState => {
   const fragment = document.createDocumentFragment();
   const state: NodePartStateInternal = {
     __value: part._value,
     __fragment: fragment,
   };
-  let start = part.__startNode.nextSibling;
+  let start = ((part as unknown) as NodePartInternal).__startNode.nextSibling;
   let nextNode;
-  while (start !== part.__endNode) {
+  while (start !== ((part as unknown) as NodePartInternal).__endNode) {
     nextNode = start!.nextSibling;
     fragment.append(start!);
     start = nextNode;
@@ -42,10 +50,13 @@ export const createAndInsertPart = (
   containerPart: NodePart,
   refPart?: NodePart
 ): NodePart => {
-  const container = containerPart.__startNode.parentNode as Node;
+  const container = ((containerPart as unknown) as NodePartInternal).__startNode
+    .parentNode as Node;
 
   const refNode =
-    refPart === undefined ? containerPart.__endNode : refPart.__startNode;
+    refPart === undefined
+      ? ((containerPart as unknown) as NodePartInternal).__endNode
+      : ((refPart as unknown) as NodePartInternal).__startNode;
 
   const startNode = container.insertBefore(createMarker(), refNode);
   const endNode = container.insertBefore(createMarker(), refNode);
@@ -64,19 +75,31 @@ export const insertPartBefore = (
   part: NodePart,
   refPart?: NodePart
 ) => {
-  const container = containerPart.__startNode.parentNode!;
+  const container = ((containerPart as unknown) as NodePartInternal).__startNode
+    .parentNode!;
 
-  const refNode = refPart ? refPart.__startNode : containerPart.__endNode;
+  const refNode = refPart
+    ? ((refPart as unknown) as NodePartInternal).__startNode
+    : ((containerPart as unknown) as NodePartInternal).__endNode;
 
-  const endNode = part.__endNode!.nextSibling;
+  const endNode = ((part as unknown) as NodePartInternal).__endNode!
+    .nextSibling;
 
   if (endNode !== refNode) {
-    reparentNodes(container, part.__startNode, endNode, refNode);
+    reparentNodes(
+      container,
+      ((part as unknown) as NodePartInternal).__startNode,
+      endNode,
+      refNode
+    );
   }
 };
 
 export const removePart = (part: NodePart) => {
-  removeNodes(part.__startNode, part.__endNode!.nextSibling);
+  removeNodes(
+    ((part as unknown) as NodePartInternal).__startNode,
+    ((part as unknown) as NodePartInternal).__endNode!.nextSibling
+  );
 };
 
 /**

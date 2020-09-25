@@ -671,8 +671,8 @@ export class NodePart {
   protected __directive?: Directive;
 
   constructor(
-    public __startNode: ChildNode,
-    public __endNode: ChildNode | null,
+    private __startNode: ChildNode,
+    private __endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
 
