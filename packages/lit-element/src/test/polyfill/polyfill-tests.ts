@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import '../../lib/lit-element-polyfill.js';
 import '../css-tag_test.js';
 import '../lit-element_styling_test.js';
 import '../lit-element_styling_apply_test.js';

@@ -1088,6 +1088,11 @@ export class EventPart extends AttributePart {
   }
 }
 
+// Apply polyfills if available
+if ((globalThis as any)['litHtmlPolyfills'] !== undefined) {
+  (globalThis as any)['litHtmlPolyfills']({NodePart, Template});
+}
+
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time

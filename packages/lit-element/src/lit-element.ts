@@ -288,3 +288,8 @@ export class LitElement extends UpdatingElement {
     return renderNotImplemented;
   }
 }
+
+// Apply polyfills if available
+if ((globalThis as any)['litElementPolyfills'] !== undefined) {
+  (globalThis as any)['litElementPolyfills']({LitElement});
+}
