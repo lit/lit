@@ -21,11 +21,11 @@
       },
       "expand": [
         {
-          "name": "template-heavy",
+          "name": "this-change",
           "url": "lit-html/template-heavy/template-heavy.html"
         },
         {
-          "name": "template-heavy",
+          "name": "tip-of-tree",
           "url": "lit-html/template-heavy/template-heavy.html",
           "packageVersions": {
             "label": "tip-of-tree",
@@ -56,7 +56,7 @@
           }
         },
         {
-          "name": "template-heavy",
+          "name": "previous-release",
           "url": "lit-html/template-heavy/template-heavy.html",
           "packageVersions": {
             "label": "previous-release",
