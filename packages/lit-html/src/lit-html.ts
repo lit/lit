@@ -671,8 +671,8 @@ export class NodePart {
   protected __directive?: Directive;
 
   constructor(
-    public _startNode: ChildNode,
-    public _endNode: ChildNode | null,
+    private __startNode: ChildNode,
+    private __endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
 
@@ -689,7 +689,7 @@ export class NodePart {
     } else if ((value as DirectiveResult)._$litDirective$ !== undefined) {
       this.__commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
-      this._commitNode(value as Node);
+      this.__commitNode(value as Node);
     } else if (isIterable(value)) {
       this.__commitIterable(value);
     } else if (value === nothing) {
@@ -701,8 +701,8 @@ export class NodePart {
     }
   }
 
-  private __insert<T extends Node>(node: T, ref = this._endNode) {
-    return this._startNode.parentNode!.insertBefore(node, ref);
+  private __insert<T extends Node>(node: T, ref = this.__endNode) {
+    return this.__startNode.parentNode!.insertBefore(node, ref);
   }
 
   private __commitDirective(value: DirectiveResult) {
@@ -717,7 +717,7 @@ export class NodePart {
     this._setValue(this.__directive.update(this, value.values));
   }
 
-  private _commitNode(value: Node): void {
+  private __commitNode(value: Node): void {
     if (this._value !== value) {
       this.__clear();
       this._value = this.__insert(value);
@@ -725,7 +725,7 @@ export class NodePart {
   }
 
   private __commitText(value: unknown): void {
-    const node = this._startNode.nextSibling;
+    const node = this.__startNode.nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
@@ -733,15 +733,15 @@ export class NodePart {
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this._endNode === null
+      (this.__endNode === null
         ? node.nextSibling === null
-        : node === this._endNode.previousSibling)
+        : node === this.__endNode.previousSibling)
     ) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this._commitNode(new Text(value as string));
+      this.__commitNode(new Text(value as string));
     }
     this._value = value;
   }
@@ -761,7 +761,7 @@ export class NodePart {
       const instance = new TemplateInstance(template!);
       const fragment = instance.__clone(this.options);
       instance.__update(values);
-      this._commitNode(fragment);
+      this.__commitNode(fragment);
       this._value = instance;
     }
   }
@@ -813,12 +813,12 @@ export class NodePart {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
-      this.__clear(itemPart?._endNode!.nextSibling);
+      this.__clear(itemPart?.__endNode!.nextSibling);
     }
   }
 
-  __clear(start: ChildNode | null = this._startNode.nextSibling) {
-    while (start && start !== this._endNode) {
+  __clear(start: ChildNode | null = this.__startNode.nextSibling) {
+    while (start && start !== this.__endNode) {
       const n = start!.nextSibling;
       start!.remove();
       start = n;
