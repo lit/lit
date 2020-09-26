@@ -40,12 +40,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <my-inner></my-inner>
     </main>
   <script type="module">
-    import { LitElement, html, css } from '../node_modules/lit-element/index.js';
-    import {UpdatingController} from '../node_modules/lit-element/lib/updating-controller.js';
-    import {directive, Directive} from '../node_modules/lit-html/index.js';
-    import {createContext} from '../lib/controllers/context.js';
-    import {ThemeContext} from '../lib/controllers/theme.js';
-    import {AsyncTask} from '../lib/controllers/async-task.js';
+    import { LitElement, html, css } from '../node_modules/lit-element/lit-element.js';
+    import {directive, Directive} from '../node_modules/lit-html/lit-html.js';
+    import {UpdatingController} from '../development/updating-controller.js';
+    import {createContext} from '../development/controllers/context.js';
+    import {ThemeContext} from '../development/controllers/theme.js';
+    import {AsyncTask} from '../development/controllers/async-task.js';
 
     class MyListener extends UpdatingController {
 

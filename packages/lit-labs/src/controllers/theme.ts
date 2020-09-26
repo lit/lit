@@ -1,6 +1,6 @@
 import {Consumer, Provider, createContext} from './context.js';
-import {UpdatingHost} from 'lit-element/lib/updating-controller.js';
-import {supportsAdoptingStyleSheets} from 'lit-element/lib/css-tag.js';
+import {UpdatingHost} from '../updating-controller.js';
+import {supportsAdoptingStyleSheets} from 'lit-element';
 
 const themeMoniker = 'element-theme';
 const allThemeMoniker = 'all';

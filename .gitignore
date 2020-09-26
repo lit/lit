@@ -17,4 +17,12 @@
 /packages/lit-element/demo/**/*.js
 /packages/lit-element/demo/**/*.js.map
 
+/packages/lit-labs/controllers
+/packages/lit-labs/directives
+
+/packages/lit-labs/demo/**/*.d.ts
+/packages/lit-labs/demo/**/*.d.ts.map
+/packages/lit-labs/demo/**/*.js
+/packages/lit-labs/demo/**/*.js.map
+
 /lerna-debug.log

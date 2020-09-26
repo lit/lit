@@ -1,8 +1,8 @@
 import {
   UpdatingController,
   UpdatingHost,
-} from 'lit-element/lib/updating-controller.js';
-import {notEqual} from 'lit-element/lib/updating-element.js';
+} from '../updating-controller.js';
+import {notEqual} from 'lit-element';
 
 export type TaskFunction = (...args: Array<any>) => any;
 export type Deps = Array<any>;

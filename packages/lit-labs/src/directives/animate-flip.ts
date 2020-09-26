@@ -1,5 +1,5 @@
 import {LitElement} from 'lit-element';
-import {directive, Directive, nothing, Part, AttributePart} from 'lit-html';
+import {directive, Directive, nothing, PartInfo, ATTRIBUTE_PART, PROPERTY_PART, AttributePart} from 'lit-html';
 
 export class AnimateFlipDirective extends Directive {
   updateListener?: () => void;
@@ -18,11 +18,15 @@ export class AnimateFlipDirective extends Directive {
     easing: `ease-in-out`,
   };
 
-  constructor(part: Part) {
+  constructor(part: PartInfo) {
     super();
-    // if (!(part instanceof AttributePart)) {
-    //   throw new Error('Can only use the animate directive in attribute position.');
-    // }
+    if (
+      part.type !== ATTRIBUTE_PART && part.type !== PROPERTY_PART
+    ) {
+      throw new Error(
+        'The `animateFlip` directive must be used in an attribute or property.'
+      );
+    }
     this.element = (part as AttributePart).element;
   }
 

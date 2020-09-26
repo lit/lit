@@ -39,28 +39,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <my-element></my-element>
     </main>
   <script type="module">
-    import { LitElement, html, css } from '../node_modules/lit-element/index.js';
-    import {animateFlip} from '../lib/directives/animate-flip.js';
+    import { LitElement, html, css } from '../node_modules/lit-element/lit-element.js';
+    import { classMap } from '../node_modules/lit-html/directives/class-map.js';
+    import {animateFlip} from '../development/directives/animate-flip.js';
 
     class MyElement extends LitElement {
 
       static properties = {
-        useLayout: {},
+        layout: {},
         animating: {}
       }
 
       constructor() {
         super();
         this.animating = false;
-        this.useLayout = false;
+        this.layout = 0;
       }
 
       static styles = [
         css`
-          .shifted {
+          .positioned-box.layout1 {
             left: 50vw;
             top: 50vh;
             opacity: .25;
+          }
+
+          .positioned-box.layout2 {
+            left: 10vw;
+            top: 60vh;
+            opacity: .5;
           }
 
           .animation-container {
@@ -90,23 +97,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             flex-direction: column;
           }
 
-          .animation-list.ordered {
+          .animation-list.layout1 {
             flex-direction: row;
           }
 
-          .animation-list.ordered > :nth-of-type(1) {
+          .animation-list.layout2 {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+          }
+
+          .animation-list.layout1 > :nth-of-type(1) {
             order: 4;
           }
 
-          .animation-list.ordered > :nth-of-type(2) {
+          .animation-list.layout1 > :nth-of-type(2) {
             order: 3;
           }
 
-          .animation-list.ordered > :nth-of-type(3) {
+          .animation-list.layout1 > :nth-of-type(3) {
             order: 2;
           }
 
-          .animation-list.ordered > :nth-of-type(4) {
+          .animation-list.layout1 > :nth-of-type(4) {
             order: 1;
           }
 
@@ -114,26 +127,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             transform-origin: 0 0;
           }
 
-          .big {
+          .hibox.layout1 {
             height: 176px;
             width: 176px;
             top: -132px;
+          }
+
+          .hibox.layout2 {
+            height: 142px;
+            width: 142px;
+            left: 200px;
+            top: -82px;
           }
         `
       ];
 
       render() {
         const options = {
-          duration: 333,
+          duration: 600,
           easing: 'ease-in-out'
         }
+        let layoutClass = '';
+        if (this.layout === 1) {
+          layoutClass = 'layout1';
+        } else if (this.layout === 2) {
+          layoutClass = 'layout2';
+        }
+        // const classes = {
+        //   layout1: this.layout === 1,
+        //   layout2: this.layout === 2,
+        // }
+
+
         return html`
           <button @click=${this.animate}>${this.animating ? 'Stop' : 'Go'}</button>
           <section class="animation-container">
-            <div ...=${animateFlip(this, options)} class="box positioned-box ${this.useLayout ? 'shifted' : ''}"">Hello!</div>
+            <div ...=${animateFlip(this, options)} class="box positioned-box ${layoutClass}"">Hello!</div>
           </section>
           <section class="animation-container2">
-            <section class="animation-list ${this.useLayout ? 'ordered' : ''}">
+            <section class="animation-list ${layoutClass}">
               <div class="box" ...=${animateFlip(this, options)}>Item 1</div>
               <div class="box" ...=${animateFlip(this, options)}>Item 2</div>
               <div class="box" ...=${animateFlip(this, options)}>Item 3</div>
@@ -141,24 +173,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </section>
           </section>
           <section>
-            <div class="box from-top-left ${this.useLayout ? 'big' : ''}"  ...=${animateFlip(this, options, () => this.animationDone())}>Hi</div>
+            <div class="hibox box from-top-left ${layoutClass}"  ...=${animateFlip(this, options, () => this.animationDone())}>Hi</div>
           </section>
         `;
       }
 
       animate() {
         this.animating = !this.animating;
-        this.toggleLayoutIfAnimating();
+        this.changeLayoutIfAnimating();
       }
 
-      toggleLayoutIfAnimating() {
+      changeLayoutIfAnimating() {
         if (this.animating) {
-          this.useLayout = !this.useLayout;
+          this.layout = ++this.layout % 3;
         }
       }
       animationDone() {
         console.log('animation done');
-        setTimeout(() => this.toggleLayoutIfAnimating(), 333);
+        this.changeLayoutIfAnimating();
+        //setTimeout(() => this.changeLayoutIfAnimating(), 0);
       }
 
     }

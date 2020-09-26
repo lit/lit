@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PropertyValues, UpdatingElement} from '../lib/updating-element.js';
-import {UpdatingController} from '../lib/updating-controller.js';
-import {generateElementName} from './test-helpers.js';
+import {PropertyValues, UpdatingElement} from 'lit-element';
+import {UpdatingController} from '../updating-controller.js';
+import {generateElementName} from 'lit-element/src/test/test-helpers';
 import {assert} from '@esm-bundle/chai';
 
 // tslint:disable:no-any ok in tests

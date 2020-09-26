@@ -1,7 +1,7 @@
 import {
   UpdatingController,
   UpdatingHost,
-} from 'lit-element/lib/updating-controller.js';
+} from '../updating-controller.js';
 
 const addEvent = 'add-context';
 const removeEvent = 'remove-context';

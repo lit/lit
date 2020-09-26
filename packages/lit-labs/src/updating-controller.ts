@@ -17,7 +17,7 @@ import {
   PropertyValues,
   connectCallback,
   updateCallback,
-} from './updating-element';
+} from 'lit-element';
 
 /**
  * Use this module if you want to create your own base class extending
