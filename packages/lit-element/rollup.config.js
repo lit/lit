@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import filesize from 'rollup-plugin-filesize';
+import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import * as pathLib from 'path';
@@ -52,7 +52,7 @@ const entryPoints = [
   'lib/decorators/query',
   'lib/decorators/queryAll',
   'lib/decorators/queryAssignedNodes',
-  'lib/decorators/queryAsync'
+  'lib/decorators/queryAsync',
 ];
 
 export default {
@@ -112,10 +112,7 @@ export default {
         },
       },
     }),
-    filesize({
-      showMinifiedSize: false,
-      showBrotliSize: true,
-    }),
+    summary(),
     ...(CHECKSIZE
       ? [skipBundleOutput]
       : [

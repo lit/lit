@@ -11,8 +11,8 @@
   "devDependencies": {
     "@web/dev-server-legacy": "^0.1.3",
     "@web/dev-server-rollup": "^0.2.7",
-    "@web/test-runner": "^0.7.25",
-    "@web/test-runner-playwright": "^0.5.6",
+    "@web/test-runner": "^0.7.29",
+    "@web/test-runner-playwright": "^0.5.7",
     "@web/test-runner-saucelabs": "0.0.4"
   }
 }

@@ -49,9 +49,9 @@ const browserPresets = {
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
     "sauce:Windows 10/firefox@68", // Current ESR
-    //"sauce:Windows 10/chrome@latest-3", // Fails with no error message
-    //"sauce:macOS 10.15/safari@latest", // Timeout on "elements with custom properties can move between elements"
-    //"sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
+    "sauce:Windows 10/chrome@latest-3",
+    "sauce:macOS 10.15/safari@latest",
+    // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
     "sauce:Windows 7/internet explorer@11",
   ],
 };
@@ -160,6 +160,7 @@ export default {
     "../lit-element/development/**/*_test.js",
   ],
   nodeResolve: true,
+  concurrency: !process.env.BROWSERS || process.env.BROWSERS === "preset:local" ? 10 : 1,
   browsers: getBrowsers(),
   plugins: getPlugins(),
   browserStartTimeout: 60000, // default 30000
