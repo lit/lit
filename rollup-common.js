@@ -39,7 +39,7 @@ const skipBundleOutput = {
   },
 };
 
-export function litRollupConfig(entryPoints) {
+export function litRollupConfig({ entryPoints, external = [] } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
   // details of lit-html.js.
@@ -101,6 +101,7 @@ export function litRollupConfig(entryPoints) {
         file: nameCacheSeederOutfile,
         format: "esm",
       },
+      external,
       // Since our virtual name cache seeder module doesn't export anything,
       // almost everything gets tree shaken out, and terser wouldn't see any
       // properties.
@@ -123,6 +124,7 @@ export function litRollupConfig(entryPoints) {
         preserveModules: true,
         sourcemap: !CHECKSIZE,
       },
+      external,
       plugins: [
         // Switch all DEV_MODE variable assignment values to false. Terser's dead
         // code removal will then remove any blocks that are conditioned on this

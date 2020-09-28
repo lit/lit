@@ -14,19 +14,19 @@
 
 import {litRollupConfig} from '../../rollup-common.js';
 
-const entryPoints = [
-  'directives/cache',
-  'directives/class-map',
-  'directives/guard',
-  'directives/if-defined',
-  'directives/live',
-  'directives/repeat',
-  'directives/style-map',
-  'directives/template-content',
-  'directives/unsafe-html',
-  'directives/unsafe-svg',
-  'lit-html',
-  'parts',
-];
-
-export default litRollupConfig(entryPoints);
+export default litRollupConfig({
+  entryPoints: [
+    'directives/cache',
+    'directives/class-map',
+    'directives/guard',
+    'directives/if-defined',
+    'directives/live',
+    'directives/repeat',
+    'directives/style-map',
+    'directives/template-content',
+    'directives/unsafe-html',
+    'directives/unsafe-svg',
+    'lit-html',
+    'parts',
+  ],
+});
