@@ -8,6 +8,20 @@
   "type": "module",
   "main": "lit-html.js",
   "typings": "lit-html.d.ts",
+  "exports": {
+    ".": {
+      "lit-development": "./development/lit-html.js",
+      "default": "./lit-html.js"
+    },
+    "./part.js": {
+      "lit-development": "./development/part.js",
+      "default": "./part.js"
+    },
+    "./directives/": {
+      "lit-development": "./development/directives/",
+      "default": "./directives/"
+    }
+  },
   "directories": {
     "test": "test"
   },
