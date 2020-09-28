@@ -747,7 +747,7 @@ export class NodePart {
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this.__commitNode(new Text(value as string));
+      this.__commitNode(document.createTextNode(value as string));
     }
     this._value = value;
   }
