@@ -159,8 +159,9 @@ export default {
   filterBrowserLogs: ({ args }) => {
     if (mode === "dev" && args[0] && args[0].includes("in dev mode")) {
       if (!seenDevModeLogs.has(args[0])) {
-        console.log(`Suppressing further logs of "${args[0]}"`);
         seenDevModeLogs.add(args[0]);
+        // Log it one time.
+        return true;
       }
       return false;
     }
