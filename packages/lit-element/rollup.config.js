@@ -19,7 +19,7 @@ export default litRollupConfig({
     'lit-element',
     'updating-element',
     'css-tag',
-    'lit-element-polyfill',
+    'polyfill',
     'decorators',
     'decorators/base',
     'decorators/customElement',
