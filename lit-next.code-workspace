@@ -9,6 +9,10 @@
 			"path": "packages/lit-element"
 		},
 		{
+			"name": "lit-labs",
+			"path": "packages/lit-labs"
+		},
+		{
 			"name": "tests",
 			"path": "packages/tests"
 		},
