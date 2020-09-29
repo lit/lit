@@ -2,47 +2,76 @@ import {
   UpdatingController,
   UpdatingHost,
 } from '../updating-controller.js';
+import {
+  notEqual
+} from 'lit-element/lib/updating-element.js';
+import { AttributePart, ATTRIBUTE_PART, directive, Directive, nothing, Part, PROPERTY_PART } from 'lit-element';
 
 const addEvent = 'add-context';
-const removeEvent = 'remove-context';
 
 export type ConsumerEvent = CustomEvent<Consumer>;
 
+// TODO(sorvell): Why is this an UpdatingController?
 export class Provider extends UpdatingController {
   consumers: Set<Consumer> = new Set();
   key = null;
   _value: any = null;
+  // TODO(sorvell): how to type this?
+  _directive?: any;
 
   constructor(host: UpdatingHost, value: unknown) {
     super(host);
     this.value = value;
-    this.element.addEventListener(addEvent, (event: Event) =>
-      this.onAddContext(event as ConsumerEvent)
-    );
-    this.element.addEventListener(removeEvent, (event: Event) =>
-      this.onRemoveContext(event as ConsumerEvent)
-    );
   }
 
-  onAddContext(event: ConsumerEvent) {
-    const consumer = event.detail;
-    if (this.key !== consumer.key) {
-      return;
+  provide() {
+    if (this._directive === undefined) {
+      this._directive = this._createDirective();
     }
-    this.consumers.add(consumer);
-    consumer.value = this.value;
-    consumer.provider = this;
-    event.stopPropagation();
+    return this._directive();
   }
 
-  onRemoveContext(event: ConsumerEvent) {
-    const consumer = event.detail;
+  _createDirective() {
+    const provider = this;
+    const ProviderDirective = class extends Directive {
+      connected = false;
+      render() {
+        return nothing;
+      }
+      update(part: Part) {
+        if (!(part.type === ATTRIBUTE_PART || part.type === PROPERTY_PART)) {
+          throw new Error('The provide directive must be used in attribute or property position.');
+        }
+        if (!this.connected) {
+          this.connected = true;
+          provider.connect((part as AttributePart).element);
+        }
+        return this.render();
+      }
+    }
+    return directive(ProviderDirective);
+  }
+
+  connect(element: HTMLElement) {
+    element.addEventListener(addEvent, (event: Event) => {
+      const consumer = (event as ConsumerEvent).detail;
+      if (this.key !== consumer.key) {
+        return;
+      }
+      this.consumers.add(consumer);
+      consumer.value = this.value;
+      consumer.provider = this;
+      event.stopPropagation();
+    });
+    return this;
+  }
+
+  disconnect(consumer: Consumer) {
     if (this.key !== consumer.key) {
       return;
     }
     this.consumers.delete(consumer);
     consumer.provider = null;
-    event.stopPropagation();
   }
 
   get value() {
@@ -50,9 +79,11 @@ export class Provider extends UpdatingController {
   }
 
   set value(value) {
-    this._value = value;
-    for (const consumer of this.consumers) {
-      consumer.value = this.value;
+    if (notEqual(this.value, value)) {
+      this._value = value;
+      for (const consumer of this.consumers) {
+        consumer.value = this.value;
+      }
     }
   }
 }
@@ -70,9 +101,7 @@ export class Consumer extends UpdatingController {
 
   onDisconnected() {
     if (this.provider) {
-      this.provider.element.dispatchEvent(
-        new CustomEvent(removeEvent, {detail: this})
-      );
+      this.provider.disconnect(this);
     }
   }
 
@@ -81,8 +110,10 @@ export class Consumer extends UpdatingController {
   }
 
   set value(value) {
-    this._value = value;
-    this.requestUpdate();
+    if (notEqual(this.value, value)) {
+      this._value = value;
+      this.requestUpdate();
+    }
   }
 }
 

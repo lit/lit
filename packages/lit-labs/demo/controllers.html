@@ -40,8 +40,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <my-inner></my-inner>
     </main>
   <script type="module">
-    import { LitElement, html, css } from '../node_modules/lit-element/lit-element.js';
-    import {directive, Directive} from '../node_modules/lit-html/lit-html.js';
+    import { LitElement, html, css, directive, Directive } from '../node_modules/lit-element/lit-element.js';
     import {UpdatingController} from '../development/updating-controller.js';
     import {createContext} from '../development/controllers/context.js';
     import {ThemeContext} from '../development/controllers/theme.js';
@@ -139,8 +138,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     }
 
-    const UserContext = createContext({name: 'Bob'}, 'user');
-
     const updateDirective = directive(
       class UpdateObserver extends Directive {
         constructor(element) {
@@ -161,18 +158,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     );
 
+    const UserContext = createContext({name: 'Bob'}, 'user');
+    const TimerContext = createContext(0, 'timer');
+
     class Inner extends LitElement {
       constructor() {
         super();
-        this.userInfo = new UserContext.consumer(this);
+        this.user = new UserContext.consumer(this);
+        this.timer = new TimerContext.consumer(this);
         new ThemeContext.consumer(this);
       }
 
       static styles = css`:host { margin: 2px; }`;
 
       render() {
-        const name = this.userInfo.value?.name;
         const insideSelf = this.getRootNode().host?.localName === this.localName;
+        const name = insideSelf ? this.timer.value : this.user.value?.name;
         return html`${name}${!insideSelf ? html`${name ? ', ' : ''} <my-inner></my-inner>` : ''}`;
       }
     }
@@ -191,7 +192,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.counter1 = new MyCounter(this);
         this.counter2 = new MyCounter(this);
         this.counter3 = new MyCounter(this);
-        this.userInfo = new UserContext.provider(this);
+        this.user = new UserContext.provider(this);
+        this.timer = new TimerContext.provider(this).connect(this);
         this.fetchTask = new AsyncTask(this, time =>
           new Promise(resolve => setTimeout(() => resolve(++time), 1000)), () => [this.time], 0);
         new ThemeContext.consumer(this);
@@ -205,26 +207,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               font-weight: 800;
             }`
           ]
-        });
+        }).connect(this);
       }
 
       render() {
-        this.time = this.fetchTask.value;
+        this.time = this.timer.value = this.fetchTask.value;
         return html`
           <section>${this.counter1.renderCounter()}</section>
           <section>${this.counter2.renderCounter()}</section>
           <section>event: ${this.counter1.renderListenerMessage()}</section>
           <hr>
-          <input @input=${this.onInput} .value=${this.userInfo.value.name}>
-          <section><my-inner></my-inner></section>
-          <section><my-inner></my-inner></section>
+          <input @input=${this.onInput} .value=${this.user.value.name}>
+          <section><my-inner .=${this.user.provide()}></my-inner></section>
+          <section><my-inner .=${this.user.provide()}></my-inner></section>
           <section>seconds: ${this.time}</section>
           <section>${updateDirective(this)}</section>
         `;
       }
 
       onInput(e) {
-        this.userInfo.value = {name: e.target.value};
+        this.user.value = {name: e.target.value};
       }
 
     }

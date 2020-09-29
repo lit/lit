@@ -65,7 +65,7 @@ import {
 } from './lib/css-tag.js';
 
 export * from './lib/updating-element.js';
-export {html, svg, TemplateResult} from 'lit-html';
+export * from 'lit-html';
 export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
