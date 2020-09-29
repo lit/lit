@@ -29,4 +29,12 @@ export default litRollupConfig({
     'lit-html',
     'parts',
   ],
+  reservedProperties: [
+    '_$litType$',
+    '_$litDirective$',
+    // TODO Decide on public API
+    // https://github.com/Polymer/lit-html/issues/1261
+    '_value',
+    '_setValue',
+  ],
 });

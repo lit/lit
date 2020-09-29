@@ -39,7 +39,11 @@ const skipBundleOutput = {
   },
 };
 
-export function litRollupConfig({ entryPoints, external = [] } = options) {
+export function litRollupConfig({
+  entryPoints,
+  external = [],
+  reservedProperties = [],
+} = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
   // details of lit-html.js.
@@ -87,7 +91,8 @@ export function litRollupConfig({ entryPoints, external = [] } = options) {
     nameCache,
     mangle: {
       properties: {
-        regex: /^__/,
+        regex: /^_/,
+        reserved: reservedProperties,
         // Set to true to mangle to readable names
         debug: false,
       },
