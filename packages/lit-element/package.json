@@ -11,11 +11,11 @@
   "typings": "lit-element.d.ts",
   "exports": {
     ".": {
-      "lit-development": "./development/lit-element.js",
+      "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
     "./lib/": {
-      "lit-development": "./development/lib/",
+      "development": "./development/lib/",
       "default": "./lib/"
     }
   },
