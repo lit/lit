@@ -39,7 +39,7 @@
     "test": "test"
   },
   "files": [
-    "/lib/",
+    "/decorators/",
     "/src/",
     "/development/",
     "!/src/demo/",
@@ -48,7 +48,22 @@
     "/lit-element.d.ts.map",
     "/lit-element.js",
     "/lit-element.js.map",
-    "/ts3.4/"
+    "/css-tag.d.ts",
+    "/css-tag.d.ts.map",
+    "/css-tag.js",
+    "/css-tag.js.map",
+    "/decorators.d.ts",
+    "/decorators.d.ts.map",
+    "/decorators.js",
+    "/decorators.js.map",
+    "/polyfill.d.ts",
+    "/polyfill.d.ts.map",
+    "/polyfill.js",
+    "/polyfill.js.map",
+    "/updating-element.d.ts",
+    "/updating-element.d.ts.map",
+    "/updating-element.js",
+    "/updating-element.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
