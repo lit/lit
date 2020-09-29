@@ -40,8 +40,8 @@ const browserPresets = {
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
     "sauce:Windows 10/firefox@68", // Current ESR
-    "sauce:Windows 10/chrome@latest-3", 
-    "sauce:macOS 10.15/safari@latest", 
+    "sauce:Windows 10/chrome@latest-3",
+    "sauce:macOS 10.15/safari@latest",
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
     // "sauce:Windows 7/internet explorer@11", // Browser start timeout
   ],
@@ -142,6 +142,8 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   return [playwrightLauncher({ product: browser })];
 }
 
+const seenDevModeLogs = new Set();
+
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
   rootDir: "../",
@@ -156,6 +158,10 @@ export default {
   plugins: getPlugins(),
   filterBrowserLogs: ({ args }) => {
     if (mode === "dev" && args[0] && args[0].includes("in dev mode")) {
+      if (!seenDevModeLogs.has(args[0])) {
+        console.log(`Suppressing further logs of "${args[0]}"`);
+        seenDevModeLogs.add(args[0]);
+      }
       return false;
     }
     return true;
