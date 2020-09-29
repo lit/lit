@@ -19,6 +19,7 @@ type NodePartStateInternal = {
 type NodePartInternal = {
   _startNode: NodePart['_startNode'];
   _endNode: NodePart['_endNode'];
+  _commitNode: NodePart['_commitNode'];
 };
 
 export const detachNodePart = (part: NodePart): NodePartState => {
@@ -39,8 +40,9 @@ export const detachNodePart = (part: NodePart): NodePartState => {
 };
 
 export const restoreNodePart = (part: NodePart, state: NodePartState) => {
-  // TODO (justinfagnani): make an interal-only interface
-  (part as any)._commitNode((state as NodePartStateInternal)._fragment);
+  ((part as unknown) as NodePartInternal)._commitNode(
+    (state as NodePartStateInternal)._fragment
+  );
   part._value = (state as NodePartStateInternal)._value;
 };
 
