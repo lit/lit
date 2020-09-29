@@ -13,7 +13,7 @@
  */
 
 import {html, LitElement} from '../../lit-element.js';
-import {queryAssignedNodes} from '../../lib/decorators/queryAssignedNodes.js';
+import {queryAssignedNodes} from '../../decorators/queryAssignedNodes.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

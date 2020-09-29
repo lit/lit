@@ -14,9 +14,25 @@
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
-    "./lib/": {
-      "development": "./development/lib/",
-      "default": "./lib/"
+    "./css-tag.js": {
+      "development": "./development/css-tag.js",
+      "default": "./css-tag.js"
+    },
+    "./decorators.js": {
+      "development": "./development/decorators.js",
+      "default": "./decorators.js"
+    },
+    "./polyfill.js": {
+      "development": "./development/polyfill.js",
+      "default": "./polyfill.js"
+    },
+    "./updating-element.js": {
+      "development": "./development/updating-element.js",
+      "default": "./updating-element.js"
+    },
+    "./decorators/": {
+      "development": "./development/decorators/",
+      "default": "./decorators/"
     }
   },
   "directories": {
@@ -40,7 +56,7 @@
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
-    "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
+    "build:babel-test": "babel src/test/decorators_test.ts --out-file test/decorators-babel_test.js",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../tests && npx wtr '../lit-element/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",

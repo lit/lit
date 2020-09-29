@@ -13,7 +13,7 @@
  */
 
 import {html, LitElement} from '../../lit-element.js';
-import {eventOptions} from '../../lib/decorators/eventOptions.js';
+import {eventOptions} from '../../decorators/eventOptions.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

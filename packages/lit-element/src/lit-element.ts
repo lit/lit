@@ -54,7 +54,7 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
+import {PropertyValues, UpdatingElement} from './updating-element.js';
 import {render, RenderOptions} from 'lit-html';
 import {
   supportsAdoptingStyleSheets,
@@ -62,11 +62,11 @@ import {
   CSSResultGroup,
   CSSResultOrNative,
   unsafeCSS,
-} from './lib/css-tag.js';
+} from './css-tag.js';
 
-export * from './lib/updating-element.js';
-export {html, svg, TemplateResult} from 'lit-html';
-export * from './lib/css-tag.js';
+export * from './updating-element.js';
+export * from 'lit-html';
+export * from './css-tag.js';
 
 const DEV_MODE = true;
 if (DEV_MODE) {

@@ -19,7 +19,7 @@ import {
   PropertyDeclarations,
   PropertyValues,
   UpdatingElement,
-} from '../lib/updating-element.js';
+} from '../updating-element.js';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

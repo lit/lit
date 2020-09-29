@@ -11,17 +11,5 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
-import {customElement} from '../../decorators/customElement.js';
-import {generateElementName} from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
-
-suite('@customElement', () => {
-  test('defines an element', () => {
-    const tagName = generateElementName();
-    @customElement(tagName)
-    class C0 extends HTMLElement {}
-    const DefinedC = customElements.get(tagName);
-    assert.strictEqual(DefinedC, C0);
-  });
-});
+export * from './lit-element.js';
+//# sourceMappingURL=lit-element-polyfill.d.ts.map

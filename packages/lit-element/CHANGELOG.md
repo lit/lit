@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0-pre.1] - 2020-09-21
 
 ### Changed
+* [Breaking] Removed the `lib/` folder which will impact users importing, for example, `lit-element/lib/updating-element`. This should now just be `lit-element/updating-element`.
 * [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 * [Breaking] When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
 * [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice it should very rarely be ([#699](https://github.com/Polymer/lit-element/issues/699)).

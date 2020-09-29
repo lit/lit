@@ -17,11 +17,11 @@
  *
  * @packageDocumentation
  */
-import {LitElement, CSSResultArray, CSSResult} from '../lit-element.js';
+import {LitElement, CSSResultArray, CSSResult} from './lit-element.js';
 import {UpdatingElement} from './updating-element.js';
 // TODO(sorvell) Add shady-render package.
 import {render, RenderOptions} from 'lit-html';
-export * from '../lit-element.js';
+export * from './lit-element.js';
 
 if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
   LitElement.render = (

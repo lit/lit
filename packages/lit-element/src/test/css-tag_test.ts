@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {css, CSSResult} from '../lib/css-tag.js';
+import {css, CSSResult} from '../css-tag.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {

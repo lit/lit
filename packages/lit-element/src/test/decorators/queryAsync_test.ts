@@ -13,7 +13,7 @@
  */
 
 import {html, LitElement} from '../../lit-element.js';
-import {queryAsync} from '../../lib/decorators/queryAsync.js';
+import {queryAsync} from '../../decorators/queryAsync.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
