@@ -20,8 +20,7 @@ export const supportsAdoptingStyleSheets =
 
 export type CSSResultOrNative = CSSResult | CSSStyleSheet;
 
-export interface CSSResultArray
-  extends Array<CSSResultOrNative | CSSResultArray> {}
+export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>
 
 export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
 
