@@ -13,9 +13,9 @@
       "development": "./development/lit-html.js",
       "default": "./lit-html.js"
     },
-    "./part.js": {
-      "development": "./development/part.js",
-      "default": "./part.js"
+    "./parts.js": {
+      "development": "./development/parts.js",
+      "default": "./parts.js"
     },
     "./directives/": {
       "development": "./development/directives/",
