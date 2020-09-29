@@ -18,6 +18,8 @@
  * @packageDocumentation
  */
 
+import 'lit-html/shady-render.js';
+
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
   scope?: string;

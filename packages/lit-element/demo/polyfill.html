@@ -18,8 +18,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   </script>
   <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script type="module" src="../development/lib/lit-element-polyfill.js"></script>
-  <script type="module" src = "../development/demo/ts-element.js"></script>
+  <script type="module" src="../node_modules/lit-html/shady-render.js"></script>
+  <script type="module" src="../lib/polyfill.js"></script>
 </head>
 <body>
     <my-element bar="5" whales="1" foobar="17">Hi</my-element>
@@ -27,7 +27,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <ts-element message="Yo" more-info="person"></ts-element>
 
   <script type="module">
-    import { LitElement, html, css } from '../development/lit-element.js';
+    import { LitElement, html, css } from '../lit-element.js';
 
     class Inner extends LitElement {
 
