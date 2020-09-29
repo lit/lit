@@ -5,22 +5,14 @@ import { legacyPlugin } from "@web/dev-server-legacy";
 import { resolveRemap } from "./rollup-resolve-remap.js";
 import { prodResolveRemapConfig, devResolveRemapConfig } from "./wtr-config.js";
 
-// TODO Replace this with log filter feature when/if added to wtr
-// https://github.com/modernweb-dev/web/issues/595
-const removeDevModeLoggingPlugin = {
-  name: "remove-dev-mode-logging",
-  transform(context) {
-    if (context.response.is("js")) {
-      return {
-        body: context.body.replace(/console\.warn\(.*in dev mode.*\);/, ""),
-      };
-    }
-  },
-};
+const mode = process.env.MODE || "dev";
+if (!["dev", "prod"].includes(mode)) {
+  throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
+}
 
 function getPlugins() {
   let resolveRemapConfig;
-  if (process.env.TEST_PROD_BUILD) {
+  if (mode === "prod") {
     console.log("Using production builds");
     resolveRemapConfig = prodResolveRemapConfig;
   } else {
@@ -29,7 +21,6 @@ function getPlugins() {
   }
   return [
     fromRollup(resolveRemap)(resolveRemapConfig),
-    removeDevModeLoggingPlugin,
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin(),
@@ -139,7 +130,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserVersion,
         platformName,
         "sauce:options": {
-          name: `lit tests [${process.env.TEST_PROD_BUILD ? "prod" : "dev"}]`,
+          name: `lit tests [${mode}]`,
           build: `${process.env.GITHUB_REF ?? "local"} build ${
             process.env.GITHUB_RUN_NUMBER ?? ""
           }`,
@@ -160,9 +151,15 @@ export default {
     "../lit-element/development/**/*_test.js",
   ],
   nodeResolve: true,
-  concurrency: !process.env.BROWSERS || process.env.BROWSERS === "preset:local" ? 10 : 1,
+  concurrency: sauceLauncher ? 1 : 10,
   browsers: getBrowsers(),
   plugins: getPlugins(),
+  filterBrowserLogs: ({ args }) => {
+    if (mode === "dev" && args[0] && args[0].includes("in dev mode")) {
+      return false;
+    }
+    return true;
+  },
   browserStartTimeout: 60000, // default 30000
   testsStartTimeout: 60000, // default 10000
   testsFinishTimeout: 60000, // default 20000
