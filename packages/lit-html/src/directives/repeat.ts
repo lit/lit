@@ -114,7 +114,7 @@ class RepeatDirective extends Directive {
   ) {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    let oldParts = getPartValue(containerPart) as Array<NodePart | null>;
+    const oldParts = getPartValue(containerPart) as Array<NodePart | null>;
     const {values: newValues, keys: newKeys} = this.__getValuesAndKeys(
       items,
       keyFnOrTemplate,
