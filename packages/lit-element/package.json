@@ -9,6 +9,16 @@
   "main": "lit-element.js",
   "module": "lit-element.js",
   "typings": "lit-element.d.ts",
+  "exports": {
+    ".": {
+      "development": "./development/lit-element.js",
+      "default": "./lit-element.js"
+    },
+    "./lib/": {
+      "development": "./development/lib/",
+      "default": "./lib/"
+    }
+  },
   "directories": {
     "test": "test"
   },
