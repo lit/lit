@@ -71,7 +71,7 @@ class RepeatDirective extends Directive {
     }
   }
 
-  _getValuesAndKeys<T>(
+  __getValuesAndKeys<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
     template?: ItemTemplate<T>
@@ -101,7 +101,7 @@ class RepeatDirective extends Directive {
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
     template?: ItemTemplate<T>
   ) {
-    return this._getValuesAndKeys(items, keyFnOrTemplate, template).values;
+    return this.__getValuesAndKeys(items, keyFnOrTemplate, template).values;
   }
 
   update<T>(
@@ -115,7 +115,7 @@ class RepeatDirective extends Directive {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
     let oldParts = getPartValue(containerPart) as Array<NodePart | null>;
-    const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
+    const {values: newValues, keys: newKeys} = this.__getValuesAndKeys(
       items,
       keyFnOrTemplate,
       template
