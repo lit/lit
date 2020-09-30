@@ -63,7 +63,6 @@ interface LitElementStandIn extends HTMLElement {
 }: {
   LitElement: LitElementStandIn;
 }) => {
-
   if (!needsPlatformSupport) {
     return;
   }
@@ -94,10 +93,7 @@ interface LitElementStandIn extends HTMLElement {
    */
   Object.assign(LitElement.prototype, {
     __baseAdoptStyles: LitElement.prototype.adoptStyles,
-    adoptStyles(
-      this: LitElementStandIn,
-      styles: CSSResults
-    ) {
+    adoptStyles(this: LitElementStandIn, styles: CSSResults) {
       if (!this.constructor.hasOwnProperty(SCOPE_KEY)) {
         const name = (this.constructor[SCOPE_KEY] = this.localName);
         if (window.ShadyCSS!.nativeShadow) {
@@ -112,7 +108,7 @@ interface LitElementStandIn extends HTMLElement {
               : v.cssText
           );
           window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
-         }
+        }
       }
     },
     /**
@@ -141,10 +137,9 @@ interface LitElementStandIn extends HTMLElement {
       if (isFirstUpdate) {
         window.ShadyCSS!.styleElement(this);
       }
-    }
+    },
   });
 };
-
 
 interface ShadyTemplateResult {
   __renderIntoShadowRoot?: boolean;
@@ -178,7 +173,6 @@ interface TemplateStandIn {
   NodePart: NodePartStandIn;
   Template: TemplateStandIn;
 }) => {
-
   if (!needsPlatformSupport) {
     return;
   }
