@@ -14,9 +14,8 @@
 
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
-import {html as htmlWithApply} from '../../lit-html.js';
-import {policy} from '../test-utils/security.js';
-import {renderShadowRoot} from '../test-utils/shadow-root.js';
+import {html as htmlWithApply} from 'lit-html';
+import {renderShadowRoot} from '../test-utils/shadow-root';
 import {assert} from '@esm-bundle/chai';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -24,7 +23,7 @@ import {assert} from '@esm-bundle/chai';
 const testIfUsingNativeCSSVariables = (test: any) =>
   window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test;
 
-suite('shady-render @apply', () => {
+suite('@apply', () => {
   test('styles with css custom properties using @apply render', function () {
     const container = document.createElement('scope-5');
     document.body.appendChild(container);
@@ -59,7 +58,7 @@ suite('shady-render @apply', () => {
     const container = document.createElement('scope-6');
     document.body.appendChild(container);
     const style = document.createElement('style');
-    style.innerHTML = policy.createHTML(`
+    style.innerHTML = `
       :host {
         --batch: {
           border: 3px solid orange;
@@ -69,7 +68,7 @@ suite('shady-render @apply', () => {
       div {
         @apply --batch;
       }
-    `);
+    `;
     const result = [style, htmlWithApply`<div>Testing...</div>`];
     renderShadowRoot(result, container);
     const div = container.shadowRoot!.querySelector('div');

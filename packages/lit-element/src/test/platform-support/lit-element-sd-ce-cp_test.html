@@ -5,9 +5,10 @@
       window.ShadyDOM = {force: true};
       window.customElements = window.customElements || {};
       window.customElements.forcePolyfill = true;
+      window.ShadyCSS = {shimcssproperties: true};
     </script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <script src="../../shady-render.js"></script>
+    <script src="../../lib/platform-support.js"></script>
   </head>
   <body>
     <script type="module">
@@ -24,8 +25,7 @@
           // setup mocha
           mocha.setup({ui: 'tdd'});
 
-          // or import your test file
-          await import('./shady-render_test.js');
+          await import('./lit-element_ps_test.js');
 
           // run the tests, and notify the test runner after finishing
           mocha.run(() => {

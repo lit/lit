@@ -66,8 +66,6 @@
     "prettier": "^2.1.1",
     "rollup": "^2.28.2",
     "typescript": "^4.0.2",
-    "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/webcomponentsjs": "^2.2.3",
     "@types/trusted-types": "^1.0.1"
   }
 }

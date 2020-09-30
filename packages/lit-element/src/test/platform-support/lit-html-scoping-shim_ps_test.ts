@@ -12,12 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {policy} from '../test-utils/security.js';
-import {renderShadowRoot} from '../test-utils/shadow-root.js';
-import {html} from '../../lit-html.js';
+import {renderShadowRoot} from '../test-utils/shadow-root';
+import {html} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 
-suite('shady-render scoping shim', () => {
+suite('ShadyCSS scoping shim', () => {
   setup(function () {
     if (
       typeof window.ShadyDOM === 'undefined' ||
@@ -76,9 +75,8 @@ suite('shady-render scoping shim', () => {
   // identified.
   test.skip('Styles inserted in the initial render through NodeParts are scoped.', function () {
     const style = document.createElement('style');
-    style.innerHTML = policy.createHTML(
-      ':host { border-top: 2px solid black; } button { font-size: 7px; }'
-    );
+    style.innerHTML =
+      ':host { border-top: 2px solid black; } button { font-size: 7px; }';
     const container = document.createElement('scope-3');
     document.body.appendChild(container);
     renderShadowRoot(

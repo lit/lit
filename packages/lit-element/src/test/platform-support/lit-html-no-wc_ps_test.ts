@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, render} from '../../lit-html.js';
+import {html, render} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
-import {ShadyRenderOptions} from '../test-utils/shadow-root.js';
+import {ShadyRenderOptions} from '../test-utils/shadow-root';
 
 suite('shady-render without Shadow DOM or Custom Elements', () => {
   test('shady-render renders content', () => {

@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html} from '../../lit-html.js';
+import {html} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
-import {renderShadowRoot} from '../test-utils/shadow-root.js';
+import {renderShadowRoot} from '../test-utils/shadow-root';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-suite('shady-render', () => {
+suite('platform-support rendering', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
     document.body.appendChild(container);

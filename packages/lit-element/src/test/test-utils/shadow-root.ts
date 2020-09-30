@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {render, RenderOptions} from '../../lit-html.js';
+import {render, RenderOptions} from 'lit-html';
 
 export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;

@@ -28,6 +28,5 @@ export default litRollupConfig({
     'directives/unsafe-svg',
     'lit-html',
     'parts',
-    'shady-render',
   ],
 });
