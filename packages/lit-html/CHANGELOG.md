@@ -26,7 +26,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Breaking] Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that ```html`<div class=${['a', 'b']}>``` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
 * Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. ```html`<div id=${a}-${b}>```
 * [Breaking] The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
-* Private names are now named with a `_` prefix instead of `__`.
 
 ### Added
 * Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
