@@ -293,7 +293,10 @@ export const render = (
   part._setValue(value);
 };
 
-const walker = d.createTreeWalker(d);
+const walker = d.createTreeWalker(d,
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false);
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -479,13 +482,23 @@ export class Template {
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
           const {attributes} = node as Element;
+          const attrsToRemove = [];
           for (let i = 0; i < attributes.length; i++) {
-            const {name, value} = attributes[i];
+            // This is the name of the attribute we're iterating over, but not
+            // _neccessarily_ the name of the attribute we will create a part
+            // for. They can be different in browsers that don't iterate on
+            // attributes in source order. In that case the attrNames array
+            // contains the attribute name we'll process next. We only need the
+            // attribute name here to know if we should process a bound attribute
+            // on this element.
+            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
-              i--;
-              (node as Element).removeAttribute(name);
+              const realName = attrNames[attrNameIndex++];
+              // Lowercase for case-sensitive SVG attributes like viewBox
+              const value = (node as Element).getAttribute(realName.toLowerCase() + boundAttributeSuffix)!;
+              attrsToRemove.push(name);
               const statics = value.split(marker);
-              const m = /([.?@])?(.*)/.exec(attrNames[attrNameIndex++])!;
+              const m = /([.?@])?(.*)/.exec(realName)!;
               this.__parts.push({
                 __type: ATTRIBUTE_PART,
                 __index: nodeIndex,
@@ -502,13 +515,15 @@ export class Template {
               });
               bindingIndex += statics.length - 1;
             } else if (name === marker) {
-              (node as Element).removeAttribute(name);
-              i--;
+              attrsToRemove.push(name);
               this.__parts.push({
                 __type: ELEMENT_PART,
                 __index: nodeIndex,
               });
             }
+          }
+          for (const name of attrsToRemove) {
+            (node as Element).removeAttribute(name);
           }
         }
         // TODO (justinfagnani): benchmark the regex against testing for each
@@ -683,8 +698,8 @@ export class NodePart {
   protected __directive?: Directive;
 
   constructor(
-    private __startNode: ChildNode,
-    private __endNode: ChildNode | null,
+    private _startNode: ChildNode,
+    private _endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
 
@@ -713,8 +728,8 @@ export class NodePart {
     }
   }
 
-  private __insert<T extends Node>(node: T, ref = this.__endNode) {
-    return this.__startNode.parentNode!.insertBefore(node, ref);
+  private __insert<T extends Node>(node: T, ref = this._endNode) {
+    return this._startNode.parentNode!.insertBefore(node, ref);
   }
 
   private __commitDirective(value: DirectiveResult) {
@@ -737,7 +752,7 @@ export class NodePart {
   }
 
   private __commitText(value: unknown): void {
-    const node = this.__startNode.nextSibling;
+    const node = this._startNode.nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
@@ -745,15 +760,15 @@ export class NodePart {
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this.__endNode === null
+      (this._endNode === null
         ? node.nextSibling === null
-        : node === this.__endNode.previousSibling)
+        : node === this._endNode.previousSibling)
     ) {
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this.__commitNode(new Text(value as string));
+      this.__commitNode(document.createTextNode(value as string));
     }
     this._value = value;
   }
@@ -830,12 +845,12 @@ export class NodePart {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
-      this.__clear(itemPart?.__endNode!.nextSibling);
+      this.__clear(itemPart?._endNode!.nextSibling);
     }
   }
 
-  __clear(start: ChildNode | null = this.__startNode.nextSibling) {
-    while (start && start !== this.__endNode) {
+  __clear(start: ChildNode | null = this._startNode.nextSibling) {
+    while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       // TODO(sorvell): replace with remove when supported by ShadyDOM
       //start!.remove();
