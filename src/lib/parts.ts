@@ -418,9 +418,13 @@ export class BooleanAttributePart implements Part {
  */
 export class PropertyCommitter extends AttributeCommitter {
   readonly single: boolean;
+  readonly eventContext?: EventTarget;
 
-  constructor(element: Element, name: string, strings: ReadonlyArray<string>) {
+  constructor(
+      element: Element, name: string, strings: ReadonlyArray<string>,
+      eventContext?: EventTarget) {
     super(element, name, strings);
+    this.eventContext = eventContext;
     this.single =
         (strings.length === 2 && strings[0] === '' && strings[1] === '');
   }
