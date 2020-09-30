@@ -8,6 +8,20 @@
   "type": "module",
   "main": "lit-html.js",
   "typings": "lit-html.d.ts",
+  "exports": {
+    ".": {
+      "development": "./development/lit-html.js",
+      "default": "./lit-html.js"
+    },
+    "./parts.js": {
+      "development": "./development/parts.js",
+      "default": "./parts.js"
+    },
+    "./directives/": {
+      "development": "./development/directives/",
+      "default": "./directives/"
+    }
+  },
   "directories": {
     "test": "test"
   },
@@ -33,8 +47,8 @@
     "build:ts:watch": "tsc --watch",
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../lit-html/development/test/**/lit-html_test.js'",
-    "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
+    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.js'",
+    "test:prod": "MODE=prod npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "format": "prettier src/* --write",
     "checksize": "rollup -c --environment=CHECKSIZE",
@@ -45,19 +59,13 @@
   "dependencies": {},
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
-    "@rollup/plugin-replace": "^2.3.3",
     "@types/mocha": "^8.0.3",
     "@web/test-runner-mocha": "^0.3.5",
     "chokidar-cli": "^2.1.0",
     "concurrently": "^5.3.0",
     "mocha": "^8.1.3",
     "prettier": "^2.1.1",
-    "rollup": "^2.26.9",
-    "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-filesize": "^9.0.2",
-    "rollup-plugin-sourcemaps": "^0.6.2",
-    "rollup-plugin-terser": "^7.0.1",
-    "terser": "^5.2.1",
+    "rollup": "^2.28.2",
     "typescript": "^4.0.2"
   }
 }

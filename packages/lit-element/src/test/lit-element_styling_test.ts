@@ -218,14 +218,13 @@ suite('Styling', () => {
     const el2 = document.createElement(name2);
     container.appendChild(el);
     container.appendChild(el2);
-    let div: Element | null;
 
     // Workaround for Safari 9 Promise timing bugs.
     await el.updateComplete;
 
     await nextFrame();
     const inner = el.shadowRoot!.querySelector('x-inner1');
-    div = inner!.shadowRoot!.querySelector('div');
+    const div = inner!.shadowRoot!.querySelector('div');
     assert.equal(getComputedStyleValue(div!, 'border-top-width').trim(), '2px');
     el2.shadowRoot!.appendChild(inner!);
 

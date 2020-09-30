@@ -5,35 +5,18 @@ import { legacyPlugin } from "@web/dev-server-legacy";
 import { resolveRemap } from "./rollup-resolve-remap.js";
 import { prodResolveRemapConfig, devResolveRemapConfig } from "./wtr-config.js";
 
-// TODO Replace this with log filter feature when/if added to wtr
-// https://github.com/modernweb-dev/web/issues/595
-const removeDevModeLoggingPlugin = {
-  name: "remove-dev-mode-logging",
-  transform(context) {
-    if (context.response.is("js")) {
-      return {
-        body: context.body.replace(/console\.warn\(.*in dev mode.*\);/, ""),
-      };
-    }
-  },
-};
+const mode = process.env.MODE || "dev";
+if (!["dev", "prod"].includes(mode)) {
+  throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
+}
 
-function getPlugins() {
-  let resolveRemapConfig;
-  if (process.env.TEST_PROD_BUILD) {
-    console.log("Using production builds");
-    resolveRemapConfig = prodResolveRemapConfig;
-  } else {
-    console.log("Using development builds");
-    resolveRemapConfig = devResolveRemapConfig;
-  }
-  return [
-    fromRollup(resolveRemap)(resolveRemapConfig),
-    removeDevModeLoggingPlugin,
-    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
-    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin(),
-  ];
+let resolveRemapConfig;
+if (mode === "prod") {
+  console.log("Using production builds");
+  resolveRemapConfig = prodResolveRemapConfig;
+} else {
+  console.log("Using development builds");
+  resolveRemapConfig = devResolveRemapConfig;
 }
 
 const browserPresets = {
@@ -49,19 +32,12 @@ const browserPresets = {
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
     "sauce:Windows 10/firefox@68", // Current ESR
-    //"sauce:Windows 10/chrome@latest-3", // Fails with no error message
-    //"sauce:macOS 10.15/safari@latest", // Timeout on "elements with custom properties can move between elements"
-    //"sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    //"sauce:Windows 7/internet explorer@11", // Browser start timeout
+    "sauce:Windows 10/chrome@latest-3",
+    "sauce:macOS 10.15/safari@latest",
+    // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
+    // "sauce:Windows 7/internet explorer@11", // Browser start timeout
   ],
 };
-
-function getBrowsers() {
-  return (process.env.BROWSERS || "preset:local")
-    .split(",")
-    .map(parseBrowser)
-    .flat();
-}
 
 let sauceLauncher;
 function makeSauceLauncherOnce() {
@@ -139,7 +115,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserVersion,
         platformName,
         "sauce:options": {
-          name: `lit tests [${process.env.TEST_PROD_BUILD ? "prod" : "dev"}]`,
+          name: `lit tests [${mode}]`,
           build: `${process.env.GITHUB_REF ?? "local"} build ${
             process.env.GITHUB_RUN_NUMBER ?? ""
           }`,
@@ -151,6 +127,13 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   return [playwrightLauncher({ product: browser })];
 }
 
+const browsers = (process.env.BROWSERS || "preset:local")
+  .split(",")
+  .map(parseBrowser)
+  .flat();
+
+const seenDevModeLogs = new Set();
+
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
   rootDir: "../",
@@ -160,16 +143,33 @@ export default {
     "../lit-element/development/**/*_test.js",
   ],
   nodeResolve: true,
-  browsers: getBrowsers(),
-  plugins: getPlugins(),
+  concurrency: sauceLauncher ? 1 : 10,
+  browsers,
+  plugins: [
+    fromRollup(resolveRemap)(resolveRemapConfig),
+    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
+    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
+    legacyPlugin(),
+  ],
+  filterBrowserLogs: ({ args }) => {
+    if (mode === "dev" && args[0] && args[0].includes("in dev mode")) {
+      if (!seenDevModeLogs.has(args[0])) {
+        seenDevModeLogs.add(args[0]);
+        // Log it one time.
+        return true;
+      }
+      return false;
+    }
+    return true;
+  },
   browserStartTimeout: 60000, // default 30000
   testsStartTimeout: 60000, // default 10000
-  testsFinishTimeout: 60000, // default 20000
+  testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
       ui: "tdd",
-      timeout: "30000", // default 2000
+      timeout: "60000", // default 2000
     },
   },
 };

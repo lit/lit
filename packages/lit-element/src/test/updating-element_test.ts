@@ -1428,8 +1428,8 @@ suite('UpdatingElement', () => {
     class E extends UpdatingElement {
       _updateCount = 0;
       updatedText = '';
-      _foo?: String;
-      _bar?: String;
+      _foo?: string;
+      _bar?: string;
       static get properties() {
         return {
           foo: {type: String, reflect: true},
