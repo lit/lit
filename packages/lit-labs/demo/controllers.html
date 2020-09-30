@@ -45,7 +45,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     import {createContext} from '../development/controllers/context.js';
     import {ThemeContext} from '../development/controllers/theme.js';
     import {AsyncTask} from '../development/controllers/async-task.js';
-    import {Refs} from '../development/controllers/refs.js';
+    import {Refs, getRefsUpdateComplete} from '../development/controllers/refs.js';
 
     class MyListener extends UpdatingController {
 
@@ -195,7 +195,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.counter3 = new MyCounter(this);
         this.user = new UserContext.provider(this);
         this.timer = new TimerContext.provider(this).connect(this);
-        this.$ = new Refs();
+        this.refs = Refs();
         this.fetchTask = new AsyncTask(this, time =>
           new Promise(resolve => setTimeout(() => resolve(++time), 1000)), () => [this.time], 0);
         new ThemeContext.consumer(this);
@@ -220,10 +220,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <section>event: ${this.counter1.renderListenerMessage()}</section>
           <hr>
           <input @input=${this.onInput} .value=${this.user.value.name}>
-          <section><my-inner ..=${this.$.getRef('inner1')} .=${this.user.provide()}></my-inner></section>
-          <section><my-inner ..=${this.$.getRef('inner2')} .=${this.user.provide()}></my-inner></section>
+          <section><my-inner ..=${this.refs('inner1')} .=${this.user.provide()}></my-inner></section>
+          <section><my-inner ..=${this.refs('inner2')} .=${this.user.provide()}></my-inner></section>
           <section>seconds: ${this.time}</section>
-          <section  ..=${this.$.getRef('section')}>${updateDirective(this)}</section>
+          <section  ..=${this.refs('section')}>${updateDirective(this)}</section>
         `;
       }
 
@@ -233,7 +233,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       async getUpdateComplete() {
         await super.getUpdateComplete();
-        await this.$.getUpdateComplete();
+        await getRefsUpdateComplete(this.refs);
       }
 
     }
