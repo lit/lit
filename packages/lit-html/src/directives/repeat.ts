@@ -71,7 +71,7 @@ class RepeatDirective extends Directive {
     }
   }
 
-  _getValuesAndKeys<T>(
+  private _getValuesAndKeys<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
     template?: ItemTemplate<T>

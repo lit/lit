@@ -563,7 +563,7 @@ class Template {
  */
 class TemplateInstance {
   _template: Template;
-  _parts: Array<Part | undefined> = [];
+  private _parts: Array<Part | undefined> = [];
 
   constructor(template: Template) {
     this._template = template;
@@ -817,7 +817,7 @@ export class NodePart {
     }
   }
 
-  _clear(start: ChildNode | null = this._startNode.nextSibling) {
+  private _clear(start: ChildNode | null = this._startNode.nextSibling) {
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -872,7 +872,7 @@ export class AttributePart {
    * @param value the raw input value to normalize
    * @param _i the index in the values array this value was read from
    */
-  _resolveValue(value: unknown, i: number) {
+  private _resolveValue(value: unknown, i: number) {
     const directiveCtor = (value as DirectiveResult)?._$litDirective$;
     if (directiveCtor !== undefined) {
       // TODO (justinfagnani): Initialize array to the correct value,
@@ -1010,7 +1010,7 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
-  _eventContext?: unknown;
+  private _eventContext?: unknown;
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
     super(...args);

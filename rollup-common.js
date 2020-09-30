@@ -40,10 +40,14 @@ const skipBundleOutput = {
 };
 
 // Any private properties which we share between different _packages_ are
-// hard-coded here because they must never change between versions.
+// hard-coded here because they must never change between versions. Mangled
+// names are chosen at random.
 const crossPackagePropertyMangles = {
-  _startNode: "s",
-  _endNode: "e",
+  _createElement: "Y",
+  _endNode: "M",
+  _setValue: "k",
+  _startNode: "C",
+  _value: "r",
 };
 
 export function litRollupConfig({
