@@ -39,6 +39,15 @@ const skipBundleOutput = {
   },
 };
 
+const reservedProperties = [
+  "_$litType$",
+  "_$litDirective$",
+  // TODO Decide on public API
+  // https://github.com/Polymer/lit-html/issues/1261
+  "_value",
+  "_setValue",
+];
+
 // Any private properties which we share between different _packages_ are
 // hard-coded here because they must never change between versions. Mangled
 // names are randomly chosen uppercase letters, in case we ever might want to
@@ -46,16 +55,10 @@ const skipBundleOutput = {
 const crossPackagePropertyMangles = {
   _createElement: "Y",
   _endNode: "M",
-  _setValue: "K",
   _startNode: "C",
-  _value: "R",
 };
 
-export function litRollupConfig({
-  entryPoints,
-  external = [],
-  reservedProperties = [],
-} = options) {
+export function litRollupConfig({ entryPoints, external = [] } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
   // details of lit-html.js.
