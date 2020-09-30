@@ -143,7 +143,7 @@ export default {
     "../lit-element/development/**/*_test.js",
   ],
   nodeResolve: true,
-  concurrency: sauceLauncher ? 1 : 10, // default cores / 2
+  concurrency: 6, // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
   browsers,
   plugins: [
