@@ -14,12 +14,12 @@
 
 import {litRollupConfig} from '../../rollup-common.js';
 
-const base = litRollupConfig({
+export default litRollupConfig({
   entryPoints: [
     'lit-element',
+    'lib/platform-support',
     'lib/updating-element',
     'lib/css-tag',
-    'lib/lit-element-polyfill',
     'lib/decorators',
     'lib/decorators/base',
     'lib/decorators/customElement',
@@ -31,25 +31,5 @@ const base = litRollupConfig({
     'lib/decorators/queryAssignedNodes',
     'lib/decorators/queryAsync',
   ],
-  external: ['lit-html'],
+  external: ['lit-html']
 });
-
-const polyfill = litRollupConfig({
-  es5: true,
-  entryPoints: [
-    'lib/polyfill'
-  ],
-  external: [],
-  plugins: [
-    // Place the bundled version into development so the build works.
-    copy({
-      hook: 'writeBundle',
-      targets: entryPoints.map((name) => ({
-        src: `${name}.js`,
-        dest: pathLib.dirname(`development/${name}`),
-      }))
-    })
-  ]
-});
-
-export default [base, polyfill];

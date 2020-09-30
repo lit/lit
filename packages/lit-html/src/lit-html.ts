@@ -1089,8 +1089,8 @@ export class EventPart extends AttributePart {
 }
 
 // Apply polyfills if available
-if ((globalThis as any)['litHtmlPolyfills'] !== undefined) {
-  (globalThis as any)['litHtmlPolyfills']({NodePart, Template});
+if ((globalThis as any)['litHtmlPlatformSupport'] !== undefined) {
+  (globalThis as any)['litHtmlPlatformSupport']({NodePart, Template});
 }
 
 // IMPORTANT: do not change the property name or the assignment expression.

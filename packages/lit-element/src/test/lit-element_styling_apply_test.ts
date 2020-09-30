@@ -13,7 +13,7 @@
  */
 
 import '@webcomponents/shadycss/apply-shim.min.js';
-import '../lib/polyfill.js';
+import '../lib/platform-support.js';
 
 import {html as htmlWithStyles, LitElement} from '../lit-element.js';
 

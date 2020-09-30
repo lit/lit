@@ -38,7 +38,7 @@ function getPlugins() {
 
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
-  local: ["chromium", "firefox", "webkit"],
+  local: ["chromium"],
 
   // Browsers to test during automated continuous integration.
   //
@@ -49,8 +49,8 @@ const browserPresets = {
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
     "sauce:Windows 10/firefox@68", // Current ESR
-    "sauce:Windows 10/chrome@latest-3", 
-    "sauce:macOS 10.15/safari@latest", 
+    "sauce:Windows 10/chrome@latest-3",
+    "sauce:macOS 10.15/safari@latest",
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
     // "sauce:Windows 7/internet explorer@11", // Browser start timeout
   ],

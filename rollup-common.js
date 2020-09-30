@@ -19,7 +19,6 @@ import * as pathLib from "path";
 import sourcemaps from "rollup-plugin-sourcemaps";
 import replace from "@rollup/plugin-replace";
 import virtual from "@rollup/plugin-virtual";
-import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 // In CHECKSIZE mode we:
 // 1) Don't emit any files.
@@ -40,7 +39,7 @@ const skipBundleOutput = {
   },
 };
 
-export function litRollupConfig({ entryPoints, external = [], es5 = false, plugins = [] } = options) {
+export function litRollupConfig({ entryPoints, external = [] } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
   // details of lit-html.js.
@@ -119,15 +118,14 @@ export function litRollupConfig({ entryPoints, external = [], es5 = false, plugi
       input: entryPoints.map((name) => `development/${name}.js`),
       output: {
         dir: "./",
-        format: es5 ? "iife" : "esm",
+        format: "esm",
         // Preserve existing module structure (e.g. preserve the "directives/"
         // directory).
-        preserveModules: !es5,
+        preserveModules: true,
         sourcemap: !CHECKSIZE,
       },
       external,
       plugins: [
-        es5 ? nodeResolve() : null,
         // Switch all DEV_MODE variable assignment values to false. Terser's dead
         // code removal will then remove any blocks that are conditioned on this
         // variable.
@@ -166,16 +164,15 @@ export function litRollupConfig({ entryPoints, external = [], es5 = false, plugi
                   dest: pathLib.dirname(name),
                 })),
               }),
-              // Copy the tests.
+              // Copy platform support tests.
               copy({
                 targets: [{
-                  src: `src/test/polyfill/*_test.html`,
-                  dest: ['development/test/polyfill', 'test/polyfill'],
+                  src: `src/test/platform-support/*_test.html`,
+                  dest: ['development/test/platform-support', 'test/platform-support'],
                 }]
               }),
             ]),
-      ],
-      ...plugins
+      ]
     },
   ];
 }

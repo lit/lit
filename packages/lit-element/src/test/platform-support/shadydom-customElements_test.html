@@ -7,7 +7,7 @@
       window.customElements.forcePolyfill = true;
     </script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <script src="../../lib/polyfill.js"></script>
+    <script src="../../lib/platform-support.js"></script>
   </head>
   <body>
     <script type="module">
@@ -24,7 +24,7 @@
           // setup mocha
           mocha.setup({ui: 'tdd'});
 
-          await import('./polyfill-tests.js');
+          await import('./platform-support-tests.js');
 
           // run the tests, and notify the test runner after finishing
           mocha.run(() => {
