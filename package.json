@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
     "build": "lerna run build",
     "test": "cd packages/tests && npm test",
     "benchmarks": "cd packages/benchmarks && npm run benchmarks"
