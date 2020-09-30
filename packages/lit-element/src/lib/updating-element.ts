@@ -396,9 +396,9 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     this[finalized] = true;
     // finalize any superclasses
-    const superProto = Object.getPrototypeOf(this);
+    const superProto = Object.getPrototypeOf(this) as typeof UpdatingElement;
     superProto.finalize();
-    this._classProperties = new Map(superProto._classProperties);
+    this._classProperties = new Map(superProto._classProperties!);
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
     // make any properties
