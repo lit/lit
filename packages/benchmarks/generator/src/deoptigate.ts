@@ -17,23 +17,25 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import deoptLogToJson from 'deoptigate/deoptigate.log.js';
 const { logToJSON } = deoptLogToJson;
-import deoptCreatePage from 'deoptigate/app/lib/create-page.js';
-const {createPage} = deoptCreatePage;
+import createPage from 'deoptigate/app/lib/create-page.js';
 import mkdirp from 'mkdirp';
 import esDevServer from 'es-dev-server';
 const { createConfig, startServer }  = esDevServer;
+import childProcess from 'child_process';
 
 const generate = async (deoptFolder: string) => {
   const json = await logToJSON(path.join(deoptFolder, 'v8.log'), { root: process.cwd() });
-  fs.writeFileSync(path.join(deoptFolder, 'index.html'), createPage(), 'utf8');
+  const file = path.join(deoptFolder, 'index.html');
+  fs.writeFileSync(file, createPage(), 'utf8');
   fs.writeFileSync(path.join(deoptFolder, 'deoptigate.render-data.js'), `deoptigateRender(${json});`, 'utf8');
+  return file;
 };
 
 export const deoptigateFolderForUrl = (url: string) => {
-  return 'deopt-' + url.replace(/\?/, '-').replace(/.html/, '');
+  return 'deopt/' + url.replace(/\?/, '-').replace(/\.html[^/]*$/, '');
 }
 
-export const deoptigate = async (outputFolder: string, url: string) => {
+export const deoptigate = async (outputFolder: string, url: string, open = false) => {
   const config = createConfig({
     port: 9999,
     nodeResolve: true,
@@ -56,10 +58,9 @@ export const deoptigate = async (outputFolder: string, url: string) => {
   });
   console.log(`Profiling ${url}...`);
   const page = await browser.newPage();
-  await page.goto(`http://localhost:9999/generated/${url}`);
+  await page.goto(`http://localhost:9999/${url}`);
   await new Promise(r => setTimeout(() => r(), 2000));
   browser.close();
-  server.close();
   // From https://gist.github.com/billti/a2ee40e60611ec9b37b89c7c00cd39ab
   let logText = fs.readFileSync(logFile, 'utf8');
   const badLines = /(extensions::SafeBuiltins:)|(v8\/LoadTimes:)|(, :\d)|(code-creation,Script)/;
@@ -72,7 +73,12 @@ export const deoptigate = async (outputFolder: string, url: string) => {
     .map((line: string) => line.replace(webPrefix, ''))
     .map((line: string) => line.replace(badWrap, '\ncode-creation'))
     .join('\n'));
-  await generate(deoptFolder);
+  const report = await generate(deoptFolder);
+  if (open) {
+    const reportURL = path.relative(process.cwd(), report);
+    console.log('Opening report... press ^C to stop server and close.');
+    childProcess.exec(`open -n -a "Google Chrome" http://localhost:9999/${reportURL}`);
+  } else {
+   server.close();
+  }
 }
-
-

@@ -243,7 +243,7 @@ async function generateAll() {
   const tach = {
     "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
     "timeout": 0,
-    "sampleSize": options.deoptigate ? 2 : options.sampleSize,
+    "sampleSize": options.runDeoptigate ? 2 : options.sampleSize,
     "benchmarks": [{
       "measurement": measurement,
       "browser": {
@@ -266,11 +266,12 @@ async function generateAll() {
 
   // index.html preamble
   let index = `<style>table,th,td { padding: 3px; border: 1px solid black; border-collapse: collapse;}</style><table>`;
-  index += `<tr>${reportOptions.map(arg => `<td>${arg}</td>`).join('')}<td>URL</td>${options.deoptigate ? `<td>Deopt</td>` : ''}</tr>`;
+  index += `<tr>${reportOptions.map(arg => `<td>${arg}</td>`).join('')}<td>URL</td>${options.runDeoptigate ? `<td>Deopt</td>` : ''}</tr>`;
 
   // Loop over cartesian product of all options and output benchmarks
   const urls = [];
   const files = new Set();
+  const urlPath = path.relative(process.cwd(), outputPath);
   for (const variation of variations) {
     const variant = (Object.keys(options) as OptionKey[])
       .reduce((v: any, arg: OptionKey, i: number) => (v[arg] = variation[i], v), {});
@@ -285,9 +286,8 @@ async function generateAll() {
     urls.push(url);
     index += `<tr>${reportOptions.map(opt => `<td>${formatOptionValue(variant[opt])}</td>`).join('')}`;
     index += `<td><a href="${url}">${url}</a></td>`
-    index += `${options.deoptigate ? `<td><a href="${deoptigateFolderForUrl(url)}/index.html">Deopt</a></td>` : ''}`
+    index += `${options.runDeoptigate ? `<td><a href="${deoptigateFolderForUrl(`${urlPath}/${url}`)}/index.html">Deopt</a></td>` : ''}`
     index += `</tr>`;
-    const urlPath = path.relative(process.cwd(), outputPath);
     const tachInfo = {name: shortName || options.shortname || '(single)', url: `${urlPath}/${url}`} as any;
     if (packageVersions) {
       tachInfo.packageVersions = packageVersions;
@@ -312,7 +312,7 @@ async function generateAll() {
   // Run the benchmarks!
   if (options.runDeoptigate) {
     for (const url of urls) {
-      await deoptigate(options.output, url);
+      await deoptigate(options.output, `${urlPath}/${url}`);
     }
   } else if (options.runTachometer) {
     await tachometer([
