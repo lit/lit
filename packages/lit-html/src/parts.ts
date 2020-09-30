@@ -17,8 +17,8 @@ type NodePartStateInternal = {
  * Package private members of NodePart.
  */
 type NodePartInternal = {
-  __startNode: NodePart['__startNode'];
-  __endNode: NodePart['__endNode'];
+  _startNode: NodePart['_startNode'];
+  _endNode: NodePart['_endNode'];
 };
 
 export const detachNodePart = (part: NodePart): NodePartState => {
@@ -27,9 +27,9 @@ export const detachNodePart = (part: NodePart): NodePartState => {
     __value: part._value,
     __fragment: fragment,
   };
-  let start = ((part as unknown) as NodePartInternal).__startNode.nextSibling;
+  let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
   let nextNode;
-  while (start !== ((part as unknown) as NodePartInternal).__endNode) {
+  while (start !== ((part as unknown) as NodePartInternal)._endNode) {
     nextNode = start!.nextSibling;
     fragment.append(start!);
     start = nextNode;
@@ -50,13 +50,13 @@ export const createAndInsertPart = (
   containerPart: NodePart,
   refPart?: NodePart
 ): NodePart => {
-  const container = ((containerPart as unknown) as NodePartInternal).__startNode
+  const container = ((containerPart as unknown) as NodePartInternal)._startNode
     .parentNode as Node;
 
   const refNode =
     refPart === undefined
-      ? ((containerPart as unknown) as NodePartInternal).__endNode
-      : ((refPart as unknown) as NodePartInternal).__startNode;
+      ? ((containerPart as unknown) as NodePartInternal)._endNode
+      : ((refPart as unknown) as NodePartInternal)._startNode;
 
   const startNode = container.insertBefore(createMarker(), refNode);
   const endNode = container.insertBefore(createMarker(), refNode);
@@ -75,20 +75,20 @@ export const insertPartBefore = (
   part: NodePart,
   refPart?: NodePart
 ) => {
-  const container = ((containerPart as unknown) as NodePartInternal).__startNode
+  const container = ((containerPart as unknown) as NodePartInternal)._startNode
     .parentNode!;
 
   const refNode = refPart
-    ? ((refPart as unknown) as NodePartInternal).__startNode
-    : ((containerPart as unknown) as NodePartInternal).__endNode;
+    ? ((refPart as unknown) as NodePartInternal)._startNode
+    : ((containerPart as unknown) as NodePartInternal)._endNode;
 
-  const endNode = ((part as unknown) as NodePartInternal).__endNode!
+  const endNode = ((part as unknown) as NodePartInternal)._endNode!
     .nextSibling;
 
   if (endNode !== refNode) {
     reparentNodes(
       container,
-      ((part as unknown) as NodePartInternal).__startNode,
+      ((part as unknown) as NodePartInternal)._startNode,
       endNode,
       refNode
     );
@@ -97,8 +97,8 @@ export const insertPartBefore = (
 
 export const removePart = (part: NodePart) => {
   removeNodes(
-    ((part as unknown) as NodePartInternal).__startNode,
-    ((part as unknown) as NodePartInternal).__endNode!.nextSibling
+    ((part as unknown) as NodePartInternal)._startNode,
+    ((part as unknown) as NodePartInternal)._endNode!.nextSibling
   );
 };
 
