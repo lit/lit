@@ -51,6 +51,7 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:local
+          CONCURRENT_BROWSERS: 6
         run: npm run test
 
   tests-sauce:
@@ -109,4 +110,5 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce
+          CONCURRENT_BROWSERS: 6
         run: npm run test
