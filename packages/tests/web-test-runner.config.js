@@ -10,21 +10,13 @@ if (!["dev", "prod"].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
 }
 
-function getPlugins() {
-  let resolveRemapConfig;
-  if (mode === "prod") {
-    console.log("Using production builds");
-    resolveRemapConfig = prodResolveRemapConfig;
-  } else {
-    console.log("Using development builds");
-    resolveRemapConfig = devResolveRemapConfig;
-  }
-  return [
-    fromRollup(resolveRemap)(resolveRemapConfig),
-    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
-    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin(),
-  ];
+let resolveRemapConfig;
+if (mode === "prod") {
+  console.log("Using production builds");
+  resolveRemapConfig = prodResolveRemapConfig;
+} else {
+  console.log("Using development builds");
+  resolveRemapConfig = devResolveRemapConfig;
 }
 
 const browserPresets = {
@@ -46,13 +38,6 @@ const browserPresets = {
     // "sauce:Windows 7/internet explorer@11", // Browser start timeout
   ],
 };
-
-function getBrowsers() {
-  return (process.env.BROWSERS || "preset:local")
-    .split(",")
-    .map(parseBrowser)
-    .flat();
-}
 
 let sauceLauncher;
 function makeSauceLauncherOnce() {
@@ -142,6 +127,11 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   return [playwrightLauncher({ product: browser })];
 }
 
+const browsers = (process.env.BROWSERS || "preset:local")
+  .split(",")
+  .map(parseBrowser)
+  .flat();
+
 const seenDevModeLogs = new Set();
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
@@ -154,8 +144,13 @@ export default {
   ],
   nodeResolve: true,
   concurrency: sauceLauncher ? 1 : 10,
-  browsers: getBrowsers(),
-  plugins: getPlugins(),
+  browsers,
+  plugins: [
+    fromRollup(resolveRemap)(resolveRemapConfig),
+    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
+    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
+    legacyPlugin(),
+  ],
   filterBrowserLogs: ({ args }) => {
     if (mode === "dev" && args[0] && args[0].includes("in dev mode")) {
       if (!seenDevModeLogs.has(args[0])) {
