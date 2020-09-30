@@ -149,8 +149,8 @@ interface ShadyTemplateResult {
 interface NodePartStandIn {
   new (...args: any[]): NodePartStandIn;
   _value: unknown;
-  __startNode: ChildNode;
-  __endNode: ChildNode | null;
+  _startNode: ChildNode;
+  _endNode: ChildNode | null;
   options: RenderOptions;
   _setValue(value: unknown): void;
   __baseSetValue(value: unknown): void;
@@ -270,7 +270,7 @@ interface TemplateStandIn {
      */
     __baseSetValue: NodePart.prototype._setValue,
     _setValue(this: NodePartStandIn, value: unknown) {
-      const container = this.__startNode.parentNode!;
+      const container = this._startNode.parentNode!;
       const renderingIntoShadowRoot = container instanceof ShadowRoot;
       if (!renderingIntoShadowRoot) {
         this.__baseSetValue(value);
@@ -292,13 +292,13 @@ interface TemplateStandIn {
         // *** This must be done here in order to support rendering
         // non-templateResults into shadowRoots.
         let renderContainer: DocumentFragment | undefined = undefined;
-        const startNode = this.__startNode;
-        const endNode = this.__endNode;
+        const startNode = this._startNode;
+        const endNode = this._endNode;
         if (renderingIntoShadowRoot && !isScopeStyled(currentScope)) {
           renderContainer = document.createDocumentFragment();
           renderContainer.appendChild(document.createComment(''));
           // Temporarily swizzle tracked nodes so the `__insert` is correct.
-          this.__startNode = this.__endNode = renderContainer.firstChild!;
+          this._startNode = this._endNode = renderContainer.firstChild!;
         }
         this.__baseSetValue(value);
 
@@ -318,8 +318,8 @@ interface TemplateStandIn {
             this.options?.renderBefore || null
           );
           // Un-swizzle tracked nodes.
-          this.__startNode = startNode;
-          this.__endNode = endNode;
+          this._startNode = startNode;
+          this._endNode = endNode;
         }
       }
     },

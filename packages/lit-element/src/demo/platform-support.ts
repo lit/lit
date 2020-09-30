@@ -93,12 +93,6 @@ class MyElement extends LitElement {
   firstUpdated() {
     (this as any)._inner = this.shadowRoot!.querySelector('x-inner');
   }
-
-  get updateComplete() {
-    return (async () => {
-      return await super.updateComplete && await (this as any).updateComplete;
-    })();
-  };
 }
 
 customElements.define('my-element', MyElement);

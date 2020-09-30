@@ -8,7 +8,8 @@
     </script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
     <script src="../../../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
-    <script src="../../lib/platform-support.js"></script>
+    <!-- load as module for better compatibility with system.js in test-runner -->
+    <script type="module" src="../../lib/platform-support.js"></script>
   </head>
   <body>
     <script type="module">

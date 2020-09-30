@@ -18,7 +18,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       window.customElements.forcePolyfill = true;
     }
   </script>
+  <!-- May need to comment this to work on IE for compatibility with es-dev-server polyfill injection -->
   <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <!-- load lib/platform-support.js as a module for better compat with es-dev-server -->
   <script type="module" src="../development/lib/platform-support.js"></script>
   <script type="module" src="../development/demo/platform-support.js"></script>
 </head>
