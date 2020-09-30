@@ -41,13 +41,14 @@ const skipBundleOutput = {
 
 // Any private properties which we share between different _packages_ are
 // hard-coded here because they must never change between versions. Mangled
-// names are chosen at random.
+// names are randomly chosen uppercase letters, in case we ever might want to
+// use lowercase letters for short, public APIs.
 const crossPackagePropertyMangles = {
   _createElement: "Y",
   _endNode: "M",
-  _setValue: "k",
+  _setValue: "K",
   _startNode: "C",
-  _value: "r",
+  _value: "R",
 };
 
 export function litRollupConfig({
