@@ -408,7 +408,7 @@ suite('lit-html', () => {
         renderBefore,
       });
       // Ensure re-render updates rather than re-rendering.
-      let containerChildNodes = Array.from(container.childNodes);
+      const containerChildNodes = Array.from(container.childNodes);
       assertRender(template, '<span></span><div></div>', {
         renderBefore,
       });

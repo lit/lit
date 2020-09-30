@@ -30,7 +30,7 @@ window.JSCompiler_renameProperty = <P extends PropertyKey>(
 ): P => prop;
 
 declare global {
-  var JSCompiler_renameProperty: <P extends PropertyKey>(
+  const JSCompiler_renameProperty: <P extends PropertyKey>(
     prop: P,
     _obj: unknown
   ) => P;
