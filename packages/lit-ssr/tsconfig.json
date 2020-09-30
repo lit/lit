@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "esnext",
+    "lib": ["es2019", "ES2020.String"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": ".",
+    "rootDir": "./src",
+    "incremental": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
+  "exclude": []
+}

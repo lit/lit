@@ -28,6 +28,7 @@ export default litProdConfig({
     'directives/unsafe-svg',
     'lit-html',
     'parts',
+    'hydrate',
     'platform-support',
   ],
   bundled: [

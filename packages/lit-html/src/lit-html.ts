@@ -42,10 +42,10 @@ const createMarker = (v = '') => d.createComment(v);
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
-const isPrimitive = (value: unknown): value is Primitive =>
+export const isPrimitive = (value: unknown): value is Primitive =>
   value === null || (typeof value != 'object' && typeof value != 'function');
 const isArray = Array.isArray;
-const isIterable = (value: unknown): value is Iterable<unknown> =>
+export const isIterable = (value: unknown): value is Iterable<unknown> =>
   isArray(value) ||
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (value && typeof (value as any)[Symbol.iterator] === 'function');
@@ -600,7 +600,7 @@ class Template {
  */
 class TemplateInstance {
   _template: Template;
-  private _parts: Array<Part | undefined> = [];
+  _parts: Array<Part | undefined> = [];
 
   constructor(template: Template) {
     this._template = template;
