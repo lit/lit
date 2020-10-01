@@ -96,6 +96,7 @@ const legacyProperty = (
  * @ExportDecoratedItems
  */
 export function property(options?: PropertyDeclaration) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (protoOrDescriptor: Object | ClassElement, name?: PropertyKey): any =>
     name !== undefined
       ? legacyProperty(options!, protoOrDescriptor as Object, name)

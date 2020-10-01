@@ -27,6 +27,7 @@ import {
 } from './base.js';
 
 // x-browser support for matches
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ElementProto = Element.prototype as any;
 const legacyMatches =
   ElementProto.msMatchesSelector || ElementProto.webkitMatchesSelector;
@@ -66,6 +67,7 @@ export function queryAssignedNodes(
   return (
     protoOrDescriptor: Object | ClassElement,
     name?: PropertyKey
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
       get(this: LitElement) {

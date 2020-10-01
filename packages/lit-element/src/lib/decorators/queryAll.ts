@@ -55,6 +55,7 @@ export function queryAll(selector: string) {
   return (
     protoOrDescriptor: Object | ClassElement,
     name?: PropertyKey
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
       get(this: LitElement) {

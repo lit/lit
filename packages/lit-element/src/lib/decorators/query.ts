@@ -57,6 +57,7 @@ export function query(selector: string, cache?: boolean) {
   return (
     protoOrDescriptor: Object | ClassElement,
     name?: PropertyKey
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
       get(this: LitElement) {

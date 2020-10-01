@@ -68,6 +68,7 @@ export function queryAsync(selector: string) {
   return (
     protoOrDescriptor: Object | ClassElement,
     name?: PropertyKey
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
       async get(this: LitElement) {

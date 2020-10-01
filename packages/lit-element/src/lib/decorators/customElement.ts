@@ -30,6 +30,7 @@ const legacyCustomElement = (
   // `Constructor<HTMLElement>` for some reason.
   // `Constructor<HTMLElement>` is helpful to make sure the decorator is
   // applied to elements however.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return clazz as any;
 };
 

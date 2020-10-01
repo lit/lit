@@ -38,6 +38,7 @@ const standardEventOptions = (
 };
 
 const legacyEventOptions =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (options: AddEventListenerOptions, proto: any, name: PropertyKey) => {
     Object.assign(proto[name], options);
   };
@@ -85,5 +86,6 @@ export function eventOptions(options: AddEventListenerOptions) {
       : standardEventOptions(
           options,
           protoOrDescriptor as ClassElement
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         )) as any;
 }

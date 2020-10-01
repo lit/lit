@@ -58,6 +58,7 @@ class LiveDirective extends Directive {
     // method for each part type. Should that be moved into the AttributePart
     // interface?
     if (part.type === PROPERTY_PART) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (value === (element as any)[name]) {
         return noChange;
       }
