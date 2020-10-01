@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as pathLib from 'path';
+import * as pathLib from "path";
 
 /**
  * Rollup plugin that remaps import module specifiers.
@@ -26,9 +26,9 @@ import * as pathLib from 'path';
  * the given substutitions to that path. This way, the paths we substitute are
  * always normalized and relative to a given root directory.
  */
-export function resolveRemap({root, remap}) {
+export function resolveRemap({ root, remap }) {
   return {
-    name: 'resolve-remap',
+    name: "resolve-remap",
     async resolveId(importee, importer) {
       const resolved = await this.resolve(importee, importer, {
         skipSelf: true,
@@ -38,7 +38,7 @@ export function resolveRemap({root, remap}) {
       }
       const fullResolvedPath = resolved.id;
       const rootRelativePath = pathLib.relative(root, fullResolvedPath);
-      for (const {from, to} of remap) {
+      for (const { from, to } of remap) {
         if (rootRelativePath.startsWith(from)) {
           if (to == null) {
             return null;

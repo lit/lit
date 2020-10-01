@@ -17,6 +17,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["lit-element/**/*.ts", "lit-html/**/*.ts"],
+  "include": [
+    "lit-element/**/*.ts",
+    "lit-html/**/*.ts"
+  ],
   "exclude": []
 }

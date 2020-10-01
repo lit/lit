@@ -6,7 +6,7 @@
   "excludeNotExported": true,
   "excludePrivate": true,
   "ignoreCompilerErrors": true,
-  "exclude": ["**/*test*", "**/node_modules/!(lit-html)/**", "**/test/**"],
+  "exclude":  ["**/*test*", "**/node_modules/!(lit-html)/**", "**/test/**"],
   "out": "./docs/api",
   "gaID": "UA-39334307-23"
 }
