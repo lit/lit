@@ -12,15 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
-const version = require(path.join(__dirname, 'package.json')).version;
-const ts = fs.readFileSync(path.join(__dirname, 'src', 'lit-element.ts'));
-if (!ts.includes(version)) {
+const packageFile = fs.readFileSync(path.resolve('package.json'));
+const {version} = JSON.parse(packageFile);
+const ts = fs.readFileSync(path.resolve('src/lit-element.ts'));
+
+if (!ts.includes(`'${version}'`)) {
+  console.log(`\nExpected lit-element.ts to contain current version "${version}"`);
   console.log(
-      `\nExpected lit-element.ts to contain current version "${version}"`);
-  console.log(
-      `Don't forget to update the version tracker string before release!`);
+    `Don't forget to update the version tracker string before release!`
+  );
   process.exit(1);
 }

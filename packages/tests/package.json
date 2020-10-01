@@ -6,14 +6,14 @@
     "format": "prettier \"*{cjs,html,js,json,md,ts}\" --write",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "npx wtr",
-    "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
+    "test:prod": "MODE=prod npm run test:dev",
     "test:watch": "npm run test:dev -- --watch"
   },
   "devDependencies": {
     "@web/dev-server-legacy": "^0.1.3",
     "@web/dev-server-rollup": "^0.2.7",
-    "@web/test-runner": "^0.7.29",
+    "@web/test-runner": "^0.7.35",
     "@web/test-runner-playwright": "^0.5.7",
-    "@web/test-runner-saucelabs": "0.0.4"
+    "@web/test-runner-saucelabs": "~0.0.7"
   }
 }

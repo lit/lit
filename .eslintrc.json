@@ -9,21 +9,36 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": [
-    "@typescript-eslint"
-  ],
+  "plugins": ["@typescript-eslint"],
   "rules": {
-    "no-unexpected-multiline": "off",
-    "@typescript-eslint/indent": "off",
-
-    "no-extra-boolean-cast": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/triple-slash-reference": "off",
-
-    "@typescript-eslint/no-unused-vars": ["warn", {
-      "argsIgnorePattern": "^_"
-    }]
-  }
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "check-version-tracker.js",
+        "rollup-common.js",
+        "rollup.config.js"
+      ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": ["*_test.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
 }

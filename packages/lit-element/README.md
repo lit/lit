@@ -116,6 +116,52 @@ To install the web components polyfills needed for older browsers:
 $ npm i -D @webcomponents/webcomponentsjs
 ```
 
+## Development mode
+
+lit-element includes a development mode which adds additional checks that are
+reported in the console.
+
+To enable development mode, add the `development` exports condition to your node
+resolve configuration.
+
+#### @web/dev-server
+
+> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
+
+```js
+{
+  nodeResolve: {
+    exportConditions: [ "development" ]
+  }
+}
+```
+
+#### Rollup
+
+> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
+
+```js
+{
+  plugins: [
+    nodeResolve({
+      exportConditions: [ "development" ]
+    })
+  ]
+}
+```
+
+#### Webpack
+
+> NOTE: Requires [Webpack v5](https://webpack.js.org/migrate/5/)
+
+```js
+{
+  resolve: {
+    conditionNames: [ "development" ]
+  }
+}
+```
+
 ## Supported Browsers
 
 The last 2 versions of all modern browsers are supported, including

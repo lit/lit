@@ -17,8 +17,6 @@ import {query} from '../../lib/decorators/query.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('@query', () => {
   let container: HTMLElement;
   let el: C;
