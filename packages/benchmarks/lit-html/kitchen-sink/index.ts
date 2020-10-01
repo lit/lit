@@ -114,6 +114,7 @@ const generateData = (
       'border-left-width': '0px',
       'border-right-width': '0px',
     },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     handler: () => {},
     ...(currentDepth < depth && {
       childData: new Array(width)

@@ -18,6 +18,7 @@ import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 const flush =
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
 
 suite('@queryAssignedNodes', () => {

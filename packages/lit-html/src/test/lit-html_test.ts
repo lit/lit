@@ -1052,6 +1052,7 @@ suite('lit-html', () => {
         '<div foo="A"></div>',
         'A'
       );
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const observer = new MutationObserver(() => {});
       observer.observe(container, {attributes: true, subtree: true});
 
@@ -1119,6 +1120,7 @@ suite('lit-html', () => {
         stripExpressionComments(container.innerHTML),
         '<div foo=""></div>'
       );
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const observer = new MutationObserver(() => {});
       observer.observe(container, {attributes: true, subtree: true});
       go(noChange);
@@ -1176,7 +1178,7 @@ suite('lit-html', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget; // eslint-disable-line
+      const eventContext = {} as EventTarget;
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -1201,7 +1203,7 @@ suite('lit-html', () => {
           thisValue = this;
         },
       };
-      const eventContext = {} as EventTarget; // eslint-disable-line
+      const eventContext = {} as EventTarget;
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -1397,6 +1399,7 @@ suite('lit-html', () => {
       const node = document.createElement('div');
       const t = () => html`${node}`;
 
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const observer = new MutationObserver(() => {});
       observer.observe(container, {childList: true, subtree: true});
 

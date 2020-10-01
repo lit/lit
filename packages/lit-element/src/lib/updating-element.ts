@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/* eslint-disable no-prototype-builtins */
+/* eslint-disable @typescript-eslint/no-empty-function, no-prototype-builtins */
 
 /**
  * Use this module if you want to create your own base class extending
