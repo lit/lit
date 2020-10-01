@@ -3,6 +3,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "format": "lerna run format",
     "lint": "lerna run lint",
     "test": "cd packages/tests && npm test",
     "benchmarks": "cd packages/benchmarks && npm run benchmarks"
@@ -16,6 +17,7 @@
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
+    "prettier": "^2.1.2",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-sourcemaps": "^0.6.2",
     "rollup-plugin-summary": "^1.2.3",
