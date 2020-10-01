@@ -87,7 +87,6 @@ class StyleMap extends Directive {
       if (!(name in styleInfo)) {
         this.previousStyleProperties!.delete(name);
         if (name.indexOf('-') === -1) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (style as any)[name] = null;
         } else {
           style.removeProperty(name);
@@ -99,7 +98,6 @@ class StyleMap extends Directive {
     for (const name in styleInfo) {
       this.previousStyleProperties.add(name);
       if (name.indexOf('-') === -1) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (style as any)[name] = styleInfo[name];
       } else {
         style.setProperty(name, styleInfo[name]);
