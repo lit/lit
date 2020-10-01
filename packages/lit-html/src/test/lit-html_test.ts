@@ -1052,7 +1052,6 @@ suite('lit-html', () => {
         '<div foo="A"></div>',
         'A'
       );
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const observer = new MutationObserver(() => {});
       observer.observe(container, {attributes: true, subtree: true});
 
@@ -1120,7 +1119,6 @@ suite('lit-html', () => {
         stripExpressionComments(container.innerHTML),
         '<div foo=""></div>'
       );
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const observer = new MutationObserver(() => {});
       observer.observe(container, {attributes: true, subtree: true});
       go(noChange);
@@ -1253,13 +1251,11 @@ suite('lit-html', () => {
       div.addEventListener = () => addCount++;
       div.removeEventListener = () => removeCount++;
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 1);
       assert.equal(removeCount, 0);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 1);
@@ -1270,13 +1266,11 @@ suite('lit-html', () => {
       assert.equal(addCount, 1);
       assert.equal(removeCount, 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 2);
       assert.equal(removeCount, 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 2);
@@ -1399,7 +1393,6 @@ suite('lit-html', () => {
       const node = document.createElement('div');
       const t = () => html`${node}`;
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const observer = new MutationObserver(() => {});
       observer.observe(container, {childList: true, subtree: true});
 

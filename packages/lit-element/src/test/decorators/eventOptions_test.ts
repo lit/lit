@@ -22,7 +22,6 @@ const supportsOptions = (function () {
   if (hasOptions !== undefined) {
     return hasOptions;
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const fn = () => {};
   const event = 'foo';
   hasOptions = false;
@@ -46,7 +45,6 @@ const supportsPassive = (function () {
   // enforce passive behavior.
   const f = document.createElement('iframe');
   document.body.appendChild(f);
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const fn = () => {};
   const event = 'foo';
   hasPassive = false;
