@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
     "build": "lerna run build",
     "format": "lerna run format",
     "lint": "lerna run lint",
