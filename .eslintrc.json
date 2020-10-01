@@ -22,7 +22,6 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "no-empty": "off",
     "no-prototype-builtins": "off"
   },
   "overrides": [

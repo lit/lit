@@ -230,6 +230,7 @@ suite('LitElement', () => {
     customElements.define(generateElementName(), F);
     const el = new F();
     container.appendChild(el);
+    // eslint-disable-next-line no-empty
     while (!(await el.updateComplete)) {}
     assert.equal(el.shadowRoot!.textContent, 'foo');
   });
