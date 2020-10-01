@@ -17,8 +17,6 @@ import {guard} from '../../directives/guard.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 suite('guard', () => {
   let container: HTMLDivElement;
 

@@ -1,44 +1,40 @@
-import { playwrightLauncher } from "@web/test-runner-playwright";
-import { fromRollup } from "@web/dev-server-rollup";
-import { createSauceLabsLauncher } from "@web/test-runner-saucelabs";
-import { legacyPlugin } from "@web/dev-server-legacy";
-import { resolveRemap } from "./rollup-resolve-remap.js";
-import { prodResolveRemapConfig, devResolveRemapConfig } from "./wtr-config.js";
+import {
+  playwrightLauncher
+} from '@web/test-runner-playwright';
+import {
+  fromRollup
+} from '@web/dev-server-rollup';
+import {
+  createSauceLabsLauncher
+} from '@web/test-runner-saucelabs';
+import {
+  legacyPlugin
+} from '@web/dev-server-legacy';
+import {
+  resolveRemap
+} from './rollup-resolve-remap.js';
+import {
+  prodResolveRemapConfig,
+  devResolveRemapConfig
+} from './wtr-config.js';
 
-// TODO Replace this with log filter feature when/if added to wtr
-// https://github.com/modernweb-dev/web/issues/595
-const removeDevModeLoggingPlugin = {
-  name: "remove-dev-mode-logging",
-  transform(context) {
-    if (context.response.is("js")) {
-      return {
-        body: context.body.replace(/console\.warn\(.*in dev mode.*\);/, ""),
-      };
-    }
-  },
-};
+const mode = process.env.MODE || 'dev';
+if (!['dev', 'prod'].includes(mode)) {
+  throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
+}
 
-function getPlugins() {
-  let resolveRemapConfig;
-  if (process.env.TEST_PROD_BUILD) {
-    console.log("Using production builds");
-    resolveRemapConfig = prodResolveRemapConfig;
-  } else {
-    console.log("Using development builds");
-    resolveRemapConfig = devResolveRemapConfig;
-  }
-  return [
-    fromRollup(resolveRemap)(resolveRemapConfig),
-    removeDevModeLoggingPlugin,
-    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
-    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin(),
-  ];
+let resolveRemapConfig;
+if (mode === 'prod') {
+  console.log('Using production builds');
+  resolveRemapConfig = prodResolveRemapConfig;
+} else {
+  console.log('Using development builds');
+  resolveRemapConfig = devResolveRemapConfig;
 }
 
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
-  local: ["chromium"],
+  local: ['chromium', 'firefox', 'webkit'],
 
   // Browsers to test during automated continuous integration.
   //
@@ -48,33 +44,30 @@ const browserPresets = {
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
-    "sauce:Windows 10/firefox@68", // Current ESR
-    "sauce:Windows 10/chrome@latest-3",
-    "sauce:macOS 10.15/safari@latest",
+    'sauce:Windows 10/firefox@68', // Current ESR
+    'sauce:Windows 10/chrome@latest-3',
+    'sauce:macOS 10.15/safari@latest',
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
     // "sauce:Windows 7/internet explorer@11", // Browser start timeout
   ],
 };
 
-function getBrowsers() {
-  return (process.env.BROWSERS || "preset:local")
-    .split(",")
-    .map(parseBrowser)
-    .flat();
-}
-
 let sauceLauncher;
+
 function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
-    const user = (process.env.SAUCE_USERNAME || "").trim();
-    const key = (process.env.SAUCE_ACCESS_KEY || "").trim();
+    const user = (process.env.SAUCE_USERNAME || '').trim();
+    const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
     if (!user || !key) {
       throw new Error(
-        "To test on Sauce, set the SAUCE_USERNAME" +
-          " and SAUCE_ACCESS_KEY environment variables."
+        'To test on Sauce, set the SAUCE_USERNAME' +
+        ' and SAUCE_ACCESS_KEY environment variables.'
       );
     }
-    sauceLauncher = createSauceLabsLauncher({ user, key });
+    sauceLauncher = createSauceLabsLauncher({
+      user,
+      key
+    });
   }
   return sauceLauncher;
 }
@@ -100,19 +93,19 @@ function parseBrowser(browser) {
     return [];
   }
 
-  if (browser.startsWith("preset:")) {
-    const preset = browser.substring("preset:".length);
+  if (browser.startsWith('preset:')) {
+    const preset = browser.substring('preset:'.length);
     const entries = browserPresets[preset];
     if (!entries) {
       throw new Error(
         `Unknown preset "${preset}", please pick one of: ` +
-          Object.keys(browserPresets).join(", ")
+        Object.keys(browserPresets).join(', ')
       );
     }
     return entries.map(parseBrowser).flat();
   }
 
-  if (browser.startsWith("sauce:")) {
+  if (browser.startsWith('sauce:')) {
     // Note this is the syntax used by WCT. Might as well use the same one.
     const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
     if (!match) {
@@ -138,39 +131,67 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserName,
         browserVersion,
         platformName,
-        "sauce:options": {
-          name: `lit tests [${process.env.TEST_PROD_BUILD ? "prod" : "dev"}]`,
-          build: `${process.env.GITHUB_REF ?? "local"} build ${
-            process.env.GITHUB_RUN_NUMBER ?? ""
+        'sauce:options': {
+          name: `lit tests [${mode}]`,
+          build: `${process.env.GITHUB_REF ?? 'local'} build ${
+            process.env.GITHUB_RUN_NUMBER ?? ''
           }`,
         },
       }),
     ];
   }
 
-  return [playwrightLauncher({ product: browser })];
+  return [playwrightLauncher({
+    product: browser
+  })];
 }
+
+const browsers = (process.env.BROWSERS || 'preset:local')
+  .split(',')
+  .map(parseBrowser)
+  .flat();
+
+const seenDevModeLogs = new Set();
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
-  rootDir: "../",
+  rootDir: '../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
-    "../lit-html/development/**/*_test.js",
-    "../lit-element/development/**/*_test.js",
+    '../lit-html/development/**/*_test.js',
+    '../lit-element/development/**/*_test.js',
   ],
   nodeResolve: true,
-  concurrency: !process.env.BROWSERS || process.env.BROWSERS === "preset:local" ? 10 : 1,
-  browsers: getBrowsers(),
-  plugins: getPlugins(),
+  concurrency: 6, // default cores / 2
+  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
+  browsers,
+  plugins: [
+    fromRollup(resolveRemap)(resolveRemapConfig),
+    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
+    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
+    legacyPlugin(),
+  ],
+  filterBrowserLogs: ({
+    args
+  }) => {
+    if (mode === 'dev' && args[0] && args[0].includes('in dev mode')) {
+      if (!seenDevModeLogs.has(args[0])) {
+        seenDevModeLogs.add(args[0]);
+        // Log it one time.
+        return true;
+      }
+      return false;
+    }
+    return true;
+  },
   browserStartTimeout: 60000, // default 30000
   testsStartTimeout: 60000, // default 10000
-  testsFinishTimeout: 60000, // default 20000
+  testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
-      ui: "tdd",
-      timeout: "30000", // default 2000
+      ui: 'tdd',
+      timeout: '60000', // default 2000
     },
   },
 };

@@ -9,8 +9,8 @@ export type NodePartState = {};
  * The private interface for NodePartState, which should be kept opaque.
  */
 type NodePartStateInternal = {
-  __value: unknown;
-  __fragment: DocumentFragment;
+  _value: unknown;
+  _fragment: DocumentFragment;
 };
 
 /**
@@ -19,13 +19,14 @@ type NodePartStateInternal = {
 type NodePartInternal = {
   _startNode: NodePart['_startNode'];
   _endNode: NodePart['_endNode'];
+  _commitNode: NodePart['_commitNode'];
 };
 
 export const detachNodePart = (part: NodePart): NodePartState => {
   const fragment = document.createDocumentFragment();
   const state: NodePartStateInternal = {
-    __value: part._value,
-    __fragment: fragment,
+    _value: part._value,
+    _fragment: fragment,
   };
   let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
   let nextNode;
@@ -39,9 +40,10 @@ export const detachNodePart = (part: NodePart): NodePartState => {
 };
 
 export const restoreNodePart = (part: NodePart, state: NodePartState) => {
-  // TODO (justinfagnani): make an interal-only interface
-  (part as any).__commitNode((state as NodePartStateInternal).__fragment);
-  part._value = (state as NodePartStateInternal).__value;
+  ((part as unknown) as NodePartInternal)._commitNode(
+    (state as NodePartStateInternal)._fragment
+  );
+  part._value = (state as NodePartStateInternal)._value;
 };
 
 const createMarker = () => document.createComment('');
@@ -82,8 +84,7 @@ export const insertPartBefore = (
     ? ((refPart as unknown) as NodePartInternal)._startNode
     : ((containerPart as unknown) as NodePartInternal)._endNode;
 
-  const endNode = ((part as unknown) as NodePartInternal)._endNode!
-    .nextSibling;
+  const endNode = ((part as unknown) as NodePartInternal)._endNode!.nextSibling;
 
   if (endNode !== refNode) {
     reparentNodes(

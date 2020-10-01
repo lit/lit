@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/* eslint-disable no-prototype-builtins */
+
 /**
  * Use this module if you want to create your own base class extending
  * [[UpdatingElement]].
@@ -30,7 +32,7 @@ window.JSCompiler_renameProperty = <P extends PropertyKey>(
 ): P => prop;
 
 declare global {
-  var JSCompiler_renameProperty: <P extends PropertyKey>(
+  const JSCompiler_renameProperty: <P extends PropertyKey>(
     prop: P,
     _obj: unknown
   ) => P;
@@ -142,7 +144,7 @@ type AttributeMap = Map<string, PropertyKey>;
  * Map of changed properties with old values. Takes an optional generic
  * interface corresponding to the declared element properties.
  */
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PropertyValues<T = any> = keyof T extends PropertyKey
   ? Map<keyof T, unknown>
   : never;
@@ -348,7 +350,7 @@ export abstract class UpdatingElement extends HTMLElement {
     options: PropertyDeclaration
   ) {
     return {
-      // tslint:disable-next-line:no-any no symbol in index
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get(): any {
         return (this as {[key: string]: unknown})[key as string];
       },
@@ -396,9 +398,9 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     this[finalized] = true;
     // finalize any superclasses
-    const superProto = Object.getPrototypeOf(this);
+    const superProto = Object.getPrototypeOf(this) as typeof UpdatingElement;
     superProto.finalize();
-    this._classProperties = new Map(superProto._classProperties);
+    this._classProperties = new Map(superProto._classProperties!);
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
     // make any properties
@@ -416,7 +418,7 @@ export abstract class UpdatingElement extends HTMLElement {
       for (const p of propKeys) {
         // note, use of `any` is due to TypeSript lack of support for symbol in
         // index types
-        // tslint:disable-next-line:no-any no symbol in index
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.createProperty(p, (props as any)[p]);
       }
     }
@@ -577,7 +579,6 @@ export abstract class UpdatingElement extends HTMLElement {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
-    // tslint:disable-next-line:no-unnecessary-type-assertion
     const propName = (ctor._attributeToPropertyMap as AttributeMap).get(name);
     // Use tracking info to avoid reflecting a property value to an attribute
     // if it was just set because the attribute changed.
@@ -585,16 +586,15 @@ export abstract class UpdatingElement extends HTMLElement {
       const options = ctor.getPropertyOptions(propName);
       const converter = options.converter;
       const fromAttribute =
-        (converter as ComplexAttributeConverter)?.fromAttribute! ??
+        (converter as ComplexAttributeConverter)?.fromAttribute ??
         (typeof converter === 'function'
           ? (converter as (value: string | null, type?: unknown) => unknown)
           : null) ??
         defaultConverter.fromAttribute;
       // mark state reflecting
       this._reflectingProperty = propName;
-      this[propName as keyof this] =
-        // tslint:disable-next-line:no-any
-        fromAttribute!(value, options.type) as any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this[propName as keyof this] = fromAttribute!(value, options.type) as any;
       // mark state not reflecting
       this._reflectingProperty = null;
     }
@@ -699,7 +699,7 @@ export abstract class UpdatingElement extends HTMLElement {
     if (this._instanceProperties) {
       // Use forEach so this works even if for/of loops are compiled to for loops
       // expecting arrays
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
     }

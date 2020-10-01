@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 * Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
+* Added development mode, which can be enabled by setting the `development` Node exports condition. See `README.md` for more details.
 
 ### Fixed
 * All usage of `instanceof` has been removed, making rendering more likely to
