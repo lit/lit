@@ -43,6 +43,7 @@ if (window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow) {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (LitElement.prototype as any).adoptStyles = function (
     this: LitElement,
     styles: CSSResultArray
