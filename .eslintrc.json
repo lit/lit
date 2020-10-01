@@ -21,8 +21,7 @@
       {
         "argsIgnorePattern": "^_"
       }
-    ],
-    "no-prototype-builtins": "off"
+    ]
   },
   "overrides": [
     {
