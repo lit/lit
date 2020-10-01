@@ -27,7 +27,7 @@
   },
   "overrides": [
     {
-      "files": ["check-version-tracker.{js,cjs}", "rollup.config.js"],
+      "files": ["check-version-tracker.js", "rollup.config.js"],
       "env": {
         "node": true
       }
