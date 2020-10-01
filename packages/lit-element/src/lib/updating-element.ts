@@ -108,6 +108,14 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
   readonly reflect?: boolean;
 
   /**
+   * If specified, the property should map to an event of the given name.
+   * For example if an event of 'foo' is specified for a property named `onFoo`,
+   * the property will be setup to add an event listener for the `foo` event
+   * with a function set to the `onFoo` property.
+   */
+  readonly event?: string;
+
+  /**
    * A function that indicates if a property should be considered changed when
    * it is set. The function should take the `newValue` and `oldValue` and
    * return `true` if an update should be requested.
@@ -347,7 +355,7 @@ export abstract class UpdatingElement extends HTMLElement {
     key: string | symbol,
     options: PropertyDeclaration
   ) {
-    return {
+    const descriptor = {
       // tslint:disable-next-line:no-any no symbol in index
       get(): any {
         return (this as {[key: string]: unknown})[key as string];
@@ -366,6 +374,30 @@ export abstract class UpdatingElement extends HTMLElement {
       configurable: true,
       enumerable: true,
     };
+    if (options.event !== undefined) {
+      descriptor.set = function (this: UpdatingElement, value: unknown) {
+          const oldValue = ((this as {}) as {[key: string]: unknown})[
+            name as string
+          ];
+          const hasChanged = options.hasChanged || notEqual;
+          if (hasChanged(value, oldValue)) {
+            ((this as {}) as {[key: string]: unknown})[key as string] = value;
+            if (oldValue != undefined) {
+              this.removeEventListener(
+                options.event as keyof HTMLElementEventMap,
+                oldValue as (e: Event) => void
+              );
+            }
+            if (value != undefined) {
+              this.addEventListener(
+                options.event as keyof HTMLElementEventMap,
+                value as (e: Event) => void
+              );
+            }
+          }
+        }
+    }
+    return descriptor;
   }
 
   /**
