@@ -355,7 +355,7 @@ export abstract class UpdatingElement extends HTMLElement {
     key: string | symbol,
     options: PropertyDeclaration
   ) {
-    const descriptor = {
+    return {
       // tslint:disable-next-line:no-any no symbol in index
       get(): any {
         return (this as {[key: string]: unknown})[key as string];
@@ -374,30 +374,6 @@ export abstract class UpdatingElement extends HTMLElement {
       configurable: true,
       enumerable: true,
     };
-    if (options.event !== undefined) {
-      descriptor.set = function (this: UpdatingElement, value: unknown) {
-          const oldValue = ((this as {}) as {[key: string]: unknown})[
-            name as string
-          ];
-          const hasChanged = options.hasChanged || notEqual;
-          if (hasChanged(value, oldValue)) {
-            ((this as {}) as {[key: string]: unknown})[key as string] = value;
-            if (oldValue != undefined) {
-              this.removeEventListener(
-                options.event as keyof HTMLElementEventMap,
-                oldValue as (e: Event) => void
-              );
-            }
-            if (value != undefined) {
-              this.addEventListener(
-                options.event as keyof HTMLElementEventMap,
-                value as (e: Event) => void
-              );
-            }
-          }
-        }
-    }
-    return descriptor;
   }
 
   /**
@@ -488,9 +464,9 @@ export abstract class UpdatingElement extends HTMLElement {
   private _changedProperties!: PropertyValues;
 
   /**
-   * Map with keys of properties that should be reflected when updated.
+   * Map with keys of properties that have update effects.
    */
-  private _reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
+  private _updatingProperties?: Map<PropertyKey, PropertyDeclaration>;
 
   /**
    * Name of currently reflecting property
@@ -661,18 +637,20 @@ export abstract class UpdatingElement extends HTMLElement {
         if (!this._changedProperties.has(name)) {
           this._changedProperties.set(name, oldValue);
         }
-        // Add to reflecting properties set.
+        // Add to updating properties set.
         // Note, it's important that every change has a chance to add the
-        // property to `_reflectingProperties`. This ensures setting
+        // property to `_updatingProperties`. This ensures setting
         // attribute + property reflects correctly.
-        if (options.reflect === true && this._reflectingProperty !== name) {
-          if (this._reflectingProperties === undefined) {
-            this._reflectingProperties = new Map();
+        if (
+          (options.reflect === true && this._reflectingProperty !== name) ||
+          options.event !== undefined
+        ) {
+          if (this._updatingProperties === undefined) {
+            this._updatingProperties = new Map();
           }
-          this._reflectingProperties.set(name, options);
+          this._updatingProperties.set(name, options);
         }
       } else {
-        // Abort the request if the property should not be considered changed.
         shouldRequestUpdate = false;
       }
     }
@@ -823,16 +801,35 @@ export abstract class UpdatingElement extends HTMLElement {
    * Setting properties inside this method will *not* trigger
    * another update.
    *
-   * @param _changedProperties Map of changed properties with old values
+   * @param changedProperties Map of changed properties with old values
    */
-  protected update(_changedProperties: PropertyValues) {
-    if (this._reflectingProperties !== undefined) {
+  protected update(changedProperties: PropertyValues) {
+    if (this._updatingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
       // loops expecting arrays
-      this._reflectingProperties.forEach((v, k) =>
-        this._propertyToAttribute(k, this[k as keyof this], v)
-      );
-      this._reflectingProperties = undefined;
+      this._updatingProperties.forEach((options, prop) => {
+        const value = this[prop as keyof this];
+        if (options.reflect) {
+          this._propertyToAttribute(prop, value, options);
+        }
+        const event = options.event;
+        if (event) {
+          const oldValue = changedProperties.get(prop);
+          if (oldValue != undefined) {
+            this.removeEventListener(
+              event as keyof HTMLElementEventMap,
+              oldValue as (e: Event) => void
+            );
+          }
+          if (value != undefined) {
+            this.addEventListener(
+              options.event as keyof HTMLElementEventMap,
+              (value as unknown) as (e: Event) => void
+            );
+          }
+        }
+      });
+      this._updatingProperties = undefined;
     }
     this._markUpdated();
   }
