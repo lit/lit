@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write --ignore-path .gitignore",
     "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/list/tachometer.json  && tach --config updating-element/list/tachometer.json",

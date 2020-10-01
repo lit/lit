@@ -47,7 +47,7 @@
     "test:prod:watch": "MODE=prod npm run test:dev -- --watch",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write --ignore-path .gitignore",
     "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "check-version": "node scripts/check-version-tracker.js",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",
