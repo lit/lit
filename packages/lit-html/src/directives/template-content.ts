@@ -21,7 +21,7 @@ import {
 } from '../lit-html.js';
 
 class TemplateContent extends Directive {
-  private __previousTemplate?: HTMLTemplateElement;
+  private _previousTemplate?: HTMLTemplateElement;
 
   constructor(part: PartInfo) {
     super();
@@ -31,10 +31,10 @@ class TemplateContent extends Directive {
   }
 
   render(template: HTMLTemplateElement) {
-    if (this.__previousTemplate === template) {
+    if (this._previousTemplate === template) {
       return noChange;
     }
-    this.__previousTemplate = template;
+    this._previousTemplate = template;
     return document.importNode(template.content, true);
   }
 }

@@ -23,8 +23,6 @@ import {property} from '../../lib/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('@property', () => {
   let container: HTMLElement;
 
@@ -400,10 +398,8 @@ suite('@property', () => {
 
       @property({}) bar = 'bar';
 
-      // tslint:disable-next-line:no-any
       _observedZot?: any;
 
-      // tslint:disable-next-line:no-any
       _observedZot2?: any;
 
       // use regular decorator and cast to type

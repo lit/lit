@@ -408,7 +408,7 @@ suite('lit-html', () => {
         renderBefore,
       });
       // Ensure re-render updates rather than re-rendering.
-      let containerChildNodes = Array.from(container.childNodes);
+      const containerChildNodes = Array.from(container.childNodes);
       assertRender(template, '<span></span><div></div>', {
         renderBefore,
       });
@@ -1176,7 +1176,7 @@ suite('lit-html', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget; // eslint-disable-line
+      const eventContext = {} as EventTarget;
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -1201,7 +1201,7 @@ suite('lit-html', () => {
           thisValue = this;
         },
       };
-      const eventContext = {} as EventTarget; // eslint-disable-line
+      const eventContext = {} as EventTarget;
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -1251,13 +1251,11 @@ suite('lit-html', () => {
       div.addEventListener = () => addCount++;
       div.removeEventListener = () => removeCount++;
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 1);
       assert.equal(removeCount, 0);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 1);
@@ -1268,13 +1266,11 @@ suite('lit-html', () => {
       assert.equal(addCount, 1);
       assert.equal(removeCount, 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 2);
       assert.equal(removeCount, 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 2);
