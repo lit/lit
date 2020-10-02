@@ -16,8 +16,6 @@ import {AttributePart, directive, html, render} from '../../lit-html.js';
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;

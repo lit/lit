@@ -400,7 +400,6 @@ suite('Static get styles', () => {
 
   test('`css` get styles throws when unsafe values are used', async () => {
     assert.throws(() => {
-      // tslint:disable:no-any intentionally unsafe code
       css`
         div {
           border: ${`2px solid blue;` as any};

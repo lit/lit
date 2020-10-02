@@ -19,8 +19,6 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 import {assert} from '@esm-bundle/chai';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 function assertItemIdentity(
   oldChildren: HTMLElement[],
   newChildren: HTMLElement[],

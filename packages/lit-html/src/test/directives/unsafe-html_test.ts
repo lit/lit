@@ -17,8 +17,6 @@ import {render, html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 suite('unsafeHTML directive', () => {
   let container: HTMLElement;
 

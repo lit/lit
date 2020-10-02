@@ -39,6 +39,25 @@ const skipBundleOutput = {
   },
 };
 
+const reservedProperties = [
+  "_$litType$",
+  "_$litDirective$",
+  // TODO Decide on public API
+  // https://github.com/Polymer/lit-html/issues/1261
+  "_value",
+  "_setValue",
+];
+
+// Any private properties which we share between different _packages_ are
+// hard-coded here because they must never change between versions. Mangled
+// names are randomly chosen uppercase letters, in case we ever might want to
+// use lowercase letters for short, public APIs.
+const crossPackagePropertyMangles = {
+  _createElement: "Y",
+  _endNode: "M",
+  _startNode: "C",
+};
+
 export function litRollupConfig({ entryPoints, external = [] } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
@@ -64,12 +83,28 @@ export function litRollupConfig({ entryPoints, external = [] } = options) {
   // of all our code in a single file, tell Terser to minify that, and then throw
   // it away. This seeds the name cache in a way that guarantees every property
   // gets a unique mangled name.
-  const nameCache = {};
+  const nameCache = {
+    props: {
+      // Note all properties in the terser name cache are prefixed with '$'
+      // (presumably to avoid collisions with built-ins).
+      props: Object.entries(crossPackagePropertyMangles).reduce(
+        (obj, [name, val]) => ({ ...obj, ["$" + name]: val }),
+        {}
+      ),
+    },
+  };
   const nameCacheSeederInfile = "name-cache-seeder-virtual-input.js";
   const nameCacheSeederOutfile = "name-cache-seeder-throwaway-output.js";
-  const nameCacheSeederContents = entryPoints
-    .map((name) => `import './development/${name}.js';`)
-    .join("\n");
+  const nameCacheSeederContents = [
+    // Import every entry point so that we see all property accesses.
+    ...entryPoints.map((name) => `import './development/${name}.js';`),
+    // Synthesize a property access for all cross-package mangled property names
+    // so that even if we don't access a property in this package, we will still
+    // reserve other properties from re-using that name.
+    ...Object.keys(crossPackagePropertyMangles).map(
+      (name) => `console.log(window.${name});`
+    ),
+  ].join("\n");
 
   const terserOptions = {
     warnings: true,
@@ -87,7 +122,8 @@ export function litRollupConfig({ entryPoints, external = [] } = options) {
     nameCache,
     mangle: {
       properties: {
-        regex: /^__/,
+        regex: /^_/,
+        reserved: reservedProperties,
         // Set to true to mangle to readable names
         debug: false,
       },

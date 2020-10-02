@@ -16,8 +16,6 @@ import {html, LitElement} from '../lit-element.js';
 import {generateElementName, stripExpressionComments} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('LitElement', () => {
   let container: HTMLElement;
 
@@ -232,6 +230,7 @@ suite('LitElement', () => {
     customElements.define(generateElementName(), F);
     const el = new F();
     container.appendChild(el);
+    // eslint-disable-next-line no-empty
     while (!(await el.updateComplete)) {}
     assert.equal(el.shadowRoot!.textContent, 'foo');
   });

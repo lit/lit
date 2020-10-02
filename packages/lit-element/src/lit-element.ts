@@ -88,7 +88,7 @@ declare global {
 
 type CSSResultFlatArray = CSSResultOrNative[];
 
-export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>
+export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
 
 /**
  * Sentinal value used to avoid calling lit-html's render function when
