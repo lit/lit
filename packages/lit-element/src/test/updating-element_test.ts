@@ -2622,6 +2622,63 @@ suite('UpdatingElement', () => {
     assert.equal(a.updatedFoo, 20);
   });
 
+  test('can set event properties', async () => {
+    class A extends UpdatingElement {
+      onFoo?: ((e: Event) => void) | null;
+      onBar?: ((e: Event) => void) | null;
+
+      static get properties() {
+        return {
+          onFoo: {type: Function, event: 'foo'},
+          onBar: {type: Function, event: 'bar'},
+        };
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    let events: Map<string, number> = new Map();
+    const handler = (e: Event) => {
+      let count = events.get(e.type) || 0;
+      events.set(e.type, ++count);
+    };
+    a.onFoo = handler;
+    a.onBar = handler;
+    await a.updateComplete;
+    a.dispatchEvent(new Event('foo'));
+    a.dispatchEvent(new Event('bar'));
+    assert.deepEqual(
+      events,
+      new Map([
+        ['foo', 1],
+        ['bar', 1],
+      ])
+    );
+    a.onFoo = null;
+    await a.updateComplete;
+    a.dispatchEvent(new Event('foo'));
+    a.dispatchEvent(new Event('bar'));
+    assert.deepEqual(
+      events,
+      new Map([
+        ['foo', 1],
+        ['bar', 2],
+      ])
+    );
+    a.onBar = null;
+    a.onFoo = handler;
+    await a.updateComplete;
+    a.dispatchEvent(new Event('foo'));
+    a.dispatchEvent(new Event('bar'));
+    assert.deepEqual(
+      events,
+      new Map([
+        ['foo', 2],
+        ['bar', 2],
+      ])
+    );
+  });
+
   suite('lifecycle callbacks', () => {
     class A extends UpdatingElement {
       static properties = {foo: {}};
