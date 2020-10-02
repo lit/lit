@@ -64,6 +64,34 @@ const supportsPassive = (function () {
   return hasPassive;
 })();
 
+let hasOnce;
+const supportsOnce = (function () {
+  if (hasOnce !== undefined) {
+    return hasOnce;
+  }
+  // Use an iframe since ShadyDOM will pass this test but doesn't actually
+  // enforce passive behavior.
+  const f = document.createElement('iframe');
+  document.body.appendChild(f);
+  const fn = () => {};
+  const event = 'foo';
+  hasOnce = false;
+  const options = {
+    get once() {
+      hasOnce = true;
+      return true;
+    },
+  };
+  f.contentDocument!.addEventListener(event, fn, options);
+  f.contentDocument!.removeEventListener(
+    event,
+    fn,
+    options as AddEventListenerOptions
+  );
+  document.body.removeChild(f);
+  return hasOnce;
+})();
+
 suite('@eventOptions', () => {
   let container: HTMLElement;
 
@@ -108,7 +136,7 @@ suite('@eventOptions', () => {
   });
 
   test('allows once listeners', async function () {
-    if (!supportsOptions) {
+    if (!supportsOnce) {
       this.skip();
     }
 
