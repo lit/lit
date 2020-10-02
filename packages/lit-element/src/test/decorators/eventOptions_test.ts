@@ -14,7 +14,7 @@
 
 import {html, LitElement} from '../../lit-element.js';
 import {eventOptions} from '../../lib/decorators/eventOptions.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 let hasOptions;
@@ -92,7 +92,7 @@ const supportsOnce = (function () {
   return hasOnce;
 })();
 
-suite('@eventOptions', () => {
+(canTestLitElement ? suite : suite.skip)('@eventOptions', () => {
   let container: HTMLElement;
 
   setup(() => {

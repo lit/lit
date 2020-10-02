@@ -42,6 +42,9 @@ suite('@apply', () => {
       <div>Testing...</div>
     `;
     renderShadowRoot(result, container);
+    if (window.ShadyCSS) {
+      window.ShadyCSS.styleElement(container);
+    }
     const div = container.shadowRoot!.querySelector('div');
     const computedStyle = getComputedStyle(div!);
     assert.equal(

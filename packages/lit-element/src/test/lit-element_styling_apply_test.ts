@@ -18,14 +18,14 @@ import '../lib/platform-support.js';
 import {html as htmlWithStyles, LitElement} from '../lit-element.js';
 
 import {
+  canTestLitElement,
   generateElementName,
   getComputedStyleValue,
   nextFrame,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// TODO(sorvell): Enable when polyfill support is available.
-suite('Styling @apply', () => {
+(canTestLitElement ? suite : suite.skip)('Styling @apply', () => {
   let container: HTMLElement;
 
   setup(() => {

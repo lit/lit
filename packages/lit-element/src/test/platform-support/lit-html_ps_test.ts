@@ -120,6 +120,9 @@ suite('platform-support rendering', () => {
       <div>Testing...</div>
     `;
     renderShadowRoot(result, container);
+    if (window.ShadyCSS) {
+      window.ShadyCSS.styleElement(container);
+    }
     const div = container.shadowRoot!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
@@ -150,8 +153,14 @@ suite('platform-support rendering', () => {
       <scope-4a-sub></scope-4a-sub>
     `;
     renderShadowRoot(result, container);
+    if (window.ShadyCSS) {
+      window.ShadyCSS.styleElement(container);
+    }
     const e = container.shadowRoot!.querySelector('scope-4a-sub')!;
     renderShadowRoot(shadowContent, e);
+    if (window.ShadyCSS) {
+      window.ShadyCSS.styleElement(e);
+    }
     assert.equal(
       getComputedStyle(e).getPropertyValue('border-top-width').trim(),
       '2px'
@@ -186,7 +195,13 @@ suite('platform-support rendering', () => {
     );
     const elements = container.shadowRoot!.querySelectorAll('scope-4b-sub');
     renderShadowRoot(nestedContent, elements[0]);
+    if (window.ShadyCSS) {
+      window.ShadyCSS.styleSubtree(elements[0]);
+    }
     renderShadowRoot(nestedContent, elements[1]);
+    if (window.ShadyCSS) {
+      window.ShadyCSS.styleSubtree(elements[1]);
+    }
     assert.equal(
       getComputedStyle(elements[0]).getPropertyValue('border-top-width').trim(),
       '2px'

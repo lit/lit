@@ -14,10 +14,10 @@
 
 import {html, LitElement, PropertyValues} from '../../lit-element.js';
 import {internalProperty} from '../../lib/decorators/internalProperty.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('@internalProperty', () => {
+(canTestLitElement ? suite : suite.skip)('@internalProperty', () => {
   let container: HTMLElement;
   let el: E;
 
