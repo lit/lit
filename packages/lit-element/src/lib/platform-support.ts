@@ -18,6 +18,51 @@
  * @packageDocumentation
  */
 
+// TODO(sorvell): Remove these once ShadyDOM/webcomponentsjs supports them.
+// Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/append()/append().md
+(function (arr) {
+  arr.forEach(function (item) {
+    if (item.hasOwnProperty('append') && !window.ShadyDOM?.inUse) {
+      return;
+    }
+    Object.defineProperty(item, 'append', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: function append() {
+        var argArr = Array.prototype.slice.call(arguments),
+          docFrag = document.createDocumentFragment();
+
+        argArr.forEach(function (argItem) {
+          var isNode = argItem instanceof Node;
+          docFrag.appendChild(
+            isNode ? argItem : document.createTextNode(String(argItem))
+          );
+        });
+
+        this.appendChild(docFrag);
+      },
+    });
+  });
+})([Element.prototype, Document.prototype, DocumentFragment.prototype]);
+
+// from:https://github.com/jserz/js_piece/blob/master/DOM/ChildNode/remove()/remove().md
+(function (arr) {
+  arr.forEach(function (item) {
+    if (item.hasOwnProperty('remove') && !window.ShadyDOM?.inUse) {
+      return;
+    }
+    Object.defineProperty(item, 'remove', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: function remove() {
+        this.parentNode.removeChild(this);
+      },
+    });
+  });
+})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+
 const needsPlatformSupport = !!(
   window.ShadyCSS !== undefined &&
   (!window.ShadyCSS.nativeShadow || window.ShadyCSS.ApplyShim)
