@@ -1,19 +1,21 @@
 <html>
-  <head>
-    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
-    <script>
-      window.ShadyDOM = {force: true};
-      window.customElements = window.customElements || {};
-      window.customElements.forcePolyfill = true;
-    </script>
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <script src="../../../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
-    <!-- load as module for better compatibility with system.js in test-runner -->
-    <script type="module" src="../../lib/platform-support.js"></script>
-  </head>
-  <body>
-    <script type="module">
-      // TODO(sorvell): node resolution doesn't seem to be working here.
+
+<head>
+  <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
+  <script>
+    window.ShadyDOM = {
+      force: true
+    };
+    window.customElements = window.customElements || {};
+    window.customElements.forcePolyfill = true;
+  </script>
+  <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
+</head>
+
+<body>
+  <script type="module">
+    // TODO(sorvell): node resolution doesn't seem to be working here.
       import {
         mocha,
         sessionFinished,
@@ -40,6 +42,7 @@
         }
       })();
     </script>
-    <div id="mocha"></div>
-  </body>
+  <div id="mocha"></div>
+</body>
+
 </html>

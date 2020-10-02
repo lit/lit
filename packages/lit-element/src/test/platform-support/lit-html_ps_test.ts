@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
+import '../../lib/platform-support.js';
 import {html} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {renderShadowRoot} from '../test-utils/shadow-root';

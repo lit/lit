@@ -1,26 +1,26 @@
 <html>
-  <head>
-    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
-    <script>
-      // Remove Shadow DOM
-      delete window.Element.prototype.assignedSlot;
-      delete window.Element.prototype.attachShadow;
-      delete window.Element.prototype.shadowRoot;
-      delete window.HTMLSlotElement;
-      delete window.ShadowRoot;
-      delete window.Text.prototype.assignedSlot;
 
-      // Remove Custom Elements
-      delete window.CustomElementRegistry;
-      delete window.customElements;
-    </script>
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <!-- load as module for better compatibility with system.js in test-runner -->
-    <script type="module" src="../../lib/platform-support.js"></script>
-  </head>
-  <body>
-    <script type="module">
-      // TODO(sorvell): node resolution doesn't seem to be working here.
+<head>
+  <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
+  <script>
+    // Remove Shadow DOM
+    delete window.Element.prototype.assignedSlot;
+    delete window.Element.prototype.attachShadow;
+    delete window.Element.prototype.shadowRoot;
+    delete window.HTMLSlotElement;
+    delete window.ShadowRoot;
+    delete window.Text.prototype.assignedSlot;
+
+    // Remove Custom Elements
+    delete window.CustomElementRegistry;
+    delete window.customElements;
+  </script>
+  <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+</head>
+
+<body>
+  <script type="module">
+    // TODO(sorvell): node resolution doesn't seem to be working here.
       import {
         mocha,
         sessionFinished,
@@ -47,6 +47,7 @@
         }
       })();
     </script>
-    <div id="mocha"></div>
-  </body>
+  <div id="mocha"></div>
+</body>
+
 </html>

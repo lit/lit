@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
+import '../../lib/platform-support.js';
 import '../css-tag_test.js';
 import '../lit-element_styling_test.js';
 import '../lit-element_styling_apply_test.js';
