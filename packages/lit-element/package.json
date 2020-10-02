@@ -44,6 +44,7 @@
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../tests && npx wtr '../lit-element/development/**/!(*_ps)_test.(js|html)'",
     "test:prod": "MODE=prod npm run test:dev",
+    "test:prod:watch": "MODE=prod npm run test:dev -- --watch",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
