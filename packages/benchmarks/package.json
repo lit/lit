@@ -9,8 +9,8 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "format": "prettier lit-html/* lit-element/* --write",
-    "lint": "tslint --project ./",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-element/stub1/tachometer.json",
     "benchmark:lit-html:kitchen-sink": "tach --config lit-html/kitchen-sink/tachometer.json",
@@ -25,7 +25,6 @@
     "tachometer": "^0.5.3"
   },
   "devDependencies": {
-    "prettier": "^2.1.1",
     "typescript": "^4.0.2"
   }
 }

@@ -46,8 +46,8 @@
     "test:prod": "MODE=prod npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier src/* --write",
-    "lint": "tslint --project ./",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "check-version": "node scripts/check-version-tracker.js",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
@@ -68,9 +68,7 @@
     "chokidar-cli": "^2.1.0",
     "downlevel-dts": "^0.6.0",
     "mocha": "^8.1.1",
-    "prettier": "^2.0.5",
     "rollup": "^2.26.4",
-    "tslint": "^6.1.3",
     "typescript": "^4.0.2"
   },
   "dependencies": {

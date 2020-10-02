@@ -57,6 +57,7 @@ const params = document.location.search
   .split('&')
   .map((p) => p.split('='))
   .reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (p: {[key: string]: any}, [k, v]) => ((p[k] = JSON.parse(v || 'true')), p),
     {}
   );
@@ -133,6 +134,7 @@ const generateData = (
  *
  * @param data Data model for item
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderItem: any = (data: Data) => html`
   <div class="${classMap(data.classes)} static" style=${styleMap(data.style)}>
     ${data.text}

@@ -47,6 +47,7 @@ const isPrimitive = (value: unknown): value is Primitive =>
 const isArray = Array.isArray;
 const isIterable = (value: unknown): value is Iterable<unknown> =>
   isArray(value) ||
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (value && typeof (value as any)[Symbol.iterator] === 'function');
 
 // TODO (justinfagnani): can we get away with `\s`?
@@ -281,9 +282,11 @@ export const render = (
   options?: RenderOptions
 ) => {
   const partOwnerNode = options?.renderBefore ?? container;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: NodePart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any).$lit$ = part = new NodePart(
       container.insertBefore(createMarker(), endNode),
       endNode,
@@ -978,6 +981,7 @@ export class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
   _commitValue(value: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
@@ -1072,4 +1076,5 @@ export class EventPart extends AttributePart {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.3');

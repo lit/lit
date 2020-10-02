@@ -23,8 +23,6 @@ import {
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('UpdatingElement', () => {
   let container: HTMLElement;
 
@@ -1324,6 +1322,7 @@ suite('UpdatingElement', () => {
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
+    // eslint-disable-next-line no-empty
     while (!(await el.updateComplete)) {}
     assert.equal(el.foo, 1);
     assert.equal(el.updateCount, 2);
@@ -1783,9 +1782,7 @@ suite('UpdatingElement', () => {
       foo = 5;
       bar = 'bar';
 
-      // tslint:disable-next-line:no-any
       _observedZot?: any;
-      // tslint:disable-next-line:no-any
       _observedZot2?: any;
 
       zot = '';
@@ -2103,6 +2100,7 @@ suite('UpdatingElement', () => {
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
+    // eslint-disable-next-line no-empty
     while (!(await el.updateComplete)) {}
     assert.equal(el.foo, 10);
   });

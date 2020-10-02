@@ -17,8 +17,6 @@ import {internalProperty} from '../../lib/decorators/internalProperty.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('@internalProperty', () => {
   let container: HTMLElement;
   let el: E;
