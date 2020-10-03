@@ -77,13 +77,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       render() {
         return html`
-          <h4>I'm ${this.localName} with props:</h4>
+          <h4>${this.localName} with props:</h4>
           <ul>
             <li>foo: ${this.foo}</li>
             <li>bar: ${this.bar}</li>
+            <li>data: <pre style="display: inline">${JSON.stringify(this.data)}</pre></li>
           </ul>
-          <h4>Structured Data</h4>
-          <pre>${JSON.stringify(this.data)}</pre>
+          <h4>and content:</h4>
           <slot></slot>
         `;
       }
