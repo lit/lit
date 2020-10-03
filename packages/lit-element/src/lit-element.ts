@@ -148,7 +148,7 @@ export class LitElement extends UpdatingElement {
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
   static styles?: CSSResultGroup;
-  private static _elementStyles?: CSSResultFlatArray;
+  static elementStyles?: CSSResultFlatArray;
 
   /**
    * Takes the styles the user supplied via the `static styles` property and
@@ -183,7 +183,7 @@ export class LitElement extends UpdatingElement {
   protected static finalize() {
     const wasFinalized = super.finalize();
     if (wasFinalized) {
-      this._elementStyles = this.finalizeStyles(this.styles);
+      this.elementStyles = this.finalizeStyles(this.styles);
     }
     return wasFinalized;
   }
@@ -211,7 +211,7 @@ export class LitElement extends UpdatingElement {
     (this as {
       renderRoot: Element | DocumentFragment;
     }).renderRoot = this.createRenderRoot();
-    this.adoptStyles((this.constructor as typeof LitElement)._elementStyles!);
+    this.adoptStyles((this.constructor as typeof LitElement).elementStyles!);
   }
 
   /**

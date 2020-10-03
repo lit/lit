@@ -62,7 +62,7 @@ export const ThemeContext = createContext(
         return;
       }
       const styles = [
-        ...(this.element.constructor as any)._elementStyles,
+        ...(this.element.constructor as any).elementStyles,
         ...getThemesForElement(this.element.localName, this.value),
       ];
       // TODO(sorvell): when polyfill is in use, does not replace styles.
