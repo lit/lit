@@ -1,6 +1,7 @@
 # global
 /node_modules/
 /lerna-debug.log
+.DS_Store
 
 # shared in packages
 /packages/*/node_modules/
@@ -34,6 +35,7 @@
 /packages/lit-html/directives/
 /packages/lit-html/lit-html.*
 /packages/lit-html/parts.*
+/packages/lit-html/hydrate.*
 /packages/lit-html/platform-support.*
 
 # updating-element package

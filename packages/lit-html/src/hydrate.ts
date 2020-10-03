@@ -12,13 +12,31 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {noChange} from './part.js';
-import {AttributePart, BooleanAttributePart, EventPart, isIterable, isPrimitive, NodePart, PropertyPart} from './parts.js';
-import {RenderOptions} from './render-options.js';
-import {parts} from './render.js';
-import {templateFactory} from './template-factory.js';
-import {TemplateInstance} from './template-instance.js';
-import {TemplateResult} from './template-result.js';
+// Type-only imports
+import {
+  TemplateResult,
+  DirectiveResult,
+} from './lit-html.js';
+
+import {
+  nothing,
+  noChange,
+  EventPart,
+  NodePart,
+  PropertyPart,
+  NodePartInfo,
+  RenderOptions,
+  ATTRIBUTE_PART,
+  $litPrivate,
+} from './lit-html.js';
+
+const {
+  _TemplateInstance: TemplateInstance,
+  _isIterable,
+  _isPrimitive,
+} = $litPrivate;
+
+type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
 /**
  * Information needed to rehydrate a single TemplateResult.
@@ -107,17 +125,11 @@ type NodePartState = {
 export const hydrate =
     (rootValue: unknown,
      container: Element|DocumentFragment,
-     userOptions?: Partial<RenderOptions>) => {
-      if (parts.has(container)) {
+     options: Partial<RenderOptions> = {}) => {
+      // TODO(kschaaf): Do we need a helper for $lit$ ("part for node")?
+      if ((container as any).$lit$ !== undefined) {
         throw new Error('container already contains a live render');
       }
-
-      // TODO: this matches what render() does, but we should probably reuse
-      // code so that we use the same options object
-      const options: RenderOptions = {
-        templateFactory,
-        ...userOptions,
-      };
 
       // Since render() creates a NodePart to render into, we'll always have
       // exactly one root part. We need to hold a reference to it so we can set
@@ -164,7 +176,7 @@ export const hydrate =
       console.assert(
           rootPart !== undefined,
           'there should be exactly one root part in a render container');
-      parts.set(container, rootPart!);
+      (container as any).$lit$ = rootPart;
     };
 
 const openNodePart =
@@ -173,22 +185,16 @@ const openNodePart =
      stack: Array<NodePartState>,
      options: RenderOptions) => {
       let value: unknown;
-      let part;
-
-      // Create the node part
+      // We know the startNode now. We'll know the endNode when we get to
+      // the matching marker and set it in closeNodePart()
+      // TODO(kschaaf): Current constructor takes both nodes
+      const part = new NodePart(marker, null, options);
       if (stack.length === 0) {
-        part = new NodePart({
-          templateFactory,
-          ...options,
-        });
         value = rootValue;
       } else {
         const state = stack[stack.length - 1];
         if (state.type === 'template-instance') {
-          // We have a current template instance, so use its template
-          // processor to create parts
-          part = state.instance.processor.handleTextExpression(options);
-          state.instance.__parts.push(part);
+          state.instance._parts.push(part);
           value = state.result.values[state.instancePartIndex++];
           state.templatePartIndex++;
         } else if (state.type === 'iterable') {
@@ -200,17 +206,9 @@ const openNodePart =
           } else {
             value = result.value;
           }
-          part = new NodePart(options);
-          (state.part.value as Array<NodePart>).push(part);
-        } else {
-          // TODO: use the closest TemplateInstance's template processor
-          part = new NodePart(options);
+          (state.part._value as Array<NodePart>).push(part);
         }
       }
-
-      // We know the startNode now. We'll know the endNode when we get to
-      // the matching marker and set it in closeNodePart()
-      part.startNode = marker;
 
       // Initialize the NodePart state depending on the type of value and push
       // it onto the stack. This logic closely follows the NodePart commit()
@@ -224,37 +222,39 @@ const openNodePart =
       // 6. Iterable
       // 7. nothing (handled in fallback)
       // 8. Fallback for everything else
-      part.setValue(value);
-      value = part.resolvePendingDirective();
+      const directive = value != null ? (value as DirectiveResult)._$litDirective$ : undefined;
+      if (directive !== undefined) {
+        part._directive = new directive(part as NodePartInfo);
+        value = part._directive!.update(part, (value as DirectiveResult).values);
+      }
       if (value === noChange) {
         stack.push({part, type: 'leaf'});
-      } else if (isPrimitive(value)) {
+      } else if (_isPrimitive(value)) {
         stack.push({part, type: 'leaf'});
-        part.value = value;
-      } else if (value instanceof TemplateResult) {
+        part._value = value;
+      } else if ((value as TemplateResult)._$litType$ !== undefined) {
         // Check for a template result digest
-        const markerWithDigest = `lit-part ${value.digest}`;
+        const markerWithDigest = `lit-part ${digestForTemplateResult(value as TemplateResult)}`;
         if (marker.data === markerWithDigest) {
-          const template = options.templateFactory(value);
-          const instance =
-              new TemplateInstance(template, value.processor, options);
+          const template = NodePart.prototype._getTemplate((value as TemplateResult).strings, value as TemplateResult);
+          const instance = new TemplateInstance(template);
           stack.push({
             type: 'template-instance',
             instance,
             part,
             templatePartIndex: 0,
             instancePartIndex: 0,
-            result: value,
+            result: value as TemplateResult,
           });
           // For TemplateResult values, we set the part value to the
           // generated TemplateInstance
-          part.value = instance;
+          part._value = instance;
         } else {
           // TODO: if this isn't the server-rendered template, do we
           // need to stop hydrating this subtree? Clear it? Add tests.
           throw new Error('unimplemented');
         }
-      } else if (isIterable(value)) {
+      } else if (_isIterable(value)) {
         // currentNodePart.value will contain an array of NodeParts
         stack.push({
           part: part,
@@ -263,14 +263,14 @@ const openNodePart =
           iterator: value[Symbol.iterator](),
           done: false,
         });
-        part.value = [];
+        part._value = [];
       } else {
         // Fallback for everything else (nothing, Objects, Functions,
         // etc.): we just initialize the part's value
         // Note that `Node` value types are not currently supported during
         // SSR, so that part of the cascade is missing.
         stack.push({part: part, type: 'leaf'});
-        part.value = value == null ? '' : value;
+        part._value = value == null ? '' : value;
       }
       return part;
     };
@@ -281,7 +281,7 @@ const closeNodePart =
           if (part === undefined) {
             throw new Error('unbalanced part marker');
           }
-          part.endNode = marker;
+          part._setEndNode(marker);
 
           const currentState = stack.pop()!;
 
@@ -312,56 +312,41 @@ const createAttributeParts =
         let foundOnePart = false;
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const part = instance.template.parts[state.templatePartIndex];
-          if (part === undefined || part.type !== 'attribute' ||
-              part.index !== nodeIndex) {
+          const part = instance._template._parts[state.templatePartIndex];
+          if (part === undefined || part._type !== ATTRIBUTE_PART ||
+              part._index !== nodeIndex) {
             break;
           }
           foundOnePart = true;
 
-          const parent = node.parentElement!;
-          const attributeParts = instance.processor.handleAttributeExpressions(
-              parent, part.name, part.strings, options);
+          const attributePart = new part._constructor(
+            node.parentElement as HTMLElement,
+            part._name,
+            part._strings,
+            options
+          );
 
-          // Prime the part values so subsequent dirty-checks work
-          for (const attributePart of attributeParts) {
-            // Set the part's current value, but only for AttributeParts,
-            // not PropertyParts. This is because properties are not
-            // represented in DOM so we do need to set them on initial
-            // render.
+          let value = attributePart.strings === undefined ?
+            state.result.values[state.instancePartIndex] : state.result.values;
 
-            // TODO: only do this if we definitely have the same data as on
-            // the server. We need a flag like `dataChanged` or `sameData`
-            // for this.
-            let value = state.result.values[state.instancePartIndex++];
-            if (attributePart instanceof AttributePart) {
-              attributePart.setValue(value);
-              attributePart.resolvePendingDirective();
-              if (!(attributePart instanceof PropertyPart)) {
-                // PropertyPart's will be committed via the committer after
-                // this loop.
-                attributePart.committer.dirty = false;
+          if (attributePart instanceof EventPart) {
+            // Install event listeners since they were not serialized
+            attributePart._setValue(value);
+          } else {
+            // Resolving the attribute value primes _value with the resolved
+            // directive value; we only then commit that value for event/property
+            // parts since those were not serialized
+            value = attributePart._resolveValue(value, state.instancePartIndex);
+            if (attributePart instanceof PropertyPart) {
+              if (value !== nothing && value !== noChange) {
+                // Commit property values, since they were not serialized
+                attributePart._commitValue(value);
               }
-            } else if (attributePart instanceof BooleanAttributePart) {
-              attributePart.setValue(value);
-              value = attributePart.resolvePendingDirective();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (attributePart as any).value = !!value && (value !== noChange);
-            } else if (attributePart instanceof EventPart) {
-              // Install event listeners during hydrate
-              attributePart.setValue(value as EventListener);
-              attributePart.commit();
             }
           }
           state.templatePartIndex++;
-          instance.__parts.push(...attributeParts);
-          if (attributeParts[0] instanceof PropertyPart) {
-            // Commit any PropertyParts since they were not serialized on the
-            // server
-            for (const attributePart of attributeParts) {
-              (attributePart as PropertyPart).commit();
-            }
-          }
+          state.instancePartIndex += part._strings.length - 1;
+          instance._parts.push(attributePart);
         }
         if (!foundOnePart) {
           // For a <!--lit-bindings--> marker there should be at least
@@ -372,3 +357,29 @@ const createAttributeParts =
         throw new Error('internal error');
       }
     };
+
+// Number of 32 bit elements to use to create template digests
+const digestSize = 2;
+  // We need to specify a digest to use across rendering environments. This is a
+  // simple digest build from a DJB2-ish hash modified from:
+  // https://github.com/darkskyapp/string-hash/blob/master/index.js
+  // It has been changed to an array of hashes to add additional bits.
+  // Goals:
+  //  - Extremely low collision rate. We may not be able to detect collisions.
+  //  - Extremely fast.
+  //  - Extremely small code size.
+  //  - Safe to include in HTML comment text or attribute value.
+  //  - Easily specifiable and implementable in multiple languages.
+  // We don't care about cryptographic suitability.
+export const digestForTemplateResult = (templateResult: TemplateResult) => {
+  const hashes = new Uint32Array(digestSize).fill(5381);
+
+  for (const s of templateResult.strings) {
+    for (let i = 0; i < s.length; i++) {
+      hashes[i % digestSize] =
+          (hashes[i % digestSize] * 33) ^ s.charCodeAt(i);
+    }
+  }
+  return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)));
+}
+

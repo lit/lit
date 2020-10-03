@@ -3,7 +3,8 @@
  */
 
 import {html} from 'lit-html';
-import {LitElement, css, property} from 'lit-element';
+import {LitElement, css} from 'lit-element';
+import {property} from 'lit-element/lib/decorators/property.js'
 //import {repeat} from 'lit-html/directives/repeat.js';
 
 export const initialData = {

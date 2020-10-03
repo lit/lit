@@ -1172,6 +1172,38 @@ suite('lit-html', () => {
       assert.strictEqual((div as any).foo, undefined);
     });
 
+    test('null sets null', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, null);
+    });
+
+    test('null in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) => render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
+    test('undefined sets undefined', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('undefined in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) => render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
     test('noChange works', () => {
       const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
       go(1);
@@ -1695,7 +1727,7 @@ suite('lit-html', () => {
     });
 
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective {
+      class FireEventDirective extends Directive {
         render() {
           return nothing;
         }

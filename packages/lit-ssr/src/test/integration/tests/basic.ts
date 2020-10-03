@@ -12,23 +12,24 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, noChange, nothing, directive, Part, TemplateResult} from 'lit-html';
+import {html, noChange, nothing, directive, Directive} from 'lit-html';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {styleMap} from 'lit-html/directives/style-map.js';
-import {until} from 'lit-html/directives/until.js';
-import {asyncAppend} from 'lit-html/directives/async-append.js';
-import {asyncReplace} from 'lit-html/directives/async-replace.js';
-import {TestAsyncIterable} from 'lit-html/test/lib/test-async-iterable.js';
+// import {until} from 'lit-html/directives/until.js';
+// import {asyncAppend} from 'lit-html/directives/async-append.js';
+// import {asyncReplace} from 'lit-html/directives/async-replace.js';
+// import {TestAsyncIterable} from 'lit-html/test/lib/test-async-iterable.js';
 import {ifDefined} from 'lit-html/directives/if-defined.js';
 import {live} from 'lit-html/directives/live.js';
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
 
-import { LitElement, property } from 'lit-element';
-import {renderLight} from 'lit-element/lib/render-light.js';
+// import { LitElement } from 'lit-element';
+// import { property } from 'lit-element/lib/decorators/property.js'
+// import {renderLight} from 'lit-element/lib/render-light.js';
 
 import { SSRTest } from './ssr-test';
 
@@ -140,40 +141,6 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: ['foo'],
         html: '<div>foo</div>'
-      }
-    ],
-    stableSelectors: ['div'],
-  },
-
-  'NodePart accepts a symbol': {
-    render(x: any) {
-      return html`<div>${x}</div>`;
-    },
-    expectations: [
-      {
-        args: [Symbol()],
-        html: '<div>Symbol()</div>'
-      },
-      {
-        args: [Symbol()],
-        html: '<div>Symbol()</div>'
-      }
-    ],
-    stableSelectors: ['div'],
-  },
-
-  'NodePart accepts a symbol with a description': {
-    render(x: any) {
-      return html`<div>${x}</div>`;
-    },
-    expectations: [
-      {
-        args: [Symbol('description!')],
-        html: '<div>Symbol(description!)</div>'
-      },
-      {
-        args: [Symbol('description2!')],
-        html: '<div>Symbol(description2!)</div>'
       }
     ],
     stableSelectors: ['div'],
@@ -524,142 +491,142 @@ export const tests: {[name: string] : SSRTest} = {
     };
   },
 
-  'NodePart accepts directive: until (primitive)': {
-    render(...args) {
-      return html`<div>${until(...args)}</div>`
-    },
-    expectations: [
-      {
-        args: ['foo'],
-        html: '<div>foo</div>',
-      },
-      {
-        args: ['bar'],
-        html: '<div>bar</div>',
-      },
-    ],
-    stableSelectors: ['div'],
-  },
+  // 'NodePart accepts directive: until (primitive)': {
+  //   render(...args) {
+  //     return html`<div>${until(...args)}</div>`
+  //   },
+  //   expectations: [
+  //     {
+  //       args: ['foo'],
+  //       html: '<div>foo</div>',
+  //     },
+  //     {
+  //       args: ['bar'],
+  //       html: '<div>bar</div>',
+  //     },
+  //   ],
+  //   stableSelectors: ['div'],
+  // },
 
-  'NodePart accepts directive: until (promise, primitive)': () => {
-    let resolve: (v: string) => void;
-    const promise = new Promise(r => resolve = r);
-    return {
-      render(...args) {
-        return html`<div>${until(...args)}</div>`
-      },
-      expectations: [
-        {
-          args: [promise, 'foo'],
-          html: '<div>foo</div>',
-        },
-        {
-          async setup() {
-            resolve('promise');
-            await promise;
-          },
-          args: [promise, 'foo'],
-          html: '<div>promise</div>',
-        },
-      ],
-      stableSelectors: ['div'],
-    };
-  },
+  // 'NodePart accepts directive: until (promise, primitive)': () => {
+  //   let resolve: (v: string) => void;
+  //   const promise = new Promise(r => resolve = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div>${until(...args)}</div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise, 'foo'],
+  //         html: '<div>foo</div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve('promise');
+  //           await promise;
+  //         },
+  //         args: [promise, 'foo'],
+  //         html: '<div>promise</div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   };
+  // },
 
-  'NodePart accepts directive: until (promise, promise)': () => {
-    let resolve1: (v: string) => void;
-    let resolve2: (v: string) => void;
-    const promise1 = new Promise(r => resolve1 = r);
-    const promise2 = new Promise(r => resolve2 = r);
-    return {
-      render(...args) {
-        return html`<div>${until(...args)}</div>`
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-        },
-        {
-          async setup() {
-            resolve1('promise1');
-            await promise1;
-          },
-          args: [promise2, promise1],
-          html: '<div>promise1</div>',
-        },
-        {
-          async setup() {
-            resolve2('promise2');
-            await promise2;
-          },
-          args: [promise2, promise1],
-          html: '<div>promise2</div>',
-        },
-      ],
-      stableSelectors: ['div'],
-    };
-  },
+  // 'NodePart accepts directive: until (promise, promise)': () => {
+  //   let resolve1: (v: string) => void;
+  //   let resolve2: (v: string) => void;
+  //   const promise1 = new Promise(r => resolve1 = r);
+  //   const promise2 = new Promise(r => resolve2 = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div>${until(...args)}</div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve1('promise1');
+  //           await promise1;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div>promise1</div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve2('promise2');
+  //           await promise2;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div>promise2</div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   };
+  // },
 
-  'NodePart accepts directive: asyncAppend': () => {
-    const iterable = new TestAsyncIterable();
-    return {
-      render(iterable) {
-        return html`<div>${asyncAppend(iterable)}</div>`
-      },
-      expectations: [
-        {
-          args: [iterable],
-          html: '<div></div>',
-        },
-        {
-          async setup() {
-            await iterable.push('a');
-          },
-          args: [iterable],
-          html: '<div>a</div>',
-        },
-        {
-          async setup() {
-            await iterable.push('b');
-          },
-          args: [iterable],
-          html: '<div>\n  a\n  b\n</div>',
-        },
-      ],
-      stableSelectors: ['div'],
-    };
-  },
+  // 'NodePart accepts directive: asyncAppend': () => {
+  //   const iterable = new TestAsyncIterable();
+  //   return {
+  //     render(iterable) {
+  //       return html`<div>${asyncAppend(iterable)}</div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [iterable],
+  //         html: '<div></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           await iterable.push('a');
+  //         },
+  //         args: [iterable],
+  //         html: '<div>a</div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           await iterable.push('b');
+  //         },
+  //         args: [iterable],
+  //         html: '<div>\n  a\n  b\n</div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   };
+  // },
 
-  'NodePart accepts directive: asyncReplace': () => {
-    const iterable = new TestAsyncIterable();
-    return {
-      render(iterable) {
-        return html`<div>${asyncReplace(iterable)}</div>`
-      },
-      expectations: [
-        {
-          args: [iterable],
-          html: '<div></div>',
-        },
-        {
-          async setup() {
-            await iterable.push('a');
-          },
-          args: [iterable],
-          html: '<div>a</div>',
-        },
-        {
-          async setup() {
-            await iterable.push('b');
-          },
-          args: [iterable],
-          html: '<div>b</div>',
-        },
-      ],
-      stableSelectors: ['div'],
-    };
-  },
+  // 'NodePart accepts directive: asyncReplace': () => {
+  //   const iterable = new TestAsyncIterable();
+  //   return {
+  //     render(iterable) {
+  //       return html`<div>${asyncReplace(iterable)}</div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [iterable],
+  //         html: '<div></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           await iterable.push('a');
+  //         },
+  //         args: [iterable],
+  //         html: '<div>a</div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           await iterable.push('b');
+  //         },
+  //         args: [iterable],
+  //         html: '<div>b</div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   };
+  // },
 
   'NodePart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -808,7 +775,7 @@ export const tests: {[name: string] : SSRTest} = {
     expectations: [
       {
         args: [noChange],
-        html: '<div class="undefined"></div>'
+        html: '<div></div>'
       },
       {
         args: ['TEST'],
@@ -819,16 +786,13 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'AttributePart accepts nothing': {
-    // TODO: Test currently fails: `nothing` causes unexpected DOM mutation on
-    // first render; to be investigated
-    skip: true,
     render(x: any) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [nothing],
-        html: '<div class="[object Object]"></div>'
+        html: '<div></div>'
       },
       {
         args: ['TEST'],
@@ -838,58 +802,60 @@ export const tests: {[name: string] : SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'AttributePart accepts a symbol': {
-    render(x: any) {
-      return html`<div class=${x}></div>`;
-    },
-    expectations: [
-      {
-        args: [Symbol()],
-        html: '<div class="Symbol()"></div>'
-      },
-      {
-        args: [Symbol()],
-        html: '<div class="Symbol()"></div>'
-      }
-    ],
-    stableSelectors: ['div'],
-  },
-
-  'AttributePart accepts a symbol with description': {
-    render(x: any) {
-      return html`<div class=${x}></div>`;
-    },
-    expectations: [
-      {
-        args: [Symbol('description!')],
-        html: '<div class="Symbol(description!)"></div>'
-      },
-      {
-        args: [Symbol('description2!')],
-        html: '<div class="Symbol(description2!)"></div>'
-      }
-    ],
-    stableSelectors: ['div'],
-  },
-
   'AttributePart accepts an array': {
-    // TODO: Test currently fails: the default array.toString is being used
-    // during SSR, causing commas between values to be rendered. To be fixed.
     render(x: any) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [['a', 'b', 'c']],
-        html: '<div class="abc"></div>'
+        html: '<div class="a,b,c"></div>'
       },
       {
         args: [['d', 'e', 'f']],
-        html: '<div class="def"></div>'
+        html: '<div class="d,e,f"></div>'
       }
     ],
     stableSelectors: ['div'],
-    // Setting an iterable always results in setAttribute being called
+    // Setting an object/array always results in setAttribute being called
+    expectMutationsOnFirstRender: true,
+  },
+
+  'AttributePart accepts an object': {
+    render(x: any) {
+      return html`<div class=${x}></div>`;
+    },
+    expectations: [
+      {
+        args: [{foo: 'bar'}],
+        html: '<div class="[object Object]"></div>'
+      },
+      {
+        args: [{ziz: 'zaz'}],
+        html: '<div class="[object Object]"></div>'
+      }
+    ],
+    stableSelectors: ['div'],
+    // Setting an object/array always results in setAttribute being called
+    expectMutationsOnFirstRender: true,
+  },
+
+  'AttributePart accepts an object with a toString method': {
+    render(x: any) {
+      return html`<div class=${x}></div>`;
+    },
+    expectations: [
+      {
+        args: [{toString() { return 'toString!'; }}],
+        html: '<div class="toString!"></div>'
+      },
+      {
+        args: [{toString() { return 'toString2!'; }}],
+        html: '<div class="toString2!"></div>'
+      }
+    ],
+    stableSelectors: ['div'],
+    // Setting an object/array always results in setAttribute being called
     expectMutationsOnFirstRender: true,
   },
 
@@ -1004,88 +970,88 @@ export const tests: {[name: string] : SSRTest} = {
     };
   },
 
-  'AttributePart accepts directive: until (primitive)': {
-    render(...args) {
-      return html`<div attr="${until(...args)}"></div>`
-    },
-    expectations: [
-      {
-        args: ['foo'],
-        html: '<div attr="foo"></div>',
-      },
-      {
-        args: ['bar'],
-        html: '<div attr="bar"></div>',
-      },
-    ],
-    stableSelectors: ['div'],
-    // until always calls setValue each render, with no dirty-check of previous
-    // value
-    expectMutationsOnFirstRender: true,
-  },
+  // 'AttributePart accepts directive: until (primitive)': {
+  //   render(...args) {
+  //     return html`<div attr="${until(...args)}"></div>`
+  //   },
+  //   expectations: [
+  //     {
+  //       args: ['foo'],
+  //       html: '<div attr="foo"></div>',
+  //     },
+  //     {
+  //       args: ['bar'],
+  //       html: '<div attr="bar"></div>',
+  //     },
+  //   ],
+  //   stableSelectors: ['div'],
+  //   // until always calls setValue each render, with no dirty-check of previous
+  //   // value
+  //   expectMutationsOnFirstRender: true,
+  // },
 
-  'AttributePart accepts directive: until (promise, primitive)': () => {
-    let resolve: (v: string) => void;
-    const promise = new Promise(r => resolve = r);
-    return {
-      render(...args) {
-        return html`<div attr="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise, 'foo'],
-          html: '<div attr="foo"></div>',
-        },
-        {
-          async setup() {
-            resolve('promise');
-            await promise;
-          },
-          args: [promise, 'foo'],
-          html: '<div attr="promise"></div>',
-        },
-      ],
-      stableSelectors: ['div'],
-      // until always calls setValue each render, with no dirty-check of previous
-      // value
-      expectMutationsOnFirstRender: true,
-    };
-  },
+  // 'AttributePart accepts directive: until (promise, primitive)': () => {
+  //   let resolve: (v: string) => void;
+  //   const promise = new Promise(r => resolve = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div attr="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise, 'foo'],
+  //         html: '<div attr="foo"></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve('promise');
+  //           await promise;
+  //         },
+  //         args: [promise, 'foo'],
+  //         html: '<div attr="promise"></div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //     // until always calls setValue each render, with no dirty-check of previous
+  //     // value
+  //     expectMutationsOnFirstRender: true,
+  //   };
+  // },
 
-  'AttributePart accepts directive: until (promise, promise)': () => {
-    let resolve1: (v: string) => void;
-    let resolve2: (v: string) => void;
-    const promise1 = new Promise(r => resolve1 = r);
-    const promise2 = new Promise(r => resolve2 = r);
-    return {
-      render(...args) {
-        return html`<div attr="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-        },
-        {
-          async setup() {
-            resolve1('promise1');
-            await promise1;
-          },
-          args: [promise2, promise1],
-          html: '<div attr="promise1"></div>',
-        },
-        {
-          async setup() {
-            resolve2('promise2');
-            await promise2;
-          },
-          args: [promise2, promise1],
-          html: '<div attr="promise2"></div>',
-        },
-      ],
-      stableSelectors: ['div'],
-    }
-  },
+  // 'AttributePart accepts directive: until (promise, promise)': () => {
+  //   let resolve1: (v: string) => void;
+  //   let resolve2: (v: string) => void;
+  //   const promise1 = new Promise(r => resolve1 = r);
+  //   const promise2 = new Promise(r => resolve2 = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div attr="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve1('promise1');
+  //           await promise1;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div attr="promise1"></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve2('promise2');
+  //           await promise2;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div attr="promise2"></div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   }
+  // },
 
   'AttributePart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -1478,24 +1444,16 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts noChange (reflected)': {
-    // TODO: Right now, SSR just reflects the raw value noChange, so it gets
-    // '[object Object]' in the HTML, but when hydration runes, the committer
-    // sets 'undefined' (which gets reflected), so there's no way to write a
-    // correct test; we should either fix the client-side to not set
-    // `undefined`, or else just serialize 'undefined' for noChange on the server
-    skip: true,
     render(x: any) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
       {
         args: [noChange],
-        html: '<div class="undefined"></div>',
+        html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          // Ideally this would be `notProperty`, but this is actually how
-          // the client-side works right now, because the committer starts off
-          // as dirty
-          assert.strictEqual(dom.querySelector('div')!.className, undefined);
+          // className will always read as '' when unset
+          assert.strictEqual(dom.querySelector('div')!.className, '');
         }
       },
       {
@@ -1508,15 +1466,9 @@ export const tests: {[name: string] : SSRTest} = {
       }
     ],
     stableSelectors: ['div'],
-    // We set properties during hydration, and natively-reflecting properties
-    // will trigger a "mutation" even when set to the same value that was
-    // rendered to its attribute
-    expectMutationsDuringHydration: true,
   },
 
   'PropertyPart accepts nothing': {
-    // TODO: the current client-side does nothing special with `nothing`, just
-    // passes it on to the property; is that what we want?
     render(x: any) {
       return html`<div .foo=${x}></div>`;
     },
@@ -1525,7 +1477,7 @@ export const tests: {[name: string] : SSRTest} = {
         args: [nothing],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, nothing);
+          assert.strictEqual((dom.querySelector('div') as any).foo, undefined);
         }
       },
       {
@@ -1548,10 +1500,10 @@ export const tests: {[name: string] : SSRTest} = {
     expectations: [
       {
         args: [nothing],
-        html: '<div class="[object Object]"></div>',
+        html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          // Note className coerces to string
-          assert.strictEqual(dom.querySelector('div')!.className, '[object Object]');
+          // className will always read as '' when unset
+          assert.strictEqual(dom.querySelector('div')!.className, '');
         }
       },
       {
@@ -1595,40 +1547,6 @@ export const tests: {[name: string] : SSRTest} = {
         }
       ],
       stableSelectors: ['div'],
-    };
-  },
-
-  'PropertyPart accepts a symbol (reflected)': () => {
-    const testSymbol = Symbol('testSymbol');
-    return {
-      // Symbols can't be set to string-coercing properties like className & id
-      skip: true,
-      render(x: any) {
-        return html`<div .className=${x}></div>`;
-      },
-      expectations: [
-        {
-          args: [testSymbol],
-          html: '<div class="Symbol(testSymbol)"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'Symbol(testSymbol)');
-          }
-        },
-        {
-          args: [1],
-          html: '<div class="1"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, '1');
-          }
-        }
-      ],
-      stableSelectors: ['div'],
-      // We set properties during hydration, and natively-reflecting properties
-      // will trigger a "mutation" even when set to the same value that was
-      // rendered to its attribute
-      expectMutationsDuringHydration: true,
     };
   },
 
@@ -1899,228 +1817,228 @@ export const tests: {[name: string] : SSRTest} = {
     };
   },
 
-  'PropertyPart accepts directive: until (primitive)': {
-    render(...args) {
-      return html`<div .prop="${until(...args)}"></div>`
-    },
-    expectations: [
-      {
-        args: ['foo'],
-        html: '<div></div>',
-        check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
-        }
-      },
-      {
-        args: ['bar'],
-        html: '<div></div>',
-        check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, 'bar');
-        }
-      },
-    ],
-    stableSelectors: ['div'],
-    // until always calls setValue each render, with no dirty-check of previous
-    // value
-    expectMutationsOnFirstRender: true,
-  },
+  // 'PropertyPart accepts directive: until (primitive)': {
+  //   render(...args) {
+  //     return html`<div .prop="${until(...args)}"></div>`
+  //   },
+  //   expectations: [
+  //     {
+  //       args: ['foo'],
+  //       html: '<div></div>',
+  //       check(assert: Chai.Assert, dom: HTMLElement) {
+  //         assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
+  //       }
+  //     },
+  //     {
+  //       args: ['bar'],
+  //       html: '<div></div>',
+  //       check(assert: Chai.Assert, dom: HTMLElement) {
+  //         assert.strictEqual((dom.querySelector('div') as any).prop, 'bar');
+  //       }
+  //     },
+  //   ],
+  //   stableSelectors: ['div'],
+  //   // until always calls setValue each render, with no dirty-check of previous
+  //   // value
+  //   expectMutationsOnFirstRender: true,
+  // },
 
-  'PropertyPart accepts directive: until (primitive) (reflected)': {
-    render(...args) {
-      return html`<div .className="${until(...args)}"></div>`
-    },
-    expectations: [
-      {
-        args: ['foo'],
-        html: '<div class="foo"></div>',
-        check(assert: Chai.Assert, dom: HTMLElement) {
-          // Note className coerces to string
-          assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-        }
-      },
-      {
-        args: ['bar'],
-        html: '<div class="bar"></div>',
-        check(assert: Chai.Assert, dom: HTMLElement) {
-          // Note className coerces to string
-          assert.strictEqual(dom.querySelector('div')!.className, 'bar');
-        }
-      },
-    ],
-    stableSelectors: ['div'],
-    // We set properties during hydration, and natively-reflecting properties
-    // will trigger a "mutation" even when set to the same value that was
-    // rendered to its attribute
-    expectMutationsDuringHydration: true,
-    // until always calls setValue each render, with no dirty-check of previous
-    // value
-    expectMutationsOnFirstRender: true,
-  },
+  // 'PropertyPart accepts directive: until (primitive) (reflected)': {
+  //   render(...args) {
+  //     return html`<div .className="${until(...args)}"></div>`
+  //   },
+  //   expectations: [
+  //     {
+  //       args: ['foo'],
+  //       html: '<div class="foo"></div>',
+  //       check(assert: Chai.Assert, dom: HTMLElement) {
+  //         // Note className coerces to string
+  //         assert.strictEqual(dom.querySelector('div')!.className, 'foo');
+  //       }
+  //     },
+  //     {
+  //       args: ['bar'],
+  //       html: '<div class="bar"></div>',
+  //       check(assert: Chai.Assert, dom: HTMLElement) {
+  //         // Note className coerces to string
+  //         assert.strictEqual(dom.querySelector('div')!.className, 'bar');
+  //       }
+  //     },
+  //   ],
+  //   stableSelectors: ['div'],
+  //   // We set properties during hydration, and natively-reflecting properties
+  //   // will trigger a "mutation" even when set to the same value that was
+  //   // rendered to its attribute
+  //   expectMutationsDuringHydration: true,
+  //   // until always calls setValue each render, with no dirty-check of previous
+  //   // value
+  //   expectMutationsOnFirstRender: true,
+  // },
 
-  'PropertyPart accepts directive: until (promise, primitive)': () => {
-    let resolve: (v: string) => void;
-    const promise = new Promise(r => resolve = r);
-    return {
-      render(...args) {
-        return html`<div .prop="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise, 'foo'],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
-          }
-        },
-        {
-          async setup() {
-            resolve('promise');
-            await promise;
-          },
-          args: [promise, 'foo'],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).prop, 'promise');
-          }
-        },
-      ],
-      stableSelectors: ['div'],
-      // until always calls setValue each render, with no dirty-check of previous
-      // value
-      expectMutationsOnFirstRender: true,
-    };
-  },
+  // 'PropertyPart accepts directive: until (promise, primitive)': () => {
+  //   let resolve: (v: string) => void;
+  //   const promise = new Promise(r => resolve = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div .prop="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise, 'foo'],
+  //         html: '<div></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve('promise');
+  //           await promise;
+  //         },
+  //         args: [promise, 'foo'],
+  //         html: '<div></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'promise');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //     // until always calls setValue each render, with no dirty-check of previous
+  //     // value
+  //     expectMutationsOnFirstRender: true,
+  //   };
+  // },
 
-  'PropertyPart accepts directive: until (promise, primitive) (reflected)': () => {
-    let resolve: (v: string) => void;
-    const promise = new Promise(r => resolve = r);
-    return {
-      render(...args) {
-        return html`<div .className="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise, 'foo'],
-          html: '<div class="foo"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-          }
-        },
-        {
-          async setup() {
-            resolve('promise');
-            await promise;
-          },
-          args: [promise, 'foo'],
-          html: '<div class="promise"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise');
-          }
-        },
-      ],
-      stableSelectors: ['div'],
-      // We set properties during hydration, and natively-reflecting properties
-      // will trigger a "mutation" even when set to the same value that was
-      // rendered to its attribute
-      expectMutationsDuringHydration: true,
-      // until always calls setValue each render, with no dirty-check of previous
-      // value
-      expectMutationsOnFirstRender: true,
-    };
-  },
+  // 'PropertyPart accepts directive: until (promise, primitive) (reflected)': () => {
+  //   let resolve: (v: string) => void;
+  //   const promise = new Promise(r => resolve = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div .className="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise, 'foo'],
+  //         html: '<div class="foo"></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           // Note className coerces to string
+  //           assert.strictEqual(dom.querySelector('div')!.className, 'foo');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve('promise');
+  //           await promise;
+  //         },
+  //         args: [promise, 'foo'],
+  //         html: '<div class="promise"></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           // Note className coerces to string
+  //           assert.strictEqual(dom.querySelector('div')!.className, 'promise');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //     // We set properties during hydration, and natively-reflecting properties
+  //     // will trigger a "mutation" even when set to the same value that was
+  //     // rendered to its attribute
+  //     expectMutationsDuringHydration: true,
+  //     // until always calls setValue each render, with no dirty-check of previous
+  //     // value
+  //     expectMutationsOnFirstRender: true,
+  //   };
+  // },
 
-  'PropertyPart accepts directive: until (promise, promise)': () => {
-    let resolve1: (v: string) => void;
-    let resolve2: (v: string) => void;
-    const promise1 = new Promise(r => resolve1 = r);
-    const promise2 = new Promise(r => resolve2 = r);
-    return {
-      render(...args) {
-        return html`<div .prop="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.notProperty((dom.querySelector('div') as any), 'prop');
-          }
-        },
-        {
-          async setup() {
-            resolve1('promise1');
-            await promise1;
-          },
-          args: [promise2, promise1],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).prop, 'promise1');
-          }
-        },
-        {
-          async setup() {
-            resolve2('promise2');
-            await promise2;
-          },
-          args: [promise2, promise1],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).prop, 'promise2');
-          }
-        },
-      ],
-      stableSelectors: ['div'],
-    }
-  },
+  // 'PropertyPart accepts directive: until (promise, promise)': () => {
+  //   let resolve1: (v: string) => void;
+  //   let resolve2: (v: string) => void;
+  //   const promise1 = new Promise(r => resolve1 = r);
+  //   const promise2 = new Promise(r => resolve2 = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div .prop="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           assert.notProperty((dom.querySelector('div') as any), 'prop');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve1('promise1');
+  //           await promise1;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'promise1');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve2('promise2');
+  //           await promise2;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'promise2');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   }
+  // },
 
-  'PropertyPart accepts directive: until (promise, promise) (reflected)': () => {
-    let resolve1: (v: string) => void;
-    let resolve2: (v: string) => void;
-    const promise1 = new Promise(r => resolve1 = r);
-    const promise2 = new Promise(r => resolve2 = r);
-    return {
-      render(...args) {
-        return html`<div .className="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, '');
-          }
-        },
-        {
-          async setup() {
-            resolve1('promise1');
-            await promise1;
-          },
-          args: [promise2, promise1],
-          html: '<div class="promise1"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise1');
-          }
-        },
-        {
-          async setup() {
-            resolve2('promise2');
-            await promise2;
-          },
-          args: [promise2, promise1],
-          html: '<div class="promise2"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise2');
-          }
-        },
-      ],
-      stableSelectors: ['div'],
-    }
-  },
+  // 'PropertyPart accepts directive: until (promise, promise) (reflected)': () => {
+  //   let resolve1: (v: string) => void;
+  //   let resolve2: (v: string) => void;
+  //   const promise1 = new Promise(r => resolve1 = r);
+  //   const promise2 = new Promise(r => resolve2 = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div .className="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           // Note className coerces to string
+  //           assert.strictEqual(dom.querySelector('div')!.className, '');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve1('promise1');
+  //           await promise1;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div class="promise1"></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           // Note className coerces to string
+  //           assert.strictEqual(dom.querySelector('div')!.className, 'promise1');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve2('promise2');
+  //           await promise2;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div class="promise2"></div>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           // Note className coerces to string
+  //           assert.strictEqual(dom.querySelector('div')!.className, 'promise2');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   }
+  // },
 
   'PropertyPart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -2400,126 +2318,126 @@ export const tests: {[name: string] : SSRTest} = {
     };
   },
 
-  'EventPart accepts directive: until (listener)': () => {
-    const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-    const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
-    return {
-      render(...args) {
-        return html`<button @click="${until(...args)}">X</button>`
-      },
-      expectations: [
-        {
-          args: [listener1],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
-          }
-        },
-        {
-          args: [listener2],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
-          }
-        },
-      ],
-      stableSelectors: ['button'],
-    };
-  },
+  // 'EventPart accepts directive: until (listener)': () => {
+  //   const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
+  //   const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+  //   return {
+  //     render(...args) {
+  //       return html`<button @click="${until(...args)}">X</button>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [listener1],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
+  //         }
+  //       },
+  //       {
+  //         args: [listener2],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['button'],
+  //   };
+  // },
 
-  'EventPart accepts directive: until (promise, listener)': () => {
-    const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-    const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
-    let resolve: (v: (e: Event) => any) => void;
-    const promise = new Promise(r => resolve = r);
-    return {
-      render(...args) {
-        return html`<button @click="${until(...args)}">X</button>`
-      },
-      expectations: [
-        {
-          args: [promise, listener1],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
-          }
-        },
-        {
-          async setup() {
-            resolve(listener2);
-            await promise;
-          },
-          args: [promise, listener1],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
-          }
-        },
-      ],
-      stableSelectors: ['button'],
-    };
-  },
-
-  'EventPart accepts directive: until (promise, promise)': () => {
-    const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-    const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
-    let resolve1: (v: (e: Event) => any) => void;
-    let resolve2: (v: (e: Event) => any) => void;
-    const promise1 = new Promise(r => resolve1 = r);
-    const promise2 = new Promise(r => resolve2 = r);
-    return {
-      render(...args) {
-        return html`<button @click="${until(...args)}">X</button>`
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.notProperty((dom.querySelector('button') as any), 'prop');
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.notProperty(button, '__wasClicked1', 'was clicked during first render');
-          }
-        },
-        {
-          async setup() {
-            resolve1(listener1);
-            await promise1;
-          },
-          args: [promise2, promise1],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during second render');
-          }
-        },
-        {
-          async setup() {
-            resolve2(listener2);
-            await promise2;
-          },
-          args: [promise2, promise1],
-          html: '<button>X</button>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            const button = dom.querySelector('button')!;
-            button.click();
-            assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during third render');
-          }
-        },
-      ],
-      stableSelectors: ['button'],
-    }
-  },
+  // 'EventPart accepts directive: until (promise, listener)': () => {
+  //   const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
+  //   const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+  //   let resolve: (v: (e: Event) => any) => void;
+  //   const promise = new Promise(r => resolve = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<button @click="${until(...args)}">X</button>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise, listener1],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve(listener2);
+  //           await promise;
+  //         },
+  //         args: [promise, listener1],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['button'],
+  //   };
+  // },
+  //
+  // 'EventPart accepts directive: until (promise, promise)': () => {
+  //   const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
+  //   const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+  //   let resolve1: (v: (e: Event) => any) => void;
+  //   let resolve2: (v: (e: Event) => any) => void;
+  //   const promise1 = new Promise(r => resolve1 = r);
+  //   const promise2 = new Promise(r => resolve2 = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<button @click="${until(...args)}">X</button>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise2, promise1],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           assert.notProperty((dom.querySelector('button') as any), 'prop');
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.notProperty(button, '__wasClicked1', 'was clicked during first render');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve1(listener1);
+  //           await promise1;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during second render');
+  //         }
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve2(listener2);
+  //           await promise2;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<button>X</button>',
+  //         check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const button = dom.querySelector('button')!;
+  //           button.click();
+  //           assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during third render');
+  //         }
+  //       },
+  //     ],
+  //     stableSelectors: ['button'],
+  //   }
+  // },
 
   'EventPart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -2630,6 +2548,8 @@ export const tests: {[name: string] : SSRTest} = {
       }
     ],
     stableSelectors: ['div'],
+    // Objects never dirty-check, so they cause a setAttribute despite being hydrated
+    expectMutationsOnFirstRender: true,
   },
 
   'BooleanAttributePart, initially false': {
@@ -2701,9 +2621,6 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'BooleanAttributePart, initially nothing': {
-    // TODO: Test currently fails: `nothing` causes attribute to be rendered
-    // (both on client & server; fix in lit-html?)
-    skip: true,
     render(hide: boolean) {
       return html`<div ?hidden=${hide}></div>`;
     },
@@ -2774,88 +2691,88 @@ export const tests: {[name: string] : SSRTest} = {
     };
   },
 
-  'BooleanAttributePart accepts directive: until (primitive)': {
-    render(...args) {
-      return html`<div ?hidden="${until(...args)}"></div>`
-    },
-    expectations: [
-      {
-        args: [true],
-        html: '<div hidden></div>',
-      },
-      {
-        args: [false],
-        html: '<div></div>',
-      },
-    ],
-    stableSelectors: ['div'],
-    // until always calls setValue each render, with no dirty-check of previous
-    // value
-    expectMutationsOnFirstRender: true,
-  },
+  // 'BooleanAttributePart accepts directive: until (primitive)': {
+  //   render(...args) {
+  //     return html`<div ?hidden="${until(...args)}"></div>`
+  //   },
+  //   expectations: [
+  //     {
+  //       args: [true],
+  //       html: '<div hidden></div>',
+  //     },
+  //     {
+  //       args: [false],
+  //       html: '<div></div>',
+  //     },
+  //   ],
+  //   stableSelectors: ['div'],
+  //   // until always calls setValue each render, with no dirty-check of previous
+  //   // value
+  //   expectMutationsOnFirstRender: true,
+  // },
 
-  'BooleanAttributePart accepts directive: until (promise, primitive)': () => {
-    let resolve: (v: boolean) => void;
-    const promise = new Promise(r => resolve = r);
-    return {
-      render(...args) {
-        return html`<div ?hidden="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise, true],
-          html: '<div hidden></div>',
-        },
-        {
-          async setup() {
-            resolve(false);
-            await promise;
-          },
-          args: [promise, true],
-          html: '<div></div>',
-        },
-      ],
-      stableSelectors: ['div'],
-      // until always calls setValue each render, with no dirty-check of previous
-      // value
-      expectMutationsOnFirstRender: true,
-    };
-  },
+  // 'BooleanAttributePart accepts directive: until (promise, primitive)': () => {
+  //   let resolve: (v: boolean) => void;
+  //   const promise = new Promise(r => resolve = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div ?hidden="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise, true],
+  //         html: '<div hidden></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve(false);
+  //           await promise;
+  //         },
+  //         args: [promise, true],
+  //         html: '<div></div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //     // until always calls setValue each render, with no dirty-check of previous
+  //     // value
+  //     expectMutationsOnFirstRender: true,
+  //   };
+  // },
 
-  'BooleanAttributePart accepts directive: until (promise, promise)': () => {
-    let resolve1: (v: boolean) => void;
-    let resolve2: (v: boolean) => void;
-    const promise1 = new Promise(r => resolve1 = r);
-    const promise2 = new Promise(r => resolve2 = r);
-    return {
-      render(...args) {
-        return html`<div ?hidden="${until(...args)}"></div>`
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-        },
-        {
-          async setup() {
-            resolve1(true);
-            await promise1;
-          },
-          args: [promise2, promise1],
-          html: '<div hidden></div>',
-        },
-        {
-          async setup() {
-            resolve2(false);
-            await promise2;
-          },
-          args: [promise2, promise1],
-          html: '<div></div>',
-        },
-      ],
-      stableSelectors: ['div'],
-    }
-  },
+  // 'BooleanAttributePart accepts directive: until (promise, promise)': () => {
+  //   let resolve1: (v: boolean) => void;
+  //   let resolve2: (v: boolean) => void;
+  //   const promise1 = new Promise(r => resolve1 = r);
+  //   const promise2 = new Promise(r => resolve2 = r);
+  //   return {
+  //     render(...args) {
+  //       return html`<div ?hidden="${until(...args)}"></div>`
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve1(true);
+  //           await promise1;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div hidden></div>',
+  //       },
+  //       {
+  //         async setup() {
+  //           resolve2(false);
+  //           await promise2;
+  //         },
+  //         args: [promise2, promise1],
+  //         html: '<div></div>',
+  //       },
+  //     ],
+  //     stableSelectors: ['div'],
+  //   }
+  // },
 
   'BooleanAttributePart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -2973,11 +2890,14 @@ export const tests: {[name: string] : SSRTest} = {
       assert.equal((div as any)[triggerProp], true, `Event not triggered for ${id}`);
       assert.equal((div as any).p, x, `Property not set for ${id}`);
     };
-    const dirMap: WeakMap<Part, string> = new WeakMap();
-    const dir = directive((value: string) => (part: Part) => {
-      if (dirMap.get(part) !== value) {
-        part.setValue(value ? `[${value}]` : value);
-        dirMap.set(part, value);
+    const dir = directive(class extends Directive {
+      value: string | undefined;
+      render(value: string) {
+        if (this.value !== value) {
+          this.value = value;
+          return value ? `[${value}]` : value;
+        }
+        return noChange;
       }
     });
     const check = (assert: Chai.Assert, dom: HTMLElement, x: any, triggerProp: string) => {
@@ -3206,292 +3126,292 @@ export const tests: {[name: string] : SSRTest} = {
    * LitElement tests
    ******************************************************/
 
-  'LitElement: Basic': () => {
-    return {
-      registerElements() {
-        customElements.define('le-basic', class extends LitElement {
-          render() {
-            return html` <div>[le-basic: <slot></slot>]</div>`;
-          }
-        });
-      },
-      render(x: string) {
-        return html`<le-basic>${x}</le-basic>`;
-      },
-      expectations: [
-        {
-          args: ['x'],
-          html: {
-            root: `<le-basic>x</le-basic>`,
-            'le-basic': `<div>[le-basic: <slot></slot>]</div>`
-          },
-        },
-      ],
-      stableSelectors: ['le-basic'],
-    };
-  },
+  // 'LitElement: Basic': () => {
+  //   return {
+  //     registerElements() {
+  //       customElements.define('le-basic', class extends LitElement {
+  //         render() {
+  //           return html` <div>[le-basic: <slot></slot>]</div>`;
+  //         }
+  //       });
+  //     },
+  //     render(x: string) {
+  //       return html`<le-basic>${x}</le-basic>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: ['x'],
+  //         html: {
+  //           root: `<le-basic>x</le-basic>`,
+  //           'le-basic': `<div>[le-basic: <slot></slot>]</div>`
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-basic'],
+  //   };
+  // },
 
-  'LitElement: Nested': () => {
-    return {
-      registerElements() {
-        customElements.define('le-nested1', class extends LitElement {
-          render() {
-            return html` <div>[le-nested1: <le-nested2><slot></slot></le-nested2>]</div>`;
-          }
-        });
-        customElements.define('le-nested2', class extends LitElement {
-          render() {
-            return html` <div>[le-nested2: <slot></slot>]</div>`;
-          }
-        });
-      },
-      render(x: string) {
-        return html`<le-nested1>${x}</le-nested1>`;
-      },
-      expectations: [
-        {
-          args: ['x'],
-          html: {
-            root: `<le-nested1>x</le-nested1>`,
-            'le-nested1': {
-              root: `<div>[le-nested1: <le-nested2><slot></slot></le-nested2>]</div>`,
-              'le-nested2': `<div>[le-nested2: <slot></slot>]</div>`
-            }
-          },
-        },
-      ],
-      stableSelectors: ['le-nested1'],
-    };
-  },
+  // 'LitElement: Nested': () => {
+  //   return {
+  //     registerElements() {
+  //       customElements.define('le-nested1', class extends LitElement {
+  //         render() {
+  //           return html` <div>[le-nested1: <le-nested2><slot></slot></le-nested2>]</div>`;
+  //         }
+  //       });
+  //       customElements.define('le-nested2', class extends LitElement {
+  //         render() {
+  //           return html` <div>[le-nested2: <slot></slot>]</div>`;
+  //         }
+  //       });
+  //     },
+  //     render(x: string) {
+  //       return html`<le-nested1>${x}</le-nested1>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: ['x'],
+  //         html: {
+  //           root: `<le-nested1>x</le-nested1>`,
+  //           'le-nested1': {
+  //             root: `<div>[le-nested1: <le-nested2><slot></slot></le-nested2>]</div>`,
+  //             'le-nested2': `<div>[le-nested2: <slot></slot>]</div>`
+  //           }
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-nested1'],
+  //   };
+  // },
 
-  'LitElement: Property binding': () => {
-    return {
-      registerElements() {
-        class LEPropBinding extends LitElement {
-          @property()
-          prop = 'default';
-          render() {
-            return html` <div>[${this.prop}]</div>`;
-          }
-        }
-        customElements.define('le-prop-binding', LEPropBinding);
-      },
-      render(prop: any) {
-        return html`<le-prop-binding .prop=${prop}></le-prop-binding>`;
-      },
-      expectations: [
-        {
-          args: ['boundProp1'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-prop-binding')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp1');
-          },
-          html: {
-            root: `<le-prop-binding></le-prop-binding>`,
-            'le-prop-binding': `<div>\n  [\n  boundProp1\n  ]\n</div>`
-          },
-        },
-        {
-          args: ['boundProp2'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-prop-binding')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp2');
-          },
-          html: {
-            root: `<le-prop-binding></le-prop-binding>`,
-            'le-prop-binding': `<div>\n  [\n  boundProp2\n  ]\n</div>`
-          },
-        },
-      ],
-      stableSelectors: ['le-prop-binding'],
-    };
-  },
+  // 'LitElement: Property binding': () => {
+  //   return {
+  //     registerElements() {
+  //       class LEPropBinding extends LitElement {
+  //         @property()
+  //         prop = 'default';
+  //         render() {
+  //           return html` <div>[${this.prop}]</div>`;
+  //         }
+  //       }
+  //       customElements.define('le-prop-binding', LEPropBinding);
+  //     },
+  //     render(prop: any) {
+  //       return html`<le-prop-binding .prop=${prop}></le-prop-binding>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: ['boundProp1'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-prop-binding')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp1');
+  //         },
+  //         html: {
+  //           root: `<le-prop-binding></le-prop-binding>`,
+  //           'le-prop-binding': `<div>\n  [\n  boundProp1\n  ]\n</div>`
+  //         },
+  //       },
+  //       {
+  //         args: ['boundProp2'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-prop-binding')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp2');
+  //         },
+  //         html: {
+  //           root: `<le-prop-binding></le-prop-binding>`,
+  //           'le-prop-binding': `<div>\n  [\n  boundProp2\n  ]\n</div>`
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-prop-binding'],
+  //   };
+  // },
 
-  'LitElement: Reflected property binding': () => {
-    return {
-      registerElements() {
-        class LEReflectedBinding extends LitElement {
-          @property({reflect: true})
-          prop = 'default';
-          render() {
-            return html` <div>[${this.prop}]</div>`;
-          }
-        }
-        customElements.define('le-reflected-binding', LEReflectedBinding);
-      },
-      render(prop: any) {
-        return html`<le-reflected-binding .prop=${prop}></le-reflected-binding>`;
-      },
-      expectations: [
-        {
-          args: ['boundProp1'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-reflected-binding')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp1');
-          },
-          html: {
-            root: `<le-reflected-binding prop="boundProp1"></le-reflected-binding>`,
-            'le-reflected-binding': `<div>\n  [\n  boundProp1\n  ]\n</div>`
-          },
-        },
-        {
-          args: ['boundProp2'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-reflected-binding')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp2');
-          },
-          html: {
-            root: `<le-reflected-binding prop="boundProp2"></le-reflected-binding>`,
-            'le-reflected-binding': `<div>\n  [\n  boundProp2\n  ]\n</div>`
-          },
-        },
-      ],
-      stableSelectors: ['le-reflected-binding'],
-      // LitElement unconditionally sets reflecting properties to attributes
-      // on a property change, even if the attribute was already there
-      expectMutationsDuringUpgrade: true,
-      expectMutationsDuringHydration: true,
-    };
-  },
+  // 'LitElement: Reflected property binding': () => {
+  //   return {
+  //     registerElements() {
+  //       class LEReflectedBinding extends LitElement {
+  //         @property({reflect: true})
+  //         prop = 'default';
+  //         render() {
+  //           return html` <div>[${this.prop}]</div>`;
+  //         }
+  //       }
+  //       customElements.define('le-reflected-binding', LEReflectedBinding);
+  //     },
+  //     render(prop: any) {
+  //       return html`<le-reflected-binding .prop=${prop}></le-reflected-binding>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: ['boundProp1'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-reflected-binding')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp1');
+  //         },
+  //         html: {
+  //           root: `<le-reflected-binding prop="boundProp1"></le-reflected-binding>`,
+  //           'le-reflected-binding': `<div>\n  [\n  boundProp1\n  ]\n</div>`
+  //         },
+  //       },
+  //       {
+  //         args: ['boundProp2'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-reflected-binding')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp2');
+  //         },
+  //         html: {
+  //           root: `<le-reflected-binding prop="boundProp2"></le-reflected-binding>`,
+  //           'le-reflected-binding': `<div>\n  [\n  boundProp2\n  ]\n</div>`
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-reflected-binding'],
+  //     // LitElement unconditionally sets reflecting properties to attributes
+  //     // on a property change, even if the attribute was already there
+  //     expectMutationsDuringUpgrade: true,
+  //     expectMutationsDuringHydration: true,
+  //   };
+  // },
 
-  'LitElement: Attribute binding': () => {
-    return {
-      registerElements() {
-        class LEAttrBinding extends LitElement {
-          @property()
-          prop = 'default';
-          render() {
-            return html` <div>[${this.prop}]</div>`;
-          }
-        }
-        customElements.define('le-attr-binding', LEAttrBinding);
-      },
-      render(prop: any) {
-        return html`<le-attr-binding prop=${prop}></le-attr-binding>`;
-      },
-      expectations: [
-        {
-          args: ['boundProp1'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-attr-binding')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp1');
-          },
-          html: {
-            root: `<le-attr-binding prop="boundProp1"></le-attr-binding>`,
-            'le-attr-binding': `<div>\n  [\n  boundProp1\n  ]\n</div>`
-          },
-        },
-        {
-          args: ['boundProp2'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-attr-binding')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp2');
-          },
-          html: {
-            root: `<le-attr-binding prop="boundProp2"></le-attr-binding>`,
-            'le-attr-binding': `<div>\n  [\n  boundProp2\n  ]\n</div>`
-          },
-        },
-      ],
-      stableSelectors: ['le-attr-binding'],
-    };
-  },
+  // 'LitElement: Attribute binding': () => {
+  //   return {
+  //     registerElements() {
+  //       class LEAttrBinding extends LitElement {
+  //         @property()
+  //         prop = 'default';
+  //         render() {
+  //           return html` <div>[${this.prop}]</div>`;
+  //         }
+  //       }
+  //       customElements.define('le-attr-binding', LEAttrBinding);
+  //     },
+  //     render(prop: any) {
+  //       return html`<le-attr-binding prop=${prop}></le-attr-binding>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: ['boundProp1'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-attr-binding')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp1');
+  //         },
+  //         html: {
+  //           root: `<le-attr-binding prop="boundProp1"></le-attr-binding>`,
+  //           'le-attr-binding': `<div>\n  [\n  boundProp1\n  ]\n</div>`
+  //         },
+  //       },
+  //       {
+  //         args: ['boundProp2'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-attr-binding')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp2');
+  //         },
+  //         html: {
+  //           root: `<le-attr-binding prop="boundProp2"></le-attr-binding>`,
+  //           'le-attr-binding': `<div>\n  [\n  boundProp2\n  ]\n</div>`
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-attr-binding'],
+  //   };
+  // },
 
-  'LitElement: TemplateResult->Node binding': () => {
-    return {
-      registerElements() {
-        class LENodeBinding extends LitElement {
-          @property()
-          template: string | TemplateResult = 'default';
-          render() {
-            return html` <div>${this.template}</div>`;
-          }
-        }
-        customElements.define('le-node-binding', LENodeBinding);
-      },
-      render(template: (s: string) => TemplateResult) {
-        return html`<le-node-binding .template=${template('shadow')}>${template('light')}</le-node-binding>`;
-      },
-      expectations: [
-        {
-          args: [(s: string) => html`[template1: ${s}]`],
-          async check(_assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-node-binding')! as LitElement;
-            await el.updateComplete;
-          },
-          html: {
-            root: `<le-node-binding>\n  [template1:\n  light\n  ]\n</le-node-binding>`,
-            'le-node-binding': `<div>\n  [template1:\n  shadow\n  ]\n</div>`
-          },
-        },
-        {
-          args: [(s: string) => html`[template2: ${s}]`],
-          async check(_assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-node-binding')! as LitElement;
-            await el.updateComplete;
-          },
-          html: {
-            root: `<le-node-binding>\n  [template2:\n  light\n  ]\n</le-node-binding>`,
-            'le-node-binding': `<div>\n  [template2:\n  shadow\n  ]\n</div>`
-          },
-        },
-      ],
-      stableSelectors: ['le-node-binding'],
-    };
-  },
+  // 'LitElement: TemplateResult->Node binding': () => {
+  //   return {
+  //     registerElements() {
+  //       class LENodeBinding extends LitElement {
+  //         @property()
+  //         template: string | TemplateResult = 'default';
+  //         render() {
+  //           return html` <div>${this.template}</div>`;
+  //         }
+  //       }
+  //       customElements.define('le-node-binding', LENodeBinding);
+  //     },
+  //     render(template: (s: string) => TemplateResult) {
+  //       return html`<le-node-binding .template=${template('shadow')}>${template('light')}</le-node-binding>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: [(s: string) => html`[template1: ${s}]`],
+  //         async check(_assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-node-binding')! as LitElement;
+  //           await el.updateComplete;
+  //         },
+  //         html: {
+  //           root: `<le-node-binding>\n  [template1:\n  light\n  ]\n</le-node-binding>`,
+  //           'le-node-binding': `<div>\n  [template1:\n  shadow\n  ]\n</div>`
+  //         },
+  //       },
+  //       {
+  //         args: [(s: string) => html`[template2: ${s}]`],
+  //         async check(_assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-node-binding')! as LitElement;
+  //           await el.updateComplete;
+  //         },
+  //         html: {
+  //           root: `<le-node-binding>\n  [template2:\n  light\n  ]\n</le-node-binding>`,
+  //           'le-node-binding': `<div>\n  [template2:\n  shadow\n  ]\n</div>`
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-node-binding'],
+  //   };
+  // },
 
-  'LitElement: renderLight': () => {
-    return {
-      registerElements() {
-        class LERenderLight extends LitElement {
-          @property()
-          prop = 'default';
-          render() {
-            return html` <div>[shadow:${this.prop}<slot></slot>]</div>`;
-          }
-          renderLight() {
-            return html` <div>[light:${this.prop}]</div>`;
-          }
-        }
-        customElements.define('le-render-light', LERenderLight);
-      },
-      render(prop: any) {
-        return html`<le-render-light .prop=${prop}>${renderLight()}</le-render-light>`;
-      },
-      expectations: [
-        {
-          args: ['boundProp1'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-render-light')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp1');
-          },
-          html: {
-            root: `<le-render-light>\n  <div>\n    [light:\n    boundProp1\n    ]\n  </div>\n</le-render-light>`,
-            'le-render-light': `<div>\n  [shadow:\n  boundProp1\n  <slot></slot>\n  ]\n</div>`
-          },
-        },
-        {
-          args: ['boundProp2'],
-          async check(assert: Chai.Assert, dom: HTMLElement) {
-            const el = dom.querySelector('le-render-light')! as LitElement;
-            await el.updateComplete;
-            assert.strictEqual((el as any).prop, 'boundProp2');
-          },
-          html: {
-            root: `<le-render-light>\n  <div>\n    [light:\n    boundProp2\n    ]\n  </div>\n</le-render-light>`,
-            'le-render-light': `<div>\n  [shadow:\n  boundProp2\n  <slot></slot>\n  ]\n</div>`
-          },
-        },
-      ],
-      stableSelectors: ['le-render-light'],
-    };
-  },
+  // 'LitElement: renderLight': () => {
+  //   return {
+  //     registerElements() {
+  //       class LERenderLight extends LitElement {
+  //         @property()
+  //         prop = 'default';
+  //         render() {
+  //           return html` <div>[shadow:${this.prop}<slot></slot>]</div>`;
+  //         }
+  //         renderLight() {
+  //           return html` <div>[light:${this.prop}]</div>`;
+  //         }
+  //       }
+  //       customElements.define('le-render-light', LERenderLight);
+  //     },
+  //     render(prop: any) {
+  //       return html`<le-render-light .prop=${prop}>${renderLight()}</le-render-light>`;
+  //     },
+  //     expectations: [
+  //       {
+  //         args: ['boundProp1'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-render-light')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp1');
+  //         },
+  //         html: {
+  //           root: `<le-render-light>\n  <div>\n    [light:\n    boundProp1\n    ]\n  </div>\n</le-render-light>`,
+  //           'le-render-light': `<div>\n  [shadow:\n  boundProp1\n  <slot></slot>\n  ]\n</div>`
+  //         },
+  //       },
+  //       {
+  //         args: ['boundProp2'],
+  //         async check(assert: Chai.Assert, dom: HTMLElement) {
+  //           const el = dom.querySelector('le-render-light')! as LitElement;
+  //           await el.updateComplete;
+  //           assert.strictEqual((el as any).prop, 'boundProp2');
+  //         },
+  //         html: {
+  //           root: `<le-render-light>\n  <div>\n    [light:\n    boundProp2\n    ]\n  </div>\n</le-render-light>`,
+  //           'le-render-light': `<div>\n  [shadow:\n  boundProp2\n  <slot></slot>\n  ]\n</div>`
+  //         },
+  //       },
+  //     ],
+  //     stableSelectors: ['le-render-light'],
+  //   };
+  // },
 
 };

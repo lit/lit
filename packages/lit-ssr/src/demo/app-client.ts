@@ -3,7 +3,7 @@
  */
 
 import {render} from 'lit-html';
-import {hydrate} from 'lit-html/lib/hydrate.js';
+import {hydrate} from 'lit-html/hydrate.js';
 import {LitElement} from 'lit-element';
 import {template, initialData} from './module.js';
 

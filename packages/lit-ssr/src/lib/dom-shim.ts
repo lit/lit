@@ -39,7 +39,10 @@ export const getWindow = (props: {[key: string]: any} = {}): {[key: string]: any
     return attrs;
   }
 
-  abstract class HTMLElement {
+  class Element {
+  };
+
+  abstract class HTMLElement extends Element {
     get attributes() {
       return Array.from(attributesForElement(this))
         .map(([name, value]) => ({name, value}));
@@ -131,6 +134,7 @@ export const getWindow = (props: {[key: string]: any} = {}): {[key: string]: any
   };
 
   const window = {
+    Element,
     HTMLElement,
     Document,
     CSSStyleSheet,
@@ -141,6 +145,12 @@ export const getWindow = (props: {[key: string]: any} = {}): {[key: string]: any
       info(...args: any[]) { console.info(...args); },
       warn(...args: any[]) { console.warn(...args); },
       debug(...args: any[]) { console.debug(...args); },
+      error(...args: any[]) { console.error(...args); },
+      assert(bool: any, msg: string) {
+        if (!bool) {
+          throw new Error(msg);
+        }
+      }
     },
     fetch: (url: URL, init: {}) => fetch(url, init),
     

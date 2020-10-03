@@ -1,9 +1,11 @@
 import { render } from './render-lit-html.js';
-import { TemplateResult, defaultTemplateProcessor } from 'lit-html';
+import { $litPrivate } from 'lit-html';
 import { promises as fs } from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 import {URL} from 'url';
+
+const { HTML_RESULT } = $litPrivate;
 
 interface RenderAppOptions {
   url: string;
@@ -37,7 +39,6 @@ export async function renderFile(options: RenderAppOptions) {
     fetch,
     process: {env: {NODE_ENV: 'production', ...options.env || {}}}
   });
-  debugger
   // Make sure file exists; if not, use fallback
   let file = path.join(options.root, url.pathname);
   let exists = false;
@@ -67,6 +68,9 @@ export async function renderFile(options: RenderAppOptions) {
     throw new Error(`Number of <!--lit-ssr-value--> comments (${strings.length-1}) and initializeSSR()-returned values (${values.length}) did not match.`)
   }
   // Construct a TemplateResult
-  const result = new TemplateResult(strings as unknown as TemplateStringsArray, values, 'html', defaultTemplateProcessor);
-  return render(result);
+  return render({
+    _$litType$: HTML_RESULT,
+    strings,
+    values
+  });
 };

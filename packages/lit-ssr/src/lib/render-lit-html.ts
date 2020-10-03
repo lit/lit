@@ -14,24 +14,30 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+// Type-only imports
 import {
   TemplateResult,
+  DirectiveResult,
+} from 'lit-html';
+
+import {
   nothing,
   noChange,
-  NodePart,
-  RenderOptions,
-  AttributeCommitter,
-  BooleanAttributePart,
-  PropertyCommitter,
+  Directive,
+  Part,
+  NODE_PART,
   AttributePart,
-  PropertyPart,
+  $litPrivate,
 } from 'lit-html';
-import {
-  marker,
-  markerRegex,
-  boundAttributeSuffix,
-  lastAttributeNameRegex,
-} from 'lit-html/lib/template.js';
+
+const {
+  getTemplateHtml,
+  marker: marker,
+  markerMatch: markerMatch,
+  boundAttributeSuffix: boundAttributeSuffix,
+} = $litPrivate;
+
+import { digestForTemplateResult } from 'lit-html/hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
@@ -47,13 +53,9 @@ import {
   isElement,
 } from './util/parse5-utils.js';
 
-import {CSSResult} from 'lit-element';
-import StyleTransformer from '@webcomponents/shadycss/src/style-transformer.js';
-import {isDirective} from 'lit-html/lib/directive.js';
-import {isRenderLightDirective} from 'lit-element/lib/render-light.js';
+// import {isRenderLightDirective} from 'lit-element/lib/render-light.js';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
-import { TemplateFactory } from 'lit-html/lib/template-factory';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -61,93 +63,17 @@ declare module 'parse5' {
   }
 }
 
+Directive.prototype.resolve = function (this: Directive, _part: Part, values: any[]) {
+  return this.render(...values);
+}
+
 const templateCache = new Map<
   TemplateStringsArray,
   {
     ops: Array<Op>;
+    attrNames: Array<string>;
   }
 >();
-
-const directiveSSRError = (dom: string) => 
-  `Directives must not access ${dom} during SSR; ` +
-  `directives must only call setValue() during initial render.`
-
-class SSRNodePart extends NodePart {
-  constructor(options: RenderOptions) {
-    super(options);
-    this.isServerRendering = true;
-  }
-  get startNode(): Element {
-    throw new Error(directiveSSRError('NodePart:startNode'));
-  }
-  set startNode(_v) {}
-  get endNode(): Element {
-    throw new Error(directiveSSRError('NodePart:endNode'));
-  }
-  set endNode(_v) {}
-}
-
-class SSRAttributeCommitter extends AttributeCommitter {
-  constructor(name: string, strings: ReadonlyArray<string>) {
-    super(undefined as any as Element, name, strings);
-    this.isServerRendering = true;
-  }
-  protected _createPart(): SSRAttributePart {
-    return new SSRAttributePart(this);
-  }
-  get element(): Element {
-    throw new Error(directiveSSRError('AttributeCommitter:element'));
-  }
-  set element(_v) {}
-}
-
-class SSRAttributePart extends AttributePart {
-  constructor(committer: AttributeCommitter) {
-    super(committer);
-    this.isServerRendering = true;
-  }
-}
-
-class SSRPropertyCommitter extends PropertyCommitter {
-  constructor(name: string, strings: ReadonlyArray<string>) {
-    super(undefined as any as Element, name, strings);
-    this.isServerRendering = true;
-  }
-  protected _createPart(): SSRPropertyPart {
-    return new SSRPropertyPart(this);
-  }
-  get element(): Element {
-    throw new Error(directiveSSRError('PropertyCommitter:element'));
-  }
-  set element(_v) {}
-}
-
-class SSRPropertyPart extends PropertyPart {
-  constructor(committer: PropertyCommitter) {
-    super(committer);
-    this.isServerRendering = true;
-  }
-}
-
-class SSRBooleanAttributePart extends BooleanAttributePart {
-  constructor(name: string, strings: readonly string[]) {
-    super(undefined as any as Element, name, strings);
-    this.isServerRendering = true;
-  }
-  get element(): Element {
-    throw new Error(directiveSSRError('BooleanAttributePart:element'));
-  }
-  set element(_v) {}
-}
-
-const ssrRenderOptions: RenderOptions = {
-  get templateFactory(): TemplateFactory {
-    throw new Error(directiveSSRError('RenderOptions:templateFactory'));
-  },
-  get eventContext(): EventTarget {
-    throw new Error(directiveSSRError('RenderOptions:eventContext'));
-  }
-};
 
 /**
  * Operation to output static text
@@ -228,12 +154,10 @@ const getTemplate = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  const html = result.getHTML();
+  const {html, attrNames} = getTemplateHtml(result.strings, result._$litType$);
   const ast = parseFragment(html, {
     sourceCodeLocationInfo: true,
   }) as DefaultTreeDocumentFragment;
-
-  // const parts: Array<TemplatePart> = [];
 
   const ops: Array<Op> = [];
 
@@ -299,7 +223,7 @@ const getTemplate = (result: TemplateResult) => {
   traverse(ast, {
     pre(node, parent) {
       if (isCommentNode(node)) {
-        if (node.data === marker) {
+        if (node.data === markerMatch) {
           flushTo(node.sourceCodeLocation!.startOffset);
           skipTo(node.sourceCodeLocation!.endOffset);
           ops.push({
@@ -310,7 +234,7 @@ const getTemplate = (result: TemplateResult) => {
           });
           // There will be two comments per part (open+close) in the rendered
           // output and on the client, so increment again for that
-          nodeIndex++;
+          // nodeIndex++;
         }
       } else if (isElement(node)) {
         // Whether to flush the start tag. This is neccessary if we're changing
@@ -353,7 +277,7 @@ const getTemplate = (result: TemplateResult) => {
                 0,
                 attr.name.length - boundAttributeSuffix.length
               );
-              const strings = attr.value.split(markerRegex);
+              const strings = attr.value.split(marker);
               const attrSourceLocation = node.sourceCodeLocation!.attrs[
                 attr.name
               ];
@@ -415,7 +339,7 @@ const getTemplate = (result: TemplateResult) => {
     },
   });
   flushTo();
-  const t = {ops};
+  const t = {ops, attrNames};
   templateCache.set(result.strings, t);
   return t;
 };
@@ -430,22 +354,6 @@ declare global {
   }
 }
 
-/**
- * Returns the scoped style sheets required by all elements currently defined.
- */
-export const getScopedStyles = () => {
-  const scopedStyles = [];
-  for (const [tagName, definition] of (customElements as any).__definitions) {
-    const styles = [(definition.ctor as any).styles].flat(Infinity);
-    for (const style of styles) {
-      if (style instanceof CSSResult) {
-        const scoped = StyleTransformer.css(style.cssText, tagName);
-        scopedStyles.push(scoped);
-      }
-    }
-  }
-  return scopedStyles;
-};
 
 export function* render(value: unknown): IterableIterator<string> {
   yield* renderValue(value, {customElementInstanceStack: []});
@@ -455,7 +363,7 @@ export function* renderValue(
   value: unknown,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
-  if (isRenderLightDirective(value)) {
+  /*if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
     const instance = getLast(renderInfo.customElementInstanceStack);
@@ -464,14 +372,13 @@ export function* renderValue(
       yield* instance.renderLight(renderInfo);
     }
     value = null;
-  } else if (isDirective(value)) {
-    const part = new SSRNodePart(ssrRenderOptions);
-    part.setValue(value);
-    value = part.resolvePendingDirective();
+  } else*/ if (value != null && (value as any)._$litDirective$) {
+    const directive = (value as DirectiveResult)._$litDirective$;
+    value = new directive({type: NODE_PART}).render(...(value as DirectiveResult).values);
   }
-  if (value instanceof TemplateResult) {
-    yield `<!--lit-part ${value.digest}-->`;
-    yield* renderTemplateResult(value, renderInfo);
+  if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
+    yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
+    yield* renderTemplateResult(value as TemplateResult, renderInfo);
   } else {
     yield `<!--lit-part-->`;
     if (value === undefined || value === null || value === nothing || value === noChange) {
@@ -506,10 +413,11 @@ export function* renderTemplateResult(
   // elements. For each we will record the offset of the node, and output the
   // previous span of HTML.
 
-  const {ops} = getTemplate(result);
+  const {ops, attrNames} = getTemplate(result);
 
   /* The next value in result.values to render */
   let partIndex = 0;
+  let attrIndex = 0;
 
   for (const op of ops) {
     switch (op.type) {
@@ -522,11 +430,17 @@ export function* renderTemplateResult(
         break;
       }
       case 'attribute-part': {
-        const stringForPart = result.strings[partIndex];
-        const name = lastAttributeNameRegex.exec(stringForPart)![2];
+        const name = attrNames[attrIndex++];
         const statics = op.strings;
         let attributeName = op.name;
         const prefix = attributeName[0];
+        const attributePart = new AttributePart(
+          null as any as HTMLElement,
+          name,
+          statics
+        );
+        let value = attributePart.strings === undefined ? result.values[partIndex] : result.values;
+        value = attributePart._resolveValue(value, partIndex);
         const instance = op.useCustomElementInstance
           ? getLast(renderInfo.customElementInstanceStack)
           : undefined;
@@ -542,23 +456,12 @@ export function* renderTemplateResult(
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
           if (instance || reflectedName !== undefined) {
-            const committer = new SSRPropertyCommitter(
-              attributeName,
-              statics);
-            committer.parts.forEach((part, i) => {
-              part.setValue(result.values[partIndex + i]);
-              part.resolvePendingDirective();
-            });
-            if (committer.dirty) {
-              const value = committer.getValue();
-              if (value !== noChange) {
-                if (instance !== undefined) {
-                  instance.setProperty(propertyName, value);
-                }
-                if (reflectedName !== undefined) {
-                  yield `${reflectedName}="${escapeAttribute(String(value))}"`;
-                }
-
+            if (value !== noChange) {
+              if (instance !== undefined) {
+                instance.setProperty(propertyName, value);
+              }
+              if (reflectedName !== undefined) {
+                yield `${reflectedName}="${escapeAttribute(String(value))}"`;
               }
             }
           }
@@ -567,23 +470,10 @@ export function* renderTemplateResult(
         } else if (prefix === '?') {
           // Boolean attribute binding
           attributeName = attributeName.substring(1);
-          const part = new SSRBooleanAttributePart(
-            attributeName,
-            statics);
-          part.setValue(result.values[partIndex]);
-          const value = part.resolvePendingDirective();
           if (value && value !== noChange) {
             yield attributeName;
           }
         } else {
-          const committer = new SSRAttributeCommitter(
-            attributeName,
-            statics);
-          committer.parts.forEach((part, i) => {
-            part.setValue(result.values[partIndex + i]);
-            part.resolvePendingDirective();
-          });
-          const value = committer.getValue();
           if (value !== noChange) {
             if (instance !== undefined) {
               instance.setAttribute(attributeName, value as string);

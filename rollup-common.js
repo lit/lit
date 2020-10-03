@@ -52,6 +52,9 @@ const reservedProperties = [
   // can share this key with dev lit-element platform-support which
   // imports it.
   '_handlesPrepareStyles',
+  // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
+  // crossPackagePropertyMangles once lit-ssr uses the rollup config)
+  "_resolveValue", // from AttributePart
 ];
 
 // Any private properties which we share between different _packages_ are

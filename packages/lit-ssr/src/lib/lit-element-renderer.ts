@@ -20,7 +20,7 @@ export type Constructor<T> = {new (): T};
 
 // No-op LitElement's client-side render method, since we will call
 // `performUpdate` directly on the server
-LitElement.render = () => {};
+// LitElement.render = () => {};
 
 /**
  * ElementRenderer implementation for LitElements

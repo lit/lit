@@ -16,17 +16,26 @@ import '@open-wc/testing';
 
 import {tests} from '../tests/basic.js';
 import {render} from 'lit-html';
-import {hydrate} from 'lit-html/lib/hydrate.js';
+import {hydrate} from 'lit-html/hydrate.js';
 import {hydrateShadowRoots} from 'template-shadowroot/template-shadowroot.js';
 import {SSRExpectedHTML} from '../tests/ssr-test.js';
-import {LitElement} from 'lit-element';
+// import {LitElement} from 'lit-element';
 
-LitElement.hydrate = hydrate;
+// LitElement.hydrate = hydrate;
 
 const assert = chai.assert;
 
 // Types don't seem to include options argument
-const assertLightDom: ((el: Element | ShadowRoot, str: string, opt: any) => void) = assert.lightDom.equal;
+const assertLightDom = (el: Element | ShadowRoot, str: string, opt?: any) => {
+  // Small workaround to normalize style serialization; When parsed in attribute
+  // the browser maintains user-authored whitespace; when reset via the property
+  // it re-serializes in a normalized form
+  Array.from(el.querySelectorAll('[style]')).forEach(el => {
+    const h = el as HTMLElement;
+    h.style.cssText = h.style.cssText;
+  });
+  assert.lightDom.equal(el, str, opt);
+};
 
 /**
  * Checks a tree of expected HTML against the DOM; the expected HTML can either
@@ -67,7 +76,7 @@ const assertLightDom: ((el: Element | ShadowRoot, str: string, opt: any) => void
 */
 const assertHTML = (container: Element | ShadowRoot, html: SSRExpectedHTML): void => {
   if (typeof html !== 'object') {
-    assert.lightDom.equal(container, html);
+    assertLightDom(container, html);
   } else {
     for (const query in html) {
       const subHtml = html[query];
@@ -194,6 +203,7 @@ suite('basic', () => {
             await ret;
           }
         }
+        
         // After hydration, render() will be operable.
         render(testRender(...args), container);
 

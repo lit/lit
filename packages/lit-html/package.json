@@ -28,11 +28,12 @@
   },
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
+    "build:watch": "rollup -c --watch",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} parts.{js,js.map,d.ts} directives/ development/",
+    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} parts.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} directives/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",

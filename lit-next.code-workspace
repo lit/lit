@@ -30,6 +30,7 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "lit-html/node_modules/typescript/lib"
+		"typescript.tsdk": "lit-html/node_modules/typescript/lib",
+		"debug.javascript.warnOnLongPrediction": false
 	}
 }
