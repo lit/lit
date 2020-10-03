@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>react demo</title>
+  <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+</head>
+
+<body>
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    main {
+      padding: 16px;
+    }
+
+    .reactContainerComponent {
+      padding: 8px;
+      border: 1px dashed tomato;
+      background: lightblue;
+    }
+  </style>
+  <main>
+    <div id="root"></div>
+  </main>
+  <script type="module">
+    import 'react/umd/react.development.js';
+    import 'react-dom/umd/react-dom.development.js';
+    import { LitElement, html, css } from 'lit-element';
+    import {createElementFactory} from '../development/frameworks/react/createElementFactory.js';
+
+    window.createElementFactory = createElementFactory;
+
+    class MyElement extends LitElement {
+
+      static properties = {
+        foo: {},
+        bar: {reflect: true},
+        data: {},
+        onzug: {event: 'zug'}
+      }
+
+      static styles = css`
+        :host {
+          display: block;
+          border: 1px dashed tomato;
+          background: beige;
+          padding: 8px;
+        }
+      `;
+
+      constructor() {
+        super();
+        this.foo = 'foo';
+        this.bar = 'bar';
+        this.data = {};
+        this.addEventListener('click', () => {
+          this.dispatchEvent(new Event('zug', {bubbles: true, composed: true}));
+        })
+      }
+
+      render() {
+        return html`
+          <h4>I'm ${this.localName} with props:</h4>
+          <ul>
+            <li>foo: ${this.foo}</li>
+            <li>bar: ${this.bar}</li>
+          </ul>
+          <h4>Structured Data</h4>
+          <pre>${JSON.stringify(this.data)}</pre>
+          <slot></slot>
+        `;
+      }
+
+    }
+
+    customElements.define('my-element', MyElement)
+  </script>
+  <script type="text/babel">
+
+    const createElement = createElementFactory(React);
+
+    // React component that uses a custom element as a component.
+    class Container extends React.Component {
+
+      state = {count: 0, data: {name: 'Bob', count: 0}}
+
+      myElement = React.createRef();
+
+      render() {
+        const zugListener = (e) => {
+          const count = ++this.state.count;
+          this.setState({
+            count,
+            data: {
+              name: 'Bob',
+              count
+            }
+          })
+        };
+
+        /** @jsx createElement */
+        return <div className="reactContainerComponent">
+          <h3>React container with custom element components</h3>
+          <my-element
+            elementRef={this.myElement}
+            foo={`react-foo: ${this.state.count}`}
+            bar={`react-bar: ${this.state.count}`}
+            data={this.state.data}
+            onzug={zugListener}>
+            MyElement content
+          </my-element>
+        </div>
+      }
+
+      componentDidUpdate() {
+        console.log(this.myElement);
+      }
+
+    }
+
+    window.ReactDOM.render(createElement(Container, {}, null), root);
+
+  </script>
+</body>
+
+</html>
