@@ -89,8 +89,9 @@ export const createElementComponent = <T extends HTMLElement>(
 
     ref = (element: T) => {
       this.element = element;
-      // Fulfill any ref we receive in our props
-      // Ref is a special property so we use `elementRef`.
+      // Fulfill any ref we receive in our props.
+      // The `ref` prop is special and cannot be accessed without an error
+      // so use `elementRef`.
       if ((this.props as any).elementRef) {
         (this.props as any).elementRef.current = element;
       }
@@ -125,19 +126,17 @@ export const createElementComponent = <T extends HTMLElement>(
 
     /**
      * Updates element properties correctly setting attributes v. properties
-     * on every render (other than mount).
+     * on every update. Note, this does not include mount.
      */
     componentDidUpdate(old: any) {
       this.updateElement(old);
     }
 
     /**
-     * Renders creates the custom element with the props passed from `this.props`
-     * and a `ref` prop which allows this component to reference the
-     * custom element.
+     * Renders creates the custom element with a `ref` prop which allows this
+     * component to reference the custom element.
      *
-     * Note, react will set all props it doesn't understand to be
-     * native properties (e.g. input.value) as attributes.
+     * Note, element properties are updated in DidMount/DidUpdate.
      *
      */
     render() {
