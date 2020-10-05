@@ -577,6 +577,7 @@ class Template {
     }
   }
 
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
   _createElement(html: string) {
     const template = d.createElement('template');
     template.innerHTML = html;
@@ -790,6 +791,7 @@ export class NodePart {
     }
   }
 
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
   private _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
     let template = templateCache.get(strings);
     if (template === undefined) {
