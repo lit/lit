@@ -13,22 +13,31 @@
  */
 import {
   UpdatingElement,
-  PropertyDeclaration
+  PropertyDeclaration,
 } from 'lit-element/lib/updating-element.js';
 import {property, customElement} from 'lit-element/lib/decorators.js';
+
+// Settings
+const itemCount = 250;
+const itemValueCount = 99;
+const updateCount = 6;
 
 // IE doesn't support URLSearchParams
 const params = document.location.search
   .slice(1)
   .split('&')
   .map((p) => p.split('='))
-  .reduce((p: {[key: string]: any}, [k, v]) => ((p[k] = v || true), p), {});
+  .reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (p: {[key: string]: any}, [k, v]) => ((p[k] = JSON.parse(v || 'true')), p),
+    {}
+  );
 
 type SimpleItem = {[index: string]: string};
 
 function makeItem(prefix: number) {
   let o: SimpleItem = {};
-  for (let i = 0; i < 99; i++) {
+  for (let i = 0; i < itemValueCount; i++) {
     o['value' + i] = prefix + ': ' + i;
   }
   return o;
@@ -42,8 +51,8 @@ function generateData(count: number) {
   return data;
 }
 
-const data = generateData(250);
-const otherData = generateData(500).slice(250);
+const data = generateData(itemCount);
+const otherData = generateData(itemCount * 2).slice(itemCount);
 
 const propertyOptions: PropertyDeclaration = {};
 
@@ -142,7 +151,6 @@ export class XApp extends UpdatingElement {
 }
 
 (async () => {
-
   const container = document.createElement('div');
   document.body.appendChild(container);
   let el: XApp;
@@ -156,7 +164,7 @@ export class XApp extends UpdatingElement {
     container.innerHTML = '';
   };
 
-  const updateComplete = () => new Promise(r => requestAnimationFrame(r));
+  const updateComplete = () => new Promise((r) => requestAnimationFrame(r));
 
   const benchmark = params.benchmark;
   const getTestStartName = (name: string) => `${name}-start`;
@@ -175,12 +183,11 @@ export class XApp extends UpdatingElement {
       performance.measure(test, start);
       destroy();
     }
-  }
+  };
   await render();
 
   // Update: toggle data
   const update = async () => {
-    const updateCount = 6;
     const test = 'update';
     if (benchmark === test || !benchmark) {
       el = create();
@@ -193,13 +200,12 @@ export class XApp extends UpdatingElement {
       performance.measure(test, start);
       destroy();
     }
-  }
+  };
   await update();
 
   const updateReflect = async () => {
     const test = 'update-reflect';
     if (benchmark === test || !benchmark) {
-      const updateCount = 6;
       el = create();
       const start = getTestStartName(test);
       performance.mark(start);
@@ -212,12 +218,11 @@ export class XApp extends UpdatingElement {
       performance.measure(test, start);
       destroy();
     }
-  }
+  };
   await updateReflect();
 
   // Log
   performance
     .getEntriesByType('measure')
     .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
-
 })();
