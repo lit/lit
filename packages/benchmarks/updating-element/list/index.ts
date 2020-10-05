@@ -29,7 +29,9 @@ const params = document.location.search
   .map((p) => p.split('='))
   .reduce(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p: {[key: string]: any}, [k, v]) => ((p[k] = JSON.parse(v || 'true')), p),
+    (p: {[key: string]: any}, [k, v]) => (
+      (p[k] = JSON.parse(`"${v}"`) || true), p
+    ),
     {}
   );
 
