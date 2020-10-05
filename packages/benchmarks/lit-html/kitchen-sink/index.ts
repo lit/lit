@@ -47,25 +47,9 @@
  */
 
 import {html, render, nothing} from 'lit-html';
-
-// TODO(kschaaf) use real repeat once landed
-// import { repeat } from "lit-html/lib/directives/repeat.js";
-const repeat = (items: any[], _kfn: (i: any) => any, tfn: (i: any) => any) =>
-  items.map((i) => tfn(i));
-
-// TODO(kschaaf) use real classMap once landed
-// import { classMap } from "lit-html/lib/directives/class-map.js";
-const classMap = (classes: {[key: string]: boolean}) =>
-  Object.keys(classes)
-    .filter((k) => classes[k])
-    .join(' ');
-
-// TODO(kschaaf) use real styleMap once landed
-// import { styleMap } from "lit-html/lib/directives/style-map.js";
-const styleMap = (style: {[key: string]: boolean}) =>
-  Object.entries(style)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join('; ');
+import {repeat} from 'lit-html/directives/repeat.js';
+import {classMap} from 'lit-html/directives/class-map.js';
+import {styleMap} from 'lit-html/directives/style-map.js';
 
 // IE doesn't support URLSearchParams
 const params = document.location.search
@@ -73,6 +57,7 @@ const params = document.location.search
   .split('&')
   .map((p) => p.split('='))
   .reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (p: {[key: string]: any}, [k, v]) => ((p[k] = JSON.parse(v || 'true')), p),
     {}
   );
@@ -149,6 +134,7 @@ const generateData = (
  *
  * @param data Data model for item
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderItem: any = (data: Data) => html`
   <div class="${classMap(data.classes)} static" style=${styleMap(data.style)}>
     ${data.text}
@@ -184,27 +170,45 @@ const renderItem: any = (data: Data) => html`
   </div>
   `;
 
-let data = generateData(0);
+const data = generateData(0);
+
+// Named functions are use to run the measurements so that they can be selected
+// in the DevTools profile flame chart.
 
 // Initial render
-performance.mark('render-start');
-render(renderItem(data), document.body);
-performance.measure('render', 'render-start');
+const initialRender = () => {
+  performance.mark('render-start');
+  render(renderItem(data), document.body);
+  performance.measure('render', 'render-start');
+};
+initialRender();
 
 // Update
-performance.mark('update-start');
+// Calculate update data outside of measurement to reduce minor GC of the data
+const updateData: Array<Data> = [];
 for (let i = 0; i < updateCount; i++) {
-  data = generateData(i + 1);
-  render(renderItem(data), document.body);
+  updateData.push(generateData(i + 1));
 }
-performance.measure('update', 'update-start');
+const update = () => {
+  performance.mark('update-start');
+  for (let i = 0; i < updateCount; i++) {
+    render(renderItem(updateData[i]), document.body);
+  }
+  performance.measure('update', 'update-start');
+};
+update();
 
 // No-op update
-performance.mark('nop-update-start');
-for (let i = 0; i < nopUpdateCount; i++) {
-  render(renderItem(data), document.body);
-}
-performance.measure('nop-update', 'nop-update-start');
+// Reset rendering to initial data so the measured render is a no-op
+render(renderItem(data), document.body);
+const noopUpdate = () => {
+  performance.mark('nop-update-start');
+  for (let i = 0; i < nopUpdateCount; i++) {
+    render(renderItem(data), document.body);
+  }
+  performance.measure('nop-update', 'nop-update-start');
+};
+noopUpdate();
 
 // Log
 console.log(

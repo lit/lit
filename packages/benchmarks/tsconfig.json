@@ -18,10 +18,6 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true
   },
-  "include": [
-    "lit-element/**/*.ts",
-    "updating-element/**/*.ts",
-    "lit-html/**/*.ts"
-  ],
+  "include": ["lit-element/**/*.ts", "lit-html/**/*.ts"],
   "exclude": []
 }

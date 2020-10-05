@@ -24,14 +24,14 @@ majority of 2.x users, please be aware of the following notable breaking
 changes:
   * This `LitElement` pre-release uses the `lit-html` pre-release as well.
     Please see the `lit-html` pre-release [README](../lit-html/README.md) and
-    [changelog](../lit-html/CHANGELOG.md#200---unreleased) for information on
+    [changelog](../lit-html/CHANGELOG.md#200-pre1---2020-09-21) for information on
     any breaking changes to `lit-html` features in your components.
   * Decorators are no longer exported from the top-level `lit-element` module.
     Instead, import any decorators you use from `lit-element/decorators/*`.
   * `requestUpdate()` no longer returns a Promise. Instead await the
     `updateComplete` Promise.
 
-See the full [changelog](CHANGELOG.md#300---unreleased) for more details on
+See the full [changelog](CHANGELOG.md#300-pre1---2020-09-21) for more details on
 these and other minor breaking changes.
 
 ## 🚨 Known issues/limitations
@@ -114,6 +114,52 @@ To install the web components polyfills needed for older browsers:
 
 ```bash
 $ npm i -D @webcomponents/webcomponentsjs
+```
+
+## Development mode
+
+lit-element includes a development mode which adds additional checks that are
+reported in the console.
+
+To enable development mode, add the `development` exports condition to your node
+resolve configuration.
+
+#### @web/dev-server
+
+> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
+
+```js
+{
+  nodeResolve: {
+    exportConditions: [ "development" ]
+  }
+}
+```
+
+#### Rollup
+
+> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
+
+```js
+{
+  plugins: [
+    nodeResolve({
+      exportConditions: [ "development" ]
+    })
+  ]
+}
+```
+
+#### Webpack
+
+> NOTE: Requires [Webpack v5](https://webpack.js.org/migrate/5/)
+
+```js
+{
+  resolve: {
+    conditionNames: [ "development" ]
+  }
+}
 ```
 
 ## Supported Browsers

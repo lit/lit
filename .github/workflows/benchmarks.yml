@@ -5,6 +5,12 @@ on: [pull_request]
 jobs:
   benchmarks:
     name: benchmarks
+
+    # We can't currently run benchmarks on PRs from forked repos, because the
+    # tachometer action reports results by posting a comment, and we can't post
+    # comments without a github token.
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
