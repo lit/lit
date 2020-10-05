@@ -159,7 +159,7 @@ export default {
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
     '../lit-html/development/**/*_test.js',
-    '../lit-element/development/**/*_test.js',
+    '../lit-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
   concurrency: 6, // default cores / 2
