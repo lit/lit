@@ -65,7 +65,7 @@ import {
 } from './lib/css-tag.js';
 
 export * from './lib/updating-element.js';
-export {html, svg} from 'lit-html';
+export * from 'lit-html';
 export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
@@ -86,7 +86,7 @@ declare global {
   '3.0.0-pre.1'
 );
 
-export type CSSResultFlatArray = CSSResultOrNative[];
+type CSSResultFlatArray = CSSResultOrNative[];
 
 export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
 
@@ -96,7 +96,7 @@ export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
  */
 const renderNotImplemented = {};
 
-export const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
+const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
   let cssText = '';
   for (const rule of sheet.cssRules) {
     cssText += rule.cssText;
