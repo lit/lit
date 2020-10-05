@@ -27,14 +27,48 @@ const reservedReactProperties = new Set([
   'className',
 ]);
 
-const setProperty = (node: Element, name: string, value: any) => {
-  if (reservedReactProperties.has(name)) {
+interface ComponentOptions {
+  properties?: {
+    [index: string]: string | boolean;
+  };
+  events?: {
+    [index: string]: string;
+  };
+  hasChanged?: (value: any) => boolean;
+}
+
+const propertyName = (name: string, options?: ComponentOptions) => {
+  const prop = options?.properties?.[name];
+  return (prop === true ? name : (prop as string)) ?? name;
+};
+
+const eventName = (name: string, options?: ComponentOptions) =>
+  options?.events?.[name];
+
+const notEqual = (value: any, old: any) => !Object.is(value, old);
+
+const setProperty = (
+  node: Element,
+  name: string,
+  value: any,
+  old: any,
+  options?: ComponentOptions
+) => {
+  const hasChanged = options?.hasChanged ?? notEqual;
+  if (reservedReactProperties.has(name) || !hasChanged(value, old)) {
     return;
   }
-  if (name in node) {
-    (node as any)[name] = value;
+  const event = eventName(name, options);
+  if (event !== undefined) {
+    if (old !== undefined) {
+      node.removeEventListener(event, old);
+    }
+    node.addEventListener(event, value);
   } else {
-    if (value == null) {
+    const property = propertyName(name, options);
+    if (property !== undefined || name in node) {
+      (node as any)[property] = value;
+    } else if (value == null) {
       node.removeAttribute(name);
     } else {
       node.setAttribute(name, value);
@@ -42,44 +76,13 @@ const setProperty = (node: Element, name: string, value: any) => {
   }
 };
 
-const isCustomElement = (tagName: any) =>
-  typeof tagName === 'string' && customElements.get(tagName);
-
-/**
- *
- * @param React React module.
- */
-export const createElementFactory = (React: any) => {
-  const createElement = React.createElement;
-  return (type: any, props?: any, ...children: ReactModule.ReactNode[]) => {
-    if (isCustomElement(type)) {
-      type = getElementComponent(React, type);
-    }
-    return createElement(type, props, ...children);
-  };
-};
-
-const elementComponents: Map<string, any> = new Map();
-/**
- *  Gets a React component for a CustomElement.
- */
-export const getElementComponent = (React: any, tagName: string) => {
-  let component = elementComponents.get(tagName);
-  if (component === undefined) {
-    elementComponents.set(
-      tagName,
-      (component = createElementComponent(React, tagName))
-    );
-  }
-  return component;
-};
-
 /**
  *  Creates a React component from a CustomElement.
  */
-export const createElementComponent = <T extends HTMLElement>(
+export const createComponent = <T extends HTMLElement>(
   React: any,
-  tagName: string
+  tagName: string,
+  options?: ComponentOptions
 ): ReactModule.ComponentClass<T, void> => {
   const Component: ReactModule.ComponentClass = React.Component;
   const createElement: typeof ReactModule.createElement = React.createElement;
@@ -100,17 +103,27 @@ export const createElementComponent = <T extends HTMLElement>(
     updateElement(oldProps?: any) {
       if (oldProps === undefined) {
         for (const prop in this.props) {
-          setProperty(this.element, prop, (this.props as any)[prop]);
+          setProperty(
+            this.element,
+            prop,
+            (this.props as any)[prop],
+            undefined,
+            options
+          );
         }
       } else {
         for (const prop in this.props) {
-          if ((this.props as any)[prop] !== oldProps[prop]) {
-            setProperty(this.element, prop, (this.props as any)[prop]);
-          }
+          setProperty(
+            this.element,
+            prop,
+            (this.props as any)[prop],
+            oldProps[prop],
+            options
+          );
         }
         for (const prop in oldProps) {
           if (!(prop in this.props)) {
-            setProperty(this.element, prop, null);
+            setProperty(this.element, prop, null, options);
           }
         }
       }

@@ -43,9 +43,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     import 'react/umd/react.development.js';
     import 'react-dom/umd/react-dom.development.js';
     import { LitElement, html, css } from 'lit-element';
-    import {createElementFactory} from '../development/frameworks/react/createElementFactory.js';
+    import {createElement} from '../development/frameworks/react/createElement.js';
+    import {createComponent} from '../development/frameworks/react/createComponent.js';
 
-    window.createElementFactory = createElementFactory;
+    window.createElement = createElement;
+    window.createComponent = createComponent;
 
     class MyElement extends LitElement {
 
@@ -90,11 +92,73 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     }
 
-    customElements.define('my-element', MyElement)
+    customElements.define('my-element', MyElement);
+
+    class RawElement extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({mode: 'open'});
+        this.addEventListener('click', () => {
+          this.dispatchEvent(new Event('zug', {bubbles: true, composed: true}));
+        })
+        this.update();
+      }
+
+      update() {
+        this.shadowRoot.innerHTML = `<style>:host {
+          display: block;
+          border: 1px dashed tomato;
+          background: beige;
+          padding: 8px;
+        }</style><h4>${this.localName} with props:</h4>
+          <ul>
+            <li>foo: ${this.foo}</li>
+            <li>bar: ${this.bar}</li>
+            <li>data: <pre style="display: inline">${JSON.stringify(this.data)}</pre></li>
+          </ul>
+          <h4>and content:</h4>
+          <slot></slot>`;
+      }
+
+      get foo() {
+        return this._foo;
+      }
+
+      set foo(value) {
+        this._foo = value;
+         this.update();
+      }
+
+      get bar() {
+        return this._bar;
+      }
+
+      set bar(value) {
+        this._bar = value;
+         this.update();
+      }
+
+      get data() {
+        return this._data;
+      }
+
+      set data(value) {
+        this._data = value;
+         this.update();
+      }
+    }
+
+    customElements.define('raw-element', RawElement);
   </script>
   <script type="text/babel">
 
-    const createElement = createElementFactory(React);
+    const createElement = createElement(React);
+
+    const RawElementComponent = createComponent(React, 'raw-element',
+      {
+        properties: { reactFoo: 'foo', reactBar: 'bar', reactData: 'data'},
+        events: {onZug: 'zug'}
+      });
 
     // React component that uses a custom element as a component.
     class Container extends React.Component {
@@ -118,6 +182,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         /** @jsx createElement */
         return <div className="reactContainerComponent">
           <h3>React container with custom element components</h3>
+          <h4>LitElement oobe: works!</h4>
           <my-element
             elementRef={this.myElement}
             foo={`react-foo: ${this.state.count}`}
@@ -126,6 +191,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             onzug={zugListener}>
             MyElement content
           </my-element>
+          <hr />
+          <h4>Raw Element oobe: no events or property mapping</h4>
+          <raw-element
+            elementRef={this.myElement}
+            foo={`react-foo: ${this.state.count}`}
+            bar={`react-bar: ${this.state.count}`}
+            data={this.state.data}
+            onzug={zugListener}>
+            MyElement content
+          </raw-element>
+          <hr />
+          <h4>Raw Element Component oobe: events and property mapping</h4>
+          <RawElementComponent
+            elementRef={this.myElement}
+            reactFoo={`react-foo: ${this.state.count}`}
+            reactBar={`react-bar: ${this.state.count}`}
+            reactData={this.state.data}
+            onZug={zugListener}>
+            MyElement content
+          </RawElementComponent>
         </div>
       }
 
