@@ -11,13 +11,12 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {
-  html,
-  LitElement,
-  css,
-  PropertyDeclaration
-} from 'lit-element';
+import {html, LitElement, css, PropertyDeclaration} from 'lit-element';
 import {property, customElement} from 'lit-element/lib/decorators.js';
+
+// Settings
+const itemCount = 250;
+const itemValueCount = 99;
 
 // IE doesn't support URLSearchParams
 const params = document.location.search
@@ -30,7 +29,7 @@ type SimpleItem = {[index: string]: string};
 
 function makeItem(prefix: number) {
   let o: SimpleItem = {};
-  for (let i = 0; i < 99; i++) {
+  for (let i = 0; i < itemValueCount; i++) {
     o['value' + i] = prefix + ': ' + i;
   }
   return o;
@@ -44,8 +43,8 @@ function generateData(count: number) {
   return data;
 }
 
-const data = generateData(250);
-const otherData = generateData(500).slice(250);
+const data = generateData(itemCount);
+const otherData = generateData(itemCount * 2).slice(itemCount);
 
 const propertyOptions: PropertyDeclaration = {};
 
@@ -164,7 +163,6 @@ export class XApp extends LitElement {
 }
 
 (async () => {
-
   const container = document.createElement('div');
   document.body.appendChild(container);
   let el: XApp;
@@ -178,7 +176,7 @@ export class XApp extends LitElement {
     container.innerHTML = '';
   };
 
-  const updateComplete = () => new Promise(r => requestAnimationFrame(r));
+  const updateComplete = () => new Promise((r) => requestAnimationFrame(r));
 
   const benchmark = params.benchmark;
   const getTestStartName = (name: string) => `${name}-start`;
@@ -197,7 +195,7 @@ export class XApp extends LitElement {
       performance.measure(test, start);
       destroy();
     }
-  }
+  };
   await render();
 
   // Update: toggle data
@@ -215,7 +213,7 @@ export class XApp extends LitElement {
       performance.measure(test, start);
       destroy();
     }
-  }
+  };
   await update();
 
   const updateReflect = async () => {
@@ -234,12 +232,11 @@ export class XApp extends LitElement {
       performance.measure(test, start);
       destroy();
     }
-  }
+  };
   await updateReflect();
 
   // Log
   performance
     .getEntriesByType('measure')
     .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
-
 })();
