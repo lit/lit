@@ -17,6 +17,7 @@ import {property, customElement} from 'lit-element/lib/decorators.js';
 // Settings
 const itemCount = 250;
 const itemValueCount = 99;
+const updateCount = 6;
 
 // IE doesn't support URLSearchParams
 const params = document.location.search
@@ -200,7 +201,6 @@ export class XApp extends LitElement {
 
   // Update: toggle data
   const update = async () => {
-    const updateCount = 6;
     const test = 'update';
     if (benchmark === test || !benchmark) {
       el = create();
@@ -219,7 +219,6 @@ export class XApp extends LitElement {
   const updateReflect = async () => {
     const test = 'update-reflect';
     if (benchmark === test || !benchmark) {
-      const updateCount = 6;
       el = create();
       const start = getTestStartName(test);
       performance.mark(start);
