@@ -70,6 +70,12 @@ suite('platform-support rendering', () => {
       getComputedStyle(span!).getPropertyValue('border-top-width').trim(),
       '5px'
     );
+    // all styles are removed
+    const styles = container.shadowRoot!.querySelectorAll('style');
+    // if ShadyDOM is in use, all styles should be removed from the template.
+    if (window.ShadyDOM?.inUse) {
+      assert.equal(styles.length, 0);
+    }
     document.body.removeChild(container);
   });
 

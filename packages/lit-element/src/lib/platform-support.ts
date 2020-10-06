@@ -202,7 +202,7 @@ interface PatchableLitElement extends HTMLElement {
 };
 
 interface ShadyTemplateResult {
-  __renderIntoShadowRoot?: boolean;
+  strings: TemplateStringsArray;
   _$litType$?: string;
 }
 
@@ -219,6 +219,7 @@ interface PatchableNodePart {
 interface PatchableTemplate {
   new (...args: any[]): PatchableTemplate;
   _createElement(html: string): HTMLTemplateElement;
+  _element: HTMLTemplateElement;
 }
 
 // Scopes that have had styling prepared. Note, must only be done once per
@@ -264,10 +265,21 @@ let currentScope: string;
   };
 
   const prepareStyles = (name: string, template: HTMLTemplateElement) => {
+    // Get styles
+    const scopeCss = cssForScope(currentScope);
+    if (scopeCss.length) {
+      const style = document.createElement('style');
+      style.textContent = scopeCss.join('\n');
+      // Note, it's important to add the style to the *end* of the template so
+      // it doesn't mess up part indices.
+      template.content.appendChild(style);
+    }
     // Mark this scope as styled.
     styledScopes.add(name);
     // Remove stored data since it's no longer needed.
     scopeCssStore.delete(name);
+    // ShadyCSS removes scopes and removes the style under ShadyDOM and leaves
+    // it under native Shadow DOM
     window.ShadyCSS!.prepareTemplateStyles(template, name);
   };
 
@@ -277,17 +289,7 @@ let currentScope: string;
   >();
 
   // Note, it's ok to subclass Template since it's only used via NodePart.
-  let currentResult: ShadyTemplateResult;
-
   class ShadyTemplate extends Template {
-    constructor(result: ShadyTemplateResult) {
-      // TODO(sorvell): Decide if Template should store the result to avoid this.
-      // We need the `result` in `_createElement` which is called directly
-      // from the constructor. Since we can't access this before super, use
-      // a side channel to store the data.
-      currentResult = result;
-      super(result);
-    }
     /**
      * Override to extract style elements from the template
      * and store all style.textContent in the shady scope data.
@@ -303,26 +305,13 @@ let currentScope: string;
         const styles = template.content.querySelectorAll('style') as NodeListOf<
           HTMLStyleElement
         >;
+        // Store the css in this template in the scope css.
         scopeCss.push(
           ...Array.from(styles).map((style) => {
             style.parentNode?.removeChild(style);
             return style.textContent!;
           })
         );
-        // Apply styles if this is the result rendering into shadowRoot.
-        if (currentResult.__renderIntoShadowRoot) {
-          if (scopeCss.length) {
-            const style = document.createElement('style');
-            style.textContent = scopeCss.join('\n');
-            // Place aggregate style into template. Note, ShadyCSS will remove
-            // it if polyfilled ShadowDOM is used.
-            template.content.insertBefore(style, template.content.firstChild);
-          }
-          // Note, it is critical this be done here and before part indices
-          // are assigned since the style may be removed by ShadyCSS and this
-          // would invalidate part indices.
-          prepareStyles(currentScope, template);
-        }
       }
       return template;
     }
@@ -344,14 +333,6 @@ let currentScope: string;
       const previousScope = currentScope;
       currentScope = this.options.scope ?? '';
 
-      const renderingTemplateResult = !!(value as ShadyTemplateResult)
-        ?._$litType$;
-      // If result is a TemplateResult decorate it so that when the template
-      // is created, styling can be shimmed.
-      if (renderingTemplateResult) {
-        (value as ShadyTemplateResult).__renderIntoShadowRoot = renderingIntoShadowRoot;
-      }
-
       // Note, @apply requires outer => inner scope rendering on initial
       // scope renders to apply property values correctly. Style preparation
       // is tied to rendering into `shadowRoot`'s and this is typically done by
@@ -367,48 +348,52 @@ let currentScope: string;
       if (needsStyleScoping && renderingIntoShadowRoot) {
         renderContainer = document.createDocumentFragment();
         renderContainer.appendChild(document.createComment(''));
-        // Temporarily swizzle tracked nodes so the `__insert` is correct.
+        // Temporarily move this part into the renderContainer.
         this._startNode = this._endNode = renderContainer.firstChild!;
       }
+      // Note, any nested template results render here and their styles will
+      // be extracted and collected.
       this.__baseSetValue(value);
 
-      // Call prepareStyles if a TemplateResult is *not* being rendered.
-      // * If a TemplateResult *is* being rendered, prepareStyles is done
-      // in `Template._createElement`, before Template parts are created.
-      // * If a TemplateResult is *not* being rendered, styles may still be
-      // added via `prepareAdoptedCssText` and ShadyCSS requires prepareStyles
-      // be called in this case.
-      if (
-        needsStyleScoping &&
-        renderingIntoShadowRoot &&
-        !renderingTemplateResult
-      ) {
-        prepareStyles(currentScope, document.createElement('template'));
+      let template: HTMLTemplateElement | undefined = undefined;
+      if (needsStyleScoping && renderingIntoShadowRoot) {
+        // Get the template for this result or create a dummy one if a result
+        // is not being rendered.
+        template = !!(value as ShadyTemplateResult)?._$litType$
+          ? getTemplate(
+              (value as ShadyTemplateResult).strings,
+              value as ShadyTemplateResult
+            )._element
+          : document.createElement('template');
+        prepareStyles(currentScope, template);
       }
       currentScope = previousScope;
       // If necessary move the rendered DOM into the real container.
       if (renderContainer !== undefined) {
         // Note, this is the temporary startNode.
         renderContainer.removeChild(renderContainer.lastChild!);
+        // When using native Shadow DOM, include prepared style in shadowRoot.
+        if (window.ShadyCSS?.nativeShadow && template) {
+          const style = template.content.querySelector('style');
+          if (style !== null) {
+            renderContainer.appendChild(style.cloneNode(true));
+          }
+        }
         container.insertBefore(
           renderContainer,
           this.options?.renderBefore || null
         );
-        // Un-swizzle tracked nodes.
+        // Move part back to original container.
         this._startNode = startNode;
         this._endNode = endNode;
       }
     }
   };
 
-  /**
-   * Patch NodePart._getTemplate to look up templates in a cache bucketed
-   * by element name.
-   */
-  NodePart.prototype._getTemplate = function (
+  const getTemplate = (
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
-  ) {
+  ) => {
     let templateCache = scopedTemplateCache.get(currentScope);
     if (templateCache === undefined) {
       scopedTemplateCache.set(currentScope, (templateCache = new Map()));
@@ -419,4 +404,10 @@ let currentScope: string;
     }
     return template;
   };
+
+  /**
+   * Patch NodePart._getTemplate to look up templates in a cache bucketed
+   * by element name.
+   */
+  NodePart.prototype._getTemplate = getTemplate;
 };
