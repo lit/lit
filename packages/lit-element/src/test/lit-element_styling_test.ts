@@ -27,7 +27,11 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('Styling', () => {
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const suiteSkipIE = isIe ? suite.skip : suite;
+
+suiteSkipIE('Styling', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -218,14 +222,13 @@ suite('Styling', () => {
     const el2 = document.createElement(name2);
     container.appendChild(el);
     container.appendChild(el2);
-    let div: Element | null;
 
     // Workaround for Safari 9 Promise timing bugs.
     await el.updateComplete;
 
     await nextFrame();
     const inner = el.shadowRoot!.querySelector('x-inner1');
-    div = inner!.shadowRoot!.querySelector('div');
+    const div = inner!.shadowRoot!.querySelector('div');
     assert.equal(getComputedStyleValue(div!, 'border-top-width').trim(), '2px');
     el2.shadowRoot!.appendChild(inner!);
 
@@ -237,7 +240,7 @@ suite('Styling', () => {
   });
 });
 
-suite('Static get styles', () => {
+suiteSkipIE('Static get styles', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -401,7 +404,6 @@ suite('Static get styles', () => {
 
   test('`css` get styles throws when unsafe values are used', async () => {
     assert.throws(() => {
-      // tslint:disable:no-any intentionally unsafe code
       css`
         div {
           border: ${`2px solid blue;` as any};
@@ -1055,7 +1057,7 @@ suite('Static get styles', () => {
   );
 });
 
-suite('ShadyDOM', () => {
+suiteSkipIE('ShadyDOM', () => {
   let container: HTMLElement;
 
   setup(function () {

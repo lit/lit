@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## [3.0.0] - Unreleased
+## [3.0.0-pre.1] - 2020-09-21
 
 ### Changed
 * [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * [Breaking] For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
 * [Breaking] The type of the `css` function has been changed to `CSSResultGroup` and is now the same as `LitElement.styles`. This avoids the need to cast the `styles` property to `any` when a subclass sets `styles` to an Array and its super class set a single value (or visa versa).
 * For efficiency, the `css` function now maintains a cache and will use a cached value if available when the same style text is requested.
+
+### Added
+* Adds development mode, which can be enabled by setting the `development` Node exports condition. See `README.md` for more details.
 
 ### Removed
 * [Breaking] Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.

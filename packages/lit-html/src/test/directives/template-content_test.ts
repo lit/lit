@@ -16,8 +16,7 @@ import {templateContent} from '../../directives/template-content.js';
 import {html, render} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import '../polyfills.js';
 
 suite('templateContent', () => {
   let container: HTMLElement;
@@ -31,17 +30,19 @@ suite('templateContent', () => {
   test('renders a template', () => {
     render(html`<div>${templateContent(template)}</div>`, container);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><div>aaa</div></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><div>aaa</div></div>'
+    );
   });
 
   test('clones a template only once', () => {
     const go = () =>
-        render(html`<div>${templateContent(template)}</div>`, container);
+      render(html`<div>${templateContent(template)}</div>`, container);
     go();
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><div>aaa</div></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><div>aaa</div></div>'
+    );
     const templateDiv = container.querySelector('div > div') as HTMLDivElement;
 
     go();
@@ -51,18 +52,20 @@ suite('templateContent', () => {
 
   test('renders a new template over a previous one', () => {
     const go = (t: HTMLTemplateElement) =>
-        render(html`<div>${templateContent(t)}</div>`, container);
+      render(html`<div>${templateContent(t)}</div>`, container);
     go(template);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><div>aaa</div></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><div>aaa</div></div>'
+    );
 
     const newTemplate = document.createElement('template');
     newTemplate.innerHTML = '<span>bbb</span>';
     go(newTemplate);
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><span>bbb</span></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><span>bbb</span></div>'
+    );
   });
 
   // TODO (justinfagnani): lit-html core has a bug/limitiation around swapping
@@ -72,15 +75,17 @@ suite('templateContent', () => {
     const go = (v: unknown) => render(html`<div>${v}</div>`, container);
     go(templateContent(template));
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><div>aaa</div></div>');
-    
+      stripExpressionMarkers(container.innerHTML),
+      '<div><div>aaa</div></div>'
+    );
+
     go('ccc');
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>ccc</div>');
 
     go(templateContent(template));
     assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div><div>aaa</div></div>');
+      stripExpressionMarkers(container.innerHTML),
+      '<div><div>aaa</div></div>'
+    );
   });
 });

@@ -17,9 +17,11 @@ import {queryAsync} from '../../lib/decorators/queryAsync.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const suiteSkipIE = isIe ? suite.skip : suite;
 
-suite('@queryAsync', () => {
+suiteSkipIE('@queryAsync', () => {
   let container: HTMLElement;
   let el: C;
 

@@ -17,16 +17,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## [2.0.0] - Unreleased
+## [2.0.0-pre.3] - 2020-09-21
 
 ### Changed
-* [Breaking] `render()` does not clear the container it's rendered to
-* [Breaking] Expressions in comments are not rendered
+* [Breaking] `render()` no longer clears the container it's rendered to. It now appends to the container by default.
+* [Breaking] Expressions in comments are not rendered or updated.
 * [Breaking] Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
-* Multiple bindings in an attribute value don't need to be in quotes
+* [Breaking] Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that ```html`<div class=${['a', 'b']}>``` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
+* Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. ```html`<div id=${a}-${b}>```
+* [Breaking] The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
 
 ### Added
 * Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
+* Added development mode, which can be enabled by setting the `development` Node exports condition. See `README.md` for more details.
 
 ### Fixed
 * All usage of `instanceof` has been removed, making rendering more likely to
@@ -34,8 +37,10 @@ work when multiple instances of the library interact.
 * Template processing is more robust to expressions in places other than text and attribute values.
 
 ### Removed
-* [Breaking] The `templateFactory` option of `RenderOptions` has been removed
-* [Breaking] TemplateProcessor has been removed
+* [Breaking] The `templateFactory` option of `RenderOptions` has been removed.
+* [Breaking] TemplateProcessor has been removed.
+* [Breaking] Symbols are not converted to a string before mutating DOM, so passing a Symbol to an attribute or text binding will result in an exception.
+* [Breaking] The `until`, `asyncAppend` and `asyncReplace` directives are not implemented.
 
 ## [1.3.0] - 2020-08-19
 

@@ -10,13 +10,13 @@
   customElements.define('x-greeter', XGreeter);
 
   (async () => {
-    performance.mark('start');
+    performance.mark('render-start');
     for (let i = 0; i < 1000; i++) {
       const el = document.createElement('x-greeter');
       document.body.appendChild(el);
     }
     // Wait for LitElement render microtasks to complete.
     await Promise.resolve(null);
-    performance.measure('render', 'start');
+    performance.measure('render', 'render-start');
   })();
 </script>

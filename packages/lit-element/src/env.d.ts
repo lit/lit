@@ -25,6 +25,7 @@ interface ShadowRoot {
   adoptedStyleSheets: CSSStyleSheet[];
 }
 
+// eslint-disable-next-line no-var
 declare var ShadowRoot: {prototype: ShadowRoot; new (): ShadowRoot};
 
 interface CSSStyleSheet {

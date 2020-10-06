@@ -12,11 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive, directive, noChange, NODE_PART, PartInfo} from '../lit-html.js';
+import {
+  Directive,
+  directive,
+  noChange,
+  NODE_PART,
+  PartInfo,
+} from '../lit-html.js';
 
 class TemplateContent extends Directive {
-  private __previousTemplate? : HTMLTemplateElement;
-  
+  private _previousTemplate?: HTMLTemplateElement;
+
   constructor(part: PartInfo) {
     super();
     if (part.type !== NODE_PART) {
@@ -25,10 +31,10 @@ class TemplateContent extends Directive {
   }
 
   render(template: HTMLTemplateElement) {
-    if (this.__previousTemplate === template) {
+    if (this._previousTemplate === template) {
       return noChange;
     }
-    this.__previousTemplate = template;
+    this._previousTemplate = template;
     return document.importNode(template.content, true);
   }
 }
