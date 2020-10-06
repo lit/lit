@@ -64,7 +64,11 @@ const supportsPassive = (function () {
   return hasPassive;
 })();
 
-suite('@eventOptions', () => {
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const suiteSkipIE = isIe ? suite.skip : suite;
+
+suiteSkipIE('@eventOptions', () => {
   let container: HTMLElement;
 
   setup(() => {

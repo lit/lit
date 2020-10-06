@@ -27,7 +27,11 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('Styling', () => {
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const suiteSkipIE = isIe ? suite.skip : suite;
+
+suiteSkipIE('Styling', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -236,7 +240,7 @@ suite('Styling', () => {
   });
 });
 
-suite('Static get styles', () => {
+suiteSkipIE('Static get styles', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -1053,7 +1057,7 @@ suite('Static get styles', () => {
   );
 });
 
-suite('ShadyDOM', () => {
+suiteSkipIE('ShadyDOM', () => {
   let container: HTMLElement;
 
   setup(function () {
