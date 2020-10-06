@@ -305,7 +305,8 @@ let currentScope: string;
         const styles = template.content.querySelectorAll('style') as NodeListOf<
           HTMLStyleElement
         >;
-        // Store the css in this template in the scope css.
+        // Store the css in this template in the scope css and remove the <style>
+        // from the template _before_ the node-walk captures part indices
         scopeCss.push(
           ...Array.from(styles).map((style) => {
             style.parentNode?.removeChild(style);
