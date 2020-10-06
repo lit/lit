@@ -17,7 +17,11 @@ import {queryAsync} from '../../lib/decorators/queryAsync.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('@queryAsync', () => {
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const suiteSkipIE = isIe ? suite.skip : suite;
+
+suiteSkipIE('@queryAsync', () => {
   let container: HTMLElement;
   let el: C;
 

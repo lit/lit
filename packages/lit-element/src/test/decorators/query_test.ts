@@ -17,7 +17,11 @@ import {query} from '../../lib/decorators/query.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('@query', () => {
+const ua = window.navigator.userAgent;
+const isIe = ua.indexOf('Trident/') > 0;
+const suiteSkipIE = isIe ? suite.skip : suite;
+
+suiteSkipIE('@query', () => {
   let container: HTMLElement;
   let el: C;
 
