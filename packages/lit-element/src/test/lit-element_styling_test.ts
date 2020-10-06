@@ -272,7 +272,7 @@ import {assert} from '@esm-bundle/chai';
       }
     });
 
-    test('content shadowRoot is styled via static get styles', async () => {
+    test('content shadowRoot is styled via static get styles in multiple instances', async () => {
       const name = generateElementName();
       customElements.define(
         name,
@@ -300,19 +300,25 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = document.createElement(name);
-      container.appendChild(el);
-      await (el as LitElement).updateComplete;
-      const div = el.shadowRoot!.querySelector('div');
-      assert.equal(
-        getComputedStyleValue(div!, 'border-top-width').trim(),
-        '2px'
-      );
-      const span = el.shadowRoot!.querySelector('span');
-      assert.equal(
-        getComputedStyleValue(span!, 'border-top-width').trim(),
-        '3px'
-      );
+      const testInstance = async () => {
+        const el = document.createElement(name);
+        container.appendChild(el);
+        await (el as LitElement).updateComplete;
+        const div = el.shadowRoot!.querySelector('div');
+        assert.equal(
+          getComputedStyleValue(div!, 'border-top-width').trim(),
+          '2px'
+        );
+        const span = el.shadowRoot!.querySelector('span');
+        assert.equal(
+          getComputedStyleValue(span!, 'border-top-width').trim(),
+          '3px'
+        );
+      };
+      // test multiple instances
+      await testInstance();
+      await testInstance();
+      await testInstance();
     });
 
     // Test this in Shadow DOM without `adoptedStyleSheets` only since it's easily

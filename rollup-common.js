@@ -61,6 +61,8 @@ const crossPackagePropertyMangles = {
   _startNode: "C",
   _getTemplate: "T",
   _element: "E",
+  _options: "O",
+  _template: "t"
 };
 
 export function litRollupConfig({

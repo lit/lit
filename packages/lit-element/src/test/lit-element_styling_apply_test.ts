@@ -15,7 +15,7 @@
 import '@webcomponents/shadycss/apply-shim.min.js';
 import '../lib/platform-support.js';
 
-import {html as htmlWithStyles, LitElement} from '../lit-element.js';
+import {html as htmlWithStyles, LitElement, css} from '../lit-element.js';
 
 import {
   canTestLitElement,
@@ -160,5 +160,54 @@ import {assert} from '@esm-bundle/chai';
       getComputedStyleValue(el.applied!, 'margin-top').trim(),
       '2px'
     );
+  });
+
+  test('content shadowRoot is styled via static get styles in multiple instances', async () => {
+    const name = generateElementName();
+    customElements.define(
+      name,
+      class extends LitElement {
+        static get styles() {
+          return [
+            css`
+              div {
+                border: 2px solid blue;
+              }
+            `,
+            css`
+              span {
+                display: block;
+                border: 3px solid blue;
+              }
+            `,
+          ];
+        }
+
+        render() {
+          return htmlWithStyles`
+        <div>Testing1</div>
+        <span>Testing2</span>`;
+        }
+      }
+    );
+    const testInstance = async () => {
+      const el = document.createElement(name);
+      container.appendChild(el);
+      await (el as LitElement).updateComplete;
+      const div = el.shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '2px'
+      );
+      const span = el.shadowRoot!.querySelector('span');
+      assert.equal(
+        getComputedStyleValue(span!, 'border-top-width').trim(),
+        '3px'
+      );
+    };
+    // test multiple instances
+    await testInstance();
+    await testInstance();
+    await testInstance();
   });
 });

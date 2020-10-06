@@ -11,7 +11,6 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
 /**
  * LitElement/lit-html patch to support browsers without native web components.
  *
@@ -120,19 +119,16 @@ interface PatchableLitElement extends HTMLElement {
   /**
    * Patch `render` to include scope.
    */
-  Object.assign(LitElement, {
-    __render: ((LitElement as unknown) as PatchableLitElementConstructor)
-      .render,
-    render(
-      this: PatchableLitElementConstructor,
-      result: unknown,
-      container: HTMLElement | DocumentFragment,
-      options: RenderOptions
-    ) {
-      options.scope = this[SCOPE_KEY];
-      this.__render(result, container, options);
-    },
-  });
+  ((LitElement as unknown) as PatchableLitElementConstructor).__render = ((LitElement as unknown) as PatchableLitElementConstructor).render;
+  ((LitElement as unknown) as PatchableLitElementConstructor).render = function (
+    this: PatchableLitElementConstructor,
+    result: unknown,
+    container: HTMLElement | DocumentFragment,
+    options: RenderOptions
+  ) {
+    options.scope = this[SCOPE_KEY];
+    this.__render(result, container, options);
+  };
 
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
@@ -142,17 +138,19 @@ interface PatchableLitElement extends HTMLElement {
     this: PatchableLitElement,
     styles: CSSResults
   ) {
+    // If using native Shadow DOM must adoptStyles normally.
+    if (window.ShadyCSS!.nativeShadow) {
+      this.__baseAdoptStyles(styles);
+    }
     // Note, `SCOPE_KEY` is used both to determine if the element has already
     // been styled by ShadyCSS and also to pass the scope name to the static
     // side of the class.
     if (!this.constructor.hasOwnProperty(SCOPE_KEY)) {
+      // Always set the SCOPE_KEY
       const name = (this.constructor[SCOPE_KEY] = this.localName);
-      // Note, we don't use ShadyCSS for native adoptedStylesheets support since
-      // this would only be used for @apply and @apply is supported in ShadyCSS
-      // only in style elements and not via `prepareAdoptedCssText`.
-      if (window.ShadyCSS!.nativeShadow) {
-        this.__baseAdoptStyles(styles);
-      } else {
+      // But only shim adoptedStyleSheets with ShadyCSS if we're not native
+      // since `prepareAdoptedCssText` does nothing for native Shadow DOM.
+      if (!window.ShadyCSS!.nativeShadow) {
         const css = styles.map((v) =>
           v instanceof CSSStyleSheet
             ? Array.from(v.cssRules).reduce(
@@ -220,6 +218,11 @@ interface PatchableTemplate {
   new (...args: any[]): PatchableTemplate;
   _createElement(html: string): HTMLTemplateElement;
   _element: HTMLTemplateElement;
+  _options: RenderOptions;
+}
+
+interface PatchableTemplateInstance {
+  _template: PatchableTemplate;
 }
 
 // Scopes that have had styling prepared. Note, must only be done once per
@@ -228,9 +231,6 @@ const styledScopes: Set<string> = new Set();
 // Map of css per scope. This is collected during first scope render, used when
 // styling is prepared, and then discarded.
 const scopeCssStore: Map<string, string[]> = new Map();
-
-// Current scope for which styling is being prepared.
-let currentScope: string;
 
 /**
  * lit-html patches. These properties cannot be renamed.
@@ -266,7 +266,7 @@ let currentScope: string;
 
   const prepareStyles = (name: string, template: HTMLTemplateElement) => {
     // Get styles
-    const scopeCss = cssForScope(currentScope);
+    const scopeCss = cssForScope(name);
     if (scopeCss.length) {
       const style = document.createElement('style');
       style.textContent = scopeCss.join('\n');
@@ -296,11 +296,12 @@ let currentScope: string;
      */
     _createElement(html: string) {
       const template = super._createElement(html);
+      const scope = this._options?.scope!;
       if (!window.ShadyCSS!.nativeShadow) {
-        window.ShadyCSS!.prepareTemplateDom(template, currentScope);
+        window.ShadyCSS!.prepareTemplateDom(template, scope);
       }
-      if (!isScopeStyled(currentScope)) {
-        const scopeCss = cssForScope(currentScope);
+      if (!isScopeStyled(scope)) {
+        const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
         const styles = template.content.querySelectorAll('style') as NodeListOf<
           HTMLStyleElement
@@ -318,6 +319,9 @@ let currentScope: string;
     }
   }
 
+  const renderContainer = document.createDocumentFragment();
+  const renderContainerMarker = document.createComment('');
+
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
@@ -328,12 +332,9 @@ let currentScope: string;
   ) {
     const container = this._startNode.parentNode!;
     const renderingIntoShadowRoot = container instanceof ShadowRoot;
-    if (!renderingIntoShadowRoot) {
-      this.__baseSetValue(value);
-    } else {
-      const previousScope = currentScope;
-      currentScope = this.options.scope ?? '';
-
+    const scope = this.options.scope;
+    const needsStyleScoping = !isScopeStyled(scope);
+    if (renderingIntoShadowRoot && needsStyleScoping) {
       // Note, @apply requires outer => inner scope rendering on initial
       // scope renders to apply property values correctly. Style preparation
       // is tied to rendering into `shadowRoot`'s and this is typically done by
@@ -342,73 +343,65 @@ let currentScope: string;
       // into a fragment first so the hosting element can prepare styles first.
       // If rendering is done in the constructor, this won't work, but that's
       // not supported in ShadyDOM anyway.
-      let renderContainer: DocumentFragment | undefined = undefined;
       const startNode = this._startNode;
       const endNode = this._endNode;
-      const needsStyleScoping = !isScopeStyled(currentScope);
-      if (needsStyleScoping && renderingIntoShadowRoot) {
-        renderContainer = document.createDocumentFragment();
-        renderContainer.appendChild(document.createComment(''));
-        // Temporarily move this part into the renderContainer.
-        this._startNode = this._endNode = renderContainer.firstChild!;
-      }
+
+      // Temporarily move this part into the renderContainer.
+      renderContainer.appendChild(renderContainerMarker);
+      this._startNode = this._endNode = renderContainerMarker;
+
       // Note, any nested template results render here and their styles will
       // be extracted and collected.
       this.__baseSetValue(value);
 
-      let template: HTMLTemplateElement | undefined = undefined;
-      if (needsStyleScoping && renderingIntoShadowRoot) {
-        // Get the template for this result or create a dummy one if a result
-        // is not being rendered.
-        template = !!(value as ShadyTemplateResult)?._$litType$
-          ? getTemplate(
-              (value as ShadyTemplateResult).strings,
-              value as ShadyTemplateResult
-            )._element
-          : document.createElement('template');
-        prepareStyles(currentScope, template);
-      }
-      currentScope = previousScope;
-      // If necessary move the rendered DOM into the real container.
-      if (renderContainer !== undefined) {
-        // Note, this is the temporary startNode.
-        renderContainer.removeChild(renderContainer.lastChild!);
-        // When using native Shadow DOM, include prepared style in shadowRoot.
-        if (window.ShadyCSS?.nativeShadow && template) {
-          const style = template.content.querySelector('style');
-          if (style !== null) {
-            renderContainer.appendChild(style.cloneNode(true));
-          }
-        }
-        container.insertBefore(
-          renderContainer,
-          this.options?.renderBefore || null
-        );
-        // Move part back to original container.
-        this._startNode = startNode;
-        this._endNode = endNode;
-      }
-    }
-  };
+      // Get the template for this result or create a dummy one if a result
+      // is not being rendered.
+      const template = !!(value as ShadyTemplateResult)?._$litType$
+        ? (this._value as PatchableTemplateInstance)._template._element
+        : document.createElement('template');
+      prepareStyles(scope!, template);
 
-  const getTemplate = (
-    strings: TemplateStringsArray,
-    result: ShadyTemplateResult
-  ) => {
-    let templateCache = scopedTemplateCache.get(currentScope);
-    if (templateCache === undefined) {
-      scopedTemplateCache.set(currentScope, (templateCache = new Map()));
+      // Note, this is the temporary startNode.
+      renderContainer.removeChild(renderContainerMarker);
+      // When using native Shadow DOM, include prepared style in shadowRoot.
+      if (window.ShadyCSS?.nativeShadow && template) {
+        const style = template.content.querySelector('style');
+        if (style !== null) {
+          renderContainer.appendChild(style.cloneNode(true));
+        }
+      }
+      container.insertBefore(
+        renderContainer,
+        this.options?.renderBefore || null
+      );
+      // Move part back to original container.
+      this._startNode = startNode;
+      this._endNode = endNode;
+    } else {
+      this.__baseSetValue(value);
     }
-    let template = templateCache.get(strings);
-    if (template === undefined) {
-      templateCache.set(strings, (template = new ShadyTemplate(result)));
-    }
-    return template;
   };
 
   /**
    * Patch NodePart._getTemplate to look up templates in a cache bucketed
    * by element name.
    */
-  NodePart.prototype._getTemplate = getTemplate;
+  NodePart.prototype._getTemplate = function (
+    strings: TemplateStringsArray,
+    result: ShadyTemplateResult
+  ) {
+    const scope = this.options.scope!;
+    let templateCache = scopedTemplateCache.get(scope);
+    if (templateCache === undefined) {
+      scopedTemplateCache.set(scope, (templateCache = new Map()));
+    }
+    let template = templateCache.get(strings);
+    if (template === undefined) {
+      templateCache.set(
+        strings,
+        (template = new ShadyTemplate(result, this.options))
+      );
+    }
+    return template;
+  };
 };

@@ -329,8 +329,14 @@ class Template {
   private _strings: TemplateStringsArray;
   _element: HTMLTemplateElement;
   _parts: Array<TemplatePart> = [];
+  // Note, this is used by the `platform-support` module.
+  _options?: RenderOptions;
 
-  constructor({strings, _$litType$: type}: TemplateResult) {
+  constructor(
+    {strings, _$litType$: type}: TemplateResult,
+    options?: RenderOptions
+  ) {
+    this._options = options;
     // Insert makers into the template HTML to represent the position of
     // bindings. The following code scans the template strings to determine the
     // syntactic position of the bindings. They can be in text position, where
