@@ -471,15 +471,16 @@ class Template {
       // insert a plain maker. If we have a attrNameEndIndex, it means we need
       // to rewrite the attribute name to add a bound attribute suffix.
       html +=
-        values[i] != null && (values[i] as StaticValue)._$litStatic$ !== undefined
-          ? (this._hasStatics = true, s + (values[i] as StaticValue).value)
+        values[i] != null &&
+        (values[i] as StaticValue)._$litStatic$ !== undefined
+          ? ((this._hasStatics = true), s + (values[i] as StaticValue).value)
           : regex === textEndRegex
-            ? s + nodeMarker
-            : (attrNameEndIndex !== -1
+          ? s + nodeMarker
+          : (attrNameEndIndex !== -1
               ? (attrNames.push(attrName!),
                 s.slice(0, attrNameEndIndex) +
-                boundAttributeSuffix +
-                s.slice(attrNameEndIndex))
+                  boundAttributeSuffix +
+                  s.slice(attrNameEndIndex))
               : s) + marker;
     }
 
