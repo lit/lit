@@ -99,8 +99,12 @@ suite('lit-html', () => {
 
       render(html`<script a="b" type="foo">${'d'}</script>`, container);
       assert.include(
-        ['<script a="b" type="foo">d</script>', '<script type="foo" a="b">d</script>'],
-        stripExpressionComments(container.innerHTML));
+        [
+          '<script a="b" type="foo">d</script>',
+          '<script type="foo" a="b">d</script>',
+        ],
+        stripExpressionComments(container.innerHTML)
+      );
     });
 
     test('text child of element with unbound unquoted attribute', () => {
@@ -108,8 +112,12 @@ suite('lit-html', () => {
 
       render(html`<script a=b type="foo">${'d'}</script>`, container);
       assert.include(
-        ['<script a="b" type="foo">d</script>', '<script type="foo" a="b">d</script>'],
-        stripExpressionComments(container.innerHTML));
+        [
+          '<script a="b" type="foo">d</script>',
+          '<script type="foo" a="b">d</script>',
+        ],
+        stripExpressionComments(container.innerHTML)
+      );
     });
 
     test('renders parts with whitespace after them', () => {
@@ -183,15 +191,24 @@ suite('lit-html', () => {
     });
 
     test('renders inside <script>: only node', () => {
-      assertRender(html`<script type="foo">${'foo'}</script>`, '<script type="foo">foo</script>');
+      assertRender(
+        html`<script type="foo">${'foo'}</script>`,
+        '<script type="foo">foo</script>'
+      );
     });
 
     test('renders inside <script>: first node', () => {
-      assertRender(html`<script type="foo">${'foo'}A</script>`, '<script type="foo">fooA</script>');
+      assertRender(
+        html`<script type="foo">${'foo'}A</script>`,
+        '<script type="foo">fooA</script>'
+      );
     });
 
     test('renders inside <script>: last node', () => {
-      assertRender(html`<script type="foo">A${'foo'}</script>`, '<script type="foo">Afoo</script>');
+      assertRender(
+        html`<script type="foo">A${'foo'}</script>`,
+        '<script type="foo">Afoo</script>'
+      );
     });
 
     test('renders inside <script>: multiple bindings', () => {
@@ -202,7 +219,10 @@ suite('lit-html', () => {
     });
 
     test('renders inside <script>: attribute-like', () => {
-      assertRender(html`<script type="foo">a=${'foo'}</script>`, '<script type="foo">a=foo</script>');
+      assertRender(
+        html`<script type="foo">a=${'foo'}</script>`,
+        '<script type="foo">a=foo</script>'
+      );
     });
 
     test('text after script element', () => {

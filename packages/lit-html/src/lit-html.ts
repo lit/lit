@@ -486,6 +486,9 @@ class Template {
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
           const {attributes} = node as Element;
+          // We defer removing bound attributes because on IE we might not be
+          // iterating attributes in their template order, and would sometimes
+          // remove an attribute that we still need to create a part for.
           const attrsToRemove = [];
           for (let i = 0; i < attributes.length; i++) {
             // This is the name of the attribute we're iterating over, but not
@@ -769,7 +772,7 @@ export class NodePart {
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this._commitNode(document.createTextNode(value as string));
+      this._commitNode(d.createTextNode(value as string));
     }
     this._value = value;
   }
