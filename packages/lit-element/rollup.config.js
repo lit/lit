@@ -17,9 +17,9 @@ import {litRollupConfig} from '../../rollup-common.js';
 export default litRollupConfig({
   entryPoints: [
     'lit-element',
+    'lib/platform-support',
     'lib/updating-element',
     'lib/css-tag',
-    'lib/lit-element-polyfill',
     'lib/decorators',
     'lib/decorators/base',
     'lib/decorators/customElement',
@@ -31,5 +31,5 @@ export default litRollupConfig({
     'lib/decorators/queryAssignedNodes',
     'lib/decorators/queryAsync',
   ],
-  external: ['lit-html'],
+  external: ['lit-html']
 });

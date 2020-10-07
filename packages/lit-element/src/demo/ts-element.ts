@@ -1,7 +1,14 @@
-import {html, LitElement} from '../lit-element.js';
+import {html, css, LitElement} from '../lit-element.js';
 import {property} from '../lib/decorators/property.js';
 
 class TSElement extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      padding: 8px;
+    }
+  `;
+
   @property() message = 'Hi';
 
   @property({
@@ -13,11 +20,12 @@ class TSElement extends LitElement {
   render() {
     const {message, extra} = this;
     return html`
-      <style>
+      ${html`<style>
         :host {
-          display: block;
-        }</style
-      >TSElement says: ${message} ${extra}
+          background: steelblue;
+        }
+      </style>`}
+      TSElement says: ${message} ${extra}
     `;
   }
 }

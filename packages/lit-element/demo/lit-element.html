@@ -9,23 +9,22 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
-    />
-    <title>lit-element demo</title>
-    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <script type="module" src="./ts-element.js"></script>
-  </head>
-  <body>
-    <my-element bar="5" whales="5" foobar="17">Hi</my-element>
-    <hr />
-    <ts-element message="Yo" more-info="person"></ts-element>
 
-    <script type="module">
-      import {LitElement, html, css} from '../lib/lit-element.js';
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
+  <title>lit-element demo</title>
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script type="module" src="./ts-element.js"></script>
+</head>
+
+<body>
+  <my-element bar="5" whales="5" foobar="17">Hi</my-element>
+  <hr />
+  <ts-element message="Yo" more-info="person"></ts-element>
+
+  <script type="module">
+    import {LitElement, html, css} from '../lib/lit-element.js';
 
       class Inner extends LitElement {
         static get styles() {
@@ -151,5 +150,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         );
       })();
     </script>
-  </body>
+</body>
+
 </html>
