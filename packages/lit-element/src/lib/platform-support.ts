@@ -337,7 +337,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       // Note, this is the temporary startNode.
       renderContainer.removeChild(renderContainerMarker);
       // When using native Shadow DOM, include prepared style in shadowRoot.
-      if (window.ShadyCSS?.nativeShadow && template) {
+      if (window.ShadyCSS?.nativeShadow) {
         const style = template.content.querySelector('style');
         if (style !== null) {
           renderContainer.appendChild(style.cloneNode(true));
