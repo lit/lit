@@ -320,7 +320,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
       // Temporarily move this part into the renderContainer.
       renderContainer.appendChild(renderContainerMarker);
-      this._startNode = this._endNode = renderContainerMarker;
+      this._startNode = renderContainerMarker;
+      this._endNode = null;
 
       // Note, any nested template results render here and their styles will
       // be extracted and collected.
