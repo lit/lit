@@ -296,7 +296,12 @@ export const render = (
   part._setValue(value);
 };
 
-const walker = d.createTreeWalker(d);
+const walker = d.createTreeWalker(
+  d,
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false
+);
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -324,10 +329,14 @@ class Template {
   private _strings: TemplateStringsArray;
   _element: HTMLTemplateElement;
   _parts: Array<TemplatePart> = [];
+  // Note, this is used by the `platform-support` module.
+  _options?: RenderOptions;
 
-  constructor({strings, _$litType$: type}: TemplateResult) {
-    walker.currentNode = (this._element = d.createElement('template')).content;
-
+  constructor(
+    {strings, _$litType$: type}: TemplateResult,
+    options?: RenderOptions
+  ) {
+    this._options = options;
     // Insert makers into the template HTML to represent the position of
     // bindings. The following code scans the template strings to determine the
     // syntactic position of the bindings. They can be in text position, where
@@ -465,7 +474,8 @@ class Template {
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
-    this._element.innerHTML = html + this._strings[l];
+    this._element = this._createElement(html + this._strings[l]);
+    walker.currentNode = this._element.content;
 
     if (type === SVG_RESULT) {
       const content = this._element.content;
@@ -482,13 +492,28 @@ class Template {
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
           const {attributes} = node as Element;
+          // We defer removing bound attributes because on IE we might not be
+          // iterating attributes in their template order, and would sometimes
+          // remove an attribute that we still need to create a part for.
+          const attrsToRemove = [];
           for (let i = 0; i < attributes.length; i++) {
-            const {name, value} = attributes[i];
+            // This is the name of the attribute we're iterating over, but not
+            // _neccessarily_ the name of the attribute we will create a part
+            // for. They can be different in browsers that don't iterate on
+            // attributes in source order. In that case the attrNames array
+            // contains the attribute name we'll process next. We only need the
+            // attribute name here to know if we should process a bound attribute
+            // on this element.
+            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
-              i--;
-              (node as Element).removeAttribute(name);
+              const realName = attrNames[attrNameIndex++];
+              // Lowercase for case-sensitive SVG attributes like viewBox
+              const value = (node as Element).getAttribute(
+                realName.toLowerCase() + boundAttributeSuffix
+              )!;
+              attrsToRemove.push(name);
               const statics = value.split(marker);
-              const m = /([.?@])?(.*)/.exec(attrNames[attrNameIndex++])!;
+              const m = /([.?@])?(.*)/.exec(realName)!;
               this._parts.push({
                 _type: ATTRIBUTE_PART,
                 _index: nodeIndex,
@@ -505,13 +530,15 @@ class Template {
               });
               bindingIndex += statics.length - 1;
             } else if (name === marker) {
-              (node as Element).removeAttribute(name);
-              i--;
+              attrsToRemove.push(name);
               this._parts.push({
                 _type: ELEMENT_PART,
                 _index: nodeIndex,
               });
             }
+          }
+          for (const name of attrsToRemove) {
+            (node as Element).removeAttribute(name);
           }
         }
         // TODO (justinfagnani): benchmark the regex against testing for each
@@ -557,6 +584,13 @@ class Template {
       }
       nodeIndex++;
     }
+  }
+
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  _createElement(html: string) {
+    const template = d.createElement('template');
+    template.innerHTML = html;
+    return template;
   }
 }
 
@@ -744,17 +778,14 @@ export class NodePart {
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this._commitNode(new Text(value as string));
+      this._commitNode(d.createTextNode(value as string));
     }
     this._value = value;
   }
 
   private _commitTemplateResult(result: TemplateResult): void {
-    const {strings, values} = result;
-    let template = templateCache.get(strings);
-    if (template === undefined) {
-      templateCache.set(strings, (template = new Template(result)));
-    }
+    const {values, strings} = result;
+    const template = this._getTemplate(strings, result);
     if (
       this._value != null &&
       (this._value as TemplateInstance)._template === template
@@ -767,6 +798,15 @@ export class NodePart {
       this._commitNode(fragment);
       this._value = instance;
     }
+  }
+
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  private _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
+    let template = templateCache.get(strings);
+    if (template === undefined) {
+      templateCache.set(strings, (template = new Template(result)));
+    }
+    return template;
   }
 
   private _commitIterable(value: Iterable<unknown>): void {
@@ -1072,6 +1112,9 @@ export class EventPart extends AttributePart {
     }
   }
 }
+
+// Apply polyfills if available
+(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

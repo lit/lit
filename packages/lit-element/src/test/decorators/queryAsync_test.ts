@@ -14,10 +14,10 @@
 
 import {html, LitElement} from '../../lit-element.js';
 import {queryAsync} from '../../lib/decorators/queryAsync.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('@queryAsync', () => {
+(canTestLitElement ? suite : suite.skip)('@queryAsync', () => {
   let container: HTMLElement;
   let el: C;
 

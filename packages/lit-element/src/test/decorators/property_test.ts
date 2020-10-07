@@ -20,10 +20,10 @@ import {
   PropertyDeclaration,
 } from '../../lit-element.js';
 import {property} from '../../lib/decorators/property.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('@property', () => {
+(canTestLitElement ? suite : suite.skip)('@property', () => {
   let container: HTMLElement;
 
   setup(() => {
