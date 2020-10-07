@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- [Breaking] The static `render` has been removed.
 - [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 - [Breaking] When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
 - [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice it should very rarely be ([#699](https://github.com/Polymer/lit-element/issues/699)).
@@ -28,14 +29,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [Breaking] LitElement's `static getStyles` method has been renamed to `static finalizeStyles` and now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.
 - [Breaking] Removed build support for TypeScript 3.4.
 - [Breaking] Decorators are no longer exported from the `lit-element` module. Instead, import any decorators you use from `lit-element/decorators/*`.
-- [Breaking] `lit-html` has been updated to 2.x. Note, shady-render support has been removed. Import the `lit-element-polyfill` module to support Shady DOM.
+- [Breaking] `lit-html` has been updated to 2.x.
+- [Breaking] Support for running in older browsers has been removed from the default configuration. Import the `platform-support` module to support Shady DOM. Note also that Lit parts inside `<style>` elements are no longer supported.
 - [Breaking] For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
 - [Breaking] The type of the `css` function has been changed to `CSSResultGroup` and is now the same as `LitElement.styles`. This avoids the need to cast the `styles` property to `any` when a subclass sets `styles` to an Array and its super class set a single value (or visa versa).
 - For efficiency, the `css` function now maintains a cache and will use a cached value if available when the same style text is requested.
 
 ### Added
 
-- Adds `static shadowRootOptions` to make it easier to customize shadowRoot options. Rather than implementing `createRenderRoot`, this property can be set. For example, to create a closed shadowRoot using delegates focus: `static shadowRootOptions = {mode: 'closed', delegatesFocus: true}`.
+- Adds `static shadowRootOptions` for customizing shadowRoot options. Rather than implementing `createRenderRoot`, this property can be set. For example, to create a closed shadowRoot using delegates focus: `static shadowRootOptions = {mode: 'closed', delegatesFocus: true}`.
 - Adds development mode, which can be enabled by setting the `development` Node exports condition. See `README.md` for more details.
 
 ### Removed

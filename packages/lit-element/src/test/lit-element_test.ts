@@ -13,10 +13,14 @@
  */
 
 import {html, LitElement} from '../lit-element.js';
-import {generateElementName, stripExpressionComments} from './test-helpers.js';
+import {
+  canTestLitElement,
+  generateElementName,
+  stripExpressionComments,
+} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('LitElement', () => {
+(canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
 
   setup(() => {

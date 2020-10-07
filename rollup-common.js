@@ -13,7 +13,9 @@
  */
 
 import summary from "rollup-plugin-summary";
-import { terser } from "rollup-plugin-terser";
+import {
+  terser
+} from "rollup-plugin-terser";
 import copy from "rollup-plugin-copy";
 import * as pathLib from "path";
 import sourcemaps from "rollup-plugin-sourcemaps";
@@ -46,6 +48,7 @@ const reservedProperties = [
   // https://github.com/Polymer/lit-html/issues/1261
   "_value",
   "_setValue",
+  "createTreeWalker"
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -56,9 +59,17 @@ const crossPackagePropertyMangles = {
   _createElement: "Y",
   _endNode: "M",
   _startNode: "C",
+  _getTemplate: "T",
+  _element: "E",
+  _options: "O",
+  _template: "t",
+  _renderOptions: "R"
 };
 
-export function litRollupConfig({ entryPoints, external = [] } = options) {
+export function litRollupConfig({
+  entryPoints,
+  external = []
+} = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
   // details of lit-html.js.
@@ -88,8 +99,10 @@ export function litRollupConfig({ entryPoints, external = [] } = options) {
       // Note all properties in the terser name cache are prefixed with '$'
       // (presumably to avoid collisions with built-ins).
       props: Object.entries(crossPackagePropertyMangles).reduce(
-        (obj, [name, val]) => ({ ...obj, ["$" + name]: val }),
-        {}
+        (obj, [name, val]) => ({
+          ...obj,
+          ["$" + name]: val
+        }), {}
       ),
     },
   };
@@ -130,8 +143,7 @@ export function litRollupConfig({ entryPoints, external = [] } = options) {
     },
   };
 
-  return [
-    {
+  return [{
       input: nameCacheSeederInfile,
       output: {
         file: nameCacheSeederOutfile,
@@ -190,18 +202,23 @@ export function litRollupConfig({ entryPoints, external = [] } = options) {
         sourcemaps(),
         terser(terserOptions),
         summary(),
-        ...(CHECKSIZE
-          ? [skipBundleOutput]
-          : [
-              // Place a copy of each d.ts file adjacent to its minified module.
-              copy({
-                targets: entryPoints.map((name) => ({
-                  src: `development/${name}.d.ts`,
-                  dest: pathLib.dirname(name),
-                })),
-              }),
-            ]),
-      ],
+        ...(CHECKSIZE ? [skipBundleOutput] : [
+          // Place a copy of each d.ts file adjacent to its minified module.
+          copy({
+            targets: entryPoints.map((name) => ({
+              src: `development/${name}.d.ts`,
+              dest: pathLib.dirname(name),
+            })),
+          }),
+          // Copy platform support tests.
+          copy({
+            targets: [{
+              src: `src/test/platform-support/*_test.html`,
+              dest: ['development/test/platform-support', 'test/platform-support'],
+            }]
+          }),
+        ]),
+      ]
     },
   ];
 }

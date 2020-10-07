@@ -65,7 +65,7 @@ import {
 } from './lib/css-tag.js';
 
 export * from './lib/updating-element.js';
-export {html, svg, TemplateResult} from 'lit-html';
+export * from 'lit-html';
 export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
@@ -128,22 +128,6 @@ export class LitElement extends UpdatingElement {
   protected static ['finalized'] = true;
 
   /**
-   * Reference to the underlying library method used to render the element's
-   * DOM. By default, points to the `render` method from lit-html's render
-   * module.
-   *
-   * This  property should not be confused with the `render` instance method,
-   * which should be overridden to define a template for the element.
-   *
-   * @nocollapse
-   */
-  static render: (
-    result: unknown,
-    container: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ) => void = render;
-
-  /**
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
@@ -203,13 +187,7 @@ export class LitElement extends UpdatingElement {
    * to an open shadowRoot.
    */
   readonly renderRoot!: HTMLElement | DocumentFragment;
-
-  /**
-   * Node before which to render content. This is used when shimming
-   * `adoptedStyleSheets` and a style element may need to exist in the
-   * shadowRoot after Lit rendered content.
-   */
-  private _renderBeforeNode?: HTMLElement;
+  readonly _renderOptions!: RenderOptions;
 
   /**
    * Performs element initialization. By default this calls
@@ -218,6 +196,9 @@ export class LitElement extends UpdatingElement {
    */
   protected initialize() {
     super.initialize();
+    (this as {
+      _renderOptions: RenderOptions;
+    })._renderOptions = {eventContext: this};
     (this as {
       renderRoot: Element | DocumentFragment;
     }).renderRoot = this.createRenderRoot();
@@ -262,7 +243,9 @@ export class LitElement extends UpdatingElement {
         const style = document.createElement('style');
         style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
-        this._renderBeforeNode ??= style;
+        (this._renderOptions as {
+          renderBefore: ChildNode;
+        }).renderBefore ??= style;
       });
     }
   }
@@ -281,11 +264,7 @@ export class LitElement extends UpdatingElement {
     super.update(changedProperties);
     // If render is not implemented by the component, don't call lit-html render
     if (templateResult !== renderNotImplemented) {
-      (this.constructor as typeof LitElement).render(
-        templateResult,
-        this.renderRoot,
-        {eventContext: this, renderBefore: this._renderBeforeNode}
-      );
+      render(templateResult, this.renderRoot, this._renderOptions);
     }
   }
 
@@ -299,3 +278,6 @@ export class LitElement extends UpdatingElement {
     return renderNotImplemented;
   }
 }
+
+// Apply polyfills if available
+(globalThis as any)['litElementPlatformSupport']?.({LitElement});
