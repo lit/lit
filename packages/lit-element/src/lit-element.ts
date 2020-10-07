@@ -268,6 +268,4 @@ export class LitElement extends UpdatingElement {
 }
 
 // Apply polyfills if available
-if ((globalThis as any)['litElementPlatformSupport'] !== undefined) {
-  (globalThis as any)['litElementPlatformSupport']({LitElement});
-}
+(globalThis as any)['litElementPlatformSupport']?.({LitElement});

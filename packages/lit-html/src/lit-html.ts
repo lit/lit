@@ -1114,9 +1114,7 @@ export class EventPart extends AttributePart {
 }
 
 // Apply polyfills if available
-if ((globalThis as any)['litHtmlPlatformSupport'] !== undefined) {
-  (globalThis as any)['litHtmlPlatformSupport']({NodePart, Template});
-}
+(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

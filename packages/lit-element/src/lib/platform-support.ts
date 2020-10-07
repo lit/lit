@@ -110,8 +110,9 @@ interface PatchableLitElement extends HTMLElement {
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
-  LitElement.prototype.__baseAdoptStyles = LitElement.prototype.adoptStyles;
-  LitElement.prototype.adoptStyles = function (
+  const litElementProto = LitElement.prototype;
+  litElementProto.__baseAdoptStyles = litElementProto.adoptStyles;
+  litElementProto.adoptStyles = function (
     this: PatchableLitElement,
     styles: CSSResults
   ) {
@@ -141,11 +142,8 @@ interface PatchableLitElement extends HTMLElement {
   /**
    * Patch connectedCallback to apply ShadyCSS custom properties shimming.
    */
-  LitElement.prototype.__baseConnectedCallback =
-    LitElement.prototype.connectedCallback;
-  LitElement.prototype.connectedCallback = function (
-    this: PatchableLitElement
-  ) {
+  litElementProto.__baseConnectedCallback = litElementProto.connectedCallback;
+  litElementProto.connectedCallback = function (this: PatchableLitElement) {
     this.__baseConnectedCallback();
     // Note, must do first update separately so that we're ensured
     // that rendering has completed before calling this.
@@ -158,8 +156,8 @@ interface PatchableLitElement extends HTMLElement {
    * Patch update to apply ShadyCSS custom properties shimming for first
    * update.
    */
-  LitElement.prototype.__baseUpdate = LitElement.prototype.update;
-  LitElement.prototype.update = function (
+  litElementProto.__baseUpdate = litElementProto.update;
+  litElementProto.update = function (
     this: PatchableLitElement,
     changedProperties: unknown
   ) {
@@ -296,14 +294,12 @@ const scopeCssStore: Map<string, string[]> = new Map();
   const renderContainer = document.createDocumentFragment();
   const renderContainerMarker = document.createComment('');
 
+  const nodePartProto = NodePart.prototype;
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
-  NodePart.prototype.__baseSetValue = NodePart.prototype._setValue;
-  NodePart.prototype._setValue = function (
-    this: PatchableNodePart,
-    value: unknown
-  ) {
+  nodePartProto.__baseSetValue = nodePartProto._setValue;
+  nodePartProto._setValue = function (this: PatchableNodePart, value: unknown) {
     const container = this._startNode.parentNode!;
     const scope = this.options.scope;
     if (container instanceof ShadowRoot && needsPrepareStyles(scope)) {
@@ -356,7 +352,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
    * Patch NodePart._getTemplate to look up templates in a cache bucketed
    * by element name.
    */
-  NodePart.prototype._getTemplate = function (
+  nodePartProto._getTemplate = function (
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {
