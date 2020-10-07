@@ -228,7 +228,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
   // );
 
   const needsPrepareStyles = (name: string | undefined) =>
-    name === undefined || !styledScopes.has(name);
+    name !== undefined && !styledScopes.has(name);
 
   const cssForScope = (name: string) => {
     let scopeCss = scopeCssStore.get(name);
@@ -274,7 +274,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       if (!window.ShadyCSS!.nativeShadow) {
         window.ShadyCSS!.prepareTemplateDom(template, scope);
       }
-      if (needsPrepareStyles(scope)) {
+      if (scope !== undefined) {
         const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
         const styles = template.content.querySelectorAll('style') as NodeListOf<
