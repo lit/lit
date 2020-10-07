@@ -227,8 +227,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
   //   'color: lightgreen; font-style: italic'
   // );
 
-  const isScopeStyled = (name: string | undefined) =>
-    name !== undefined ? styledScopes.has(name) : true;
+  const needsPrepareStyles = (name: string | undefined) =>
+    name === undefined || !styledScopes.has(name);
 
   const cssForScope = (name: string) => {
     let scopeCss = scopeCssStore.get(name);
@@ -274,7 +274,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       if (!window.ShadyCSS!.nativeShadow) {
         window.ShadyCSS!.prepareTemplateDom(template, scope);
       }
-      if (!isScopeStyled(scope)) {
+      if (needsPrepareStyles(scope)) {
         const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
         const styles = template.content.querySelectorAll('style') as NodeListOf<
@@ -307,7 +307,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
     const container = this._startNode.parentNode!;
     const renderingIntoShadowRoot = container instanceof ShadowRoot;
     const scope = this.options.scope;
-    const needsStyleScoping = !isScopeStyled(scope);
+    const needsStyleScoping = needsPrepareStyles(scope);
     if (renderingIntoShadowRoot && needsStyleScoping) {
       // Note, @apply requires outer => inner scope rendering on initial
       // scope renders to apply property values correctly. Style preparation
