@@ -271,10 +271,10 @@ const scopeCssStore: Map<string, string[]> = new Map();
     _createElement(html: string) {
       const template = super._createElement(html);
       const scope = this._options?.scope!;
-      if (!window.ShadyCSS!.nativeShadow) {
-        window.ShadyCSS!.prepareTemplateDom(template, scope);
-      }
       if (scope !== undefined) {
+        if (!window.ShadyCSS!.nativeShadow) {
+          window.ShadyCSS!.prepareTemplateDom(template, scope);
+        }
         const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
         const styles = template.content.querySelectorAll('style') as NodeListOf<
