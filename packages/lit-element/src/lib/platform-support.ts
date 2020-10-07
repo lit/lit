@@ -72,20 +72,10 @@ interface RenderOptions {
   scope?: string;
 }
 
-const SCOPE_KEY = '__localName';
+const SCOPED = '__scoped';
 
 interface PatchableLitElementConstructor {
-  [SCOPE_KEY]: string;
-  render(
-    result: unknown,
-    container: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ): void;
-  __render(
-    result: unknown,
-    container: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ): void;
+  [SCOPED]: boolean;
 }
 
 type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
@@ -100,6 +90,7 @@ interface PatchableLitElement extends HTMLElement {
   __baseUpdate(changedProperties: unknown): void;
   adoptStyles(styles: CSSResults): void;
   __baseAdoptStyles(styles: CSSResults): void;
+  _renderOptions: RenderOptions;
 }
 
 (globalThis as any)['litElementPlatformSupport'] = ({
@@ -117,20 +108,6 @@ interface PatchableLitElement extends HTMLElement {
   // );
 
   /**
-   * Patch `render` to include scope.
-   */
-  ((LitElement as unknown) as PatchableLitElementConstructor).__render = ((LitElement as unknown) as PatchableLitElementConstructor).render;
-  ((LitElement as unknown) as PatchableLitElementConstructor).render = function (
-    this: PatchableLitElementConstructor,
-    result: unknown,
-    container: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ) {
-    options.scope = this[SCOPE_KEY];
-    this.__render(result, container, options);
-  };
-
-  /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
   LitElement.prototype.__baseAdoptStyles = LitElement.prototype.adoptStyles;
@@ -138,29 +115,26 @@ interface PatchableLitElement extends HTMLElement {
     this: PatchableLitElement,
     styles: CSSResults
   ) {
-    // If using native Shadow DOM must adoptStyles normally.
+    // Pass the scope to render options so that it gets to lit-html for proper
+    // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
+    // due to @apply.
+    const name = (this._renderOptions.scope = this.localName);
+    // If using native Shadow DOM must adoptStyles normally,
+    // otherwise do nothing.
     if (window.ShadyCSS!.nativeShadow) {
       this.__baseAdoptStyles(styles);
-    }
-    // Note, `SCOPE_KEY` is used both to determine if the element has already
-    // been styled by ShadyCSS and also to pass the scope name to the static
-    // side of the class.
-    if (!this.constructor.hasOwnProperty(SCOPE_KEY)) {
-      // Always set the SCOPE_KEY
-      const name = (this.constructor[SCOPE_KEY] = this.localName);
-      // But only shim adoptedStyleSheets with ShadyCSS if we're not native
-      // since `prepareAdoptedCssText` does nothing for native Shadow DOM.
-      if (!window.ShadyCSS!.nativeShadow) {
-        const css = styles.map((v) =>
-          v instanceof CSSStyleSheet
-            ? Array.from(v.cssRules).reduce(
-                (a: string, r: CSSRule) => (a += r.cssText),
-                ''
-              )
-            : v.cssText
-        );
-        window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
-      }
+      // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
+    } else if (!this.constructor.hasOwnProperty(SCOPED)) {
+      (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;
+      const css = styles.map((v) =>
+        v instanceof CSSStyleSheet
+          ? Array.from(v.cssRules).reduce(
+              (a: string, r: CSSRule) => (a += r.cssText),
+              ''
+            )
+          : v.cssText
+      );
+      window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
     }
   };
 
