@@ -343,10 +343,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
           renderContainer.appendChild(style.cloneNode(true));
         }
       }
-      container.insertBefore(
-        renderContainer,
-        this.options?.renderBefore || null
-      );
+      container.insertBefore(renderContainer, endNode);
       // Move part back to original container.
       this._startNode = startNode;
       this._endNode = endNode;
