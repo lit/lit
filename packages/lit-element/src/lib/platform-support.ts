@@ -305,10 +305,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
     value: unknown
   ) {
     const container = this._startNode.parentNode!;
-    const renderingIntoShadowRoot = container instanceof ShadowRoot;
     const scope = this.options.scope;
-    const needsStyleScoping = needsPrepareStyles(scope);
-    if (renderingIntoShadowRoot && needsStyleScoping) {
+    if (container instanceof ShadowRoot && needsPrepareStyles(scope)) {
       // Note, @apply requires outer => inner scope rendering on initial
       // scope renders to apply property values correctly. Style preparation
       // is tied to rendering into `shadowRoot`'s and this is typically done by
