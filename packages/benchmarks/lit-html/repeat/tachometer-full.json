@@ -28,15 +28,35 @@
         },
         {
           "mode": "performance",
-          "entryName": "addMirror"
-        },
-        {
-          "mode": "performance",
           "entryName": "remove"
         },
         {
           "mode": "performance",
+          "entryName": "addEdges"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeEdges"
+        },
+        {
+          "mode": "performance",
+          "entryName": "addMirror"
+        },
+        {
+          "mode": "performance",
           "entryName": "removeMirror"
+        },
+        {
+          "mode": "performance",
+          "entryName": "addStripe"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeStripe"
+        },
+        {
+          "mode": "performance",
+          "entryName": "replaceStripe"
         },
         {
           "mode": "performance",
@@ -49,6 +69,10 @@
         {
           "mode": "performance",
           "entryName": "swapMany"
+        },
+        {
+          "mode": "performance",
+          "entryName": "swapEdges"
         },
         {
           "mode": "performance",
@@ -69,6 +93,10 @@
         {
           "mode": "performance",
           "entryName": "shuffle"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeAll"
         }
       ],
       "expand": [

@@ -22,7 +22,9 @@
     "benchmark:lit-html:template-heavy": "tach --config lit-html/template-heavy/tachometer.json",
     "benchmark:lit-html:repeat": "tach --config lit-html/repeat/tachometer.json",
     "benchmark:lit-html:repeat-full": "tach --config lit-html/repeat/tachometer-full.json",
-    "benchmark:lit-element:stub1": "tach --config lit-element/stub1/tachometer.json"
+    "benchmark:lit-element:stub1": "tach --config lit-element/stub1/tachometer.json",
+    "link:dev": "rm -f node_modules/lit-{html,element} && ln -s ../../lit-html/development node_modules/lit-html && ln -sf ../package.json ../lit-html/development/package.json && ln -s ../../lit-element/development node_modules/lit-element && ln -sf ../package.json ../lit-element/development/package.json",
+    "link:prod": "rm -f node_modules/lit-{html,element} && ln -s ../../lit-html node_modules/lit-html && ln -s ../../lit-element node_modules/lit-element"
   },
   "dependencies": {
     "lit-element": "^3.0.0-pre.1",

@@ -9,7 +9,8 @@ const params = document.location.search
   .map((p) => p.split('='))
   .reduce(
     // convert boolean, number, strings and default empty to true
-    (p: {[key: string]: string|boolean}, [k, v]) => ((p[k] = (() => { try { return JSON.parse(v) } catch { return v || true }})(), p),
+    (p: {[key: string]: string|boolean}, [k, v]) => 
+      (p[k] = (() => { try { return JSON.parse(v) } catch { return v || true }})(), p),
     {}
   );
 
@@ -20,6 +21,9 @@ const defaults = {
   removeCount: 0,
   moveCount: 0,
   addCount: 0,
+  addStripeCount: 0,
+  removeStripeCount: 0,
+  replaceStripeCount: 0,
   swapCount: 0,
   from: 2,
   to: 8,
@@ -35,17 +39,24 @@ const preset: {[index: string]: (Partial<typeof defaults>)} = {
   nop: {},
   replace: {replace: true, loopCount: 2},
   add: {addCount: 10, to: 100, loopCount: 50},
-  addMirror: {addCount: 10, to: 100, mirror: true, loopCount: 10},
   remove: {removeCount: 10, from: 100, loopCount: 50},
-  removeMirror: {removeCount: 10, from: 100, mirror: true, loopCount: 10},
+  addEdges: {addCount: 100, to: 0, mirror: true, loopCount: 10},
+  removeEdges: {removeCount: 100, from: 0, mirror: true, loopCount: 10},
+  addMirror: {addCount: 100, to: 100, mirror: true, loopCount: 10},
+  removeMirror: {removeCount: 100, from: 100, mirror: true, loopCount: 10},
+  addStripe: {addStripeCount: 50, loopCount: 10},
+  removeStripe: {removeStripeCount: 50, loopCount: 10},
+  replaceStripe: {replaceStripeCount: 50, loopCount: 1},
   reverse: {reverse: true},
   swapOne: {swapCount: 1, from: 100, to: 800, loopCount: 100},
   swapMany: {swapCount: 10, from: 100, to: 800},
+  swapEdges: {swapCount: 1, from: 0, to: 999, loopCount: 100},
   moveForwardOne: {moveCount: 1, from: 100, to: 800, loopCount: 100},
   moveForwardMany: {moveCount: 10, from: 100, to: 800},
   moveBackwardOne: {moveCount: 1, from: 800, to: 100, loopCount: 100},
   moveBackwardMany: {moveCount: 10, from: 800, to: 100},
   shuffle: {shuffle: true, loopCount: 5},
+  removeAll: {removeCount: 1000, from: 0, loopCount: 1},
 };
 
 // If query params are provided, put that opreation in a `custom` step
@@ -60,8 +71,9 @@ type Item = {
   id: number,
   text: string
 };
+const createItem = () => ({id: gid, text: `item ${gid++}`});
 const createItems = (count: number): Item[] => 
-  new Array(count).fill(0).map(() => ({id: gid, text: `item ${gid++}`}));
+  new Array(count).fill(0).map(createItem);
 
 const itemTemplates = {
   li: (item: Item) => html`<li>${item.text}</li>`,
@@ -76,8 +88,6 @@ const methods = {
     return html`<ul>${items.map(renderItem)}</ul>`;
   }
 };
-
-
 
 let items: Item[] = [];
 
@@ -116,6 +126,27 @@ for (const [step, values] of Object.entries(routine)) {
         items = [...items.slice(0, s.to), ...createItems(s.addCount), ...items.slice(s.to)];
         if (s.mirror) {
           items = [...items.slice(0, -s.to), ...createItems(s.addCount), ...items.slice(-s.to)];
+        }
+      }
+
+      if (s.addStripeCount) {
+        const step = (items.length + s.addStripeCount) / s.addStripeCount;
+        for (let i=0; i<s.addStripeCount; i++) {
+          items.splice(i*step, 0, createItem());
+        }
+      }
+
+      if (s.removeStripeCount) {
+        const step = (items.length - s.removeStripeCount) / s.removeStripeCount;
+        for (let i=0; i<s.removeStripeCount; i++) {
+          items.splice(i*step, 1);
+        }
+      }
+
+      if (s.replaceStripeCount) {
+        const step = items.length / s.replaceStripeCount;
+        for (let i=0; i<s.replaceStripeCount; i++) {
+          items[i*step] = createItem();
         }
       }
 
