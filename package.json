@@ -6,8 +6,8 @@
     "build": "lerna run build",
     "format": "npm run format:eslint && npm run format:prettier",
     "format:eslint": "npm run lint -- --fix",
-    "format:prettier": "prettier \"packages/**/*.{cjs,html,js,json,md,ts}\" --ignore-path .gitignore --write",
-    "lint": "eslint \"packages/**/*.{js,ts}\" --ignore-path .gitignore",
+    "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path .gitignore --write",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
     "test": "cd packages/tests && npm test"
   },
@@ -36,7 +36,7 @@
     }
   },
   "lint-staged": {
-    "packages/**/*.{cjs,html,js,json,md,ts}": "prettier --ignore-path .gitignore --write",
-    "packages/**/*.{js,ts}": "eslint --ignore-path .gitignore --fix"
+    "**/*.{cjs,html,js,json,md,ts}": "prettier --ignore-path .gitignore --write",
+    "**/*.{js,ts}": "eslint --ignore-path .gitignore --fix"
   }
 }
