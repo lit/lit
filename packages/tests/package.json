@@ -1,6 +1,6 @@
 {
-  "private": true,
   "name": "tests",
+  "private": true,
   "type": "module",
   "scripts": {
     "format": "prettier \"*{cjs,html,js,json,md,ts}\" --write",

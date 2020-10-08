@@ -1,13 +1,13 @@
 {
   "type": "module",
   "scripts": {
+    "benchmarks": "cd packages/benchmarks && npm run benchmarks",
     "bootstrap": "lerna bootstrap",
-    "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
     "build": "lerna run build",
     "format": "lerna run format",
     "lint": "lerna run lint",
-    "test": "cd packages/tests && npm test",
-    "benchmarks": "cd packages/benchmarks && npm run benchmarks"
+    "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
+    "test": "cd packages/tests && npm test"
   },
   "dependencies": {
     "lerna": "^3.22.1"
