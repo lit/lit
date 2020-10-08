@@ -135,6 +135,16 @@ export class LitElement extends UpdatingElement {
   private static _elementStyles?: CSSResultFlatArray;
 
   /**
+   * Options used when calling `attachShadow`. Set this property to customize
+   * the options for the shadowRoot; for example, to create a closed
+   * shadowRoot: `{mode: 'closed'}`.
+   *
+   * Note, these options are used in `createRenderRoot`. If this method
+   * is customized, options should be respected if possible.
+   */
+  static shadowRootOptions: ShadowRootInit = {mode: 'open'};
+
+  /**
    * Takes the styles the user supplied via the `static styles` property and
    * returns the array of styles to apply to the element.
    * Override this method to integrate into a style management system.
@@ -203,7 +213,9 @@ export class LitElement extends UpdatingElement {
    * @returns {Element|DocumentFragment} Returns a node into which to render.
    */
   protected createRenderRoot(): Element | ShadowRoot {
-    return this.attachShadow({mode: 'open'});
+    return this.attachShadow(
+      (this.constructor as typeof LitElement).shadowRootOptions
+    );
   }
 
   /**
