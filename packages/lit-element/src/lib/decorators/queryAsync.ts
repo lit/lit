@@ -67,8 +67,8 @@ import {
 export function queryAsync(selector: string) {
   return (
     protoOrDescriptor: Object | ClassElement,
-    // tslint:disable-next-line:no-any decorator
     name?: PropertyKey
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
       async get(this: LitElement) {

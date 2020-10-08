@@ -65,7 +65,7 @@ import {
 } from './lib/css-tag.js';
 
 export * from './lib/updating-element.js';
-export {html, svg, TemplateResult} from 'lit-html';
+export * from 'lit-html';
 export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
@@ -88,8 +88,7 @@ declare global {
 
 type CSSResultFlatArray = CSSResultOrNative[];
 
-export interface CSSResultArray
-  extends Array<CSSResultOrNative | CSSResultArray> {}
+export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
 
 /**
  * Sentinal value used to avoid calling lit-html's render function when
@@ -129,27 +128,21 @@ export class LitElement extends UpdatingElement {
   protected static ['finalized'] = true;
 
   /**
-   * Reference to the underlying library method used to render the element's
-   * DOM. By default, points to the `render` method from lit-html's render
-   * module.
-   *
-   * This  property should not be confused with the `render` instance method,
-   * which should be overridden to define a template for the element.
-   *
-   * @nocollapse
-   */
-  static render: (
-    result: unknown,
-    container: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ) => void = render;
-
-  /**
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
   static styles?: CSSResultGroup;
   private static _elementStyles?: CSSResultFlatArray;
+
+  /**
+   * Options used when calling `attachShadow`. Set this property to customize
+   * the options for the shadowRoot; for example, to create a closed
+   * shadowRoot: `{mode: 'closed'}`.
+   *
+   * Note, these options are used in `createRenderRoot`. If this method
+   * is customized, options should be respected if possible.
+   */
+  static shadowRootOptions: ShadowRootInit = {mode: 'open'};
 
   /**
    * Takes the styles the user supplied via the `static styles` property and
@@ -194,13 +187,7 @@ export class LitElement extends UpdatingElement {
    * to an open shadowRoot.
    */
   readonly renderRoot!: HTMLElement | DocumentFragment;
-
-  /**
-   * Node before which to render content. This is used when shimming
-   * `adoptedStyleSheets` and a style element may need to exist in the
-   * shadowRoot after Lit rendered content.
-   */
-  private _renderBeforeNode?: HTMLElement;
+  readonly _renderOptions!: RenderOptions;
 
   /**
    * Performs element initialization. By default this calls
@@ -209,6 +196,9 @@ export class LitElement extends UpdatingElement {
    */
   protected initialize() {
     super.initialize();
+    (this as {
+      _renderOptions: RenderOptions;
+    })._renderOptions = {eventContext: this};
     (this as {
       renderRoot: Element | DocumentFragment;
     }).renderRoot = this.createRenderRoot();
@@ -223,7 +213,9 @@ export class LitElement extends UpdatingElement {
    * @returns {Element|DocumentFragment} Returns a node into which to render.
    */
   protected createRenderRoot(): Element | ShadowRoot {
-    return this.attachShadow({mode: 'open'});
+    return this.attachShadow(
+      (this.constructor as typeof LitElement).shadowRootOptions
+    );
   }
 
   /**
@@ -251,7 +243,9 @@ export class LitElement extends UpdatingElement {
         const style = document.createElement('style');
         style.textContent = (s as CSSResult).cssText;
         this.renderRoot.appendChild(style);
-        this._renderBeforeNode ??= style;
+        (this._renderOptions as {
+          renderBefore: ChildNode;
+        }).renderBefore ??= style;
       });
     }
   }
@@ -270,11 +264,7 @@ export class LitElement extends UpdatingElement {
     super.update(changedProperties);
     // If render is not implemented by the component, don't call lit-html render
     if (templateResult !== renderNotImplemented) {
-      (this.constructor as typeof LitElement).render(
-        templateResult,
-        this.renderRoot,
-        {eventContext: this, renderBefore: this._renderBeforeNode}
-      );
+      render(templateResult, this.renderRoot, this._renderOptions);
     }
   }
 
@@ -288,3 +278,6 @@ export class LitElement extends UpdatingElement {
     return renderNotImplemented;
   }
 }
+
+// Apply polyfills if available
+(globalThis as any)['litElementPlatformSupport']?.({LitElement});

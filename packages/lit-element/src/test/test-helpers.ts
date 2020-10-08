@@ -25,3 +25,9 @@ export const getComputedStyleValue = (element: Element, property: string) =>
 
 export const stripExpressionComments = (html: string) =>
   html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
+
+// Only test LitElement if ShadowRoot is available and either ShadyDOM is not
+// in use or it is and LitElement platform support is available.
+export const canTestLitElement =
+  (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
+  window.litElementPlatformSupport;

@@ -15,8 +15,7 @@
 import {AttributePart, directive, html, render} from '../../lit-html.js';
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import '../polyfills.js';
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
@@ -69,7 +68,7 @@ suite('styleMap', () => {
     const style = div.style;
     assert.equal(style.color, 'red');
     assert.equal(style.backgroundColor, 'blue');
-    assert.equal(style.webkitAppearance, 'none');
+    assert.include(['none', undefined], style.webkitAppearance);
     assert.equal(style.paddingLeft, '4px');
   });
 

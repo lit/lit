@@ -6,6 +6,12 @@ jobs:
 
   benchmarks:
     name: benchmarks
+
+    # We can't currently run benchmarks on PRs from forked repos, because the
+    # tachometer action reports results by posting a comment, and we can't post
+    # comments without a github token.
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -91,38 +97,34 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
-      # TODO(kschaaf): re-enable this once we work out a good way to trigger
-      # optional benchmarks for a PR
-      # # lit-html:repeat-full
-      # - name: Benchmark lit-html/repeat-full
-      #   if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
-      #   run: |
-      #     cd packages/benchmarks
-      #     npx tachometer \
-      #       --config lit-html/repeat/tachometer-full.json \
-      #       --json-file lit-html/repeat/results-full.json
-
-      # - name: Report lit-html-repeat-full
-      #   if: ${{ contains(github.event.pull_request.body, '[benchmarks:lit-html-repeat-full]') }}
-      #   uses: andrewiggins/tachometer-reporter-action@v2
-      #   with:
-      #     report-id: lit-html-repeat-full
-      #     path: packages/benchmarks/lit-html/repeat/results-full.json
-      #     pr-bench-name: this-change
-      #     base-bench-name: tip-of-tree
-
-      # lit-element:stub1
-      - name: Benchmark lit-element/stub1
+      # lit-element:list
+      - name: Benchmark lit-element/list
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config lit-element/stub1/tachometer.json \
-            --json-file lit-element/stub1/results.json
+            --config lit-element/list/tachometer.json \
+            --json-file lit-element/list/results.json
 
-      - name: Report lit-element-stub1
+      - name: Report lit-element-list
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: lit-element-stub1
-          path: packages/benchmarks/lit-element/stub1/results.json
+          report-id: lit-element-list
+          path: packages/benchmarks/lit-element/list/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      # updating-element:list
+      - name: Benchmark updating-element/list
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config updating-element/list/tachometer.json \
+            --json-file updating-element/list/results.json
+
+      - name: Report updating-element-list
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: updating-element-list
+          path: packages/benchmarks/updating-element/list/results.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree

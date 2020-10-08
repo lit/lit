@@ -14,10 +14,8 @@
 
 import {html, LitElement} from '../../lit-element.js';
 import {eventOptions} from '../../lib/decorators/eventOptions.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
-
-// tslint:disable:no-any ok in tests
 
 let hasOptions;
 const supportsOptions = (function () {
@@ -66,7 +64,35 @@ const supportsPassive = (function () {
   return hasPassive;
 })();
 
-suite('@eventOptions', () => {
+let hasOnce;
+const supportsOnce = (function () {
+  if (hasOnce !== undefined) {
+    return hasOnce;
+  }
+  // Use an iframe since ShadyDOM will pass this test but doesn't actually
+  // enforce passive behavior.
+  const f = document.createElement('iframe');
+  document.body.appendChild(f);
+  const fn = () => {};
+  const event = 'foo';
+  hasOnce = false;
+  const options = {
+    get once() {
+      hasOnce = true;
+      return true;
+    },
+  };
+  f.contentDocument!.addEventListener(event, fn, options);
+  f.contentDocument!.removeEventListener(
+    event,
+    fn,
+    options as AddEventListenerOptions
+  );
+  document.body.removeChild(f);
+  return hasOnce;
+})();
+
+(canTestLitElement ? suite : suite.skip)('@eventOptions', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -110,7 +136,7 @@ suite('@eventOptions', () => {
   });
 
   test('allows once listeners', async function () {
-    if (!supportsOptions) {
+    if (!supportsOnce) {
       this.skip();
     }
 

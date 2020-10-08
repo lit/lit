@@ -10,5 +10,6 @@
 !generator/types/deoptigate.d.ts
 generator/build
 generator/generated
+generated
 
 !lit-html/template-heavy/template-heavy.js
