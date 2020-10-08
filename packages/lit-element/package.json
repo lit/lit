@@ -31,7 +31,6 @@
     "checksize": "rollup -c --environment=CHECKSIZE",
     "clean": "rm -rf lit-element.{js,js.map,d.ts} lib/ development/",
     "dev": "scripts/dev.sh",
-    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write --ignore-path .gitignore",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
