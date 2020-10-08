@@ -345,10 +345,14 @@ class Template {
   _element: HTMLTemplateElement;
   _parts: Array<TemplatePart> = [];
   _hasStatics = false;
+  // Note, this is used by the `platform-support` module.
+  _options?: RenderOptions;
 
-  constructor({strings, _$litType$: type, values}: TemplateResult) {
-    walker.currentNode = (this._element = d.createElement('template')).content;
-
+  constructor(
+    {strings, _$litType$: type, values}: TemplateResult,
+    options?: RenderOptions
+  ) {
+    this._options = options;
     // Insert makers into the template HTML to represent the position of
     // bindings. The following code scans the template strings to determine the
     // syntactic position of the bindings. They can be in text position, where
@@ -489,7 +493,8 @@ class Template {
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
-    this._element.innerHTML = html + this._strings[l];
+    this._element = this._createElement(html + this._strings[l]);
+    walker.currentNode = this._element.content;
 
     if (type === SVG_RESULT) {
       const content = this._element.content;
@@ -598,6 +603,13 @@ class Template {
       }
       nodeIndex++;
     }
+  }
+
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  _createElement(html: string) {
+    const template = d.createElement('template');
+    template.innerHTML = html;
+    return template;
   }
 }
 
@@ -798,11 +810,8 @@ export class NodePart {
   }
 
   private _commitTemplateResult(result: TemplateResult): void {
-    const {strings, values} = result;
-    let template = templateCache.get(strings);
-    if (template === undefined) {
-      templateCache.set(strings, (template = new Template(result)));
-    }
+    const {values, strings} = result;
+    const template = this._getTemplate(strings, result);
     if (
       this._value != null &&
       (this._value as TemplateInstance)._template === template
@@ -815,6 +824,15 @@ export class NodePart {
       this._commitNode(fragment);
       this._value = instance;
     }
+  }
+
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  private _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
+    let template = templateCache.get(strings);
+    if (template === undefined) {
+      templateCache.set(strings, (template = new Template(result)));
+    }
+    return template;
   }
 
   private _commitIterable(value: Iterable<unknown>): void {
@@ -1120,6 +1138,9 @@ export class EventPart extends AttributePart {
     }
   }
 }
+
+// Apply polyfills if available
+(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
