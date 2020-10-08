@@ -3,18 +3,9 @@ name: Benchmarks
 on: [pull_request]
 
 jobs:
-  setup:
-    name: Setup Tachometer Reporting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Initialize tachometer comment
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          initialize: true
 
   benchmarks:
     name: benchmarks
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
