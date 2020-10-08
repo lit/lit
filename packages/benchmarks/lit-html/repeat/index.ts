@@ -8,7 +8,8 @@ const params = document.location.search
   .filter(s => s)
   .map((p) => p.split('='))
   .reduce(
-    (p: {[key: string]: any}, [k, v]) => ((p[k] = JSON.parse(v || 'true')), p),
+    // convert boolean, number, strings and default empty to true
+    (p: {[key: string]: string|boolean}, [k, v]) => ((p[k] = (() => { try { return JSON.parse(v) } catch { return v || true }})(), p),
     {}
   );
 
