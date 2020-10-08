@@ -23,7 +23,6 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write --ignore-path .gitignore",
-    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
   "dependencies": {
