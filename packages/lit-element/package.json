@@ -1,14 +1,17 @@
 {
   "name": "lit-element",
   "version": "3.0.0-pre.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A simple base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit-element.polymer-project.org/",
   "repository": "Polymer/lit-html",
-  "type": "module",
+  "author": "The Polymer Authors",
+  "homepage": "https://lit-element.polymer-project.org/",
   "main": "lit-element.js",
   "module": "lit-element.js",
-  "typings": "lit-element.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "development": "./development/lit-element.js",
@@ -19,8 +22,26 @@
       "default": "./lib/"
     }
   },
-  "directories": {
-    "test": "test"
+  "scripts": {
+    "build": "npm run clean && tsc && rollup -c",
+    "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
+    "build:ts": "tsc",
+    "build:ts:watch": "tsc --watch",
+    "check-version": "node scripts/check-version-tracker.js",
+    "checksize": "rollup -c --environment=CHECKSIZE",
+    "clean": "rm -rf lit-element.{js,js.map,d.ts} lib/ development/",
+    "dev": "scripts/dev.sh",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
+    "prepublishOnly": "npm run check-version && npm run lint && npm test",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "release": "np --any-branch --yolo",
+    "test": "npm run test:dev && npm run test:prod",
+    "test:dev": "cd ../tests && npx wtr '../lit-element/development/**/*_test.(js|html)'",
+    "test:prod": "MODE=prod npm run test:dev",
+    "test:prod:watch": "MODE=prod npm run test:dev -- --watch",
+    "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
     "/lib/",
@@ -34,28 +55,9 @@
     "/lit-element.js.map",
     "/ts3.4/"
   ],
-  "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} lib/ development/",
-    "dev": "scripts/dev.sh",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
-    "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../lit-element/development/**/*_test.(js|html)'",
-    "test:prod": "MODE=prod npm run test:dev",
-    "test:prod:watch": "MODE=prod npm run test:dev -- --watch",
-    "test:watch": "npm run test:dev -- --watch",
-    "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
-    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
-    "check-version": "node scripts/check-version-tracker.js",
-    "prepublishOnly": "npm run check-version && npm run lint && npm test",
-    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
-    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
-    "release": "np --any-branch --yolo"
+  "dependencies": {
+    "lit-html": "^2.0.0-pre.3"
   },
-  "author": "The Polymer Authors",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/plugin-proposal-class-properties": "^7.2.3",
@@ -72,10 +74,8 @@
     "rollup": "^2.26.4",
     "typescript": "^4.0.2"
   },
-  "dependencies": {
-    "lit-html": "^2.0.0-pre.3"
-  },
-  "publishConfig": {
-    "access": "public"
+  "typings": "lit-element.d.ts",
+  "directories": {
+    "test": "test"
   }
 }
