@@ -1,3 +1,5 @@
+/* eslint-disable no-prototype-builtins */
+
 // Source: https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/remove
 (function (arr) {
   arr.forEach(function (item) {
@@ -26,11 +28,11 @@
       enumerable: true,
       writable: true,
       value: function append() {
-        var argArr = Array.prototype.slice.call(arguments),
+        const argArr = Array.prototype.slice.call(arguments),
           docFrag = document.createDocumentFragment();
 
         argArr.forEach(function (argItem) {
-          var isNode = argItem instanceof Node;
+          const isNode = argItem instanceof Node;
           docFrag.appendChild(
             isNode ? argItem : document.createTextNode(String(argItem))
           );
