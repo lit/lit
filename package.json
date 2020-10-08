@@ -4,7 +4,9 @@
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "format": "prettier \"packages/**/*.{cjs,html,js,json,md,ts}\" --ignore-path .gitignore --write",
+    "format": "npm run format:eslint && npm run format:prettier",
+    "format:eslint": "npm run lint -- --fix",
+    "format:prettier": "prettier \"packages/**/*.{cjs,html,js,json,md,ts}\" --ignore-path .gitignore --write",
     "lint": "eslint \"packages/**/*.{js,ts}\" --ignore-path .gitignore",
     "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
     "test": "cd packages/tests && npm test"
