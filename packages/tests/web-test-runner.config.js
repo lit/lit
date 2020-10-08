@@ -1,22 +1,9 @@
-import {
-  playwrightLauncher
-} from '@web/test-runner-playwright';
-import {
-  fromRollup
-} from '@web/dev-server-rollup';
-import {
-  createSauceLabsLauncher
-} from '@web/test-runner-saucelabs';
-import {
-  legacyPlugin
-} from '@web/dev-server-legacy';
-import {
-  resolveRemap
-} from './rollup-resolve-remap.js';
-import {
-  prodResolveRemapConfig,
-  devResolveRemapConfig
-} from './wtr-config.js';
+import {playwrightLauncher} from '@web/test-runner-playwright';
+import {fromRollup} from '@web/dev-server-rollup';
+import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
+import {legacyPlugin} from '@web/dev-server-legacy';
+import {resolveRemap} from './rollup-resolve-remap.js';
+import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -48,7 +35,7 @@ const browserPresets = {
     'sauce:Windows 10/chrome@latest-3',
     'sauce:macOS 10.15/safari@latest',
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    "sauce:Windows 7/internet explorer@11", // Browser start timeout
+    'sauce:Windows 7/internet explorer@11', // Browser start timeout
   ],
 };
 
@@ -61,12 +48,12 @@ function makeSauceLauncherOnce() {
     if (!user || !key) {
       throw new Error(
         'To test on Sauce, set the SAUCE_USERNAME' +
-        ' and SAUCE_ACCESS_KEY environment variables.'
+          ' and SAUCE_ACCESS_KEY environment variables.'
       );
     }
     sauceLauncher = createSauceLabsLauncher({
       user,
-      key
+      key,
     });
   }
   return sauceLauncher;
@@ -99,7 +86,7 @@ function parseBrowser(browser) {
     if (!entries) {
       throw new Error(
         `Unknown preset "${preset}", please pick one of: ` +
-        Object.keys(browserPresets).join(', ')
+          Object.keys(browserPresets).join(', ')
       );
     }
     return entries.map(parseBrowser).flat();
@@ -141,9 +128,11 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  return [playwrightLauncher({
-    product: browser
-  })];
+  return [
+    playwrightLauncher({
+      product: browser,
+    }),
+  ];
 }
 
 const browsers = (process.env.BROWSERS || 'preset:local')
@@ -171,9 +160,7 @@ export default {
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin(),
   ],
-  filterBrowserLogs: ({
-    args
-  }) => {
+  filterBrowserLogs: ({args}) => {
     if (mode === 'dev' && args[0] && args[0].includes('in dev mode')) {
       if (!seenDevModeLogs.has(args[0])) {
         seenDevModeLogs.add(args[0]);

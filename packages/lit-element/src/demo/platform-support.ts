@@ -1,9 +1,14 @@
-import { LitElement, html, css, PropertyValues } from '../lit-element.js';
+import {LitElement, html, css, PropertyValues} from '../lit-element.js';
 
 class Inner extends LitElement {
-
   static get styles() {
-    return [css`:host { color: green; }`];
+    return [
+      css`
+        :host {
+          color: green;
+        }
+      `,
+    ];
   }
   render() {
     return html`Hello world`;
@@ -13,15 +18,20 @@ class Inner extends LitElement {
 customElements.define('x-inner', Inner);
 
 class MyElement extends LitElement {
-
   static get properties() {
     return {
       nug: {},
       foo: {},
       bar: {},
       whales: {type: Number},
-      fooBar: {converter: {fromAttribute: parseInt, toAttribute: (value: string) => value + '-attr'}, reflect: true}
-    }
+      fooBar: {
+        converter: {
+          fromAttribute: parseInt,
+          toAttribute: (value: string) => value + '-attr',
+        },
+        reflect: true,
+      },
+    };
   }
   foo: string;
   nug: number[];
@@ -36,7 +46,9 @@ class MyElement extends LitElement {
     this.addEventListener('click', async () => {
       this.whales++;
       await this.updateComplete;
-      this.dispatchEvent(new CustomEvent('whales', {detail: {whales: this.whales}}))
+      this.dispatchEvent(
+        new CustomEvent('whales', {detail: {whales: this.whales}})
+      );
       console.log(this.shadowRoot!.querySelector('.count')!.textContent);
     });
   }
@@ -55,13 +67,15 @@ class MyElement extends LitElement {
       padding: 8px;
     }
 
-    h4 { color: orange;}
+    h4 {
+      color: orange;
+    }
   `;
 
   render() {
     const {foo, bar} = this;
     let {whales} = this;
-    whales = 2 + whales % 8;
+    whales = 2 + (whales % 8);
     return html`
       <style>
         :host {
@@ -72,15 +86,15 @@ class MyElement extends LitElement {
           border: 4px dotted black;
         }
       </style>
-      <h4 @click="${(e: Event) => console.log(this, e.target)}">Foo: ${foo}, Bar: ${bar}</h4>
+      <h4 @click="${(e: Event) => console.log(this, e.target)}">
+        Foo: ${foo}, Bar: ${bar}
+      </h4>
       <div class="content">
         <slot></slot>
       </div>
-      <div class="count">
-        whales: ${'🐳'.repeat(whales)}
-      </div>
+      <div class="count">whales: ${'🐳'.repeat(whales)}</div>
       <ul>
-      ${new Array(whales).fill(0).map((_n,i) => html`<li>${i}: 🐳</li>`)}
+        ${new Array(whales).fill(0).map((_n, i) => html`<li>${i}: 🐳</li>`)}
       </ul>
       <x-inner></x-inner>
     `;

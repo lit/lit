@@ -31,5 +31,5 @@ export default litRollupConfig({
     'lib/decorators/queryAssignedNodes',
     'lib/decorators/queryAsync',
   ],
-  external: ['lit-html']
+  external: ['lit-html'],
 });

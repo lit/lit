@@ -1,4 +1,5 @@
-<!DOCTYPE html><!--
+<!DOCTYPE html>
+<!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -6,27 +7,35 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><html><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>polyfill demo</title>
-  <script>
-    window.globalThis = window;
-    if (!window.location.search.indexOf('native') >= 0) {
-      window.ShadyDOM = {force: true};
-      window.customElements = window.customElements || {}
-      window.customElements.forcePolyfill = true;
-    }
-  </script>
-  <!-- May need to comment this to work on IE for compatibility with es-dev-server polyfill injection -->
-  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <!-- load lib/platform-support.js as a module for better compat with es-dev-server -->
-  <script type="module" src="../development/lib/platform-support.js"></script>
-  <script type="module" src="../development/demo/platform-support.js"></script>
-</head>
-<body>
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>polyfill demo</title>
+    <script>
+      window.globalThis = window;
+      if (!window.location.search.indexOf('native') >= 0) {
+        window.ShadyDOM = {force: true};
+        window.customElements = window.customElements || {};
+        window.customElements.forcePolyfill = true;
+      }
+    </script>
+    <!-- May need to comment this to work on IE for compatibility with es-dev-server polyfill injection -->
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <!-- load lib/platform-support.js as a module for better compat with es-dev-server -->
+    <script type="module" src="../development/lib/platform-support.js"></script>
+    <script
+      type="module"
+      src="../development/demo/platform-support.js"
+    ></script>
+  </head>
+  <body>
     <my-element bar="5" whales="1" foobar="17">Hi</my-element>
-    <hr>
+    <hr />
     <ts-element message="Yo" more-info="person"></ts-element>
-
-</body></html>
+  </body>
+</html>
