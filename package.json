@@ -20,6 +20,8 @@
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "prettier-plugin-package": "^1.1.0",
     "rollup-plugin-copy": "^3.3.0",
@@ -27,5 +29,14 @@
     "rollup-plugin-summary": "^1.2.3",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.0.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "packages/**/*.{cjs,html,js,json,md,ts}": "prettier --ignore-path .gitignore --write",
+    "packages/**/*.{js,ts}": "eslint --ignore-path .gitignore --fix"
   }
 }
