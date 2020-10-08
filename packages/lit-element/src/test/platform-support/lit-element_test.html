@@ -1,15 +1,14 @@
 <html>
+  <head>
+    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
+    <!-- Loads polyfills but does not force settings... -->
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <script src="../../../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
+  </head>
 
-<head>
-  <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
-  <!-- Loads polyfills but does not force settings... -->
-  <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script src="../../../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
-</head>
-
-<body>
-  <script type="module">
-    // TODO(sorvell): node resolution doesn't seem to be working here.
+  <body>
+    <script type="module">
+      // TODO(sorvell): node resolution doesn't seem to be working here.
       import {
         mocha,
         sessionFinished,
@@ -35,7 +34,6 @@
         }
       })();
     </script>
-  <div id="mocha"></div>
-</body>
-
+    <div id="mocha"></div>
+  </body>
 </html>
