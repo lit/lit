@@ -84,12 +84,12 @@ interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
   connectedCallback(): void;
-  __baseConnectedCallback(): void;
+  _baseConnectedCallback(): void;
   hasUpdated: boolean;
   update(changedProperties: unknown): void;
-  __baseUpdate(changedProperties: unknown): void;
+  _baseUpdate(changedProperties: unknown): void;
   adoptStyles(styles: CSSResults): void;
-  __baseAdoptStyles(styles: CSSResults): void;
+  _baseAdoptStyles(styles: CSSResults): void;
   _renderOptions: RenderOptions;
 }
 
@@ -111,7 +111,7 @@ interface PatchableLitElement extends HTMLElement {
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
   const litElementProto = LitElement.prototype;
-  litElementProto.__baseAdoptStyles = litElementProto.adoptStyles;
+  litElementProto._baseAdoptStyles = litElementProto.adoptStyles;
   litElementProto.adoptStyles = function (
     this: PatchableLitElement,
     styles: CSSResults
@@ -123,7 +123,7 @@ interface PatchableLitElement extends HTMLElement {
     // If using native Shadow DOM must adoptStyles normally,
     // otherwise do nothing.
     if (window.ShadyCSS!.nativeShadow) {
-      this.__baseAdoptStyles(styles);
+      this._baseAdoptStyles(styles);
       // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
     } else if (!this.constructor.hasOwnProperty(SCOPED)) {
       (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;
@@ -142,9 +142,9 @@ interface PatchableLitElement extends HTMLElement {
   /**
    * Patch connectedCallback to apply ShadyCSS custom properties shimming.
    */
-  litElementProto.__baseConnectedCallback = litElementProto.connectedCallback;
+  litElementProto._baseConnectedCallback = litElementProto.connectedCallback;
   litElementProto.connectedCallback = function (this: PatchableLitElement) {
-    this.__baseConnectedCallback();
+    this._baseConnectedCallback();
     // Note, must do first update separately so that we're ensured
     // that rendering has completed before calling this.
     if (this.hasUpdated) {
@@ -156,13 +156,13 @@ interface PatchableLitElement extends HTMLElement {
    * Patch update to apply ShadyCSS custom properties shimming for first
    * update.
    */
-  litElementProto.__baseUpdate = litElementProto.update;
+  litElementProto._baseUpdate = litElementProto.update;
   litElementProto.update = function (
     this: PatchableLitElement,
     changedProperties: unknown
   ) {
     const isFirstUpdate = !this.hasUpdated;
-    this.__baseUpdate(changedProperties);
+    this._baseUpdate(changedProperties);
     // Note, must do first update here so rendering has completed before
     // calling this and styles are correct by updated/firstUpdated.
     if (isFirstUpdate) {
@@ -183,7 +183,7 @@ interface PatchableNodePart {
   _endNode: ChildNode | null;
   options: RenderOptions;
   _setValue(value: unknown): void;
-  __baseSetValue(value: unknown): void;
+  _baseSetValue(value: unknown): void;
 }
 
 interface PatchableTemplate {
@@ -298,7 +298,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
-  nodePartProto.__baseSetValue = nodePartProto._setValue;
+  nodePartProto._baseSetValue = nodePartProto._setValue;
   nodePartProto._setValue = function (this: PatchableNodePart, value: unknown) {
     const container = this._startNode.parentNode!;
     const scope = this.options.scope;
@@ -321,7 +321,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
       // Note, any nested template results render here and their styles will
       // be extracted and collected.
-      this.__baseSetValue(value);
+      this._baseSetValue(value);
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
@@ -344,7 +344,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       this._startNode = startNode;
       this._endNode = endNode;
     } else {
-      this.__baseSetValue(value);
+      this._baseSetValue(value);
     }
   };
 

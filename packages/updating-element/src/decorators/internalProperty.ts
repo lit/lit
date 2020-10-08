@@ -21,11 +21,6 @@
 
 import {property} from './property.js';
 
-export type Constructor<T> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  new (...args: any[]): T;
-};
-
 export interface InternalPropertyDeclaration<Type = unknown> {
   /**
    * A function that indicates if a property should be considered changed when

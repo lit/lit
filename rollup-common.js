@@ -63,7 +63,11 @@ const crossPackagePropertyMangles = {
   _element: "E",
   _options: "O",
   _template: "t",
-  _renderOptions: "R"
+  _renderOptions: "R",
+  _baseConnectedCallback: "bC",
+  _baseUpdate: "bU",
+  _baseAdoptStyles: "bA",
+  _baseSetValue: "bS"
 };
 
 export function litRollupConfig({

@@ -19,7 +19,7 @@
  * not an arrow function.
  */
 
-import {UpdatingElement} from '../updating-element.js';
+import {UpdatingElement} from 'updating-element';
 import {ClassElement} from './base.js';
 
 const standardEventOptions = (

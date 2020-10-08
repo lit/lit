@@ -31,8 +31,7 @@
     "/lit-element.d.ts",
     "/lit-element.d.ts.map",
     "/lit-element.js",
-    "/lit-element.js.map",
-    "/ts3.4/"
+    "/lit-element.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
@@ -73,6 +72,7 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
+    "updating-element": "^1.0.0-pre.1",
     "lit-html": "^2.0.0-pre.3"
   },
   "publishConfig": {

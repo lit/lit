@@ -34,21 +34,3 @@ export interface ClassElement {
   finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
   descriptor?: PropertyDescriptor;
 }
-
-export const legacyPrototypeMethod = (
-  descriptor: PropertyDescriptor,
-  proto: Object,
-  name: PropertyKey
-) => {
-  Object.defineProperty(proto, name, descriptor);
-};
-
-export const standardPrototypeMethod = (
-  descriptor: PropertyDescriptor,
-  element: ClassElement
-) => ({
-  kind: 'method',
-  placement: 'prototype',
-  key: element.key,
-  descriptor,
-});

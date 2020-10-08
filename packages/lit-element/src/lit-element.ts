@@ -54,7 +54,7 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
+import {PropertyValues, UpdatingElement} from 'updating-element';
 import {render, RenderOptions} from 'lit-html';
 import {
   supportsAdoptingStyleSheets,
@@ -64,7 +64,7 @@ import {
   unsafeCSS,
 } from './lib/css-tag.js';
 
-export * from './lib/updating-element.js';
+export * from 'updating-element';
 export * from 'lit-html';
 export * from './lib/css-tag.js';
 
@@ -123,7 +123,7 @@ export class LitElement extends UpdatingElement {
    * it will not needlessly try to `finalize`.
    *
    * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See updating-element.ts for more information.
+   * optimizations. See updating-element for more information.
    */
   protected static ['finalized'] = true;
 
