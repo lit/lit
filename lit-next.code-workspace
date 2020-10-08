@@ -1,27 +1,31 @@
 {
-	"folders": [
-		{
-			"name": "lit-html",
-			"path": "packages/lit-html"
-		},
-		{
-			"name": "lit-element",
-			"path": "packages/lit-element"
-		},
-		{
-			"name": "tests",
-			"path": "packages/tests"
-		},
-		{
-			"name": "benchmarks",
-			"path": "packages/benchmarks"
-		},
-		{
-			"name": "lit-next",
-			"path": "."
-		}
-	],
-	"settings": {
-		"typescript.tsdk": "lit-html/node_modules/typescript/lib"
-	}
+  "folders": [
+    {
+      "name": "lit-html",
+      "path": "packages/lit-html"
+    },
+    {
+      "name": "lit-element",
+      "path": "packages/lit-element"
+    },
+    {
+      "name": "updating-element",
+      "path": "packages/updating-element"
+    },
+    {
+      "name": "tests",
+      "path": "packages/tests"
+    },
+    {
+      "name": "benchmarks",
+      "path": "packages/benchmarks"
+    },
+    {
+      "name": "lit-next",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "lit-html/node_modules/typescript/lib"
+  }
 }
