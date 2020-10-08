@@ -17,5 +17,12 @@ npm run benchmark:lit-html:kitchen-sink
 npm run benchmark:lit-html:kitchen-sink-render
 npm run benchmark:lit-html:kitchen-sink-update
 npm run benchmark:lit-html:kitchen-sink-nop-update
-npm run benchmark:lit-element:stub1
+npm run benchmark:lit-element:list
+npm run benchmark:lit-element:list-render
+npm run benchmark:lit-element:list-update
+npm run benchmark:lit-element:list-update-reflect
+npm run benchmark:updating-element:list
+npm run benchmark:updating-element:list-render
+npm run benchmark:updating-element:list-update
+npm run benchmark:updating-element:list-update-reflect
 ```
