@@ -26,7 +26,9 @@ interface Window {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   ShadowRoot: typeof ShadowRoot;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   litElementPlatformSupport: (options: {[index: string]: any}) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   litHtmlPlatformSupport: (options: {[index: string]: any}) => void;
 }
 

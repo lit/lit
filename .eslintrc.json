@@ -10,7 +10,11 @@
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint"],
+  "env": {
+    "browser": true
+  },
   "rules": {
+    "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "error",
@@ -28,7 +32,8 @@
       "files": [
         "check-version-tracker.js",
         "rollup-common.js",
-        "rollup.config.js"
+        "rollup.config.js",
+        "web-test-runner.config.js"
       ],
       "env": {
         "node": true

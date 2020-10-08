@@ -59,7 +59,8 @@ class MyElement extends LitElement {
   `;
 
   render() {
-    let {foo, bar, whales} = this;
+    const {foo, bar} = this;
+    let {whales} = this;
     whales = 2 + whales % 8;
     return html`
       <style>
@@ -91,6 +92,7 @@ class MyElement extends LitElement {
   }
 
   firstUpdated() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this as any)._inner = this.shadowRoot!.querySelector('x-inner');
   }
 }

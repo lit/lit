@@ -125,7 +125,7 @@ Valid examples:
 
 See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
     }
-    const [_, platformName, browserName, browserVersion] = match;
+    const [platformName, browserName, browserVersion] = match;
     return [
       makeSauceLauncherOnce()({
         browserName,
