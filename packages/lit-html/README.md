@@ -165,6 +165,52 @@ render(helloTemplate('Kevin'), document.body);
 $ npm install lit-html
 ```
 
+## Development mode
+
+lit-html includes a development mode which adds additional checks that are
+reported in the console.
+
+To enable development mode, add the `development` exports condition to your node
+resolve configuration.
+
+#### @web/dev-server
+
+> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
+
+```js
+{
+  nodeResolve: {
+    exportConditions: [ "development" ]
+  }
+}
+```
+
+#### Rollup
+
+> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
+
+```js
+{
+  plugins: [
+    nodeResolve({
+      exportConditions: [ "development" ]
+    })
+  ]
+}
+```
+
+#### Webpack
+
+> NOTE: Requires [Webpack v5](https://webpack.js.org/migrate/5/)
+
+```js
+{
+  resolve: {
+    conditionNames: [ "development" ]
+  }
+}
+```
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).

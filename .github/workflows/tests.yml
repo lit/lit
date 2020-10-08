@@ -48,9 +48,8 @@ jobs:
 
       - name: Test
         env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:local
+          CONCURRENT_BROWSERS: 3
         run: npm run test
 
   tests-sauce:
@@ -109,4 +108,9 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce
+          # TODO We should be able to bump this up, but going above 2 currently
+          # causes flakiness where the second test job (dev vs prod) fails to
+          # set up the Sauce tunnel (maybe something to do with browsers still
+          # shutting down on the Sauce VM from the previous run?).
+          CONCURRENT_BROWSERS: 2
         run: npm run test

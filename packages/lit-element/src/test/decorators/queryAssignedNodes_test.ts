@@ -14,13 +14,13 @@
 
 import {html, LitElement} from '../../lit-element.js';
 import {queryAssignedNodes} from '../../lib/decorators/queryAssignedNodes.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 const flush =
   window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
 
-suite('@queryAssignedNodes', () => {
+(canTestLitElement ? suite : suite.skip)('@queryAssignedNodes', () => {
   let container: HTMLElement;
   let el: C;
 

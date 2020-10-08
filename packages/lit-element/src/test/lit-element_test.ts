@@ -13,12 +13,14 @@
  */
 
 import {html, LitElement} from '../lit-element.js';
-import {generateElementName, stripExpressionComments} from './test-helpers.js';
+import {
+  canTestLitElement,
+  generateElementName,
+  stripExpressionComments,
+} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
-suite('LitElement', () => {
+(canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -232,6 +234,7 @@ suite('LitElement', () => {
     customElements.define(generateElementName(), F);
     const el = new F();
     container.appendChild(el);
+    // eslint-disable-next-line no-empty
     while (!(await el.updateComplete)) {}
     assert.equal(el.shadowRoot!.textContent, 'foo');
   });
@@ -292,4 +295,18 @@ suite('LitElement', () => {
       'testDom should be a child of the component'
     );
   });
+
+  (window.ShadyDOM && window.ShadyDOM.inUse ? test.skip : test)(
+    'can customize shadowRootOptions',
+    async () => {
+      class A extends LitElement {
+        static shadowRootOptions: ShadowRootInit = {mode: 'closed'};
+      }
+      customElements.define(generateElementName(), A);
+      const a = new A();
+      container.appendChild(a);
+      await a.updateComplete;
+      assert.equal(a.shadowRoot, undefined);
+    }
+  );
 });

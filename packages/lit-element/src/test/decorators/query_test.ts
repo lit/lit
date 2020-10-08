@@ -14,12 +14,10 @@
 
 import {html, LitElement} from '../../lit-element.js';
 import {query} from '../../lib/decorators/query.js';
-import {generateElementName} from '../test-helpers.js';
+import {canTestLitElement, generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
-suite('@query', () => {
+(canTestLitElement ? suite : suite.skip)('@query', () => {
   let container: HTMLElement;
   let el: C;
 
