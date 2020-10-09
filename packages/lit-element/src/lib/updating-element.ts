@@ -178,7 +178,8 @@ export const defaultConverter: ComplexAttributeConverter = {
         // don't normally complain on being mis-configured.
         // TODO(sorvell): Do generate exception in *dev mode*.
         try {
-          fromValue = JSON.parse(value!);
+          // Assert to adhere to Bazel's "must type assert JSON parse" rule.
+          fromValue = JSON.parse(value!) as unknown;
         } catch (e) {
           fromValue = null;
         }
