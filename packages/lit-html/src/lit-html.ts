@@ -202,8 +202,7 @@ export const nothing = {};
  * without sanitizing it.
  */
 export const unsafeStatic = (value: string) => ({
-  _$litStatic$: true,
-  value,
+  _$litStatic$: value,
 });
 
 type StaticValue = ReturnType<typeof unsafeStatic>;
@@ -375,9 +374,23 @@ class Template {
     // The current parsing state, represented as a reference to one of the
     // regexes
     let regex = textEndRegex;
+    let i = 0;
 
-    for (let i = 0; i < l; i++) {
-      const s = strings[i];
+    while (i < l) {
+      let s = strings[i];
+      // Collect any unsafeStatic values, and their following template strings
+      // so taht we treat a run of template strings and unsafe static values as
+      // a single template string.
+      while (i < l && (values[i] as StaticValue)?._$litStatic$ !== undefined) {
+        s += (values[i] as StaticValue)?._$litStatic$ + strings[++i];
+        this._hasStatics = true;
+      }
+      // If by consuming unsafe static values we use the last template string,
+      // then this template has no dynamic bindings.
+      if (i++ > l) {
+        break;
+      }
+
       // The index of the end of the last attribute name. When this is
       // positive at end of a string, it means we're in an attribute value
       // position and need to rewrite the attribute name.
@@ -475,10 +488,7 @@ class Template {
       // insert a plain maker. If we have a attrNameEndIndex, it means we need
       // to rewrite the attribute name to add a bound attribute suffix.
       html +=
-        values[i] != null &&
-        (values[i] as StaticValue)._$litStatic$ !== undefined
-          ? ((this._hasStatics = true), s + (values[i] as StaticValue).value)
-          : regex === textEndRegex
+        regex === textEndRegex
           ? s + nodeMarker
           : (attrNameEndIndex !== -1
               ? (attrNames.push(attrName!),
@@ -493,7 +503,7 @@ class Template {
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
-    this._element = this._createElement(html + this._strings[l]);
+    this._element = this._createElement(html + (i > l ? '' : this._strings[l]));
     walker.currentNode = this._element.content;
 
     if (type === SVG_RESULT) {

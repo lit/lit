@@ -1393,15 +1393,45 @@ suite('lit-html', () => {
 
     test('static tag binding', () => {
       const tagName = unsafeStatic('div');
-      render(html`<${tagName}></${tagName}>`, container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      render(html`<${tagName}>${'A'}</${tagName}>`, container);
+      assert.equal(stripExpressionComments(container.innerHTML), '<div>A</div>');
     });
+
+    test('static attribute name binding', () => {
+      render(html`<div ${unsafeStatic('foo')}="${'bar'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar"></div>'
+      );
+
+      render(html`<div x-${unsafeStatic('foo')}="${'bar'}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div x-foo="bar"></div>'
+      );
+    });
+
+    test('static attribute name binding', () => {
+      render(html`<div ${unsafeStatic('foo')}="${unsafeStatic('bar')}"></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="bar"></div>'
+      );
+    });
+
 
     test('dynamic binding after static text binding', () => {
       render(html`${unsafeStatic('<p>Hello</p>')}${'<p>World</p>'}`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<p>Hello</p>&lt;p&gt;World&lt;/p&gt;'
+      );
+
+      // Make sure `null` is handled
+      render(html`${unsafeStatic('<p>Hello</p>')}${null}`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<p>Hello</p>'
       );
     });
   });
