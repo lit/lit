@@ -1,5 +1,4 @@
 {
-  "readme": "docs/_api/api-readme.md",
   "tsconfig": "tsconfig_apidoc.json",
   "mode": "library",
   "theme": "docs/_api/theme",
