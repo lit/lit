@@ -107,7 +107,7 @@ const itemTemplates = {
   ce: (item: Item) => html`<c-e .text=${item.text}></c-e>`,
 }
 
-if (defaults.itemType.startsWith('ce')) {
+if (defaults.itemType === 'ce') {
   customElements.define('c-e', class extends HTMLElement {
     set text(s: string) {
       this.textContent = s;
