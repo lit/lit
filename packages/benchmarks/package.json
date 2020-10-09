@@ -24,6 +24,7 @@
     "benchmark:lit-html:repeat-full": "tach --config lit-html/repeat/tachometer-full.json",
     "benchmark:lit-html:repeat-vs-map": "tach --config lit-html/repeat/tachometer-vs-map.json",
     "benchmark:lit-html:repeat-vs-map-full": "tach --config lit-html/repeat/tachometer-vs-map-full.json",
+    "benchmark:lit-html:repeat-vs-map-delay-full": "tach --config lit-html/repeat/tachometer-vs-map-delay-full.json",
     "benchmark:lit-element:list": "tach --config lit-element/list/tachometer.json",
     "benchmark:lit-element:list-render": "tach --config lit-element/list/tachometer-render.json",
     "benchmark:lit-element:list-update": "tach --config lit-element/list/tachometer-update.json",
