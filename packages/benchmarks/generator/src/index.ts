@@ -56,8 +56,11 @@ const generateBenchmark = (opts: OptionValues, outputPath: string, name: string)
     templateLevel: string = '',
     tag: string = 'div') => {
 
+    // "Static" nodes/attrs mean there is no binding (i.e. not "dynamic")
     const staticAttrPerNode = Math.floor((1 - opts.dynAttrPct) * opts.attrPerNode);
     const staticNodesPerNode = Math.floor((1 - opts.dynNodePct) * opts.width);
+    // "Constant" nodes/attrs mean there is a binding, but it shouldn't change
+    // between updates (i.e. not "updatable")
     const constantAttrPerNode = Math.floor((1 - opts.updateAttrPct) * (opts.attrPerNode - staticAttrPerNode));
     const constantNodesPerNode = Math.floor((1 - opts.updateNodePct) * (opts.width - staticNodesPerNode));
 
