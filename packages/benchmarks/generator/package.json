@@ -29,7 +29,6 @@
     "es-dev-server": "^1.55.0",
     "incremental-dom": "^0.7.0",
     "js-combinatorics": "^0.6.0",
-    "lit-html": "^1.2.1",
     "preact": "^10.4.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
