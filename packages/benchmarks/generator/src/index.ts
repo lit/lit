@@ -64,28 +64,46 @@ const generateBenchmark = (opts: OptionValues, outputPath: string, name: string)
     // Generates a tree of either static or dynamic nodes (template calls) at a
     // given level
     const generateTree = (s: string, renderer: TemplateRenderer, parentLevel: string = '') => {
+      // Generate `width` nodes (or template calls) for this level of the tree
       for (let i=0; i<opts.width; i++) {
+        // Moniker for this position in the tree, based on parent level & node
+        // index (i.e. if parent was position 0_2_3 and this is node 3 inside
+        // it, the current level will be 0_2_3_3); the level is used for
+        // generating unique text at a given position in the tree, and for
+        // naming templates corresponding to a given level in the tree
         const level = nextLevel(parentLevel, i);
+        // Open tag start
         s = renderer.openTagStart(s, level, tag, opts.attrPerNode, staticAttrPerNode);
+        // Attributes
         for (let j=0; j<opts.attrPerNode; j++) {
           const isStatic = j < staticAttrPerNode;
           const isConstant = isStatic || ((j - staticAttrPerNode) < constantAttrPerNode)
           const name = nextLevel(level, j);
           s = renderer.setAttr(s, level, name, isStatic, isConstant, Math.max(opts.valPerDynAttr, 1));
         }
+        // Open tag end
         s = renderer.openTagEnd(s, level, tag, opts.attrPerNode);
+        // Text
         s = renderer.textNode(s, level, false, level);
+        // Generate next level of tree, until we've reached the max depth
         if (depthForLevel(level) < opts.depth) {
           if (i < staticNodesPerNode) {
+            // Recurse to continue generating static DOM in the tree
             s = generateTree(s, renderer, level);
           } else {
+            // Recurse by way of a dynamic template call
             const isConstant = (i - staticNodesPerNode) < constantNodesPerNode;
             const name = templateNameForLevel(level, !!opts.uniqueTemplates, (isConstant ? '' : 'A'));
+            // Generate new template(s) for the given depth if we haven't yet or
+            // for the given level (unique position) if we're using
+            // uniqueTemplates
             if (opts.uniqueTemplates || !generatedTemplates.has(name)) {
               generatedTemplates.add(name);
               // Prepend generated templates to the start of the script
               s = generateTemplate(s, level + (isConstant ? '' : 'A'), 'div');
               if (!isConstant) {
+                // If this template call is updatable, generate a "B" version of
+                // the template
                 const name = levelForTemplate(level, !!opts.uniqueTemplates, 'B');
                 if (opts.uniqueTemplates || !generatedTemplates.has(name)) {
                   generatedTemplates.add(name);
@@ -97,6 +115,7 @@ const generateBenchmark = (opts: OptionValues, outputPath: string, name: string)
             s = renderer.callTemplate(s, level, templateNameForLevel(level, !!opts.uniqueTemplates), isConstant);
           }
         }
+        // Close tag
         s = renderer.closeTag(s, level, tag);
       }
       return s;
