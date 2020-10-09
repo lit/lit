@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {html, LitElement, css, PropertyDeclaration} from 'lit-element';
-import {property, customElement} from 'lit-element/lib/decorators.js';
+import {property, customElement} from 'lit-element/decorators.js';
 
 // Settings
 const itemCount = 250;

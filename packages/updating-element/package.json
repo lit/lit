@@ -66,7 +66,7 @@
     "check-version": "node scripts/check-version-tracker.js",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
-    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
