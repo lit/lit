@@ -20,10 +20,6 @@
         },
         {
           "mode": "performance",
-          "entryName": "replace"
-        },
-        {
-          "mode": "performance",
           "entryName": "add"
         },
         {
@@ -56,14 +52,6 @@
         },
         {
           "mode": "performance",
-          "entryName": "replaceStripe"
-        },
-        {
-          "mode": "performance",
-          "entryName": "reverse"
-        },
-        {
-          "mode": "performance",
           "entryName": "swapOne"
         },
         {
@@ -92,7 +80,19 @@
         },
         {
           "mode": "performance",
+          "entryName": "reverse"
+        },
+        {
+          "mode": "performance",
           "entryName": "shuffle"
+        },
+        {
+          "mode": "performance",
+          "entryName": "replace"
+        },
+        {
+          "mode": "performance",
+          "entryName": "replaceStripe"
         },
         {
           "mode": "performance",

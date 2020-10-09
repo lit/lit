@@ -1,43 +1,62 @@
+/**
+ * @license
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
 import {repeat} from 'lit-html/directives/repeat.js';
 import {render, html} from 'lit-html';
-
-// IE doesn't support URLSearchParams
-const params = document.location.search
-  .slice(1)
-  .split('&')
-  .filter(s => s)
-  .map((p) => p.split('='))
-  .reduce(
-    // convert boolean, number, strings and default empty to true
-    (p: {[key: string]: string|boolean}, [k, v]) => 
-      (p[k] = (() => { try { return JSON.parse(v) } catch { return v || true }})(), p),
-    {}
-  );
+import {queryParams} from '../../utils/query-params.js';
 
 const defaults = {
+  // Which repeat method to use ('repeat' or 'map')
   method: 'repeat' as keyof typeof methods,
+  // Item template to use ('li' or 'input')
   itemType: 'li' as keyof typeof itemTemplates,
+  // Initial count of items to create
   initialCount: 1000,
+  // Replace items with newly created items (also specify 'from' and 'to')
+  replaceCount: 0,
+  // Remove items (also specify 'from')
   removeCount: 0,
+  // Move items (also specify 'from' and 'to')
   moveCount: 0,
+  // Add items (also specify 'to')
   addCount: 0,
+  // Add items equally spaced through list
   addStripeCount: 0,
+  // Remove items equally spaced through list
   removeStripeCount: 0,
+  // Replace items with newly created items equally spaced through list
   replaceStripeCount: 0,
+  // Swap items (also specify 'from' and 'to)
   swapCount: 0,
-  from: 2,
-  to: 8,
-  replace: false,
-  reverse: false,
-  shuffle: false,
+  // Reverse the order of items (also specify 'from' and 'to)
+  reverseCount: 0,
+  // Shuffle items (also specify 'from' and 'to)
+  shuffleCount: 0,
+  // 'from' item index used in operations (remove, move, swap)
+  from: 0,
+  // 'to' item index used in operations (add, move, swap)
+  to: 1000,
+  // When true, supported operations are mirrored symetrically on the other side
+  // of the list
   mirror: false,
+  // Number of times to loop, repeating the same operation on the list
   loopCount: 10
 };
 
 const preset: {[index: string]: (Partial<typeof defaults>)} = {
-  render: {},
+  render: {initialCount: 1000},
   nop: {},
-  replace: {replace: true, loopCount: 2},
   add: {addCount: 10, to: 100, loopCount: 50},
   remove: {removeCount: 10, from: 100, loopCount: 50},
   addEdges: {addCount: 100, to: 0, mirror: true, loopCount: 10},
@@ -46,23 +65,33 @@ const preset: {[index: string]: (Partial<typeof defaults>)} = {
   removeMirror: {removeCount: 100, from: 100, mirror: true, loopCount: 10},
   addStripe: {addStripeCount: 50, loopCount: 10},
   removeStripe: {removeStripeCount: 50, loopCount: 10},
-  replaceStripe: {replaceStripeCount: 50, loopCount: 1},
-  reverse: {reverse: true},
   swapOne: {swapCount: 1, from: 100, to: 800, loopCount: 100},
-  swapMany: {swapCount: 10, from: 100, to: 800},
+  swapMany: {swapCount: 100, from: 100, to: 800, loopCount: 4},
   swapEdges: {swapCount: 1, from: 0, to: 999, loopCount: 100},
   moveForwardOne: {moveCount: 1, from: 100, to: 800, loopCount: 100},
-  moveForwardMany: {moveCount: 10, from: 100, to: 800},
+  moveForwardMany: {moveCount: 100, from: 100, to: 800, loopCount: 4},
   moveBackwardOne: {moveCount: 1, from: 800, to: 100, loopCount: 100},
-  moveBackwardMany: {moveCount: 10, from: 800, to: 100},
-  shuffle: {shuffle: true, loopCount: 5},
+  moveBackwardMany: {moveCount: 100, from: 800, to: 100, loopCount: 4},
+  reverse: {reverseCount: 1000, loopCount: 4},
+  shuffle: {shuffleCount: 1000, loopCount: 5},
+  replace: {replaceCount: 1000, loopCount: 2},
+  replaceStripe: {replaceStripeCount: 100, loopCount: 10},
   removeAll: {removeCount: 1000, from: 0, loopCount: 1},
 };
 
-// If query params are provided, put that opreation in a `custom` step
-const routine = (Object.keys(params).length === 0) ? preset : {
-  render: {...params}, 
-  custom: {...params}
+// `method` and `itemType` are special and override defaults
+let customParams = Object.keys(queryParams).length;
+['method', 'itemType'].forEach((k) => {
+  if (queryParams[k]) {
+    (defaults as any)[k] = queryParams[k];
+    customParams--; // Don't count these params as a custom step
+  }
+})
+
+// If query params are provided, put that operation in a `custom` step
+const routine = (customParams === 0) ? preset : {
+  render: {...queryParams}, 
+  custom: {...queryParams}
 };
 
 let gid = 0;
@@ -111,8 +140,12 @@ for (const [step, values] of Object.entries(routine)) {
 
     for (let i=0; i<s.loopCount; i++) {
 
-      if (s.replace) {
-        items = createItems(items.length);
+      if (s.replaceCount) {
+        items = [
+          ...items.slice(0, s.from),
+          ...createItems(s.replaceCount),
+          ...items.slice(s.to),
+        ];
       }
 
       if (s.removeCount) {
@@ -125,7 +158,7 @@ for (const [step, values] of Object.entries(routine)) {
       if (s.addCount) {
         items = [...items.slice(0, s.to), ...createItems(s.addCount), ...items.slice(s.to)];
         if (s.mirror) {
-          items = [...items.slice(0, -s.to), ...createItems(s.addCount), ...items.slice(-s.to)];
+          items = [...items.slice(0, items.length-s.to), ...createItems(s.addCount), ...items.slice(items.length-s.to)];
         }
       }
 
@@ -197,16 +230,25 @@ for (const [step, values] of Object.entries(routine)) {
         }
       }
 
-      if (s.reverse) {
-        items = items.reverse();
+      if (s.reverseCount) {
+        items = [
+          ...items.slice(0, s.from),
+          ...items.slice(s.from, s.to).reverse(),
+          ...items.slice(s.to),
+        ];
       }
 
-      if (s.shuffle) {
-        items = items.slice();
-        for (let i = items.length-1; i>0; i--) {
+      if (s.shuffleCount) {
+        const shuffled = items.slice(s.from, s.to);
+        for (let i = shuffled.length-1; i>0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [items[i], items[j]] = [items[j], items[i]];
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
+        items = [
+          ...items.slice(0, s.from),
+          ...shuffled,
+          ...items.slice(s.to),
+        ];
       }
 
       // TODO(kschaaf): Accumulate measurements around just the render
@@ -227,7 +269,8 @@ console.table({
   ...Object.keys(routine).reduce((p: {[index: string]: number},n) => 
     (p[n] = performance.getEntriesByName(n).reduce((p, n) => p + n.duration, 0), p), {}),
   update: performance.getEntriesByName('update').reduce((p, n) => p + n.duration, 0),
-  total: performance.getEntriesByName('total')[0].duration
+  total: performance.getEntriesByName('total')[0].duration,
+  'items.length (at end)': items.length
 });
 
 // Put items & render on window for debugging
