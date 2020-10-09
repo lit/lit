@@ -20,6 +20,15 @@
  * @packageDocumentation
  */
 
+import {
+  getCompatibleStyle,
+  adoptStyles,
+  CSSResultGroup,
+  CSSResultOrNative,
+  CSSResultFlatArray,
+} from './css-tag.js';
+export * from './css-tag.js';
+
 /*
  * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
  * replaced at compile time by the munged name for object[property]. We cannot
@@ -245,16 +254,28 @@ export abstract class UpdatingElement extends HTMLElement {
   protected static [finalized] = true;
 
   /**
-   * Memoized list of all class properties, including any superclass properties.
+   * Memoized list of all element properties, including any superclass properties.
    * Created lazily on user subclasses when finalizing the class.
    */
-  private static _classProperties?: PropertyDeclarationMap;
+  static elementProperties?: PropertyDeclarationMap;
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
    * objects containing options for configuring the property.
    */
   static properties: PropertyDeclarations;
+
+  /**
+   * Memoized list of all element styles.
+   * Created lazily on user subclasses when finalizing the class.
+   */
+  static elementStyles?: CSSResultFlatArray;
+
+  /**
+   * Array of styles to apply to the element. The styles should be defined
+   * using the [[`css`]] tag function or via constructible stylesheets.
+   */
+  static styles?: CSSResultGroup;
 
   /**
    * Returns a list of attributes corresponding to the registered properties.
@@ -266,7 +287,7 @@ export abstract class UpdatingElement extends HTMLElement {
     const attributes: string[] = [];
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
-    this._classProperties!.forEach((v, p) => {
+    this.elementProperties!.forEach((v, p) => {
       const attr = this._attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this._attributeToPropertyMap.set(attr, p);
@@ -305,7 +326,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
     this.finalize();
-    this._classProperties!.set(name, options);
+    this.elementProperties!.set(name, options);
     // Do not generate an accessor if the prototype already has one, since
     // it would be lost otherwise and that would never be the user's intention;
     // Instead, we expect users to call `requestUpdate` themselves from
@@ -383,13 +404,13 @@ export abstract class UpdatingElement extends HTMLElement {
    * @final
    */
   protected static getPropertyOptions(name: PropertyKey) {
-    return this._classProperties!.get(name) || defaultPropertyDeclaration;
+    return this.elementProperties!.get(name) || defaultPropertyDeclaration;
   }
 
   /**
-   * Creates property accessors for registered properties and ensures
-   * any superclasses are also finalized. Returns true if the element was
-   * finalized.
+   * Creates property accessors for registered properties, sets up element
+   * styling, and ensures any superclasses are also finalized. Returns true if
+   * the element was finalized.
    * @nocollapse
    */
   protected static finalize() {
@@ -400,7 +421,7 @@ export abstract class UpdatingElement extends HTMLElement {
     // finalize any superclasses
     const superProto = Object.getPrototypeOf(this) as typeof UpdatingElement;
     superProto.finalize();
-    this._classProperties = new Map(superProto._classProperties!);
+    this.elementProperties = new Map(superProto.elementProperties!);
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
     // make any properties
@@ -422,8 +443,55 @@ export abstract class UpdatingElement extends HTMLElement {
         this.createProperty(p, (props as any)[p]);
       }
     }
+    this.elementStyles = this.finalizeStyles(this.styles);
     return true;
   }
+
+  /**
+   * Options used when calling `attachShadow`. Set this property to customize
+   * the options for the shadowRoot; for example, to create a closed
+   * shadowRoot: `{mode: 'closed'}`.
+   *
+   * Note, these options are used in `createRenderRoot`. If this method
+   * is customized, options should be respected if possible.
+   */
+  static shadowRootOptions: ShadowRootInit = {mode: 'open'};
+
+  /**
+   * Takes the styles the user supplied via the `static styles` property and
+   * returns the array of styles to apply to the element.
+   * Override this method to integrate into a style management system.
+   *
+   * Styles are deduplicated preserving the _last_ instance in the list. This
+   * is a performance optimization to avoid duplicated styles that can occur
+   * especially when composing via subclassing. The last item is kept to try
+   * to preserve the cascade order with the assumption that it's most important
+   * that last added styles override previous styles.
+   *
+   * @nocollapse
+   */
+  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
+    const elementStyles = [];
+    if (Array.isArray(styles)) {
+      // Dedupe the flattened array in reverse order to preserve the last items.
+      // TODO(sorvell): casting to Array<unknown> works around TS error that
+      // appears to come from trying to flatten a type CSSResultArray.
+      const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
+      // Then preserve original order by adding the set items in reverse order.
+      for (const s of set) {
+        elementStyles.unshift(getCompatibleStyle(s as CSSResultOrNative));
+      }
+    } else if (styles !== undefined) {
+      elementStyles.push(getCompatibleStyle(styles));
+    }
+    return elementStyles;
+  }
+
+  /**
+   * Node or ShadowRoot into which element DOM should be rendered. Defaults
+   * to an open shadowRoot.
+   */
+  readonly renderRoot!: HTMLElement | ShadowRoot;
 
   /**
    * Returns the property name for the given attribute `name`.
@@ -469,14 +537,6 @@ export abstract class UpdatingElement extends HTMLElement {
 
   constructor() {
     super();
-    this.initialize();
-  }
-
-  /**
-   * Performs element initialization. By default captures any pre-set values for
-   * registered properties.
-   */
-  protected initialize() {
     this._updatePromise = new Promise((res) => (this.enableUpdating = res));
     this._changedProperties = new Map();
     this._saveInstanceProperties();
@@ -500,7 +560,7 @@ export abstract class UpdatingElement extends HTMLElement {
   private _saveInstanceProperties() {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
-    (this.constructor as typeof UpdatingElement)._classProperties!.forEach(
+    (this.constructor as typeof UpdatingElement).elementProperties!.forEach(
       (_v, p) => {
         if (this.hasOwnProperty(p)) {
           this._instanceProperties!.set(p, this[p as keyof this]);
@@ -510,9 +570,36 @@ export abstract class UpdatingElement extends HTMLElement {
     );
   }
 
+  /**
+   * Returns the node into which the element should render and by default
+   * creates and returns an open shadowRoot. Implement to customize where the
+   * element's DOM is rendered. For example, to render into the element's
+   * childNodes, return `this`.
+   * @returns {Element|DocumentFragment} Returns a node into which to render.
+   */
+  protected createRenderRoot(): Element | ShadowRoot {
+    const renderRoot =
+      this.shadowRoot ??
+      this.attachShadow(
+        (this.constructor as typeof UpdatingElement).shadowRootOptions
+      );
+    this._adoptStyles(
+      renderRoot,
+      (this.constructor as typeof UpdatingElement).elementStyles!
+    );
+    return renderRoot;
+  }
+
+  // NOTE, this is called by `platform-support`.
+  private _adoptStyles(renderRoot: ShadowRoot, styles: CSSResultFlatArray) {
+    adoptStyles(renderRoot, styles);
+  }
+
+  /**
+   * On first connection, creates the element's renderRoot, sets up
+   * element styling, and enables updating.
+   */
   connectedCallback() {
-    // Ensure first connection completes an update. Updates cannot complete
-    // before connection.
     this.enableUpdating();
   }
 
@@ -702,6 +789,12 @@ export abstract class UpdatingElement extends HTMLElement {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
+    }
+    // create renderRoot before first update.
+    if (!this.hasUpdated) {
+      (this as {
+        renderRoot: Element | DocumentFragment;
+      }).renderRoot = this.createRenderRoot();
     }
     let shouldUpdate = false;
     const changedProperties = this._changedProperties;

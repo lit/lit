@@ -12,5 +12,44 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {UpdatingElement, PropertyValues} from '../updating-element.js';
+
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
+
+export const nextFrame = () =>
+  new Promise((resolve) => requestAnimationFrame(resolve));
+
+export const getComputedStyleValue = (element: Element, property: string) =>
+  window.ShadyCSS
+    ? window.ShadyCSS.getComputedStyleValue(element, property)
+    : getComputedStyle(element).getPropertyValue(property);
+
+export const stripExpressionComments = (html: string) =>
+  html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
+
+// Only test if ShadowRoot is available and either ShadyDOM is not
+// in use or it is and platform support is available.
+export const canTestUpdatingElement =
+  (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
+  window.litElementPlatformSupport;
+
+export class RenderingElement extends UpdatingElement {
+  render(): string | undefined {
+    return '';
+  }
+  update(changedProperties: PropertyValues) {
+    const result = this.render();
+    super.update(changedProperties);
+    if (result !== undefined) {
+      this.renderRoot.innerHTML = result;
+    }
+  }
+}
+
+export const html = (strings: TemplateStringsArray, ...values: unknown[]) => {
+  return values.reduce(
+    (a: string, v: unknown, i: number) => a + v + strings[i + 1],
+    strings[0]
+  );
+};

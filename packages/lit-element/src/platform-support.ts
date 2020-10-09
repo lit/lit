@@ -88,8 +88,8 @@ interface PatchableLitElement extends HTMLElement {
   hasUpdated: boolean;
   update(changedProperties: unknown): void;
   _baseUpdate(changedProperties: unknown): void;
-  adoptStyles(styles: CSSResults): void;
-  _baseAdoptStyles(styles: CSSResults): void;
+  _adoptStyles(renderRoot: ShadowRoot, styles: CSSResults): void;
+  _baseAdoptStyles(renderRoot: ShadowRoot, styles: CSSResults): void;
   _renderOptions: RenderOptions;
 }
 
@@ -111,9 +111,10 @@ interface PatchableLitElement extends HTMLElement {
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
   const litElementProto = LitElement.prototype;
-  litElementProto._baseAdoptStyles = litElementProto.adoptStyles;
-  litElementProto.adoptStyles = function (
+  litElementProto._baseAdoptStyles = litElementProto._adoptStyles;
+  litElementProto._adoptStyles = function (
     this: PatchableLitElement,
+    renderRoot: ShadowRoot,
     styles: CSSResults
   ) {
     // Pass the scope to render options so that it gets to lit-html for proper
@@ -123,7 +124,7 @@ interface PatchableLitElement extends HTMLElement {
     // If using native Shadow DOM must adoptStyles normally,
     // otherwise do nothing.
     if (window.ShadyCSS!.nativeShadow) {
-      this._baseAdoptStyles(styles);
+      this._baseAdoptStyles(renderRoot, styles);
       // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
     } else if (!this.constructor.hasOwnProperty(SCOPED)) {
       (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;

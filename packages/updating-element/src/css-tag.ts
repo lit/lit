@@ -20,6 +20,8 @@ export const supportsAdoptingStyleSheets =
 
 export type CSSResultOrNative = CSSResult | CSSStyleSheet;
 
+export type CSSResultFlatArray = CSSResultOrNative[];
+
 export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
 
 export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
@@ -105,3 +107,38 @@ export const css = (
   }
   return result;
 };
+
+/**
+ * Applies the given styles to a `shadowRoot`. When Shadow DOM is
+ * available but `adoptedStyleSheets` is not, styles are appended to the the
+ * `shadowRoot` to [mimic spec behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
+ */
+export const adoptStyles = (
+  renderRoot: ShadowRoot,
+  styles: CSSResultFlatArray
+) => {
+  if (supportsAdoptingStyleSheets) {
+    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
+      s instanceof CSSStyleSheet ? s : s.styleSheet!
+    );
+  } else {
+    styles.forEach((s) => {
+      const style = document.createElement('style');
+      style.textContent = (s as CSSResult).cssText;
+      renderRoot.appendChild(style);
+    });
+  }
+};
+
+const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
+  let cssText = '';
+  for (const rule of sheet.cssRules) {
+    cssText += rule.cssText;
+  }
+  return unsafeCSS(cssText);
+};
+
+export const getCompatibleStyle = supportsAdoptingStyleSheets
+  ? (s: CSSResultOrNative) => s
+  : (s: CSSResultOrNative) =>
+      s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;

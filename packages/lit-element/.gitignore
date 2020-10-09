@@ -1,5 +1,5 @@
 /development/
-/lib/
+/decorators/
 /lit-element.*
-/development
-/lib
+/platform-support.*
+/decorators.*

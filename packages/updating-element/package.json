@@ -14,6 +14,14 @@
       "development": "./development/updating-element.js",
       "default": "./updating-element.js"
     },
+    "./css-tag.js": {
+      "development": "./development/css-tag.js",
+      "default": "./css-tag.js"
+    },
+    "./decorators.js": {
+      "development": "./development/decorators.js",
+      "default": "./decorators.js"
+    },
     "./decorators/": {
       "development": "./development/decorators/",
       "default": "./decorators/"
@@ -31,11 +39,19 @@
     "/updating-element.d.ts",
     "/updating-element.d.ts.map",
     "/updating-element.js",
-    "/updating-element.js.map"
+    "/updating-element.js.map",
+    "/css-tag.d.ts",
+    "/css-tag.d.ts.map",
+    "/css-tag.js",
+    "/css-tag.js.map",
+    "/decorators.d.ts",
+    "/decorators.d.ts.map",
+    "/decorators.js",
+    "/decorators.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf updating-element.{js,js.map,d.ts} decorators/ development/",
+    "clean": "rm -rf updating-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",

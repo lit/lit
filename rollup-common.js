@@ -48,6 +48,7 @@ const reservedProperties = [
   // https://github.com/Polymer/lit-html/issues/1261
   "_value",
   "_setValue",
+  "_adoptStyles",
   "createTreeWalker"
 ];
 

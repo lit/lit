@@ -19,10 +19,17 @@ import {
 export default litRollupConfig({
   entryPoints: [
     'updating-element',
+    'css-tag',
+    'decorators',
     'decorators/base',
     'decorators/customElement',
+    'decorators/eventOptions',
     'decorators/internalProperty',
     'decorators/property',
+    'decorators/query',
+    'decorators/queryAll',
+    'decorators/queryAssignedNodes',
+    'decorators/queryAsync',
   ],
   external: []
 });

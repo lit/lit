@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {render, RenderOptions} from 'lit-html';
+
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
 
@@ -31,3 +33,19 @@ export const stripExpressionComments = (html: string) =>
 export const canTestLitElement =
   (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
   window.litElementPlatformSupport;
+
+export interface ShadyRenderOptions extends RenderOptions {
+  scope?: string;
+}
+
+/**
+ * A helper for creating a shadowRoot on an element.
+ */
+export const renderShadowRoot = (result: unknown, element: Element) => {
+  if (!element.shadowRoot) {
+    element.attachShadow({mode: 'open'});
+  }
+  render(result, element.shadowRoot!, {
+    scope: element.localName,
+  } as ShadyRenderOptions);
+};

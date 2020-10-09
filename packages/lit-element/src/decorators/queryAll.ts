@@ -12,10 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/*
- * IMPORTANT: For compatibility with tsickle and the Closure JS compiler, all
- * property decorators (but not class decorators) in this file that have
- * an @ExportDecoratedItems annotation must be defined as a regular function,
- * not an arrow function.
- */
-export * from 'updating-element/decorators/customElement.js';
+export * from 'updating-element/decorators/queryAll.js';

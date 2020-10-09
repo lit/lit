@@ -11,20 +11,5 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {render, RenderOptions} from 'lit-html';
 
-export interface ShadyRenderOptions extends RenderOptions {
-  scope?: string;
-}
-
-/**
- * A helper for creating a shadowRoot on an element.
- */
-export const renderShadowRoot = (result: unknown, element: Element) => {
-  if (!element.shadowRoot) {
-    element.attachShadow({mode: 'open'});
-  }
-  render(result, element.shadowRoot!, {
-    scope: element.localName,
-  } as ShadyRenderOptions);
-};
+export * from 'updating-element/decorators/queryAssignedNodes.js';

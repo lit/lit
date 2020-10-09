@@ -12,9 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../../lit-element.js';
-import {eventOptions} from '../../lib/decorators/eventOptions.js';
-import {canTestLitElement, generateElementName} from '../test-helpers.js';
+import {UpdatingElement} from '../../updating-element.js';
+import {eventOptions} from '../../decorators/eventOptions.js';
+import {
+  canTestUpdatingElement,
+  generateElementName,
+  RenderingElement,
+  html,
+} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 let hasOptions;
@@ -92,7 +97,7 @@ const supportsOnce = (function () {
   return hasOnce;
 })();
 
-(canTestLitElement ? suite : suite.skip)('@eventOptions', () => {
+(canTestUpdatingElement ? suite : suite.skip)('@eventOptions', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -113,16 +118,26 @@ const supportsOnce = (function () {
       this.skip();
     }
 
-    class C extends LitElement {
+    class C extends RenderingElement {
       eventPhase?: number;
-
-      render() {
-        return html` <div @click=${this.onClick}><button></button></div> `;
-      }
 
       @eventOptions({capture: true})
       onClick(e: Event) {
         this.eventPhase = e.eventPhase;
+      }
+
+      render() {
+        return html`<div><button></button></div>`;
+      }
+
+      firstUpdated() {
+        this.renderRoot
+          .querySelector('div')!
+          .addEventListener(
+            'click',
+            (e: Event) => this.onClick(e),
+            (this.onClick as unknown) as AddEventListenerOptions
+          );
       }
     }
     customElements.define(generateElementName(), C);
@@ -130,8 +145,7 @@ const supportsOnce = (function () {
     const c = new C();
     container.appendChild(c);
     await c.updateComplete;
-    const button = c.shadowRoot!.querySelector('button')!;
-    button.click();
+    c.renderRoot.querySelector('button')!.click();
     assert.equal(c.eventPhase, Event.CAPTURING_PHASE);
   });
 
@@ -140,11 +154,16 @@ const supportsOnce = (function () {
       this.skip();
     }
 
-    class C extends LitElement {
+    class C extends UpdatingElement {
       clicked = 0;
 
-      render() {
-        return html` <div @click=${this.onClick}><button></button></div> `;
+      constructor() {
+        super();
+        this.addEventListener(
+          'click',
+          () => this.onClick(),
+          (this.onClick as unknown) as AddEventListenerOptions
+        );
       }
 
       @eventOptions({once: true})
@@ -157,9 +176,8 @@ const supportsOnce = (function () {
     const c = new C();
     container.appendChild(c);
     await c.updateComplete;
-    const button = c.shadowRoot!.querySelector('button')!;
-    button.click();
-    button.click();
+    c.click();
+    c.click();
     assert.equal(c.clicked, 1);
   });
 
@@ -168,11 +186,16 @@ const supportsOnce = (function () {
       this.skip();
     }
 
-    class C extends LitElement {
+    class C extends UpdatingElement {
       defaultPrevented?: boolean;
 
-      render() {
-        return html` <div @click=${this.onClick}><button></button></div> `;
+      constructor() {
+        super();
+        this.addEventListener(
+          'click',
+          (e: Event) => this.onClick(e),
+          (this.onClick as unknown) as AddEventListenerOptions
+        );
       }
 
       @eventOptions({passive: true})
@@ -190,8 +213,7 @@ const supportsOnce = (function () {
     const c = new C();
     container.appendChild(c);
     await c.updateComplete;
-    const button = c.shadowRoot!.querySelector('button')!;
-    button.click();
+    c.click();
     assert.isFalse(c.defaultPrevented);
   });
 });

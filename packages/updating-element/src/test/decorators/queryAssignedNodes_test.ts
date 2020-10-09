@@ -12,19 +12,23 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../../lit-element.js';
-import {queryAssignedNodes} from '../../lib/decorators/queryAssignedNodes.js';
-import {canTestLitElement, generateElementName} from '../test-helpers.js';
+import {queryAssignedNodes} from '../../decorators/queryAssignedNodes.js';
+import {
+  canTestUpdatingElement,
+  generateElementName,
+  RenderingElement,
+  html,
+} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 const flush =
   window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
 
-(canTestLitElement ? suite : suite.skip)('@queryAssignedNodes', () => {
+(canTestUpdatingElement ? suite : suite.skip)('@queryAssignedNodes', () => {
   let container: HTMLElement;
   let el: C;
 
-  class D extends LitElement {
+  class D extends RenderingElement {
     @queryAssignedNodes() defaultAssigned!: Node[];
 
     // The `true` on the decorator indicates that results should be flattened.
@@ -42,7 +46,7 @@ const flush =
   }
   customElements.define('assigned-nodes-el', D);
 
-  class E extends LitElement {
+  class E extends RenderingElement {
     @queryAssignedNodes() defaultAssigned!: Node[];
 
     @queryAssignedNodes('header') headerAssigned!: Node[];
@@ -58,7 +62,7 @@ const flush =
 
   // Note, there are 2 elements here so that the `flatten` option of
   // the decorator can be tested.
-  class C extends LitElement {
+  class C extends RenderingElement {
     div!: HTMLDivElement;
     div2!: HTMLDivElement;
     assignedNodesEl!: D;

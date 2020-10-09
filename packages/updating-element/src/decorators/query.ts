@@ -19,7 +19,7 @@
  * not an arrow function.
  */
 
-import {LitElement} from '../../lit-element.js';
+import {UpdatingElement} from '../updating-element.js';
 import {
   ClassElement,
   legacyPrototypeMethod,
@@ -27,19 +27,21 @@ import {
 } from './base.js';
 
 /**
- * A property decorator that converts a class property into a getter
- * that executes a querySelectorAll on the element's renderRoot.
+ * A property decorator that converts a class property into a getter that
+ * executes a querySelector on the element's renderRoot.
  *
  * @param selector A DOMString containing one or more selectors to match.
+ * @param cache An optional boolean which when true performs the DOM query only
+ * once and caches the result.
  *
- * See:
- * https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
+ * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
  * @example
+ *
  * ```ts
  * class MyElement {
- *   @queryAll('div')
- *   divs;
+ *   @query('#first')
+ *   first;
  *
  *   render() {
  *     return html`
@@ -51,19 +53,36 @@ import {
  * ```
  * @category Decorator
  */
-export function queryAll(selector: string) {
+export function query(selector: string, cache?: boolean) {
   return (
     protoOrDescriptor: Object | ClassElement,
     name?: PropertyKey
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
-      get(this: LitElement) {
-        return this.renderRoot.querySelectorAll(selector);
+      get(this: UpdatingElement) {
+        return this.renderRoot?.querySelector(selector);
       },
       enumerable: true,
       configurable: true,
     };
+    if (cache) {
+      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+      descriptor.get = function (this: UpdatingElement) {
+        if (
+          ((this as unknown) as {[key: string]: Element | null})[
+            key as string
+          ] === undefined
+        ) {
+          ((this as unknown) as {[key: string]: Element | null})[
+            key as string
+          ] = this.renderRoot?.querySelector(selector);
+        }
+        return ((this as unknown) as {[key: string]: Element | null})[
+          key as string
+        ];
+      };
+    }
     return name !== undefined
       ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
       : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);

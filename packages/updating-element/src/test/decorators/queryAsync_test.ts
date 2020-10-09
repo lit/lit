@@ -12,36 +12,44 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../../lit-element.js';
-import {queryAll} from '../../lib/decorators/queryAll.js';
-import {canTestLitElement, generateElementName} from '../test-helpers.js';
+import {queryAsync} from '../../decorators/queryAsync.js';
+import {
+  canTestUpdatingElement,
+  generateElementName,
+  RenderingElement,
+  html,
+} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-(canTestLitElement ? suite : suite.skip)('@queryAll', () => {
+(canTestUpdatingElement ? suite : suite.skip)('@queryAsync', () => {
   let container: HTMLElement;
   let el: C;
 
-  class C extends LitElement {
-    @queryAll('div') divs!: NodeList;
+  class C extends RenderingElement {
+    @queryAsync('#blah') blah!: Promise<HTMLDivElement>;
+    @queryAsync('span') nope!: Promise<HTMLSpanElement | null>;
 
-    @queryAll('span') spans!: NodeList;
+    foo = false;
+
+    static properties = {foo: {}};
 
     render() {
       return html`
         <div>Not this one</div>
-        <div id="blah">This one</div>
+        ${this.foo
+          ? html`<div id="blah" foo>This one</div>`
+          : html`<div id="blah">This one</div>`}
       `;
     }
   }
   customElements.define(generateElementName(), C);
 
-  setup(async () => {
+  setup(() => {
     container = document.createElement('div');
     container.id = 'test-container';
     document.body.appendChild(container);
     el = new C();
     container.appendChild(el);
-    await el.updateComplete;
   });
 
   teardown(() => {
@@ -51,19 +59,18 @@ import {assert} from '@esm-bundle/chai';
     }
   });
 
-  test('returns elements when they exists', () => {
-    assert.lengthOf(el.divs, 2);
-    assert.deepEqual(
-      Array.from(el.divs),
-      Array.from(el.renderRoot.querySelectorAll('div'))
-    );
+  test('returns an element when it exists after update', async () => {
+    let div = await el.blah;
+    assert.instanceOf(div, HTMLDivElement);
+    assert.isFalse(div.hasAttribute('foo'));
+    el.foo = true;
+    div = await el.blah;
+    assert.instanceOf(div, HTMLDivElement);
+    assert.isTrue(div.hasAttribute('foo'));
   });
 
-  test('returns empty NodeList when no match', () => {
-    assert.lengthOf(el.spans, 0);
-    assert.deepEqual(
-      Array.from(el.spans),
-      Array.from(el.renderRoot.querySelectorAll('span'))
-    );
+  test('returns null when no match', async () => {
+    const span = await el.nope;
+    assert.isNull(span);
   });
 });

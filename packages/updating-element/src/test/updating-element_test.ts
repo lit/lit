@@ -2198,9 +2198,8 @@ suite('UpdatingElement', () => {
       inner: E | null = null;
 
       firstUpdated() {
-        this.attachShadow({mode: 'open'});
         this.inner = document.createElement('x-1224') as E;
-        this.shadowRoot!.appendChild(this.inner);
+        this.renderRoot!.appendChild(this.inner);
       }
 
       get updateComplete() {

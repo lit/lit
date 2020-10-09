@@ -19,71 +19,61 @@
  * not an arrow function.
  */
 
-import {LitElement} from '../../lit-element.js';
+import {UpdatingElement} from '../updating-element.js';
 import {
   ClassElement,
   legacyPrototypeMethod,
   standardPrototypeMethod,
 } from './base.js';
 
-// x-browser support for matches
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ElementProto = Element.prototype as any;
-const legacyMatches =
-  ElementProto.msMatchesSelector || ElementProto.webkitMatchesSelector;
-
+// Note, in the future, we may extend this decorator to support the use case
+// where the queried element may need to do work to become ready to interact
+// with (e.g. load some implementation code). If so, we might elect to
+// add a second argument defining a function that can be run to make the
+// queried element loaded/updated/ready.
 /**
  * A property decorator that converts a class property into a getter that
- * returns the `assignedNodes` of the given named `slot`. Note, the type of
- * this property should be annotated as `NodeListOf<HTMLElement>`.
+ * returns a promise that resolves to the result of a querySelector on the
+ * element's renderRoot done after the element's `updateComplete` promise
+ * resolves. When the queried property may change with element state, this
+ * decorator can be used instead of requiring users to await the
+ * `updateComplete` before accessing the property.
  *
- * @param slotName A string name of the slot.
- * @param flatten A boolean which when true flattens the assigned nodes,
- * meaning any assigned nodes that are slot elements are replaced with their
- * assigned nodes.
- * @param selector A string which filters the results to elements that match
- * the given css selector.
+ * @param selector A DOMString containing one or more selectors to match.
  *
- * * @example
+ * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
+ *
+ * @example
  * ```ts
  * class MyElement {
- *   @queryAssignedNodes('list', true, '.item')
- *   listItems;
+ *   @queryAsync('#first')
+ *   first;
  *
  *   render() {
  *     return html`
- *       <slot name="list"></slot>
+ *       <div id="first"></div>
+ *       <div id="second"></div>
  *     `;
  *   }
+ * }
+ *
+ * // external usage
+ * async doSomethingWithFirst() {
+ *  (await aMyElement.first).doSomething();
  * }
  * ```
  * @category Decorator
  */
-export function queryAssignedNodes(
-  slotName = '',
-  flatten = false,
-  selector = ''
-) {
+export function queryAsync(selector: string) {
   return (
     protoOrDescriptor: Object | ClassElement,
     name?: PropertyKey
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     const descriptor = {
-      get(this: LitElement) {
-        const slotSelector = `slot${
-          slotName ? `[name=${slotName}]` : ':not([name])'
-        }`;
-        const slot = this.renderRoot.querySelector(slotSelector);
-        let nodes = slot && (slot as HTMLSlotElement).assignedNodes({flatten});
-        if (nodes && selector) {
-          nodes = nodes.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE && (node as Element).matches
-              ? (node as Element).matches(selector)
-              : legacyMatches.call(node as Element, selector)
-          );
-        }
-        return nodes;
+      async get(this: UpdatingElement) {
+        await this.updateComplete;
+        return this.renderRoot?.querySelector(selector);
       },
       enumerable: true,
       configurable: true,

@@ -12,23 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ClassElement} from 'updating-element/decorators/base.js';
-export * from 'updating-element/decorators/base.js';
-
-export const legacyPrototypeMethod = (
-  descriptor: PropertyDescriptor,
-  proto: Object,
-  name: PropertyKey
-) => {
-  Object.defineProperty(proto, name, descriptor);
-};
-
-export const standardPrototypeMethod = (
-  descriptor: PropertyDescriptor,
-  element: ClassElement
-) => ({
-  kind: 'method',
-  placement: 'prototype',
-  key: element.key,
-  descriptor,
-});
+export * from 'updating-element/decorators/queryAsync.js';

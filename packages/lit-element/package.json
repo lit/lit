@@ -14,16 +14,24 @@
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
-    "./lib/": {
-      "development": "./development/lib/",
-      "default": "./lib/"
+    "./platform-support.js": {
+      "development": "./development/platform-support.js",
+      "default": "./platform-support.js"
+    },
+    "./decorators.js": {
+      "development": "./development/decorators.js",
+      "default": "./decorators.js"
+    },
+    "./decorators/": {
+      "development": "./development/decorators/",
+      "default": "./decorators/"
     }
   },
   "directories": {
     "test": "test"
   },
   "files": [
-    "/lib/",
+    "/decorators/",
     "/src/",
     "/development/",
     "!/src/demo/",
@@ -31,11 +39,19 @@
     "/lit-element.d.ts",
     "/lit-element.d.ts.map",
     "/lit-element.js",
-    "/lit-element.js.map"
+    "/lit-element.js.map",
+    "/platform-support.d.ts",
+    "/platform-support.d.ts.map",
+    "/platform-support.js",
+    "/platform-support.js.map",
+    "/decorators.d.ts",
+    "/decorators.d.ts.map",
+    "/decorators.js",
+    "/decorators.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} lib/ development/",
+    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
