@@ -18,9 +18,11 @@ import {queryParams} from '../../utils/query-params.js';
 
 const defaults = {
   // Which repeat method to use ('repeat' or 'map')
-  method: 'repeat' as keyof typeof methods,
+  method: (queryParams.method ?? 'repeat') as keyof typeof methods,
   // Item template to use ('li' or 'input')
-  itemType: 'li' as keyof typeof itemTemplates,
+  itemType: (queryParams.itemType ?? 'li') as keyof typeof itemTemplates,
+  // Delay (when itemType=ce)
+  delay: (queryParams.delay ?? 0) as number,
   // Initial count of items to create
   initialCount: 1000,
   // Replace items with newly created items (also specify 'from' and 'to')
@@ -80,13 +82,8 @@ const preset: {[index: string]: (Partial<typeof defaults>)} = {
 };
 
 // `method` and `itemType` are special and override defaults
-let customParams = Object.keys(queryParams).length;
-['method', 'itemType'].forEach((k) => {
-  if (queryParams[k]) {
-    (defaults as any)[k] = queryParams[k];
-    customParams--; // Don't count these params as a custom step
-  }
-})
+let customParams = ['method', 'itemType', 'delay'].reduce((n, k) =>
+  k in queryParams ? n-1 : n, Object.keys(queryParams).length)
 
 // If query params are provided, put that operation in a `custom` step
 const routine = (customParams === 0) ? preset : {
@@ -106,7 +103,23 @@ const createItems = (count: number): Item[] =>
 
 const itemTemplates = {
   li: (item: Item) => html`<li>${item.text}</li>`,
-  input: (item: Item) => html`<div>${item.text}: <input value="${item.text}"></div>`
+  input: (item: Item) => html`<div>${item.text}: <input value="${item.text}"></div>`,
+  ce: (item: Item) => html`<c-e .text=${item.text}></c-e>`,
+}
+
+if (defaults.itemType.startsWith('ce')) {
+  customElements.define('c-e', class extends HTMLElement {
+    set text(s: string) {
+      this.textContent = s;
+      if (defaults.delay > 0) {
+        const end = performance.now() + defaults.delay;
+        while (performance.now() < end) { /* spin loop */ }
+      }
+    }
+    get item() {
+      return this.textContent;
+    }
+  });
 }
 
 const methods = {
