@@ -48,7 +48,6 @@ const reservedProperties = [
   // https://github.com/Polymer/lit-html/issues/1261
   "_value",
   "_setValue",
-  "_adoptStyles",
   "createTreeWalker"
 ];
 
@@ -67,7 +66,7 @@ const crossPackagePropertyMangles = {
   _renderOptions: "R",
   _baseConnectedCallback: "bC",
   _baseUpdate: "bU",
-  _baseAdoptStyles: "bA",
+  _baseCreateRenderRoot: "bA",
   _baseSetValue: "bS"
 };
 

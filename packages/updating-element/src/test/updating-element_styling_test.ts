@@ -232,58 +232,6 @@ import {assert} from '@esm-bundle/chai';
       );
     });
 
-    test('styles in render compose with `static get styles`', async () => {
-      const name = generateElementName();
-      customElements.define(
-        name,
-        class extends RenderingElement {
-          static get styles() {
-            return [
-              css`
-                div {
-                  border: 2px solid blue;
-                }
-              `,
-              css`
-                span {
-                  display: block;
-                  border: 3px solid blue;
-                }
-              `,
-            ];
-          }
-
-          render() {
-            return html` <style>
-                div {
-                  padding: 4px;
-                }
-                span {
-                  display: block;
-                  border: 4px solid blue;
-                }
-              </style>
-              <div>Testing1</div>
-              <span>Testing2</span>`;
-          }
-        }
-      );
-      const el = document.createElement(name);
-      container.appendChild(el);
-      await (el as UpdatingElement).updateComplete;
-      const div = el.shadowRoot!.querySelector('div');
-      assert.equal(
-        getComputedStyleValue(div!, 'border-top-width').trim(),
-        '2px'
-      );
-      assert.equal(getComputedStyleValue(div!, 'padding-top').trim(), '4px');
-      const span = el.shadowRoot!.querySelector('span');
-      assert.equal(
-        getComputedStyleValue(span!, 'border-top-width').trim(),
-        '3px'
-      );
-    });
-
     test('`static get styles` applies last instance of style', async () => {
       const name = generateElementName();
       const s1 = css`

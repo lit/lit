@@ -38,6 +38,12 @@ export class RenderingElement extends UpdatingElement {
   render(): string | undefined {
     return '';
   }
+  createRenderRoot() {
+    const renderRoot = super.createRenderRoot();
+    const span = document.createElement('span');
+    renderRoot.appendChild(span);
+    return span;
+  }
   update(changedProperties: PropertyValues) {
     const result = this.render();
     super.update(changedProperties);

@@ -24,12 +24,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [Breaking] `UpdatingElement` has been moved to its own package. The `updating-element`, `css-tag`, and all `decorators` have moved to the `updating-element` package. For convenience, all decorators are re-exported in `LitElement` at `lit-element/decorators` and `lit-element/decorators/*`.
 - [Breaking] The `lib` folder has been removed.
 - [Breaking] Rendering of `renderRoot`/`shadowRoot`) via `createRenderRoot` and support for `static styles` has moved from `LitElement` to `UpdatingElement`.
+- [Breaking] The `createRenderRoot` method is now called just before the first update rather than in the constructor. Element code can not assume the `renderRoot` exists before the element `hasUpdated`. This change was made for compatibility with SSR.
 - [Breaking] `UpdatingElement`'s `initialize` method has been removed. This work is now done in the element constructor.
 - [Breaking] The static `render` has been removed.
 - [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 - [Breaking] When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
 - [Breaking] The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice it should very rarely be ([#699](https://github.com/Polymer/lit-element/issues/699)).
-- [Breaking] LitElement's `adoptStyles` method has been removed. Styling is now adopted in `createRenderRoot`. The default implementation only applies styling to the element's shadowRoot and does nothing if the `renderRoot` is not a shadowRoot. This method may be overridden to customize this behavior.
+- [Breaking] LitElement's `adoptStyles` method has been removed. Styling is now adopted in `createRenderRoot`. This method may be overridden to customize this behavior.
 - [Breaking] LitElement's `static getStyles` method has been renamed to `static finalizeStyles` and now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.
 - [Breaking] Removed build support for TypeScript 3.4.
 - [Breaking] Decorators are no longer exported from the `lit-element` module. Instead, import any decorators you use from `lit-element/decorators/*`.

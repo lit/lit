@@ -54,11 +54,7 @@
  *
  * @packageDocumentation
  */
-import {
-  PropertyValues,
-  UpdatingElement,
-  supportsAdoptingStyleSheets,
-} from 'updating-element';
+import {PropertyValues, UpdatingElement} from 'updating-element';
 import {render, RenderOptions} from 'lit-html';
 export * from 'updating-element';
 export * from 'lit-html';
@@ -109,11 +105,12 @@ export class LitElement extends UpdatingElement {
 
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
-    if (!supportsAdoptingStyleSheets) {
-      (this._renderOptions as {
-        renderBefore: ChildNode;
-      }).renderBefore ??= renderRoot!.lastChild as ChildNode;
-    }
+    // When adoptedStyleSheets are shimmed, they are inserted into the
+    // shadowRoot by createRenderRoot. Adjust the renderBefore node so that
+    // any styles in Lit content render before adoptedStyleSheets. This is
+    // important so that adoptedStyleSheets have precedence over styles in
+    // the shadowRoot.
+    this._renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
     return renderRoot;
   }
 

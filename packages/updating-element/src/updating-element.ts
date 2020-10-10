@@ -420,9 +420,9 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     this[finalized] = true;
     // finalize any superclasses
-    const superProto = Object.getPrototypeOf(this) as typeof UpdatingElement;
-    superProto.finalize();
-    this.elementProperties = new Map(superProto.elementProperties!);
+    const superCtor = Object.getPrototypeOf(this) as typeof UpdatingElement;
+    superCtor.finalize();
+    this.elementProperties = new Map(superCtor.elementProperties!);
     // initialize Map populated in observedAttributes
     this._attributeToPropertyMap = new Map();
     // make any properties
@@ -584,16 +584,11 @@ export abstract class UpdatingElement extends HTMLElement {
       this.attachShadow(
         (this.constructor as typeof UpdatingElement).shadowRootOptions
       );
-    this._adoptStyles(
+    adoptStyles(
       renderRoot,
       (this.constructor as typeof UpdatingElement).elementStyles!
     );
     return renderRoot;
-  }
-
-  // NOTE, this is called by `platform-support`.
-  private _adoptStyles(renderRoot: ShadowRoot, styles: CSSResultFlatArray) {
-    adoptStyles(renderRoot, styles);
   }
 
   /**

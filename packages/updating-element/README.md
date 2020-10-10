@@ -55,8 +55,20 @@ export class MyElement extends UpdatingElement {
     }
   `;
 
+  contentEl?: HTMLSpanElement;
+
+  // One time setup of shadowRoot content.
+  createRenderRoot() {
+    const shadowRoot = super.createRenderRoot();
+    shadowRoot.innerHTML = `Web Components are <span></span>!`;
+    this.contentEl = shadowRoot.firstElementChild;
+    return shadowRoot;
+  }
+
+  // Use a DOM rendering library of your choice or manually update the DOM.
   update(changedProperties: PropertyValues) {
-    this.renderRoot.innerHTML = `Web Components are <span>${this.mood}</span>!`;
+    super.update(changedProperties);
+    this.contentEl.textContent = this.mood;
   }
 }
 ```

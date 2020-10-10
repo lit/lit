@@ -74,11 +74,13 @@ interface RenderOptions {
 
 const SCOPED = '__scoped';
 
+type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
+
 interface PatchableLitElementConstructor {
   [SCOPED]: boolean;
+  elementStyles: CSSResults;
+  shadowRootOptions: ShadowRootInit;
 }
-
-type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
 
 interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
@@ -88,8 +90,8 @@ interface PatchableLitElement extends HTMLElement {
   hasUpdated: boolean;
   update(changedProperties: unknown): void;
   _baseUpdate(changedProperties: unknown): void;
-  _adoptStyles(renderRoot: ShadowRoot, styles: CSSResults): void;
-  _baseAdoptStyles(renderRoot: ShadowRoot, styles: CSSResults): void;
+  createRenderRoot(): Element | ShadowRoot;
+  _baseCreateRenderRoot(): Element | ShadowRoot;
   _renderOptions: RenderOptions;
 }
 
@@ -111,12 +113,8 @@ interface PatchableLitElement extends HTMLElement {
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
   const litElementProto = LitElement.prototype;
-  litElementProto._baseAdoptStyles = litElementProto._adoptStyles;
-  litElementProto._adoptStyles = function (
-    this: PatchableLitElement,
-    renderRoot: ShadowRoot,
-    styles: CSSResults
-  ) {
+  litElementProto._baseCreateRenderRoot = litElementProto.createRenderRoot;
+  litElementProto.createRenderRoot = function (this: PatchableLitElement) {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
     // due to @apply.
@@ -124,19 +122,29 @@ interface PatchableLitElement extends HTMLElement {
     // If using native Shadow DOM must adoptStyles normally,
     // otherwise do nothing.
     if (window.ShadyCSS!.nativeShadow) {
-      this._baseAdoptStyles(renderRoot, styles);
-      // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
-    } else if (!this.constructor.hasOwnProperty(SCOPED)) {
-      (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;
-      const css = styles.map((v) =>
-        v instanceof CSSStyleSheet
-          ? Array.from(v.cssRules).reduce(
-              (a: string, r: CSSRule) => (a += r.cssText),
-              ''
-            )
-          : v.cssText
+      return this._baseCreateRenderRoot();
+    } else {
+      if (!this.constructor.hasOwnProperty(SCOPED)) {
+        (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;
+        // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
+        const css = (this
+          .constructor as PatchableLitElementConstructor).elementStyles.map(
+          (v) =>
+            v instanceof CSSStyleSheet
+              ? Array.from(v.cssRules).reduce(
+                  (a: string, r: CSSRule) => (a += r.cssText),
+                  ''
+                )
+              : v.cssText
+        );
+        window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
+      }
+      return (
+        this.shadowRoot ??
+        this.attachShadow(
+          (this.constructor as PatchableLitElementConstructor).shadowRootOptions
+        )
       );
-      window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
     }
   };
 
