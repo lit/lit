@@ -16,24 +16,12 @@ import {
   PropertyDeclaration,
 } from 'lit-element/lib/updating-element.js';
 import {property, customElement} from 'lit-element/lib/decorators.js';
+import {queryParams} from '../../utils/query-params.js';
 
 // Settings
 const itemCount = 250;
 const itemValueCount = 99;
 const updateCount = 6;
-
-// IE doesn't support URLSearchParams
-const params = document.location.search
-  .slice(1)
-  .split('&')
-  .map((p) => p.split('='))
-  .reduce(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p: {[key: string]: any}, [k, v]) => (
-      (p[k] = JSON.parse(`"${v}"`) || true), p
-    ),
-    {}
-  );
 
 type SimpleItem = {[index: string]: string};
 
@@ -168,7 +156,7 @@ export class XApp extends UpdatingElement {
 
   const updateComplete = () => new Promise((r) => requestAnimationFrame(r));
 
-  const benchmark = params.benchmark;
+  const benchmark = queryParams.benchmark;
   const getTestStartName = (name: string) => `${name}-start`;
 
   // Named functions are use to run the measurements so that they can be

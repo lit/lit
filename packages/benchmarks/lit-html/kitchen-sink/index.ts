@@ -50,23 +50,13 @@ import {html, render, nothing} from 'lit-html';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {styleMap} from 'lit-html/directives/style-map.js';
-
-// IE doesn't support URLSearchParams
-const params = document.location.search
-  .slice(1)
-  .split('&')
-  .map((p) => p.split('='))
-  .reduce(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p: {[key: string]: any}, [k, v]) => ((p[k] = JSON.parse(v || 'true')), p),
-    {}
-  );
+import {queryParams} from '../../utils/query-params.js';
 
 // Configurable params
-const width = params.width ?? 4;
-const depth = params.depth ?? 4;
-const updateCount = params.updateCount ?? 10;
-const nopUpdateCount = params.nopUpdateCount ?? 10;
+const width = queryParams.width ?? 4;
+const depth = queryParams.depth ?? 4;
+const updateCount = queryParams.updateCount ?? 10;
+const nopUpdateCount = queryParams.nopUpdateCount ?? 10;
 
 // Data model
 interface Data {
