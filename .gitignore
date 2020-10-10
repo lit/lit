@@ -17,6 +17,11 @@
 /packages/benchmarks/**/*.d.ts.map
 /packages/benchmarks/**/*.js
 /packages/benchmarks/**/*.js.map
+/packages/benchmarks/generator/build/
+/packages/benchmarks/generator/generated/
+/packages/benchmarks/generated/
+!/packages/benchmarks/generator/types/deoptigate.d.ts
+!/packages/benchmarks/lit-html/template-heavy/template-heavy.js
 
 # lit-element package
 /packages/lit-element/demo/**/*.d.ts
