@@ -3,6 +3,7 @@ name: Benchmarks
 on: [pull_request]
 
 jobs:
+
   benchmarks:
     name: benchmarks
 
@@ -48,6 +49,7 @@ jobs:
       - name: Build
         run: npm run build
 
+      # lit-html:kitchen-sink
       - name: Benchmark lit-html/kitchen-sink
         run: |
           cd packages/benchmarks
@@ -63,6 +65,39 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
+      # lit-html:template-heavy
+      - name: Benchmark lit-html/template-heavy
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/template-heavy/tachometer.json \
+            --json-file lit-html/template-heavy/results.json
+
+      - name: Report lit-html-template-heavy
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-html-template-heavy
+          path: packages/benchmarks/lit-html/template-heavy/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      # lit-html:repeat
+      - name: Benchmark lit-html/repeat
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/repeat/tachometer.json \
+            --json-file lit-html/repeat/results.json
+
+      - name: Report lit-html-repeat
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-html-repeat
+          path: packages/benchmarks/lit-html/repeat/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      # lit-element:list
       - name: Benchmark lit-element/list
         run: |
           cd packages/benchmarks
@@ -78,6 +113,7 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
+      # updating-element:list
       - name: Benchmark updating-element/list
         run: |
           cd packages/benchmarks
