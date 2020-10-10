@@ -193,6 +193,10 @@ interface PatchableNodePart {
   options: RenderOptions;
   _setValue(value: unknown): void;
   _baseSetValue(value: unknown): void;
+  _getTemplate(
+    strings: TemplateStringsArray,
+    result: ShadyTemplateResult
+  ): HTMLTemplateElement;
 }
 
 interface PatchableTemplate {
