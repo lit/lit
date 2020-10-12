@@ -9,79 +9,84 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>lit-element bundle demo</title>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <script src="../platform-support.js"></script>
+    <script src="../lit.min.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
-  <title>lit-element bundle demo</title>
-  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script src="../platform-support.js"></script>
-  <script src="../lit.min.js"></script>
-</head>
+  <body>
+    <bundle-element>Slotted Content</bundle-element>
 
-<body>
-  <bundle-element>Slotted Content</bundle-element>
+    <script type="module">
+      const {LitElement, html, css} = Lit;
 
-  <script type="module">
-    const {LitElement, html, css} = Lit;
+      class BundleElement extends LitElement {
+        static get styles() {
+          return css`
+            :host {
+              display: block;
+              font-family: sans-serif;
+              background: #000051;
+              color: white;
+              padding: 16px;
+              margin: 8px;
+              border: 4px solid #03dac6;
+            }
 
-    class BundleElement extends LitElement {
+            header {
+              font-size: 2rem;
+            }
 
-      static get styles() { return css`
-        :host {
-          display: block;
-          font-family: sans-serif;
-          background: #000051;
-          color: white;
-          padding: 16px;
-          margin: 8px;
-          border: 4px solid #03DAC6;
+            section {
+              margin: 8px;
+              font-size: 1.2rem;
+              padding: 8px;
+            }
+
+            .content {
+              border: 1px solid #03dac6;
+              margin: 16px;
+            }
+          `;
         }
 
-        header {
-          font-size: 2rem;
+        static get properties() {
+          return {value: {}};
         }
 
-        section {
-          margin: 8px;
-          font-size: 1.2rem;
-          padding: 8px;
+        constructor() {
+          super();
+          this.value = 'Hi!';
         }
 
-        .content {
-          border: 1px solid #03DAC6;
-          margin: 16px;
-        }`
-
+        render() {
+          return html`
+            <header>${this.localName}</header>
+            <section class="content">
+              <slot></slot>
+            </section>
+            <section class="content">
+              <section>
+                Say something:
+                <input
+                  @input=${(e) => (this.value = e.target.value)}
+                  value=${this.value}
+                />
+              </section>
+              <section>You said: ${this.value}</section>
+            </section>
+          `;
+        }
       }
 
-      static get properties() {
-        return {value: {}}
-      }
-
-      constructor() {
-        super();
-        this.value = 'Hi!';
-      }
-
-      render() {
-        return html`
-          <header>${this.localName}</header>
-          <section class="content">
-            <slot></slot>
-          </section>
-          <section class="content">
-            <section>Say something: <input @input=${(e) => this.value = e.target.value} value=${this.value}></section>
-            <section>You said: ${this.value}</section>
-          </section>
-        `;
-      }
-
-    }
-
-    customElements.define('bundle-element', BundleElement);
-
-  </script>
-</body>
-
+      customElements.define('bundle-element', BundleElement);
+    </script>
+  </body>
 </html>

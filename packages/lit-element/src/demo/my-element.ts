@@ -1,14 +1,17 @@
 // TODO(sorvell): rollup problem: it's trying to import all of this from
 // updating-element, but importing separately works.
 // import { LitElement, html, css, PropertyValues } from '../lit-element.js';
-import { LitElement } from '../lit-element.js';
+import {LitElement} from '../lit-element.js';
 import {html} from 'lit-html';
-import { css, PropertyValues } from 'updating-element';
-import { property } from '../decorators/property.js';
+import {css, PropertyValues} from 'updating-element';
+import {property} from '../decorators/property.js';
 
 class AnotherElement extends LitElement {
-
-  static styles = css`:host { color: #03DAC6; }`;
+  static styles = css`
+    :host {
+      color: #03dac6;
+    }
+  `;
 
   render() {
     return html`${this.localName} says hi`;
@@ -18,7 +21,6 @@ class AnotherElement extends LitElement {
 customElements.define('another-element', AnotherElement);
 
 class MyElement extends LitElement {
-
   @property()
   foo = 'foo';
   @property()
@@ -27,7 +29,13 @@ class MyElement extends LitElement {
   whales = 0;
   @property()
   bar!: number;
-  @property({converter: {fromAttribute: parseInt, toAttribute: (value: string) => value + '-attr'}, reflect: true})
+  @property({
+    converter: {
+      fromAttribute: parseInt,
+      toAttribute: (value: string) => value + '-attr',
+    },
+    reflect: true,
+  })
   fooBar?: string;
 
   constructor() {
@@ -35,7 +43,9 @@ class MyElement extends LitElement {
     this.addEventListener('click', async () => {
       this.whales++;
       await this.updateComplete;
-      this.dispatchEvent(new CustomEvent('whales', {detail: {whales: this.whales}}))
+      this.dispatchEvent(
+        new CustomEvent('whales', {detail: {whales: this.whales}})
+      );
       console.log(this.shadowRoot!.querySelector('.count')!.textContent);
     });
   }
@@ -48,15 +58,15 @@ class MyElement extends LitElement {
       color: white;
       padding: 16px;
       margin: 8px;
-      border: 4px solid #03DAC6;
+      border: 4px solid #03dac6;
     }
 
     .count {
-      color: #03DAC6;
+      color: #03dac6;
     }
 
     .content {
-      border: 1px solid #03DAC6;
+      border: 1px solid #03dac6;
       padding: 8px;
     }
 
@@ -68,7 +78,6 @@ class MyElement extends LitElement {
       margin: 16px;
       font-size: 1.2rem;
     }
-
   `;
 
   render() {
@@ -85,9 +94,7 @@ class MyElement extends LitElement {
         Composed element:
         <another-element></another-element>
       </section>
-      <section class="count">
-        Whales: ${'🐳'.repeat(this.whales)}
-      </section>
+      <section class="count">Whales: ${'🐳'.repeat(this.whales)}</section>
     `;
   }
 
