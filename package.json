@@ -15,6 +15,7 @@
   "devDependencies": {
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-virtual": "^2.0.3",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",

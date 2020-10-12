@@ -19,7 +19,6 @@ import {
 export default litRollupConfig({
   entryPoints: [
     'lit-element',
-    'platform-support',
     'decorators',
     'decorators/customElement',
     'decorators/eventOptions',
@@ -30,5 +29,9 @@ export default litRollupConfig({
     'decorators/queryAssignedNodes',
     'decorators/queryAsync',
   ],
-  external: ['lit-html', 'updating-element']
+  external: ['lit-html', 'updating-element'],
+  bundled: [{
+    file: 'platform-support',
+    name: 'LitPlatformSupport'
+  }]
 });

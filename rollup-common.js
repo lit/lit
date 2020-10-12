@@ -17,6 +17,7 @@ import {
   terser
 } from "rollup-plugin-terser";
 import copy from "rollup-plugin-copy";
+import nodeResolve from "@rollup/plugin-node-resolve";
 import * as pathLib from "path";
 import sourcemaps from "rollup-plugin-sourcemaps";
 import replace from "@rollup/plugin-replace";
@@ -76,9 +77,34 @@ const crossPackagePropertyMangles = {
 
 };
 
+const generateTerserOptions = (nameCache = null) => ({
+  warnings: true,
+  ecma: 2017,
+  compress: {
+    unsafe: true,
+    // An extra pass can squeeze out an extra byte or two.
+    passes: 2,
+  },
+  output: {
+    // "some" preserves @license and @preserve comments
+    comments: CHECKSIZE ? false : "some",
+    inline_script: false,
+  },
+  nameCache,
+  mangle: {
+    properties: {
+      regex: /^_/,
+      reserved: reservedProperties,
+      // Set to true to mangle to readable names
+      debug: false,
+    },
+  },
+});
+
 export function litRollupConfig({
   entryPoints,
-  external = []
+  external = [],
+  bundled = [],
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
@@ -129,29 +155,7 @@ export function litRollupConfig({
     ),
   ].join("\n");
 
-  const terserOptions = {
-    warnings: true,
-    ecma: 2017,
-    compress: {
-      unsafe: true,
-      // An extra pass can squeeze out an extra byte or two.
-      passes: 2,
-    },
-    output: {
-      // "some" preserves @license and @preserve comments
-      comments: CHECKSIZE ? false : "some",
-      inline_script: false,
-    },
-    nameCache,
-    mangle: {
-      properties: {
-        regex: /^_/,
-        reserved: reservedProperties,
-        // Set to true to mangle to readable names
-        debug: false,
-      },
-    },
-  };
+  const terserOptions = generateTerserOptions(nameCache);
 
   return [{
       input: nameCacheSeederInfile,
@@ -230,5 +234,41 @@ export function litRollupConfig({
         ]),
       ]
     },
+    ...bundled.map(({
+      file,
+      output,
+      name
+    }) => litBundle({
+      file,
+      output,
+      name,
+      terserOptions: terserOptions
+    }))
   ];
 }
+
+export const litBundle = ({
+  file,
+  output,
+  name,
+  terserOptions = generateTerserOptions()
+} = options) => ({
+  input: `development/${file}.js`,
+  output: {
+    file: `${output || file}.js`,
+    format: "umd",
+    name,
+    sourcemap: !CHECKSIZE,
+  },
+  plugins: [
+    nodeResolve(),
+    replace({
+      "const DEV_MODE = true": "const DEV_MODE = false",
+    }),
+    // This plugin automatically composes the existing TypeScript -> raw JS
+    // sourcemap with the raw JS -> minified JS one that we're generating here.
+    sourcemaps(),
+    terser(terserOptions),
+    summary(),
+  ]
+})
