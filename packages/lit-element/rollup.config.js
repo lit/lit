@@ -28,6 +28,7 @@ export default litRollupConfig({
     'decorators/queryAll',
     'decorators/queryAssignedNodes',
     'decorators/queryAsync',
+    'demo/my-element'
   ],
   external: ['lit-html', 'updating-element'],
   bundled: [{

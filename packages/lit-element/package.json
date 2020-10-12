@@ -87,7 +87,8 @@
     "downlevel-dts": "^0.6.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "tslib": "^2.0.3"
   },
   "dependencies": {
     "updating-element": "^1.0.0-pre.1",
