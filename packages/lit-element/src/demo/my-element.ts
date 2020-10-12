@@ -59,6 +59,7 @@ class MyElement extends LitElement {
       padding: 16px;
       margin: 8px;
       border: 4px solid #03dac6;
+      border-radius: 4px;
     }
 
     .count {
@@ -67,6 +68,7 @@ class MyElement extends LitElement {
 
     .content {
       border: 1px solid #03dac6;
+      border-radius: 4px;
       padding: 8px;
     }
 

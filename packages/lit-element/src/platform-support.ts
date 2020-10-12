@@ -109,6 +109,12 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
+  // TODO(sorvell):
+  // When we patch in UpdatingElement, we'll be under LitElement and we
+  // don't want to conflict with work lit-element needs to do.
+  // 1. instead of patching createRenderRoot, add/patch `_adoptStyles`.
+  // 2. instead of patching update, add/patch `performUpdate`.
+
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
