@@ -52,6 +52,8 @@
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
     "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
+    "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
+    "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
