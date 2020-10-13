@@ -28,5 +28,12 @@ export default litRollupConfig({
     'directives/unsafe-svg',
     'lit-html',
     'parts',
+    'platform-support',
+  ],
+  bundled: [
+    {
+      file: 'platform-support',
+      name: 'LitHtmlPlatformSupport',
+    },
   ],
 });
