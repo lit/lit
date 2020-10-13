@@ -54,19 +54,10 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from './lib/updating-element.js';
+import {PropertyValues, UpdatingElement} from 'updating-element';
 import {render, RenderOptions} from 'lit-html';
-import {
-  supportsAdoptingStyleSheets,
-  CSSResult,
-  CSSResultGroup,
-  CSSResultOrNative,
-  unsafeCSS,
-} from './lib/css-tag.js';
-
-export * from './lib/updating-element.js';
+export * from 'updating-element';
 export * from 'lit-html';
-export * from './lib/css-tag.js';
 
 const DEV_MODE = true;
 if (DEV_MODE) {
@@ -86,28 +77,11 @@ declare global {
   '3.0.0-pre.1'
 );
 
-type CSSResultFlatArray = CSSResultOrNative[];
-
-export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
-
 /**
  * Sentinal value used to avoid calling lit-html's render function when
  * subclasses do not implement `render`
  */
 const renderNotImplemented = {};
-
-const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
-  let cssText = '';
-  for (const rule of sheet.cssRules) {
-    cssText += rule.cssText;
-  }
-  return unsafeCSS(cssText);
-};
-
-const getCompatibleStyle = supportsAdoptingStyleSheets
-  ? (s: CSSResultOrNative) => s
-  : (s: CSSResultOrNative) =>
-      s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -123,131 +97,21 @@ export class LitElement extends UpdatingElement {
    * it will not needlessly try to `finalize`.
    *
    * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See updating-element.ts for more information.
+   * optimizations. See updating-element for more information.
    */
   protected static ['finalized'] = true;
 
-  /**
-   * Array of styles to apply to the element. The styles should be defined
-   * using the [[`css`]] tag function or via constructible stylesheets.
-   */
-  static styles?: CSSResultGroup;
-  private static _elementStyles?: CSSResultFlatArray;
+  readonly _renderOptions: RenderOptions = {eventContext: this};
 
-  /**
-   * Options used when calling `attachShadow`. Set this property to customize
-   * the options for the shadowRoot; for example, to create a closed
-   * shadowRoot: `{mode: 'closed'}`.
-   *
-   * Note, these options are used in `createRenderRoot`. If this method
-   * is customized, options should be respected if possible.
-   */
-  static shadowRootOptions: ShadowRootInit = {mode: 'open'};
-
-  /**
-   * Takes the styles the user supplied via the `static styles` property and
-   * returns the array of styles to apply to the element.
-   * Override this method to integrate into a style management system.
-   *
-   * Styles are deduplicated preserving the _last_ instance in the list. This
-   * is a performance optimization to avoid duplicated styles that can occur
-   * especially when composing via subclassing. The last item is kept to try
-   * to preserve the cascade order with the assumption that it's most important
-   * that last added styles override previous styles.
-   *
-   * @nocollapse
-   */
-  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
-    const elementStyles = [];
-    if (Array.isArray(styles)) {
-      // Dedupe the flattened array in reverse order to preserve the last items.
-      // TODO(sorvell): casting to Array<unknown> works around TS error that
-      // appears to come from trying to flatten a type CSSResultArray.
-      const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
-      // Then preserve original order by adding the set items in reverse order.
-      for (const s of set) {
-        elementStyles.unshift(getCompatibleStyle(s as CSSResultOrNative));
-      }
-    } else if (styles !== undefined) {
-      elementStyles.push(getCompatibleStyle(styles));
-    }
-    return elementStyles;
-  }
-
-  protected static finalize() {
-    const wasFinalized = super.finalize();
-    if (wasFinalized) {
-      this._elementStyles = this.finalizeStyles(this.styles);
-    }
-    return wasFinalized;
-  }
-
-  /**
-   * Node or ShadowRoot into which element DOM should be rendered. Defaults
-   * to an open shadowRoot.
-   */
-  readonly renderRoot!: HTMLElement | DocumentFragment;
-  readonly _renderOptions!: RenderOptions;
-
-  /**
-   * Performs element initialization. By default this calls
-   * [[`createRenderRoot`]] to create the element [[`renderRoot`]] node and
-   * captures any pre-set values for registered properties.
-   */
-  protected initialize() {
-    super.initialize();
-    (this as {
-      _renderOptions: RenderOptions;
-    })._renderOptions = {eventContext: this};
-    (this as {
-      renderRoot: Element | DocumentFragment;
-    }).renderRoot = this.createRenderRoot();
-    this.adoptStyles((this.constructor as typeof LitElement)._elementStyles!);
-  }
-
-  /**
-   * Returns the node into which the element should render and by default
-   * creates and returns an open shadowRoot. Implement to customize where the
-   * element's DOM is rendered. For example, to render into the element's
-   * childNodes, return `this`.
-   * @returns {Element|DocumentFragment} Returns a node into which to render.
-   */
-  protected createRenderRoot(): Element | ShadowRoot {
-    return this.attachShadow(
-      (this.constructor as typeof LitElement).shadowRootOptions
-    );
-  }
-
-  /**
-   * Applies the given styles to the element. Styling is applied to the element
-   * only if the `renderRoot` is a `shadowRoot`. If the `rendeRoot` is not
-   * a `shadowRoot`, this method may be overridden to apply styling in another
-   * way. Styling will apply using `shadowRoot.adoptedStyleSheets` where
-   * available and will fallback otherwise. When Shadow DOM is available but
-   * `adoptedStyleSheets` is not, styles are appended to the the `shadowRoot`
-   * to [mimic spec behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
-   */
-  protected adoptStyles(styles: CSSResultFlatArray) {
-    // Note, if renderRoot is not a shadowRoot, styles would/could apply to the
-    // element's getRootNode(). While this could be done, we're choosing not to
-    // support this now since it would require different logic around de-duping.
-    if (!(this.renderRoot instanceof window.ShadowRoot)) {
-      return;
-    }
-    if (supportsAdoptingStyleSheets) {
-      (this.renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
-        s instanceof CSSStyleSheet ? s : s.styleSheet!
-      );
-    } else {
-      styles.forEach((s) => {
-        const style = document.createElement('style');
-        style.textContent = (s as CSSResult).cssText;
-        this.renderRoot.appendChild(style);
-        (this._renderOptions as {
-          renderBefore: ChildNode;
-        }).renderBefore ??= style;
-      });
-    }
+  protected createRenderRoot() {
+    const renderRoot = super.createRenderRoot();
+    // When adoptedStyleSheets are shimmed, they are inserted into the
+    // shadowRoot by createRenderRoot. Adjust the renderBefore node so that
+    // any styles in Lit content render before adoptedStyleSheets. This is
+    // important so that adoptedStyleSheets have precedence over styles in
+    // the shadowRoot.
+    this._renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    return renderRoot;
   }
 
   /**

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "lit-element": "^3.0.0-pre.1",
+    "updating-element": "^1.0.0-pre.1",
     "lit-html": "^2.0.0-pre.1",
     "tachometer": "^0.5.3"
   },

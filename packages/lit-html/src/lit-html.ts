@@ -263,11 +263,11 @@ export interface RenderOptions {
    * An object to use as the `this` value for event listeners. It's often
    * useful to set this to the host component rendering a template.
    */
-  readonly eventContext?: EventTarget;
+  eventContext?: EventTarget;
   /**
    * A DOM node before which to render content in the container.
    */
-  readonly renderBefore?: ChildNode | null;
+  renderBefore?: ChildNode | null;
 }
 
 /**
