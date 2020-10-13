@@ -30,4 +30,10 @@ export default litRollupConfig({
     'decorators/queryAsync',
   ],
   external: [],
+  bundled: [
+    {
+      file: 'platform-support',
+      name: 'PlatformSupport',
+    },
+  ],
 });

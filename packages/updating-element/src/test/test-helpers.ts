@@ -32,7 +32,7 @@ export const stripExpressionComments = (html: string) =>
 // in use or it is and platform support is available.
 export const canTestUpdatingElement =
   (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
-  window.litElementPlatformSupport;
+  UpdatingElement.hasOwnProperty('_hasPlatformSupport');
 
 export class RenderingElement extends UpdatingElement {
   render(): string | undefined {

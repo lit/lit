@@ -921,3 +921,6 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
+
+// Apply polyfills if available
+(globalThis as any)['updatingElementPlatformSupport']?.({UpdatingElement});

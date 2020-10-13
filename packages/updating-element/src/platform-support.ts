@@ -28,13 +28,16 @@ interface RenderOptions {
 }
 
 const SCOPED = '__scoped';
+const HAS_PLATFORM_SUPPORT = '_hasPlatformSupport';
 
 type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
 
 interface PatchableUpdatingElementConstructor {
+  [HAS_PLATFORM_SUPPORT]?: boolean;
   [SCOPED]: boolean;
   elementStyles: CSSResults;
   shadowRootOptions: ShadowRootInit;
+  _handlesPrepareStyles?: boolean;
 }
 
 interface PatchableUpdatingElement extends HTMLElement {
@@ -55,9 +58,16 @@ interface PatchableUpdatingElement extends HTMLElement {
 }: {
   UpdatingElement: PatchableUpdatingElement;
 }) => {
-  if (!needsPlatformSupport) {
+  if (
+    !needsPlatformSupport ||
+    UpdatingElement.hasOwnProperty(HAS_PLATFORM_SUPPORT)
+  ) {
     return;
   }
+
+  ((UpdatingElement as unknown) as PatchableUpdatingElementConstructor)[
+    HAS_PLATFORM_SUPPORT
+  ] = true;
 
   // console.log(
   //   '%c Making UpdatingElement compatible with ShadyDOM/CSS.',
@@ -72,9 +82,8 @@ interface PatchableUpdatingElement extends HTMLElement {
   elementProto._baseCreateRenderRoot = elementProto.createRenderRoot;
   elementProto.createRenderRoot = function (this: PatchableUpdatingElement) {
     // Pass the scope to render options so that it gets to lit-html for proper
-    // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
-    // due to @apply.
-    // const name = (this._renderOptions.scope = this.localName);
+    // scoping via ShadyCSS.
+    const name = this.localName;
     // If using native Shadow DOM must adoptStyles normally,
     // otherwise do nothing.
     if (window.ShadyCSS!.nativeShadow) {
@@ -96,6 +105,12 @@ interface PatchableUpdatingElement extends HTMLElement {
               : v.cssText
         );
         window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
+        if (this.constructor._handlesPrepareStyles === undefined) {
+          window.ShadyCSS!.prepareTemplateStyles(
+            document.createElement('template'),
+            name
+          );
+        }
       }
       return (
         this.shadowRoot ??
@@ -125,7 +140,7 @@ interface PatchableUpdatingElement extends HTMLElement {
    * update.
    */
   elementProto._baseAfterUpdate = elementProto._afterUpdate;
-  elementProto.update = function (
+  elementProto._afterUpdate = function (
     this: PatchableUpdatingElement,
     changedProperties: unknown
   ) {
