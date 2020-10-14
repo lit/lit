@@ -12,16 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import summary from "rollup-plugin-summary";
-import {
-  terser
-} from "rollup-plugin-terser";
-import copy from "rollup-plugin-copy";
-import nodeResolve from "@rollup/plugin-node-resolve";
-import * as pathLib from "path";
-import sourcemaps from "rollup-plugin-sourcemaps";
-import replace from "@rollup/plugin-replace";
-import virtual from "@rollup/plugin-virtual";
+import summary from 'rollup-plugin-summary';
+import {terser} from 'rollup-plugin-terser';
+import copy from 'rollup-plugin-copy';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import * as pathLib from 'path';
+import sourcemaps from 'rollup-plugin-sourcemaps';
+import replace from '@rollup/plugin-replace';
+import virtual from '@rollup/plugin-virtual';
 
 // In CHECKSIZE mode we:
 // 1) Don't emit any files.
@@ -29,7 +27,7 @@ import virtual from "@rollup/plugin-virtual";
 // 3) Don't include the "//# sourceMappingURL" comment.
 const CHECKSIZE = !!process.env.CHECKSIZE;
 if (CHECKSIZE) {
-  console.log("NOTE: In CHECKSIZE mode, no output!");
+  console.log('NOTE: In CHECKSIZE mode, no output!');
 }
 
 const skipBundleOutput = {
@@ -43,13 +41,17 @@ const skipBundleOutput = {
 };
 
 const reservedProperties = [
-  "_$litType$",
-  "_$litDirective$",
+  '_$litType$',
+  '_$litDirective$',
   // TODO Decide on public API
   // https://github.com/Polymer/lit-html/issues/1261
-  "_value",
-  "_setValue",
-  "createTreeWalker"
+  '_value',
+  '_setValue',
+  'createTreeWalker',
+  // Note, reserved so that prod updating-element platform-support
+  // can share this key with dev lit-element platform-support which
+  // imports it.
+  '_handlesPrepareStyles',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -59,22 +61,23 @@ const reservedProperties = [
 // Note, these are used for `platform-support`.
 const crossPackagePropertyMangles = {
   // lit-html: Template
-  _createElement: "A",
-  _element: "B",
-  _options: "C",
+  _createElement: 'A',
+  _element: 'B',
+  _options: 'C',
   // lit-html: NodePart
-  _startNode: "D",
-  _endNode: "E",
-  _baseSetValue: "F",
-  _getTemplate: "G",
+  _startNode: 'D',
+  _endNode: 'E',
+  _baseSetValue: 'F',
+  _getTemplate: 'G',
   // lit-html: TemplateInstance
-  _template: "H",
+  _template: 'H',
+  // updating-element: UpdatingElement
+  _baseConnectedCallback: 'Q',
+  _baseCreateRenderRoot: 'R',
+  _afterUpdate: 'S',
+  _baseAfterUpdate: 'T',
   // lit-element: LitElement
-  _renderOptions: "I",
-  _baseConnectedCallback: "J",
-  _baseUpdate: "K",
-  _baseCreateRenderRoot: "L",
-
+  _renderOptions: 'W',
 };
 
 const generateTerserOptions = (nameCache = null) => ({
@@ -87,7 +90,7 @@ const generateTerserOptions = (nameCache = null) => ({
   },
   output: {
     // "some" preserves @license and @preserve comments
-    comments: CHECKSIZE ? false : "some",
+    comments: CHECKSIZE ? false : 'some',
     inline_script: false,
   },
   nameCache,
@@ -137,13 +140,14 @@ export function litRollupConfig({
       props: Object.entries(crossPackagePropertyMangles).reduce(
         (obj, [name, val]) => ({
           ...obj,
-          ["$" + name]: val
-        }), {}
+          ['$' + name]: val,
+        }),
+        {}
       ),
     },
   };
-  const nameCacheSeederInfile = "name-cache-seeder-virtual-input.js";
-  const nameCacheSeederOutfile = "name-cache-seeder-throwaway-output.js";
+  const nameCacheSeederInfile = 'name-cache-seeder-virtual-input.js';
+  const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
     // Import every entry point so that we see all property accesses.
     ...entryPoints.map((name) => `import './development/${name}.js';`),
@@ -153,15 +157,16 @@ export function litRollupConfig({
     ...Object.keys(crossPackagePropertyMangles).map(
       (name) => `console.log(window.${name});`
     ),
-  ].join("\n");
+  ].join('\n');
 
   const terserOptions = generateTerserOptions(nameCache);
 
-  return [{
+  return [
+    {
       input: nameCacheSeederInfile,
       output: {
         file: nameCacheSeederOutfile,
-        format: "esm",
+        format: 'esm',
       },
       external,
       // Since our virtual name cache seeder module doesn't export anything,
@@ -179,8 +184,8 @@ export function litRollupConfig({
     {
       input: entryPoints.map((name) => `development/${name}.js`),
       output: {
-        dir: "./",
-        format: "esm",
+        dir: './',
+        format: 'esm',
         // Preserve existing module structure (e.g. preserve the "directives/"
         // directory).
         preserveModules: true,
@@ -209,41 +214,46 @@ export function litRollupConfig({
         // way or another, so it's difficult to define a default in the source code
         // itself.
         replace({
-          "const DEV_MODE = true": "const DEV_MODE = false",
+          'const DEV_MODE = true': 'const DEV_MODE = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
         sourcemaps(),
         terser(terserOptions),
         summary(),
-        ...(CHECKSIZE ? [skipBundleOutput] : [
-          // Place a copy of each d.ts file adjacent to its minified module.
-          copy({
-            targets: entryPoints.map((name) => ({
-              src: `development/${name}.d.ts`,
-              dest: pathLib.dirname(name),
-            })),
-          }),
-          // Copy platform support tests.
-          copy({
-            targets: [{
-              src: `src/test/platform-support/*_test.html`,
-              dest: ['development/test/platform-support', 'test/platform-support'],
-            }]
-          }),
-        ]),
-      ]
+        ...(CHECKSIZE
+          ? [skipBundleOutput]
+          : [
+              // Place a copy of each d.ts file adjacent to its minified module.
+              copy({
+                targets: entryPoints.map((name) => ({
+                  src: `development/${name}.d.ts`,
+                  dest: pathLib.dirname(name),
+                })),
+              }),
+              // Copy platform support tests.
+              copy({
+                targets: [
+                  {
+                    src: `src/test/platform-support/*_test.html`,
+                    dest: [
+                      'development/test/platform-support',
+                      'test/platform-support',
+                    ],
+                  },
+                ],
+              }),
+            ]),
+      ],
     },
-    ...bundled.map(({
-      file,
-      output,
-      name
-    }) => litBundle({
-      file,
-      output,
-      name,
-      terserOptions: terserOptions
-    }))
+    ...bundled.map(({file, output, name}) =>
+      litBundle({
+        file,
+        output,
+        name,
+        terserOptions: terserOptions,
+      })
+    ),
   ];
 }
 
@@ -251,24 +261,24 @@ export const litBundle = ({
   file,
   output,
   name,
-  terserOptions = generateTerserOptions()
+  terserOptions = generateTerserOptions(),
 } = options) => ({
   input: `development/${file}.js`,
   output: {
     file: `${output || file}.js`,
-    format: "umd",
+    format: 'umd',
     name,
     sourcemap: !CHECKSIZE,
   },
   plugins: [
     nodeResolve(),
     replace({
-      "const DEV_MODE = true": "const DEV_MODE = false",
+      'const DEV_MODE = true': 'const DEV_MODE = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.
     sourcemaps(),
     terser(terserOptions),
     summary(),
-  ]
-})
+  ],
+});

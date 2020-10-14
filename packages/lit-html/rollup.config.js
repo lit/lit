@@ -33,7 +33,6 @@ export default litRollupConfig({
   bundled: [
     {
       file: 'platform-support',
-      name: 'LitHtmlPlatformSupport',
     },
   ],
 });

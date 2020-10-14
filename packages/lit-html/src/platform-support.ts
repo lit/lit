@@ -77,8 +77,11 @@ interface ShadyTemplateResult {
   _$litType$?: string;
 }
 
+const HAS_PLATFORM_SUPPORT = '_hasPlatformSupport';
+
 interface PatchableNodePart {
   new (...args: any[]): PatchableNodePart;
+  [HAS_PLATFORM_SUPPORT]?: boolean;
   _value: unknown;
   _startNode: ChildNode;
   _endNode: ChildNode | null;
@@ -121,9 +124,14 @@ const scopeCssStore: Map<string, string[]> = new Map();
   NodePart: PatchableNodePart;
   Template: PatchableTemplate;
 }) => {
-  if (!needsPlatformSupport) {
+  if (
+    !needsPlatformSupport ||
+    NodePart.prototype[HAS_PLATFORM_SUPPORT] !== undefined
+  ) {
     return;
   }
+
+  NodePart.prototype[HAS_PLATFORM_SUPPORT] = true;
 
   // console.log(
   //   '%c Making lit-html compatible with ShadyDOM/CSS.',
