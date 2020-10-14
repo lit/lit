@@ -17,6 +17,8 @@
  * @packageDocumentation
  */
 
+import 'updating-element/platform-support.js';
+
 // TODO(sorvell): Remove these once ShadyDOM/webcomponentsjs supports them.
 // Source: https://developer.mozilla.org/en-US/docs/Web/API/ParentNode/append
 (function (arr) {
@@ -72,26 +74,16 @@ interface RenderOptions {
   scope?: string;
 }
 
-const SCOPED = '__scoped';
-
-type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
+const HAS_PLATFORM_SUPPORT = '_hasPlatformSupport';
 
 interface PatchableLitElementConstructor {
-  [SCOPED]: boolean;
-  elementStyles: CSSResults;
-  shadowRootOptions: ShadowRootInit;
+  [HAS_PLATFORM_SUPPORT]?: boolean;
 }
 
 interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
-  connectedCallback(): void;
-  _baseConnectedCallback(): void;
-  hasUpdated: boolean;
-  update(changedProperties: unknown): void;
-  _baseUpdate(changedProperties: unknown): void;
   createRenderRoot(): Element | ShadowRoot;
-  _baseCreateRenderRoot(): Element | ShadowRoot;
   _renderOptions: RenderOptions;
 }
 
@@ -100,7 +92,10 @@ interface PatchableLitElement extends HTMLElement {
 }: {
   LitElement: PatchableLitElement;
 }) => {
-  if (!needsPlatformSupport) {
+  if (
+    !needsPlatformSupport ||
+    LitElement.hasOwnProperty(HAS_PLATFORM_SUPPORT)
+  ) {
     return;
   }
 
@@ -109,80 +104,17 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
-  // TODO(sorvell):
-  // When we patch in UpdatingElement, we'll be under LitElement and we
-  // don't want to conflict with work lit-element needs to do.
-  // 1. instead of patching createRenderRoot, add/patch `_adoptStyles`.
-  // 2. instead of patching update, add/patch `performUpdate`.
-
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
   const litElementProto = LitElement.prototype;
-  litElementProto._baseCreateRenderRoot = litElementProto.createRenderRoot;
+  const createRenderRoot = litElementProto.createRenderRoot;
   litElementProto.createRenderRoot = function (this: PatchableLitElement) {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
     // due to @apply.
-    const name = (this._renderOptions.scope = this.localName);
-    // If using native Shadow DOM must adoptStyles normally,
-    // otherwise do nothing.
-    if (window.ShadyCSS!.nativeShadow) {
-      return this._baseCreateRenderRoot();
-    } else {
-      if (!this.constructor.hasOwnProperty(SCOPED)) {
-        (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;
-        // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
-        const css = (this
-          .constructor as PatchableLitElementConstructor).elementStyles.map(
-          (v) =>
-            v instanceof CSSStyleSheet
-              ? Array.from(v.cssRules).reduce(
-                  (a: string, r: CSSRule) => (a += r.cssText),
-                  ''
-                )
-              : v.cssText
-        );
-        window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
-      }
-      return (
-        this.shadowRoot ??
-        this.attachShadow(
-          (this.constructor as PatchableLitElementConstructor).shadowRootOptions
-        )
-      );
-    }
-  };
-
-  /**
-   * Patch connectedCallback to apply ShadyCSS custom properties shimming.
-   */
-  litElementProto._baseConnectedCallback = litElementProto.connectedCallback;
-  litElementProto.connectedCallback = function (this: PatchableLitElement) {
-    this._baseConnectedCallback();
-    // Note, must do first update separately so that we're ensured
-    // that rendering has completed before calling this.
-    if (this.hasUpdated) {
-      window.ShadyCSS!.styleElement(this);
-    }
-  };
-
-  /**
-   * Patch update to apply ShadyCSS custom properties shimming for first
-   * update.
-   */
-  litElementProto._baseUpdate = litElementProto.update;
-  litElementProto.update = function (
-    this: PatchableLitElement,
-    changedProperties: unknown
-  ) {
-    const isFirstUpdate = !this.hasUpdated;
-    this._baseUpdate(changedProperties);
-    // Note, must do first update here so rendering has completed before
-    // calling this and styles are correct by updated/firstUpdated.
-    if (isFirstUpdate) {
-      window.ShadyCSS!.styleElement(this);
-    }
+    this._renderOptions.scope = this.localName;
+    return createRenderRoot.call(this);
   };
 };
 
