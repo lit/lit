@@ -4,12 +4,8 @@
 
 # shared in packages
 /packages/*/node_modules/
-/packages/*/lib/
+/packages/*/development/
 /packages/*/test/
-/packages/*/development/**/*.js
-/packages/*/development/**/*.js.map
-/packages/*/development/**/*.d.ts
-/packages/*/development/**/*.d.ts.map
 /packages/*/*.tgz
 
 # benchmarks package
@@ -39,7 +35,7 @@
 /packages/lit-html/parts.*
 
 # updating-element package
-/packages/lit-html/decorators/
-/packages/lit-html/css-tag.*
-/packages/lit-html/decorators.*
-/packages/lit-html/updating-element.*
+/packages/updating-element/decorators/
+/packages/updating-element/css-tag.*
+/packages/updating-element/decorators.*
+/packages/updating-element/updating-element.*
