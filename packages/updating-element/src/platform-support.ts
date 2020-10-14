@@ -28,12 +28,10 @@ interface RenderOptions {
 }
 
 const SCOPED = '__scoped';
-const HAS_PLATFORM_SUPPORT = '_hasPlatformSupport';
 
 type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
 
 interface PatchableUpdatingElementConstructor {
-  [HAS_PLATFORM_SUPPORT]?: boolean;
   [SCOPED]: boolean;
   elementStyles: CSSResults;
   shadowRootOptions: ShadowRootInit;
@@ -44,30 +42,20 @@ interface PatchableUpdatingElement extends HTMLElement {
   new (...args: any[]): PatchableUpdatingElement;
   constructor: PatchableUpdatingElementConstructor;
   connectedCallback(): void;
-  _baseConnectedCallback(): void;
   hasUpdated: boolean;
   _afterUpdate(changedProperties: unknown): void;
-  _baseAfterUpdate(changedProperties: unknown): void;
   createRenderRoot(): Element | ShadowRoot;
-  _baseCreateRenderRoot(): Element | ShadowRoot;
   _renderOptions: RenderOptions;
 }
 
-(globalThis as any)['updatingElementPlatformSupport'] = ({
+(globalThis as any)['updatingElementPlatformSupport'] ??= ({
   UpdatingElement,
 }: {
   UpdatingElement: PatchableUpdatingElement;
 }) => {
-  if (
-    !needsPlatformSupport ||
-    UpdatingElement.hasOwnProperty(HAS_PLATFORM_SUPPORT)
-  ) {
+  if (!needsPlatformSupport) {
     return;
   }
-
-  ((UpdatingElement as unknown) as PatchableUpdatingElementConstructor)[
-    HAS_PLATFORM_SUPPORT
-  ] = true;
 
   // console.log(
   //   '%c Making UpdatingElement compatible with ShadyDOM/CSS.',
@@ -79,7 +67,7 @@ interface PatchableUpdatingElement extends HTMLElement {
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
-  elementProto._baseCreateRenderRoot = elementProto.createRenderRoot;
+  const createRenderRoot = elementProto.createRenderRoot;
   elementProto.createRenderRoot = function (this: PatchableUpdatingElement) {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS.
@@ -87,7 +75,7 @@ interface PatchableUpdatingElement extends HTMLElement {
     // If using native Shadow DOM must adoptStyles normally,
     // otherwise do nothing.
     if (window.ShadyCSS!.nativeShadow) {
-      return this._baseCreateRenderRoot();
+      return createRenderRoot.call(this);
     } else {
       if (!this.constructor.hasOwnProperty(SCOPED)) {
         (this.constructor as PatchableUpdatingElementConstructor)[
@@ -125,9 +113,9 @@ interface PatchableUpdatingElement extends HTMLElement {
   /**
    * Patch connectedCallback to apply ShadyCSS custom properties shimming.
    */
-  elementProto._baseConnectedCallback = elementProto.connectedCallback;
+  const connectedCallback = elementProto.connectedCallback;
   elementProto.connectedCallback = function (this: PatchableUpdatingElement) {
-    this._baseConnectedCallback();
+    connectedCallback.call(this);
     // Note, must do first update separately so that we're ensured
     // that rendering has completed before calling this.
     if (this.hasUpdated) {
@@ -139,13 +127,13 @@ interface PatchableUpdatingElement extends HTMLElement {
    * Patch update to apply ShadyCSS custom properties shimming for first
    * update.
    */
-  elementProto._baseAfterUpdate = elementProto._afterUpdate;
+  const afterUpdate = elementProto._afterUpdate;
   elementProto._afterUpdate = function (
     this: PatchableUpdatingElement,
     changedProperties: unknown
   ) {
     const isFirstUpdate = !this.hasUpdated;
-    this._baseAfterUpdate(changedProperties);
+    afterUpdate.call(this, changedProperties);
     // Note, must do first update here so rendering has completed before
     // calling this and styles are correct by updated/firstUpdated.
     if (isFirstUpdate) {

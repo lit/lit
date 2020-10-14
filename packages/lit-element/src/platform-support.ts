@@ -30,10 +30,7 @@ interface RenderOptions {
   scope?: string;
 }
 
-const HAS_PLATFORM_SUPPORT = '_hasPlatformSupport';
-
 interface PatchableLitElementConstructor {
-  [HAS_PLATFORM_SUPPORT]?: boolean;
   _handlesPrepareStyles?: boolean;
 }
 
@@ -44,15 +41,12 @@ interface PatchableLitElement extends HTMLElement {
   _renderOptions: RenderOptions;
 }
 
-(globalThis as any)['litElementPlatformSupport'] = ({
+(globalThis as any)['litElementPlatformSupport'] ??= ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;
 }) => {
-  if (
-    !needsPlatformSupport ||
-    LitElement.hasOwnProperty(HAS_PLATFORM_SUPPORT)
-  ) {
+  if (!needsPlatformSupport) {
     return;
   }
 

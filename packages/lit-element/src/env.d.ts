@@ -26,6 +26,7 @@ interface Window {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   ShadowRoot: typeof ShadowRoot;
+  updatingElementPlatformSupport: (options: {[index: string]: any}) => void;
   litElementPlatformSupport: (options: {[index: string]: any}) => void;
   litHtmlPlatformSupport: (options: {[index: string]: any}) => void;
 }

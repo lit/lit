@@ -67,15 +67,11 @@ const crossPackagePropertyMangles = {
   // lit-html: NodePart
   _startNode: 'D',
   _endNode: 'E',
-  _baseSetValue: 'F',
-  _getTemplate: 'G',
+  _getTemplate: 'F',
   // lit-html: TemplateInstance
   _template: 'H',
   // updating-element: UpdatingElement
-  _baseConnectedCallback: 'Q',
-  _baseCreateRenderRoot: 'R',
   _afterUpdate: 'S',
-  _baseAfterUpdate: 'T',
   // lit-element: LitElement
   _renderOptions: 'W',
 };

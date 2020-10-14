@@ -77,17 +77,13 @@ interface ShadyTemplateResult {
   _$litType$?: string;
 }
 
-const HAS_PLATFORM_SUPPORT = '_hasPlatformSupport';
-
 interface PatchableNodePart {
   new (...args: any[]): PatchableNodePart;
-  [HAS_PLATFORM_SUPPORT]?: boolean;
   _value: unknown;
   _startNode: ChildNode;
   _endNode: ChildNode | null;
   options: RenderOptions;
   _setValue(value: unknown): void;
-  _baseSetValue(value: unknown): void;
   _getTemplate(
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
@@ -117,21 +113,16 @@ const scopeCssStore: Map<string, string[]> = new Map();
  * * NodePart.prototype._getTemplate
  * * NodePart.prototype._setValue
  */
-(globalThis as any)['litHtmlPlatformSupport'] = ({
+(globalThis as any)['litHtmlPlatformSupport'] ??= ({
   NodePart,
   Template,
 }: {
   NodePart: PatchableNodePart;
   Template: PatchableTemplate;
 }) => {
-  if (
-    !needsPlatformSupport ||
-    NodePart.prototype[HAS_PLATFORM_SUPPORT] !== undefined
-  ) {
+  if (!needsPlatformSupport) {
     return;
   }
-
-  NodePart.prototype[HAS_PLATFORM_SUPPORT] = true;
 
   // console.log(
   //   '%c Making lit-html compatible with ShadyDOM/CSS.',
@@ -211,7 +202,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
-  nodePartProto._baseSetValue = nodePartProto._setValue;
+  const setValue = nodePartProto._setValue;
   nodePartProto._setValue = function (this: PatchableNodePart, value: unknown) {
     const container = this._startNode.parentNode!;
     const scope = this.options.scope;
@@ -234,7 +225,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
       // Note, any nested template results render here and their styles will
       // be extracted and collected.
-      this._baseSetValue(value);
+      setValue.call(this, value);
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
@@ -257,7 +248,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       this._startNode = startNode;
       this._endNode = endNode;
     } else {
-      this._baseSetValue(value);
+      setValue.call(this, value);
     }
   };
 
