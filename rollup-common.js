@@ -51,17 +51,26 @@ const reservedProperties = [
 
 // Any private properties which we share between different _packages_ are
 // hard-coded here because they must never change between versions. Mangled
-// names are randomly chosen uppercase letters, in case we ever might want to
+// names are uppercase letters, in case we ever might want to
 // use lowercase letters for short, public APIs.
+// Note, these are used for `platform-support`.
 const crossPackagePropertyMangles = {
-  _createElement: 'Y',
-  _endNode: 'M',
-  _startNode: 'C',
-  _getTemplate: 'T',
-  _element: 'E',
-  _options: 'O',
-  _template: 't',
-  _renderOptions: 'R',
+  // lit-html: Template
+  _createElement: 'A',
+  _element: 'B',
+  _options: 'C',
+  // lit-html: NodePart
+  _startNode: 'D',
+  _endNode: 'E',
+  _baseSetValue: 'F',
+  _getTemplate: 'G',
+  // lit-html: TemplateInstance
+  _template: 'H',
+  // lit-element: LitElement
+  _renderOptions: 'I',
+  _baseConnectedCallback: 'J',
+  _baseUpdate: 'K',
+  _baseCreateRenderRoot: 'L',
 };
 
 // eslint-disable-next-line no-undef

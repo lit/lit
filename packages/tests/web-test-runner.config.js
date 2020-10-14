@@ -149,6 +149,7 @@ export default {
   files: [
     '../lit-html/development/**/*_test.js',
     '../lit-element/development/**/*_test.(js|html)',
+    '../updating-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
   concurrency: 6, // default cores / 2

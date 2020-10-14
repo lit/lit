@@ -11,10 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../lib/platform-support.js';
+import '../../platform-support.js';
 import {html, render} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
-import {ShadyRenderOptions} from '../test-utils/shadow-root';
+import {ShadyRenderOptions} from '../test-helpers.js';
 
 suite('shady-render without Shadow DOM or Custom Elements', () => {
   test('shady-render renders content', () => {

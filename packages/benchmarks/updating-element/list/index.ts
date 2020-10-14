@@ -11,11 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {
-  UpdatingElement,
-  PropertyDeclaration,
-} from 'lit-element/lib/updating-element.js';
-import {property, customElement} from 'lit-element/lib/decorators.js';
+import {UpdatingElement, PropertyDeclaration} from 'updating-element';
+import {property, customElement} from 'updating-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
 
 // Settings

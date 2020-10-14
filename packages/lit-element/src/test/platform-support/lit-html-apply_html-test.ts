@@ -11,11 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../lib/platform-support.js';
+import '../../platform-support.js';
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
 import {html as htmlWithApply} from 'lit-html';
-import {renderShadowRoot} from '../test-utils/shadow-root';
+import {renderShadowRoot} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

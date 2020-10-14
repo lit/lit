@@ -37,19 +37,19 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/lit-html.js",
-    "/lit-html.js.map",
+    "/development/",
+    "!/development/test/",
+    "/directives/",
     "/lit-html.d.ts",
     "/lit-html.d.ts.map",
-    "/directives/",
-    "/parts.js",
-    "/parts.js.map",
+    "/lit-html.js",
+    "/lit-html.js.map",
     "/parts.d.ts",
     "/parts.d.ts.map",
+    "/parts.js",
+    "/parts.js.map",
     "/src/",
-    "!/src/test/",
-    "/development/",
-    "!/development/test/"
+    "!/src/test/"
   ],
   "dependencies": {},
   "devDependencies": {
