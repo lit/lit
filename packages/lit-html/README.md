@@ -1,4 +1,5 @@
 # lit-html 2.0 Pre-release
+
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
 [![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next
@@ -67,10 +68,12 @@ change in future pre-releases.**
 | How part validation is done | `instanceof` check on `part` in every render | `part.type` check in constructor
 
 ### Example directive migration
+
 Below is an example of a lit-html 1.x directive, and how to migrate it to the
 new API:
 
 1.x Directive API:
+
 ```js
 import {directive, NodePart, html} from 'lit-html';
 
@@ -99,36 +102,40 @@ export const renderCounter = directive((initialValue) => (part) => {
 ```
 
 2.0 Directive API:
+
 ```js
 import {directive, Directive, NODE_PART, html} from 'lit-html';
 
 // Class-based directive API
-export const renderCounter = directive(class extends Directive {
-  // State stored in class field
-  value = undefined;
-  constructor(part) {
-    super();
-    // When necessary, validate part in constructor using `part.type`
-    if (part.type !== NODE_PART) {
-      throw new Error('renderCounter only supports NodePart');
+export const renderCounter = directive(
+  class extends Directive {
+    // State stored in class field
+    value = undefined;
+    constructor(part) {
+      super();
+      // When necessary, validate part in constructor using `part.type`
+      if (part.type !== NODE_PART) {
+        throw new Error('renderCounter only supports NodePart');
+      }
+    }
+    // Any imperative updates to DOM/parts would go here
+    update(part, [initialValue]) {
+      // ...
+    }
+    // Do SSR-compatible rendering (arguments are passed from call site)
+    render(initialValue) {
+      // Previous state available on class field
+      if (this.value === undefined) {
+        this.value = initialValue;
+      } else {
+        this.value++;
+      }
+      return html`<p>${this.value}</p>`;
     }
   }
-  // Any imperative updates to DOM/parts would go here
-  update(part, [initialValue]) {
-    // ...
-  }
-  // Do SSR-compatible rendering (arguments are passed from call site)
-  render(initialValue) {
-    // Previous state available on class field
-    if (this.value === undefined) {
-      this.value = initialValue;
-    } else {
-      this.value++;
-    }
-    return html`<p>${this.value}</p>`;
-  }
-});
+);
 ```
+
 </details>
 
 <hr>
@@ -180,7 +187,7 @@ resolve configuration.
 ```js
 {
   nodeResolve: {
-    exportConditions: [ "development" ]
+    exportConditions: ['development'];
   }
 }
 ```
@@ -193,9 +200,9 @@ resolve configuration.
 {
   plugins: [
     nodeResolve({
-      exportConditions: [ "development" ]
-    })
-  ]
+      exportConditions: ['development'],
+    }),
+  ];
 }
 ```
 
@@ -206,7 +213,7 @@ resolve configuration.
 ```js
 {
   resolve: {
-    conditionNames: [ "development" ]
+    conditionNames: ['development'];
   }
 }
 ```
