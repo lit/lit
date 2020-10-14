@@ -31,7 +31,9 @@ import {
 } from 'lit-html';
 
 const {
-  getTemplateHtml,
+  // TODO(kschaaf): These will be underscored/renamed once we have
+  // lit-ssr building via rollup/terser with the name cache
+  getTemplateHtml: getTemplateHtml,
   marker: marker,
   markerMatch: markerMatch,
   boundAttributeSuffix: boundAttributeSuffix,

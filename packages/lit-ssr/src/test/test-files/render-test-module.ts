@@ -16,7 +16,7 @@ import {html, nothing} from 'lit-html';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {LitElement, css} from 'lit-element';
-import {property, customElement} from 'lit-element/lib/decorators.js';
+import {property, customElement} from 'lit-element/decorators.js';
 export {digestForTemplateResult} from 'lit-html/hydrate.js';
 
 export {render} from '../../lib/render-lit-html.js';

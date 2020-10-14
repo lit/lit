@@ -128,8 +128,16 @@ export class LitElement extends UpdatingElement {
     super.update(changedProperties);
     // If render is not implemented by the component, don't call lit-html render
     if (templateResult !== renderNotImplemented) {
-      render(templateResult, this.renderRoot, this._renderOptions);
+      this._renderImpl(templateResult, this.renderRoot, this._renderOptions);
     }
+  }
+
+  /**
+   * Implementation for lit-html render; overridden by hydrate-support.
+   * @internal
+   */
+  _renderImpl(value: unknown, root: HTMLElement | DocumentFragment, options: RenderOptions) {
+    render(value, root, options);
   }
 
   /**
@@ -142,6 +150,9 @@ export class LitElement extends UpdatingElement {
     return renderNotImplemented;
   }
 }
+
+// Install hydration if available
+(globalThis as any)['litElementHydrateSupport']?.({LitElement});
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -13,14 +13,10 @@
  */
 
 import {ElementRenderer} from './element-renderer.js';
-import {LitElement, CSSResult} from 'lit-element';
+import {LitElement, CSSResult, UpdatingElement} from 'lit-element';
 import {render, renderValue, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
-
-// No-op LitElement's client-side render method, since we will call
-// `performUpdate` directly on the server
-// LitElement.render = () => {};
 
 /**
  * ElementRenderer implementation for LitElements
@@ -31,8 +27,8 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
-    (this.element as any).enableUpdating();
-    (this.element as any).performUpdate(false);
+    // Reflect properties to attributes
+    (UpdatingElement.prototype as any).update.call(this.element);
   }
 
   attributeChangedCallback(name: string, old: string | null, value: string | null) {

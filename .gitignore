@@ -2,6 +2,7 @@
 /node_modules/
 /lerna-debug.log
 .DS_Store
+tsconfig.tsbuildinfo
 
 # shared in packages
 /packages/*/node_modules/
@@ -30,6 +31,7 @@
 /packages/lit-element/lit-element.*
 /packages/lit-element/lit.min.*
 /packages/lit-element/platform-support.*
+/packages/lit-element/hydrate-support.*
 
 # lit-html package
 /packages/lit-html/directives/

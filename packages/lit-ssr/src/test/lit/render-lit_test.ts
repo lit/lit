@@ -185,37 +185,37 @@ test('nested template', async (t: Test) => {
 
 /* Custom Elements */
 
-// test('simple custom element', async (t: Test) => {
-//   const {render, simpleTemplateWithElement} = await setup();
-//   const result = await render(simpleTemplateWithElement);
-//   t.equal(
-//     result,
-//     `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
-//   );
-// });
+test('simple custom element', async (t: Test) => {
+  const {render, simpleTemplateWithElement} = await setup();
+  const result = await render(simpleTemplateWithElement);
+  t.equal(
+    result,
+    `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+  );
+});
 
-// test('element with property', async (t: Test) => {
-//   const {render, elementWithProperty} = await setup();
-//   const result = await render(elementWithProperty);
-//   // TODO: we'd like to remove the extra space in the start tag
-//   t.equal(
-//     result,
-//     `<!--lit-part v2CxGIW+qHI=--><test-property ><!--lit-bindings 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
-//   );
-// });
+test('element with property', async (t: Test) => {
+  const {render, elementWithProperty} = await setup();
+  const result = await render(elementWithProperty);
+  // TODO: we'd like to remove the extra space in the start tag
+  t.equal(
+    result,
+    `<!--lit-part v2CxGIW+qHI=--><test-property ><!--lit-bindings 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+  );
+});
 
 /* Slots and Distribution */
 
 /* Declarative Shadow Root */
 
-// test('no slot', async (t: Test) => {
-//   const {render, noSlot} = await setup();
-//   const result = await render(noSlot);
-//   t.equal(
-//     result,
-//     `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
-//   );
-// });
+test('no slot', async (t: Test) => {
+  const {render, noSlot} = await setup();
+  const result = await render(noSlot);
+  t.equal(
+    result,
+    `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
+  );
+});
 
 /* Directives */
 

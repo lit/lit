@@ -1,0 +1,48 @@
+{
+  "autorun": false,
+  "terminals": [
+    {
+      "name": "TS: lit-html",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-html",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: updating-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/updating-element",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: lit-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-element",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: lit-ssr",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-ssr",
+      "command": "npm run build:watch",
+      "focus": true
+    },
+    {
+      "name": "Rollup: lit-html",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-html",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: updating-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/updating-element",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: lit-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-element",
+      "command": "npm run build:watch"
+    }
+  ]
+}

@@ -19,22 +19,65 @@ import {render} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
 import {hydrateShadowRoots} from 'template-shadowroot/template-shadowroot.js';
 import {SSRExpectedHTML} from '../tests/ssr-test.js';
-// import {LitElement} from 'lit-element';
-
-// LitElement.hydrate = hydrate;
 
 const assert = chai.assert;
 
-// Types don't seem to include options argument
+const assertTemplate = document.createElement('template');
+
+/**
+ * Removes comments, normalizes text content, and normalizes style attribute
+ * serialization. 
+ *
+ * Although semantic-dom-diff removes comments, it does not normalize
+ * textContent after removing them, so differences in comments remain
+ * semantically meaningful; we currently use different comment marker strategies
+ * between client and server, so this inures us to those differences. 
+ */
+const normalize = (node: Node | null) => {
+  if (node === null) { 
+    return;
+  }
+  let nextSibling = node.nextSibling;
+  // Remove comments
+  if (node.nodeType === node.COMMENT_NODE) {
+    node.parentNode!.removeChild(node);
+  }
+  // Normalize text content (we don't use node.normalize, because
+  // it doesn't work on IE)
+  else if (node.nodeType === node.TEXT_NODE) {
+    while (node.nextSibling &&
+      (node.nextSibling.nodeType === node.TEXT_NODE ||
+      node.nextSibling.nodeType === node.COMMENT_NODE)) {
+      if (node.nextSibling.nodeType === node.TEXT_NODE) {
+        node.nodeValue! += node.nextSibling.nodeValue;
+      }
+      node.parentNode!.removeChild(node.nextSibling);
+    }
+    nextSibling = node.nextSibling;
+  } else {
+    // When parsed via the parser, the browser maintains user-authored whitespace;
+    // when reset via the property it re-serializes in a normalized form
+    if (node.nodeType === node.ELEMENT_NODE) {
+      if ((node as HTMLElement).hasAttribute('style')) {
+        (node as HTMLElement).style.cssText = (node as HTMLElement).style.cssText;
+      }
+    }
+    // Recurse
+    normalize(node.firstChild);
+  }
+  // Recurse breadth-and-depth
+  normalize(nextSibling);
+}
+
+/**
+ * Wrapper around semantic-dom-diff assert.lightDom.equal to normalize the
+ * content using the `normalize` implementation above.
+ */
 const assertLightDom = (el: Element | ShadowRoot, str: string, opt?: any) => {
-  // Small workaround to normalize style serialization; When parsed in attribute
-  // the browser maintains user-authored whitespace; when reset via the property
-  // it re-serializes in a normalized form
-  Array.from(el.querySelectorAll('[style]')).forEach(el => {
-    const h = el as HTMLElement;
-    h.style.cssText = h.style.cssText;
-  });
-  assert.lightDom.equal(el, str, opt);
+  assertTemplate.innerHTML = el.innerHTML;
+  normalize(assertTemplate.content);
+  assert.lightDom.equal(assertTemplate, str, opt);
+  assertTemplate.innerHTML = '';
 };
 
 /**

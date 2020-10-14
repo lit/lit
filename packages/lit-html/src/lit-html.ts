@@ -472,8 +472,14 @@ class Template {
   _element!: HTMLTemplateElement;
   /** @internal */
   _parts: Array<TemplatePart> = [];
+  // Note, this is used by the `platform-support` module.
+  _options?: RenderOptions;	
 
-  constructor({strings, _$litType$: type}: TemplateResult) {
+  constructor(
+    {strings, _$litType$: type}: TemplateResult,
+    options?: RenderOptions,
+  ) {
+    this._options = options
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
@@ -1158,14 +1164,15 @@ export class EventPart extends AttributePart {
 }
 
 export const $litPrivate = {
-  // Used in lit-ssr (temporarily not-renamed)
+  // TODO(kschaaf): These should be underscored so they can be renamed once
+  // lit-ssr has a rollup/terser build using the name cache
+  // Used in lit-ssr
   boundAttributeSuffix: boundAttributeSuffix,
   marker: marker,
   markerMatch: markerMatch,
   HTML_RESULT: HTML_RESULT,
   getTemplateHtml: getTemplateHtml,
   // Used in hydrate
-  _Template: Template,
   _TemplateInstance: TemplateInstance,
   _isPrimitive: isPrimitive,
   _isIterable: isIterable,

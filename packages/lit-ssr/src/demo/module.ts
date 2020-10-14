@@ -4,7 +4,7 @@
 
 import {html} from 'lit-html';
 import {LitElement, css} from 'lit-element';
-import {property} from 'lit-element/lib/decorators/property.js'
+import {property} from 'lit-element/decorators/property.js'
 //import {repeat} from 'lit-html/directives/repeat.js';
 
 export const initialData = {

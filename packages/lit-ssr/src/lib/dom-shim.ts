@@ -66,6 +66,8 @@ export const getWindow = (props: {[key: string]: any} = {}): {[key: string]: any
     }
   };
 
+  class ShadowRoot { }
+
   class Document {
     get adoptedStyleSheets() {
       return [];
@@ -138,6 +140,7 @@ export const getWindow = (props: {[key: string]: any} = {}): {[key: string]: any
     HTMLElement,
     Document,
     CSSStyleSheet,
+    ShadowRoot,
     customElements: new CustomElementRegistry(),
     btoa,
     console: {
