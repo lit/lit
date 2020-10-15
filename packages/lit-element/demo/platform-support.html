@@ -15,27 +15,84 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       name="viewport"
       content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
     />
-    <title>polyfill demo</title>
+    <title>platform-support demo</title>
     <script>
-      window.globalThis = window;
-      if (!window.location.search.indexOf('native') >= 0) {
-        window.ShadyDOM = {force: true};
+      if (window.location.search.indexOf('native') === -1) {
+        window.ShadyDOM = {
+          force: true,
+        };
         window.customElements = window.customElements || {};
         window.customElements.forcePolyfill = true;
       }
     </script>
-    <!-- May need to comment this to work on IE for compatibility with es-dev-server polyfill injection -->
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <!-- load lib/platform-support.js as a module for better compat with es-dev-server -->
-    <script type="module" src="../development/lib/platform-support.js"></script>
-    <script
-      type="module"
-      src="../development/demo/platform-support.js"
-    ></script>
+    <script type="module" src="../platform-support.js"></script>
+    <script type="module" src="./my-element.js"></script>
   </head>
+
   <body>
-    <my-element bar="5" whales="1" foobar="17">Hi</my-element>
-    <hr />
-    <ts-element message="Yo" more-info="person"></ts-element>
+    <my-element bar="5" whales="5" foobar="17">Slotted Content</my-element>
+    <platform-support-element></platform-support-element>
+    <script type="module">
+      import {LitElement, html, css} from '../lit-element.js';
+      class PlatformSupportElement extends LitElement {
+        static get styles() {
+          return css`
+            :host {
+              position: fixed;
+              display: inline-block;
+              opacity: 0.75;
+              background: darkgray;
+              font-family: sans-serif;
+              right: 4px;
+              bottom: 4px;
+              padding: 4px;
+              font-size: 0.75rem;
+              border-radius: 4px;
+            }
+
+            .row {
+              display: flex;
+              align-items: baseline;
+            }
+
+            .row > :first-child {
+              flex: 1;
+              padding: 0 16px 0 8px;
+            }
+          `;
+        }
+        renderOption(value) {
+          return value ? `✅` : `❎`;
+        }
+
+        render() {
+          return html`
+            <header>Polyfilling</header>
+            <div class="row">
+              <div>Custom Elements</div>
+              <div>
+                ${this.renderOption(customElements.polyfillWrapFlushCallback)}
+              </div>
+            </div>
+            <div class="row">
+              <div>Shadow DOM</div>
+              <div>
+                ${this.renderOption(window.ShadyDOM && window.ShadyDOM.inUse)}
+              </div>
+            </div>
+            <div class="row">
+              <div>Styling</div>
+              <div>
+                ${this.renderOption(
+                  !(window.ShadyCSS && window.ShadyCSS.nativeShadow)
+                )}
+              </div>
+            </div>
+          `;
+        }
+      }
+      customElements.define('platform-support-element', PlatformSupportElement);
+    </script>
   </body>
 </html>

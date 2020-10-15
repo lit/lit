@@ -809,12 +809,17 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      if (!this.hasUpdated) {
-        this.hasUpdated = true;
-        this.firstUpdated(changedProperties);
-      }
-      this.updated(changedProperties);
+      this._afterUpdate(changedProperties);
     }
+  }
+
+  // Note, this is an override point for platform-support.
+  private _afterUpdate(changedProperties: PropertyValues) {
+    if (!this.hasUpdated) {
+      this.hasUpdated = true;
+      this.firstUpdated(changedProperties);
+    }
+    this.updated(changedProperties);
   }
 
   private _markUpdated() {
@@ -914,3 +919,7 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
+
+// Apply polyfills if available
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any)['updatingElementPlatformSupport']?.({UpdatingElement});

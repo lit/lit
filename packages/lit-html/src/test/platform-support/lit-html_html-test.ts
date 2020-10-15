@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import '../../platform-support.js';
-import {html} from 'lit-html';
+import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
-import {renderShadowRoot} from '../test-helpers.js';
+import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

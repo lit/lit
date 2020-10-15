@@ -33,11 +33,13 @@
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
+    "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
+    "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -86,6 +88,7 @@
     "downlevel-dts": "^0.6.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",
+    "tslib": "^2.0.3",
     "typescript": "^4.0.2"
   },
   "typings": "lit-element.d.ts",

@@ -15,6 +15,7 @@
 import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import * as pathLib from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
@@ -47,6 +48,10 @@ const reservedProperties = [
   '_value',
   '_setValue',
   'createTreeWalker',
+  // Note, reserved so that prod updating-element platform-support
+  // can share this key with dev lit-element platform-support which
+  // imports it.
+  '_handlesPrepareStyles',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -62,19 +67,45 @@ const crossPackagePropertyMangles = {
   // lit-html: NodePart
   _startNode: 'D',
   _endNode: 'E',
-  _baseSetValue: 'F',
-  _getTemplate: 'G',
+  _getTemplate: 'F',
   // lit-html: TemplateInstance
   _template: 'H',
+  // updating-element: UpdatingElement
+  _afterUpdate: 'S',
   // lit-element: LitElement
-  _renderOptions: 'I',
-  _baseConnectedCallback: 'J',
-  _baseUpdate: 'K',
-  _baseCreateRenderRoot: 'L',
+  _renderOptions: 'W',
 };
 
-// eslint-disable-next-line no-undef
-export function litRollupConfig({entryPoints, external = []} = options) {
+const generateTerserOptions = (nameCache = null) => ({
+  warnings: true,
+  ecma: 2017,
+  compress: {
+    unsafe: true,
+    // An extra pass can squeeze out an extra byte or two.
+    passes: 2,
+  },
+  output: {
+    // "some" preserves @license and @preserve comments
+    comments: CHECKSIZE ? false : 'some',
+    inline_script: false,
+  },
+  nameCache,
+  mangle: {
+    properties: {
+      regex: /^_/,
+      reserved: reservedProperties,
+      // Set to true to mangle to readable names
+      debug: false,
+    },
+  },
+});
+
+export function litProdConfig({
+  entryPoints,
+  external = [],
+  bundled = [],
+  // eslint-disable-next-line no-undef
+} = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
   // details of lit-html.js.
@@ -125,29 +156,7 @@ export function litRollupConfig({entryPoints, external = []} = options) {
     ),
   ].join('\n');
 
-  const terserOptions = {
-    warnings: true,
-    ecma: 2017,
-    compress: {
-      unsafe: true,
-      // An extra pass can squeeze out an extra byte or two.
-      passes: 2,
-    },
-    output: {
-      // "some" preserves @license and @preserve comments
-      comments: CHECKSIZE ? false : 'some',
-      inline_script: false,
-    },
-    nameCache,
-    mangle: {
-      properties: {
-        regex: /^_/,
-        reserved: reservedProperties,
-        // Set to true to mangle to readable names
-        debug: false,
-      },
-    },
-  };
+  const terserOptions = generateTerserOptions(nameCache);
 
   return [
     {
@@ -234,5 +243,40 @@ export function litRollupConfig({entryPoints, external = []} = options) {
             ]),
       ],
     },
+    ...bundled.map(({file, output, name}) =>
+      litMonoBundleConfig({
+        file,
+        output,
+        name,
+        terserOptions: terserOptions,
+      })
+    ),
   ];
 }
+
+export const litMonoBundleConfig = ({
+  file,
+  output,
+  name,
+  terserOptions = generateTerserOptions(),
+  // eslint-disable-next-line no-undef
+} = options) => ({
+  input: `development/${file}.js`,
+  output: {
+    file: `${output || file}.js`,
+    format: 'umd',
+    name,
+    sourcemap: !CHECKSIZE,
+  },
+  plugins: [
+    nodeResolve(),
+    replace({
+      'const DEV_MODE = true': 'const DEV_MODE = false',
+    }),
+    // This plugin automatically composes the existing TypeScript -> raw JS
+    // sourcemap with the raw JS -> minified JS one that we're generating here.
+    sourcemaps(),
+    terser(terserOptions),
+    summary(),
+  ],
+});

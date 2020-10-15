@@ -17,6 +17,10 @@
       "development": "./development/parts.js",
       "default": "./parts.js"
     },
+    "./platform-support.js": {
+      "development": "./development/platform-support.js",
+      "default": "./platform-support.js"
+    },
     "./directives/": {
       "development": "./development/directives/",
       "default": "./directives/"
@@ -28,11 +32,11 @@
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} directives/ development/",
+    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} parts.{js,js.map,d.ts} directives/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.js'",
+    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.(js|html)'",
     "test:prod": "MODE=prod npm run test:dev",
     "test:watch": "npm run test:dev -- --watch"
   },
@@ -48,6 +52,10 @@
     "/parts.d.ts.map",
     "/parts.js",
     "/parts.js.map",
+    "/platform-support.d.ts",
+    "/platform-support.d.ts.map",
+    "/platform-support.js",
+    "/platform-support.js.map",
     "/src/",
     "!/src/test/"
   ],
@@ -57,6 +65,8 @@
     "@types/mocha": "^8.0.3",
     "@types/trusted-types": "^1.0.1",
     "@web/test-runner-mocha": "^0.3.5",
+    "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/webcomponentsjs": "^2.2.3",
     "chokidar-cli": "^2.1.0",
     "concurrently": "^5.3.0",
     "mocha": "^8.1.3",

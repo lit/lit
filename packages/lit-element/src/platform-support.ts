@@ -12,56 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 /**
- * LitElement/lit-html patch to support browsers without native web components.
+ * LitElement patch to support browsers without native web components.
+ *
+ * This module should be used in addition to loading the web components
+ * polyfills via @webcomponents/webcomponentjs. When using those polyfills
+ * support for polyfilled Shadow DOM is automatic via the ShadyDOM polyfill, but
+ * support for Shadow DOM like css scoping is opt-in. This module uses ShadyCSS
+ * to scope styles defined via the `static styles` property and styles included
+ * in the render method. There are some limitations to be aware of:
+ * * only styles that are included in the first render of a component are scoped.
+ * * In addition, support for the deprecated `@apply` feature of ShadyCSS is
+ * only provided for styles included in the template and not styles provided
+ * via the static styles property.
+ * * Lit parts cannot be used in styles included in the template.
  *
  * @packageDocumentation
  */
 
-// TODO(sorvell): Remove these once ShadyDOM/webcomponentsjs supports them.
-// Source: https://developer.mozilla.org/en-US/docs/Web/API/ParentNode/append
-(function (arr) {
-  arr.forEach(function (item) {
-    if (item.hasOwnProperty('append') && !window.ShadyDOM?.inUse) {
-      return;
-    }
-    Object.defineProperty(item, 'append', {
-      configurable: true,
-      enumerable: true,
-      writable: true,
-      value: function append() {
-        // eslint-disable-next-line prefer-rest-params
-        const argArr = Array.prototype.slice.call(arguments),
-          docFrag = document.createDocumentFragment();
-
-        argArr.forEach(function (argItem) {
-          const isNode = argItem instanceof Node;
-          docFrag.appendChild(
-            isNode ? argItem : document.createTextNode(String(argItem))
-          );
-        });
-
-        this.appendChild(docFrag);
-      },
-    });
-  });
-})([Element.prototype, Document.prototype, DocumentFragment.prototype]);
-
-// from: https://developer.mozilla.org/en-US/docs/Web/API/ChildNode/remove
-(function (arr) {
-  arr.forEach(function (item) {
-    if (item.hasOwnProperty('remove') && !window.ShadyDOM?.inUse) {
-      return;
-    }
-    Object.defineProperty(item, 'remove', {
-      configurable: true,
-      enumerable: true,
-      writable: true,
-      value: function remove() {
-        this.parentNode.removeChild(this);
-      },
-    });
-  });
-})([Element.prototype, CharacterData.prototype, DocumentType.prototype]);
+import 'updating-element/platform-support.js';
+import 'lit-html/platform-support.js';
 
 const needsPlatformSupport = !!(
   window.ShadyCSS !== undefined &&
@@ -73,32 +42,20 @@ interface RenderOptions {
   scope?: string;
 }
 
-const SCOPED = '__scoped';
-
-type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
-
 interface PatchableLitElementConstructor {
-  [SCOPED]: boolean;
-  elementStyles: CSSResults;
-  shadowRootOptions: ShadowRootInit;
+  _handlesPrepareStyles?: boolean;
 }
 
 interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
-  connectedCallback(): void;
-  _baseConnectedCallback(): void;
-  hasUpdated: boolean;
-  update(changedProperties: unknown): void;
-  _baseUpdate(changedProperties: unknown): void;
   createRenderRoot(): Element | ShadowRoot;
-  _baseCreateRenderRoot(): Element | ShadowRoot;
   _renderOptions: RenderOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport'] = ({
+(globalThis as any)['litElementPlatformSupport'] ??= ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;
@@ -112,281 +69,18 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
+  ((LitElement as unknown) as PatchableLitElementConstructor)._handlesPrepareStyles = true;
+
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
   const litElementProto = LitElement.prototype;
-  litElementProto._baseCreateRenderRoot = litElementProto.createRenderRoot;
+  const createRenderRoot = litElementProto.createRenderRoot;
   litElementProto.createRenderRoot = function (this: PatchableLitElement) {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
     // due to @apply.
-    const name = (this._renderOptions.scope = this.localName);
-    // If using native Shadow DOM must adoptStyles normally,
-    // otherwise do nothing.
-    if (window.ShadyCSS!.nativeShadow) {
-      return this._baseCreateRenderRoot();
-    } else {
-      if (!this.constructor.hasOwnProperty(SCOPED)) {
-        (this.constructor as PatchableLitElementConstructor)[SCOPED] = true;
-        // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
-        const css = (this
-          .constructor as PatchableLitElementConstructor).elementStyles.map(
-          (v) =>
-            v instanceof CSSStyleSheet
-              ? Array.from(v.cssRules).reduce(
-                  (a: string, r: CSSRule) => (a += r.cssText),
-                  ''
-                )
-              : v.cssText
-        );
-        window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
-      }
-      return (
-        this.shadowRoot ??
-        this.attachShadow(
-          (this.constructor as PatchableLitElementConstructor).shadowRootOptions
-        )
-      );
-    }
-  };
-
-  /**
-   * Patch connectedCallback to apply ShadyCSS custom properties shimming.
-   */
-  litElementProto._baseConnectedCallback = litElementProto.connectedCallback;
-  litElementProto.connectedCallback = function (this: PatchableLitElement) {
-    this._baseConnectedCallback();
-    // Note, must do first update separately so that we're ensured
-    // that rendering has completed before calling this.
-    if (this.hasUpdated) {
-      window.ShadyCSS!.styleElement(this);
-    }
-  };
-
-  /**
-   * Patch update to apply ShadyCSS custom properties shimming for first
-   * update.
-   */
-  litElementProto._baseUpdate = litElementProto.update;
-  litElementProto.update = function (
-    this: PatchableLitElement,
-    changedProperties: unknown
-  ) {
-    const isFirstUpdate = !this.hasUpdated;
-    this._baseUpdate(changedProperties);
-    // Note, must do first update here so rendering has completed before
-    // calling this and styles are correct by updated/firstUpdated.
-    if (isFirstUpdate) {
-      window.ShadyCSS!.styleElement(this);
-    }
-  };
-};
-
-interface ShadyTemplateResult {
-  strings: TemplateStringsArray;
-  _$litType$?: string;
-}
-
-interface PatchableNodePart {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  new (...args: any[]): PatchableNodePart;
-  _value: unknown;
-  _startNode: ChildNode;
-  _endNode: ChildNode | null;
-  options: RenderOptions;
-  _setValue(value: unknown): void;
-  _baseSetValue(value: unknown): void;
-  _getTemplate(
-    strings: TemplateStringsArray,
-    result: ShadyTemplateResult
-  ): HTMLTemplateElement;
-}
-
-interface PatchableTemplate {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  new (...args: any[]): PatchableTemplate;
-  _createElement(html: string): HTMLTemplateElement;
-  _element: HTMLTemplateElement;
-  _options: RenderOptions;
-}
-
-interface PatchableTemplateInstance {
-  _template: PatchableTemplate;
-}
-
-// Scopes that have had styling prepared. Note, must only be done once per
-// scope.
-const styledScopes: Set<string> = new Set();
-// Map of css per scope. This is collected during first scope render, used when
-// styling is prepared, and then discarded.
-const scopeCssStore: Map<string, string[]> = new Map();
-
-/**
- * lit-html patches. These properties cannot be renamed.
- * * NodePart.prototype._getTemplate
- * * NodePart.prototype._setValue
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport'] = ({
-  NodePart,
-  Template,
-}: {
-  NodePart: PatchableNodePart;
-  Template: PatchableTemplate;
-}) => {
-  if (!needsPlatformSupport) {
-    return;
-  }
-
-  // console.log(
-  //   '%c Making lit-html compatible with ShadyDOM/CSS.',
-  //   'color: lightgreen; font-style: italic'
-  // );
-
-  const needsPrepareStyles = (name: string | undefined) =>
-    name !== undefined && !styledScopes.has(name);
-
-  const cssForScope = (name: string) => {
-    let scopeCss = scopeCssStore.get(name);
-    if (scopeCss === undefined) {
-      scopeCssStore.set(name, (scopeCss = []));
-    }
-    return scopeCss;
-  };
-
-  const prepareStyles = (name: string, template: HTMLTemplateElement) => {
-    // Get styles
-    const scopeCss = cssForScope(name);
-    if (scopeCss.length) {
-      const style = document.createElement('style');
-      style.textContent = scopeCss.join('\n');
-      // Note, it's important to add the style to the *end* of the template so
-      // it doesn't mess up part indices.
-      template.content.appendChild(style);
-    }
-    // Mark this scope as styled.
-    styledScopes.add(name);
-    // Remove stored data since it's no longer needed.
-    scopeCssStore.delete(name);
-    // ShadyCSS removes scopes and removes the style under ShadyDOM and leaves
-    // it under native Shadow DOM
-    window.ShadyCSS!.prepareTemplateStyles(template, name);
-  };
-
-  const scopedTemplateCache = new Map<
-    string,
-    Map<TemplateStringsArray, PatchableTemplate>
-  >();
-
-  // Note, it's ok to subclass Template since it's only used via NodePart.
-  class ShadyTemplate extends Template {
-    /**
-     * Override to extract style elements from the template
-     * and store all style.textContent in the shady scope data.
-     */
-    _createElement(html: string) {
-      const template = super._createElement(html);
-      const scope = this._options!.scope!;
-      if (scope !== undefined) {
-        if (!window.ShadyCSS!.nativeShadow) {
-          window.ShadyCSS!.prepareTemplateDom(template, scope);
-        }
-        const scopeCss = cssForScope(scope);
-        // Remove styles and store textContent.
-        const styles = template.content.querySelectorAll('style') as NodeListOf<
-          HTMLStyleElement
-        >;
-        // Store the css in this template in the scope css and remove the <style>
-        // from the template _before_ the node-walk captures part indices
-        scopeCss.push(
-          ...Array.from(styles).map((style) => {
-            style.parentNode?.removeChild(style);
-            return style.textContent!;
-          })
-        );
-      }
-      return template;
-    }
-  }
-
-  const renderContainer = document.createDocumentFragment();
-  const renderContainerMarker = document.createComment('');
-
-  const nodePartProto = NodePart.prototype;
-  /**
-   * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
-   */
-  nodePartProto._baseSetValue = nodePartProto._setValue;
-  nodePartProto._setValue = function (this: PatchableNodePart, value: unknown) {
-    const container = this._startNode.parentNode!;
-    const scope = this.options.scope;
-    if (container instanceof ShadowRoot && needsPrepareStyles(scope)) {
-      // Note, @apply requires outer => inner scope rendering on initial
-      // scope renders to apply property values correctly. Style preparation
-      // is tied to rendering into `shadowRoot`'s and this is typically done by
-      // custom elements. If this is done in `connectedCallback`, as is typical,
-      // the code below ensures the right order since content is rendered
-      // into a fragment first so the hosting element can prepare styles first.
-      // If rendering is done in the constructor, this won't work, but that's
-      // not supported in ShadyDOM anyway.
-      const startNode = this._startNode;
-      const endNode = this._endNode;
-
-      // Temporarily move this part into the renderContainer.
-      renderContainer.appendChild(renderContainerMarker);
-      this._startNode = renderContainerMarker;
-      this._endNode = null;
-
-      // Note, any nested template results render here and their styles will
-      // be extracted and collected.
-      this._baseSetValue(value);
-
-      // Get the template for this result or create a dummy one if a result
-      // is not being rendered.
-      const template = (value as ShadyTemplateResult)?._$litType$
-        ? (this._value as PatchableTemplateInstance)._template._element
-        : document.createElement('template');
-      prepareStyles(scope!, template);
-
-      // Note, this is the temporary startNode.
-      renderContainer.removeChild(renderContainerMarker);
-      // When using native Shadow DOM, include prepared style in shadowRoot.
-      if (window.ShadyCSS?.nativeShadow) {
-        const style = template.content.querySelector('style');
-        if (style !== null) {
-          renderContainer.appendChild(style.cloneNode(true));
-        }
-      }
-      container.insertBefore(renderContainer, endNode);
-      // Move part back to original container.
-      this._startNode = startNode;
-      this._endNode = endNode;
-    } else {
-      this._baseSetValue(value);
-    }
-  };
-
-  /**
-   * Patch NodePart._getTemplate to look up templates in a cache bucketed
-   * by element name.
-   */
-  nodePartProto._getTemplate = function (
-    strings: TemplateStringsArray,
-    result: ShadyTemplateResult
-  ) {
-    const scope = this.options.scope!;
-    let templateCache = scopedTemplateCache.get(scope);
-    if (templateCache === undefined) {
-      scopedTemplateCache.set(scope, (templateCache = new Map()));
-    }
-    let template = templateCache.get(strings);
-    if (template === undefined) {
-      templateCache.set(
-        strings,
-        (template = new ShadyTemplate(result, this.options))
-      );
-    }
-    return template;
+    this._renderOptions.scope = this.localName;
+    return createRenderRoot.call(this);
   };
 };

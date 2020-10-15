@@ -14,8 +14,8 @@
 import '../../platform-support.js';
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
-import {html as htmlWithApply} from 'lit-html';
-import {renderShadowRoot} from '../test-helpers.js';
+import {html as htmlWithApply} from '../../lit-html.js';
+import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
