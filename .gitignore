@@ -38,6 +38,7 @@ tsconfig.tsbuildinfo
 /packages/lit-html/lit-html.*
 /packages/lit-html/parts.*
 /packages/lit-html/hydrate.*
+/packages/lit-html/private-ssr-support.*
 /packages/lit-html/platform-support.*
 
 # updating-element package

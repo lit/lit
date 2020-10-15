@@ -1164,14 +1164,12 @@ export class EventPart extends AttributePart {
 }
 
 export const $litPrivate = {
-  // TODO(kschaaf): These should be underscored so they can be renamed once
-  // lit-ssr has a rollup/terser build using the name cache
   // Used in lit-ssr
-  boundAttributeSuffix: boundAttributeSuffix,
-  marker: marker,
-  markerMatch: markerMatch,
-  HTML_RESULT: HTML_RESULT,
-  getTemplateHtml: getTemplateHtml,
+  _boundAttributeSuffix: boundAttributeSuffix,
+  _marker: marker,
+  _markerMatch: markerMatch,
+  _HTML_RESULT: HTML_RESULT,
+  _getTemplateHtml: getTemplateHtml,
   // Used in hydrate
   _TemplateInstance: TemplateInstance,
   _isPrimitive: isPrimitive,

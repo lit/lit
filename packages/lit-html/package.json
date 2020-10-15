@@ -24,6 +24,14 @@
     "./directives/": {
       "development": "./development/directives/",
       "default": "./directives/"
+    },
+    "./hydrate.js": {
+      "development": "./development/hydrate.js",
+      "default": "./hydrate.js"
+    },
+    "./private-ssr-support.js": {
+      "development": "./development/private-ssr-support.js",
+      "default": "./private-ssr-support.js"
     }
   },
   "scripts": {
@@ -57,6 +65,10 @@
     "/platform-support.d.ts.map",
     "/platform-support.js",
     "/platform-support.js.map",
+    "/private-ssr-support.js",
+    "/private-ssr-support.js.map",
+    "/private-ssr-support.d.ts",
+    "/private-ssr-support.d.ts.map",
     "/src/",
     "!/src/test/"
   ],

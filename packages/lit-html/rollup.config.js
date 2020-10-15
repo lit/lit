@@ -29,6 +29,7 @@ export default litProdConfig({
     'lit-html',
     'parts',
     'hydrate',
+    'private-ssr-support',
     'platform-support',
   ],
   bundled: [

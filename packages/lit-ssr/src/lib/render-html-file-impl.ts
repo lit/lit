@@ -1,5 +1,5 @@
 import { render } from './render-lit-html.js';
-import { $litPrivate } from 'lit-html';
+import { $litPrivate } from 'lit-html/private-ssr-support.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
