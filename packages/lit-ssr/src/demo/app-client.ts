@@ -4,19 +4,10 @@
 
 import {render} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
-import {LitElement} from 'lit-element';
+import 'lit-element/hydrate-support.js';
 import {template, initialData} from './module.js';
 
 declare var window: any;
-
-// Note, give LitElement a hydrate function.
-(LitElement as any).hydrate = hydrate;
-// TODO(sorvell): Give LitElement a render function to avoid a version
-// conflict that results from the dev server config. Here lit-html is loaded
-// at `node_modules/lit-html` and
-// `node_modules/lit-element/node_modules/lit-html`. This should be addressed
-// by fixing the dev server, but setting it here works around this problem.
-(LitElement as any).render = render;
 
 console.log('Page hydrating with same data as rendered with SSR.');
 // The hydrate() function is run with the same data as used in the server

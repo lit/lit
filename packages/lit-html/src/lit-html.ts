@@ -1163,7 +1163,10 @@ export class EventPart extends AttributePart {
   }
 }
 
-export const $litPrivate = {
+// Private exports for use by other Lit packages, not intended for use by
+// external users; they are exported with underscored names (mangled in build)
+// to keep payload impact minimal
+export const $private = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
   _marker: marker,

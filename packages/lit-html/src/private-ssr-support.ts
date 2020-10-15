@@ -13,10 +13,10 @@
  */
 
 import {
-  $litPrivate as p,
+  $private as p,
 } from './lit-html.js';
 
-export const $litPrivate = {
+export const $private = {
   boundAttributeSuffix: p._boundAttributeSuffix,
   marker: p._marker,
   markerMatch: p._markerMatch,

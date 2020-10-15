@@ -30,7 +30,7 @@ import {
 } from 'lit-html';
 
 import {
-  $litPrivate
+  $private
 } from 'lit-html/private-ssr-support.js';
 
 const {
@@ -38,7 +38,7 @@ const {
   marker,
   markerMatch,
   boundAttributeSuffix,
-} = $litPrivate;
+} = $private;
 
 import { digestForTemplateResult } from 'lit-html/hydrate.js';
 

@@ -1,11 +1,11 @@
 import { render } from './render-lit-html.js';
-import { $litPrivate } from 'lit-html/private-ssr-support.js';
+import { $private } from 'lit-html/private-ssr-support.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 import {URL} from 'url';
 
-const { HTML_RESULT } = $litPrivate;
+const { HTML_RESULT } = $private;
 
 interface RenderAppOptions {
   url: string;
