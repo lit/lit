@@ -12,11 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  litRollupConfig
-} from '../../rollup-common.js';
+import {litProdConfig} from '../../rollup-common.js';
 
-export default litRollupConfig({
+export default litProdConfig({
   entryPoints: [
     'updating-element',
     'css-tag',
@@ -31,5 +29,10 @@ export default litRollupConfig({
     'decorators/queryAssignedNodes',
     'decorators/queryAsync',
   ],
-  external: []
+  external: [],
+  bundled: [
+    {
+      file: 'platform-support',
+    },
+  ],
 });

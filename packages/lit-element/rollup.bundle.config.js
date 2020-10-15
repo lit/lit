@@ -12,26 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {litProdConfig} from '../../rollup-common.js';
+import {litMonoBundleConfig} from '../../rollup-common.js';
 
-export default litProdConfig({
-  entryPoints: [
-    'lit-element',
-    'decorators',
-    'decorators/customElement',
-    'decorators/eventOptions',
-    'decorators/internalProperty',
-    'decorators/property',
-    'decorators/query',
-    'decorators/queryAll',
-    'decorators/queryAssignedNodes',
-    'decorators/queryAsync',
-    'demo/my-element',
-  ],
-  external: ['lit-html', 'updating-element'],
-  bundled: [
-    {
-      file: 'platform-support',
-    },
-  ],
+export default litMonoBundleConfig({
+  file: 'lit-element',
+  output: 'lit.min',
+  name: 'Lit',
 });

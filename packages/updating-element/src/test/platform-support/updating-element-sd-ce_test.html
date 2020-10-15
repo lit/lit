@@ -7,9 +7,6 @@
       };
       window.customElements = window.customElements || {};
       window.customElements.forcePolyfill = true;
-      window.ShadyCSS = {
-        shimcssproperties: true,
-      };
     </script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
   </head>
@@ -29,7 +26,7 @@
           // setup mocha
           mocha.setup({ui: 'tdd'});
 
-          await import('./lit-element_html-test.js');
+          await import('./updating-element_html-test.js');
 
           // run the tests, and notify the test runner after finishing
           mocha.run(() => {

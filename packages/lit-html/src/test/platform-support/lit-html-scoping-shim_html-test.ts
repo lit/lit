@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import '../../platform-support.js';
-import {renderShadowRoot} from '../test-helpers.js';
-import {html} from 'lit-html';
+import {renderShadowRoot} from '../test-utils/shadow-root.js';
+import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('ShadyCSS scoping shim', () => {
