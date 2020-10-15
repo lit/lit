@@ -1,9 +1,8 @@
 {
-  "private": true,
   "name": "tests",
+  "private": true,
   "type": "module",
   "scripts": {
-    "format": "prettier \"*{cjs,html,js,json,md,ts}\" --write",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "npx wtr",
     "test:prod": "MODE=prod npm run test:dev",

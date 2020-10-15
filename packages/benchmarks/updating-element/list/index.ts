@@ -23,7 +23,7 @@ const updateCount = 6;
 type SimpleItem = {[index: string]: string};
 
 function makeItem(prefix: number) {
-  let o: SimpleItem = {};
+  const o: SimpleItem = {};
   for (let i = 0; i < itemValueCount; i++) {
     o['value' + i] = prefix + ': ' + i;
   }
@@ -31,7 +31,7 @@ function makeItem(prefix: number) {
 }
 
 function generateData(count: number) {
-  let data = [];
+  const data = [];
   for (let i = 0; i < count; i++) {
     data.push(makeItem(i));
   }
@@ -196,11 +196,13 @@ export class XApp extends UpdatingElement {
       el = create();
       const start = getTestStartName(test);
       performance.mark(start);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (propertyOptions as any).reflect = true;
       for (let i = 0; i < updateCount; i++) {
         el.items = i % 2 ? otherData : data;
         await updateComplete();
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (propertyOptions as any).reflect = false;
       performance.measure(test, start);
       destroy();

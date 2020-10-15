@@ -28,7 +28,8 @@ const optionList = [
     name: 'output',
     type: String,
     alias: 'o',
-    description: 'Folder to output generated benchmarks into. Defaults to `generated`. ',
+    description:
+      'Folder to output generated benchmarks into. Defaults to `generated`. ',
     defaultValue: 'generated',
   },
   {
@@ -44,19 +45,20 @@ const optionList = [
     alias: 'h',
     description: 'Print this usage guide,',
     defaultValue: false,
-  }
+  },
 ];
 
 const usage = [
   {
     header: 'Deoptigate runner & output generator',
-    content: 'Captures a v8 log for the given URL using Puppeteer, and generates a Deoptigate report based on it.'
-  }, {
+    content:
+      'Captures a v8 log for the given URL using Puppeteer, and generates a Deoptigate report based on it.',
+  },
+  {
     header: 'Options',
-    optionList
-  }
+    optionList,
+  },
 ];
-
 
 // Parse command line arguments
 const options = cliArgs(optionList);
@@ -67,7 +69,7 @@ if (options.help || !options.url) {
   process.exit(0);
 }
 
-process.on('SIGINT', function() {
+process.on('SIGINT', function () {
   process.exit(1);
 });
 

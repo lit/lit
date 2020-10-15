@@ -53,10 +53,10 @@ const defaults = {
   // of the list
   mirror: false,
   // Number of times to loop, repeating the same operation on the list
-  loopCount: 10
+  loopCount: 10,
 };
 
-const preset: {[index: string]: (Partial<typeof defaults>)} = {
+const preset: {[index: string]: Partial<typeof defaults>} = {
   render: {initialCount: 1000},
   nop: {},
   add: {addCount: 10, to: 100, loopCount: 50},
@@ -82,59 +82,75 @@ const preset: {[index: string]: (Partial<typeof defaults>)} = {
 };
 
 // `method` and `itemType` are special and override defaults
-let customParams = ['method', 'itemType', 'delay'].reduce((n, k) =>
-  k in queryParams ? n-1 : n, Object.keys(queryParams).length)
+const customParams = ['method', 'itemType', 'delay'].reduce(
+  (n, k) => (k in queryParams ? n - 1 : n),
+  Object.keys(queryParams).length
+);
 
 // If query params are provided, put that operation in a `custom` step
-const routine = (customParams === 0) ? preset : {
-  render: {...queryParams}, 
-  custom: {...queryParams}
-};
+const routine =
+  customParams === 0
+    ? preset
+    : {
+        render: {...queryParams},
+        custom: {...queryParams},
+      };
 
 let gid = 0;
 const container = document.getElementById('container')!;
 type Item = {
-  id: number,
-  text: string
+  id: number;
+  text: string;
 };
 const createItem = () => ({id: gid, text: `item ${gid++}`});
-const createItems = (count: number): Item[] => 
+const createItems = (count: number): Item[] =>
   new Array(count).fill(0).map(createItem);
 
 const itemTemplates = {
   li: (item: Item) => html`<li>${item.text}</li>`,
-  input: (item: Item) => html`<div>${item.text}: <input value="${item.text}"></div>`,
+  input: (item: Item) =>
+    html`<div>${item.text}: <input value="${item.text}" /></div>`,
   ce: (item: Item) => html`<c-e .text=${item.text}></c-e>`,
-}
+};
 
 if (defaults.itemType === 'ce') {
-  customElements.define('c-e', class extends HTMLElement {
-    set text(s: string) {
-      this.textContent = s;
-      if (defaults.delay > 0) {
-        const end = performance.now() + defaults.delay;
-        while (performance.now() < end) { /* spin loop */ }
+  customElements.define(
+    'c-e',
+    class extends HTMLElement {
+      set text(s: string) {
+        this.textContent = s;
+        if (defaults.delay > 0) {
+          const end = performance.now() + defaults.delay;
+          while (performance.now() < end) {
+            /* spin loop */
+          }
+        }
+      }
+      get item() {
+        return this.textContent;
       }
     }
-    get item() {
-      return this.textContent;
-    }
-  });
+  );
 }
 
 const methods = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   repeat(items: Item[], renderItem: (item: Item) => any) {
-    return html`<ul>${repeat(items, item => item.id, renderItem)}</ul>`;
+    return html`<ul>
+      ${repeat(items, (item) => item.id, renderItem)}
+    </ul>`;
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   map(items: Item[], renderItem: (item: Item) => any) {
-    return html`<ul>${items.map(renderItem)}</ul>`;
-  }
+    return html`<ul>
+      ${items.map(renderItem)}
+    </ul>`;
+  },
 };
 
 let items: Item[] = [];
 
 for (const [step, values] of Object.entries(routine)) {
-
   const s = {...defaults, ...values};
   const renderTemplate = methods[s.method];
   const renderItem = itemTemplates[s.itemType];
@@ -146,13 +162,11 @@ for (const [step, values] of Object.entries(routine)) {
     performance.measure('render', 'render-start');
     performance.mark('update-start');
   } else {
-    
     // TODO(kschaaf): Accumulate measurements around just the render
     // once/if https://github.com/Polymer/tachometer/issues/196 is resolved
     performance.mark(`${step}-start`);
 
-    for (let i=0; i<s.loopCount; i++) {
-
+    for (let i = 0; i < s.loopCount; i++) {
       if (s.replaceCount) {
         items = [
           ...items.slice(0, s.from),
@@ -162,37 +176,51 @@ for (const [step, values] of Object.entries(routine)) {
       }
 
       if (s.removeCount) {
-        items = items.filter((_, i) => i < s.from || i >= s.from + s.removeCount);
+        items = items.filter(
+          (_, i) => i < s.from || i >= s.from + s.removeCount
+        );
         if (s.mirror) {
-          items = items.filter((_, i) => i < items.length - s.from-s.removeCount || i >= items.length - s.from);
+          items = items.filter(
+            (_, i) =>
+              i < items.length - s.from - s.removeCount ||
+              i >= items.length - s.from
+          );
         }
       }
 
       if (s.addCount) {
-        items = [...items.slice(0, s.to), ...createItems(s.addCount), ...items.slice(s.to)];
+        items = [
+          ...items.slice(0, s.to),
+          ...createItems(s.addCount),
+          ...items.slice(s.to),
+        ];
         if (s.mirror) {
-          items = [...items.slice(0, items.length-s.to), ...createItems(s.addCount), ...items.slice(items.length-s.to)];
+          items = [
+            ...items.slice(0, items.length - s.to),
+            ...createItems(s.addCount),
+            ...items.slice(items.length - s.to),
+          ];
         }
       }
 
       if (s.addStripeCount) {
         const step = (items.length + s.addStripeCount) / s.addStripeCount;
-        for (let i=0; i<s.addStripeCount; i++) {
-          items.splice(i*step, 0, createItem());
+        for (let i = 0; i < s.addStripeCount; i++) {
+          items.splice(i * step, 0, createItem());
         }
       }
 
       if (s.removeStripeCount) {
         const step = (items.length - s.removeStripeCount) / s.removeStripeCount;
-        for (let i=0; i<s.removeStripeCount; i++) {
-          items.splice(i*step, 1);
+        for (let i = 0; i < s.removeStripeCount; i++) {
+          items.splice(i * step, 1);
         }
       }
 
       if (s.replaceStripeCount) {
         const step = items.length / s.replaceStripeCount;
-        for (let i=0; i<s.replaceStripeCount; i++) {
-          items[i*step] = createItem();
+        for (let i = 0; i < s.replaceStripeCount; i++) {
+          items[i * step] = createItem();
         }
       }
 
@@ -202,7 +230,7 @@ for (const [step, values] of Object.entries(routine)) {
           ...items.slice(s.to, s.to + s.swapCount),
           ...items.slice(s.from + s.swapCount, s.to),
           ...items.slice(s.from, s.from + s.swapCount),
-          ...items.slice(s.to + s.swapCount)
+          ...items.slice(s.to + s.swapCount),
         ];
       }
 
@@ -212,32 +240,32 @@ for (const [step, values] of Object.entries(routine)) {
             ...items.slice(0, s.from),
             ...items.slice(s.from + s.moveCount, s.to),
             ...items.slice(s.from, s.from + s.moveCount),
-            ...items.slice(s.to)
+            ...items.slice(s.to),
           ];
         } else {
           items = [
             ...items.slice(0, s.to),
             ...items.slice(s.from, s.from + s.moveCount),
             ...items.slice(s.to, s.from),
-            ...items.slice(s.from + s.moveCount)
+            ...items.slice(s.from + s.moveCount),
           ];
         }
         if (s.mirror) {
-          let mfrom = items.length - s.from - s.moveCount;
-          let mto = items.length - s.to;
+          const mfrom = items.length - s.from - s.moveCount;
+          const mto = items.length - s.to;
           if (mfrom < mto) {
             items = [
               ...items.slice(0, mfrom),
               ...items.slice(mfrom + s.moveCount, mto),
               ...items.slice(mfrom, mfrom + s.moveCount),
-              ...items.slice(mto)
+              ...items.slice(mto),
             ];
           } else {
             items = [
               ...items.slice(0, mto),
               ...items.slice(mfrom, mfrom + s.moveCount),
               ...items.slice(mto, mfrom),
-              ...items.slice(mfrom + s.moveCount)
+              ...items.slice(mfrom + s.moveCount),
             ];
           }
         }
@@ -253,15 +281,11 @@ for (const [step, values] of Object.entries(routine)) {
 
       if (s.shuffleCount) {
         const shuffled = items.slice(s.from, s.to);
-        for (let i = shuffled.length-1; i>0; i--) {
+        for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
-        items = [
-          ...items.slice(0, s.from),
-          ...shuffled,
-          ...items.slice(s.to),
-        ];
+        items = [...items.slice(0, s.from), ...shuffled, ...items.slice(s.to)];
       }
 
       // TODO(kschaaf): Accumulate measurements around just the render
@@ -273,43 +297,60 @@ for (const [step, values] of Object.entries(routine)) {
     performance.measure(step, `${step}-start`);
   }
 }
-performance.measure('update', `update-start`)
+performance.measure('update', `update-start`);
 performance.measure('total', 'render-start');
 
-(window as any).tachometerResult = performance.getEntriesByName('total')[0].duration;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).tachometerResult = performance.getEntriesByName(
+  'total'
+)[0].duration;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 document.title = (window as any).tachometerResult.toFixed(2) + 'ms';
 console.table({
-  ...Object.keys(routine).reduce((p: {[index: string]: number},n) => 
-    (p[n] = performance.getEntriesByName(n).reduce((p, n) => p + n.duration, 0), p), {}),
-  update: performance.getEntriesByName('update').reduce((p, n) => p + n.duration, 0),
+  ...Object.keys(routine).reduce(
+    (p: {[index: string]: number}, n) => (
+      (p[n] = performance
+        .getEntriesByName(n)
+        .reduce((p, n) => p + n.duration, 0)),
+      p
+    ),
+    {}
+  ),
+  update: performance
+    .getEntriesByName('update')
+    .reduce((p, n) => p + n.duration, 0),
   total: performance.getEntriesByName('total')[0].duration,
-  'items.length (at end)': items.length
+  'items.length (at end)': items.length,
 });
 
 // Put items & render on window for debugging
 Object.assign(window, {
-  items, 
+  items,
   render: (step = 'render') => {
     const t = methods[routine[step].method || defaults.method];
     const i = itemTemplates[routine[step].itemType || defaults.itemType];
     render(t(items, i), container);
-  }
+  },
 });
 
 // Debug helper
 const error = (msg: string) => {
-  console.log(items.map(i=>i.id));
+  console.log(items.map((i) => i.id));
   console.error(msg);
   const div = document.createElement('div');
   div.innerHTML = `<span style="color:red;font-size:2em;">${msg}</span>`;
   document.body.insertBefore(div, document.body.firstChild);
-}
+};
 
 // Assert items were rendered in correct order
 if (container.firstElementChild!.children.length !== items.length) {
   error(`Length mismatch!`);
 } else {
-  for (let e=container.firstElementChild!.firstElementChild!, i=0; e; e=e.nextElementSibling!, i++) {
+  for (
+    let e = container.firstElementChild!.firstElementChild!, i = 0;
+    e;
+    e = e.nextElementSibling!, i++
+  ) {
     if (!items[i] || !e.textContent!.includes(items[i].text)) {
       error(`Mismatch at ${i}`);
       break;

@@ -1,18 +1,19 @@
 {
   "name": "benchmarks",
   "version": "1.0.0",
-  "description": "Template benchmark generator",
-  "repository": "Polymer/lit-html",
-  "main": "index.js",
   "private": true,
+  "description": "Template benchmark generator",
+  "license": "ISC",
+  "repository": "Polymer/lit-html",
+  "author": "",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "es-dev-server --node-resolve --dedupe --preserve-symlinks",
     "serve:open": "es-dev-server --node-resolve --dedupe --preserve-symlinks --open generated/index.html"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@types/command-line-args": "^5.0.0",
     "@types/command-line-usage": "^5.0.1",
@@ -35,7 +36,6 @@
     "rimraf": "^3.0.2",
     "table": "^5.4.6"
   },
-  "type": "module",
   "devDependencies": {
     "puppeteer": "^4.0.0",
     "tachometer": "^0.5.1",

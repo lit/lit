@@ -1114,6 +1114,7 @@ export class EventPart extends AttributePart {
 }
 
 // Apply polyfills if available
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
 
 // IMPORTANT: do not change the property name or the assignment expression.

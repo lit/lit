@@ -47,12 +47,14 @@ interface PatchableLitElementConstructor {
 }
 
 interface PatchableLitElement extends HTMLElement {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
   createRenderRoot(): Element | ShadowRoot;
   _renderOptions: RenderOptions;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litElementPlatformSupport'] ??= ({
   LitElement,
 }: {

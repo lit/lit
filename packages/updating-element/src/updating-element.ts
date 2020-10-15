@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/* eslint-disable no-prototype-builtins */
-
 /**
  * Use this module if you want to create your own base class extending
  * [[UpdatingElement]].
@@ -923,4 +921,5 @@ export abstract class UpdatingElement extends HTMLElement {
 }
 
 // Apply polyfills if available
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['updatingElementPlatformSupport']?.({UpdatingElement});

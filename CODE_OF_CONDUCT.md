@@ -1,6 +1,5 @@
 The Polymer community is full of bright, thoughtful, helpful, supportive people - it's on all of us to keep it this way! Google and the Polymer team want to help foster and support this, and we take any breaches of mutual respect very seriously. Below is the community code of conduct, which applies to our Github repos and organizations, mailing lists, Slack channels, and any other Polymer-supported communication group.
 
-
 ### Be excellent to each other.
 
 Treat everyone with respect. Participate while acknowledging that everyone deserves to be here — and each of us has the right to enjoy our experience and participate without fear of harassment, discrimination, or condescension, whether blatant or via micro-aggressions.
@@ -42,7 +41,7 @@ Build on each other’s ideas. We all benefit when we create together.
 
 We empower and encourage you to report any behavior that makes you or others feel uncomfortable by emailing community@polymer-project.org.
 
-Any person communicating in a disorderly manner, engaging in harassing or uncomfortable behavior, or otherwise failing to comply with this policy may be removed from any Google-supported channel or permanently banned (including to future Google communities) at any time in Google’s sole discretion. 
+Any person communicating in a disorderly manner, engaging in harassing or uncomfortable behavior, or otherwise failing to comply with this policy may be removed from any Google-supported channel or permanently banned (including to future Google communities) at any time in Google’s sole discretion.
 
 ### ANTI-HARASSMENT POLICY
 

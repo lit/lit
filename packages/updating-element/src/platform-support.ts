@@ -45,6 +45,7 @@ interface PatchableUpdatingElementConstructor {
 }
 
 interface PatchableUpdatingElement extends HTMLElement {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableUpdatingElement;
   constructor: PatchableUpdatingElementConstructor;
   connectedCallback(): void;
@@ -54,6 +55,7 @@ interface PatchableUpdatingElement extends HTMLElement {
   _renderOptions: RenderOptions;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['updatingElementPlatformSupport'] ??= ({
   UpdatingElement,
 }: {

@@ -26,11 +26,12 @@
       enumerable: true,
       writable: true,
       value: function append() {
-        var argArr = Array.prototype.slice.call(arguments),
+        // eslint-disable-next-line prefer-rest-params
+        const argArr = Array.prototype.slice.call(arguments),
           docFrag = document.createDocumentFragment();
 
         argArr.forEach(function (argItem) {
-          var isNode = argItem instanceof Node;
+          const isNode = argItem instanceof Node;
           docFrag.appendChild(
             isNode ? argItem : document.createTextNode(String(argItem))
           );

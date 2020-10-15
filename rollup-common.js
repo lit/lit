@@ -104,6 +104,7 @@ export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
+  // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. parts.js can safely access internal
@@ -258,6 +259,7 @@ export const litMonoBundleConfig = ({
   output,
   name,
   terserOptions = generateTerserOptions(),
+  // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
   output: {

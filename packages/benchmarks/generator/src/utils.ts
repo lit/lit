@@ -17,14 +17,19 @@ import path from 'path';
 
 // Level is a string denoting position in the tree, e.g. '0_2_1'
 // Depth for '0_2_1' is 3
-export const depthForLevel = (level: string) => level ? Array.from(level.matchAll(/_/g)).length + 1 : 0;
+export const depthForLevel = (level: string) =>
+  level ? Array.from(level.matchAll(/_/g)).length + 1 : 0;
 
-export const levelForTemplate = (level: string, uniqueTemplates: boolean, modifier: string = '') => {
+export const levelForTemplate = (
+  level: string,
+  uniqueTemplates: boolean,
+  modifier = ''
+) => {
   if (uniqueTemplates) {
     return `${level}${modifier}`;
   } else {
     if (!modifier) {
-      const end = level[level.length-1] || '';
+      const end = level[level.length - 1] || '';
       modifier = /(A|B)/.test(end) ? end : ''; // For A/B template switching
     }
     const depth = depthForLevel(level);
@@ -38,7 +43,11 @@ export const levelForTemplate = (level: string, uniqueTemplates: boolean, modifi
 // it's 'render2' (append depth-1, since top level is just render()).
 // If the level ended in A/B (for dynamic template switching), add that to the
 // depth when not using unique templates (e.g. '0_2_1A' -> 'render3A')
-export const templateNameForLevel = (level: string, uniqueTemplates: boolean, modifier: string = '') => {
+export const templateNameForLevel = (
+  level: string,
+  uniqueTemplates: boolean,
+  modifier = ''
+) => {
   return `render${levelForTemplate(level, uniqueTemplates, modifier)}`;
 };
 
@@ -60,7 +69,9 @@ export const parseRenderer = (renderer: string) => {
   if (parts[3]) {
     const vparts = /([^=]+)=(?:([^@]+)@(.*)|(.*\.json$))/.exec(parts[3]);
     if (vparts === null) {
-      throw new Error(`Renderer version '${parts[3]}' was invalid; use form label=package@version or label=version-info.json`);
+      throw new Error(
+        `Renderer version '${parts[3]}' was invalid; use form label=package@version or label=version-info.json`
+      );
     }
     if (vparts[4]) {
       const file = path.join(process.cwd(), vparts[4]);
@@ -69,15 +80,15 @@ export const parseRenderer = (renderer: string) => {
       packageVersions = {
         label: vparts[1],
         dependencies: {
-          [vparts[2]]: vparts[3]
-        }
-      }
+          [vparts[2]]: vparts[3],
+        },
+      };
     }
   }
   const info = {
     base: parts[1],
     query: parts[2],
-    packageVersions
+    packageVersions,
   };
   rendererInfoMap.set(renderer, info);
   return info;

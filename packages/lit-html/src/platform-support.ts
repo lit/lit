@@ -44,11 +44,12 @@
       enumerable: true,
       writable: true,
       value: function append() {
-        var argArr = Array.prototype.slice.call(arguments),
+        // eslint-disable-next-line prefer-rest-params
+        const argArr = Array.prototype.slice.call(arguments),
           docFrag = document.createDocumentFragment();
 
         argArr.forEach(function (argItem) {
-          var isNode = argItem instanceof Node;
+          const isNode = argItem instanceof Node;
           docFrag.appendChild(
             isNode ? argItem : document.createTextNode(String(argItem))
           );
@@ -93,6 +94,7 @@ interface ShadyTemplateResult {
 }
 
 interface PatchableNodePart {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableNodePart;
   _value: unknown;
   _startNode: ChildNode;
@@ -106,6 +108,7 @@ interface PatchableNodePart {
 }
 
 interface PatchableTemplate {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableTemplate;
   _createElement(html: string): HTMLTemplateElement;
   _element: HTMLTemplateElement;
@@ -128,6 +131,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
  * * NodePart.prototype._getTemplate
  * * NodePart.prototype._setValue
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= ({
   NodePart,
   Template,
@@ -187,7 +191,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
      */
     _createElement(html: string) {
       const template = super._createElement(html);
-      const scope = this._options?.scope!;
+      const scope = this._options?.scope;
       if (scope !== undefined) {
         if (!window.ShadyCSS!.nativeShadow) {
           window.ShadyCSS!.prepareTemplateDom(template, scope);
@@ -244,7 +248,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
-      const template = !!(value as ShadyTemplateResult)?._$litType$
+      const template = (value as ShadyTemplateResult)?._$litType$
         ? (this._value as PatchableTemplateInstance)._template._element
         : document.createElement('template');
       prepareStyles(scope!, template);
