@@ -44,12 +44,12 @@
         "rollup-plugin-terser": "^5.0.0",
         "tachometer": "^0.4.7",
         "tslint": "^5.18.0",
-        "typescript": "^3.5.1"
+        "typescript": "^4.0.2"
     },
     "dependencies": {
         "event-target-shim": "^5.0.1",
-        "lit-element": "^2.3.1",
-        "lit-html": "^1.2.1",
+        "lit-element": "next-major",
+        "lit-html": "next-major",
         "resize-observer-polyfill": "^1.5.1",
         "tslib": "^1.10.0"
     }

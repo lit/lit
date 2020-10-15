@@ -15,7 +15,9 @@
     "clean": "lerna run clean; rm -r node_modules/",
     "start": "http-server & npm run build-and-watch --prefix packages/uni-virtualizer-examples",
     "deploy-examples": "./scripts/deploy-examples.sh",
-    "init": "npm run bootstrap; npm run build --prefix packages/lit-virtualizer; npm run bootstrap;"
+    "init": "npm run bootstrap; npm run build --prefix packages/lit-virtualizer; npm run bootstrap;",
+    "link:dev": "rm -fr node_modules/lit-{html,element} && ln -s ~/source/lit-html/packages/lit-html/development node_modules/lit-html && ln -sf ~/source/lit-html/packages/lit-html/package.json ~/source/lit-html/packages/lit-html/development/package.json && ln -s ~/source/lit-html/packages/lit-element/development node_modules/lit-element && ln -sf ~/source/lit-html/packages/lit-element/package.json ~/source/lit-html/packages/lit-element/development/package.json",
+    "link:prod": "rm -f node_modules/lit-{html,element} && npm run bootstrap"
   },
   "dependencies": {}
 }

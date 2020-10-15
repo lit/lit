@@ -60,7 +60,7 @@ interface VirtualScrollerConfig {
   /**
    * An element that receives scroll events for the virtual scroller.
    */
-  scrollTarget: Element | Window;
+  scrollTarget?: Element | Window;
 
   /**
    * The parent of all child nodes to be rendered.
