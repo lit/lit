@@ -16,8 +16,6 @@ import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 suite('platform-support rendering', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
@@ -84,6 +82,7 @@ suite('platform-support rendering', () => {
     const container2 = document.createElement('div');
     document.body.appendChild(container1);
     document.body.appendChild(container2);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getResult = (data: any) => html`${data.a}-${data.b}-${data.c}`;
     renderShadowRoot(getResult({a: 1, b: 2, c: 3}), container1);
     renderShadowRoot(getResult({a: 4, b: 5, c: 6}), container2);
