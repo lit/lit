@@ -14,12 +14,12 @@
 import {
   html,
   render,
-} from '../../lib/lit-html.js';
+} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
 } from '../test-utils/strip-markers.js';
-import { ref, Ref } from '../../lib/directives/ref.js';
+import { ref, Ref } from '../../directives/ref.js';
 
 suite('ref', () => {
   let container: HTMLDivElement;

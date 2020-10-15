@@ -24,6 +24,7 @@ import {
   PROPERTY_PART,
   BOOLEAN_ATTRIBUTE_PART,
   ATTRIBUTE_PART,
+  ELEMENT_PART,
 } from '../lit-html.js';
 
 // A sentinal value that can never appear as a part value except when set by
@@ -33,7 +34,7 @@ const RESET_VALUE = {};
 class LiveDirective extends Directive {
   constructor(part: PartInfo) {
     super();
-    if (part.type === EVENT_PART || part.type === NODE_PART) {
+    if (part.type === EVENT_PART || part.type === NODE_PART || part.type === ELEMENT_PART) {
       throw new Error(
         'The `live` directive is not allowed on text or event bindings'
       );

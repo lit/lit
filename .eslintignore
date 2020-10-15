@@ -1,5 +1,0 @@
-/packages/*/lib/
-/packages/*/test/**/*.{d.ts,d.ts.map,js,js.map}
-/packages/*/index.{d.ts,d.ts.map,js,js.map}
-
-/packages/lit-html/directives/

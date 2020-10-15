@@ -47,6 +47,7 @@ const isPrimitive = (value: unknown): value is Primitive =>
 const isArray = Array.isArray;
 const isIterable = (value: unknown): value is Iterable<unknown> =>
   isArray(value) ||
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (value && typeof (value as any)[Symbol.iterator] === 'function');
 
 // TODO (justinfagnani): can we get away with `\s`?
@@ -72,12 +73,16 @@ const NAME_CHAR = `[^\0-\x1F\x7F-\x9F "'>=/]`;
  * End of text is: `<` followed by:
  *   (comment start) or (tag) or (dynamic tag binding)
  */
-const textRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
-const commentRegex = /-->/g;
+const textEndRegex = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+const COMMENT_START = 1;
+const TAG_NAME = 2;
+const DYNAMIC_TAG_NAME = 3;
+
+const commentEndRegex = /-->/g;
 /**
  * Comments not started with <!--, like </{, can be ended by a single `>`
  */
-const comment2Regex = />/g;
+const comment2EndRegex = />/g;
 
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
@@ -103,12 +108,17 @@ const comment2Regex = />/g;
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
-const tagRegex = new RegExp(
-  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|$))`,
+const tagEndRegex = new RegExp(
+  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))`,
   'g'
 );
-const singleQuoteAttr = /'/g;
-const doubleQuoteAttr = /"/g;
+const ENTIRE_MATCH = 0;
+const ATTRIBUTE_NAME = 1;
+const SPACES_AND_EQUALS = 2;
+const QUOTE_CHAR = 3;
+
+const singleQuoteAttrEndRegex = /'/g;
+const doubleQuoteAttrEndRegex = /"/g;
 /**
  * Matches the raw text elements.
  *
@@ -132,7 +142,7 @@ export const NODE_PART = 2;
 export const PROPERTY_PART = 3;
 export const BOOLEAN_ATTRIBUTE_PART = 4;
 export const EVENT_PART = 5;
-const ELEMENT_PART = 6;
+export const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
 
 
@@ -215,13 +225,18 @@ export type AttributePartInfo = {
   tagName: string;
 };
 
+export type ElementPartInfo = {
+  readonly type: typeof ELEMENT_PART;
+  tagName: string;
+};
+
 /**
  * Information about the part a directive is bound to.
  *
  * This is useful for checking that a directive is attached to a valid part,
  * such as with directive that can only be used on attribute bindings.
  */
-export type PartInfo = NodePartInfo | AttributePartInfo;
+export type PartInfo = NodePartInfo | AttributePartInfo | ElementPartInfo;
 
 export type DirectiveClass = {new (part: PartInfo): Directive};
 
@@ -245,7 +260,7 @@ type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
 /**
  * Creates a user-facing directive function from a Directive class. This
  * function has the same parameters as the directive's render() method.
- * 
+ *
  * WARNING: The directive and part API changes are in progress and subject to
  * change in future pre-releases.
  */
@@ -261,11 +276,11 @@ export interface RenderOptions {
    * An object to use as the `this` value for event listeners. It's often
    * useful to set this to the host component rendering a template.
    */
-  readonly eventContext?: EventTarget;
+  eventContext?: EventTarget;
   /**
    * A DOM node before which to render content in the container.
    */
-  readonly renderBefore?: ChildNode | null;
+  renderBefore?: ChildNode | null;
 }
 
 /**
@@ -280,9 +295,11 @@ export const render = (
   options?: RenderOptions
 ) => {
   const partOwnerNode = options?.renderBefore ?? container;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: NodePart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any).$lit$ = part = new NodePart(
       container.insertBefore(createMarker(), endNode),
       endNode,
@@ -292,7 +309,12 @@ export const render = (
   part._setValue(value);
 };
 
-const walker = d.createTreeWalker(d);
+const walker = d.createTreeWalker(
+  d,
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false
+);
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -305,7 +327,7 @@ const walker = d.createTreeWalker(d);
  * Base class for creating custom directives. Users should extend this class,
  * implement `render` and/or `update`, and then pass their subclass to
  * `directive`.
- * 
+ *
  * WARNING: The directive and part API changes are in progress and subject to
  * change in future pre-releases.
  */
@@ -317,20 +339,24 @@ export abstract class Directive {
 }
 
 class Template {
-  private __strings: TemplateStringsArray;
-  __element: HTMLTemplateElement;
-  __parts: Array<TemplatePart> = [];
+  private _strings: TemplateStringsArray;
+  _element: HTMLTemplateElement;
+  _parts: Array<TemplatePart> = [];
+  // Note, this is used by the `platform-support` module.
+  _options?: RenderOptions;
 
-  constructor({strings, _$litType$: type}: TemplateResult) {
-    walker.currentNode = (this.__element = d.createElement('template')).content;
-
+  constructor(
+    {strings, _$litType$: type}: TemplateResult,
+    options?: RenderOptions
+  ) {
+    this._options = options;
     // Insert makers into the template HTML to represent the position of
     // bindings. The following code scans the template strings to determine the
     // syntactic position of the bindings. They can be in text position, where
     // we insert an HTML comment, attribute value position, where we insert a
     // sentinel string and re-write the attribute name, or inside a tag where
     // we insert the sentinel string.
-    const l = (this.__strings = strings).length - 1;
+    const l = (this._strings = strings).length - 1;
     const attrNames: Array<string> = [];
     let html = type === SVG_RESULT ? '<svg>' : '';
     let node: Node | null;
@@ -338,15 +364,21 @@ class Template {
     let bindingIndex = 0;
     let attrNameIndex = 0;
 
+    // When we're inside a raw text tag (not it's text content), the regex
+    // will still be tagRegex so we can find attributes, but will switch to
+    // this regex when the tag ends.
+    let rawTextEndRegex: RegExp | undefined;
+
     // The current parsing state, represented as a reference to one of the
     // regexes
-    let regex = textRegex;
+    let regex = textEndRegex;
 
     for (let i = 0; i < l; i++) {
       const s = strings[i];
-      // The index of the end of the last attribute. When this is !== -1 at
-      // end of a string, it means we're in a quoted attribute position.
-      let attrNameEnd = -1;
+      // The index of the end of the last attribute name. When this is
+      // positive at end of a string, it means we're in an attribute value
+      // position and need to rewrite the attribute name.
+      let attrNameEndIndex = -1;
       let attrName: string | undefined;
       let lastIndex = 0;
       let match: RegExpExecArray | null;
@@ -358,63 +390,96 @@ class Template {
         regex.lastIndex = lastIndex;
         match = regex.exec(s);
         if (match === null) {
-          // TODO (justinfagnani): add test coverage from spread parts
-          // If we're not in a quoted attribute value, make sure we clear
-          // the attrNameEnd marker
-          if (regex !== singleQuoteAttr && regex !== doubleQuoteAttr) {
-            attrNameEnd = -1;
+          // If the current regex doesn't match we've come to a binding inside
+          // that state and must break and insert a marker
+          if (regex === tagEndRegex) {
+            // When tagEndRegex doesn't match we must have a binding in
+            // attribute-name position, since tagEndRegex does match static
+            // attribute names and end-of-tag. We need to clear
+            // attrNameEndIndex which may have been set by a previous
+            // tagEndRegex match.
+            attrNameEndIndex = -1;
           }
           break;
         }
         lastIndex = regex.lastIndex;
-        if (regex === textRegex) {
-          if (match[1] === '!--') {
-            regex = commentRegex;
-          } else if (match[1] !== undefined) {
-            regex = comment2Regex;
-          } else if (match[2] !== undefined) {
-            if (rawTextElement.test(match[2])) {
-              regex = new RegExp(`<\/${match[2]}`, 'g');
-            } else {
-              regex = tagRegex;
+        if (regex === textEndRegex) {
+          if (match[COMMENT_START] === '!--') {
+            regex = commentEndRegex;
+          } else if (match[COMMENT_START] !== undefined) {
+            // We started a weird comment, like </{
+            regex = comment2EndRegex;
+          } else if (match[TAG_NAME] !== undefined) {
+            if (rawTextElement.test(match[TAG_NAME])) {
+              // Record if we encounter a raw-text element. We'll switch to
+              // this regex at the end of the tag
+              rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
             }
-          } else if (match[3] !== undefined) {
+            regex = tagEndRegex;
+          } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
             // dynamic tag name
-            regex = tagRegex;
+            regex = tagEndRegex;
           }
-        } else if (regex === tagRegex) {
-          if (match[0] === '>') {
-            regex = textRegex;
+        } else if (regex === tagEndRegex) {
+          if (match[ENTIRE_MATCH] === '>') {
+            // End of a tag. If we had started a raw-text element, use that
+            // regex
+            regex = rawTextEndRegex ?? textEndRegex;
+            // We may be ending an unquoted attribute value, so make sure we
+            // clear any pending attrNameEndIndex
+            attrNameEndIndex = -1;
           } else {
-            attrNameEnd = regex.lastIndex - match[2].length;
-            attrName = match[1];
+            attrNameEndIndex =
+              regex.lastIndex - match[SPACES_AND_EQUALS].length;
+            attrName = match[ATTRIBUTE_NAME];
             regex =
-              match[3] === undefined
-                ? tagRegex
-                : match[3] === '"'
-                ? doubleQuoteAttr
-                : singleQuoteAttr;
+              match[QUOTE_CHAR] === undefined
+                ? tagEndRegex
+                : match[QUOTE_CHAR] === '"'
+                ? doubleQuoteAttrEndRegex
+                : singleQuoteAttrEndRegex;
           }
-        } else if (regex === doubleQuoteAttr || regex === singleQuoteAttr) {
-          attrNameEnd = -1;
-          regex = tagRegex;
-        } else if (regex === commentRegex || regex === comment2Regex) {
-          regex = textRegex;
+        } else if (
+          regex === doubleQuoteAttrEndRegex ||
+          regex === singleQuoteAttrEndRegex
+        ) {
+          regex = tagEndRegex;
+        } else if (regex === commentEndRegex || regex === comment2EndRegex) {
+          regex = textEndRegex;
         } else {
           // Not one of the five state regexes, so it must be the dynamically
           // created raw text regex and we're at the close of that element.
-          regex = tagRegex;
+          regex = tagEndRegex;
+          rawTextEndRegex = undefined;
         }
       }
 
-      // console.assert(!(attrNameEnd !== -1 && regex === textRegex));
-      if (attrNameEnd !== -1) {
-        attrNames.push(attrName!);
-        html +=
-          s.slice(0, attrNameEnd) + '$lit$' + s.slice(attrNameEnd) + marker;
-      } else {
-        html += regex === textRegex ? s + nodeMarker : s + marker;
+      if (DEV_MODE) {
+        // If we have a attrNameEndIndex, which indicates that we should
+        // rewrite the attribute name, assert that we're in a valid attribute
+        // position - either in a tag, or a quoted attribute value.
+        console.assert(
+          attrNameEndIndex === -1 ||
+            regex === tagEndRegex ||
+            regex === singleQuoteAttrEndRegex ||
+            regex === doubleQuoteAttrEndRegex,
+          'unexpected parse state B'
+        );
       }
+
+      // If we're in text position, and not in a raw text element
+      // (regex === textEndRegex), we insert a comment marker. Otherwise, we
+      // insert a plain maker. If we have a attrNameEndIndex, it means we need
+      // to rewrite the attribute name to add a bound attribute suffix.
+      html +=
+        regex === textEndRegex
+          ? s + nodeMarker
+          : (attrNameEndIndex !== -1
+              ? (attrNames.push(attrName!),
+                s.slice(0, attrNameEndIndex) +
+                  boundAttributeSuffix +
+                  s.slice(attrNameEndIndex))
+              : s) + marker;
     }
 
     // TODO (justinfagnani): if regex is not textRegex log a warning for a
@@ -422,10 +487,11 @@ class Template {
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
-    this.__element.innerHTML = html + this.__strings[l];
+    this._element = this._createElement(html + this._strings[l]);
+    walker.currentNode = this._element.content;
 
     if (type === SVG_RESULT) {
-      const content = this.__element.content;
+      const content = this._element.content;
       const svgElement = content.firstChild!;
       svgElement.remove();
       content.append(...svgElement.childNodes);
@@ -439,19 +505,34 @@ class Template {
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
           const {attributes} = node as Element;
+          // We defer removing bound attributes because on IE we might not be
+          // iterating attributes in their template order, and would sometimes
+          // remove an attribute that we still need to create a part for.
+          const attrsToRemove = [];
           for (let i = 0; i < attributes.length; i++) {
-            const {name, value} = attributes[i];
+            // This is the name of the attribute we're iterating over, but not
+            // _neccessarily_ the name of the attribute we will create a part
+            // for. They can be different in browsers that don't iterate on
+            // attributes in source order. In that case the attrNames array
+            // contains the attribute name we'll process next. We only need the
+            // attribute name here to know if we should process a bound attribute
+            // on this element.
+            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
-              i--;
-              (node as Element).removeAttribute(name);
+              const realName = attrNames[attrNameIndex++];
+              // Lowercase for case-sensitive SVG attributes like viewBox
+              const value = (node as Element).getAttribute(
+                realName.toLowerCase() + boundAttributeSuffix
+              )!;
+              attrsToRemove.push(name);
               const statics = value.split(marker);
-              const m = /([.?@])?(.*)/.exec(attrNames[attrNameIndex++])!;
-              this.__parts.push({
-                __type: ATTRIBUTE_PART,
-                __index: nodeIndex,
-                __name: m[2],
-                __strings: statics,
-                __constructor:
+              const m = /([.?@])?(.*)/.exec(realName)!;
+              this._parts.push({
+                _type: ATTRIBUTE_PART,
+                _index: nodeIndex,
+                _name: m[2],
+                _strings: statics,
+                _constructor:
                   m[1] === '.'
                     ? PropertyPart
                     : m[1] === '?'
@@ -462,13 +543,15 @@ class Template {
               });
               bindingIndex += statics.length - 1;
             } else if (name === marker) {
-              (node as Element).removeAttribute(name);
-              i--;
-              this.__parts.push({
-                __type: ELEMENT_PART,
-                __index: nodeIndex,
+              attrsToRemove.push(name);
+              this._parts.push({
+                _type: ELEMENT_PART,
+                _index: nodeIndex,
               });
             }
+          }
+          for (const name of attrsToRemove) {
+            (node as Element).removeAttribute(name);
           }
         }
         // TODO (justinfagnani): benchmark the regex against testing for each
@@ -487,7 +570,7 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this.__parts.push({__type: NODE_PART, __index: ++nodeIndex});
+              this._parts.push({_type: NODE_PART, _index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -497,7 +580,7 @@ class Template {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this.__parts.push({__type: NODE_PART, __index: nodeIndex});
+          this._parts.push({_type: NODE_PART, _index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -505,7 +588,7 @@ class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this.__parts.push({__type: COMMENT_PART, __index: nodeIndex});
+            this._parts.push({_type: COMMENT_PART, _index: nodeIndex});
             bindingIndex++;
             // Move to the end of the match
             i += marker.length - 1;
@@ -515,23 +598,30 @@ class Template {
       nodeIndex++;
     }
   }
+
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  _createElement(html: string) {
+    const template = d.createElement('template');
+    template.innerHTML = html;
+    return template;
+  }
 }
 
 class AttributesTemplate {
-  __attrs: Array<{name: string; strings: Array<string>}> = [];
-  constructor(protected __strings: TemplateStringsArray) {
+  _attrs: Array<{name: string; strings: Array<string>}> = [];
+  constructor(protected _strings: TemplateStringsArray) {
     const el = d.createElement('template');
-    el.innerHTML = `<div ${__strings.join(marker)}></div>`;
-    console.log(el.innerHTML);
+    el.innerHTML = `<div ${_strings.join(marker)}></div>`;
+    // console.log(el.innerHTML);
     for (const {name, value} of el.content.firstElementChild!.attributes) {
       const [, , n] = /([.?@])?(.*)/.exec(name)!;
       // const type = prefix === '.' ? PROP
-      this.__attrs.push({
+      this._attrs.push({
         name: n,
         strings: value.split(marker),
       });
     }
-    console.log(this.__attrs);
+    // console.log(this._attrs);
   }
 }
 
@@ -540,20 +630,20 @@ class AttributesTemplate {
  * update the template instance.
  */
 class TemplateInstance {
-  __template: Template;
-  __parts: Array<Part | undefined> = [];
+  _template: Template;
+  private _parts: Array<Part | undefined> = [];
 
   constructor(template: Template) {
-    this.__template = template;
+    this._template = template;
   }
 
   // This method is separate from the constructor because we need to return a
   // DocumentFragment and we don't want to hold onto it with an instance field.
-  __clone(options: RenderOptions | undefined) {
+  _clone(options: RenderOptions | undefined) {
     const {
-      __element: {content},
-      __parts: parts,
-    } = this.__template;
+      _element: {content},
+      _parts: parts,
+    } = this._template;
     const fragment = d.importNode(content, true);
     walker.currentNode = fragment;
 
@@ -563,24 +653,24 @@ class TemplateInstance {
     let templatePart = parts[0];
 
     while (templatePart !== undefined && node !== null) {
-      if (nodeIndex === templatePart.__index) {
+      if (nodeIndex === templatePart._index) {
         let part: Part | undefined;
-        if (templatePart.__type === NODE_PART) {
+        if (templatePart._type === NODE_PART) {
           part = new NodePart(node as HTMLElement, node.nextSibling, options);
-        } else if (templatePart.__type === ATTRIBUTE_PART) {
-          part = new templatePart.__constructor(
+        } else if (templatePart._type === ATTRIBUTE_PART) {
+          part = new templatePart._constructor(
             node as HTMLElement,
-            templatePart.__name,
-            templatePart.__strings,
+            templatePart._name,
+            templatePart._strings,
             options
           );
-        } else if (templatePart.__type === ELEMENT_PART) {
+        } else if (templatePart._type === ELEMENT_PART) {
           part = new SpreadPart(node as HTMLElement);
         }
-        this.__parts.push(part);
+        this._parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart.__index) {
+      if (templatePart !== undefined && nodeIndex !== templatePart._index) {
         node = walker.nextNode();
         nodeIndex++;
       }
@@ -588,9 +678,9 @@ class TemplateInstance {
     return fragment;
   }
 
-  __update(values: Array<unknown>) {
+  _update(values: Array<unknown>) {
     let i = 0;
-    for (const part of this.__parts) {
+    for (const part of this._parts) {
       if (part === undefined) {
         i++;
         continue;
@@ -609,23 +699,23 @@ class TemplateInstance {
  * Parts
  */
 type AttributeTemplatePart = {
-  readonly __type: typeof ATTRIBUTE_PART;
-  readonly __index: number;
-  readonly __name: string;
-  readonly __constructor: typeof AttributePart;
-  readonly __strings: ReadonlyArray<string>;
+  readonly _type: typeof ATTRIBUTE_PART;
+  readonly _index: number;
+  readonly _name: string;
+  readonly _constructor: typeof AttributePart;
+  readonly _strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly __type: typeof NODE_PART;
-  readonly __index: number;
+  readonly _type: typeof NODE_PART;
+  readonly _index: number;
 };
 type ElementTemplatePart = {
-  readonly __type: typeof ELEMENT_PART;
-  readonly __index: number;
+  readonly _type: typeof ELEMENT_PART;
+  readonly _index: number;
 };
 type CommentTemplatePart = {
-  readonly __type: typeof COMMENT_PART;
-  readonly __index: number;
+  readonly _type: typeof COMMENT_PART;
+  readonly _index: number;
 };
 
 /**
@@ -649,63 +739,63 @@ export type Part =
 export class NodePart {
   readonly type = NODE_PART;
   _value: unknown;
-  protected __directive?: Directive;
+  protected _directive?: Directive;
 
   constructor(
-    public _startNode: ChildNode,
-    public _endNode: ChildNode | null,
+    private _startNode: ChildNode,
+    private _endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {}
 
   _setValue(value: unknown): void {
     // TODO (justinfagnani): when setting a non-directive over a directive,
-    // we don't yet clear this.__directive.
+    // we don't yet clear this._directive.
     // See https://github.com/Polymer/lit-html/issues/1286
     if (isPrimitive(value)) {
       if (value !== this._value) {
-        this.__commitText(value);
+        this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
-      this.__commitTemplateResult(value as TemplateResult);
+      this._commitTemplateResult(value as TemplateResult);
     } else if ((value as DirectiveResult)._$litDirective$ !== undefined) {
-      this.__commitDirective(value as DirectiveResult);
+      this._commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
-      this.__commitIterable(value);
+      this._commitIterable(value);
     } else if (value === nothing) {
       this._value = nothing;
-      this.__clear();
+      this._clear();
     } else if (value !== noChange) {
       // Fallback, will render the string representation
-      this.__commitText(value);
+      this._commitText(value);
     }
   }
 
-  private __insert<T extends Node>(node: T, ref = this._endNode) {
+  private _insert<T extends Node>(node: T, ref = this._endNode) {
     return this._startNode.parentNode!.insertBefore(node, ref);
   }
 
-  private __commitDirective(value: DirectiveResult) {
+  private _commitDirective(value: DirectiveResult) {
     const directive = value._$litDirective$;
-    if (this.__directive?.constructor !== directive) {
-      this.__clear();
-      this.__directive = new directive(this as NodePartInfo);
+    if (this._directive?.constructor !== directive) {
+      this._clear();
+      this._directive = new directive(this as NodePartInfo);
     }
     // TODO (justinfagnani): To support nested directives, we'd need to
     // resolve the directive result's values. We may want to offer another
     // way of composing directives.
-    this._setValue(this.__directive.update(this, value.values));
+    this._setValue(this._directive.update(this, value.values));
   }
 
   private _commitNode(value: Node): void {
     if (this._value !== value) {
-      this.__clear();
-      this._value = this.__insert(value);
+      this._clear();
+      this._value = this._insert(value);
     }
   }
 
-  private __commitText(value: unknown): void {
+  private _commitText(value: unknown): void {
     const node = this._startNode.nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
@@ -722,32 +812,38 @@ export class NodePart {
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this._commitNode(new Text(value as string));
+      this._commitNode(d.createTextNode(value as string));
     }
     this._value = value;
   }
 
-  private __commitTemplateResult(result: TemplateResult): void {
-    const {strings, values} = result;
-    let template = templateCache.get(strings);
-    if (template === undefined) {
-      templateCache.set(strings, (template = new Template(result)));
-    }
+  private _commitTemplateResult(result: TemplateResult): void {
+    const {values, strings} = result;
+    const template = this._getTemplate(strings, result);
     if (
       this._value != null &&
-      (this._value as TemplateInstance).__template === template
+      (this._value as TemplateInstance)._template === template
     ) {
-      (this._value as TemplateInstance).__update(values);
+      (this._value as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template!);
-      const fragment = instance.__clone(this.options);
-      instance.__update(values);
+      const fragment = instance._clone(this.options);
+      instance._update(values);
       this._commitNode(fragment);
       this._value = instance;
     }
   }
 
-  private __commitIterable(value: Iterable<unknown>): void {
+  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  private _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
+    let template = templateCache.get(strings);
+    if (template === undefined) {
+      templateCache.set(strings, (template = new Template(result)));
+    }
+    return template;
+  }
+
+  private _commitIterable(value: Iterable<unknown>): void {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
@@ -760,7 +856,7 @@ export class NodePart {
     // array for NodeParts.
     if (!isArray(this._value)) {
       this._value = [];
-      this.__clear();
+      this._clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
@@ -777,8 +873,8 @@ export class NodePart {
         // https://github.com/Polymer/lit-html/issues/1266
         itemParts.push(
           (itemPart = new NodePart(
-            this.__insert(createMarker()),
-            this.__insert(createMarker()),
+            this._insert(createMarker()),
+            this._insert(createMarker()),
             this.options
           ))
         );
@@ -794,11 +890,11 @@ export class NodePart {
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
-      this.__clear(itemPart?._endNode!.nextSibling);
+      this._clear(itemPart?._endNode!.nextSibling);
     }
   }
 
-  __clear(start: ChildNode | null = this._startNode.nextSibling) {
+  private _clear(start: ChildNode | null = this._startNode.nextSibling) {
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -823,7 +919,7 @@ export class AttributePart {
    */
   readonly strings?: ReadonlyArray<string>;
   _value: unknown | Array<unknown> = nothing;
-  private __directives?: Array<Directive>;
+  private _directives?: Array<Directive>;
 
   get tagName() {
     return this.element.tagName;
@@ -853,14 +949,14 @@ export class AttributePart {
    * @param value the raw input value to normalize
    * @param _i the index in the values array this value was read from
    */
-  __resolveValue(value: unknown, i: number) {
+  private _resolveValue(value: unknown, i: number) {
     const directiveCtor = (value as DirectiveResult)?._$litDirective$;
     if (directiveCtor !== undefined) {
       // TODO (justinfagnani): Initialize array to the correct value,
       // or check length.
-      let directive: Directive = (this.__directives ??= [])[i];
+      let directive: Directive = (this._directives ??= [])[i];
       if (directive?.constructor !== directiveCtor) {
-        directive = this.__directives[i] = new directiveCtor(
+        directive = this._directives[i] = new directiveCtor(
           this as AttributePartInfo
         );
       }
@@ -875,9 +971,9 @@ export class AttributePart {
   /**
    * Sets the value of this part.
    *
-   * If this part is single-valued, `this.__strings` will be undefined, and the
+   * If this part is single-valued, `this._strings` will be undefined, and the
    * method will be called with a single value argument. If this part is
-   * multi-value, `this.__strings` will be defined, and the method is called
+   * multi-value, `this._strings` will be defined, and the method is called
    * with the value array of the part's owning TemplateInstance, and an offset
    * into the value array from which the values should be read.
    *
@@ -896,7 +992,7 @@ export class AttributePart {
 
     if (strings === undefined) {
       // Single-value binding case
-      const v = this.__resolveValue(value, 0);
+      const v = this._resolveValue(value, 0);
       // Only dirty-check primitives and `nothing`:
       // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
       // `nothing`. `v === this._value` is the dirty-check.
@@ -904,7 +1000,7 @@ export class AttributePart {
         !((isPrimitive(v) || v === nothing) && v === this._value) &&
         v !== noChange
       ) {
-        this.__commitValue((this._value = v));
+        this._commitValue((this._value = v));
       }
     } else {
       // Interpolation case
@@ -919,7 +1015,7 @@ export class AttributePart {
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = this.__resolveValue((value as Array<unknown>)[from! + i], i);
+        v = this._resolveValue((value as Array<unknown>)[from! + i], i);
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._value as Array<unknown>)[i];
@@ -937,7 +1033,7 @@ export class AttributePart {
           (typeof v === 'string' ? v : String(v)) + strings[i + 1];
       }
       if (change) {
-        this.__commitValue(remove ? nothing : attributeValue);
+        this._commitValue(remove ? nothing : attributeValue);
       }
     }
   }
@@ -946,7 +1042,7 @@ export class AttributePart {
    * Writes the value to the DOM. An override point for PropertyPart and
    * BooleanAttributePart.
    */
-  __commitValue(value: unknown) {
+  _commitValue(value: unknown) {
     if (value === nothing) {
       this.element.removeAttribute(this.name);
     } else {
@@ -958,7 +1054,8 @@ export class AttributePart {
 export class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
-  __commitValue(value: unknown) {
+  _commitValue(value: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
@@ -966,7 +1063,7 @@ export class PropertyPart extends AttributePart {
 export class BooleanAttributePart extends AttributePart {
   readonly type = BOOLEAN_ATTRIBUTE_PART;
 
-  __commitValue(value: unknown) {
+  _commitValue(value: unknown) {
     if (value && value !== nothing) {
       this.element.setAttribute(this.name, '');
     } else {
@@ -991,11 +1088,11 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
-  __eventContext?: unknown;
+  private _eventContext?: unknown;
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
     super(...args);
-    this.__eventContext = args[3]?.eventContext;
+    this._eventContext = args[3]?.eventContext;
   }
 
   _setValue(newListener: unknown) {
@@ -1041,9 +1138,9 @@ export class EventPart extends AttributePart {
 
   handleEvent(event: Event) {
     if (typeof this._value === 'function') {
-      // TODO (justinfagnani): do we need to default to this.__element?
+      // TODO (justinfagnani): do we need to default to this._element?
       // It'll always be the same as `e.currentTarget`.
-      this._value.call(this.__eventContext ?? this.element, event);
+      this._value.call(this._eventContext ?? this.element, event);
     } else {
       (this._value as EventListenerObject).handleEvent(event);
     }
@@ -1051,19 +1148,24 @@ export class EventPart extends AttributePart {
 }
 
 export class SpreadPart {
-  __value: unknown;
-  __directive?: Directive;
+  readonly type = ELEMENT_PART;
+  _value: unknown;
+  _directive?: Directive;
 
-  constructor(public __element: Element) {}
+  constructor(public element: Element) {}
 
-  __setValue(value: unknown): void {
+  get tagName() {
+    return this.element.tagName;
+  }
+
+  _setValue(value: unknown): void {
     const directive = (value as DirectiveResult)._$litDirective$;
     if (directive !== undefined) {
-      if (this.__directive?.constructor !== directive) {
-        this.__directive = new directive(this);
+      if (this._directive?.constructor !== directive) {
+        this._directive = new directive(this);
         // TODO (justinfagnani): clear?
       }
-      value = this.__directive.update(this, (value as DirectiveResult).values);
+      value = this._directive.update(this, (value as DirectiveResult).values);
     }
     if (value === nothing) {
       // ?
@@ -1073,7 +1175,7 @@ export class SpreadPart {
       throw new Error('only Attributes can be set here');
     }
     const {strings, values} = value as TemplateResult;
-    const element = this.__element;
+    const element = this.element;
     let from = 0;
     let template = attributesTemplateCache.get(strings);
     if (template === undefined) {
@@ -1082,7 +1184,7 @@ export class SpreadPart {
         (template = new AttributesTemplate(strings))
       );
     }
-    for (const {name, strings} of template.__attrs) {
+    for (const {name, strings} of template._attrs) {
       if (strings.length === 1) {
         // TODO: static, only set once
         element.setAttribute(name, strings[0]);
@@ -1102,7 +1204,11 @@ export class SpreadPart {
   }
 }
 
+// Apply polyfills if available
+(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
+
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-((globalThis as any)['litHtmlVersions'] ??= []).push('1.3.0');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.3');

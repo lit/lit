@@ -50,7 +50,7 @@ export const cache = directive(
 
       // If the new value is a TemplateResult, try to restore it from cache
       if ((v as TemplateResult)._$litType$ !== undefined) {
-        let cachedTemplate = this.templateCache.get(
+        const cachedTemplate = this.templateCache.get(
           (v as TemplateResult).strings
         );
         if (cachedTemplate !== undefined) {

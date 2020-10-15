@@ -15,8 +15,7 @@
 import {live} from '../../directives/live.js';
 import {html, noChange, nothing, render} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import '../polyfills.js';
 
 class LiveTester extends HTMLElement {
   _x?: string;

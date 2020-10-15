@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {render, RenderOptions} from 'lit-html';
+
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
 
@@ -22,3 +24,28 @@ export const getComputedStyleValue = (element: Element, property: string) =>
   window.ShadyCSS
     ? window.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
+
+export const stripExpressionComments = (html: string) =>
+  html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
+
+// Only test LitElement if ShadowRoot is available and either ShadyDOM is not
+// in use or it is and LitElement platform support is available.
+export const canTestLitElement =
+  (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
+  window.litElementPlatformSupport;
+
+export interface ShadyRenderOptions extends RenderOptions {
+  scope?: string;
+}
+
+/**
+ * A helper for creating a shadowRoot on an element.
+ */
+export const renderShadowRoot = (result: unknown, element: Element) => {
+  if (!element.shadowRoot) {
+    element.attachShadow({mode: 'open'});
+  }
+  render(result, element.shadowRoot!, {
+    scope: element.localName,
+  } as ShadyRenderOptions);
+};

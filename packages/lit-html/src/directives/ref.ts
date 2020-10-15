@@ -31,8 +31,8 @@ class RefDirective extends Directive {
   }
 
   update(part: SpreadPart, [ref]: Parameters<this['render']>) {
-    if (ref.value !== part.__element) {
-      ref.set(part.__element);
+    if (ref.value !== part.element) {
+      ref.set(part.element);
     }
     return nothing;
   }
