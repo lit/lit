@@ -18,8 +18,7 @@ import {html as htmlWithApply} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const testIfUsingNativeCSSVariables = (test: any) =>
   window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test;
 
