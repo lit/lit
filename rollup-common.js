@@ -100,7 +100,7 @@ const generateTerserOptions = (nameCache = null) => ({
   },
 });
 
-export function litRollupConfig({
+export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
@@ -243,7 +243,7 @@ export function litRollupConfig({
       ],
     },
     ...bundled.map(({file, output, name}) =>
-      litBundle({
+      litMonoBundleConfig({
         file,
         output,
         name,
@@ -253,7 +253,7 @@ export function litRollupConfig({
   ];
 }
 
-export const litBundle = ({
+export const litMonoBundleConfig = ({
   file,
   output,
   name,

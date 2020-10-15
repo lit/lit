@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {litBundle} from '../../rollup-common.js';
+import {litMonoBundleConfig} from '../../rollup-common.js';
 
-export default litBundle({
+export default litMonoBundleConfig({
   file: 'lit-element',
   output: 'lit.min',
   name: 'Lit',
