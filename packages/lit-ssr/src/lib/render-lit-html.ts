@@ -56,7 +56,7 @@ import {
   isElement,
 } from './util/parse5-utils.js';
 
-// import {isRenderLightDirective} from 'lit-element/lib/render-light.js';
+import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
@@ -366,7 +366,7 @@ export function* renderValue(
   value: unknown,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
-  /*if (isRenderLightDirective(value)) {
+  if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
     const instance = getLast(renderInfo.customElementInstanceStack);
@@ -375,7 +375,7 @@ export function* renderValue(
       yield* instance.renderLight(renderInfo);
     }
     value = null;
-  } else*/ if (value != null && (value as any)._$litDirective$) {
+  } else if (value != null && (value as any)._$litDirective$) {
     const directive = (value as DirectiveResult)._$litDirective$;
     value = new directive({type: NODE_PART}).render(...(value as DirectiveResult).values);
   }

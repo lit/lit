@@ -733,6 +733,10 @@ export class NodePart {
     public options: RenderOptions | undefined
   ) {}
 
+  get parentNode(): Node {
+    return this._startNode.parentNode!;
+  }
+
   /** @internal */
   _setEndNode(node: ChildNode | null) {
     this._endNode = node;

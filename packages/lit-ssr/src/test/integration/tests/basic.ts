@@ -31,7 +31,7 @@ import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
 
 import {LitElement} from 'lit-element';
 import {property} from 'lit-element/decorators/property.js'
-// import {renderLight} from 'lit-element/render-light.js';
+import {renderLight, RenderLightHost} from 'lit-html/directives/render-light.js';
 
 import { SSRTest } from './ssr-test';
 
@@ -3369,52 +3369,52 @@ export const tests: {[name: string] : SSRTest} = {
     };
   },
 
-  // 'LitElement: renderLight': () => {
-  //   return {
-  //     registerElements() {
-  //       class LERenderLight extends LitElement {
-  //         @property()
-  //         prop = 'default';
-  //         render() {
-  //           return html` <div>[shadow:${this.prop}<slot></slot>]</div>`;
-  //         }
-  //         renderLight() {
-  //           return html` <div>[light:${this.prop}]</div>`;
-  //         }
-  //       }
-  //       customElements.define('le-render-light', LERenderLight);
-  //     },
-  //     render(prop: any) {
-  //       return html`<le-render-light .prop=${prop}>${renderLight()}</le-render-light>`;
-  //     },
-  //     expectations: [
-  //       {
-  //         args: ['boundProp1'],
-  //         async check(assert: Chai.Assert, dom: HTMLElement) {
-  //           const el = dom.querySelector('le-render-light')! as LitElement;
-  //           await el.updateComplete;
-  //           assert.strictEqual((el as any).prop, 'boundProp1');
-  //         },
-  //         html: {
-  //           root: `<le-render-light>\n  <div>\n    [light:  boundProp1  ]\n  </div>\n</le-render-light>`,
-  //           'le-render-light': `<div>\n  [shadow:boundProp1\n  <slot></slot>\n  ]\n</div>`
-  //         },
-  //       },
-  //       {
-  //         args: ['boundProp2'],
-  //         async check(assert: Chai.Assert, dom: HTMLElement) {
-  //           const el = dom.querySelector('le-render-light')! as LitElement;
-  //           await el.updateComplete;
-  //           assert.strictEqual((el as any).prop, 'boundProp2');
-  //         },
-  //         html: {
-  //           root: `<le-render-light>\n  <div>\n    [light:  boundProp2  ]\n  </div>\n</le-render-light>`,
-  //           'le-render-light': `<div>\n  [shadow:boundProp2\n  <slot></slot>\n  ]\n</div>`
-  //         },
-  //       },
-  //     ],
-  //     stableSelectors: ['le-render-light'],
-  //   };
-  // },
+  'LitElement: renderLight': () => {
+    return {
+      registerElements() {
+        class LERenderLight extends LitElement implements RenderLightHost {
+          @property()
+          prop = 'default';
+          render() {
+            return html` <div>[shadow:${this.prop}<slot></slot>]</div>`;
+          }
+          renderLight() {
+            return html` <div>[light:${this.prop}]</div>`;
+          }
+        }
+        customElements.define('le-render-light', LERenderLight);
+      },
+      render(prop: any) {
+        return html`<le-render-light .prop=${prop}>${renderLight()}</le-render-light>`;
+      },
+      expectations: [
+        {
+          args: ['boundProp1'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-render-light')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).prop, 'boundProp1');
+          },
+          html: {
+            root: `<le-render-light>\n  <div>\n    [light:boundProp1]\n  </div>\n</le-render-light>`,
+            'le-render-light': `<div>\n  [shadow:boundProp1\n  <slot></slot>\n  ]\n</div>`
+          },
+        },
+        {
+          args: ['boundProp2'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-render-light')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).prop, 'boundProp2');
+          },
+          html: {
+            root: `<le-render-light>\n  <div>\n    [light:boundProp2]\n  </div>\n</le-render-light>`,
+            'le-render-light': `<div>\n  [shadow:boundProp2\n  <slot></slot>\n  ]\n</div>`
+          },
+        },
+      ],
+      stableSelectors: ['le-render-light'],
+    };
+  },
 
 };
