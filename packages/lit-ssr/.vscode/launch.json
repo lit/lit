@@ -9,28 +9,20 @@
       "runtimeVersion": "14.4.0",
       "request": "launch",
       "name": "Test: Integration (debug)",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/test/integration/test.js",
       "args": ["--debug"],
-      "outFiles": [
-        "${workspaceFolder}/./**/*.js"
-      ],
-      "runtimeArgs": ["--experimental-vm-modules"],
+      "outFiles": ["${workspaceFolder}/./**/*.js"],
+      "runtimeArgs": ["--experimental-vm-modules"]
     },
     {
       "type": "node",
       "runtimeVersion": "14.4.0",
       "request": "launch",
       "name": "Demo Server",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/demo/server.js",
-      "outFiles": [
-        "${workspaceFolder}/./**/*.js"
-      ],
+      "outFiles": ["${workspaceFolder}/./**/*.js"],
       "runtimeArgs": ["--experimental-vm-modules"]
     }
   ]

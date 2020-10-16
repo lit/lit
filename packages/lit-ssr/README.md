@@ -16,7 +16,7 @@ lit-element@3.
 The easiest way to get started using lit-ssr is to add the `renderHTMLFile`
 middleware from the `render-html-file` module to your server. This middleware
 will server-side render any `Lit` custom elements included in html files served
-in your application.  It handles URLs to files with `.html` or bare paths with
+in your application. It handles URLs to files with `.html` or bare paths with
 `accept: text/html` or `accept: *`. If a static file does not exist at the
 specified URL path, the `fallback` file will be rendered/served.
 
@@ -52,27 +52,28 @@ const root = /* Root of your webapp */;
 When using this middleware, there are a few steps you should do to prepare you
 HTML files for proper server rendering:
 
-* Add the `template-shadowroot` polyfill to hydrate server-rendered `<template
-  shadowroot>` elements. For example:
+- Add the `template-shadowroot` polyfill to hydrate server-rendered `<template shadowroot>` elements. For example:
   ```html
   <script type="module">
     import {hydrateShadowRoots} from './node_modules/template-shadowroot/template-shadowroot.js';
     hydrateShadowRoots(document.body);
   </script>
   ```
-* Add `ssr` attribute to scripts that _should_ be executed on the server, for
+- Add `ssr` attribute to scripts that _should_ be executed on the server, for
   example, scripts that include custom element definitions. For example:
   ```html
   <script type="module" src="my-app-components.js" ssr></script>
   ```
-* (Optional): Add `type="ssr"` attribute to scripts that should _only_ be
+- (Optional): Add `type="ssr"` attribute to scripts that should _only_ be
   executed on the server. This is useful for fetching/initializing application
   data on the server. Note that if a `type="ssr"` module script exports an async
   function named `initializeSSR`, it will be invoked, and its return value can
-  be rendered into the html page (see below).  For example:
+  be rendered into the html page (see below). For example:
+
   ```html
   <script type="ssr-only" src="initialize-server-data.js"></script>
   ```
+
   ```js
   // Example: initialize-server-data.js
 
@@ -84,18 +85,21 @@ HTML files for proper server rendering:
     // Serialize state (escaping HTML brackets for safety) and return as a Lit
     // value to interpolate into the client-side HTML page
     const stateString = JSON.stringify(state).replace(/</g, '\\u003c');
-    return [unsafeHTML(`<script>window.__PRELOADED_STATE__=${stateString}</script>`)];
+    return [
+      unsafeHTML(`<script>window.__PRELOADED_STATE__=${stateString}</script>`),
+    ];
   };
   ```
-* Add `<!--lit-ssr-value-->` comments to HTML to interpolate any values returned
+
+- Add `<!--lit-ssr-value-->` comments to HTML to interpolate any values returned
   from `initializeSSR` exports discovered in scripts into the serialized HTML
   page.
 
 Full example HTML file:
 
 ```html
-<!doctype html>
-<html>	
+<!DOCTYPE html>
+<html>
   <head>
     <title>My App</title>
     <script type="module">
@@ -110,7 +114,6 @@ Full example HTML file:
     <my-app></my-app>
   </body>
 </html>
-
 ```
 
 ### Low-level API: render `lit-html` templates
@@ -134,7 +137,7 @@ import {render} from 'lit-ssr/lib/render-lit-html.js';
 import {myTemplate} from 'my-template.js';
 export const renderTemplate = (someData) => {
   return render(myTemplate(someData));
-}
+};
 ```
 
 ```js

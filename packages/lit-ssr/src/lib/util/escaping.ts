@@ -30,12 +30,12 @@ const escapeReplace = (c: string) => {
       return '&nbsp;';
   }
   throw new Error('unexpected');
-}
+};
 
 export const escapeAttribute = (s: string) => {
   return s.replace(escapeAttrRegExp, escapeReplace);
-}
+};
 
 export const escapeTextContent = (s: string) => {
   return s.replace(escapeDataRegExp, escapeReplace);
-}
+};

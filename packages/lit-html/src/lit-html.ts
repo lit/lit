@@ -297,12 +297,14 @@ export const render = (
   part._setValue(value);
 };
 
-const walker = d && d.createTreeWalker(
-  d,
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-  null,
-  false
-);
+const walker =
+  d &&
+  d.createTreeWalker(
+    d,
+    133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+    null,
+    false
+  );
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -405,8 +407,7 @@ const getTemplateHtml = (strings: TemplateStringsArray, type: ResultType) => {
           // clear any pending attrNameEndIndex
           attrNameEndIndex = -1;
         } else {
-          attrNameEndIndex =
-            regex.lastIndex - match[SPACES_AND_EQUALS].length;
+          attrNameEndIndex = regex.lastIndex - match[SPACES_AND_EQUALS].length;
           attrName = match[ATTRIBUTE_NAME];
           regex =
             match[QUOTE_CHAR] === undefined
@@ -463,9 +464,9 @@ const getTemplateHtml = (strings: TemplateStringsArray, type: ResultType) => {
     // We don't technically need to close the SVG tag since the parser
     // will handle it for us, but the SSR parser doesn't like that
     html: html + strings[l] + (type === SVG_RESULT ? '</svg>' : ''),
-    attrNames
+    attrNames,
   };
-}
+};
 
 class Template {
   /** @internal */
@@ -473,13 +474,13 @@ class Template {
   /** @internal */
   _parts: Array<TemplatePart> = [];
   // Note, this is used by the `platform-support` module.
-  _options?: RenderOptions;	
+  _options?: RenderOptions;
 
   constructor(
     {strings, _$litType$: type}: TemplateResult,
-    options?: RenderOptions,
+    options?: RenderOptions
   ) {
-    this._options = options
+    this._options = options;
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
@@ -944,7 +945,7 @@ export class AttributePart {
    *
    * @param value the raw input value to normalize
    * @param _i the index in the values array this value was read from
-   * 
+   *
    * @internal
    */
   _resolveDirective(value: unknown, i: number) {
@@ -983,7 +984,7 @@ export class AttributePart {
    * @param value The part value, or an array of values for multi-valued parts
    * @param from the index to start reading values from. `undefined` for
    *   single-valued parts
-   * 
+   *
    * @internal
    */
   _resolveValue(value: unknown | Array<unknown>, from?: number): unknown {
@@ -995,9 +996,10 @@ export class AttributePart {
       // Only dirty-check primitives and `nothing`:
       // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
       // `nothing`. `v === this._value` is the dirty-check.
-      return (((isPrimitive(v) || v === nothing) && v === this._value) || 
-              v === noChange) ?
-        noChange : (this._value = v);
+      return ((isPrimitive(v) || v === nothing) && v === this._value) ||
+        v === noChange
+        ? noChange
+        : (this._value = v);
     } else {
       // Interpolation case
       let attributeValue = strings[0];
@@ -1043,7 +1045,7 @@ export class AttributePart {
    * @param value The part value, or an array of values for multi-valued parts
    * @param from the index to start reading values from. `undefined` for
    *   single-valued parts
-   * 
+   *
    * @internal
    */
   _setValue(value: unknown): void;

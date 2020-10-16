@@ -44,8 +44,9 @@ export const templateWithMultiBindingAttributeExpression = (
 
 /* Reflected Property Expressions */
 
+// prettier-ignore
 export const inputTemplateWithValueProperty = (x: string) =>
-  html`<input .value=${x} />`;
+  html`<input .value=${x}>`;
 export const elementTemplateWithClassNameProperty = (x: string) =>
   html`<div .className=${x}></div>`;
 export const elementTemplateWithClassnameProperty = (x: string) =>
@@ -77,9 +78,8 @@ export class TestProperty extends LitElement {
   }
 }
 
-export const elementWithProperty = html`<test-property
-  .foo=${'bar'}
-></test-property>`;
+// prettier-ignore
+export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
 
 /* Slots and Distribution */
 
@@ -92,27 +92,22 @@ export class TestSlot extends LitElement {
   }
 }
 
-export const slotWithStaticChild = html`<test-simple-slot
-  ><p>Hi</p></test-simple-slot
->`;
+// prettier-ignore
+export const slotWithStaticChild = html`<test-simple-slot><p>Hi</p></test-simple-slot>`;
 
-export const slotWithStaticChildren = html`<test-simple-slot
-  ><h1>Yo</h1>
-  <p>Hi</p></test-simple-slot
->`;
+// prettier-ignore
+export const slotWithStaticChildren = html`<test-simple-slot><h1>Yo</h1><p>Hi</p></test-simple-slot>`;
 
 const dynamicChild = html`<p>Hi</p>`;
-export const slotWithDynamicChild = html`<test-simple-slot
-  >${dynamicChild}</test-simple-slot
->`;
 
-export const slotWithDynamicChildAndMore = html`<test-simple-slot
-    >${dynamicChild}</test-simple-slot
-  >${42}`;
+// prettier-ignore
+export const slotWithDynamicChild = html`<test-simple-slot>${dynamicChild}</test-simple-slot>`;
 
-export const slotWithReusedDynamicChild = html`<test-simple-slot
-    >${dynamicChild}</test-simple-slot
-  >${dynamicChild}`;
+// prettier-ignore
+export const slotWithDynamicChildAndMore = html`<test-simple-slot>${dynamicChild}</test-simple-slot>${42}`;
+
+// prettier-ignore
+export const slotWithReusedDynamicChild = html`<test-simple-slot>${dynamicChild}</test-simple-slot>${dynamicChild}`;
 
 @customElement('test-two-slots')
 export class TestTwoSlots extends LitElement {
@@ -122,25 +117,17 @@ export class TestTwoSlots extends LitElement {
   }
 }
 
-export const twoSlotsWithStaticChildren = html`<test-two-slots
-  ><h1>Yo</h1>
-  <p slot="a">Hi</p></test-two-slots
->`;
+// prettier-ignore
+export const twoSlotsWithStaticChildren = html`<test-two-slots><h1>Yo</h1><p slot="a">Hi</p></test-two-slots>`;
 
-export const twoSlotsWithStaticChildrenOutOfOrder = html`<test-two-slots
-  ><p slot="a">Hi</p>
-  <h1>Yo</h1></test-two-slots
->`;
+// prettier-ignore
+export const twoSlotsWithStaticChildrenOutOfOrder = html`<test-two-slots><p slot="a">Hi</p><h1>Yo</h1></test-two-slots>`;
 
-export const twoSlotsWithDynamicChildren = html`<test-two-slots
-  >${html`<h1>Yo</h1>
-    <p slot="a">Hi</p>`}</test-two-slots
->`;
+// prettier-ignore
+export const twoSlotsWithDynamicChildren = html`<test-two-slots>${html`<h1>Yo</h1><p slot="a">Hi</p>`}</test-two-slots>`;
 
-export const twoSlotsWithDynamicChildrenOutOfOrder = html`<test-two-slots
-  >${html`<p slot="a">Hi</p>
-    <h1>Yo</h1>`}</test-two-slots
->`;
+// prettier-ignore
+export const twoSlotsWithDynamicChildrenOutOfOrder = html`<test-two-slots>${html`<p slot="a">Hi</p><h1>Yo</h1>`}</test-two-slots>`;
 
 @customElement('test-dynamic-slot')
 export class TestDynamicSlot extends LitElement {
@@ -149,10 +136,9 @@ export class TestDynamicSlot extends LitElement {
     return html`${this.renderSlot ? html`<slot></slot>` : nothing}`;
   }
 }
+// prettier-ignore
 export const dynamicSlot = (renderSlot: boolean) =>
-  html`<test-dynamic-slot .renderSlot=${renderSlot}
-    ><p>Hi</p></test-dynamic-slot
-  >`;
+  html`<test-dynamic-slot .renderSlot=${renderSlot}><p>Hi</p></test-dynamic-slot>`;
 
 @customElement('test-styles')
 export class TestStyles extends LitElement {
@@ -165,25 +151,17 @@ export class TestStyles extends LitElement {
 
 /* Directives */
 
-export const repeatDirectiveWithTemplateResult = html`<div>
-  ${repeat(
-    ['foo', 'bar', 'qux'],
-    (name: string, i: number) => html`<p>${i}) ${name}</p>`
-  )}
-</div>`;
+// prettier-ignore
+export const repeatDirectiveWithTemplateResult = html`<div>${repeat(['foo', 'bar', 'qux'], (name: string, i: number) => html`<p>${i}) ${name}</p>`)}</div>`;
 
-export const repeatDirectiveWithString = html`${repeat(
-  ['foo', 'bar', 'qux'],
-  (name: string) => name
-)}`;
+// prettier-ignore
+export const repeatDirectiveWithString = html`${repeat(['foo', 'bar', 'qux'], (name: string) => name)}`;
 
-export const classMapDirective = html`<div
-  class="${classMap({a: true, b: false, c: true})}"
-></div>`;
+// prettier-ignore
+export const classMapDirective = html`<div class="${classMap({a: true, b: false, c: true})}"></div>`;
 
-export const classMapDirectiveMultiBinding = html`<div
-  class="z ${'hi'} ${classMap({a: true, b: false, c: true})}"
-></div>`;
+// prettier-ignore
+export const classMapDirectiveMultiBinding = html`<div class="z ${'hi'} ${classMap({a: true, b: false, c: true})}"></div>`;
 
 // Tests to do:
 //  - simple template, no expressions

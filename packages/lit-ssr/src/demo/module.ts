@@ -4,7 +4,7 @@
 
 import {html} from 'lit-html';
 import {LitElement, css} from 'lit-element';
-import {property} from 'lit-element/decorators/property.js'
+import {property} from 'lit-element/decorators/property.js';
 //import {repeat} from 'lit-html/directives/repeat.js';
 
 export const initialData = {
@@ -55,10 +55,7 @@ export class MyElement extends LitElement {
 }
 customElements.define('my-element', MyElement);
 
-export const header = (name: string) =>
-  html`
-    <h1>Hello ${name}!</h1>
-  `;
+export const header = (name: string) => html` <h1>Hello ${name}!</h1> `;
 
 export const template = (data: {
   name: string;
@@ -72,14 +69,7 @@ export const template = (data: {
     ${header(data.name)}
     <p>${data.message}</p>
     <h4>repeating:</h4>
-    <div>
-      ${data.items.map(
-        (item, i) =>
-          html`
-            <p>${i}) ${item}</p>
-          `
-      )}
-    </div>
+    <div>${data.items.map((item, i) => html` <p>${i}) ${item}</p> `)}</div>
     ${Array(3)
       .fill(1)
       .map(

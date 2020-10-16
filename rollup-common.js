@@ -55,11 +55,11 @@ const reservedProperties = [
   // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
   // crossPackagePropertyMangles once lit-ssr uses the rollup config)
   // lit-html: AttributePart (used by render-lit-html)
-  "_resolveValue",
+  '_resolveValue',
   // updating-element: UpdatingElement (used by lit-element-renderer)
-  "_attributeToProperty",
+  '_attributeToProperty',
   // hydrate-support: LitElement (added by hydrate-support)
-  "_needsHydration",
+  '_needsHydration',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -83,7 +83,7 @@ const crossPackagePropertyMangles = {
   // lit-element: LitElement
   _renderOptions: 'W',
   // lit-element: LitElement (used by hydrate-support)
-  _renderImpl: "M",
+  _renderImpl: 'M',
 };
 
 const generateTerserOptions = (nameCache = null) => ({

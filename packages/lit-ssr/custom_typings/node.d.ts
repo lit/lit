@@ -1,4 +1,4 @@
-export {}
+export {};
 
 declare global {
   interface ImportMeta {
@@ -7,7 +7,6 @@ declare global {
 }
 
 declare module 'vm' {
-
   class Module {
     dependencySpecifiers: ReadonlyArray<string>;
     error?: any;
@@ -15,7 +14,12 @@ declare module 'vm' {
     status: string;
     identifier: string;
     evaluate(): Promise<{result: unknown}>;
-    link(linker: (specifier: string, referencingModule: Module) => Module | Promise<Module>): Promise<void>;
+    link(
+      linker: (
+        specifier: string,
+        referencingModule: Module
+      ) => Module | Promise<Module>
+    ): Promise<void>;
   }
 
   class SourceTextModule extends Module {
@@ -25,7 +29,11 @@ declare module 'vm' {
   }
 
   class SyntheticModule extends Module {
-    constructor(exportNames: string[], evaluateCallback: (this: SyntheticModule) => void, options: any);
+    constructor(
+      exportNames: string[],
+      evaluateCallback: (this: SyntheticModule) => void,
+      options: any
+    );
     setExport(name: string, value: any);
   }
 }

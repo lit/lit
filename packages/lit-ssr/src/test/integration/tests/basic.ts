@@ -216,19 +216,13 @@ export const tests: {[name: string]: SSRTest} = {
     },
     expectations: [
       {
-        args: [
-          () => {
-            throw new Error();
-          },
-        ],
+        // prettier-ignore
+        args: [ () => { throw new Error(); }, ],
         html: '<div>() => { throw new Error(); }</div>',
       },
       {
-        args: [
-          () => {
-            throw new Error('2');
-          },
-        ],
+        // prettier-ignore
+        args: [ () => { throw new Error("2"); }, ],
         html: '<div>() => { throw new Error("2"); }</div>',
       },
     ],
@@ -340,7 +334,8 @@ export const tests: {[name: string]: SSRTest} = {
 
   'NodePart with trailing whitespace': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      // prettier-ignore
+      return html`<div>${x} </div>`;
     },
     expectations: [
       {

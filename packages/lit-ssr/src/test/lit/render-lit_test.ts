@@ -225,15 +225,15 @@ test('repeat directive with a template result', async (t: Test) => {
   t.equal(
     result,
     '<!--lit-part AEmR7W+R0Ak=-->' +
-    '<div>' +
-    '<!--lit-part-->' + // part that wraps the directive
-    '<!--lit-part AgkKByTWdnw=-->' + // part for child template 0
-    '<p><!--lit-part-->0<!--/lit-part-->) <!--lit-part-->foo<!--/lit-part--></p>' +
-    '<!--/lit-part-->' +
-    '<!--lit-part AgkKByTWdnw=-->' + // part for child template 1
-    '<p><!--lit-part-->1<!--/lit-part-->) <!--lit-part-->bar<!--/lit-part--></p>' +
-    '<!--/lit-part-->' +
-    '<!--lit-part AgkKByTWdnw=-->' + // part for child template 2
+      '<div>' +
+      '<!--lit-part-->' + // part that wraps the directive
+      '<!--lit-part AgkKByTWdnw=-->' + // part for child template 0
+      '<p><!--lit-part-->0<!--/lit-part-->) <!--lit-part-->foo<!--/lit-part--></p>' +
+      '<!--/lit-part-->' +
+      '<!--lit-part AgkKByTWdnw=-->' + // part for child template 1
+      '<p><!--lit-part-->1<!--/lit-part-->) <!--lit-part-->bar<!--/lit-part--></p>' +
+      '<!--/lit-part-->' +
+      '<!--lit-part AgkKByTWdnw=-->' + // part for child template 2
       '<p><!--lit-part-->2<!--/lit-part-->) <!--lit-part-->qux<!--/lit-part--></p>' +
       '<!--/lit-part-->' +
       '<!--/lit-part-->' +
@@ -248,14 +248,14 @@ test('repeat directive with a string', async (t: Test) => {
   t.equal(
     result,
     '<!--lit-part BRUAAAUVAAA=-->' +
-    '<!--lit-part-->' + // part that wraps the directive
-    '<!--lit-part-->' + // part for child template 0
-    'foo' +
-    '<!--/lit-part-->' +
-    '<!--lit-part-->' + // part for child template 1
-    'bar' +
-    '<!--/lit-part-->' +
-    '<!--lit-part-->' + // part for child template 2
+      '<!--lit-part-->' + // part that wraps the directive
+      '<!--lit-part-->' + // part for child template 0
+      'foo' +
+      '<!--/lit-part-->' +
+      '<!--lit-part-->' + // part for child template 1
+      'bar' +
+      '<!--/lit-part-->' +
+      '<!--lit-part-->' + // part for child template 2
       'qux' +
       '<!--/lit-part-->' +
       '<!--/lit-part-->' +

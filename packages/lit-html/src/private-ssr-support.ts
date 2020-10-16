@@ -12,9 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  $private as p,
-} from './lit-html.js';
+import {$private as p} from './lit-html.js';
 
 export const $private = {
   boundAttributeSuffix: p._boundAttributeSuffix,

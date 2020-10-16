@@ -1181,7 +1181,8 @@ suite('lit-html', () => {
     });
 
     test('null in multiple part sets empty string', () => {
-      const go = (v1: any, v2: any) => render(html`<div .foo="${v1}${v2}"></div>`, container);
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
 
       go('hi', null);
       const div = container.querySelector('div')!;
@@ -1197,7 +1198,8 @@ suite('lit-html', () => {
     });
 
     test('undefined in multiple part sets empty string', () => {
-      const go = (v1: any, v2: any) => render(html`<div .foo="${v1}${v2}"></div>`, container);
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
 
       go('hi', undefined);
       const div = container.querySelector('div')!;

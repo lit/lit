@@ -12,14 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { TemplateResult } from 'lit-html';
+import {TemplateResult} from 'lit-html';
 
-export type SSRExpectedHTML = string | {[name: string] : SSRExpectedHTML | SSRExpectedHTML[]};
+export type SSRExpectedHTML =
+  | string
+  | {[name: string]: SSRExpectedHTML | SSRExpectedHTML[]};
 
 export interface SSRTestDescription {
   render(...args: any): TemplateResult;
   expectations: Array<{
-
     /**
      * The arguments to pass to render()
      */
@@ -32,21 +33,20 @@ export interface SSRTestDescription {
      */
     html: SSRExpectedHTML;
 
-    setup?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>
+    setup?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
     check?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
-
   }>;
   /**
    * A list of selectors of elements that should no change between renders.
    * Used to assert that the DOM reused in hydration, not recreated.
    */
   stableSelectors: Array<string>;
-  expectMutationsOnFirstRender?: boolean,
-  expectMutationsDuringHydration?: boolean,
-  expectMutationsDuringUpgrade?: boolean,
+  expectMutationsOnFirstRender?: boolean;
+  expectMutationsDuringHydration?: boolean;
+  expectMutationsDuringUpgrade?: boolean;
   skip?: boolean;
   only?: boolean;
-  registerElements?() : void | Promise<unknown>;
+  registerElements?(): void | Promise<unknown>;
 }
 
 export type SSRTestFactory = () => SSRTestDescription;
