@@ -846,19 +846,20 @@ export class NodePart {
   private _commitNode(value: Node): void {
     if (this._value !== value) {
       this._clear();
-      const parent = this._startNode.parentNode;
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
-        sanitizerFactoryInternal !== noopSanitizer &&
-        (parent?.nodeName === 'STYLE' || parent?.nodeName === 'SCRIPT')
+        sanitizerFactoryInternal !== noopSanitizer
       ) {
-        this._insert(
-          new Text(
-            '/* lit-html will not write ' +
-              'TemplateResults to scripts and styles */'
-          )
-        );
-        return;
+        const parentNodeName = this._startNode.parentNode?.nodeName;
+        if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
+          this._insert(
+            new Text(
+              '/* lit-html will not write ' +
+                'TemplateResults to scripts and styles */'
+            )
+          );
+          return;
+        }
       }
       this._value = this._insert(value);
     }
@@ -887,9 +888,9 @@ export class NodePart {
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      const textNode = document.createTextNode('');
-      this._commitNode(textNode);
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
+        const textNode = document.createTextNode('');
+        this._commitNode(textNode);
         // When setting text content, for security purposes it matters a lot
         // what the parent is. For example, <style> and <script> need to be
         // handled with care, while <span> does not. So first we need to put a
@@ -898,8 +899,10 @@ export class NodePart {
           this._textSanitizer = createSanitizer(textNode, 'data', 'property');
         }
         value = this._textSanitizer(value);
+        textNode.data = value as string;
+      } else {
+        this._commitNode(d.createTextNode(value as string));
       }
-      textNode.data = value as string;
     }
     this._value = value;
   }
