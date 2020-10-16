@@ -23,7 +23,6 @@ import {
   svg,
   TemplateResult,
   RenderOptions,
-  setSanitizer,
   SanitizerFactory,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
@@ -1756,10 +1755,10 @@ suite('lit-html', () => {
       };
     };
     setup(() => {
-      setSanitizer(testSanitizerFactory);
+      render.setSanitizer(testSanitizerFactory);
     });
     teardown(() => {
-      setSanitizer._testOnlyClearSanitizerFactoryDoNotCallOrElse();
+      render._testOnlyClearSanitizerFactoryDoNotCallOrElse();
       sanitizerCalls.length = 0;
     });
 

@@ -67,7 +67,7 @@ const noopSanitizer: SanitizerFactory = (
 ) => identityFunction;
 
 /** Sets the global sanitizer factory. */
-export const setSanitizer = (newSanitizer: SanitizerFactory) => {
+const setSanitizer = (newSanitizer: SanitizerFactory) => {
   if (!ENABLE_EXTRA_SECURITY_HOOKS) {
     return;
   }
@@ -80,16 +80,14 @@ export const setSanitizer = (newSanitizer: SanitizerFactory) => {
   sanitizerFactoryInternal = newSanitizer;
 };
 
-if (DEV_MODE && ENABLE_EXTRA_SECURITY_HOOKS) {
-  /**
-   * Only used in internal tests, not a part of the public API.
-   */
-  setSanitizer._testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
-    sanitizerFactoryInternal = noopSanitizer;
-  };
-}
+/**
+ * Only used in internal tests, not a part of the public API.
+ */
+const _testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
+  sanitizerFactoryInternal = noopSanitizer;
+};
 
-export const createSanitizer: SanitizerFactory = (node, name, type) => {
+const createSanitizer: SanitizerFactory = (node, name, type) => {
   return sanitizerFactoryInternal(node, name, type);
 };
 
@@ -370,6 +368,14 @@ export const render = (
   }
   part._setValue(value);
 };
+
+if (ENABLE_EXTRA_SECURITY_HOOKS) {
+  render.setSanitizer = setSanitizer;
+  render.createSanitizer = createSanitizer;
+  if (DEV_MODE) {
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse = _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+  }
+}
 
 const walker = d.createTreeWalker(
   d,
