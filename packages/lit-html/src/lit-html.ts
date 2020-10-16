@@ -783,12 +783,18 @@ export class NodePart {
   readonly type = NODE_PART;
   _value: unknown;
   protected _directive?: Directive;
+  private _textSanitizer: ValueSanitizer | undefined;
 
   constructor(
     private _startNode: ChildNode,
     private _endNode: ChildNode | null,
     public options: RenderOptions | undefined
-  ) {}
+  ) {
+    if (ENABLE_EXTRA_SECURITY_HOOKS) {
+      // Explicitly initialize for consistent class shape.
+      this._textSanitizer = undefined;
+    }
+  }
 
   _setValue(value: unknown): void {
     // TODO (justinfagnani): when setting a non-directive over a directive,
@@ -866,22 +872,26 @@ export class NodePart {
         : node === this._endNode.previousSibling)
     ) {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
-        const sanitizer = sanitizerFactory(node, 'data', 'property');
-        value = sanitizer(value);
+        if (this._textSanitizer === undefined) {
+          this._textSanitizer = sanitizerFactory(node, 'data', 'property');
+        }
+        value = this._textSanitizer(value);
       }
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      // When setting text content, for security purposes it matters a lot what
-      // the parent is. For example, <style> and <script> need to be handled
-      // with care, while <span> does not. So first we need to put a text node
-      // into the document, then we can sanitize its contentx.
       const textNode = document.createTextNode('');
       this._commitNode(textNode);
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
-        const sanitizer = sanitizerFactory(textNode, 'data', 'property');
-        value = sanitizer(value);
+        // When setting text content, for security purposes it matters a lot
+        // what the parent is. For example, <style> and <script> need to be
+        // handled with care, while <span> does not. So first we need to put a
+        // text node into the document, then we can sanitize its contentx.
+        if (this._textSanitizer === undefined) {
+          this._textSanitizer = sanitizerFactory(textNode, 'data', 'property');
+        }
+        value = this._textSanitizer(value);
       }
       textNode.data = value as string;
     }
@@ -991,6 +1001,7 @@ export class AttributePart {
   readonly strings?: ReadonlyArray<string>;
   _value: unknown | Array<unknown> = nothing;
   private _directives?: Array<Directive>;
+  protected _sanitizer: ValueSanitizer | undefined;
 
   get tagName() {
     return this.element.tagName;
@@ -1009,6 +1020,9 @@ export class AttributePart {
       this.strings = strings;
     } else {
       this._value = nothing;
+    }
+    if (ENABLE_EXTRA_SECURITY_HOOKS) {
+      this._sanitizer = undefined;
     }
   }
 
@@ -1118,12 +1132,14 @@ export class AttributePart {
       this.element.removeAttribute(this.name);
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
-        const sanitizer = sanitizerFactoryInternal(
-          this.element,
-          this.name,
-          'attribute'
-        );
-        value = sanitizer(value);
+        if (this._sanitizer === undefined) {
+          this._sanitizer = sanitizerFactoryInternal(
+            this.element,
+            this.name,
+            'attribute'
+          );
+        }
+        value = this._sanitizer(value);
       }
       this.element.setAttribute(this.name, value as string);
     }
@@ -1135,12 +1151,14 @@ export class PropertyPart extends AttributePart {
 
   _commitValue(value: unknown) {
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
-      const sanitizer = sanitizerFactoryInternal(
-        this.element,
-        this.name,
-        'property'
-      );
-      value = sanitizer(value);
+      if (this._sanitizer === undefined) {
+        this._sanitizer = sanitizerFactoryInternal(
+          this.element,
+          this.name,
+          'property'
+        );
+      }
+      value = this._sanitizer(value);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.element as any)[this.name] = value === nothing ? undefined : value;

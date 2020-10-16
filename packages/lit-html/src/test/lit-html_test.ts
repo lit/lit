@@ -1780,8 +1780,12 @@ suite('lit-html', () => {
       );
 
       assert.deepEqual(sanitizerCalls, [
-        {values: ['foo'], name: 'data', type: 'property', nodeName: '#text'},
-        {values: [safeFoo], name: 'data', type: 'property', nodeName: '#text'},
+        {
+          values: ['foo', safeFoo],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
       ]);
     });
 
@@ -1803,8 +1807,12 @@ suite('lit-html', () => {
       );
 
       assert.deepEqual(sanitizerCalls, [
-        {values: ['big'], name: 'data', type: 'property', nodeName: '#text'},
-        {values: [safeBig], name: 'data', type: 'property', nodeName: '#text'},
+        {
+          values: ['big', safeBig],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
       ]);
     });
 
@@ -1824,8 +1832,12 @@ suite('lit-html', () => {
       );
 
       assert.deepEqual(sanitizerCalls, [
-        {values: ['bad'], name: 'attrib', type: 'attribute', nodeName: 'DIV'},
-        {values: [safe], name: 'attrib', type: 'attribute', nodeName: 'DIV'},
+        {
+          values: ['bad', safe],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
       ]);
     });
 
@@ -1858,8 +1870,7 @@ suite('lit-html', () => {
       assert.equal((container.querySelector('div')! as any).foo, 'good');
 
       assert.deepEqual(sanitizerCalls, [
-        {values: ['bad'], name: 'foo', type: 'property', nodeName: 'DIV'},
-        {values: [safe], name: 'foo', type: 'property', nodeName: 'DIV'},
+        {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
       ]);
     });
   });
