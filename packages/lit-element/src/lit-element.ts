@@ -136,7 +136,11 @@ export class LitElement extends UpdatingElement {
    * Implementation for lit-html render; overridden by hydrate-support.
    * @internal
    */
-  _renderImpl(value: unknown, root: HTMLElement | DocumentFragment, options: RenderOptions) {
+  _renderImpl(
+    value: unknown,
+    root: HTMLElement | DocumentFragment,
+    options: RenderOptions
+  ) {
     render(value, root, options);
   }
 
@@ -152,6 +156,7 @@ export class LitElement extends UpdatingElement {
 }
 
 // Install hydration if available
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litElementHydrateSupport']?.({LitElement});
 
 // Apply polyfills if available

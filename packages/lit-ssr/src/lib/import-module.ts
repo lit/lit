@@ -53,7 +53,10 @@ const resolveSpecifier = (specifier: string, referrer: string): URL => {
       return new URL(specifier, referrer);
     }
 
-    if (specifier.startsWith('lit-html') || specifier.startsWith('lit-element')) {
+    if (
+      specifier.startsWith('lit-html') ||
+      specifier.startsWith('lit-element')
+    ) {
       // Override where we resolve lit-html from so that we always resolve to
       // a single version of lit-html.
       referrer = import.meta.url;
@@ -78,7 +81,7 @@ const resolveSpecifier = (specifier: string, referrer: string): URL => {
 /**
  * Web-like import.meta initializer that sets up import.meta.url
  */
-const initializeImportMeta = (meta: any, module: vm.Module) => {
+const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
   meta.url = module.identifier;
 };
 
@@ -134,12 +137,16 @@ export const importModule = async (
       // DOM API's like fetch)
       if (builtIns.has(specifier)) {
         const mod = await import(specifier);
-        return new vm.SyntheticModule(Object.keys(mod), function() {
-          Object.keys(mod).forEach(key => this.setExport(key, mod[key]));
-        }, {
-          context,
-          identifier: specifier + `:${vmContextId}`,
-        });
+        return new vm.SyntheticModule(
+          Object.keys(mod),
+          function () {
+            Object.keys(mod).forEach((key) => this.setExport(key, mod[key]));
+          },
+          {
+            context,
+            identifier: specifier + `:${vmContextId}`,
+          }
+        );
       } else {
         const source = await fs.readFile(modulePath, 'utf-8');
         // TODO: store and re-use cachedData:

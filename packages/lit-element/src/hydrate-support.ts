@@ -22,32 +22,37 @@ import {RenderOptions} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
 
 interface PatchableLitElement extends HTMLElement {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableLitElement;
-  createRenderRoot(): Element | ShadowRoot,
-  _needsHydration: boolean,
-  _renderImpl(value: unknown, root: HTMLElement | DocumentFragment, options: RenderOptions): void;
+  createRenderRoot(): Element | ShadowRoot;
+  _needsHydration: boolean;
+  _renderImpl(
+    value: unknown,
+    root: HTMLElement | DocumentFragment,
+    options: RenderOptions
+  ): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litElementHydrateSupport'] = ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;
 }) => {
-
   // Capture whether we need hydration or not
   const createRenderRoot = LitElement.prototype.createRenderRoot;
-  LitElement.prototype.createRenderRoot = function() {
+  LitElement.prototype.createRenderRoot = function () {
     if (this.shadowRoot) {
       this._needsHydration = true;
       return this.shadowRoot;
     } else {
       return createRenderRoot.call(this);
     }
-  }
+  };
 
   // Hydrate on first render when needed
   const render = LitElement.prototype._renderImpl;
-  LitElement.prototype._renderImpl = function(
+  LitElement.prototype._renderImpl = function (
     value: unknown,
     root: HTMLElement | DocumentFragment,
     options: RenderOptions
@@ -59,5 +64,4 @@ interface PatchableLitElement extends HTMLElement {
       render.call(this, value, root, options);
     }
   };
-
 };

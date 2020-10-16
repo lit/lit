@@ -15,7 +15,7 @@ export const renderModule = async (
   specifier: string,
   referrer: string,
   functionName: string,
-  args: any[]
+  args: unknown[]
 ) => {
   const window = getWindow({
     // We need to give window a require to load CJS modules used by the SSR
@@ -25,5 +25,5 @@ export const renderModule = async (
   const module = await importModule(specifier, referrer, window);
   const f = module.namespace[functionName] as Function;
   // TODO: should we require the result be an AsyncIterable?
-  return f.apply(undefined, args);
+  return f(...args);
 };

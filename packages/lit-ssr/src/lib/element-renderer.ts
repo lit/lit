@@ -23,7 +23,6 @@ import {RenderInfo} from './render-lit-html.js';
  * An object that renders elements of a certain type.
  */
 export abstract class ElementRenderer {
-  
   constructor(public element: HTMLElement) {}
 
   /**
@@ -34,27 +33,32 @@ export abstract class ElementRenderer {
   /**
    * Should implement server-appropriate implementation of attributeChangedCallback
    */
-  abstract attributeChangedCallback(name: string, old: string | null, value: string | null): void;
+  abstract attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null
+  ): void;
 
   /**
    * Handles setting a property.
-   * 
+   *
    * Default implementation sets the property on the renderer's element instance.
-   * 
+   *
    * @param name Name of the property
    * @param value Value of the property
    */
   setProperty(name: string, value: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.element as any)[name] = value;
-  };
+  }
 
   /**
    * Handles setting an attribute on an element.
-   * 
+   *
    * Default implementation calls `setAttribute` on the renderer's element
    * instance, and calls the abstract `attributeChangedCallback` on the
    * renderer.
-   * 
+   *
    * @param name Name of the attribute
    * @param value Value of the attribute
    */
@@ -62,7 +66,7 @@ export abstract class ElementRenderer {
     const old = this.element.getAttribute(name);
     this.element.setAttribute(name, value);
     this.attributeChangedCallback(name, old, value);
-  };
+  }
 
   /**
    * Render a single element's ShadowRoot children.
@@ -76,12 +80,16 @@ export abstract class ElementRenderer {
 
   /**
    * Render an element's attributes.
-   * 
+   *
    * Default implementation serializes all attributes on the element instance.
    */
   *renderAttributes(): IterableIterator<string> {
     const {attributes} = this.element;
-    for (let i=0, name, value; i<attributes.length && ({name, value}=attributes[i]); i++){
+    for (
+      let i = 0, name, value;
+      i < attributes.length && ({name, value} = attributes[i]);
+      i++
+    ) {
       if (value === '') {
         yield ` ${name}`;
       } else {
@@ -89,5 +97,4 @@ export abstract class ElementRenderer {
       }
     }
   }
-
 }

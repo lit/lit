@@ -27,13 +27,19 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
-    // Reflect properties to attributes
+    // Reflect properties to attributes by calling into UpdatingElement's
+    // update, which _only_ reflects attributes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (UpdatingElement.prototype as any).update.call(this.element);
   }
 
-  attributeChangedCallback(name: string, old: string | null, value: string | null) {
+  attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null
+  ) {
     if (old !== value) {
-      (this.element as any)._attributeToProperty(name, value);
+      (this.element as LitElement)._attributeToProperty(name, value);
     }
   }
 
@@ -43,7 +49,7 @@ export class LitElementRenderer extends ElementRenderer {
     // Render styles.
     const styles = [(this.element.constructor as typeof LitElement).styles]
       .flat(Infinity)
-      .filter(style => style instanceof CSSResult);
+      .filter((style) => style instanceof CSSResult);
     if (styles.length) {
       yield '<style>';
       for (const style of styles) {
@@ -52,12 +58,14 @@ export class LitElementRenderer extends ElementRenderer {
       yield '</style>';
     }
     // Render template
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yield* render((this.element as any).render());
     // Close shadow root
     yield '</template>';
   }
 
-  *renderLight (renderInfo: RenderInfo): IterableIterator<string> {
+  *renderLight(renderInfo: RenderInfo): IterableIterator<string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
       yield* renderValue(value, renderInfo);

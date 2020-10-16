@@ -47,3 +47,15 @@ tsconfig.tsbuildinfo
 /packages/updating-element/decorators.*
 /packages/updating-element/platform-support.*
 /packages/updating-element/updating-element.*
+
+# lit-ssr package
+/packages/lit-ssr/lib
+/packages/lit-ssr/demo
+/packages/lit-ssr/test/**/*.js
+/packages/lit-ssr/test/**/*.js.map
+/packages/lit-ssr/test/**/*.d.ts
+/packages/lit-ssr/test/**/*.d.ts.map
+/packages/lit-ssr/index.js
+/packages/lit-ssr/index.js.map
+/packages/lit-ssr/index.d.ts
+/packages/lit-ssr/index.d.ts.map

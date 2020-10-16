@@ -7,8 +7,6 @@ import {hydrate} from 'lit-html/hydrate.js';
 import 'lit-element/hydrate-support.js';
 import {template, initialData} from './module.js';
 
-declare var window: any;
-
 console.log('Page hydrating with same data as rendered with SSR.');
 // The hydrate() function is run with the same data as used in the server
 // render. It doesn't update the DOM, and just updates the lit-html part values

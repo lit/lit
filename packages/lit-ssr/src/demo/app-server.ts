@@ -14,7 +14,7 @@ export function renderAppWithInitialData() {
 // shell in unbalanced fragments. By yielding the HTML pramable immediately
 // with no lit-html template preparation or rendering needed, we minimize TTFB,
 // And can get the browser to start prefetch as soon as possible.
-export function* renderApp(data: any) {
+export function* renderApp(data: typeof initialData) {
   yield `
     <!doctype html>
     <html>

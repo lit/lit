@@ -15,10 +15,7 @@
  */
 
 // Type-only imports
-import {
-  TemplateResult,
-  DirectiveResult,
-} from 'lit-html';
+import {TemplateResult, DirectiveResult} from 'lit-html';
 
 import {
   nothing,
@@ -29,18 +26,11 @@ import {
   AttributePart,
 } from 'lit-html';
 
-import {
-  $private
-} from 'lit-html/private-ssr-support.js';
+import {$private} from 'lit-html/private-ssr-support.js';
 
-const {
-  getTemplateHtml,
-  marker,
-  markerMatch,
-  boundAttributeSuffix,
-} = $private;
+const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = $private;
 
-import { digestForTemplateResult } from 'lit-html/hydrate.js';
+import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
@@ -57,6 +47,7 @@ import {
 } from './util/parse5-utils.js';
 
 import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
+import {LitElement} from 'lit-element';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
@@ -66,9 +57,13 @@ declare module 'parse5' {
   }
 }
 
-Directive.prototype.resolve = function (this: Directive, _part: Part, values: any[]) {
+Directive.prototype.resolve = function (
+  this: Directive,
+  _part: Part,
+  values: unknown[]
+) {
   return this.render(...values);
-}
+};
 
 const templateCache = new Map<
   TemplateStringsArray,
@@ -114,7 +109,7 @@ type AttributePartOp = {
 type CustomElementOpenOp = {
   type: 'custom-element-open';
   tagName: string;
-  ctor: any;
+  ctor: {new (): HTMLElement};
   staticAttributes: Map<string, string>;
 };
 
@@ -262,9 +257,11 @@ const getTemplate = (result: TemplateResult) => {
               type: 'custom-element-open',
               tagName,
               ctor,
-              staticAttributes: new Map(node.attrs
-                .filter(attr => !attr.name.endsWith(boundAttributeSuffix))
-                .map(attr => ([attr.name, attr.value])))
+              staticAttributes: new Map(
+                node.attrs
+                  .filter((attr) => !attr.name.endsWith(boundAttributeSuffix))
+                  .map((attr) => [attr.name, attr.value])
+              ),
             });
           }
         }
@@ -312,7 +309,7 @@ const getTemplate = (result: TemplateResult) => {
           if (node.isDefinedCustomElement) {
             flushTo(node.sourceCodeLocation!.startTag.endOffset - 1);
             ops.push({
-              type: 'custom-element-attributes'
+              type: 'custom-element-attributes',
             });
             flush('>');
             skipTo(node.sourceCodeLocation!.startTag.endOffset);
@@ -357,7 +354,6 @@ declare global {
   }
 }
 
-
 export function* render(value: unknown): IterableIterator<string> {
   yield* renderValue(value, {customElementInstanceStack: []});
 }
@@ -370,21 +366,27 @@ export function* renderValue(
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
     const instance = getLast(renderInfo.customElementInstanceStack);
-    // TODO, move out of here into something LitElement specific
     if (instance !== undefined) {
       yield* instance.renderLight(renderInfo);
     }
     value = null;
-  } else if (value != null && (value as any)._$litDirective$) {
+  } else if (value != null && (value as DirectiveResult)._$litDirective$) {
     const directive = (value as DirectiveResult)._$litDirective$;
-    value = new directive({type: NODE_PART}).render(...(value as DirectiveResult).values);
+    value = new directive({type: NODE_PART}).render(
+      ...(value as DirectiveResult).values
+    );
   }
   if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
     yield* renderTemplateResult(value as TemplateResult, renderInfo);
   } else {
     yield `<!--lit-part-->`;
-    if (value === undefined || value === null || value === nothing || value === noChange) {
+    if (
+      value === undefined ||
+      value === null ||
+      value === nothing ||
+      value === noChange
+    ) {
       // yield nothing
     } else if (Array.isArray(value)) {
       for (const item of value) {
@@ -438,11 +440,17 @@ export function* renderTemplateResult(
         let attributeName = op.name;
         const prefix = attributeName[0];
         const attributePart = new AttributePart(
-          null as any as HTMLElement,
+          // Passing null for the element is fine since the directive only gets
+          // PartInfo without the node available in the constructor
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (null as any) as HTMLElement,
           name,
           statics
         );
-        let value = attributePart.strings === undefined ? result.values[partIndex] : result.values;
+        let value =
+          attributePart.strings === undefined
+            ? result.values[partIndex]
+            : result.values;
         value = attributePart._resolveValue(value, partIndex);
         const instance = op.useCustomElementInstance
           ? getLast(renderInfo.customElementInstanceStack)
@@ -494,8 +502,14 @@ export function* renderTemplateResult(
         let instance = undefined;
         try {
           const element = new ctor();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (element as any).tagName = op.tagName;
-          instance = new LitElementRenderer(element);
+          // TODO: Move renderer instantiation into a plugin system
+          if (element instanceof LitElement) {
+            instance = new LitElementRenderer(element);
+          } else {
+            console.error(`No renderer for custom element: ${op.tagName}`);
+          }
         } catch (e) {
           console.error('Exception in custom element constructor', e);
         }

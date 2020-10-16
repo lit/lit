@@ -40,7 +40,12 @@
       }
     },
     {
-      "files": ["*_test.ts"],
+      "files": [
+        "*_test.ts",
+        "**/custom_typings/*.ts",
+        "packages/lit-ssr/src/test/integration/tests/**",
+        "packages/lit-ssr/src/lib/util/parse5-utils.ts"
+      ],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
       }

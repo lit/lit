@@ -21,8 +21,7 @@ import {getWindow} from '../../../lib/dom-shim.js';
 import {IterableReader} from '../../../lib/util/iterator-readable.js';
 
 import * as testModule from '../tests/basic-ssr.js';
-import { SSRTest } from "../tests/ssr-test";
-
+import {SSRTest} from '../tests/ssr-test';
 
 export const startServer = async (port = 9090) => {
   const app = new Koa();
@@ -35,25 +34,21 @@ export const startServer = async (port = 9090) => {
     const window = getWindow({
       // We need to give window a require to load CJS modules used by the SSR
       // implementation. If we had only JS module dependencies, we wouldn't need this.
-      require: createRequire(import.meta.url)
+      require: createRequire(import.meta.url),
     });
-    const {namespace} = await importModule(`../tests/${suiteName}-ssr.js`, import.meta.url, window);
+    const {namespace} = await importModule(
+      `../tests/${suiteName}-ssr.js`,
+      import.meta.url,
+      window
+    );
     const module = namespace as typeof testModule;
 
     const testDescOrFn = module.tests[testName] as SSRTest;
-    const test = (typeof testDescOrFn === 'function') ? testDescOrFn() : testDescOrFn;
+    const test =
+      typeof testDescOrFn === 'function' ? testDescOrFn() : testDescOrFn;
     const {render} = module;
     if (test.registerElements) {
       await test.registerElements();
-    }
-    // For debugging:
-    if (false) {
-      const result = render(test.render(...test.expectations[0].args));
-      let s = '';
-      for await (const chunk of result) {
-        s += chunk;
-      }
-      console.log('result', s);
     }
     const result = render(test.render(...test.expectations[0].args));
     context.type = 'text/html';

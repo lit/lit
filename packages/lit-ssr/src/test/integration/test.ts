@@ -24,8 +24,9 @@ const options = [
     name: 'debug',
     type: Boolean,
     alias: 'd',
-    description: 'Runs karma in debug mode without opening a webdriver-controlled browser',
-    defaultValue: false
+    description:
+      'Runs karma in debug mode without opening a webdriver-controlled browser',
+    defaultValue: false,
   },
 ];
 
@@ -42,12 +43,12 @@ const {createDefaultConfig} = testingKarma;
 const config: karma.ConfigOptions = deepmerge(createDefaultConfig({}), {
   frameworks: ['mocha', 'chai'],
   client: {
-    mocha: {ui: 'tdd'}
+    mocha: {ui: 'tdd'},
   },
   files: [
     {
       pattern: 'test/integration/client/**/*_test.js',
-      type: 'module'
+      type: 'module',
     },
   ],
   proxies: {
@@ -59,11 +60,13 @@ const config: karma.ConfigOptions = deepmerge(createDefaultConfig({}), {
     nodeResolve: true,
     preserveSymlinks: true,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any);
 
 if (args.debug) {
   config.browsers = [];
   config.singleRun = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (config as any).client.mocha.timeout = 100000000;
 }
 

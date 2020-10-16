@@ -1,6 +1,6 @@
 import Koa from 'koa';
 import {renderModule} from './render-module.js';
-import { IterableReader } from './util/iterator-readable.js';
+import {IterableReader} from './util/iterator-readable.js';
 
 import * as path from 'path';
 
@@ -9,7 +9,7 @@ export interface RenderHTMLFileOptions {
   root: string;
   /** A fallback file to use if the specified URL did not exist */
   fallback: string;
-};
+}
 
 /**
  * Koa middleware for rendering HTML files using render-lit-html.
@@ -25,43 +25,49 @@ export interface RenderHTMLFileOptions {
  * of values, those values will be interpolated into `<!--lit-ssr-value-->`
  * comment markers found in the page.
  *
- * @param options 
+ * @param options
  */
-export const renderHTMLFile =
-  (options: RenderHTMLFileOptions) => 
-    async (ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>, next: Koa.Next) => {
-      // Only handle GET's
-      if (ctx.method !== 'GET') {
-        return next();
-      }
-      // Only handle .html extension or bare paths
-      const ext = path.extname(ctx.path);
-      if (ext && ext !== '.html') {
-        return next();
-      }
-      // Only handle HTML or *, but never JSON
-      if (!ctx.headers || typeof ctx.headers.accept !== 'string') {
-        return next();
-      }
-      if (ctx.headers.accept.includes('application/json')) {
-        return next();
-      }
-      if (!(ctx.headers.accept.includes('text/html') || ctx.headers.accept.includes('*/*'))) {
-        return next();
-      }
-      // Render the file using a new VM context for each request
-      const ssrResult = await (renderModule(
-        './render-html-file-impl.js',
-        import.meta.url,
-        'renderFile',
-        [{url: ctx.href, root: options.root, fallback: options.fallback}]
-      ));
-      const stream = new IterableReader(ssrResult);
-      stream.on('error', (e) => {
-        console.error(e.message);
-        console.error(e.stack);
-      });
-      ctx.type = 'text/html';
-      ctx.body = stream;
-      return;
-    };
+export const renderHTMLFile = (options: RenderHTMLFileOptions) => async (
+  ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext>,
+  next: Koa.Next
+) => {
+  // Only handle GET's
+  if (ctx.method !== 'GET') {
+    return next();
+  }
+  // Only handle .html extension or bare paths
+  const ext = path.extname(ctx.path);
+  if (ext && ext !== '.html') {
+    return next();
+  }
+  // Only handle HTML or *, but never JSON
+  if (!ctx.headers || typeof ctx.headers.accept !== 'string') {
+    return next();
+  }
+  if (ctx.headers.accept.includes('application/json')) {
+    return next();
+  }
+  if (
+    !(
+      ctx.headers.accept.includes('text/html') ||
+      ctx.headers.accept.includes('*/*')
+    )
+  ) {
+    return next();
+  }
+  // Render the file using a new VM context for each request
+  const ssrResult = await renderModule(
+    './render-html-file-impl.js',
+    import.meta.url,
+    'renderFile',
+    [{url: ctx.href, root: options.root, fallback: options.fallback}]
+  );
+  const stream = new IterableReader(ssrResult);
+  stream.on('error', (e) => {
+    console.error(e.message);
+    console.error(e.stack);
+  });
+  ctx.type = 'text/html';
+  ctx.body = stream;
+  return;
+};

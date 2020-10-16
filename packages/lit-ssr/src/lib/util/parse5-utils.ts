@@ -17,6 +17,7 @@ import {
 } from 'parse5';
 import * as parse5lib from 'parse5';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const parse5 = require('parse5') as typeof parse5lib;
 
 export const parseFragment = parse5.parseFragment;
@@ -53,7 +54,7 @@ export function getTextContent(node: any): string {
 }
 
 export function setAttr(ast: any, name: any, value: any) {
-  let attr = (<{name: string; value: any}[]>ast.attrs).find(
+  const attr = (<{name: string; value: any}[]>ast.attrs).find(
     ({name: attrName}) => attrName === name
   );
   if (attr) {
@@ -128,8 +129,11 @@ export function isTextNode(
   return node.nodeName === '#text';
 }
 
-export type GetChildNodes = (node: DefaultTreeParentNode) => Array<DefaultTreeNode>|undefined;
-export const defaultChildNodes: GetChildNodes = (node: DefaultTreeParentNode) => node.childNodes;
+export type GetChildNodes = (
+  node: DefaultTreeParentNode
+) => Array<DefaultTreeNode> | undefined;
+export const defaultChildNodes: GetChildNodes = (node: DefaultTreeParentNode) =>
+  node.childNodes;
 
 export function* depthFirst(
   node: DefaultTreeNode | DefaultTreeDocumentFragment,
@@ -216,19 +220,30 @@ export function newTextNode(value: any) {
 }
 
 export interface Visitor {
-  pre?: (node: DefaultTreeNode, parent?: DefaultTreeParentNode) => boolean|void;
-  post?: (node: DefaultTreeNode, parent?: DefaultTreeParentNode) => boolean|void;
+  pre?: (
+    node: DefaultTreeNode,
+    parent?: DefaultTreeParentNode
+  ) => boolean | void;
+  post?: (
+    node: DefaultTreeNode,
+    parent?: DefaultTreeParentNode
+  ) => boolean | void;
   getChildNodes?: GetChildNodes;
 }
 
-export const traverse = (node: DefaultTreeNode, visitor: Visitor, parent?: DefaultTreeParentNode) => {
-  const getChildNodes: GetChildNodes = visitor.getChildNodes ?? defaultChildNodes;
-  let visitChildren: boolean|void = true;
+export const traverse = (
+  node: DefaultTreeNode,
+  visitor: Visitor,
+  parent?: DefaultTreeParentNode
+) => {
+  const getChildNodes: GetChildNodes =
+    visitor.getChildNodes ?? defaultChildNodes;
+  let visitChildren: boolean | void = true;
 
   if (typeof visitor.pre === 'function') {
     visitChildren = visitor.pre(node, parent);
   }
-  
+
   if (visitChildren !== false) {
     const childNodes = getChildNodes(node as DefaultTreeParentNode);
     if (childNodes !== undefined) {

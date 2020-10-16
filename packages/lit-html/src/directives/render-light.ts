@@ -1,11 +1,13 @@
-import {Directive, directive, NodePart} from '../lit-html.js';
+import {Directive, DirectiveResult, directive, NodePart} from '../lit-html.js';
 
 export interface RenderLightHost extends HTMLElement {
   renderLight(): unknown;
 }
 
 class RenderLight extends Directive {
-  render() { /* SSR handled specially in render-lit-html */ }
+  render() {
+    /* SSR handled specially in render-lit-html */
+  }
   update(part: NodePart) {
     const instance = part.parentNode as RenderLightHost;
     if (typeof instance.renderLight === 'function') {
@@ -101,4 +103,4 @@ class RenderLight extends Directive {
 export const renderLight = directive(RenderLight);
 
 export const isRenderLightDirective = (value: unknown): boolean =>
-    (value as any)?._$litDirective$ === RenderLight;
+  (value as DirectiveResult)?._$litDirective$ === RenderLight;

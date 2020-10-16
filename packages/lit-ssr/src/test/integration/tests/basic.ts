@@ -30,17 +30,28 @@ import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
 
 import {LitElement} from 'lit-element';
-import {property} from 'lit-element/decorators/property.js'
-import {renderLight, RenderLightHost} from 'lit-html/directives/render-light.js';
+import {property} from 'lit-element/decorators/property.js';
+import {
+  renderLight,
+  RenderLightHost,
+} from 'lit-html/directives/render-light.js';
 
-import { SSRTest } from './ssr-test';
+import {SSRTest} from './ssr-test';
 
+interface DivWithProp extends HTMLDivElement {
+  prop?: unknown;
+  prop2?: unknown;
+}
+
+interface ClickableButton extends HTMLButtonElement {
+  __wasClicked: boolean;
+  __wasClicked2: boolean;
+}
 
 const filterNodes = (nodes: ArrayLike<Node>, nodeType: number) =>
-  Array.from(nodes).filter(n => n.nodeType === nodeType);
+  Array.from(nodes).filter((n) => n.nodeType === nodeType);
 
-export const tests: {[name: string] : SSRTest} = {
-
+export const tests: {[name: string]: SSRTest} = {
   // TODO: add suites (for now, delineating with comments)
 
   /******************************************************
@@ -48,120 +59,120 @@ export const tests: {[name: string] : SSRTest} = {
    ******************************************************/
 
   'NodePart accepts a string': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: ['foo'],
-        html: '<div>foo</div>'
+        html: '<div>foo</div>',
       },
       {
         args: ['foo2'],
-        html: '<div>foo2</div>'
-      }
+        html: '<div>foo2</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts a number': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: [123],
-        html: '<div>123</div>'
+        html: '<div>123</div>',
       },
       {
         args: [456.789],
-        html: '<div>456.789</div>'
-      }
+        html: '<div>456.789</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts undefined': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: [undefined],
-        html: '<div></div>'
+        html: '<div></div>',
       },
       {
         args: ['foo'],
-        html: '<div>foo</div>'
-      }
+        html: '<div>foo</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts null': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: [null],
-        html: '<div></div>'
+        html: '<div></div>',
       },
       {
         args: ['foo'],
-        html: '<div>foo</div>'
-      }
+        html: '<div>foo</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts noChange': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: [noChange],
-        html: '<div></div>'
+        html: '<div></div>',
       },
       {
         args: ['foo'],
-        html: '<div>foo</div>'
-      }
+        html: '<div>foo</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts nothing': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: [nothing],
-        html: '<div></div>'
+        html: '<div></div>',
       },
       {
         args: ['foo'],
-        html: '<div>foo</div>'
-      }
+        html: '<div>foo</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts an object': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
         args: [{}],
-        html: '<div>[object Object]</div>'
+        html: '<div>[object Object]</div>',
       },
       {
         args: [{}],
-        html: '<div>[object Object]</div>'
-      }
+        html: '<div>[object Object]</div>',
+      },
     ],
     // Objects are not dirty-checked before being toString()'ed
     expectMutationsOnFirstRender: true,
@@ -169,18 +180,30 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'NodePart accepts an object with a toString method': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
-        args: [{toString() { return 'toString!'; }}],
-        html: '<div>toString!</div>'
+        args: [
+          {
+            toString() {
+              return 'toString!';
+            },
+          },
+        ],
+        html: '<div>toString!</div>',
       },
       {
-        args: [{toString() { return 'toString2!'; }}],
-        html: '<div>toString2!</div>'
-      }
+        args: [
+          {
+            toString() {
+              return 'toString2!';
+            },
+          },
+        ],
+        html: '<div>toString2!</div>',
+      },
     ],
     // Objects are not dirty-checked before being toString()'ed
     expectMutationsOnFirstRender: true,
@@ -188,18 +211,26 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'NodePart accepts a function': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${x}</div>`;
     },
     expectations: [
       {
-        args: [() => { throw new Error(); }],
-        html: '<div>() => { throw new Error(); }</div>'
+        args: [
+          () => {
+            throw new Error();
+          },
+        ],
+        html: '<div>() => { throw new Error(); }</div>',
       },
       {
-        args: [() => { throw new Error("2"); }],
-        html: '<div>() => { throw new Error("2"); }</div>'
-      }
+        args: [
+          () => {
+            throw new Error('2');
+          },
+        ],
+        html: '<div>() => { throw new Error("2"); }</div>',
+      },
     ],
     // Functions are not dirty-checked before being toString()'ed
     expectMutationsOnFirstRender: true,
@@ -207,75 +238,77 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'NodePart accepts TemplateResult': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div>${html`<span>${x}</span>`}</div>`;
     },
     expectations: [
       {
         args: ['A'],
-        html: '<div><span>A</span></div>'
+        html: '<div><span>A</span></div>',
       },
       {
         args: ['B'],
-        html: '<div><span>B</span></div>'
-      }
+        html: '<div><span>B</span></div>',
+      },
     ],
     stableSelectors: ['div', 'span'],
   },
 
   'multiple NodeParts, adjacent primitive values': {
-    render(x: any, y: any) {
+    render(x: unknown, y: unknown) {
       return html`<div>${x}${y}</div>`;
     },
     expectations: [
       {
         args: ['A', 'B'],
-        html: '<div>AB</div>'
+        html: '<div>AB</div>',
       },
       {
         args: ['C', 'D'],
-        html: '<div>CD</div>'
-      }
+        html: '<div>CD</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'multiple NodeParts, adjacent primitive & TemplateResult': {
-    render(x: any, y: any) {
+    render(x: unknown, y: unknown) {
       return html`<div>${x}${html`<span>${y}</span>`}</div>`;
     },
     expectations: [
       {
         args: ['A', 'B'],
-        html: '<div>A\n  <span>B</span></div>'
+        html: '<div>A\n  <span>B</span></div>',
       },
       {
         args: ['C', 'D'],
-        html: '<div>C\n  <span>D</span></div>'
-      }
+        html: '<div>C\n  <span>D</span></div>',
+      },
     ],
     stableSelectors: ['div', 'span'],
   },
 
   'multiple NodeParts, adjacent TemplateResults': {
-    render(x: any, y: any) {
-      return html`<div>${html`<span>${x}</span>`}${html`<span>${y}</span>`}</div>`;
+    render(x: unknown, y: unknown) {
+      return html`<div>
+        ${html`<span>${x}</span>`}${html`<span>${y}</span>`}
+      </div>`;
     },
     expectations: [
       {
         args: ['A', 'B'],
-        html: '<div><span>A</span><span>B</span></div>'
+        html: '<div><span>A</span><span>B</span></div>',
       },
       {
         args: ['C', 'D'],
-        html: '<div><span>C</span><span>D</span></div>'
-      }
+        html: '<div><span>C</span><span>D</span></div>',
+      },
     ],
     stableSelectors: ['div', 'span'],
   },
 
   'multiple NodeParts with whitespace': {
-    render(x: any, y: any) {
+    render(x: unknown, y: unknown) {
       return html`<div>${x} ${y}</div>`;
     },
     expectations: [
@@ -284,28 +317,30 @@ export const tests: {[name: string] : SSRTest} = {
         html: '<div>A B</div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const childNodes = dom.querySelector('div')!.childNodes;
-          const textContent = filterNodes(childNodes, Node.TEXT_NODE)
-            .map(n => n.textContent);
+          const textContent = filterNodes(childNodes, Node.TEXT_NODE).map(
+            (n) => n.textContent
+          );
           assert.deepEqual(textContent, ['A', ' ', 'B']);
-        }
+        },
       },
       {
         args: ['C', 'D'],
         html: '<div>C D</div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const childNodes = dom.querySelector('div')!.childNodes;
-          const textContent = filterNodes(childNodes, Node.TEXT_NODE)
-            .map(n => n.textContent);
+          const textContent = filterNodes(childNodes, Node.TEXT_NODE).map(
+            (n) => n.textContent
+          );
           assert.deepEqual(textContent, ['C', ' ', 'D']);
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart with trailing whitespace': {
-    render(x: any) {
-      return html`<div>${x} </div>`;
+    render(x: unknown) {
+      return html`<div>${x}</div>`;
     },
     expectations: [
       {
@@ -313,21 +348,23 @@ export const tests: {[name: string] : SSRTest} = {
         html: '<div>A\n  </div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const childNodes = dom.querySelector('div')!.childNodes;
-          const textContent = filterNodes(childNodes, Node.TEXT_NODE)
-            .map(n => n.textContent);
+          const textContent = filterNodes(childNodes, Node.TEXT_NODE).map(
+            (n) => n.textContent
+          );
           assert.deepEqual(textContent, ['A', ' ']);
-        }
+        },
       },
       {
         args: ['B'],
         html: '<div>B\n  </div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const childNodes = dom.querySelector('div')!.childNodes;
-          const textContent = filterNodes(childNodes, Node.TEXT_NODE)
-            .map(n => n.textContent);
+          const textContent = filterNodes(childNodes, Node.TEXT_NODE).map(
+            (n) => n.textContent
+          );
           assert.deepEqual(textContent, ['B', ' ']);
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -339,30 +376,30 @@ export const tests: {[name: string] : SSRTest} = {
     expectations: [
       {
         args: [['A', 'B', 'C']],
-        html: '<div>ABC</div>'
+        html: '<div>ABC</div>',
       },
       {
         args: [['D', 'E', 'F']],
-        html: '<div>DEF</div>'
-      }
+        html: '<div>DEF</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts array with strings, updated with fewer items': {
     render(words: string[]) {
-     return html`<div>${words}</div>`;
+      return html`<div>${words}</div>`;
     },
     expectations: [
       {
         args: [['A', 'B', 'C']],
-        html: '<div>ABC</div>'
+        html: '<div>ABC</div>',
       },
       // Attribute hydration not working yet
       {
         args: [['D', 'E']],
-        html: '<div>DE</div>'
-      }
+        html: '<div>DE</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -374,30 +411,32 @@ export const tests: {[name: string] : SSRTest} = {
     expectations: [
       {
         args: [['A', 'B', 'C']],
-        html: '<div>ABC</div>'
+        html: '<div>ABC</div>',
       },
       // Attribute hydration not working yet
       {
         args: [['D', 'E', 'F', 'G']],
-        html: '<div>DEFG</div>'
-      }
+        html: '<div>DEFG</div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodePart accepts array with templates': {
     render(words: string[]) {
-      return html`<ol>${words.map((w) => html`<li>${w}</li>`)}</ol>`;
+      return html`<ol>
+        ${words.map((w) => html`<li>${w}</li>`)}
+      </ol>`;
     },
     expectations: [
       {
         args: [['A', 'B', 'C']],
-        html: '<ol><li>A</li>\n  <li>B</li>\n  <li>C</li></ol>'
+        html: '<ol><li>A</li>\n  <li>B</li>\n  <li>C</li></ol>',
       },
       {
         args: [['D', 'E', 'F']],
-        html: '<ol><li>D</li>\n  <li>E</li>\n  <li>F</li></ol>'
-      }
+        html: '<ol><li>D</li>\n  <li>E</li>\n  <li>F</li></ol>',
+      },
     ],
     stableSelectors: ['ol', 'li'],
   },
@@ -409,12 +448,12 @@ export const tests: {[name: string] : SSRTest} = {
     expectations: [
       {
         args: [['foo', 'bar', 'qux']],
-        html: '(0 foo)(1 bar)(2 qux)'
+        html: '(0 foo)(1 bar)(2 qux)',
       },
       {
         args: [['A', 'B', 'C']],
-        html: '(0 A)(1 B)(2 C)'
-      }
+        html: '(0 A)(1 B)(2 C)',
+      },
     ],
     stableSelectors: [],
   },
@@ -426,33 +465,33 @@ export const tests: {[name: string] : SSRTest} = {
     expectations: [
       {
         args: [['foo', 'bar', 'qux']],
-        html: '<p>\n  0) foo\n</p>\n<p>\n  1) bar\n</p>\n<p>\n  2) qux\n</p>\n'
+        html: '<p>\n  0) foo\n</p>\n<p>\n  1) bar\n</p>\n<p>\n  2) qux\n</p>\n',
       },
       {
         args: [['A', 'B', 'C']],
-        html: '<p>\n  0) A\n</p>\n<p>\n  1) B\n</p>\n<p>\n  2) C\n</p>\n'
-      }
+        html: '<p>\n  0) A\n</p>\n<p>\n  1) B\n</p>\n<p>\n  2) C\n</p>\n',
+      },
     ],
     stableSelectors: ['p'],
   },
 
   'NodePart accepts directive: cache': {
     render(bool: boolean) {
-      return html`${cache(bool ? html`<p>true</p>` : html`<b>false</b>` )}`;
+      return html`${cache(bool ? html`<p>true</p>` : html`<b>false</b>`)}`;
     },
     expectations: [
       {
         args: [true],
-        html: '<p>true</p>'
+        html: '<p>true</p>',
       },
       {
         args: [false],
-        html: '<b>false</b>'
+        html: '<b>false</b>',
       },
       {
         args: [true],
-        html: '<p>true</p>'
-      }
+        html: '<p>true</p>',
+      },
     ],
     stableSelectors: [],
   },
@@ -462,10 +501,10 @@ export const tests: {[name: string] : SSRTest} = {
     const guardedTemplate = (bool: boolean) => {
       guardedCallCount++;
       return html`value is ${bool ? true : false}`;
-    }
+    };
     return {
       render(bool: boolean) {
-        return html`<div>${guard([bool], () => guardedTemplate(bool))}</div>`
+        return html`<div>${guard([bool], () => guardedTemplate(bool))}</div>`;
       },
       expectations: [
         {
@@ -473,22 +512,22 @@ export const tests: {[name: string] : SSRTest} = {
           html: '<div>value is true</div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 1);
-          }
+          },
         },
         {
           args: [true],
           html: '<div>value is true</div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 1);
-          }
+          },
         },
         {
           args: [false],
           html: '<div>value is false</div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 2);
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -633,7 +672,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'NodePart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div>${ifDefined(v)}</div>`
+      return html`<div>${ifDefined(v)}</div>`;
     },
     expectations: [
       {
@@ -650,7 +689,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'NodePart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div>${ifDefined(v)}</div>`
+      return html`<div>${ifDefined(v)}</div>`;
     },
     expectations: [
       {
@@ -667,7 +706,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'NodePart accepts directive: unsafeHTML': {
     render(v) {
-      return html`<div>${unsafeHTML(v)}</div>`
+      return html`<div>${unsafeHTML(v)}</div>`;
     },
     expectations: [
       {
@@ -684,7 +723,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'NodePart accepts directive: unsafeSVG': {
     render(v) {
-      return html`<svg>${unsafeSVG(v)}</svg>`
+      return html`<svg>${unsafeSVG(v)}</svg>`;
     },
     expectations: [
       {
@@ -693,7 +732,8 @@ export const tests: {[name: string] : SSRTest} = {
       },
       {
         args: ['<ellipse cx="100" cy="50" rx="100" ry="50" />'],
-        html: '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
+        html:
+          '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
       },
     ],
     stableSelectors: ['div'],
@@ -704,120 +744,120 @@ export const tests: {[name: string] : SSRTest} = {
    ******************************************************/
 
   'AttributePart accepts a string': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: ['TEST'],
-        html: '<div class="TEST"></div>'
+        html: '<div class="TEST"></div>',
       },
       {
         args: ['TEST2'],
-        html: '<div class="TEST2"></div>'
-      }
+        html: '<div class="TEST2"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts a number': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [123],
-        html: '<div class="123"></div>'
+        html: '<div class="123"></div>',
       },
       {
         args: [456.789],
-        html: '<div class="456.789"></div>'
-      }
+        html: '<div class="456.789"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts undefined': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [undefined],
-        html: '<div class="undefined"></div>'
+        html: '<div class="undefined"></div>',
       },
       {
         args: ['TEST'],
-        html: '<div class="TEST"></div>'
-      }
+        html: '<div class="TEST"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts null': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [null],
-        html: '<div class="null"></div>'
+        html: '<div class="null"></div>',
       },
       {
         args: ['TEST'],
-        html: '<div class="TEST"></div>'
-      }
+        html: '<div class="TEST"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts noChange': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [noChange],
-        html: '<div></div>'
+        html: '<div></div>',
       },
       {
         args: ['TEST'],
-        html: '<div class="TEST"></div>'
-      }
+        html: '<div class="TEST"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts nothing': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [nothing],
-        html: '<div></div>'
+        html: '<div></div>',
       },
       {
         args: ['TEST'],
-        html: '<div class="TEST"></div>'
-      }
+        html: '<div class="TEST"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts an array': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [['a', 'b', 'c']],
-        html: '<div class="a,b,c"></div>'
+        html: '<div class="a,b,c"></div>',
       },
       {
         args: [['d', 'e', 'f']],
-        html: '<div class="d,e,f"></div>'
-      }
+        html: '<div class="d,e,f"></div>',
+      },
     ],
     stableSelectors: ['div'],
     // Setting an object/array always results in setAttribute being called
@@ -825,18 +865,18 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'AttributePart accepts an object': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
         args: [{foo: 'bar'}],
-        html: '<div class="[object Object]"></div>'
+        html: '<div class="[object Object]"></div>',
       },
       {
         args: [{ziz: 'zaz'}],
-        html: '<div class="[object Object]"></div>'
-      }
+        html: '<div class="[object Object]"></div>',
+      },
     ],
     stableSelectors: ['div'],
     // Setting an object/array always results in setAttribute being called
@@ -844,18 +884,30 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'AttributePart accepts an object with a toString method': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div class=${x}></div>`;
     },
     expectations: [
       {
-        args: [{toString() { return 'toString!'; }}],
-        html: '<div class="toString!"></div>'
+        args: [
+          {
+            toString() {
+              return 'toString!';
+            },
+          },
+        ],
+        html: '<div class="toString!"></div>',
       },
       {
-        args: [{toString() { return 'toString2!'; }}],
-        html: '<div class="toString2!"></div>'
-      }
+        args: [
+          {
+            toString() {
+              return 'toString2!';
+            },
+          },
+        ],
+        html: '<div class="toString2!"></div>',
+      },
     ],
     stableSelectors: ['div'],
     // Setting an object/array always results in setAttribute being called
@@ -863,52 +915,56 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'AttributePart accepts directive: classMap': {
-    render(map: any) {
+    render(map: {}) {
       return html`<div class=${classMap(map)}></div>`;
     },
     expectations: [
       {
         args: [{foo: true, bar: false, baz: true}],
-        html: '<div class="foo baz"></div>'
+        html: '<div class="foo baz"></div>',
       },
       {
         args: [{foo: false, bar: true, baz: true, zug: true}],
-        html: '<div class="bar baz zug"></div>'
-      }
+        html: '<div class="bar baz zug"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts directive: classMap (with statics)': {
-    render(map: any) {
+    render(map: {}) {
       return html`<div class="static1 ${classMap(map)} static2"></div>`;
     },
     expectations: [
       {
         args: [{foo: true, bar: false, baz: true}],
-        html: '<div class="static1 foo baz static2"></div>'
+        html: '<div class="static1 foo baz static2"></div>',
       },
       {
         args: [{foo: false, bar: true, baz: true, zug: true}],
-        html: '<div class="static1 bar baz zug static2"></div>'
-      }
+        html: '<div class="static1 bar baz zug static2"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'AttributePart accepts directive: styleMap': {
-    render(map: any) {
+    render(map: {}) {
       return html`<div style=${styleMap(map)}></div>`;
     },
     expectations: [
       {
         args: [{background: 'red', paddingTop: '10px', '--my-prop': 'green'}],
-        html: '<div style="background: red; padding-top: 10px; --my-prop:green;"></div>'
+        html:
+          '<div style="background: red; padding-top: 10px; --my-prop:green;"></div>',
       },
       {
-        args: [{paddingTop: '20px', '--my-prop': 'gray', backgroundColor: 'white'}],
-        html: '<div style="padding-top: 20px; --my-prop:gray; background-color: white;"></div>'
-      }
+        args: [
+          {paddingTop: '20px', '--my-prop': 'gray', backgroundColor: 'white'},
+        ],
+        html:
+          '<div style="padding-top: 20px; --my-prop:gray; background-color: white;"></div>',
+      },
     ],
     // styleMap does not dirty check individual properties before setting,
     // which causes an attribute mutation even if the text has not changed
@@ -917,18 +973,20 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'AttributePart accepts directive: styleMap (with statics)': {
-    render(map: any) {
-      return html`<div style="color: red; ${styleMap(map)} height: 3px;"></div>`;
+    render(map: {}) {
+      return html`<div
+        style="color: red; ${styleMap(map)} height: 3px;"
+      ></div>`;
     },
     expectations: [
       {
         args: [{background: 'green'}],
-        html: '<div style="color: red; background: green; height: 3px;"></div>'
+        html: '<div style="color: red; background: green; height: 3px;"></div>',
       },
       {
         args: [{paddingTop: '20px'}],
-        html: '<div style="color: red; height: 3px; padding-top: 20px;"></div>'
-      }
+        html: '<div style="color: red; height: 3px; padding-top: 20px;"></div>',
+      },
     ],
     // styleMap does not dirty check individual properties before setting,
     // which causes an attribute mutation even if the text has not changed
@@ -941,10 +999,12 @@ export const tests: {[name: string] : SSRTest} = {
     const guardedValue = (bool: boolean) => {
       guardedCallCount++;
       return bool ? 'true' : 'false';
-    }
+    };
     return {
       render(bool: boolean) {
-        return html`<div attr="${guard([bool], () => guardedValue(bool))}"></div>`
+        return html`<div
+          attr="${guard([bool], () => guardedValue(bool))}"
+        ></div>`;
       },
       expectations: [
         {
@@ -952,22 +1012,22 @@ export const tests: {[name: string] : SSRTest} = {
           html: '<div attr="true"></div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 1);
-          }
+          },
         },
         {
           args: [true],
           html: '<div attr="true"></div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 1);
-          }
+          },
         },
         {
           args: [false],
           html: '<div attr="false"></div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 2);
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -1058,7 +1118,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'AttributePart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div attr="${ifDefined(v)}"></div>`
+      return html`<div attr="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
@@ -1075,7 +1135,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'AttributePart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div attr="${ifDefined(v)}"></div>`
+      return html`<div attr="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
@@ -1092,7 +1152,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'AttributePart accepts directive: live': {
     render(v: string) {
-      return html`<div attr="${live(v)}"></div>`
+      return html`<div attr="${live(v)}"></div>`;
     },
     expectations: [
       {
@@ -1108,52 +1168,67 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'multiple AttributeParts on same node': {
-    render(x: any, y: any) {
+    render(x: unknown, y: unknown) {
       return html`<div class=${x} foo=${y}></div>`;
     },
     expectations: [
       {
         args: ['A', 'B'],
-        html: '<div class="A" foo="B"></div>'
+        html: '<div class="A" foo="B"></div>',
       },
       {
         args: ['C', 'D'],
-        html: '<div class="C" foo="D"></div>'
-      }
+        html: '<div class="C" foo="D"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'multiple AttributeParts in same attribute': {
-    render(x: any, y: any) {
+    render(x: unknown, y: unknown) {
       return html`<div class="${x} ${y}"></div>`;
     },
     expectations: [
       {
         args: ['A', 'B'],
-        html: '<div class="A B"></div>'
+        html: '<div class="A B"></div>',
       },
       {
         args: ['C', 'D'],
-        html: '<div class="C D"></div>'
-      }
+        html: '<div class="C D"></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'multiple AttributeParts across multiple attributes': {
-    render(a: any, b: any, c: any, d: any, e: any, f: any) {
-      return html`<div ab="${a} ${b}" x c="${c}" y de="${d} ${e}" f="${f}" z></div>`;
+    render(
+      a: unknown,
+      b: unknown,
+      c: unknown,
+      d: unknown,
+      e: unknown,
+      f: unknown
+    ) {
+      return html`<div
+        ab="${a} ${b}"
+        x
+        c="${c}"
+        y
+        de="${d} ${e}"
+        f="${f}"
+        z
+      ></div>`;
     },
     expectations: [
       {
         args: ['a', 'b', 'c', 'd', 'e', 'f'],
-        html: '<div ab="a b" x c="c" y de="d e" f="f" z></div>'
+        html: '<div ab="a b" x c="c" y de="d e" f="f" z></div>',
       },
       {
         args: ['A', 'B', 'C', 'D', 'E', 'F'],
-        html: '<div ab="A B" x c="C" y de="D E" f="F" z></div>'
-      }
+        html: '<div ab="A B" x c="C" y de="D E" f="F" z></div>',
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -1163,30 +1238,36 @@ export const tests: {[name: string] : SSRTest} = {
    ******************************************************/
 
   'PropertyPart accepts a string': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
         args: ['foo'],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 'foo');
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            'foo'
+          );
+        },
       },
       {
         args: ['foo2'],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 'foo2');
-        }
-      }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            'foo2'
+          );
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts a string (reflected)': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1195,15 +1276,15 @@ export const tests: {[name: string] : SSRTest} = {
         html: '<div class="foo"></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-        }
+        },
       },
       {
         args: ['foo2'],
         html: '<div class="foo2"></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           assert.strictEqual(dom.querySelector('div')!.className, 'foo2');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
     // We set properties during hydration, and natively-reflecting properties
@@ -1213,30 +1294,30 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts a number': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
         args: [1],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-        }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 1);
+        },
       },
       {
         args: [2],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 2);
-        }
-      }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 2);
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts a number (reflected)': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1246,7 +1327,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '1');
-        }
+        },
       },
       {
         args: [2],
@@ -1254,8 +1335,8 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '2');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
     // We set properties during hydration, and natively-reflecting properties
@@ -1265,30 +1346,36 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts a boolean': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
         args: [false],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, false);
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            false
+          );
+        },
       },
       {
         args: [true],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, true);
-        }
-      }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            true
+          );
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts a boolean (reflected)': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1298,7 +1385,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'false');
-        }
+        },
       },
       {
         args: [true],
@@ -1306,8 +1393,8 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'true');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
     // We set properties during hydration, and natively-reflecting properties
@@ -1317,30 +1404,33 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts undefined': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
         args: [undefined],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, undefined);
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            undefined
+          );
+        },
       },
       {
         args: [1],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-        }
-      }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 1);
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts undefined (reflected)': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1350,7 +1440,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'undefined');
-        }
+        },
       },
       {
         args: [1],
@@ -1358,8 +1448,8 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '1');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
     // We set properties during hydration, and natively-reflecting properties
@@ -1369,30 +1459,33 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts null': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
         args: [null],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, null);
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            null
+          );
+        },
       },
       {
         args: [1],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-        }
-      }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 1);
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts null (reflected)': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1402,7 +1495,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'null');
-        }
+        },
       },
       {
         args: [1],
@@ -1410,8 +1503,8 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '1');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
     // We set properties during hydration, and natively-reflecting properties
@@ -1421,8 +1514,8 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts noChange': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
@@ -1432,22 +1525,25 @@ export const tests: {[name: string] : SSRTest} = {
           // Ideally this would be `notProperty`, but this is actually how
           // the client-side works right now, because the committer starts off
           // as dirty
-          assert.strictEqual((dom.querySelector('div') as any).foo, undefined);
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            undefined
+          );
+        },
       },
       {
         args: [1],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-        }
-      }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 1);
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts noChange (reflected)': {
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1457,7 +1553,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // className will always read as '' when unset
           assert.strictEqual(dom.querySelector('div')!.className, '');
-        }
+        },
       },
       {
         args: [1],
@@ -1465,31 +1561,34 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '1');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'PropertyPart accepts nothing': {
-    render(x: any) {
-      return html`<div .foo=${x}></div>`;
+    render(x: unknown) {
+      return html`<div .prop=${x}></div>`;
     },
     expectations: [
       {
         args: [nothing],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, undefined);
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            undefined
+          );
+        },
       },
       {
         args: [1],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-        }
-      }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 1);
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -1497,7 +1596,7 @@ export const tests: {[name: string] : SSRTest} = {
   'PropertyPart accepts nothing (reflected)': {
     // TODO: the current client-side does nothing special with `nothing`, just
     // passes it on to the property; is that what we want?
-    render(x: any) {
+    render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
     expectations: [
@@ -1507,7 +1606,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // className will always read as '' when unset
           assert.strictEqual(dom.querySelector('div')!.className, '');
-        }
+        },
       },
       {
         args: [1],
@@ -1515,8 +1614,8 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '1');
-        }
-      }
+        },
+      },
     ],
     stableSelectors: ['div'],
     // We set properties during hydration, and natively-reflecting properties
@@ -1530,24 +1629,30 @@ export const tests: {[name: string] : SSRTest} = {
   'PropertyPart accepts a symbol': () => {
     const testSymbol = Symbol();
     return {
-      render(x: any) {
-        return html`<div .foo=${x}></div>`;
+      render(x: unknown) {
+        return html`<div .prop=${x}></div>`;
       },
       expectations: [
         {
           args: [testSymbol],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, testSymbol);
-          }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              testSymbol
+            );
+          },
         },
         {
           args: [1],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-          }
-        }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              1
+            );
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -1555,25 +1660,31 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts an object': () => {
     const testObject = {};
-    return  {
-      render(x: any) {
-        return html`<div .foo=${x}></div>`;
+    return {
+      render(x: unknown) {
+        return html`<div .prop=${x}></div>`;
       },
       expectations: [
         {
           args: [testObject],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, testObject);
-          }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              testObject
+            );
+          },
         },
         {
           args: [1],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-          }
-        }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              1
+            );
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -1581,8 +1692,8 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts an object (reflected)': () => {
     const testObject = {};
-    return  {
-      render(x: any) {
+    return {
+      render(x: unknown) {
         return html`<div .className=${x}></div>`;
       },
       expectations: [
@@ -1591,8 +1702,11 @@ export const tests: {[name: string] : SSRTest} = {
           html: '<div class="[object Object]"></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
             // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, '[object Object]');
-          }
+            assert.strictEqual(
+              dom.querySelector('div')!.className,
+              '[object Object]'
+            );
+          },
         },
         {
           args: [1],
@@ -1600,8 +1714,8 @@ export const tests: {[name: string] : SSRTest} = {
           check(assert: Chai.Assert, dom: HTMLElement) {
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, '1');
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
       // We set properties during hydration, and natively-reflecting properties
@@ -1614,35 +1728,41 @@ export const tests: {[name: string] : SSRTest} = {
   },
 
   'PropertyPart accepts an array': () => {
-    const testArray = [1,2,3];
+    const testArray = [1, 2, 3];
     return {
-      render(x: any) {
-        return html`<div .foo=${x}></div>`;
+      render(x: unknown) {
+        return html`<div .prop=${x}></div>`;
       },
       expectations: [
         {
           args: [testArray],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, testArray);
-          }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              testArray
+            );
+          },
         },
         {
           args: [1],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-          }
-        }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              1
+            );
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
   },
 
   'PropertyPart accepts an array (reflected)': () => {
-    const testArray = [1,2,3];
+    const testArray = [1, 2, 3];
     return {
-      render(x: any) {
+      render(x: unknown) {
         return html`<div .className=${x}></div>`;
       },
       expectations: [
@@ -1652,7 +1772,7 @@ export const tests: {[name: string] : SSRTest} = {
           check(assert: Chai.Assert, dom: HTMLElement) {
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, '1,2,3');
-          }
+          },
         },
         {
           args: [1],
@@ -1660,8 +1780,8 @@ export const tests: {[name: string] : SSRTest} = {
           check(assert: Chai.Assert, dom: HTMLElement) {
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, '1');
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
       // We set properties during hydration, and natively-reflecting properties
@@ -1676,24 +1796,30 @@ export const tests: {[name: string] : SSRTest} = {
   'PropertyPart accepts a function': () => {
     const testFunction = () => 'test function';
     return {
-      render(x: any) {
-        return html`<div .foo=${x}></div>`;
+      render(x: unknown) {
+        return html`<div .prop=${x}></div>`;
       },
       expectations: [
         {
           args: [testFunction],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, testFunction);
-          }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              testFunction
+            );
+          },
         },
         {
           args: [1],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
-            assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-          }
-        }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              1
+            );
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -1702,7 +1828,7 @@ export const tests: {[name: string] : SSRTest} = {
   'PropertyPart accepts a function (reflected)': () => {
     const testFunction = () => 'test function';
     return {
-      render(x: any) {
+      render(x: unknown) {
         return html`<div .className=${x}></div>`;
       },
       expectations: [
@@ -1711,8 +1837,11 @@ export const tests: {[name: string] : SSRTest} = {
           html: `<div class="() => 'test function'"></div>`,
           check(assert: Chai.Assert, dom: HTMLElement) {
             // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, `() => 'test function'`);
-          }
+            assert.strictEqual(
+              dom.querySelector('div')!.className,
+              `() => 'test function'`
+            );
+          },
         },
         {
           args: [1],
@@ -1720,8 +1849,8 @@ export const tests: {[name: string] : SSRTest} = {
           check(assert: Chai.Assert, dom: HTMLElement) {
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, '1');
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
       // We set properties during hydration, and natively-reflecting properties
@@ -1738,10 +1867,12 @@ export const tests: {[name: string] : SSRTest} = {
     const guardedValue = (bool: boolean) => {
       guardedCallCount++;
       return bool;
-    }
+    };
     return {
       render(bool: boolean) {
-        return html`<div .prop="${guard([bool], () => guardedValue(bool))}"></div>`
+        return html`<div
+          .prop="${guard([bool], () => guardedValue(bool))}"
+        ></div>`;
       },
       expectations: [
         {
@@ -1749,25 +1880,34 @@ export const tests: {[name: string] : SSRTest} = {
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
             assert.equal(guardedCallCount, 1);
-            assert.strictEqual((dom.querySelector('div') as any).prop, true);
-          }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              true
+            );
+          },
         },
         {
           args: [true],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
             assert.equal(guardedCallCount, 1);
-            assert.strictEqual((dom.querySelector('div') as any).prop, true);
-          }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              true
+            );
+          },
         },
         {
           args: [false],
           html: '<div></div>',
           check(assert: Chai.Assert, dom: HTMLElement) {
             assert.equal(guardedCallCount, 2);
-            assert.strictEqual((dom.querySelector('div') as any).prop, false);
-          }
-        }
+            assert.strictEqual(
+              (dom.querySelector('div') as DivWithProp).prop,
+              false
+            );
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -1778,10 +1918,12 @@ export const tests: {[name: string] : SSRTest} = {
     const guardedValue = (v: string) => {
       guardedCallCount++;
       return v;
-    }
+    };
     return {
       render(v: string) {
-        return html`<div .className="${guard([v], () => guardedValue(v))}"></div>`
+        return html`<div
+          .className="${guard([v], () => guardedValue(v))}"
+        ></div>`;
       },
       expectations: [
         {
@@ -1791,7 +1933,7 @@ export const tests: {[name: string] : SSRTest} = {
             assert.equal(guardedCallCount, 1);
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-          }
+          },
         },
         {
           args: ['foo'],
@@ -1800,7 +1942,7 @@ export const tests: {[name: string] : SSRTest} = {
             assert.equal(guardedCallCount, 1);
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-          }
+          },
         },
         {
           args: ['bar'],
@@ -1809,8 +1951,8 @@ export const tests: {[name: string] : SSRTest} = {
             assert.equal(guardedCallCount, 2);
             // Note className coerces to string
             assert.strictEqual(dom.querySelector('div')!.className, 'bar');
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
       // We set properties during hydration, and natively-reflecting properties
@@ -1829,14 +1971,14 @@ export const tests: {[name: string] : SSRTest} = {
   //       args: ['foo'],
   //       html: '<div></div>',
   //       check(assert: Chai.Assert, dom: HTMLElement) {
-  //         assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
+  //         assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 'foo');
   //       }
   //     },
   //     {
   //       args: ['bar'],
   //       html: '<div></div>',
   //       check(assert: Chai.Assert, dom: HTMLElement) {
-  //         assert.strictEqual((dom.querySelector('div') as any).prop, 'bar');
+  //         assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 'bar');
   //       }
   //     },
   //   ],
@@ -1890,7 +2032,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         args: [promise, 'foo'],
   //         html: '<div></div>',
   //         check(assert: Chai.Assert, dom: HTMLElement) {
-  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
+  //           assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 'foo');
   //         }
   //       },
   //       {
@@ -1901,7 +2043,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         args: [promise, 'foo'],
   //         html: '<div></div>',
   //         check(assert: Chai.Assert, dom: HTMLElement) {
-  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'promise');
+  //           assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 'promise');
   //         }
   //       },
   //     ],
@@ -1966,7 +2108,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         args: [promise2, promise1],
   //         html: '<div></div>',
   //         check(assert: Chai.Assert, dom: HTMLElement) {
-  //           assert.notProperty((dom.querySelector('div') as any), 'prop');
+  //           assert.notProperty((dom.querySelector('div') as DivWithProp), 'prop');
   //         }
   //       },
   //       {
@@ -1977,7 +2119,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         args: [promise2, promise1],
   //         html: '<div></div>',
   //         check(assert: Chai.Assert, dom: HTMLElement) {
-  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'promise1');
+  //           assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 'promise1');
   //         }
   //       },
   //       {
@@ -1988,7 +2130,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         args: [promise2, promise1],
   //         html: '<div></div>',
   //         check(assert: Chai.Assert, dom: HTMLElement) {
-  //           assert.strictEqual((dom.querySelector('div') as any).prop, 'promise2');
+  //           assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 'promise2');
   //         }
   //       },
   //     ],
@@ -2045,22 +2187,25 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div .prop="${ifDefined(v)}"></div>`
+      return html`<div .prop="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
         args: [undefined],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.notProperty((dom.querySelector('div') as any), 'prop');
-        }
+          assert.notProperty(dom.querySelector('div') as DivWithProp, 'prop');
+        },
       },
       {
         args: ['foo'],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            'foo'
+          );
+        },
       },
     ],
     stableSelectors: ['div'],
@@ -2068,7 +2213,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (undefined) (reflected)': {
     render(v) {
-      return html`<div .className="${ifDefined(v)}"></div>`
+      return html`<div .className="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
@@ -2077,7 +2222,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, '');
-        }
+        },
       },
       {
         args: ['foo'],
@@ -2085,7 +2230,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-        }
+        },
       },
     ],
     stableSelectors: ['div'],
@@ -2093,22 +2238,28 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div .prop="${ifDefined(v)}"></div>`
+      return html`<div .prop="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
         args: ['foo'],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            'foo'
+          );
+        },
       },
       {
         args: [undefined],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, undefined);
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            undefined
+          );
+        },
       },
     ],
     stableSelectors: ['div'],
@@ -2116,7 +2267,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (defined) (reflected)': {
     render(v) {
-      return html`<div .className="${ifDefined(v)}"></div>`
+      return html`<div .className="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
@@ -2125,7 +2276,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-        }
+        },
       },
       {
         args: [undefined],
@@ -2136,7 +2287,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'undefined');
-        }
+        },
       },
     ],
     stableSelectors: ['div'],
@@ -2148,22 +2299,28 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts directive: live': {
     render(v: string) {
-      return html`<div .prop="${live(v)}"></div>`
+      return html`<div .prop="${live(v)}"></div>`;
     },
     expectations: [
       {
         args: ['foo'],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, 'foo');
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            'foo'
+          );
+        },
       },
       {
         args: ['bar'],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).prop, 'bar');
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            'bar'
+          );
+        },
       },
     ],
     stableSelectors: ['div'],
@@ -2171,7 +2328,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'PropertyPart accepts directive: live (reflected)': {
     render(v: string) {
-      return html`<div .className="${live(v)}"></div>`
+      return html`<div .className="${live(v)}"></div>`;
     },
     expectations: [
       {
@@ -2180,7 +2337,7 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-        }
+        },
       },
       {
         args: ['bar'],
@@ -2188,56 +2345,68 @@ export const tests: {[name: string] : SSRTest} = {
         check(assert: Chai.Assert, dom: HTMLElement) {
           // Note className coerces to string
           assert.strictEqual(dom.querySelector('div')!.className, 'bar');
-        }
+        },
       },
     ],
     stableSelectors: ['div'],
   },
 
   'multiple PropertyParts on same node': {
-    render(x: any, y: any) {
-      return html`<div .foo=${x} .bar=${y}></div>`;
+    render(x: unknown, y: unknown) {
+      return html`<div .prop=${x} .prop2=${y}></div>`;
     },
     expectations: [
       {
         args: [1, true],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 1);
-          assert.strictEqual((dom.querySelector('div') as any).bar, true);
-        }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 1);
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop2,
+            true
+          );
+        },
       },
       {
         args: [2, false],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, 2);
-          assert.strictEqual((dom.querySelector('div') as any).bar, false);
-        }
-      }
+          assert.strictEqual((dom.querySelector('div') as DivWithProp).prop, 2);
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop2,
+            false
+          );
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'multiple PropertyParts in one property': {
-    render(x: any, y: any) {
-      return html`<div .foo="${x},${y}"></div>`;
+    render(x: unknown, y: unknown) {
+      return html`<div .prop="${x},${y}"></div>`;
     },
     expectations: [
       {
         args: [1, true],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, '1,true');
-        }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            '1,true'
+          );
+        },
       },
       {
         args: [2, false],
         html: '<div></div>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.strictEqual((dom.querySelector('div') as any).foo, '2,false');
-        }
-      }
+          assert.strictEqual(
+            (dom.querySelector('div') as DivWithProp).prop,
+            '2,false'
+          );
+        },
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2246,44 +2415,60 @@ export const tests: {[name: string] : SSRTest} = {
    * EventPart tests
    ******************************************************/
 
-  'EventPart': {
+  EventPart: {
     render(listener: (e: Event) => void) {
       return html`<button @click=${listener}>X</button>`;
     },
     expectations: [
       {
-        args: [(e: Event) => (e.target as any).__wasClicked = true],
+        args: [
+          (e: Event) => ((e.target as ClickableButton).__wasClicked = true),
+        ],
         html: '<button>X</button>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const button = dom.querySelector('button')!;
           button.click();
-          assert.strictEqual((button as any).__wasClicked, true, 'not clicked during first render');
-        }
+          assert.strictEqual(
+            (button as ClickableButton).__wasClicked,
+            true,
+            'not clicked during first render'
+          );
+        },
       },
       {
-        args: [(e: Event) => (e.target as any).__wasClicked2 = true],
+        args: [
+          (e: Event) => ((e.target as ClickableButton).__wasClicked2 = true),
+        ],
         html: '<button>X</button>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const button = dom.querySelector('button')!;
           button.click();
-          assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
-        }
-      }
+          assert.strictEqual(
+            (button as ClickableButton).__wasClicked2,
+            true,
+            'not clicked during second render'
+          );
+        },
+      },
     ],
     stableSelectors: ['button'],
   },
 
   'EventPart accepts directive: guard': () => {
-    const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-    const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+    const listener1 = (e: Event) =>
+      ((e.target as ClickableButton).__wasClicked = true);
+    const listener2 = (e: Event) =>
+      ((e.target as ClickableButton).__wasClicked2 = true);
     let guardedCallCount = 0;
-    const guardedValue = (fn: (e: Event) => any) => {
+    const guardedValue = (fn: (e: Event) => unknown) => {
       guardedCallCount++;
       return fn;
-    }
+    };
     return {
-      render(fn: (e: Event) => any) {
-        return html`<button @click="${guard([fn], () => guardedValue(fn))}">X</button>`
+      render(fn: (e: Event) => unknown) {
+        return html`<button @click="${guard([fn], () => guardedValue(fn))}">
+          X
+        </button>`;
       },
       expectations: [
         {
@@ -2293,8 +2478,12 @@ export const tests: {[name: string] : SSRTest} = {
             assert.equal(guardedCallCount, 1);
             const button = dom.querySelector('button')!;
             button.click();
-            assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
-          }
+            assert.strictEqual(
+              (button as ClickableButton).__wasClicked,
+              true,
+              'not clicked during first render'
+            );
+          },
         },
         {
           args: [listener1],
@@ -2303,8 +2492,12 @@ export const tests: {[name: string] : SSRTest} = {
             assert.equal(guardedCallCount, 1);
             const button = dom.querySelector('button')!;
             button.click();
-            assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during second render');
-          }
+            assert.strictEqual(
+              (button as ClickableButton).__wasClicked,
+              true,
+              'not clicked during second render'
+            );
+          },
         },
         {
           args: [listener2],
@@ -2313,17 +2506,21 @@ export const tests: {[name: string] : SSRTest} = {
             assert.equal(guardedCallCount, 2);
             const button = dom.querySelector('button')!;
             button.click();
-            assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during third render');
-          }
-        }
+            assert.strictEqual(
+              (button as ClickableButton).__wasClicked,
+              true,
+              'not clicked during third render'
+            );
+          },
+        },
       ],
       stableSelectors: ['button'],
     };
   },
 
   // 'EventPart accepts directive: until (listener)': () => {
-  //   const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-  //   const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+  //   const listener1 = (e: Event) => (e.target as ClickableButton).__wasClicked = true;
+  //   const listener2 = (e: Event) => (e.target as ClickableButton).__wasClicked2 = true;
   //   return {
   //     render(...args) {
   //       return html`<button @click="${until(...args)}">X</button>`
@@ -2335,7 +2532,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         check(assert: Chai.Assert, dom: HTMLElement) {
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
+  //           assert.strictEqual((button as ClickableButton).__wasClicked, true, 'not clicked during first render');
   //         }
   //       },
   //       {
@@ -2344,7 +2541,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         check(assert: Chai.Assert, dom: HTMLElement) {
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
+  //           assert.strictEqual((button as ClickableButton).__wasClicked2, true, 'not clicked during second render');
   //         }
   //       },
   //     ],
@@ -2353,8 +2550,8 @@ export const tests: {[name: string] : SSRTest} = {
   // },
 
   // 'EventPart accepts directive: until (promise, listener)': () => {
-  //   const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-  //   const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+  //   const listener1 = (e: Event) => (e.target as ClickableButton).__wasClicked = true;
+  //   const listener2 = (e: Event) => (e.target as ClickableButton).__wasClicked2 = true;
   //   let resolve: (v: (e: Event) => any) => void;
   //   const promise = new Promise(r => resolve = r);
   //   return {
@@ -2368,7 +2565,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         check(assert: Chai.Assert, dom: HTMLElement) {
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during first render');
+  //           assert.strictEqual((button as ClickableButton).__wasClicked, true, 'not clicked during first render');
   //         }
   //       },
   //       {
@@ -2381,7 +2578,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         check(assert: Chai.Assert, dom: HTMLElement) {
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during second render');
+  //           assert.strictEqual((button as ClickableButton).__wasClicked2, true, 'not clicked during second render');
   //         }
   //       },
   //     ],
@@ -2390,8 +2587,8 @@ export const tests: {[name: string] : SSRTest} = {
   // },
   //
   // 'EventPart accepts directive: until (promise, promise)': () => {
-  //   const listener1 = (e: Event) => (e.target as any).__wasClicked1 = true;
-  //   const listener2 = (e: Event) => (e.target as any).__wasClicked2 = true;
+  //   const listener1 = (e: Event) => (e.target as ClickableButton).__wasClicked = true;
+  //   const listener2 = (e: Event) => (e.target as ClickableButton).__wasClicked2 = true;
   //   let resolve1: (v: (e: Event) => any) => void;
   //   let resolve2: (v: (e: Event) => any) => void;
   //   const promise1 = new Promise(r => resolve1 = r);
@@ -2405,10 +2602,10 @@ export const tests: {[name: string] : SSRTest} = {
   //         args: [promise2, promise1],
   //         html: '<button>X</button>',
   //         check(assert: Chai.Assert, dom: HTMLElement) {
-  //           assert.notProperty((dom.querySelector('button') as any), 'prop');
+  //           assert.notProperty((dom.querySelector('button') as ClickableButton), '__wasClicked');
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.notProperty(button, '__wasClicked1', 'was clicked during first render');
+  //           assert.notProperty(button, '__wasClicked', 'was clicked during first render');
   //         }
   //       },
   //       {
@@ -2421,7 +2618,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         check(assert: Chai.Assert, dom: HTMLElement) {
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.strictEqual((button as any).__wasClicked1, true, 'not clicked during second render');
+  //           assert.strictEqual((button as ClickableButton).__wasClicked, true, 'not clicked during second render');
   //         }
   //       },
   //       {
@@ -2434,7 +2631,7 @@ export const tests: {[name: string] : SSRTest} = {
   //         check(assert: Chai.Assert, dom: HTMLElement) {
   //           const button = dom.querySelector('button')!;
   //           button.click();
-  //           assert.strictEqual((button as any).__wasClicked2, true, 'not clicked during third render');
+  //           assert.strictEqual((button as ClickableButton).__wasClicked2, true, 'not clicked during third render');
   //         }
   //       },
   //     ],
@@ -2444,27 +2641,40 @@ export const tests: {[name: string] : SSRTest} = {
 
   'EventPart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<button @click="${ifDefined(v)}">X</button>`
+      return html`<button @click="${ifDefined(v)}">X</button>`;
     },
     expectations: [
       {
         args: [undefined],
         html: '<button>X</button>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.notProperty((dom.querySelector('button') as any), 'prop');
+          assert.notProperty(
+            dom.querySelector('button') as ClickableButton,
+            '__wasClicked'
+          );
           const button = dom.querySelector('button')!;
           button.click();
-          assert.notProperty(button, '__wasClicked1', 'was clicked during first render');
-        }
+          assert.notProperty(
+            button,
+            '__wasClicked',
+            'was clicked during first render'
+          );
+        },
       },
       {
-        args: [(e: Event) => (e.target as any).__wasClicked = true],
+        args: [
+          (e: Event) => ((e.target as ClickableButton).__wasClicked = true),
+        ],
         html: '<button>X</button>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const button = dom.querySelector('button')!;
           button.click();
-          assert.strictEqual((button as any).__wasClicked, true, 'not clicked during second render');
-        }
+          assert.strictEqual(
+            (button as ClickableButton).__wasClicked,
+            true,
+            'not clicked during second render'
+          );
+        },
       },
     ],
     stableSelectors: ['button'],
@@ -2472,27 +2682,40 @@ export const tests: {[name: string] : SSRTest} = {
 
   'EventPart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<button @click="${ifDefined(v)}">X</button>`
+      return html`<button @click="${ifDefined(v)}">X</button>`;
     },
     expectations: [
       {
-        args: [(e: Event) => (e.target as any).__wasClicked = true],
+        args: [
+          (e: Event) => ((e.target as ClickableButton).__wasClicked = true),
+        ],
         html: '<button>X</button>',
         check(assert: Chai.Assert, dom: HTMLElement) {
           const button = dom.querySelector('button')!;
           button.click();
-          assert.strictEqual((button as any).__wasClicked, true, 'not clicked during second render');
-        }
+          assert.strictEqual(
+            (button as ClickableButton).__wasClicked,
+            true,
+            'not clicked during second render'
+          );
+        },
       },
       {
         args: [undefined],
         html: '<button>X</button>',
         check(assert: Chai.Assert, dom: HTMLElement) {
-          assert.notProperty((dom.querySelector('button') as any), 'prop');
+          assert.notProperty(
+            dom.querySelector('button') as ClickableButton,
+            '__wasClicked1'
+          );
           const button = dom.querySelector('button')!;
           button.click();
-          assert.notProperty(button, '__wasClicked1', 'was clicked during first render');
-        }
+          assert.notProperty(
+            button,
+            '__wasClicked1',
+            'was clicked during first render'
+          );
+        },
       },
     ],
     stableSelectors: ['button'],
@@ -2514,7 +2737,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [false],
         html: '<div></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2531,7 +2754,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [false],
         html: '<div></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2548,7 +2771,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [false],
         html: '<div></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
     // Objects never dirty-check, so they cause a setAttribute despite being hydrated
@@ -2567,7 +2790,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [true],
         html: '<div hidden></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2584,7 +2807,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [true],
         html: '<div hidden></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2601,7 +2824,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [true],
         html: '<div hidden></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2618,7 +2841,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [true],
         html: '<div hidden></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2635,7 +2858,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [true],
         html: '<div hidden></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2652,7 +2875,7 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: [true],
         html: '<div hidden></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
@@ -2662,10 +2885,12 @@ export const tests: {[name: string] : SSRTest} = {
     const guardedValue = (bool: boolean) => {
       guardedCallCount++;
       return bool;
-    }
+    };
     return {
       render(bool: boolean) {
-        return html`<div ?hidden="${guard([bool], () => guardedValue(bool))}"></div>`
+        return html`<div
+          ?hidden="${guard([bool], () => guardedValue(bool))}"
+        ></div>`;
       },
       expectations: [
         {
@@ -2673,22 +2898,22 @@ export const tests: {[name: string] : SSRTest} = {
           html: '<div hidden></div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 1);
-          }
+          },
         },
         {
           args: [true],
           html: '<div hidden></div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 1);
-          }
+          },
         },
         {
           args: [false],
           html: '<div></div>',
           check(assert: Chai.Assert) {
             assert.equal(guardedCallCount, 2);
-          }
-        }
+          },
+        },
       ],
       stableSelectors: ['div'],
     };
@@ -2779,7 +3004,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'BooleanAttributePart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div ?hidden="${ifDefined(v)}"></div>`
+      return html`<div ?hidden="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
@@ -2796,7 +3021,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'BooleanAttributePart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div ?hidden="${ifDefined(v)}"></div>`
+      return html`<div ?hidden="${ifDefined(v)}"></div>`;
     },
     expectations: [
       {
@@ -2813,7 +3038,7 @@ export const tests: {[name: string] : SSRTest} = {
 
   'BooleanAttributePart accepts directive: live': {
     render(v: boolean) {
-      return html`<div ?hidden="${live(v)}"></div>`
+      return html`<div ?hidden="${live(v)}"></div>`;
     },
     expectations: [
       {
@@ -2834,7 +3059,8 @@ export const tests: {[name: string] : SSRTest} = {
 
   'NodeParts & AttributeParts on adjacent nodes': {
     render(x, y) {
-      return html`<div attr="${x}">${x}</div><div attr="${y}">${y}</div>`;
+      return html`<div attr="${x}">${x}</div>
+        <div attr="${y}">${y}</div>`;
     },
     expectations: [
       {
@@ -2844,14 +3070,17 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: ['a', 'b'],
         html: '<div attr="a">a</div><div attr="b">b</div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodeParts & AttributeParts on nested nodes': {
     render(x, y) {
-      return html`<div attr="${x}">${x}<div attr="${y}">${y}</div></div>`;
+      return html`<div attr="${x}">
+        ${x}
+        <div attr="${y}">${y}</div>
+      </div>`;
     },
     expectations: [
       {
@@ -2861,54 +3090,79 @@ export const tests: {[name: string] : SSRTest} = {
       {
         args: ['a', 'b'],
         html: '<div attr="a">a<div attr="b">b</div></div>',
-      }
+      },
     ],
     stableSelectors: ['div'],
   },
 
   'NodeParts & AttributeParts soup': {
     render(x, y, z) {
-      return html`text:${x}<div>${x}</div><span a1="${y}" a2="${y}">${x}<p a="${y}">${y}</p>${z}</span>`;
+      return html`text:${x}
+        <div>${x}</div>
+        <span a1="${y}" a2="${y}"
+          >${x}
+          <p a="${y}">${y}</p>
+          ${z}</span
+        >`;
     },
     expectations: [
       {
         args: [html`<a></a>`, 'b', 'c'],
-        html: 'text:\n<a></a><div><a></a></div><span a1="b" a2="b"><a></a><p a="b">b</p>c</span>',
+        html:
+          'text:\n<a></a><div><a></a></div><span a1="b" a2="b"><a></a><p a="b">b</p>c</span>',
       },
       {
         args: ['x', 'y', html`<i></i>`],
-        html: 'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i></i></span>',
-      }
+        html:
+          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i></i></span>',
+      },
     ],
     stableSelectors: ['div', 'span', 'p'],
   },
 
   'All part types with at various depths': () => {
-    const handler1 = (e: Event) => (e.target as any).triggered1 = true;
-    const handler2 = (e: Event) => (e.target as any).triggered2 = true;
-    const checkDiv = (assert: Chai.Assert, dom: HTMLElement, id: string, x: any, triggerProp: string) => {
+    const handler1 = (e: Event) => ((e.target as any).triggered1 = true);
+    const handler2 = (e: Event) => ((e.target as any).triggered2 = true);
+    const checkDiv = (
+      assert: Chai.Assert,
+      dom: HTMLElement,
+      id: string,
+      x: unknown,
+      triggerProp: string
+    ) => {
       const div = dom.querySelector(`#${id}`) as HTMLElement;
       assert.ok(div, `Div ${id} not found`);
       div.click();
-      assert.equal((div as any)[triggerProp], true, `Event not triggered for ${id}`);
+      assert.equal(
+        (div as any)[triggerProp],
+        true,
+        `Event not triggered for ${id}`
+      );
       assert.equal((div as any).p, x, `Property not set for ${id}`);
     };
-    const dir = directive(class extends Directive {
-      value: string | undefined;
-      render(value: string) {
-        if (this.value !== value) {
-          this.value = value;
-          return value ? `[${value}]` : value;
+    const dir = directive(
+      class extends Directive {
+        value: string | undefined;
+        render(value: string) {
+          if (this.value !== value) {
+            this.value = value;
+            return value ? `[${value}]` : value;
+          }
+          return noChange;
         }
-        return noChange;
       }
-    });
-    const check = (assert: Chai.Assert, dom: HTMLElement, x: any, triggerProp: string) => {
-      for (let i=0; i<2; i++) {
+    );
+    const check = (
+      assert: Chai.Assert,
+      dom: HTMLElement,
+      x: unknown,
+      triggerProp: string
+    ) => {
+      for (let i = 0; i < 2; i++) {
         checkDiv(assert, dom, `div${i}`, x, triggerProp);
-        for (let j=0; j<2; j++) {
+        for (let j = 0; j < 2; j++) {
           checkDiv(assert, dom, `div${i}-${j}`, x, triggerProp);
-          for (let k=0; k<3; k++) {
+          for (let k = 0; k < 3; k++) {
             checkDiv(assert, dom, `div${i}-${j}-${k}`, x, triggerProp);
           }
         }
@@ -2917,64 +3171,208 @@ export const tests: {[name: string] : SSRTest} = {
     return {
       render(x, y, z, h) {
         return html`
-          <div id="div0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+          <div
+            id="div0"
+            a1=${x}
+            a2="[${x}-${y}]"
+            a3="(${dir(x)})"
+            .p=${x}
+            @click=${h}
+            ?b=${x}
+          >
             ${x}
-            <div id="div0-0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+            <div
+              id="div0-0"
+              a1=${x}
+              a2="[${x}-${y}]"
+              a3="(${dir(x)})"
+              .p=${x}
+              @click=${h}
+              ?b=${x}
+            >
               ${y}
-              <div id="div0-0-0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div0-0-0"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
-              <div id="div0-0-1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div0-0-1"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
               <span>static</span>
-              <div id="div0-0-2" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div0-0-2"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
             </div>
             <span>static</span>
             <span>static</span>
-            <div id="div0-1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+            <div
+              id="div0-1"
+              a1=${x}
+              a2="[${x}-${y}]"
+              a3="(${dir(x)})"
+              .p=${x}
+              @click=${h}
+              ?b=${x}
+            >
               ${y}
-              <div id="div0-1-0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div0-1-0"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
-              <div id="div0-1-1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div0-1-1"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
               <span>static</span>
-              <div id="div0-1-2" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div0-1-2"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
             </div>
           </div>
-          <div id="div1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+          <div
+            id="div1"
+            a1=${x}
+            a2="[${x}-${y}]"
+            a3="(${dir(x)})"
+            .p=${x}
+            @click=${h}
+            ?b=${x}
+          >
             ${x}
-            <div id="div1-0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+            <div
+              id="div1-0"
+              a1=${x}
+              a2="[${x}-${y}]"
+              a3="(${dir(x)})"
+              .p=${x}
+              @click=${h}
+              ?b=${x}
+            >
               ${y}
-              <div id="div1-0-0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div1-0-0"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
-              <div id="div1-0-1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div1-0-1"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
               <span>static</span>
-              <div id="div1-0-2" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div1-0-2"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
             </div>
             <span>static</span>
             <span>static</span>
-            <div id="div1-1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+            <div
+              id="div1-1"
+              a1=${x}
+              a2="[${x}-${y}]"
+              a3="(${dir(x)})"
+              .p=${x}
+              @click=${h}
+              ?b=${x}
+            >
               ${y}
-              <div id="div1-1-0" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div1-1-0"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
-              <div id="div1-1-1" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div1-1-1"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
               <span>static</span>
-              <div id="div1-1-2" a1=${x} a2="[${x}-${y}]" a3="(${dir(x)})" .p=${x} @click=${h} ?b=${x}>
+              <div
+                id="div1-1-2"
+                a1=${x}
+                a2="[${x}-${y}]"
+                a3="(${dir(x)})"
+                .p=${x}
+                @click=${h}
+                ?b=${x}
+              >
                 ${z}
               </div>
             </div>
@@ -3049,7 +3447,7 @@ export const tests: {[name: string] : SSRTest} = {
           </div>`,
           check(assert: Chai.Assert, dom: HTMLElement) {
             check(assert, dom, 'x', 'triggered1');
-          }
+          },
         },
         {
           args: [0, 1, html`<b>2</b>`, handler2],
@@ -3118,11 +3516,11 @@ export const tests: {[name: string] : SSRTest} = {
           </div>`,
           check(assert: Chai.Assert, dom: HTMLElement) {
             check(assert, dom, 0, 'triggered2');
-          }
+          },
         },
       ],
       stableSelectors: ['div', 'span'],
-    }
+    };
   },
 
   /******************************************************
@@ -3132,11 +3530,14 @@ export const tests: {[name: string] : SSRTest} = {
   'LitElement: Basic': () => {
     return {
       registerElements() {
-        customElements.define('le-basic', class extends LitElement {
-          render() {
-            return html` <div>[le-basic: <slot></slot>]</div>`;
+        customElements.define(
+          'le-basic',
+          class extends LitElement {
+            render() {
+              return html` <div>[le-basic: <slot></slot>]</div>`;
+            }
           }
-        });
+        );
       },
       render(x: string) {
         return html`<le-basic>${x}</le-basic>`;
@@ -3146,7 +3547,7 @@ export const tests: {[name: string] : SSRTest} = {
           args: ['x'],
           html: {
             root: `<le-basic>x</le-basic>`,
-            'le-basic': `<div>[le-basic: <slot></slot>]</div>`
+            'le-basic': `<div>[le-basic: <slot></slot>]</div>`,
           },
         },
       ],
@@ -3157,16 +3558,24 @@ export const tests: {[name: string] : SSRTest} = {
   'LitElement: Nested': () => {
     return {
       registerElements() {
-        customElements.define('le-nested1', class extends LitElement {
-          render() {
-            return html` <div>[le-nested1: <le-nested2><slot></slot></le-nested2>]</div>`;
+        customElements.define(
+          'le-nested1',
+          class extends LitElement {
+            render() {
+              return html` <div>
+                [le-nested1: <le-nested2><slot></slot></le-nested2>]
+              </div>`;
+            }
           }
-        });
-        customElements.define('le-nested2', class extends LitElement {
-          render() {
-            return html` <div>[le-nested2: <slot></slot>]</div>`;
+        );
+        customElements.define(
+          'le-nested2',
+          class extends LitElement {
+            render() {
+              return html` <div>[le-nested2: <slot></slot>]</div>`;
+            }
           }
-        });
+        );
       },
       render(x: string) {
         return html`<le-nested1>${x}</le-nested1>`;
@@ -3178,8 +3587,8 @@ export const tests: {[name: string] : SSRTest} = {
             root: `<le-nested1>x</le-nested1>`,
             'le-nested1': {
               root: `<div>[le-nested1: <le-nested2><slot></slot></le-nested2>]</div>`,
-              'le-nested2': `<div>[le-nested2: <slot></slot>]</div>`
-            }
+              'le-nested2': `<div>[le-nested2: <slot></slot>]</div>`,
+            },
           },
         },
       ],
@@ -3199,7 +3608,7 @@ export const tests: {[name: string] : SSRTest} = {
         }
         customElements.define('le-prop-binding', LEPropBinding);
       },
-      render(prop: any) {
+      render(prop: unknown) {
         return html`<le-prop-binding .prop=${prop}></le-prop-binding>`;
       },
       expectations: [
@@ -3212,7 +3621,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-prop-binding></le-prop-binding>`,
-            'le-prop-binding': `<div>\n  [boundProp1]\n</div>`
+            'le-prop-binding': `<div>\n  [boundProp1]\n</div>`,
           },
         },
         {
@@ -3224,7 +3633,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-prop-binding></le-prop-binding>`,
-            'le-prop-binding': `<div>\n  [boundProp2]\n</div>`
+            'le-prop-binding': `<div>\n  [boundProp2]\n</div>`,
           },
         },
       ],
@@ -3244,8 +3653,10 @@ export const tests: {[name: string] : SSRTest} = {
         }
         customElements.define('le-reflected-binding', LEReflectedBinding);
       },
-      render(prop: any) {
-        return html`<le-reflected-binding .prop=${prop}></le-reflected-binding>`;
+      render(prop: unknown) {
+        return html`<le-reflected-binding
+          .prop=${prop}
+        ></le-reflected-binding>`;
       },
       expectations: [
         {
@@ -3257,7 +3668,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-reflected-binding prop="boundProp1"></le-reflected-binding>`,
-            'le-reflected-binding': `<div>\n  [boundProp1]\n</div>`
+            'le-reflected-binding': `<div>\n  [boundProp1]\n</div>`,
           },
         },
         {
@@ -3269,7 +3680,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-reflected-binding prop="boundProp2"></le-reflected-binding>`,
-            'le-reflected-binding': `<div>\n  [boundProp2]\n</div>`
+            'le-reflected-binding': `<div>\n  [boundProp2]\n</div>`,
           },
         },
       ],
@@ -3293,7 +3704,7 @@ export const tests: {[name: string] : SSRTest} = {
         }
         customElements.define('le-attr-binding', LEAttrBinding);
       },
-      render(prop: any) {
+      render(prop: unknown) {
         return html`<le-attr-binding prop=${prop}></le-attr-binding>`;
       },
       expectations: [
@@ -3306,7 +3717,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-attr-binding prop="boundProp1"></le-attr-binding>`,
-            'le-attr-binding': `<div>\n  [boundProp1]\n</div>`
+            'le-attr-binding': `<div>\n  [boundProp1]\n</div>`,
           },
         },
         {
@@ -3318,7 +3729,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-attr-binding prop="boundProp2"></le-attr-binding>`,
-            'le-attr-binding': `<div>\n  [boundProp2]\n</div>`
+            'le-attr-binding': `<div>\n  [boundProp2]\n</div>`,
           },
         },
       ],
@@ -3331,7 +3742,7 @@ export const tests: {[name: string] : SSRTest} = {
       registerElements() {
         class LENodeBinding extends LitElement {
           @property()
-          template: any = 'default';
+          template: unknown = 'default';
           render() {
             return html` <div>${this.template}</div>`;
           }
@@ -3339,7 +3750,9 @@ export const tests: {[name: string] : SSRTest} = {
         customElements.define('le-node-binding', LENodeBinding);
       },
       render(template: (s: string) => any) {
-        return html`<le-node-binding .template=${template('shadow')}>${template('light')}</le-node-binding>`;
+        return html`<le-node-binding .template=${template('shadow')}
+          >${template('light')}</le-node-binding
+        >`;
       },
       expectations: [
         {
@@ -3350,7 +3763,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-node-binding>\n  [template1: light]\n</le-node-binding>`,
-            'le-node-binding': `<div>\n  [template1: shadow]\n</div>`
+            'le-node-binding': `<div>\n  [template1: shadow]\n</div>`,
           },
         },
         {
@@ -3361,7 +3774,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-node-binding>\n  [template2: light]\n</le-node-binding>`,
-            'le-node-binding': `<div>\n  [template2: shadow]\n</div>`
+            'le-node-binding': `<div>\n  [template2: shadow]\n</div>`,
           },
         },
       ],
@@ -3384,8 +3797,10 @@ export const tests: {[name: string] : SSRTest} = {
         }
         customElements.define('le-render-light', LERenderLight);
       },
-      render(prop: any) {
-        return html`<le-render-light .prop=${prop}>${renderLight()}</le-render-light>`;
+      render(prop: unknown) {
+        return html`<le-render-light .prop=${prop}
+          >${renderLight()}</le-render-light
+        >`;
       },
       expectations: [
         {
@@ -3397,7 +3812,7 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-render-light>\n  <div>\n    [light:boundProp1]\n  </div>\n</le-render-light>`,
-            'le-render-light': `<div>\n  [shadow:boundProp1\n  <slot></slot>\n  ]\n</div>`
+            'le-render-light': `<div>\n  [shadow:boundProp1\n  <slot></slot>\n  ]\n</div>`,
           },
         },
         {
@@ -3409,12 +3824,11 @@ export const tests: {[name: string] : SSRTest} = {
           },
           html: {
             root: `<le-render-light>\n  <div>\n    [light:boundProp2]\n  </div>\n</le-render-light>`,
-            'le-render-light': `<div>\n  [shadow:boundProp2\n  <slot></slot>\n  ]\n</div>`
+            'le-render-light': `<div>\n  [shadow:boundProp2\n  <slot></slot>\n  ]\n</div>`,
           },
         },
       ],
       stableSelectors: ['le-render-light'],
     };
   },
-
 };
