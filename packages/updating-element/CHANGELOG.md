@@ -22,3 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - UpdatingElement moved from `lit-element` package to `updating-element` package.
+
+### Fixed
+
+- Fixes an issue with `queryAssignedNodes` when applying a selector on a slot that included text nodes on older browsers not supporting Element.matches [#1088](https://github.com/Polymer/lit-element/issues/1088).
