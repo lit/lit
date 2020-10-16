@@ -66,8 +66,6 @@ const noopSanitizer: SanitizerFactory = (
   _type: 'property' | 'attribute'
 ) => identityFunction;
 
-let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
-
 /** Sets the global sanitizer factory. */
 export const setSanitizer = (newSanitizer: SanitizerFactory) => {
   if (!ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -82,16 +80,16 @@ export const setSanitizer = (newSanitizer: SanitizerFactory) => {
   sanitizerFactoryInternal = newSanitizer;
 };
 
-/**
- * Only used in internal tests, not a part of the public API.
- */
-export const __testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
-  if (DEV_MODE && ENABLE_EXTRA_SECURITY_HOOKS) {
+if (DEV_MODE && ENABLE_EXTRA_SECURITY_HOOKS) {
+  /**
+   * Only used in internal tests, not a part of the public API.
+   */
+  setSanitizer._testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
     sanitizerFactoryInternal = noopSanitizer;
-  }
-};
+  };
+}
 
-export const sanitizerFactory: SanitizerFactory = (node, name, type) => {
+export const createSanitizer: SanitizerFactory = (node, name, type) => {
   return sanitizerFactoryInternal(node, name, type);
 };
 
@@ -379,6 +377,8 @@ const walker = d.createTreeWalker(
   null,
   false
 );
+
+let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -873,7 +873,7 @@ export class NodePart {
     ) {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
-          this._textSanitizer = sanitizerFactory(node, 'data', 'property');
+          this._textSanitizer = createSanitizer(node, 'data', 'property');
         }
         value = this._textSanitizer(value);
       }
@@ -889,7 +889,7 @@ export class NodePart {
         // handled with care, while <span> does not. So first we need to put a
         // text node into the document, then we can sanitize its contentx.
         if (this._textSanitizer === undefined) {
-          this._textSanitizer = sanitizerFactory(textNode, 'data', 'property');
+          this._textSanitizer = createSanitizer(textNode, 'data', 'property');
         }
         value = this._textSanitizer(value);
       }

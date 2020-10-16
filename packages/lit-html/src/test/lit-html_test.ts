@@ -25,7 +25,6 @@ import {
   RenderOptions,
   setSanitizer,
   SanitizerFactory,
-  __testOnlyClearSanitizerFactoryDoNotCallOrElse,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -1760,7 +1759,7 @@ suite('lit-html', () => {
       setSanitizer(testSanitizerFactory);
     });
     teardown(() => {
-      __testOnlyClearSanitizerFactoryDoNotCallOrElse();
+      setSanitizer._testOnlyClearSanitizerFactoryDoNotCallOrElse();
       sanitizerCalls.length = 0;
     });
 
