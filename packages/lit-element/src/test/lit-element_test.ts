@@ -275,7 +275,7 @@ import {assert} from '@esm-bundle/chai';
     shouldThrow = false;
     a.foo = 20;
     // TODO(sorvell): Make sure to wait beyond error timing or wtr is sad.
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r));
     assert.equal(a.foo, 20);
     assert.equal(a.shadowRoot!.textContent, '20');
     console.error = consoleError;

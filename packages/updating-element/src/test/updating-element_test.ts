@@ -20,7 +20,7 @@ import {
   PropertyValues,
   UpdatingElement,
 } from '../updating-element.js';
-import {generateElementName, nextFrame} from './test-helpers.js';
+import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('UpdatingElement', () => {
@@ -2424,7 +2424,8 @@ suite('UpdatingElement', () => {
         container.parentNode.removeChild(container);
       }
       // allow errors to resolve between tests.
-      await nextFrame();
+      // await nextFrame();
+      await new Promise((r) => setTimeout(r));
     });
 
     test('exceptions in `update` do not prevent further updates', async () => {
@@ -2687,9 +2688,8 @@ suite('UpdatingElement', () => {
       // next update only will throw
       shouldThrow = true;
       a.foo = 10;
-      // TODO(sorvell): runner appears to need more time for this.
-      await nextFrame();
-      await nextFrame();
+      // TODO(sorvell): runner appears to need more time than raf
+      await new Promise((r) => setTimeout(r));
       assert.isTrue(threwError);
       assert.equal(a.foo, 10);
       assert.equal(a.updateCount, 3);
