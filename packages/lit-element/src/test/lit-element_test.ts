@@ -16,7 +16,6 @@ import {html, LitElement} from '../lit-element.js';
 import {
   canTestLitElement,
   generateElementName,
-  nextFrame,
   stripExpressionComments,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
