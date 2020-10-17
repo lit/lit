@@ -2424,10 +2424,6 @@ suite('UpdatingElement', () => {
         container.parentNode.removeChild(container);
       }
       // allow errors to resolve between tests.
-      // TODO(sorvell): test runner seems flaky without a long pause between
-      // tests.
-      await nextFrame();
-      await nextFrame();
       await nextFrame();
     });
 
@@ -2691,6 +2687,8 @@ suite('UpdatingElement', () => {
       // next update only will throw
       shouldThrow = true;
       a.foo = 10;
+      // TODO(sorvell): runner appears to need more time for this.
+      await nextFrame();
       await nextFrame();
       assert.isTrue(threwError);
       assert.equal(a.foo, 10);

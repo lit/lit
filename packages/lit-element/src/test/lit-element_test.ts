@@ -16,6 +16,7 @@ import {html, LitElement} from '../lit-element.js';
 import {
   canTestLitElement,
   generateElementName,
+  nextFrame,
   stripExpressionComments,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -240,6 +241,9 @@ import {assert} from '@esm-bundle/chai';
   });
 
   test('exceptions in `render` throw but do not prevent further updates', async () => {
+    // TODO(sorvell): console errors produced by wtr and upset it.
+    const consoleError = console.error;
+    console.error = () => {};
     let shouldThrow = false;
     class A extends LitElement {
       static properties = {foo: {}};
@@ -271,9 +275,12 @@ import {assert} from '@esm-bundle/chai';
     assert.equal(a.shadowRoot!.textContent, '5');
     shouldThrow = false;
     a.foo = 20;
-    await a.updateComplete;
+    // TODO(sorvell): Make sure to wait beyond error timing or wtr is sad.
+    await nextFrame();
+    await nextFrame();
     assert.equal(a.foo, 20);
     assert.equal(a.shadowRoot!.textContent, '20');
+    console.error = consoleError;
   });
 
   test('if `render` is unimplemented, do not overwrite renderRoot', async () => {
