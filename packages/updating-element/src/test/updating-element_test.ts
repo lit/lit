@@ -2424,6 +2424,10 @@ suite('UpdatingElement', () => {
         container.parentNode.removeChild(container);
       }
       // allow errors to resolve between tests.
+      // TODO(sorvell): test runner seems flaky without a long pause between
+      // tests.
+      await nextFrame();
+      await nextFrame();
       await nextFrame();
     });
 
