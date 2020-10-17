@@ -80,6 +80,7 @@ export function queryAssignedNodes(
           nodes = nodes.filter(
             (node) =>
               node.nodeType === Node.ELEMENT_NODE &&
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((node as any).matches
                 ? (node as Element).matches(selector)
                 : legacyMatches.call(node as Element, selector))
