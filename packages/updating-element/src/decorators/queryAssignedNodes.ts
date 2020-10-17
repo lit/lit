@@ -26,6 +26,7 @@ import {
   standardPrototypeMethod,
 } from './base.js';
 
+// TODO(sorvell): Remove when https://github.com/webcomponents/polyfills/issues/397 is addressed.
 // x-browser support for matches
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ElementProto = Element.prototype as any;
