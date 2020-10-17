@@ -744,9 +744,7 @@ export abstract class UpdatingElement extends HTMLElement {
       // cycle. Errors are refired so developers have a chance to observe
       // them, and this can be done by implementing
       // `window.onunhandledrejection`.
-      Promise.resolve().then(() => {
-        throw e;
-      });
+      Promise.reject(e);
     }
     const result = this.performUpdate();
     // If `performUpdate` returns a Promise, we await it. This is done to
