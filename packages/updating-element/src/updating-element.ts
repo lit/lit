@@ -480,10 +480,15 @@ export abstract class UpdatingElement extends HTMLElement {
         warnRemoved(this.prototype as any, UpdatingElement.prototype, name)
       );
 
+      // Issue platform support warning once only.
       if (
         window.ShadyDOM?.inUse &&
-        (globalThis as any)['updatingElementPlatformSupport'] === undefined
+        (globalThis as any)['updatingElementPlatformSupport'] === undefined &&
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (UpdatingElement as any)._issuedPlatformSupportWarning === undefined
       ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (UpdatingElement as any)._issuedPlatformSupportWarning = true;
         console.warn(
           `Shadow DOM is being polyfilled via ShadyDOM but ` +
             `the \`platform-support\` module has not been loaded.`
