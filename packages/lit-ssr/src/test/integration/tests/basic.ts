@@ -944,21 +944,37 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   'AttributePart accepts directive: styleMap': {
+    only: true,
     render(map: {}) {
       return html`<div style=${styleMap(map)}></div>`;
     },
     expectations: [
       {
-        args: [{background: 'red', paddingTop: '10px', '--my-prop': 'green'}],
+        // Note that (at least on chrome, vendor-prefixed properties get
+        // collapsed down to the standard property name when re-parsed on the
+        // browser)
+        args: [
+          {
+            background: 'red',
+            paddingTop: '10px',
+            '--my-prop': 'green',
+            webkitAppearance: 'none',
+          },
+        ],
         html:
-          '<div style="background: red; padding-top: 10px; --my-prop:green;"></div>',
+          '<div style="background: red; padding-top: 10px; --my-prop:green; appearance: none;"></div>',
       },
       {
         args: [
-          {paddingTop: '20px', '--my-prop': 'gray', backgroundColor: 'white'},
+          {
+            paddingTop: '20px',
+            '--my-prop': 'gray',
+            backgroundColor: 'white',
+            webkitAppearance: 'inherit',
+          },
         ],
         html:
-          '<div style="padding-top: 20px; --my-prop:gray; background-color: white;"></div>',
+          '<div style="padding-top: 20px; --my-prop:gray; appearance: inherit; background-color: white;"></div>',
       },
     ],
     // styleMap does not dirty check individual properties before setting,
