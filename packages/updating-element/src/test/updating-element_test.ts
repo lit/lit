@@ -20,7 +20,7 @@ import {
   PropertyValues,
   UpdatingElement,
 } from '../updating-element.js';
-import {generateElementName} from './test-helpers.js';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('UpdatingElement', () => {
@@ -2390,28 +2390,29 @@ suite('UpdatingElement', () => {
 
   suite('exceptions', () => {
     let threwError = false;
-    const promiseErrorListener = (e: Event) => {
+    // Custom error listener.
+    const errorListener = (_e: Event) => {
       threwError = true;
-      e.stopImmediatePropagation();
-      return true;
     };
-    // squelch console errors as it seems to mess up the test runner.
+    // Squelch console errors as it seems to mess up the test runner.
     const consoleError = console.error;
     suiteSetup(() => {
       console.error = () => {};
-      window.addEventListener('unhandledrejection', promiseErrorListener, true);
+      window.addEventListener('unhandledrejection', errorListener);
     });
 
     suiteTeardown(() => {
       console.error = consoleError;
-      window.removeEventListener(
-        'unhandledrejection',
-        promiseErrorListener,
-        true
-      );
+      window.removeEventListener('unhandledrejection', errorListener);
     });
 
     let container: HTMLElement;
+
+    const errorsThrown = async () => {
+      await nextFrame();
+      // Note, should be done by rAF, but FF/IE appears to need more time.
+      await new Promise((r) => setTimeout(r));
+    };
 
     setup(() => {
       threwError = false;
@@ -2423,9 +2424,7 @@ suite('UpdatingElement', () => {
       if (container && container.parentNode) {
         container.parentNode.removeChild(container);
       }
-      // allow errors to resolve between tests.
-      // await nextFrame();
-      await new Promise((r) => setTimeout(r));
+      await errorsThrown();
     });
 
     test('exceptions in `update` do not prevent further updates', async () => {
@@ -2661,7 +2660,7 @@ suite('UpdatingElement', () => {
       assert.equal(a.updatedFoo, 20);
     });
 
-    test('exceptions in the update cycle are visible via `unhandledrejection` event', async () => {
+    test('exceptions in the update cycle are visible via window event', async () => {
       let shouldThrow = false;
       class A extends UpdatingElement {
         static properties = {foo: {}};
@@ -2688,8 +2687,7 @@ suite('UpdatingElement', () => {
       // next update only will throw
       shouldThrow = true;
       a.foo = 10;
-      // TODO(sorvell): runner appears to need more time than raf
-      await new Promise((r) => setTimeout(r));
+      await errorsThrown();
       assert.isTrue(threwError);
       assert.equal(a.foo, 10);
       assert.equal(a.updateCount, 3);
