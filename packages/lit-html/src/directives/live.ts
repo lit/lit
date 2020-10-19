@@ -34,7 +34,11 @@ const RESET_VALUE = {};
 class LiveDirective extends Directive {
   constructor(part: PartInfo) {
     super();
-    if (part.type === EVENT_PART || part.type === NODE_PART || part.type === ELEMENT_PART) {
+    if (
+      part.type === EVENT_PART ||
+      part.type === NODE_PART ||
+      part.type === ELEMENT_PART
+    ) {
       throw new Error(
         'The `live` directive is not allowed on text or event bindings'
       );

@@ -130,9 +130,8 @@ const rawTextElement = /^(?:script|style|textarea)$/i;
 /** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
-const ATTR_RESULT = 3;
 
-type ResultType = typeof HTML_RESULT | typeof SVG_RESULT  | typeof ATTR_RESULT;
+type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
 /** TemplatePart types */
 // TODO (justinfagnani): since these are exported, consider shorter names,
@@ -144,7 +143,6 @@ export const BOOLEAN_ATTRIBUTE_PART = 4;
 export const EVENT_PART = 5;
 export const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
-
 
 /**
  * The return type of the template tag functions.
@@ -184,8 +182,6 @@ export const html = tag(HTML_RESULT);
  */
 export const svg = tag(SVG_RESULT);
 
-export const attr = tag(ATTR_RESULT);
-
 /**
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
@@ -205,10 +201,6 @@ export const nothing = {};
  * path for rendering.
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
-const attributesTemplateCache = new Map<
-  TemplateStringsArray,
-  AttributesTemplate
->();
 
 export type NodePartInfo = {
   readonly type: typeof NODE_PART;
@@ -381,7 +373,7 @@ class Template {
       let attrNameEndIndex = -1;
       let attrName: string | undefined;
       let lastIndex = 0;
-      let match: RegExpExecArray | null;
+      let match!: RegExpExecArray | null;
 
       // The conditions in this loop handle the current parse state, and the
       // assignments to the `regex` variable are the state transitions.
@@ -467,20 +459,36 @@ class Template {
         );
       }
 
-      // If we're in text position, and not in a raw text element
-      // (regex === textEndRegex), we insert a comment marker. Otherwise, we
-      // insert a plain maker. If we have a attrNameEndIndex, it means we need
-      // to rewrite the attribute name to add a bound attribute suffix.
+      let regexName =
+          regex === textEndRegex ? 'text' :
+          regex === tagEndRegex ? 'tag' :
+          '?';
+      console.log('A', attrNameEndIndex, regexName, match === null);
+
+      // We support three cases:
+      //  1. We're in text position, and not in a raw text element
+      //     (regex === textEndRegex): insert a comment marker.
+      //  2. We have a attrNameEndIndex which means we need to rewrite the
+      //     attribute name to add a bound attribute suffix.
+      //  3. Otherwise, we're at the non-first binding in a multi-binding
+      //     attribute, or somewhere else inside the tag. Use a plain marker,
+      //     but if we're in attribute name position, add a sequential suffix
+      //     to generate a unique attribute name.
       html +=
         regex === textEndRegex
           ? s + nodeMarker
-          : (attrNameEndIndex !== -1
-              ? (attrNames.push(attrName!),
-                s.slice(0, attrNameEndIndex) +
-                  boundAttributeSuffix +
-                  s.slice(attrNameEndIndex))
-              : s) + marker;
+          : attrNameEndIndex !== -1
+          ? ((attrNames.push(attrName!),
+            s.slice(0, attrNameEndIndex) +
+              boundAttributeSuffix +
+              s.slice(attrNameEndIndex)) + marker)
+          : (s +
+            marker +
+            (regex === tagEndRegex && match === null ? `:${i}` : ''));
     }
+
+    console.log('B', html + this._strings[l]);
+
 
     // TODO (justinfagnani): if regex is not textRegex log a warning for a
     // malformed template in dev mode.
@@ -542,7 +550,7 @@ class Template {
                     : AttributePart,
               });
               bindingIndex += statics.length - 1;
-            } else if (name === marker) {
+            } else if (name.startsWith(marker)) {
               attrsToRemove.push(name);
               this._parts.push({
                 _type: ELEMENT_PART,
@@ -607,24 +615,6 @@ class Template {
   }
 }
 
-class AttributesTemplate {
-  _attrs: Array<{name: string; strings: Array<string>}> = [];
-  constructor(protected _strings: TemplateStringsArray) {
-    const el = d.createElement('template');
-    el.innerHTML = `<div ${_strings.join(marker)}></div>`;
-    // console.log(el.innerHTML);
-    for (const {name, value} of el.content.firstElementChild!.attributes) {
-      const [, , n] = /([.?@])?(.*)/.exec(name)!;
-      // const type = prefix === '.' ? PROP
-      this._attrs.push({
-        name: n,
-        strings: value.split(marker),
-      });
-    }
-    // console.log(this._attrs);
-  }
-}
-
 /**
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
@@ -665,7 +655,7 @@ class TemplateInstance {
             options
           );
         } else if (templatePart._type === ELEMENT_PART) {
-          part = new SpreadPart(node as HTMLElement);
+          part = new ElementPart(node as HTMLElement);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -734,7 +724,7 @@ export type Part =
   | AttributePart
   | PropertyPart
   | BooleanAttributePart
-  | SpreadPart;
+  | ElementPart;
 
 export class NodePart {
   readonly type = NODE_PART;
@@ -1147,7 +1137,7 @@ export class EventPart extends AttributePart {
   }
 }
 
-export class SpreadPart {
+export class ElementPart {
   readonly type = ELEMENT_PART;
   _value: unknown;
   _directive?: Directive;
@@ -1160,47 +1150,15 @@ export class SpreadPart {
 
   _setValue(value: unknown): void {
     const directive = (value as DirectiveResult)._$litDirective$;
-    if (directive !== undefined) {
-      if (this._directive?.constructor !== directive) {
+    if (this._directive?.constructor !== directive) {
+      // if (this._directive !== undefined) {
+      //   this._directive.disconnectedCallback();
+      // }
+      if (directive !== undefined) {
         this._directive = new directive(this);
-        // TODO (justinfagnani): clear?
-      }
-      value = this._directive.update(this, (value as DirectiveResult).values);
-    }
-    if (value === nothing) {
-      // ?
-      return;
-    }
-    if ((value as TemplateResult)._$litType$ !== ATTR_RESULT) {
-      throw new Error('only Attributes can be set here');
-    }
-    const {strings, values} = value as TemplateResult;
-    const element = this.element;
-    let from = 0;
-    let template = attributesTemplateCache.get(strings);
-    if (template === undefined) {
-      attributesTemplateCache.set(
-        strings,
-        (template = new AttributesTemplate(strings))
-      );
-    }
-    for (const {name, strings} of template._attrs) {
-      if (strings.length === 1) {
-        // TODO: static, only set once
-        element.setAttribute(name, strings[0]);
-      } else {
-        let value = strings[0];
-        const size = strings.length - 1;
-        for (let i = 0; i < size; i++) {
-          const v = values[from++];
-          value +=
-            (typeof v === 'string' ? v : v == null ? '' : String(v)) +
-            strings[i + 1];
-        }
-        // TODO: dirty-check
-        element.setAttribute(name, value as string);
       }
     }
+    this._directive?.update(this, (value as DirectiveResult).values);
   }
 }
 

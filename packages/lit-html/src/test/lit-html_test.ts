@@ -15,7 +15,6 @@ import {
   AttributePart,
   Directive,
   directive,
-  attr,
   html,
   noChange,
   NodePart,
@@ -320,50 +319,41 @@ suite('lit-html', () => {
     });
 
     test('inside start tag', () => {
-      assertRender(html`<div ${attr`a="b"`}></div>`, '<div a="b"></div>');
+      assertRender(html`<div ${`a`}></div>`, '<div></div>');
     });
 
     test('inside start tag x2', () => {
       // We don't support multiple attribute-position bindings yet, so just
       // ensure this parses ok
-      assertRender(
-        html`<div ${attr`a="b"`} ${attr`c="d"`}></div>`,
-        '<div a="b"></div>'
-      );
+      assertRender(html`<div ${`a`} ${`a`}></div>`, '<div></div>');
     });
 
     test('inside start tag after quoted attribute', () => {
-      assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
+      assertRender(html`<div a="b" ${`c`}></div>`, '<div a="b"></div>');
       assertRender(
-        html`<script a="b" ${attr`c="d"`}></script>`,
-        '<script a="b" c="d"></script>'
+        html`<script a="b" ${`c`}></script>`,
+        '<script a="b"></script>'
       );
     });
 
     test('inside start tag after unquoted attribute', () => {
       // prettier-ignore
-      assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
+      assertRender(html`<div a=b ${`c`}></div>`, '<div a="b"></div>');
     });
 
     test('inside start tag before unquoted attribute', () => {
       // bound attributes always appear after static attributes
-      assertRender(
-        html`<div ${attr`c="d"`} a="b"></div>`,
-        '<div a="b" c="d"></div>'
-      );
+      assertRender(html`<div ${`c`} a="b"></div>`, '<div a="b"></div>');
     });
 
     test('inside start tag before quoted attribute', () => {
       // bound attributes always appear after static attributes
-      assertRender(
-        html`<div ${attr`c="d"`} a="b"></div>`,
-        '<div a="b" c="d"></div>'
-      );
+      assertRender(html`<div ${`c`} a="b"></div>`, '<div a="b"></div>');
     });
 
     test('"dynamic" tag name', () => {
       render(html`<${'A'}></${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<:0></:0>');
     });
 
     test('malformed "dynamic" tag name', () => {
@@ -371,7 +361,7 @@ suite('lit-html', () => {
       render(html`<${'A'}></ ${'A'}>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<><!-- --></>'
+        '<:0><!-- --></:0>'
       );
 
       // Currently fails:
@@ -767,20 +757,20 @@ suite('lit-html', () => {
       );
     });
 
-    test('renders interpolation to an unquoted attribute', () => {
-      render(html`<div foo=A${'B'}C></div>`, container);
+    test('renders interpolation to a quoted attribute', () => {
+      render(html`<div foo="A${'B'}C"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'
       );
-      render(html`<div foo=${'A'}B${'C'}></div>`, container);
+      render(html`<div foo="${'A'}B${'C'}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'
       );
     });
 
-    test('renders interpolation to an unquoted attribute', () => {
+    test.only('renders interpolation to an unquoted attribute', () => {
       render(html`<div foo=A${'B'}C></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -1712,30 +1702,30 @@ suite('lit-html', () => {
     });
   });
 
-  suite('spread', () => {
-    test('renders a static attr result', () => {
-      render(html`<div ${attr`foo=bar`} a="b"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="b" foo="bar"></div>'
-      );
-    });
+  // suite('spread', () => {
+  //   test('renders a static attr result', () => {
+  //     render(html`<div ${attr`foo=bar`} a="b"></div>`, container);
+  //     assert.equal(
+  //       stripExpressionComments(container.innerHTML),
+  //       '<div a="b" foo="bar"></div>'
+  //     );
+  //   });
 
-    test('renders a dynamic attr result', () => {
-      render(html`<div ${attr`foo=${'bar'}`} a="b"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="b" foo="bar"></div>'
-      );
-    });
+  //   test('renders a dynamic attr result', () => {
+  //     render(html`<div ${attr`foo=${'bar'}`} a="b"></div>`, container);
+  //     assert.equal(
+  //       stripExpressionComments(container.innerHTML),
+  //       '<div a="b" foo="bar"></div>'
+  //     );
+  //   });
 
-    test.skip('renders a property', () => {
-      render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),'<div a="b"></div>'
-      );
-      const div = container.querySelector('div');
-      assert.equal((div as any).foo, 'bar');
-    });
-  });
+  //   test.skip('renders a property', () => {
+  //     render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
+  //     assert.equal(
+  //       stripExpressionComments(container.innerHTML),'<div a="b"></div>'
+  //     );
+  //     const div = container.querySelector('div');
+  //     assert.equal((div as any).foo, 'bar');
+  //   });
+  // });
 });

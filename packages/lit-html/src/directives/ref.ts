@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {Directive, directive, nothing, SpreadPart} from '../lit-html.js';
+import {Directive, directive, nothing, ElementPart} from '../lit-html.js';
 
 /**
  * A container for a reference to an element.
@@ -25,12 +25,11 @@ export class Ref<T = Element> {
 }
 
 class RefDirective extends Directive {
-
   render(_ref: Ref) {
     return nothing;
   }
 
-  update(part: SpreadPart, [ref]: Parameters<this['render']>) {
+  update(part: ElementPart, [ref]: Parameters<this['render']>) {
     if (ref.value !== part.element) {
       ref.set(part.element);
     }
@@ -40,12 +39,12 @@ class RefDirective extends Directive {
 
 /**
  * Sets the value of a Ref object to the element it's bound to.
- * 
+ *
  * A Ref acts as a container for a reference to an element. The ref
  * directive sets the value of the Ref obejct during rendering.
- * 
+ *
  * @example
- * 
+ *
  *     const inputRef = new Ref();
  *     render(html`<input ${inputRef}>`, container);
  *     input.value.focus();
