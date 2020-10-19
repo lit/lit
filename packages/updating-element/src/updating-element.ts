@@ -27,6 +27,13 @@ import {
 } from './css-tag.js';
 export * from './css-tag.js';
 
+const DEV_MODE = true;
+if (DEV_MODE) {
+  console.warn(
+    `updating-element is in dev mode. Not recommended ` + `for production!`
+  );
+}
+
 /*
  * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
  * replaced at compile time by the munged name for object[property]. We cannot
@@ -277,6 +284,12 @@ export abstract class UpdatingElement extends HTMLElement {
   static styles?: CSSResultGroup;
 
   /**
+   * Set to true to display strict warnings on the console when in developer
+   * mode.
+   */
+  static strictWarnings?: boolean;
+
+  /**
    * Returns a list of attributes corresponding to the registered properties.
    * @nocollapse
    */
@@ -436,13 +449,47 @@ export abstract class UpdatingElement extends HTMLElement {
       ];
       // This for/of is ok because propKeys is an array
       for (const p of propKeys) {
-        // note, use of `any` is due to TypeSript lack of support for symbol in
+        // note, use of `any` is due to TypeScript lack of support for symbol in
         // index types
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.createProperty(p, (props as any)[p]);
       }
     }
     this.elementStyles = this.finalizeStyles(this.styles);
+    // DEV mode warnings
+    if (DEV_MODE) {
+      const warnRemoved = (obj: any, base: any, name: string) => {
+        if (obj[name] !== base[name]) {
+          console.warn(
+            `\`${name}\` is implemented. It ` +
+              `has been removed from this version of UpdatingElement.`
+          );
+        }
+      };
+      [`render`, `getStyles`].forEach((name: string) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        warnRemoved(this as any, UpdatingElement, name)
+      );
+      [
+        `adoptStyles`,
+        `initialize`,
+        `requestUpdateInternal`,
+        `_getUpdateComplete`,
+      ].forEach((name: string) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        warnRemoved(this.prototype as any, UpdatingElement.prototype, name)
+      );
+
+      if (
+        window.ShadyDOM?.inUse &&
+        (globalThis as any)['updatingElementPlatformSupport'] === undefined
+      ) {
+        console.warn(
+          `Shadow DOM is being polyfilled via ShadyDOM but ` +
+            `the \`platform-support\` module has not been loaded.`
+        );
+      }
+    }
     return true;
   }
 
@@ -637,6 +684,14 @@ export abstract class UpdatingElement extends HTMLElement {
         (options.converter as ComplexAttributeConverter)?.toAttribute ??
         defaultConverter.toAttribute;
       const attrValue = toAttribute!(value, options.type);
+      if (DEV_MODE && attrValue === undefined) {
+        console.warn(
+          `The attribute value for the ` +
+            `${name as string} property is undefined. The attribute will be ` +
+            `removed, but in the previous version of UpdatingElement, the ` +
+            `attribute would not have changed.`
+        );
+      }
       // Track if the property is being reflected to avoid
       // setting the property again via `attributeChangedCallback`. Note:
       // 1. this takes advantage of the fact that the callback is synchronous.
@@ -776,6 +831,25 @@ export abstract class UpdatingElement extends HTMLElement {
     if (!this.isUpdatePending) {
       return;
     }
+    // create renderRoot before first update.
+    if (!this.hasUpdated) {
+      // Produce warning if any class properties are shadowed by class fields
+      if (DEV_MODE) {
+        (this.constructor as typeof UpdatingElement).elementProperties!.forEach(
+          (_v, p) => {
+            if (this.hasOwnProperty(p) && !this._instanceProperties?.has(p)) {
+              console.warn(
+                `Reactive properties cannot be set as class ` +
+                  `fields. Property '${p as string}' will not trigger updates.`
+              );
+            }
+          }
+        );
+      }
+      (this as {
+        renderRoot: Element | DocumentFragment;
+      }).renderRoot = this.createRenderRoot();
+    }
     // Mixin instance properties once, if they exist.
     if (this._instanceProperties) {
       // Use forEach so this works even if for/of loops are compiled to for loops
@@ -783,12 +857,6 @@ export abstract class UpdatingElement extends HTMLElement {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
-    }
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
     }
     let shouldUpdate = false;
     const changedProperties = this._changedProperties;
@@ -820,6 +888,17 @@ export abstract class UpdatingElement extends HTMLElement {
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
+    if (
+      DEV_MODE &&
+      (this.constructor as typeof UpdatingElement).strictWarnings &&
+      this.isUpdatePending
+    ) {
+      console.warn(
+        `An updating is pending after an ` +
+          `update completed. This should be avoided unless the next update ` +
+          `can only be scheduled as a side effect of the previous update.`
+      );
+    }
   }
 
   private _markUpdated() {
@@ -923,3 +1002,32 @@ export abstract class UpdatingElement extends HTMLElement {
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['updatingElementPlatformSupport']?.({UpdatingElement});
+
+// Dev mode warnings...
+if (DEV_MODE) {
+  const requestUpdateThenable = {
+    then: (
+      onfulfilled?: (value: boolean) => void,
+      _onrejected?: () => void
+    ) => {
+      console.warn(
+        `\`requestUpdate\` no longer returns a Promise.` +
+          `Use \`updateComplete\` instead.`
+      );
+      if (onfulfilled !== undefined) {
+        onfulfilled(false);
+      }
+    },
+  };
+
+  const requestUpdate = UpdatingElement.prototype.requestUpdate;
+  UpdatingElement.prototype.requestUpdate = function (
+    this: UpdatingElement,
+    name?: PropertyKey,
+    oldValue?: unknown,
+    options?: PropertyDeclaration
+  ) {
+    requestUpdate.call(this, name, oldValue, options);
+    return requestUpdateThenable;
+  };
+}
