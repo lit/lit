@@ -331,6 +331,8 @@ const createAttributeParts = (
     let foundOnePart = false;
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      // If the next template part is in attribute-position on the current node,
+      // create the instance part for it and prime its state
       const part = instance._template._parts[state.templatePartIndex];
       if (
         part === undefined ||
@@ -341,6 +343,8 @@ const createAttributeParts = (
       }
       foundOnePart = true;
 
+      // The instance part is created based on the constructor saved in the
+      // template part
       const attributePart = new part._constructor(
         node.parentElement as HTMLElement,
         part._name,
