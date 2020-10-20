@@ -944,7 +944,6 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   'AttributePart accepts directive: styleMap': {
-    only: true,
     render(map: {}) {
       return html`<div style=${styleMap(map)}></div>`;
     },
