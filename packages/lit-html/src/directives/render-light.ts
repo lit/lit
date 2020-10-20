@@ -17,7 +17,7 @@ class RenderLight extends Directive {
 }
 
 /**
- * This directive allows a LitElement to control its light DOM rendering in
+ * This directive allows a host element to control its light DOM rendering in
  * addition to its shadow DOM rendering, by implementing a renderLight() method.
  *
  * Here's an example of a <x-story> element that intended to server and client
@@ -45,10 +45,10 @@ class RenderLight extends Directive {
  * </x-story>
  * ```
  *
- * Implementation:
+ * Implementation (using `LitElement`):
  *
  * ```js
- * class StoryElement extends LitElement {
+ * class StoryElement extends LitElement implements RenderLightHost {
  *
  *   @property() title;
  *   @property() body;
@@ -88,7 +88,7 @@ class RenderLight extends Directive {
  *
  * This prevents contention on the light DOM between the user of the component
  * and the component itself. The component doesn't actually render to its
- * light DOM, its user does. The component gives provides the implementation.
+ * light DOM, its user does. The component provides the implementation.
  *
  * The component will also need to provide its light DOM styling. This is TBD,
  * but obviously won't be able to take advantage of shadow DOM scoping.
