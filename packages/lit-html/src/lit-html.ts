@@ -728,20 +728,22 @@ export class NodePart {
   _value: unknown;
   /** @internal */
   _directive?: Directive;
+  /** @internal */
+  _startNode: ChildNode;
+  /** @internal */
+  _endNode: ChildNode | null;
 
   constructor(
-    private _startNode: ChildNode,
-    private _endNode: ChildNode | null,
+    startNode: ChildNode,
+    endNode: ChildNode | null,
     public options: RenderOptions | undefined
-  ) {}
+  ) {
+    this._startNode = startNode;
+    this._endNode = endNode;
+  }
 
   get parentNode(): Node {
     return this._startNode.parentNode!;
-  }
-
-  /** @internal */
-  _setEndNode(node: ChildNode | null) {
-    this._endNode = node;
   }
 
   _setValue(value: unknown): void {

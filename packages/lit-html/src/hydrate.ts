@@ -297,7 +297,8 @@ const closeNodePart = (
   if (part === undefined) {
     throw new Error('unbalanced part marker');
   }
-  part._setEndNode(marker);
+
+  part._endNode = marker;
 
   const currentState = stack.pop()!;
 
