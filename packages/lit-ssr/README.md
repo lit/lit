@@ -64,14 +64,14 @@ HTML files for proper server rendering:
   ```html
   <script type="module" src="my-app-components.js" ssr></script>
   ```
-- (Optional): Add `type="ssr"` attribute to scripts that should _only_ be
+- (Optional): Add `type="ssr-only"` attribute to scripts that should _only_ be
   executed on the server. This is useful for fetching/initializing application
-  data on the server. Note that if a `type="ssr"` module script exports an async
+  data on the server. Note that if a `ssr` module script exports an async
   function named `initializeSSR`, it will be invoked, and its return value can
   be rendered into the html page (see below). For example:
 
   ```html
-  <script type="ssr-only" src="initialize-server-data.js"></script>
+  <script type="ssr-only" src="initialize-server-data.js" ssr></script>
   ```
 
   ```js
