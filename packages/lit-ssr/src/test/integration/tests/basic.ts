@@ -20,6 +20,7 @@ import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {styleMap} from 'lit-html/directives/style-map.js';
+// TODO(kschaaf): Enable once async directives are implemented
 // import {until} from 'lit-html/directives/until.js';
 // import {asyncAppend} from 'lit-html/directives/async-append.js';
 // import {asyncReplace} from 'lit-html/directives/async-replace.js';
@@ -527,6 +528,8 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['div'],
     };
   },
+
+  // TODO(kschaaf): Enable once async directives are implemented
 
   // 'NodePart accepts directive: until (primitive)': {
   //   render(...args) {
@@ -1042,6 +1045,8 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['div'],
     };
   },
+
+  // TODO(kschaaf): Enable once async directives are implemented
 
   // 'AttributePart accepts directive: until (primitive)': {
   //   render(...args) {
@@ -1972,6 +1977,8 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  // TODO(kschaaf): Enable once async directives are implemented
+
   // 'PropertyPart accepts directive: until (primitive)': {
   //   render(...args) {
   //     return html`<div .prop="${until(...args)}"></div>`
@@ -2528,6 +2535,8 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  // TODO(kschaaf): Enable once async directives are implemented
+
   // 'EventPart accepts directive: until (listener)': () => {
   //   const listener1 = (e: Event) => (e.target as ClickableButton).__wasClicked = true;
   //   const listener2 = (e: Event) => (e.target as ClickableButton).__wasClicked2 = true;
@@ -2928,6 +2937,8 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['div'],
     };
   },
+
+  // TODO(kschaaf): Enable once async directives are implemented
 
   // 'BooleanAttributePart accepts directive: until (primitive)': {
   //   render(...args) {
