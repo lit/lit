@@ -24,6 +24,8 @@
  *    or
  *    property name (if reflected attribute name is identical).
  */
+// TODO: fill out complete list based on DOM IDL:
+// https://github.com/Polymer/lit-html/issues/1380
 const reflectedAttributesSource: (string | string[])[][] = [
   [['input', 'select'], 'value'],
   ['*', ['className', 'class'], 'id'],
