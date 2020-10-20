@@ -14,11 +14,11 @@ lit-element@3.
 ### High-level API: render HTML pages
 
 The easiest way to get started using lit-ssr is to add the `renderHTMLFile`
-middleware from the `render-html-file` module to your server. This middleware
-will server-side render any `Lit` custom elements included in html files served
-in your application. It handles URLs to files with `.html` or bare paths with
-`accept: text/html` or `accept: *`. If a static file does not exist at the
-specified URL path, the `fallback` file will be rendered/served.
+middleware from the `koa-render-html-file` module to your server. This
+middleware will server-side render any `Lit` custom elements included in html
+files served in your application. It handles URLs to files with `.html` or bare
+paths with `accept: text/html` or `accept: *`. If a static file does not exist
+at the specified URL path, the `fallback` file will be rendered/served.
 
 Below is an example usage of the lit-ssr `renderHTMLFile` middleware:
 
@@ -29,7 +29,7 @@ import * as path from 'path';
 import Koa from 'koa';
 import staticFiles from 'koa-static';
 import koaNodeResolve from 'koa-node-resolve';
-import {renderHTMLFile} from 'lit-ssr/lib/render-html-file.js';
+import {renderHTMLFile} from 'lit-ssr/lib/koa-render-html-file.js';
 
 const {nodeResolve} = koaNodeResolve;
 
@@ -120,7 +120,7 @@ Full example HTML file:
 
 As a lower-level means of rendering `lit-html` templates (optionally containing
 `LitElement` components), the `renderModule` function from the
-`render-html-file` module will import a given module into a server-side VM
+`render-module` module will import a given module into a server-side VM
 sandbox shimmed with the minimal DOM shim required for Lit server rendering,
 execute a given function exported from that module, and return its value.
 
