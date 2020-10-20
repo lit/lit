@@ -35,22 +35,18 @@ export class LitElementRenderer extends ElementRenderer {
 
   attributeChangedCallback(
     name: string,
-    old: string | null,
+    _old: string | null,
     value: string | null
   ) {
-    if (old !== value) {
-      (this.element as LitElement)._attributeToProperty(name, value);
-    }
+    (this.element as LitElement)._attributeToProperty(name, value);
   }
 
   *renderChildren(): IterableIterator<string> {
     // Open shadow root
     yield '<template shadowroot="open">';
     // Render styles.
-    const styles = [(this.element.constructor as typeof LitElement).styles]
-      .flat(Infinity)
-      .filter((style) => style instanceof CSSResult);
-    if (styles.length) {
+    const styles = (this.element.constructor as typeof LitElement).elementStyles;
+    if (styles !== undefined && styles.length > 0) {
       yield '<style>';
       for (const style of styles) {
         yield (style as CSSResult).cssText;
