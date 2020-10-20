@@ -57,7 +57,8 @@ declare module 'parse5' {
   }
 }
 
-Directive.prototype.resolve = function (
+// Switch directive resolution to SSR-compatible `render`
+Directive.prototype._resolve = function (
   this: Directive,
   _part: Part,
   values: unknown[]

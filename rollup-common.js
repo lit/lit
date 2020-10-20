@@ -56,6 +56,8 @@ const reservedProperties = [
   // crossPackagePropertyMangles once lit-ssr uses the rollup config)
   // lit-html: AttributePart (used by render-lit-html)
   '_resolveValue',
+  // lit-html: Directive (used by render-lit-html)
+  '_resolve',
   // updating-element: UpdatingElement (used by lit-element-renderer)
   '_attributeToProperty',
   // hydrate-support: LitElement (added by hydrate-support)

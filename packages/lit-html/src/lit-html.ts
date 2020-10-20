@@ -322,7 +322,8 @@ const walker =
  * change in future pre-releases.
  */
 export abstract class Directive {
-  resolve(part: Part, props: Array<unknown>): unknown {
+  /** @internal */
+  _resolve(part: Part, props: Array<unknown>): unknown {
     return this.update(part, props);
   }
   abstract render(...props: Array<unknown>): unknown;
@@ -781,7 +782,7 @@ export class NodePart {
     // TODO (justinfagnani): To support nested directives, we'd need to
     // resolve the directive result's values. We may want to offer another
     // way of composing directives.
-    this._setValue(this._directive.resolve(this, value.values));
+    this._setValue(this._directive._resolve(this, value.values));
   }
 
   private _commitNode(value: Node): void {
@@ -962,14 +963,16 @@ export class AttributePart {
       // TODO (justinfagnani): To support nested directives, we'd need to
       // resolve the directive result's values. We may want to offer another
       // way of composing directives.
-      value = directive.resolve(this, (value as DirectiveResult).values);
+      value = directive._resolve(this, (value as DirectiveResult).values);
     }
     return value;
   }
 
   /**
    * Resolves the final value of the attribute from possibly multiple values
-   * and static strings.
+   * and static strings. This method is called by `_setValue` on the client, and
+   * also by `hydrate()` and `lit-ssr` to retrieve the resolved value of a part
+   * without committing it.
    *
    * If this part is single-valued, `this._strings` will be undefined, and the
    * method will be called with a single value argument. If this part is
@@ -1169,9 +1172,18 @@ export class EventPart extends AttributePart {
   }
 }
 
-// Private exports for use by other Lit packages, not intended for use by
-// external users; they are exported with underscored names (mangled in build)
-// to keep payload impact minimal
+/**
+ * END USERS SHOULD NOT RELY ON THIS OBJECT.
+ * 
+ * Private exports for use by other Lit packages, not intended for use by
+ * external users.
+ * 
+ * We currently do not make a mangled rollup build of the lit-ssr code. In order
+ * to keep a number of (otherwise private) top-level exports mangled in the
+ * client side code, we export a $private object containing those members, and
+ * then re-export them for use in lit-ssr. This keeps lit-ssr agnostic to
+ * whether the client-side code is being used in `dev` mode or `prod` mode.
+ */
 export const $private = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
