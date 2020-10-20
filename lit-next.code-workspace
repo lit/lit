@@ -8,10 +8,10 @@
 			"name": "lit-element",
 			"path": "packages/lit-element"
 		},
-    {
-      "name": "updating-element",
-      "path": "packages/updating-element"
-    },
+		{
+			"name": "updating-element",
+			"path": "packages/updating-element"
+		},
 		{
 			"name": "lit-ssr",
 			"path": "packages/lit-ssr"
@@ -27,6 +27,9 @@
 		{
 			"name": "lit-next",
 			"path": "."
+		},
+		{
+			"path": "../lit-ssr-hacker-news"
 		}
 	],
 	"settings": {

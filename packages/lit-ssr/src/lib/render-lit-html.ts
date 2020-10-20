@@ -165,8 +165,8 @@ const getTemplate = (result: TemplateResult) => {
 
   /**
    * Sets `lastOffset` to `offset`, skipping a range of characters. This is
-   * useful for skipping <slot>s and distributed nodes in flattened mode, or
-   * skipping and re-writting lit-html marker nodes.
+   * useful for skipping and re-writing lit-html marker nodes, bound attribute
+   * suffix, etc.
    */
   const skipTo = (offset: number) => {
     if (lastOffset === undefined) {
@@ -192,15 +192,7 @@ const getTemplate = (result: TemplateResult) => {
     const previousLastOffset = lastOffset;
     lastOffset = offset;
     const value = html.substring(previousLastOffset, offset);
-    const op = getLast(ops);
-    if (op !== undefined && op.type === 'text') {
-      op.value += value;
-    } else {
-      ops.push({
-        type: 'text',
-        value,
-      });
-    }
+    flush(value);
   };
 
   const flush = (value: string) => {
