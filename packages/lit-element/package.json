@@ -21,6 +21,10 @@
       "development": "./development/platform-support.js",
       "default": "./platform-support.js"
     },
+    "./hydrate-support.js": {
+      "development": "./development/hydrate-support.js",
+      "default": "./hydrate-support.js"
+    },
     "./decorators.js": {
       "development": "./development/decorators.js",
       "default": "./decorators.js"
