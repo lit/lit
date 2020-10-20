@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledexception` event handler on window.
+- Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledrejection` event handler on window.
 
 ### Added
 
