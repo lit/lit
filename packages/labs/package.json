@@ -12,14 +12,28 @@
   "directories": {
     "test": "test"
   },
+  "exports": {
+    ".": {
+      "development": "./development/index.js",
+      "default": "./index.js"
+    },
+    "./controllers/updating-controller.js": {
+      "development": "./development/controllers/updating-controller.js",
+      "default": "./controllers/updating-controller.js"
+    }
+  },
   "files": [
-    "/lib/",
+    "/controllers/",
     "/src/",
-    "!/src/test/"
+    "!/src/test/",
+    "/controllers/updating-controller.d.ts",
+    "/controllers/updating-controller.d.ts.map",
+    "/controllers/updating-controller.js",
+    "/controllers/updating-controller.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf development/",
+    "clean": "rm -rf index.{js,js.map,d.ts} controllers/ development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
