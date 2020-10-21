@@ -30,7 +30,7 @@
     "checksize": "rollup -c --environment=CHECKSIZE",
     "format": "prettier src/* --write",
     "lint": "tslint --project ./",
-    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
   "author": "The Polymer Authors",
   "devDependencies": {
