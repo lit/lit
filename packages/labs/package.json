@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf lib/ development/",
+    "clean": "rm -rf development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
