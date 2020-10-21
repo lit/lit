@@ -27,9 +27,6 @@
 		{
 			"name": "lit-next",
 			"path": "."
-		},
-		{
-			"path": "../lit-ssr-hacker-news"
 		}
 	],
 	"settings": {

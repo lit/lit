@@ -182,6 +182,23 @@ const getTemplate = (result: TemplateResult) => {
   };
 
   /**
+   * Records the given string to the output, either by appending to the current
+   * opcode (if already `text`) or by creating a new `text` opcode (if the
+   * previous opocde was not `text)
+   */
+  const flush = (value: string) => {
+    const op = getLast(ops);
+    if (op !== undefined && op.type === 'text') {
+      op.value += value;
+    } else {
+      ops.push({
+        type: 'text',
+        value,
+      });
+    }
+  };
+
+  /**
    * Creates or appends to a text opcode with a substring of the html from the
    * `lastOffset` flushed to `offset`.
    */
@@ -195,17 +212,6 @@ const getTemplate = (result: TemplateResult) => {
     flush(value);
   };
 
-  const flush = (value: string) => {
-    const op = getLast(ops);
-    if (op !== undefined && op.type === 'text') {
-      op.value += value;
-    } else {
-      ops.push({
-        type: 'text',
-        value,
-      });
-    }
-  };
 
   // Depth-first node index. Initialized to -1 so that the first child node is
   // index 0, to match client-side lit-html.
