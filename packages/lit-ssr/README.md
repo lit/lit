@@ -34,25 +34,25 @@ import {renderHTMLFile} from 'lit-ssr/lib/koa-render-html-file.js';
 const {nodeResolve} = koaNodeResolve;
 
 const root = /* Root of your webapp */;
+const port = 8080;
+const app = new Koa();
 
-(async() => {
-
-  const port = 8080;
-  const app = new Koa();
-  app.use(nodeResolve({root}));
-  app.use(renderHTMLFile({root, fallback: 'index.html'})); // Use `renderHTMLFile` plugin
-  app.use(staticFiles(root));
-  app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-  });
-
-})();
+app.use(nodeResolve({root}));
+app.use(renderHTMLFile({root, fallback: 'index.html'})); // Use `renderHTMLFile` plugin
+app.use(staticFiles(root));
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
 ```
 
 When using this middleware, there are a few steps you should do to prepare you
 HTML files for proper server rendering:
 
-- Add the `template-shadowroot` polyfill to hydrate server-rendered `<template shadowroot>` elements. For example:
+- Add the `template-shadowroot` polyfill to hydrate server-rendered
+  `<template shadowroot>` elements. Note that `hydrateShadowRoots` must run
+  after the document is parsed, before any elements definitions are loaded.
+  Loading all scripts as module scripts is an easy way to achieve this.
+  For example:
   ```html
   <script type="module">
     import {hydrateShadowRoots} from './node_modules/template-shadowroot/template-shadowroot.js';

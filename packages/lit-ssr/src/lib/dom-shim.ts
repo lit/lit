@@ -21,7 +21,6 @@
  */
 
 import fetch from 'node-fetch';
-import btoa from 'btoa';
 
 /**
  * Constructs a fresh instance of the "window" vm context to use for
@@ -120,7 +119,7 @@ export const getWindow = (
     ShadowRoot,
     customElements: new CustomElementRegistry(),
     btoa(s: string) {
-      return btoa(s);
+      return Buffer.from(s, 'binary').toString('base64');
     },
     console: {
       log(...args: unknown[]) {

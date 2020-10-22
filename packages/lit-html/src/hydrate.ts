@@ -37,10 +37,6 @@ type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
 /**
  * Information needed to rehydrate a single TemplateResult.
- *
- * TODO: this doesn't let us handle nested NodeParts that aren't the result of
- * nested templates, as repeat() creates. We need the stack to contain all
- * NodeParts for that.
  */
 type NodePartState =
   | {
@@ -163,9 +159,7 @@ export const hydrate = (
       }
       // Create a new NodePart and push it onto the stack
       currentNodePart = openNodePart(rootValue, marker, stack, options);
-      if (rootPart === undefined) {
-        rootPart = currentNodePart;
-      }
+      rootPart ??= currentNodePart;
     } else if (markerText.startsWith('lit-bindings')) {
       // Create and hydrate attribute parts into the current NodePart on the
       // stack

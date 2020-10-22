@@ -127,8 +127,8 @@ type CustomElementAttributesOp = {
 /**
  * Operation to render a custom element's children, usually its shadow root.
  */
-type CustomElementChildrenOp = {
-  type: 'custom-element-children';
+type CustomElementShadowOp = {
+  type: 'custom-element-shadow';
 };
 
 /**
@@ -145,7 +145,7 @@ type Op =
   | AttributePartOp
   | CustomElementOpenOp
   | CustomElementAttributesOp
-  | CustomElementChildrenOp
+  | CustomElementShadowOp
   | CustomElementClosedOp;
 
 /**
@@ -195,8 +195,8 @@ type Op =
  * - `text`
  *   - Emit end of of open tag `>`
  *   - Emit `<!--lit-bindings n-->` marker if there were attribute parts
- * - `custom-element-children`
- *   - Emit `renderer.renderChildren()` (emits `<template shadowroot>` +
+ * - `custom-element-shadow`
+ *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)
  * - `text`
  *   - Emit run of static text within tag: `<div>child</div>...`
@@ -398,7 +398,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 
         if (ctor !== undefined) {
           ops.push({
-            type: 'custom-element-children',
+            type: 'custom-element-shadow',
           });
         }
       }
@@ -525,7 +525,7 @@ export function* renderTemplateResult(
         value = part._resolveValue(value, partIndex);
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`
-        if (value !== noChange && value !== nothing) {
+        if (value !== noChange) {
           const instance = op.useCustomElementInstance
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
@@ -583,10 +583,12 @@ export function* renderTemplateResult(
         }
         break;
       }
-      case 'custom-element-children': {
+      case 'custom-element-shadow': {
         const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance !== undefined) {
-          yield* instance.renderChildren();
+        if (instance !== undefined && instance.renderShadow !== undefined) {
+          yield '<template shadowroot="open">';
+          yield* instance.renderShadow();
+          yield '</template>';
         }
         break;
       }

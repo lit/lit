@@ -73,7 +73,7 @@ export abstract class ElementRenderer {
   /**
    * Render a single element's ShadowRoot children.
    */
-  abstract renderChildren(): IterableIterator<string>;
+  abstract renderShadow(): IterableIterator<string>;
 
   /**
    * Render an element's light DOM children.

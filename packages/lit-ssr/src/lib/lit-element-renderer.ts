@@ -41,9 +41,7 @@ export class LitElementRenderer extends ElementRenderer {
     (this.element as LitElement)._attributeToProperty(name, value);
   }
 
-  *renderChildren(): IterableIterator<string> {
-    // Open shadow root
-    yield '<template shadowroot="open">';
+  *renderShadow(): IterableIterator<string> {
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
@@ -57,8 +55,6 @@ export class LitElementRenderer extends ElementRenderer {
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yield* render((this.element as any).render());
-    // Close shadow root
-    yield '</template>';
   }
 
   *renderLight(renderInfo: RenderInfo): IterableIterator<string> {
