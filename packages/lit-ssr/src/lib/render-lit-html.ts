@@ -37,7 +37,8 @@ import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
-import {escapeAttribute, escapeHTML} from '@wordpress/escape-html';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const escapeHtml = require('escape-html') as typeof import('escape-html');
 
 // types only
 import {DefaultTreeDocumentFragment} from 'parse5';
@@ -468,7 +469,7 @@ export function* renderValue(
         yield* renderValue(item, renderInfo);
       }
     } else {
-      yield escapeHTML(String(value));
+      yield escapeHtml(String(value));
     }
   }
   yield `<!--/lit-part-->`;
@@ -616,7 +617,7 @@ function* renderPropertyPart(
     instance.setProperty(op.name, value);
   }
   if (reflectedName !== undefined) {
-    yield `${reflectedName}="${escapeAttribute(String(value))}"`;
+    yield `${reflectedName}="${escapeHtml(String(value))}"`;
   }
 }
 
@@ -643,7 +644,7 @@ function* renderAttributePart(
     if (instance !== undefined) {
       instance.setAttribute(op.name, value as string);
     } else {
-      yield `${op.name}="${escapeAttribute(String(value ?? ''))}"`;
+      yield `${op.name}="${escapeHtml(String(value ?? ''))}"`;
     }
   }
 }

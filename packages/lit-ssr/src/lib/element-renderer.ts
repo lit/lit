@@ -16,7 +16,9 @@
 
 export type Constructor<T> = {new (): T};
 
-import {escapeAttribute} from '@wordpress/escape-html';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const escapeHtml = require('escape-html') as typeof import('escape-html');
+
 import {RenderInfo} from './render-lit-html.js';
 
 /**
@@ -93,7 +95,7 @@ export abstract class ElementRenderer {
       if (value === '') {
         yield ` ${name}`;
       } else {
-        yield ` ${name}="${escapeAttribute(value)}"`;
+        yield ` ${name}="${escapeHtml(value)}"`;
       }
     }
   }
