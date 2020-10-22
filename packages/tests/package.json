@@ -14,5 +14,8 @@
     "@web/test-runner": "^0.7.39",
     "@web/test-runner-playwright": "^0.5.7",
     "@web/test-runner-saucelabs": "0.0.9"
+  },
+  "dependencies": {
+    "@webcomponents/webcomponentsjs": "^2.5.0"
   }
 }
