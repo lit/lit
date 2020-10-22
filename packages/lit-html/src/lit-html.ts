@@ -1176,10 +1176,10 @@ export class EventPart extends AttributePart {
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
- * 
+ *
  * Private exports for use by other Lit packages, not intended for use by
  * external users.
- * 
+ *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports mangled in the
  * client side code, we export a $private object containing those members, and

@@ -1,6 +1,6 @@
 import Koa from 'koa';
 import {renderModule} from './render-module.js';
-import {IterableReader} from './util/iterator-readable.js';
+import {Readable} from 'stream';
 
 import * as path from 'path';
 
@@ -62,7 +62,7 @@ export const renderHTMLFile = (options: RenderHTMLFileOptions) => async (
     'renderFile',
     [{url: ctx.href, root: options.root, fallback: options.fallback}]
   );
-  const stream = new IterableReader(ssrResult);
+  const stream = Readable.from(ssrResult);
   stream.on('error', (e) => {
     console.error(e.message);
     console.error(e.stack);

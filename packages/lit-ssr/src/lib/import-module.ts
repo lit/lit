@@ -22,9 +22,6 @@ import {builtinModules} from 'module';
 
 type PackageJSON = {main?: string; module?: string; 'jsnext:main'?: string};
 
-const isRelativeOrAbsolutePath = (s: string) =>
-  s.match(/^(\.){0,2}\//) !== null;
-
 const builtIns = new Set(builtinModules);
 
 /**
@@ -49,10 +46,6 @@ const resolveSpecifier = (specifier: string, referrer: string): URL => {
     // those will be absolute to the file system.
     return new URL(specifier);
   } catch (e) {
-    if (isRelativeOrAbsolutePath(specifier)) {
-      return new URL(specifier, referrer);
-    }
-
     if (
       specifier.startsWith('lit-html') ||
       specifier.startsWith('lit-element')

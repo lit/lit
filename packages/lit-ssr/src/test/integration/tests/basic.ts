@@ -782,7 +782,7 @@ export const tests: {[name: string]: SSRTest} = {
     expectations: [
       {
         args: [undefined],
-        html: '<div class="undefined"></div>',
+        html: '<div class=""></div>',
       },
       {
         args: ['TEST'],
@@ -799,7 +799,7 @@ export const tests: {[name: string]: SSRTest} = {
     expectations: [
       {
         args: [null],
-        html: '<div class="null"></div>',
+        html: '<div class=""></div>',
       },
       {
         args: ['TEST'],
@@ -1281,7 +1281,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'PropertyPart accepts a string (reflected)': {
+  'PropertyPart accepts a string (reflected + camelCase)': {
     render(x: unknown) {
       return html`<div .className=${x}></div>`;
     },
@@ -3726,7 +3726,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define('le-attr-binding', LEAttrBinding);
       },
       render(prop: unknown) {
-        return html`<le-attr-binding prop=${prop}></le-attr-binding>`;
+        return html`<le-attr-binding prop=${prop} static></le-attr-binding>`;
       },
       expectations: [
         {
@@ -3737,7 +3737,7 @@ export const tests: {[name: string]: SSRTest} = {
             assert.strictEqual((el as any).prop, 'boundProp1');
           },
           html: {
-            root: `<le-attr-binding prop="boundProp1"></le-attr-binding>`,
+            root: `<le-attr-binding prop="boundProp1" static></le-attr-binding>`,
             'le-attr-binding': `<div>\n  [boundProp1]\n</div>`,
           },
         },
@@ -3749,8 +3749,41 @@ export const tests: {[name: string]: SSRTest} = {
             assert.strictEqual((el as any).prop, 'boundProp2');
           },
           html: {
-            root: `<le-attr-binding prop="boundProp2"></le-attr-binding>`,
+            root: `<le-attr-binding prop="boundProp2" static></le-attr-binding>`,
             'le-attr-binding': `<div>\n  [boundProp2]\n</div>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-attr-binding'],
+    };
+  },
+
+  'LitElement: Static attribute deserializes': () => {
+    return {
+      registerElements() {
+        class LEStaticAttr extends LitElement {
+          @property()
+          prop = 'default';
+          render() {
+            return html` <div>[${this.prop}]</div>`;
+          }
+        }
+        customElements.define('le-static-attr', LEStaticAttr);
+      },
+      render() {
+        return html`<le-static-attr prop="static" static></le-static-attr>`;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-static-attr')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).prop, 'static');
+          },
+          html: {
+            root: `<le-static-attr prop="static" static></le-static-attr>`,
+            'le-static-attr': `<div>\n  [static]\n</div>`,
           },
         },
       ],

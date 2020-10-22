@@ -45,7 +45,8 @@ export class LitElementRenderer extends ElementRenderer {
     // Open shadow root
     yield '<template shadowroot="open">';
     // Render styles.
-    const styles = (this.element.constructor as typeof LitElement).elementStyles;
+    const styles = (this.element.constructor as typeof LitElement)
+      .elementStyles;
     if (styles !== undefined && styles.length > 0) {
       yield '<style>';
       for (const style of styles) {

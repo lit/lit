@@ -24,6 +24,9 @@ import {
   Part,
   NODE_PART,
   AttributePart,
+  PropertyPart,
+  BooleanAttributePart,
+  EventPart,
 } from 'lit-html';
 
 import {$private} from 'lit-html/private-ssr-support.js';
@@ -34,7 +37,7 @@ import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
-import {escapeAttribute, escapeTextContent} from './util/escaping.js';
+import {escapeAttribute, escapeHTML} from '@wordpress/escape-html';
 
 // types only
 import {DefaultTreeDocumentFragment} from 'parse5';
@@ -57,7 +60,8 @@ declare module 'parse5' {
   }
 }
 
-// Switch directive resolution to SSR-compatible `render`
+// Switch directive resolution to SSR-compatible `render`; the rule is that only
+// `render` (and not `update`) is run on the server
 Directive.prototype._resolve = function (
   this: Directive,
   _part: Part,
@@ -66,13 +70,7 @@ Directive.prototype._resolve = function (
   return this.render(...values);
 };
 
-const templateCache = new Map<
-  TemplateStringsArray,
-  {
-    ops: Array<Op>;
-    attrNames: Array<string>;
-  }
->();
+const templateCache = new Map<TemplateStringsArray, Array<Op>>();
 
 /**
  * Operation to output static text
@@ -99,6 +97,7 @@ type AttributePartOp = {
   type: 'attribute-part';
   index: number;
   name: string;
+  ctor: typeof AttributePart;
   strings: Array<string>;
   tagName: string;
   useCustomElementInstance?: boolean;
@@ -148,12 +147,74 @@ type Op =
   | CustomElementChildrenOp
   | CustomElementClosedOp;
 
-const getTemplate = (result: TemplateResult) => {
+/**
+ * For a given TemplateResult, generates and/or returns a cached list of opcodes
+ * for the associated Template.  Opcodes are designed to allow emitting
+ * contiguous static text from the template as much as possible, with specific
+ * non-`text` opcodes interleaved to perform dynamic work, such as emitting
+ * values for NodeParts or AttributeParts, and handling custom elements.
+ *
+ * For the following example template, an opcode list may look like this:
+ *
+ * ```js
+ * html`<div><span>Hello</span><span class=${'bold'}>${template()}</span></div>`
+ * ```
+ *
+ * - `text`
+ *   - Emit run of static text: `<div><span>Hello</span><span`
+ * - `attribute-part`
+ *   - Emit an AttributePart's value, e.g. ` class="bold"`
+ * - `text`
+ *   - Emit run of static text: `>`
+ * - `node-part`
+ *   - Emit the NodePart's value, in this case a TemplateResult, thus we recurse
+ *     into that template's opcodes
+ * - `text`
+ *   - Emit run of static text: `/span></div>`
+ *
+ * When a custom-element is encountered, the flow looks like this:
+ *
+ * ```js
+ * html`<x-foo staticAttr dynamicAttr=${value}><div>child</div>...</x-foo>`
+ * ```
+ *
+ * - `text`
+ *   - Emit open tag `<x-foo`
+ * - `custom-element-open`
+ *   - Create the CE `instance`+`renderer` and put on
+ *     `customElementInstanceStack`
+ *   - Call `renderer.setAttribute()` for any `staticAttributes` (e.g.
+ *     'staticAttr`)
+ * - `attribute-part`(s)
+ *   - Call `renderer.setAttribute()` or `renderer.setProperty()` for
+ *     `AttributePart`/`PropertyPart`s (e.g. for `dynamicAttr`)
+ * - `custom-element-attributes`
+ *   - Call `renderer.connectedCallback()`
+ *   - Emit `renderer.renderAttributes()`
+ * - `text`
+ *   - Emit end of of open tag `>`
+ *   - Emit `<!--lit-bindings n-->` marker if there were attribute parts
+ * - `custom-element-children`
+ *   - Emit `renderer.renderChildren()` (emits `<template shadowroot>` +
+ *     recurses to emit `render()`)
+ * - `text`
+ *   - Emit run of static text within tag: `<div>child</div>...`
+ * - ...(recurse to render more parts/children)...
+ * - `custom-element-close`
+ *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
+ */
+const getTemplateOpcodes = (result: TemplateResult) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
   }
   const {html, attrNames} = getTemplateHtml(result.strings, result._$litType$);
+
+  /**
+   * The html string is parsed into a parse5 AST with source code information
+   * on; this lets us skip over certain ast nodes by string character position
+   * while walking the AST.
+   */
   const ast = parseFragment(html, {
     sourceCodeLocationInfo: true,
   }) as DefaultTreeDocumentFragment;
@@ -162,6 +223,9 @@ const getTemplate = (result: TemplateResult) => {
 
   /* The last offset of html written to the stream */
   let lastOffset: number | undefined = 0;
+
+  /* Current attribute part index, for indexing attrNames */
+  let attrIndex = 0;
 
   /**
    * Sets `lastOffset` to `offset`, skipping a range of characters. This is
@@ -212,8 +276,8 @@ const getTemplate = (result: TemplateResult) => {
     flush(value);
   };
 
-
-  // Depth-first node index. Initialized to -1 so that the first child node is
+  // Depth-first node index. Initialized to -1 (corresponding to the fragment
+  // root node at the top of the ast) so that the first child node is
   // index 0, to match client-side lit-html.
   let nodeIndex = -1;
 
@@ -229,12 +293,9 @@ const getTemplate = (result: TemplateResult) => {
             useCustomElementInstance:
               parent && isElement(parent) && parent.isDefinedCustomElement,
           });
-          // There will be two comments per part (open+close) in the rendered
-          // output and on the client, so increment again for that
-          // nodeIndex++;
         }
       } else if (isElement(node)) {
-        // Whether to flush the start tag. This is neccessary if we're changing
+        // Whether to flush the start tag. This is necessary if we're changing
         // any of the attributes in the tag, so it's true for custom-elements
         // which might reflect their own state, or any element with a binding.
         let writeTag = false;
@@ -272,11 +333,13 @@ const getTemplate = (result: TemplateResult) => {
               // Note that although we emit a lit-bindings comment marker for any
               // nodes with bindings, we don't account for it in the nodeIndex because
               // that will not be injected into the client template
-              const name = attr.name.substring(
-                0,
-                attr.name.length - boundAttributeSuffix.length
-              );
               const strings = attr.value.split(marker);
+              // We store the case-sensitive name from `attrNames` (generated
+              // while parsing the template strings); note that this assumes
+              // parse5 attribute ordering matches string ordering
+              const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                attrNames[attrIndex++]
+              )!;
               const attrSourceLocation = node.sourceCodeLocation!.attrs[
                 attr.name
               ];
@@ -286,15 +349,26 @@ const getTemplate = (result: TemplateResult) => {
               ops.push({
                 type: 'attribute-part',
                 index: nodeIndex,
-                name,
+                name: caseSensitiveName,
+                ctor:
+                  prefix === '.'
+                    ? PropertyPart
+                    : prefix === '?'
+                    ? BooleanAttributePart
+                    : prefix === '@'
+                    ? EventPart
+                    : AttributePart,
                 strings,
                 tagName,
                 useCustomElementInstance: ctor !== undefined,
               });
               skipTo(attrEndOffset);
             } else if (node.isDefinedCustomElement) {
-              // We will wait until after connectedCallback() and render all
-              // custom element attributes then
+              // For custom elements, all static attributes are stored along
+              // with the `custom-element-open` opcode so that we can set them
+              // into the custom element instance, and then serialize them back
+              // out along with any manually-reflected attributes. As such, we
+              // skip over static attribute text here.
               const attrSourceLocation = node.sourceCodeLocation!.attrs[
                 attr.name
               ];
@@ -337,10 +411,10 @@ const getTemplate = (result: TemplateResult) => {
       }
     },
   });
+  // Flush remaining static text in the template (e.g. closing tags)
   flushTo();
-  const t = {ops, attrNames};
-  templateCache.set(result.strings, t);
-  return t;
+  templateCache.set(result.strings, ops);
+  return ops;
 };
 
 export type RenderInfo = {
@@ -371,6 +445,8 @@ export function* renderValue(
     value = null;
   } else if (value != null && (value as DirectiveResult)._$litDirective$) {
     const directive = (value as DirectiveResult)._$litDirective$;
+    // Note that we are calling the SSR-compatible `render`; the rule is that
+    // only `render` (and not `update`) is run on the server
     value = new directive({type: NODE_PART}).render(
       ...(value as DirectiveResult).values
     );
@@ -392,7 +468,7 @@ export function* renderValue(
         yield* renderValue(item, renderInfo);
       }
     } else {
-      yield escapeTextContent(String(value));
+      yield escapeHTML(String(value));
     }
   }
   yield `<!--/lit-part-->`;
@@ -417,11 +493,10 @@ export function* renderTemplateResult(
   // elements. For each we will record the offset of the node, and output the
   // previous span of HTML.
 
-  const {ops, attrNames} = getTemplate(result);
+  const ops = getTemplateOpcodes(result);
 
   /* The next value in result.values to render */
   let partIndex = 0;
-  let attrIndex = 0;
 
   for (const op of ops) {
     switch (op.type) {
@@ -434,62 +509,34 @@ export function* renderTemplateResult(
         break;
       }
       case 'attribute-part': {
-        const name = attrNames[attrIndex++];
         const statics = op.strings;
-        let attributeName = op.name;
-        const prefix = attributeName[0];
-        const attributePart = new AttributePart(
+        const part = new op.ctor(
           // Passing null for the element is fine since the directive only gets
           // PartInfo without the node available in the constructor
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (null as any) as HTMLElement,
-          name,
+          op.name,
           statics
         );
         let value =
-          attributePart.strings === undefined
-            ? result.values[partIndex]
-            : result.values;
-        value = attributePart._resolveValue(value, partIndex);
-        const instance = op.useCustomElementInstance
-          ? getLast(renderInfo.customElementInstanceStack)
-          : undefined;
-        if (prefix === '.') {
-          const propertyName = name.substring(1);
-          // Property should be reflected to attribute
-          const reflectedName = reflectedAttributeName(
-            op.tagName,
-            propertyName
-          );
-          // Property should be set to custom element instance
+          part.strings === undefined ? result.values[partIndex] : result.values;
+        // Resolve any directives and contenate multiple parts into a final value
+        value = part._resolveValue(value, partIndex);
+        // We don't emit anything on the server when value is `noChange` or
+        // `nothing`
+        if (value !== noChange && value !== nothing) {
           const instance = op.useCustomElementInstance
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
-          if (instance || reflectedName !== undefined) {
-            if (value !== noChange) {
-              if (instance !== undefined) {
-                instance.setProperty(propertyName, value);
-              }
-              if (reflectedName !== undefined) {
-                yield `${reflectedName}="${escapeAttribute(String(value))}"`;
-              }
-            }
-          }
-        } else if (prefix === '@') {
-          // Event binding, do nothing with values
-        } else if (prefix === '?') {
-          // Boolean attribute binding
-          attributeName = attributeName.substring(1);
-          if (value && value !== noChange) {
-            yield attributeName;
-          }
-        } else {
-          if (value !== noChange) {
-            if (instance !== undefined) {
-              instance.setAttribute(attributeName, value as string);
-            } else {
-              yield `${attributeName}="${escapeAttribute(String(value))}"`;
-            }
+          if (part instanceof PropertyPart) {
+            yield* renderPropertyPart(instance, op, value);
+          } else if (part instanceof EventPart) {
+            // Event binding, do nothing with values
+          } else if (part instanceof BooleanAttributePart) {
+            // Boolean attribute binding
+            yield* renderBooleanAttributePart(instance, op, value);
+          } else {
+            yield* renderAttributePart(instance, op, value);
           }
         }
         partIndex += statics.length - 1;
@@ -497,7 +544,7 @@ export function* renderTemplateResult(
       }
       case 'custom-element-open': {
         const ctor = op.ctor;
-        // Instantiate the element and stream its render() result
+        // Instantiate the element and its renderer
         let instance = undefined;
         try {
           const element = new ctor();
@@ -512,15 +559,25 @@ export function* renderTemplateResult(
         } catch (e) {
           console.error('Exception in custom element constructor', e);
         }
+        // Set static attributes to the element renderer
+        if (instance !== undefined) {
+          for (const [name, value] of op.staticAttributes) {
+            instance?.setAttribute(name, value);
+          }
+        }
         renderInfo.customElementInstanceStack.push(instance);
         break;
       }
       case 'custom-element-attributes': {
         const instance = getLast(renderInfo.customElementInstanceStack);
         if (instance !== undefined) {
+          // Perform any connect-time work via the renderer (e.g. reflecting any
+          // properties to attributes, for example)
           if (instance.connectedCallback) {
             instance.connectedCallback();
           }
+          // Render out any attributes on the instance (both static and those
+          // that may have been dynamically set by the renderer)
           yield* instance.renderAttributes();
         }
         break;
@@ -544,6 +601,50 @@ export function* renderTemplateResult(
     throw new Error(
       `unexpected final partIndex: ${partIndex} !== ${result.values.length}`
     );
+  }
+}
+
+function* renderPropertyPart(
+  instance: ElementRenderer | undefined,
+  op: AttributePartOp,
+  value: unknown
+) {
+  value = value === nothing ? undefined : value;
+  // Property should be reflected to attribute
+  const reflectedName = reflectedAttributeName(op.tagName, op.name);
+  if (instance !== undefined) {
+    instance.setProperty(op.name, value);
+  }
+  if (reflectedName !== undefined) {
+    yield `${reflectedName}="${escapeAttribute(String(value))}"`;
+  }
+}
+
+function* renderBooleanAttributePart(
+  instance: ElementRenderer | undefined,
+  op: AttributePartOp,
+  value: unknown
+) {
+  if (value && value !== nothing) {
+    if (instance !== undefined) {
+      instance.setAttribute(op.name, '');
+    } else {
+      yield op.name;
+    }
+  }
+}
+
+function* renderAttributePart(
+  instance: ElementRenderer | undefined,
+  op: AttributePartOp,
+  value: unknown
+) {
+  if (value !== nothing) {
+    if (instance !== undefined) {
+      instance.setAttribute(op.name, value as string);
+    } else {
+      yield `${op.name}="${escapeAttribute(String(value ?? ''))}"`;
+    }
   }
 }
 

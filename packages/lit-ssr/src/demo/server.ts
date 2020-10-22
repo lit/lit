@@ -19,7 +19,7 @@ import {URL} from 'url';
 import * as path from 'path';
 
 import {renderModule} from '../lib/render-module.js';
-import {IterableReader} from '../lib/util/iterator-readable.js';
+import {Readable} from 'stream';
 
 const {nodeResolve} = koaNodeResolve;
 
@@ -46,7 +46,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
   ) as Promise<Iterable<unknown>>);
 
   ctx.type = 'text/html';
-  ctx.body = new IterableReader(ssrResult);
+  ctx.body = Readable.from(ssrResult);
 });
 app.use(nodeResolve({}));
 app.use(staticFiles(packageRoot));

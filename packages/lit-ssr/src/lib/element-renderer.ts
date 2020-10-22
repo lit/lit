@@ -16,7 +16,7 @@
 
 export type Constructor<T> = {new (): T};
 
-import {escapeAttribute} from './util/escaping.js';
+import {escapeAttribute} from '@wordpress/escape-html';
 import {RenderInfo} from './render-lit-html.js';
 
 /**

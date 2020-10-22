@@ -18,7 +18,7 @@ import Router from '@koa/router';
 
 import {importModule} from '../../../lib/import-module.js';
 import {getWindow} from '../../../lib/dom-shim.js';
-import {IterableReader} from '../../../lib/util/iterator-readable.js';
+import {Readable} from 'stream';
 
 import * as testModule from '../tests/basic-ssr.js';
 import {SSRTest} from '../tests/ssr-test';
@@ -52,7 +52,7 @@ export const startServer = async (port = 9090) => {
     }
     const result = render(test.render(...test.expectations[0].args));
     context.type = 'text/html';
-    context.body = new IterableReader(result);
+    context.body = Readable.from(result);
   });
 
   app.use(router.routes());
