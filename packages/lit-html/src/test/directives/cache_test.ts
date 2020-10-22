@@ -16,7 +16,6 @@ import {html, render} from '../../lit-html.js';
 import {cache} from '../../directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 suite('cache directive', () => {
   let container: HTMLDivElement;

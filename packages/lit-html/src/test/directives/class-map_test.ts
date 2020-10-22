@@ -15,7 +15,6 @@
 import {html, svg, render} from '../../lit-html.js';
 import {ClassInfo, classMap} from '../../directives/class-map.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 suite('classMap directive', () => {
   let container: HTMLDivElement;
