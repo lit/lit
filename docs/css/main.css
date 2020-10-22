@@ -43,7 +43,7 @@ h4 {
 
 h1.title {
   max-width: 560px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 h1.title:after {
   content: "";
