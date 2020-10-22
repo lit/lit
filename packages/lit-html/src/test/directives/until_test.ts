@@ -18,6 +18,8 @@ import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 import '../polyfills.js';
 
+const laterTask = () => new Promise((resolve) => setTimeout(resolve));
+
 suite('until directive', () => {
   let container: HTMLDivElement;
 
@@ -36,5 +38,65 @@ suite('until directive', () => {
       stripExpressionMarkers(container.innerHTML),
       '<div data-attr="a"></div>'
     );
+  });
+
+  test('renders a literal in a BooleanAttributePart', () => {
+    render(html`<div ?data-attr="${until('a')}"></div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr=""></div>'
+    );
+  });
+
+  test('renders a literal in a PropertyPart', () => {
+    render(html`<div .someProp="${until('a')}"></div>`, container);
+    assert.equal((container.querySelector('div')! as any).someProp, 'a');
+  });
+
+  test('renders a Promise in a NodePart', async () => {
+    render(html`${until(Promise.resolve('a'))}`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '');
+
+    await laterTask();
+    assert.equal(stripExpressionMarkers(container.innerHTML), 'a');
+  });
+
+  test('renders a Promise in a AttributePart', async () => {
+    render(
+      html`<div data-attr="${until(Promise.resolve('a'))}"></div>`,
+      container
+    );
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await laterTask();
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="a"></div>'
+    );
+  });
+
+  test('renders a Promise in a BooleanAttributePart', async () => {
+    render(
+      html`<div ?data-attr="${until(Promise.resolve('a'))}"></div>`,
+      container
+    );
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await laterTask();
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr=""></div>'
+    );
+  });
+
+  test('renders a Promise in a PropertyPart', async () => {
+    render(
+      html`<div .someProp="${until(Promise.resolve('a'))}"></div>`,
+      container
+    );
+    assert.equal((container.querySelector('div')! as any).someProp, undefined);
+
+    await laterTask();
+    assert.equal((container.querySelector('div')! as any).someProp, 'a');
   });
 });
