@@ -99,4 +99,72 @@ suite('until directive', () => {
     await laterTask();
     assert.equal((container.querySelector('div')! as any).someProp, 'a');
   });
+
+  test('renders later arguments until earlier promises resolve', async () => {
+    let resolvePromise: (arg: any) => void;
+    const promise = new Promise((resolve, _reject) => {
+      resolvePromise = resolve;
+    });
+
+    render(html`${until(promise, 'default')}`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
+
+    resolvePromise!('resolved value');
+    await laterTask();
+    assert.equal(stripExpressionMarkers(container.innerHTML), 'resolved value');
+  });
+
+  test(
+    'promises later in the arguments array than the currently used value ' +
+      'do not overwrite the current value when they resolve',
+    async () => {
+      let resolvePromiseA: (arg: any) => void;
+      const promiseA = new Promise((resolve, _reject) => {
+        resolvePromiseA = resolve;
+      });
+
+      let resolvePromiseB: (arg: any) => void;
+      const promiseB = new Promise((resolve, _reject) => {
+        resolvePromiseB = resolve;
+      });
+
+      render(html`${until(promiseA, promiseB, 'default')}`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
+
+      resolvePromiseA!('A');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'A');
+
+      resolvePromiseB!('B');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'A');
+    }
+  );
+
+  test(
+    'promises earlier in the arguments array than the currently used ' +
+      'value overwrite the current value when they resolve',
+    async () => {
+      let resolvePromiseA: (arg: any) => void;
+      const promiseA = new Promise((resolve, _reject) => {
+        resolvePromiseA = resolve;
+      });
+
+      let resolvePromiseB: (arg: any) => void;
+      const promiseB = new Promise((resolve, _reject) => {
+        resolvePromiseB = resolve;
+      });
+
+      render(html`${until(promiseA, promiseB, 'default')}`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
+
+      resolvePromiseB!('B');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'B');
+
+      resolvePromiseA!('A');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'A');
+    }
+  );
 });
