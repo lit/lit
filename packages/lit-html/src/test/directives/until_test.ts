@@ -25,8 +25,16 @@ suite('until directive', () => {
     container = document.createElement('div');
   });
 
-  test('renders a literal value', () => {
+  test('renders a literal in a NodePart', () => {
     render(html`${until('a')}`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), 'a');
+  });
+
+  test('renders a literal in an AttributePart', () => {
+    render(html`<div data-attr="${until('a')}"></div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="a"></div>'
+    );
   });
 });
