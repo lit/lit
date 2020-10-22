@@ -19,6 +19,8 @@
  */
 
 import {RenderOptions} from 'lit-html';
+import {PropertyValues, UpdatingElement} from 'updating-element';
+import {render} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
 
 interface PatchableLitElement extends HTMLElement {
@@ -50,18 +52,17 @@ interface PatchableLitElement extends HTMLElement {
     }
   };
 
-  // Hydrate on first render when needed
-  const render = LitElement.prototype._renderImpl;
-  LitElement.prototype._renderImpl = function (
-    value: unknown,
-    root: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ) {
+  // Hydrate on first update when needed
+  LitElement.prototype.update = function (changedProperties: PropertyValues) {
+    const value = this.render();
+    // Since this is a patch, we can't call super.update()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (UpdatingElement.prototype as any).update.call(this, changedProperties);
     if (this._needsHydration) {
       this._needsHydration = false;
-      hydrate(value, root, options);
+      hydrate(value, this.renderRoot, this._renderOptions);
     } else {
-      render.call(this, value, root, options);
+      render(value, this.renderRoot, this._renderOptions);
     }
   };
 };
