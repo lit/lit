@@ -25,48 +25,34 @@ import {setPartValue} from '../parts.js';
 class UntilDirective extends Directive {
   private _index: undefined | number;
   private _latestUpdateId: number;
-  private _seenPromises: WeakSet<Promise<unknown>>;
-  private _resolvedPromises: WeakMap<Promise<unknown>, unknown>;
 
   constructor(_part: PartInfo, index?: number) {
     super();
 
     this._index = index;
     this._latestUpdateId = 0;
-    this._seenPromises = new WeakSet();
-    this._resolvedPromises = new WeakMap();
   }
 
   render(...values: Array<unknown>) {
-    for (const value of values) {
-      if (!(value instanceof Promise)) {
-        return value;
-      } else if (this._resolvedPromises.has(value)) {
-        return this._resolvedPromises.get(value);
-      }
-    }
-
-    return nothing;
+    return values.find((value) => !(value instanceof Promise)) ?? nothing;
   }
 
   update(part: Part, values: Array<unknown>) {
     const updateId = ++this._latestUpdateId;
+    let lastRenderedIndex = Infinity;
 
-    for (const value of values) {
+    for (let i = 0; i < values.length; i++) {
+      const index = i;
+      const value = values[i];
+
       if (value instanceof Promise) {
-        if (!this._seenPromises.has(value)) {
-          this._seenPromises.add(value);
-          value.then((x) => {
-            this._resolvedPromises.set(value, x);
-          });
-        }
-
-        value.then(() => {
-          if (updateId === this._latestUpdateId) {
+        value.then((result) => {
+          if (updateId === this._latestUpdateId && index < lastRenderedIndex) {
+            lastRenderedIndex = index;
             if ((part as AttributePart).strings !== undefined) {
-              setPartValue(part, this.render(...values), this._index as number);
+              setPartValue(part, result, this._index as number);
             } else {
-              setPartValue(part, this.render(...values));
+              setPartValue(part, result);
             }
           }
         });
