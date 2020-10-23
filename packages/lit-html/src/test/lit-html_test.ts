@@ -1728,6 +1728,32 @@ suite('lit-html', () => {
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
     });
 
+    test.only('renders directives on EventParts', () => {
+      const handle = directive(
+        class extends Directive {
+          count = 0;
+          render(value: string) {
+            return (e: Event) => {
+              (e.target as any).__clicked = `${value}:${++this.count}`;
+            };
+          }
+        }
+      );
+      const template = (value: string) =>
+        html`<div @click=${handle(value)}></div>`;
+      render(template('A'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:1');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:2');
+      render(template('B'), container);
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:3');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:4');
+    });
+
     test('event listeners can see events fired in attribute directives', () => {
       class FireEventDirective extends Directive {
         render() {
