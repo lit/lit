@@ -63,7 +63,8 @@ and renders declaratively using `lit-html`. See the [lit-html guide](https://lit
 for additional information on how to create templates for lit-element.
 
 ```ts
-import {LitElement, html, css, customElement, property} from 'lit-element';
+import {LitElement, html, css} from 'lit-element';
+import {customElement, property} from 'lit-element/decorators.js';
 
 // This decorator defines the element.
 @customElement('my-element')

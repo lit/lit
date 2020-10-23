@@ -116,18 +116,26 @@ const flush =
       el.div.nextSibling!,
     ]);
     const child = document.createElement('div');
+    const text1 = document.createTextNode('');
+    el.assignedNodesEl.appendChild(text1);
     el.assignedNodesEl.appendChild(child);
+    const text2 = document.createTextNode('');
+    el.assignedNodesEl.appendChild(text2);
     flush();
     assert.deepEqual(el.assignedNodesEl.defaultAssigned, [
       el.div,
       el.div.nextSibling!,
+      text1,
       child,
+      text2,
     ]);
     el.assignedNodesEl.removeChild(child);
     flush();
     assert.deepEqual(el.assignedNodesEl.defaultAssigned, [
       el.div,
       el.div.nextSibling!,
+      text1,
+      text2,
     ]);
   });
 
@@ -166,5 +174,34 @@ const flush =
     el.removeChild(child2);
     flush();
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
+  });
+
+  test('returns assignedNodes for slot that contains text nodes filtered by selector when Element.matches does not exist', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      'matches'
+    );
+    Object.defineProperty(Element.prototype, 'matches', {
+      value: undefined,
+      configurable: true,
+    });
+    assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
+    const child1 = document.createElement('div');
+    const child2 = document.createElement('div');
+    const text1 = document.createTextNode('');
+    const text2 = document.createTextNode('');
+    child2.classList.add('item');
+    el.appendChild(child1);
+    el.appendChild(text1);
+    el.appendChild(child2);
+    el.appendChild(text2);
+    flush();
+    assert.deepEqual(el.assignedNodesEl.footerAssignedItems, [child2]);
+    el.removeChild(child2);
+    flush();
+    assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
+    if (descriptor !== undefined) {
+      Object.defineProperty(Element.prototype, 'matches', descriptor);
+    }
   });
 });

@@ -741,8 +741,11 @@ export abstract class UpdatingElement extends HTMLElement {
       // This `await` also ensures that property changes are batched.
       await this._updatePromise;
     } catch (e) {
-      // Ignore any previous errors. We only care that the previous cycle is
-      // done. Any error should have been handled in the previous update.
+      // Refire any previous errors async so they do not disrupt the update
+      // cycle. Errors are refired so developers have a chance to observe
+      // them, and this can be done by implementing
+      // `window.onunhandledrejection`.
+      Promise.reject(e);
     }
     const result = this.performUpdate();
     // If `performUpdate` returns a Promise, we await it. This is done to
