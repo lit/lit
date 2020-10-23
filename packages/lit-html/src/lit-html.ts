@@ -35,7 +35,7 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = window.document;
+const d = document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
 const createMarker = (v = '') => d.createComment(v);
@@ -297,14 +297,12 @@ export const render = (
   part._setValue(value);
 };
 
-const walker =
-  d &&
-  d.createTreeWalker(
-    d,
-    133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
-    null,
-    false
-  );
+const walker = d.createTreeWalker(
+  d,
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  null,
+  false
+);
 
 //
 // Classes only below here, const variable declarations only above here...

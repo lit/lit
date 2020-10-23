@@ -83,6 +83,9 @@ export const getWindow = (
     get adoptedStyleSheets() {
       return [];
     }
+    createTreeWalker() {
+      return {};
+    }
   }
 
   class CSSStyleSheet {
@@ -115,6 +118,7 @@ export const getWindow = (
     Element,
     HTMLElement,
     Document,
+    document: new Document(),
     CSSStyleSheet,
     ShadowRoot,
     customElements: new CustomElementRegistry(),
