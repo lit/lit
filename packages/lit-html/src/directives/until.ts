@@ -12,16 +12,26 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive, directive, Part, nothing} from '../lit-html.js';
+import {
+  AttributePart,
+  Directive,
+  directive,
+  Part,
+  PartInfo,
+  nothing,
+} from '../lit-html.js';
+import {setPartValue} from '../parts.js';
 
 class UntilDirective extends Directive {
+  private _index: undefined | number;
   private _latestUpdateId: number;
   private _seenPromises: WeakSet<Promise<unknown>>;
   private _resolvedPromises: WeakMap<Promise<unknown>, unknown>;
 
-  constructor() {
+  constructor(_part: PartInfo, index?: number) {
     super();
 
+    this._index = index;
     this._latestUpdateId = 0;
     this._seenPromises = new WeakSet();
     this._resolvedPromises = new WeakMap();
@@ -53,7 +63,11 @@ class UntilDirective extends Directive {
 
         value.then(() => {
           if (updateId === this._latestUpdateId) {
-            part!._setValue(this.render(...values));
+            if ((part as AttributePart).strings !== undefined) {
+              setPartValue(part, this.render(...values), this._index as number);
+            } else {
+              setPartValue(part, this.render(...values));
+            }
           }
         });
       }

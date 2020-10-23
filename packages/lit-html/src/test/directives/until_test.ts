@@ -40,6 +40,17 @@ suite('until directive', () => {
     );
   });
 
+  test('renders literals in an interpolated AttributePart', () => {
+    render(
+      html`<div data-attr="other ${until('a')} ${until('b')}"></div>`,
+      container
+    );
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="other a b"></div>'
+    );
+  });
+
   test('renders a literal in a BooleanAttributePart', () => {
     render(html`<div ?data-attr="${until('a')}"></div>`, container);
     assert.equal(
@@ -72,6 +83,22 @@ suite('until directive', () => {
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<div data-attr="a"></div>'
+    );
+  });
+
+  test('renders Promises in an interpolated AttributePart', async () => {
+    render(
+      html`<div data-attr="other ${until(Promise.resolve('a'))} ${until(
+        Promise.resolve('b')
+      )}"></div>`,
+      container
+    );
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await laterTask();
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="other a b"></div>'
     );
   });
 
