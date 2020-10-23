@@ -18,7 +18,6 @@
  * @packageDocumentation
  */
 
-import {RenderOptions} from 'lit-html';
 import {PropertyValues, UpdatingElement} from 'updating-element';
 import {render} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
@@ -28,11 +27,6 @@ interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   createRenderRoot(): Element | ShadowRoot;
   _needsHydration: boolean;
-  _renderImpl(
-    value: unknown,
-    root: HTMLElement | DocumentFragment,
-    options: RenderOptions
-  ): void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

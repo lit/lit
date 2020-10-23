@@ -80,8 +80,10 @@ type NodePartState =
 
 /**
  * hydrate() operates on a container with server-side rendered content and
- * restores the client side data structures needed for lit-html updates
- * such as TemplateInstances and Parts.
+ * restores the client side data structures needed for lit-html updates such as
+ * TemplateInstances and Parts. After calling `hydrate`, lit-html will behave as
+ * if it initially rendered the DOM, and any subsequent updates will update
+ * efficiently, the same as if lit-html had rendered the DOM on the client.
  *
  * hydrate() must be called on DOM that adheres the to lit-ssr structure for
  * parts. NodeParts must be represented with both a start and end comment
@@ -328,11 +330,11 @@ const createAttributeParts = (
     while (true) {
       // If the next template part is in attribute-position on the current node,
       // create the instance part for it and prime its state
-      const part = instance._template._parts[state.templatePartIndex];
+      const templatePart = instance._template._parts[state.templatePartIndex];
       if (
-        part === undefined ||
-        part._type !== ATTRIBUTE_PART ||
-        part._index !== nodeIndex
+        templatePart === undefined ||
+        templatePart._type !== ATTRIBUTE_PART ||
+        templatePart._index !== nodeIndex
       ) {
         break;
       }
@@ -340,36 +342,36 @@ const createAttributeParts = (
 
       // The instance part is created based on the constructor saved in the
       // template part
-      const attributePart = new part._constructor(
+      const instancePart = new templatePart._constructor(
         node.parentElement as HTMLElement,
-        part._name,
-        part._strings,
+        templatePart._name,
+        templatePart._strings,
         options
       );
 
       let value =
-        attributePart.strings === undefined
+        instancePart.strings === undefined
           ? state.result.values[state.instancePartIndex]
           : state.result.values;
 
-      if (attributePart instanceof EventPart) {
+      if (instancePart instanceof EventPart) {
         // Install event listeners since they were not serialized
-        attributePart._setValue(value);
+        instancePart._setValue(value);
       } else {
         // Resolving the attribute value primes _value with the resolved
         // directive value; we only then commit that value for event/property
         // parts since those were not serialized
-        value = attributePart._resolveValue(value, state.instancePartIndex);
-        if (attributePart instanceof PropertyPart) {
+        value = instancePart._resolveValue(value, state.instancePartIndex);
+        if (instancePart instanceof PropertyPart) {
           if (value !== nothing && value !== noChange) {
             // Commit property values, since they were not serialized
-            attributePart._commitValue(value);
+            instancePart._commitValue(value);
           }
         }
       }
       state.templatePartIndex++;
-      state.instancePartIndex += part._strings.length - 1;
-      instance._parts.push(attributePart);
+      state.instancePartIndex += templatePart._strings.length - 1;
+      instance._parts.push(instancePart);
     }
     if (!foundOnePart) {
       // For a <!--lit-bindings--> marker there should be at least
