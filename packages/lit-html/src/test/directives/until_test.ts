@@ -127,6 +127,96 @@ suite('until directive', () => {
     assert.equal((container.querySelector('div')! as any).someProp, 'a');
   });
 
+  test('renders a promise-like in a NodePart', async () => {
+    const thenable = {
+      then(resolve: (arg: unknown) => void) {
+        resolve('a');
+      },
+    };
+
+    render(html`${until(thenable)}`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '');
+
+    await laterTask();
+    assert.equal(stripExpressionMarkers(container.innerHTML), 'a');
+  });
+
+  test('renders a promise-like in a AttributePart', async () => {
+    const thenable = {
+      then(resolve: (arg: unknown) => void) {
+        resolve('a');
+      },
+    };
+
+    render(html`<div data-attr="${until(thenable)}"></div>`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await laterTask();
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="a"></div>'
+    );
+  });
+
+  test('renders promise-likes in an interpolated AttributePart', async () => {
+    const thenableA = {
+      then(resolve: (arg: unknown) => void) {
+        resolve('a');
+      },
+    };
+
+    const thenableB = {
+      then(resolve: (arg: unknown) => void) {
+        resolve('b');
+      },
+    };
+
+    render(
+      html`<div data-attr="other ${until(thenableA)} ${until(
+        thenableB
+      )}"></div>`,
+      container
+    );
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await laterTask();
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="other a b"></div>'
+    );
+  });
+
+  test('renders a promise-like in a BooleanAttributePart', async () => {
+    const thenable = {
+      then(resolve: (arg: unknown) => void) {
+        resolve('a');
+      },
+    };
+
+    render(html`<div ?data-attr="${until(thenable)}"></div>`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await laterTask();
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr=""></div>'
+    );
+  });
+
+  test('renders a promise-like in a PropertyPart', async () => {
+    const thenable = {
+      then(resolve: (arg: unknown) => void) {
+        resolve('a');
+      },
+    };
+
+    render(html`<div .someProp="${until(thenable)}"></div>`, container);
+    assert.equal((container.querySelector('div')! as any).someProp, undefined);
+
+    await laterTask();
+    assert.equal((container.querySelector('div')! as any).someProp, 'a');
+  });
+
   test('renders later arguments until earlier promises resolve', async () => {
     let resolvePromise: (arg: any) => void;
     const promise = new Promise((resolve, _reject) => {

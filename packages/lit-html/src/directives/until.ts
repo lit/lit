@@ -22,6 +22,10 @@ import {
 } from '../lit-html.js';
 import {setPartValue} from '../parts.js';
 
+const isPromiseLike = (x: unknown): x is PromiseLike<unknown> => {
+  return typeof (x as undefined | null | {then?: unknown})?.then === 'function';
+};
+
 class UntilDirective extends Directive {
   private _index: undefined | number;
   private _latestUpdateId: number;
@@ -34,7 +38,7 @@ class UntilDirective extends Directive {
   }
 
   render(...values: Array<unknown>) {
-    return values.find((value) => !(value instanceof Promise)) ?? nothing;
+    return values.find(isPromiseLike) ?? nothing;
   }
 
   update(part: Part, values: Array<unknown>) {
@@ -47,8 +51,8 @@ class UntilDirective extends Directive {
       const index = i;
       const value = values[i];
 
-      if (value instanceof Promise) {
-        value.then((result) => {
+      if (isPromiseLike(value)) {
+        Promise.resolve(value).then((result) => {
           if (updateId === this._latestUpdateId && index < lastRenderedIndex) {
             lastRenderedIndex = index;
             if ((part as AttributePart).strings !== undefined) {
