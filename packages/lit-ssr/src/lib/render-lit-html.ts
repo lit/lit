@@ -209,7 +209,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  const {html, attrNames} = getTemplateHtml(result.strings, result._$litType$);
+  const [html, attrNames] = getTemplateHtml(result.strings, result._$litType$);
 
   /**
    * The html string is parsed into a parse5 AST with source code information

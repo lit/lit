@@ -330,7 +330,22 @@ export abstract class Directive {
   }
 }
 
-const getTemplateHtml = (strings: TemplateStringsArray, type: ResultType) => {
+/**
+ * Returns an HTML string for the given TemplateStringsArray and result type
+ * (HTML or SVG), along with the case-sensitive bound attribute names in
+ * template order. The HTML contains comment comment markers denoting the
+ * `NodePart`s and suffixes on bound attributes denoting the `AttributeParts`.
+ *
+ * @param strings template strings array
+ * @param type HTML or SVG
+ * @return Array containing `[html, attrNames]` (array returned for terseness,
+ *   to avoid object fields since this code is shared with non-minified SSR
+ *   code)
+ */
+const getTemplateHtml = (
+  strings: TemplateStringsArray,
+  type: ResultType
+): [string, string[]] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -459,12 +474,13 @@ const getTemplateHtml = (strings: TemplateStringsArray, type: ResultType) => {
   }
   // TODO (justinfagnani): if regex is not textRegex log a warning for a
   // malformed template in dev mode.
-  return {
+  // Returned as an array for terseness
+  return [
     // We don't technically need to close the SVG tag since the parser
     // will handle it for us, but the SSR parser doesn't like that
-    html: html + strings[l] + (type === SVG_RESULT ? '</svg>' : ''),
+    html + strings[l] + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
-  };
+  ];
 };
 
 class Template {
@@ -487,7 +503,7 @@ class Template {
     const l = strings.length - 1;
 
     // Create template element
-    const {html, attrNames} = getTemplateHtml(strings, type);
+    const [html, attrNames] = getTemplateHtml(strings, type);
     this._element = this._createElement(html);
     walker.currentNode = this._element.content;
 
