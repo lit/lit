@@ -194,4 +194,22 @@ suite('until directive', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), 'A');
     }
   );
+
+  test(
+    'promises later in the arguments array than a non-promise are never ' +
+      'rendered',
+    async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      render(html`${until('default', promise)}`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
+
+      resolvePromise!('resolved value');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
+    }
+  );
 });

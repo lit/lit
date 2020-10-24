@@ -40,6 +40,8 @@ class UntilDirective extends Directive {
   update(part: Part, values: Array<unknown>) {
     const updateId = ++this._latestUpdateId;
     let lastRenderedIndex = Infinity;
+    let initialValueFound = false;
+    let initialValue: unknown = nothing;
 
     for (let i = 0; i < values.length; i++) {
       const index = i;
@@ -56,10 +58,14 @@ class UntilDirective extends Directive {
             }
           }
         });
+      } else if (!initialValueFound) {
+        initialValueFound = true;
+        initialValue = value;
+        lastRenderedIndex = index;
       }
     }
 
-    return this.render(...values);
+    return initialValue;
   }
 }
 
