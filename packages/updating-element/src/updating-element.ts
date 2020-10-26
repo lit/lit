@@ -219,9 +219,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export type connectCallback = () => void;
-export type updateCallback = (changedProperties: PropertyValues) => void;
-
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -537,26 +534,6 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   private _reflectingProperty: PropertyKey | null = null;
 
-  /**
-   * Set of callbacks called in connectedCallback.
-   */
-  connectedCallbacks: Set<connectCallback> = new Set();
-
-  /**
-   * Set of callbacks called in disconnectedCallback.
-   */
-  disconnectedCallbacks: Set<connectCallback> = new Set();
-
-  /**
-   * Set of callbacks called before update.
-   */
-  updateCallbacks: Set<updateCallback> = new Set();
-
-  /**
-   * Set of callbacks called after updated.
-   */
-  updatedCallbacks: Set<updateCallback> = new Set();
-
   constructor() {
     super();
     this._updatePromise = new Promise((res) => (this.enableUpdating = res));
@@ -618,7 +595,6 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    this.connectedCallbacks.forEach((cb) => cb());
   }
 
   /**
@@ -633,9 +609,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * reserving the possibility of making non-breaking feature additions
    * when disconnecting at some point in the future.
    */
-  disconnectedCallback() {
-    this.disconnectedCallbacks.forEach((cb) => cb());
-  }
+  disconnectedCallback() {}
 
   /**
    * Synchronizes property values when attributes change.
@@ -824,7 +798,6 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.updateCallbacks.forEach((cb) => cb(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -850,7 +823,6 @@ export abstract class UpdatingElement extends HTMLElement {
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
-    this.updatedCallbacks.forEach((cb) => cb(changedProperties));
   }
 
   private _markUpdated() {
