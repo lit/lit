@@ -58,11 +58,16 @@ export class UpdatingController {
   updateCallbacks: Set<updateCallback> = new Set();
   updatedCallbacks: Set<updateCallback> = new Set();
 
-  private _onConnected = () => this.onConnected();
-  private _onDisconnected = () => this.onDisconnected();
-  private _onUpdate = (changedProperties: PropertyValues) =>
+  // Note, these are not private so they can be used with mixins.
+  // @internal
+  _onConnected = () => this.onConnected();
+  // @internal
+  _onDisconnected = () => this.onDisconnected();
+  // @internal
+  _onUpdate = (changedProperties: PropertyValues) =>
     this.onUpdate(changedProperties);
-  private _onUpdated = (changedProperties: PropertyValues) =>
+  // @internal
+  _onUpdated = (changedProperties: PropertyValues) =>
     this.onUpdated(changedProperties);
 
   constructor(host: UpdatingHost) {
@@ -74,7 +79,10 @@ export class UpdatingController {
       throw new Error('A controller must be removed before being added.');
     }
     controller.host = host;
-    controller.element = host instanceof UpdatingElement ? host : host.element;
+    controller.element =
+      (host as UpdatingElement).localName !== undefined
+        ? (host as UpdatingElement)
+        : (host as UpdatingController).element;
     host.connectedCallbacks.add(controller._onConnected);
     host.disconnectedCallbacks.add(controller._onDisconnected);
     host.updateCallbacks.add(controller._onUpdate);
