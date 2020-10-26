@@ -13,10 +13,6 @@
       "path": "packages/updating-element"
     },
     {
-      "name": "labs",
-      "path": "packages/labs"
-    },
-    {
       "name": "tests",
       "path": "packages/tests"
     },
