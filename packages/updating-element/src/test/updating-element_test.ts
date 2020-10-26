@@ -23,6 +23,12 @@ import {
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+const DEV_MODE = true;
+
+if (DEV_MODE) {
+  UpdatingElement.disabledWarnings!.add('change-in-update');
+}
+
 suite('UpdatingElement', () => {
   let container: HTMLElement;
 

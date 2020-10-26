@@ -30,7 +30,7 @@ export * from './css-tag.js';
 const DEV_MODE = true;
 if (DEV_MODE) {
   console.warn(
-    `updating-element is in dev mode. Not recommended ` + `for production!`
+    `updating-element is in dev mode. Not recommended for production!`
   );
 }
 
@@ -241,6 +241,7 @@ const finalized = 'finalized';
  * @noInheritDoc
  */
 export abstract class UpdatingElement extends HTMLElement {
+  static disabledWarnings?: Set<'change-in-update' | 'migration'>;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
@@ -282,12 +283,6 @@ export abstract class UpdatingElement extends HTMLElement {
    * using the [[`css`]] tag function or via constructible stylesheets.
    */
   static styles?: CSSResultGroup;
-
-  /**
-   * Set to true to display strict warnings on the console when in developer
-   * mode.
-   */
-  static strictWarnings?: boolean;
 
   /**
    * Returns a list of attributes corresponding to the registered properties.
@@ -458,8 +453,8 @@ export abstract class UpdatingElement extends HTMLElement {
     this.elementStyles = this.finalizeStyles(this.styles);
     // DEV mode warnings
     if (DEV_MODE) {
-      const warnRemoved = (obj: any, base: any, name: string) => {
-        if (obj[name] !== base[name]) {
+      const warnRemoved = (obj: any, name: string) => {
+        if (obj[name] !== undefined) {
           console.warn(
             `\`${name}\` is implemented. It ` +
               `has been removed from this version of UpdatingElement.`
@@ -468,7 +463,7 @@ export abstract class UpdatingElement extends HTMLElement {
       };
       [`render`, `getStyles`].forEach((name: string) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        warnRemoved(this as any, UpdatingElement, name)
+        warnRemoved(this as any, name)
       );
       [
         `adoptStyles`,
@@ -477,7 +472,7 @@ export abstract class UpdatingElement extends HTMLElement {
         `_getUpdateComplete`,
       ].forEach((name: string) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        warnRemoved(this.prototype as any, UpdatingElement.prototype, name)
+        warnRemoved(this.prototype as any, name)
       );
 
       // Issue platform support warning once only.
@@ -689,7 +684,13 @@ export abstract class UpdatingElement extends HTMLElement {
         (options.converter as ComplexAttributeConverter)?.toAttribute ??
         defaultConverter.toAttribute;
       const attrValue = toAttribute!(value, options.type);
-      if (DEV_MODE && attrValue === undefined) {
+      if (
+        DEV_MODE &&
+        !(this.constructor as typeof UpdatingElement).disabledWarnings!.has(
+          'migration'
+        ) &&
+        attrValue === undefined
+      ) {
         console.warn(
           `The attribute value for the ` +
             `${name as string} property is undefined. The attribute will be ` +
@@ -895,8 +896,10 @@ export abstract class UpdatingElement extends HTMLElement {
     this.updated(changedProperties);
     if (
       DEV_MODE &&
-      (this.constructor as typeof UpdatingElement).strictWarnings &&
-      this.isUpdatePending
+      this.isUpdatePending &&
+      !(this.constructor as typeof UpdatingElement).disabledWarnings!.has(
+        'change-in-update'
+      )
     ) {
       console.warn(
         `An updating is pending after an ` +
@@ -1035,4 +1038,8 @@ if (DEV_MODE) {
     requestUpdate.call(this, name, oldValue, options);
     return requestUpdateThenable;
   };
+}
+
+if (DEV_MODE) {
+  UpdatingElement.disabledWarnings = new Set(['migration']);
 }

@@ -142,7 +142,9 @@ if (DEV_MODE) {
 
         foo = 'hi';
       }
-      customElements.define(generateElementName(), A);
+      const name = generateElementName();
+      A.disabledWarnings?.delete('migration');
+      customElements.define(name, A);
       const a = new A();
       container.appendChild(a);
       await a.updateComplete;
@@ -187,9 +189,8 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'Promise');
     });
 
-    test('warns when update triggers another update if `strictWarnings` is set', async () => {
+    test('warns when update triggers another update if element', async () => {
       class A extends UpdatingElement {
-        static strictWarnings = true;
         shouldUpdateAgain = false;
         updated() {
           if (this.shouldUpdateAgain) {
@@ -198,7 +199,8 @@ if (DEV_MODE) {
           }
         }
       }
-      customElements.define(generateElementName(), A);
+      const name = generateElementName();
+      customElements.define(name, A);
       const a = new A();
       container.appendChild(a);
       await a.updateComplete;
@@ -214,7 +216,7 @@ if (DEV_MODE) {
       await a.updateComplete;
       assert.equal(warnings.length, 0);
       a.shouldUpdateAgain = true;
-      (a.constructor as typeof A).strictWarnings = false;
+      A.disabledWarnings?.add('change-in-update');
       a.requestUpdate();
       await a.updateComplete;
       assert.equal(warnings.length, 0);
