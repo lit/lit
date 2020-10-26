@@ -34,6 +34,9 @@ import './polyfills.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
+// We don't have direct access to DEV_MODE, but this is a good enough
+// proxy.
+const DEV_MODE = render.setSanitizer != null;
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -1723,7 +1726,13 @@ suite('lit-html', () => {
     });
   });
 
-  suite('enahnced security hooks', () => {
+  let securityHooksSuiteFunction:
+    | Mocha.SuiteFunction
+    | Mocha.PendingSuiteFunction = suite;
+  if (!DEV_MODE) {
+    securityHooksSuiteFunction = suite.skip;
+  }
+  securityHooksSuiteFunction('enahnced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
       constructor(sanitizeTo: string) {
