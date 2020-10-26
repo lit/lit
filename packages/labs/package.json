@@ -1,6 +1,6 @@
 {
   "name": "lit-labs",
-  "version": "0.0.0",
+  "version": "1.0.0-pre.1",
   "description": "An experimental playground for Lit helpers and tools. Your mileage may vary.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit-element.polymer-project.org/",
