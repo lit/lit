@@ -27,13 +27,13 @@ const isPromiseLike = (x: unknown): x is PromiseLike<unknown> => {
 };
 
 class UntilDirective extends Directive {
-  private _index: undefined | number;
+  private _attrPartIndex: undefined | number;
   private _latestUpdateId: number;
 
   constructor(_part: PartInfo, index?: number) {
     super();
 
-    this._index = index;
+    this._attrPartIndex = index;
     this._latestUpdateId = 0;
   }
 
@@ -48,15 +48,14 @@ class UntilDirective extends Directive {
     let initialValue: unknown = nothing;
 
     for (let i = 0; i < values.length; i++) {
-      const index = i;
       const value = values[i];
 
       if (isPromiseLike(value)) {
         Promise.resolve(value).then((result) => {
-          if (updateId === this._latestUpdateId && index < lastRenderedIndex) {
-            lastRenderedIndex = index;
+          if (updateId === this._latestUpdateId && i < lastRenderedIndex) {
+            lastRenderedIndex = i;
             if ((part as AttributePart).strings !== undefined) {
-              setPartValue(part, result, this._index as number);
+              setPartValue(part, result, this._attrPartIndex as number);
             } else {
               setPartValue(part, result);
             }
@@ -65,7 +64,7 @@ class UntilDirective extends Directive {
       } else if (!initialValueFound) {
         initialValueFound = true;
         initialValue = value;
-        lastRenderedIndex = index;
+        lastRenderedIndex = i;
       }
     }
 
