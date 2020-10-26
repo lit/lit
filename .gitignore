@@ -42,3 +42,6 @@
 /packages/updating-element/decorators.*
 /packages/updating-element/platform-support.*
 /packages/updating-element/updating-element.*
+
+# labs package
+/packages/labs/index.*

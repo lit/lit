@@ -12,14 +12,23 @@
   "directories": {
     "test": "test"
   },
+  "exports": {
+    ".": {
+      "development": "./development/index.js",
+      "default": "./index.js"
+    }
+  },
   "files": [
-    "/lib/",
     "/src/",
-    "!/src/test/"
+    "!/src/test/",
+    "/index.d.ts",
+    "/index.d.ts.map",
+    "/index.js",
+    "/index.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf development/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
