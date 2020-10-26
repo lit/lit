@@ -17,3 +17,17 @@ export const generateElementName = () => `x-${count++}`;
 
 export const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
+
+export const queryDeep = (root: ShadowRoot, selector: string) => {
+  let nodes: Element[] = [];
+  const els = root.querySelectorAll('*');
+  els.forEach((el) => {
+    if (el.matches(selector)) {
+      nodes.push(el);
+    }
+    if (el.shadowRoot) {
+      nodes = [...nodes, ...queryDeep(el.shadowRoot, selector)];
+    }
+  });
+  return nodes;
+};
