@@ -38,7 +38,7 @@ class UntilDirective extends Directive {
   }
 
   render(...values: Array<unknown>) {
-    return values.find(isPromiseLike) ?? nothing;
+    return values.find((x) => !isPromiseLike(x)) ?? nothing;
   }
 
   update(part: Part, values: Array<unknown>) {
