@@ -1207,14 +1207,19 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
   private _eventContext?: unknown;
+  protected _directive?: Directive;
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
     super(...args);
     this._eventContext = args[3]?.eventContext;
   }
 
-  _setValue(newListener: unknown) {
-    newListener ??= nothing;
+  _setValue(value: unknown) {
+    const newListener = this._maybeUnwrapDirectiveResult(value) ?? nothing;
+    if (newListener === noChange) {
+      return;
+    }
+
     const oldListener = this._value;
 
     // If the new value is nothing or any options change we have to remove the
@@ -1254,13 +1259,25 @@ export class EventPart extends AttributePart {
     this._value = newListener;
   }
 
+  private _maybeUnwrapDirectiveResult(value: unknown): unknown {
+    if ((value as DirectiveResult)?._$litDirective$) {
+      const directive = (value as DirectiveResult)._$litDirective$;
+      if (this._directive?.constructor !== directive) {
+        this._directive = new directive(this as AttributePartInfo);
+      }
+      return this._directive.update(this, (value as DirectiveResult).values);
+    } else {
+      return value;
+    }
+  }
+
   handleEvent(event: Event) {
     if (typeof this._value === 'function') {
       // TODO (justinfagnani): do we need to default to this._element?
       // It'll always be the same as `e.currentTarget`.
-      this._value.call(this._eventContext ?? this.element, event);
+      this._value?.call(this._eventContext ?? this.element, event);
     } else {
-      (this._value as EventListenerObject).handleEvent(event);
+      (this._value as EventListenerObject)?.handleEvent(event);
     }
   }
 }

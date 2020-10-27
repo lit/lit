@@ -59,6 +59,17 @@ suite('until directive', () => {
     );
   });
 
+  test('renders a literal in an EventPart', () => {
+    let callCount = 0;
+    render(
+      html`<div @some-event="${until(() => callCount++)}"></div>`,
+      container
+    );
+    const div = container.querySelector('div') as HTMLDivElement;
+    div.dispatchEvent(new Event('some-event'));
+    assert.equal(callCount, 1);
+  });
+
   test('renders a literal in a PropertyPart', () => {
     render(html`<div .someProp="${until('a')}"></div>`, container);
     assert.equal((container.querySelector('div')! as any).someProp, 'a');
@@ -125,6 +136,23 @@ suite('until directive', () => {
 
     await laterTask();
     assert.equal((container.querySelector('div')! as any).someProp, 'a');
+  });
+
+  test('renders a Promise in an EventPart', async () => {
+    let callCount = 0;
+    render(
+      html`<div @some-event="${until(
+        Promise.resolve(() => callCount++)
+      )}"></div>`,
+      container
+    );
+    const div = container.querySelector('div') as HTMLDivElement;
+    div.dispatchEvent(new Event('some-event'));
+    assert.equal(callCount, 0);
+
+    await laterTask();
+    div.dispatchEvent(new Event('some-event'));
+    assert.equal(callCount, 1);
   });
 
   test('renders a promise-like in a NodePart', async () => {
@@ -215,6 +243,24 @@ suite('until directive', () => {
 
     await laterTask();
     assert.equal((container.querySelector('div')! as any).someProp, 'a');
+  });
+
+  test('renders a promise-like in an EventPart', async () => {
+    let callCount = 0;
+    const thenable = {
+      then(resolve: (arg: unknown) => void) {
+        resolve(() => callCount++);
+      },
+    };
+
+    render(html`<div @some-event="${until(thenable)}"></div>`, container);
+    const div = container.querySelector('div') as HTMLDivElement;
+    div.dispatchEvent(new Event('some-event'));
+    assert.equal(callCount, 0);
+
+    await laterTask();
+    div.dispatchEvent(new Event('some-event'));
+    assert.equal(callCount, 1);
   });
 
   test('renders later arguments until earlier promises resolve', async () => {
