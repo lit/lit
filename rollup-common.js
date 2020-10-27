@@ -72,6 +72,7 @@ const crossPackagePropertyMangles = {
   _template: 'H',
   // updating-element: UpdatingElement
   _afterUpdate: 'S',
+  _willUpdate: 'T',
   // lit-element: LitElement
   _renderOptions: 'W',
 };
