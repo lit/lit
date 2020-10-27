@@ -12,14 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  AttributePart,
-  Directive,
-  directive,
-  Part,
-  PartInfo,
-  noChange,
-} from '../lit-html.js';
+import {Directive, directive, Part, PartInfo, noChange} from '../lit-html.js';
 import {setPartValue} from '../parts.js';
 
 const isPromiseLike = (x: unknown): x is PromiseLike<unknown> => {
@@ -54,11 +47,7 @@ class UntilDirective extends Directive {
         Promise.resolve(value).then((result) => {
           if (updateId === this._latestUpdateId && i < lastRenderedIndex) {
             lastRenderedIndex = i;
-            if ((part as AttributePart).strings !== undefined) {
-              setPartValue(part, result, this._attrPartIndex as number);
-            } else {
-              setPartValue(part, result);
-            }
+            setPartValue(part, result, this._attrPartIndex);
           }
         });
       } else if (!initialValueFound) {
