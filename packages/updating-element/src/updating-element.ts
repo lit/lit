@@ -241,7 +241,7 @@ const finalized = 'finalized';
  * @noInheritDoc
  */
 export abstract class UpdatingElement extends HTMLElement {
-  static disabledWarnings?: Set<'change-in-update' | 'migration'>;
+  static warnings?: Set<'change-in-update' | 'migration'>;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
@@ -686,7 +686,7 @@ export abstract class UpdatingElement extends HTMLElement {
       const attrValue = toAttribute!(value, options.type);
       if (
         DEV_MODE &&
-        !(this.constructor as typeof UpdatingElement).disabledWarnings!.has(
+        (this.constructor as typeof UpdatingElement).warnings!.has(
           'migration'
         ) &&
         attrValue === undefined
@@ -897,7 +897,7 @@ export abstract class UpdatingElement extends HTMLElement {
     if (
       DEV_MODE &&
       this.isUpdatePending &&
-      !(this.constructor as typeof UpdatingElement).disabledWarnings!.has(
+      (this.constructor as typeof UpdatingElement).warnings!.has(
         'change-in-update'
       )
     ) {
@@ -1041,5 +1041,5 @@ if (DEV_MODE) {
 }
 
 if (DEV_MODE) {
-  UpdatingElement.disabledWarnings = new Set(['migration']);
+  UpdatingElement.warnings = new Set(['change-in-update']);
 }

@@ -143,7 +143,7 @@ if (DEV_MODE) {
         foo = 'hi';
       }
       const name = generateElementName();
-      A.disabledWarnings?.delete('migration');
+      A.warnings?.add('migration');
       customElements.define(name, A);
       const a = new A();
       container.appendChild(a);
@@ -216,7 +216,7 @@ if (DEV_MODE) {
       await a.updateComplete;
       assert.equal(warnings.length, 0);
       a.shouldUpdateAgain = true;
-      A.disabledWarnings?.add('change-in-update');
+      A.warnings?.delete('change-in-update');
       a.requestUpdate();
       await a.updateComplete;
       assert.equal(warnings.length, 0);
