@@ -212,6 +212,8 @@ export function litProdConfig({
         // itself.
         replace({
           'const DEV_MODE = true': 'const DEV_MODE = false',
+          'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+            'const ENABLE_EXTRA_SECURITY_HOOKS = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -272,6 +274,8 @@ export const litMonoBundleConfig = ({
     nodeResolve(),
     replace({
       'const DEV_MODE = true': 'const DEV_MODE = false',
+      'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+        'const ENABLE_EXTRA_SECURITY_HOOKS = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.
