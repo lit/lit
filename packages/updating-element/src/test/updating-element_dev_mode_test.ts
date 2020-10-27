@@ -61,13 +61,18 @@ if (DEV_MODE) {
         await a.updateComplete;
         assert.equal(warnings.length, 1);
         assert.include(warnings[0], 'platform-support');
-        // should be generated once only
+      }
+    );
+
+    (missingPlatformSupport ? test : test.skip)(
+      'warning for platform-support generated only once',
+      async () => {
         class B extends UpdatingElement {}
         customElements.define(generateElementName(), B);
         const b = new B();
         container.appendChild(b);
         await b.updateComplete;
-        assert.equal(warnings.length, 1);
+        assert.equal(warnings.length, 0);
         assert.include(warnings[0], 'platform-support');
       }
     );
@@ -134,24 +139,6 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'requestUpdateInternal');
     });
 
-    test('warns when `toAttribute` returns undefined', async () => {
-      class A extends UpdatingElement {
-        static properties = {
-          foo: {converter: {toAttribute: () => undefined}, reflect: true},
-        };
-
-        foo = 'hi';
-      }
-      const name = generateElementName();
-      A.warnings?.add('migration');
-      customElements.define(name, A);
-      const a = new A();
-      container.appendChild(a);
-      await a.updateComplete;
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'undefined');
-    });
-
     test('warns when updating properties are shadowed', async () => {
       class A extends UpdatingElement {
         static properties = {
@@ -189,37 +176,100 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'Promise');
     });
 
-    test('warns when update triggers another update if element', async () => {
-      class A extends UpdatingElement {
-        shouldUpdateAgain = false;
-        updated() {
-          if (this.shouldUpdateAgain) {
-            this.shouldUpdateAgain = false;
-            this.requestUpdate();
+    suite('conditional warnings', () => {
+      test('warns when `toAttribute` returns undefined with migration warnings on', async () => {
+        class A extends UpdatingElement {
+          static properties = {
+            foo: {converter: {toAttribute: () => undefined}, reflect: true},
+          };
+
+          foo = 'hi';
+        }
+        A.enableWarning('migration');
+        customElements.define(generateElementName(), A);
+        const a = new A();
+        container.appendChild(a);
+        await a.updateComplete;
+        assert.equal(warnings.length, 1);
+        assert.include(warnings[0], 'undefined');
+      });
+
+      test('warns when update triggers another update if element', async () => {
+        class A extends UpdatingElement {
+          shouldUpdateAgain = false;
+          updated() {
+            if (this.shouldUpdateAgain) {
+              this.shouldUpdateAgain = false;
+              this.requestUpdate();
+            }
           }
         }
-      }
-      const name = generateElementName();
-      customElements.define(name, A);
-      const a = new A();
-      container.appendChild(a);
-      await a.updateComplete;
-      assert.equal(warnings.length, 0);
-      a.shouldUpdateAgain = true;
-      a.requestUpdate();
-      await a.updateComplete;
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'update');
-      assert.include(warnings[0], 'pending');
-      warnings = [];
-      a.requestUpdate();
-      await a.updateComplete;
-      assert.equal(warnings.length, 0);
-      a.shouldUpdateAgain = true;
-      A.warnings?.delete('change-in-update');
-      a.requestUpdate();
-      await a.updateComplete;
-      assert.equal(warnings.length, 0);
+        customElements.define(generateElementName(), A);
+        const a = new A();
+        container.appendChild(a);
+        await a.updateComplete;
+        assert.equal(warnings.length, 0);
+        a.shouldUpdateAgain = true;
+        a.requestUpdate();
+        await a.updateComplete;
+        assert.equal(warnings.length, 1);
+        assert.include(warnings[0], 'update');
+        assert.include(warnings[0], 'pending');
+        warnings = [];
+        a.requestUpdate();
+        await a.updateComplete;
+        assert.equal(warnings.length, 0);
+        a.shouldUpdateAgain = true;
+        A.disableWarning('change-in-update');
+        a.requestUpdate();
+        await a.updateComplete;
+        assert.equal(warnings.length, 0);
+      });
+
+      test('warning settings can be set on base class and per class', async () => {
+        class A extends UpdatingElement {
+          shouldUpdateAgain = false;
+          updated() {
+            if (this.shouldUpdateAgain) {
+              this.shouldUpdateAgain = false;
+              this.requestUpdate();
+            }
+          }
+        }
+        customElements.define(generateElementName(), A);
+        class B extends A {}
+        customElements.define(generateElementName(), B);
+        const a = new A();
+        container.appendChild(a);
+        const b = new B();
+        container.appendChild(b);
+        await a.updateComplete;
+        await b.updateComplete;
+        assert.equal(warnings.length, 0);
+        const triggerChangeInUpdate = async () => {
+          a.shouldUpdateAgain = true;
+          b.shouldUpdateAgain = true;
+          a.requestUpdate();
+          b.requestUpdate();
+          await a.updateComplete;
+          await b.updateComplete;
+        };
+        // Defeat warning in base class
+        A.disableWarning('change-in-update');
+        await triggerChangeInUpdate();
+        assert.equal(warnings.length, 0);
+        // Explicitly turn on warning in subclass
+        B.enableWarning('change-in-update');
+        warnings = [];
+        await triggerChangeInUpdate();
+        assert.equal(warnings.length, 1);
+        // Turn of warning in subclass and back on in base class
+        B.disableWarning('change-in-update');
+        A.enableWarning('change-in-update');
+        warnings = [];
+        await triggerChangeInUpdate();
+        assert.equal(warnings.length, 1);
+      });
     });
   });
 }

@@ -25,8 +25,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Console warnings added for removed API and other element problems in developer mode. Some warnings are errors and are always issued while others are optional. Optional warnings can be configured per class via `MyElement.enable/disableWarning`. Making changes in update warns by default and can be toggled via `MyElement.disableWarning('change-in-update)`; migration warnings are off by default and can be toggled via `MyElement.enableWarning('migration')`.
 - UpdatingElement moved from `lit-element` package to `updating-element` package.
-- Console warnings added for removed API and other element problems in developer mode. Some warnings are errors and are always issued while others are optional: making changes in update warns by default and can be toggled via `MyElement.warnings.delete('change-in-update)`; special migration warnings are off by default and can be toggled via `MyElement.warnings.add('migration')`.
 
 ### Fixed
 

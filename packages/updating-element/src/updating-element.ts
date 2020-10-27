@@ -234,6 +234,8 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
  */
 const finalized = 'finalized';
 
+export type Warnings = 'change-in-update' | 'migration';
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -241,7 +243,10 @@ const finalized = 'finalized';
  * @noInheritDoc
  */
 export abstract class UpdatingElement extends HTMLElement {
-  static warnings?: Set<'change-in-update' | 'migration'>;
+  // Note, these are patched in only in DEV_MODE.
+  static warnings?: Set<Warnings>;
+  static enableWarning: (type: Warnings) => void;
+  static disableWarning: (type: Warnings) => void;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
@@ -1046,5 +1051,19 @@ if (DEV_MODE) {
 }
 
 if (DEV_MODE) {
+  // Default warning set.
   UpdatingElement.warnings = new Set(['change-in-update']);
+  const ensureOwnWarnings = function (ctor: typeof UpdatingElement) {
+    if (!ctor.hasOwnProperty('warnings')) {
+      ctor.warnings = new Set(ctor.warnings);
+    }
+  };
+  UpdatingElement.enableWarning = function (warning: Warnings) {
+    ensureOwnWarnings(this);
+    this.warnings!.add(warning);
+  };
+  UpdatingElement.disableWarning = function (warning: Warnings) {
+    ensureOwnWarnings(this);
+    this.warnings!.delete(warning);
+  };
 }
