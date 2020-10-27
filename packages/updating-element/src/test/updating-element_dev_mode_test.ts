@@ -73,7 +73,6 @@ if (DEV_MODE) {
         container.appendChild(b);
         await b.updateComplete;
         assert.equal(warnings.length, 0);
-        assert.include(warnings[0], 'platform-support');
       }
     );
 
