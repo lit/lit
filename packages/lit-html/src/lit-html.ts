@@ -13,10 +13,83 @@
  */
 
 const DEV_MODE = true;
+const ENABLE_EXTRA_SECURITY_HOOKS = true;
 
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
+
+/**
+ * Used to sanitize any value before it is written into the DOM. This can be
+ * used to implement a security policy of allowed and disallowed values in
+ * order to prevent XSS attacks.
+ *
+ * One way of using this callback would be to check attributes and properties
+ * against a list of high risk fields, and require that values written to such
+ * fields be instances of a class which is safe by construction. Closure's Safe
+ * HTML Types is one implementation of this technique (
+ * https://github.com/google/safe-html-types/blob/master/doc/safehtml-types.md).
+ * The TrustedTypes polyfill in API-only mode could also be used as a basis
+ * for this technique (https://github.com/WICG/trusted-types).
+ *
+ * @param node The HTML node (usually either a #text node or an Element) that
+ *   is being written to. Note that this is just an exemplar node, the write
+ *   may take place against another instance of the same class of node.
+ * @param name The name of an attribute or property (for example, 'href').
+ * @param type Indicates whether the write that's about to be performed will
+ *   be to a property or a node.
+ * @returns A function that will sanitize this class of writes.
+ */
+export type SanitizerFactory = (
+  node: Node,
+  name: string,
+  type: 'property' | 'attribute'
+) => ValueSanitizer;
+
+/**
+ * A function which can sanitize values that will be written to a specific kind
+ * of DOM sink.
+ *
+ * See SanitizerFactory.
+ *
+ * @param value The value to sanitize. Will be the actual value passed into
+ *   the lit-html template literal, so this could be of any type.
+ * @returns The value to write to the DOM. Usually the same as the input value,
+ *   unless sanitization is needed.
+ */
+export type ValueSanitizer = (value: unknown) => unknown;
+
+const identityFunction: ValueSanitizer = (value: unknown) => value;
+const noopSanitizer: SanitizerFactory = (
+  _node: Node,
+  _name: string,
+  _type: 'property' | 'attribute'
+) => identityFunction;
+
+/** Sets the global sanitizer factory. */
+const setSanitizer = (newSanitizer: SanitizerFactory) => {
+  if (!ENABLE_EXTRA_SECURITY_HOOKS) {
+    return;
+  }
+  if (sanitizerFactoryInternal !== noopSanitizer) {
+    throw new Error(
+      `Attempted to overwrite existing lit-html security policy.` +
+        ` setSanitizeDOMValueFactory should be called at most once.`
+    );
+  }
+  sanitizerFactoryInternal = newSanitizer;
+};
+
+/**
+ * Only used in internal tests, not a part of the public API.
+ */
+const _testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
+  sanitizerFactoryInternal = noopSanitizer;
+};
+
+const createSanitizer: SanitizerFactory = (node, name, type) => {
+  return sanitizerFactoryInternal(node, name, type);
+};
 
 // Added to an attribute name to mark the attribute as bound so we can find
 // it easily.
@@ -299,12 +372,22 @@ export const render = (
   part._setValue(value);
 };
 
+if (ENABLE_EXTRA_SECURITY_HOOKS) {
+  render.setSanitizer = setSanitizer;
+  render.createSanitizer = createSanitizer;
+  if (DEV_MODE) {
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse = _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+  }
+}
+
 const walker = d.createTreeWalker(
   d,
   133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
   null,
   false
 );
+
+let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 
 //
 // Classes only below here, const variable declarations only above here...
@@ -709,12 +792,18 @@ export class NodePart {
   readonly type = NODE_PART;
   _value: unknown;
   protected _directive?: Directive;
+  private _textSanitizer: ValueSanitizer | undefined;
 
   constructor(
     private _startNode: ChildNode,
     private _endNode: ChildNode | null,
     public options: RenderOptions | undefined
-  ) {}
+  ) {
+    if (ENABLE_EXTRA_SECURITY_HOOKS) {
+      // Explicitly initialize for consistent class shape.
+      this._textSanitizer = undefined;
+    }
+  }
 
   _setValue(value: unknown): void {
     // TODO (justinfagnani): when setting a non-directive over a directive,
@@ -760,6 +849,21 @@ export class NodePart {
   private _commitNode(value: Node): void {
     if (this._value !== value) {
       this._clear();
+      if (
+        ENABLE_EXTRA_SECURITY_HOOKS &&
+        sanitizerFactoryInternal !== noopSanitizer
+      ) {
+        const parentNodeName = this._startNode.parentNode?.nodeName;
+        if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
+          this._insert(
+            new Text(
+              '/* lit-html will not write ' +
+                'TemplateResults to scripts and styles */'
+            )
+          );
+          return;
+        }
+      }
       this._value = this._insert(value);
     }
   }
@@ -777,11 +881,31 @@ export class NodePart {
         ? node.nextSibling === null
         : node === this._endNode.previousSibling)
     ) {
+      if (ENABLE_EXTRA_SECURITY_HOOKS) {
+        if (this._textSanitizer === undefined) {
+          this._textSanitizer = createSanitizer(node, 'data', 'property');
+        }
+        value = this._textSanitizer(value);
+      }
       // If we only have a single text node between the markers, we can just
       // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
-      this._commitNode(d.createTextNode(value as string));
+      if (ENABLE_EXTRA_SECURITY_HOOKS) {
+        const textNode = document.createTextNode('');
+        this._commitNode(textNode);
+        // When setting text content, for security purposes it matters a lot
+        // what the parent is. For example, <style> and <script> need to be
+        // handled with care, while <span> does not. So first we need to put a
+        // text node into the document, then we can sanitize its contentx.
+        if (this._textSanitizer === undefined) {
+          this._textSanitizer = createSanitizer(textNode, 'data', 'property');
+        }
+        value = this._textSanitizer(value);
+        textNode.data = value as string;
+      } else {
+        this._commitNode(d.createTextNode(value as string));
+      }
     }
     this._value = value;
   }
@@ -889,6 +1013,7 @@ export class AttributePart {
   readonly strings?: ReadonlyArray<string>;
   _value: unknown | Array<unknown> = nothing;
   private _directives?: Array<Directive>;
+  protected _sanitizer: ValueSanitizer | undefined;
 
   get tagName() {
     return this.element.tagName;
@@ -907,6 +1032,9 @@ export class AttributePart {
       this.strings = strings;
     } else {
       this._value = nothing;
+    }
+    if (ENABLE_EXTRA_SECURITY_HOOKS) {
+      this._sanitizer = undefined;
     }
   }
 
@@ -1016,6 +1144,16 @@ export class AttributePart {
     if (value === nothing) {
       this.element.removeAttribute(this.name);
     } else {
+      if (ENABLE_EXTRA_SECURITY_HOOKS) {
+        if (this._sanitizer === undefined) {
+          this._sanitizer = sanitizerFactoryInternal(
+            this.element,
+            this.name,
+            'attribute'
+          );
+        }
+        value = this._sanitizer(value);
+      }
       this.element.setAttribute(this.name, value as string);
     }
   }
@@ -1025,6 +1163,16 @@ export class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
   _commitValue(value: unknown) {
+    if (ENABLE_EXTRA_SECURITY_HOOKS) {
+      if (this._sanitizer === undefined) {
+        this._sanitizer = sanitizerFactoryInternal(
+          this.element,
+          this.name,
+          'property'
+        );
+      }
+      value = this._sanitizer(value);
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
