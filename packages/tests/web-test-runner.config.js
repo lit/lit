@@ -112,6 +112,7 @@ Valid examples:
 
 See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, platformName, browserName, browserVersion] = match;
     return [
       makeSauceLauncherOnce()({

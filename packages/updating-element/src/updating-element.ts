@@ -453,6 +453,7 @@ export abstract class UpdatingElement extends HTMLElement {
     this.elementStyles = this.finalizeStyles(this.styles);
     // DEV mode warnings
     if (DEV_MODE) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const warnRemoved = (obj: any, name: string) => {
         if (obj[name] !== undefined) {
           console.warn(
@@ -478,6 +479,7 @@ export abstract class UpdatingElement extends HTMLElement {
       // Issue platform support warning once only.
       if (
         window.ShadyDOM?.inUse &&
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any)['updatingElementPlatformSupport'] === undefined &&
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (UpdatingElement as any)._issuedPlatformSupportWarning === undefined
