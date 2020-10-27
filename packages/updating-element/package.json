@@ -36,6 +36,7 @@
   },
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
+    "build:watch": "rollup -c --watch",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",

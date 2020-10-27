@@ -52,6 +52,16 @@ const reservedProperties = [
   // can share this key with dev lit-element platform-support which
   // imports it.
   '_handlesPrepareStyles',
+  // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
+  // crossPackagePropertyMangles once lit-ssr uses the rollup config)
+  // lit-html: AttributePart (used by render-lit-html)
+  '_resolveValue',
+  // lit-html: Directive (used by render-lit-html)
+  '_resolve',
+  // updating-element: UpdatingElement (used by lit-element-renderer)
+  '_attributeToProperty',
+  // hydrate-support: LitElement (added by hydrate-support)
+  '_needsHydration',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -74,6 +84,8 @@ const crossPackagePropertyMangles = {
   _afterUpdate: 'S',
   // lit-element: LitElement
   _renderOptions: 'W',
+  // lit-element: LitElement (used by hydrate-support)
+  _renderImpl: 'M',
 };
 
 const generateTerserOptions = (nameCache = null) => ({

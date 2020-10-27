@@ -114,6 +114,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
 
+      - name: Lint
+        run: npm run lint
+
       - name: Build
         run: npm run build
 

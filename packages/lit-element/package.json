@@ -21,6 +21,10 @@
       "development": "./development/platform-support.js",
       "default": "./platform-support.js"
     },
+    "./hydrate-support.js": {
+      "development": "./development/hydrate-support.js",
+      "default": "./hydrate-support.js"
+    },
     "./decorators.js": {
       "development": "./development/decorators.js",
       "default": "./decorators.js"
@@ -32,13 +36,14 @@
   },
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
+    "build:watch": "rollup -c --watch",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
     "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
+    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
     "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version && npm run lint && npm test",

@@ -27,8 +27,11 @@ export default litProdConfig({
     'directives/unsafe-html',
     'directives/unsafe-svg',
     'directives/until',
+    'directives/render-light',
     'lit-html',
     'parts',
+    'hydrate',
+    'private-ssr-support',
     'platform-support',
   ],
   bundled: [
