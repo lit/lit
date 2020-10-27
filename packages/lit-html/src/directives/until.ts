@@ -18,7 +18,7 @@ import {
   directive,
   Part,
   PartInfo,
-  nothing,
+  noChange,
 } from '../lit-html.js';
 import {setPartValue} from '../parts.js';
 
@@ -38,14 +38,14 @@ class UntilDirective extends Directive {
   }
 
   render(...values: Array<unknown>) {
-    return values.find((x) => !isPromiseLike(x)) ?? nothing;
+    return values.find((x) => !isPromiseLike(x)) ?? noChange;
   }
 
   update(part: Part, values: Array<unknown>) {
     const updateId = ++this._latestUpdateId;
     let lastRenderedIndex = Infinity;
     let initialValueFound = false;
-    let initialValue: unknown = nothing;
+    let initialValue: unknown = noChange;
 
     for (let i = 0; i < values.length; i++) {
       const value = values[i];
