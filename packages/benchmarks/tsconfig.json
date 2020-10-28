@@ -21,7 +21,8 @@
   "include": [
     "lit-element/**/*.ts",
     "updating-element/**/*.ts",
-    "lit-html/**/*.ts"
+    "lit-html/**/*.ts",
+    "labs/**/*.ts"
   ],
   "exclude": []
 }

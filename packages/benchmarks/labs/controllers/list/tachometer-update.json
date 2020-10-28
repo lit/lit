@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 50,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "update"
+        }
+      ],
+      "expand": [
+        {
+          "name": "updating-element",
+          "url": "updating-element/list/index.html?benchmark=update"
+        },
+        {
+          "name": "controller",
+          "url": "labs/controllers/list/index.html?benchmark=update"
+        }
+      ]
+    }
+  ]
+}

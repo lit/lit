@@ -11,8 +11,15 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {html, LitElement, css, PropertyDeclaration} from 'lit-element';
-import {queryParams} from '../../utils/query-params.js';
+import {
+  UpdatingElement,
+  PropertyDeclaration,
+  PropertyValues,
+  css,
+} from 'updating-element';
+import {property} from 'updating-element/decorators.js';
+import {queryParams} from '../../../utils/query-params.js';
+import {UpdatingController} from 'lit-labs/controllers/updating-controller.js';
 
 (async () => {
   // wait until after page loads
@@ -28,20 +35,6 @@ import {queryParams} from '../../utils/query-params.js';
   }
   await new Promise((r) => setTimeout(r));
 
-  // Note, `decorators.js` moved from the `lib` folder to top level
-  // between previous release and lit-next. Handle this by trying to import
-  // from each location.
-  let decorators;
-  try {
-    decorators = await import('lit-element/decorators.js');
-  } catch (e) {
-    decorators = await ((import(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      'lit-element/lib/decorators.js'
-    ) as unknown) as typeof import('lit-element/decorators.js'));
-  }
-  const {property} = decorators;
   // Settings
   const itemCount = 250;
   const itemValueCount = 99;
@@ -70,7 +63,27 @@ import {queryParams} from '../../utils/query-params.js';
 
   const propertyOptions: PropertyDeclaration = {};
 
-  class XThing extends LitElement {
+  class MyController extends UpdatingController {
+    value!: string;
+    isConnected = false;
+
+    onConnected() {
+      this.isConnected = true;
+    }
+
+    onDisconnected() {
+      this.isConnected = false;
+    }
+
+    onUpdate() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.value = (this.element as any).time;
+    }
+
+    onUpdated() {}
+  }
+
+  class XThing extends UpdatingElement {
     static styles = css`
       .container {
         box-sizing: border-box;
@@ -106,20 +119,42 @@ import {queryParams} from '../../utils/query-params.js';
     time = '';
     @property(propertyOptions)
     subject = '';
+    fromEl!: HTMLSpanElement;
+    timeEl!: HTMLSpanElement;
+    subjectEl!: HTMLDivElement;
 
-    protected render() {
-      return html`
-        <div class="container">
-          <span class="from">${this.from}</span>
-          <span class="time">${this.time}</span>
-          <div class="subject">${this.subject}</div>
-        </div>
-      `;
+    controller = new MyController(this);
+
+    protected update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+      if (!this.hasUpdated) {
+        const container = document.createElement('div');
+        container.appendChild(document.createTextNode(' '));
+        container.className = 'container';
+        this.fromEl = document.createElement('span');
+        this.fromEl.className = 'from';
+        container.appendChild(this.fromEl);
+        container.appendChild(document.createTextNode(' '));
+        this.timeEl = document.createElement('span');
+        this.timeEl.className = 'time';
+        container.appendChild(this.timeEl);
+        container.appendChild(document.createTextNode(' '));
+        this.subjectEl = document.createElement('div');
+        this.subjectEl.className = 'subject';
+        container.appendChild(this.subjectEl);
+        container.appendChild(document.createTextNode(' '));
+        this.renderRoot.appendChild(document.createTextNode(' '));
+        this.renderRoot.appendChild(container);
+        this.renderRoot.appendChild(document.createTextNode(' '));
+      }
+      this.fromEl.textContent = this.from;
+      this.timeEl.textContent = this.controller.value;
+      this.subjectEl.textContent = this.subject;
     }
   }
   customElements.define('x-thing', XThing);
 
-  class XItem extends LitElement {
+  class XItem extends UpdatingElement {
     static styles = css`
       .item {
         display: flex;
@@ -128,58 +163,67 @@ import {queryParams} from '../../utils/query-params.js';
 
     @property()
     item!: SimpleItem;
+    count = 6;
+    things: XThing[] = [];
 
-    protected render() {
-      return html`
-        <div @click="${this.onClick}" class="item">
-          <x-thing
-            .from="${this.item.value0}"
-            .time="${this.item.value1}"
-            .subject="${this.item.value2}"
-          ></x-thing>
-          <x-thing
-            .from="${this.item.value3}"
-            .time="${this.item.value4}"
-            .subject="${this.item.value5}"
-          ></x-thing>
-          <x-thing
-            .from="${this.item.value6}"
-            .time="${this.item.value7}"
-            .subject="${this.item.value8}"
-          ></x-thing>
-          <x-thing
-            .from="${this.item.value9}"
-            .time="${this.item.value10}"
-            .subject="${this.item.value11}"
-          ></x-thing>
-          <x-thing
-            .from="${this.item.value12}"
-            .time="${this.item.value13}"
-            .subject="${this.item.value14}"
-          ></x-thing>
-          <x-thing
-            .from="${this.item.value15}"
-            .time="${this.item.value16}"
-            .subject="${this.item.value17}"
-          ></x-thing>
-        </div>
-      `;
+    protected update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+      if (!this.hasUpdated) {
+        this.renderRoot.appendChild(document.createTextNode(' '));
+        const container = this.renderRoot.appendChild(
+          document.createElement('div')
+        );
+        this.renderRoot.appendChild(document.createTextNode(' '));
+        container.className = 'item';
+        container.appendChild(document.createTextNode(' '));
+        for (let i = 0; i < this.count; i++) {
+          this.things.push(
+            container.appendChild(document.createElement('x-thing')) as XThing
+          );
+          container.appendChild(document.createTextNode(' '));
+        }
+      }
+      let x = 0;
+      this.things.forEach((thing) => {
+        this.updateThing(
+          thing,
+          this.item[`value${x++}`],
+          this.item[`value${x++}`],
+          this.item[`value${x++}`]
+        );
+      });
     }
 
-    onClick(e: MouseEvent) {
-      console.log(e.type);
+    private updateThing(
+      thing: XThing,
+      from: string,
+      time: string,
+      subject: string
+    ) {
+      thing.from = from;
+      thing.time = time;
+      thing.subject = subject;
     }
   }
   customElements.define('x-item', XItem);
 
-  class XApp extends LitElement {
+  class XApp extends UpdatingElement {
     @property()
     items = data;
+    itemEls: XItem[] = [];
 
-    protected render() {
-      return html`${this.items.map(
-        (item) => html`<x-item .item="${item}"></x-item>`
-      )}`;
+    protected update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+      if (!this.hasUpdated) {
+        this.items.forEach(() => {
+          this.itemEls.push(
+            this.renderRoot.appendChild(
+              document.createElement('x-item')
+            ) as XItem
+          );
+        });
+      }
+      this.items.forEach((item, i) => (this.itemEls[i].item = item));
     }
   }
   customElements.define('x-app', XApp);
@@ -190,7 +234,7 @@ import {queryParams} from '../../utils/query-params.js';
     let el: XApp;
 
     const create = () => {
-      const el = document.createElement('x-app') as XApp;
+      el = document.createElement('x-app') as XApp;
       return container.appendChild(el) as XApp;
     };
 
