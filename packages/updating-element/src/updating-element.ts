@@ -855,8 +855,11 @@ export abstract class UpdatingElement extends HTMLElement {
           (_v, p) => {
             if (this.hasOwnProperty(p) && !this._instanceProperties?.has(p)) {
               console.warn(
-                `Reactive properties cannot be set as class ` +
-                  `fields. Property '${p as string}' will not trigger updates.`
+                `Reactive properties cannot be initialized using class ` +
+                  `fields, since these will overwrite accessors `+
+                  `used for detecting changes. Use a decorator ` +
+                  `or initialize properties in the constructor` +
+                  `instead. Property '${p as string}' will not trigger updates.`
               );
             }
           }
