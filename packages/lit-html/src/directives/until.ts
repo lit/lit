@@ -46,17 +46,18 @@ interface AsyncState {
 const isPromise = (x: unknown) => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
 };
-const _state = new WeakMap<Part, AsyncState>();
 // Effectively infinity, but a SMI.
 const _infinity = 0x7fffffff;
 
 class UntilDirective extends Directive {
+  private _state: WeakMap<Part, AsyncState>;
   private _attrPartIndex: number | undefined;
 
   constructor(_part: PartInfo, index?: number) {
     super();
 
     this._attrPartIndex = index;
+    this._state = new WeakMap<Part, AsyncState>();
   }
 
   render(...args: Array<unknown>) {
@@ -64,13 +65,13 @@ class UntilDirective extends Directive {
   }
 
   update(part: Part, args: Array<unknown>) {
-    let state = _state.get(part)!;
+    let state = this._state.get(part)!;
     if (state === undefined) {
       state = {
         lastRenderedIndex: _infinity,
         values: [],
       };
-      _state.set(part, state);
+      this._state.set(part, state);
     }
     const previousValues = state.values;
     let previousLength = previousValues.length;
