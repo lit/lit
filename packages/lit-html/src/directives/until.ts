@@ -22,6 +22,15 @@ import {
 } from '../lit-html.js';
 import {setPartValue} from '../parts.js';
 
+const DEV_MODE = true;
+
+if (DEV_MODE) {
+  console.warn(
+    'lit-html: The `until` directive is deprecated and will be removed in ' +
+      'the next major version.'
+  );
+}
+
 const isPrimitive = $private._isPrimitive;
 
 interface AsyncState {
