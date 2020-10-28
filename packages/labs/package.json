@@ -42,8 +42,6 @@
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier src/* --write",
-    "lint": "tslint --project ./",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
   "author": "The Polymer Authors",
