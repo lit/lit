@@ -48,10 +48,19 @@ const reservedProperties = [
   '_value',
   '_setValue',
   'createTreeWalker',
+  // TODO(sorvell): The properties below are only reserved so dev and prod can
+  // work together x-package.
   // Note, reserved so that prod updating-element platform-support
   // can share this key with dev lit-element platform-support which
   // imports it.
   '_handlesPrepareStyles',
+  // Note, reserved so that labs in dev mode can see these properties on
+  // updating-element in prod mode. Labs imports via 'updating-element' and
+  // therefore gets prod mode by default.
+  '_afterUpdate',
+  '_willUpdate',
+  '_connectedCallback',
+  '_disconnectedCallback',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -73,6 +82,8 @@ const crossPackagePropertyMangles = {
   // updating-element: UpdatingElement
   _afterUpdate: 'S',
   _willUpdate: 'T',
+  _connectedCallback: 'U',
+  _disconnectedCallback: 'V',
   // lit-element: LitElement
   _renderOptions: 'W',
 };

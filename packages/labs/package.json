@@ -16,6 +16,10 @@
     ".": {
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./callbacks/": {
+      "development": "./development/callbacks/",
+      "default": "./callbacks/"
     }
   },
   "files": [
@@ -28,7 +32,7 @@
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/",
+    "clean": "rm -rf index.{js,js.map,d.ts} callbacks/ development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",

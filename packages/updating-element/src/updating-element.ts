@@ -219,9 +219,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export type connectCallback = () => void;
-export type updateCallback = (changedProperties: PropertyValues) => void;
-
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -598,7 +595,13 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
+    this._connectedCallback();
   }
+
+  // Note, this is an override point for controller callbacks. Per spec, the
+  // `connectedCallback` itself cannot be changed.
+  //@internal
+  _connectedCallback() {}
 
   /**
    * Note, this method should be considered final and not overridden. It is
@@ -612,7 +615,14 @@ export abstract class UpdatingElement extends HTMLElement {
    * reserving the possibility of making non-breaking feature additions
    * when disconnecting at some point in the future.
    */
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this._disconnectedCallback();
+  }
+
+  // Note, this is an override point for controller callbacks. Per spec, the
+  // `disconnectedCallback` itself cannot be changed.
+  //@internal
+  _disconnectedCallback() {}
 
   /**
    * Synchronizes property values when attributes change.
@@ -801,7 +811,7 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._willUpdate();
+        this._willUpdate(changedProperties);
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -821,8 +831,8 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   // @internal
-  // Note, this is an override point for controllers
-  _willUpdate() {}
+  // Note, this is an override point for controller callbacks
+  _willUpdate(_changedProperties: PropertyValues) {}
 
   // Note, this is an override point for platform-support and controllers.
   // @internal

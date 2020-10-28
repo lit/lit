@@ -21,4 +21,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Adds the callbacks module which provides support for adding lifecycle callbacks for connected, disconnected, update, and updated to UpdatingElement.
 - Adds `labs` package. The `labs` package is an experimental playground for Lit helpers and tools.
