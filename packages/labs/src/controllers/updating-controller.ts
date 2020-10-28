@@ -64,8 +64,8 @@ export class UpdatingController {
   _boundWillUpdate = (changedProperties: PropertyValues) =>
     this._willUpdate(changedProperties);
   // @internal
-  _boundAfterUpdate = (changedProperties: PropertyValues) =>
-    this._afterUpdate(changedProperties);
+  _boundDidUpdate = (changedProperties: PropertyValues) =>
+    this._didUpdate(changedProperties);
 
   constructor(host: UpdatingHost) {
     this.addController(this, host);
@@ -89,7 +89,7 @@ export class UpdatingController {
       controller._boundDisconnectedCallback
     );
     addUpdateCallback(host as UpdatingElement, controller._boundWillUpdate);
-    addUpdatedCallback(host as UpdatingElement, controller._boundAfterUpdate);
+    addUpdatedCallback(host as UpdatingElement, controller._boundDidUpdate);
     // Allows controller to be added after element is connected.
     if (controller.element?.isConnected) {
       controller.onConnected();
@@ -112,10 +112,7 @@ export class UpdatingController {
       controller._boundDisconnectedCallback
     );
     removeUpdateCallback(host as UpdatingElement, controller._boundWillUpdate);
-    removeUpdatedCallback(
-      host as UpdatingElement,
-      controller._boundAfterUpdate
-    );
+    removeUpdatedCallback(host as UpdatingElement, controller._boundDidUpdate);
     controller.element = undefined;
     controller.host = undefined;
   }
@@ -134,7 +131,7 @@ export class UpdatingController {
   _willUpdate(changedProperties: PropertyValues) {
     this.onUpdate(changedProperties);
   }
-  _afterUpdate(changedProperties: PropertyValues) {
+  _didUpdate(changedProperties: PropertyValues) {
     this.onUpdated(changedProperties);
   }
 

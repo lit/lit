@@ -57,8 +57,8 @@ const reservedProperties = [
   // Note, reserved so that labs in dev mode can see these properties on
   // updating-element in prod mode. Labs imports via 'updating-element' and
   // therefore gets prod mode by default.
-  '_afterUpdate',
   '_willUpdate',
+  '_didUpdate',
   '_connectedCallback',
   '_disconnectedCallback',
 ];
@@ -80,8 +80,8 @@ const crossPackagePropertyMangles = {
   // lit-html: TemplateInstance
   _template: 'H',
   // updating-element: UpdatingElement
-  _afterUpdate: 'S',
   _willUpdate: 'T',
+  _didUpdate: 'S',
   _connectedCallback: 'U',
   _disconnectedCallback: 'V',
   // lit-element: LitElement

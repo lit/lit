@@ -21,7 +21,7 @@ interface UpdatingHost {
   _connectedCallback(): void;
   _disconnectedCallback(): void;
   _willUpdate(changedProperties: PropertyValues): void;
-  _afterUpdate(changedProperties: PropertyValues): void;
+  _didUpdate(changedProperties: PropertyValues): void;
 }
 
 // connectedCallback
@@ -152,8 +152,8 @@ const updatedCallbacks: WeakMap<
 const getUpdatedCallbacks = (host: UpdatingHost) => {
   let callbacks = updatedCallbacks.get(host);
   if (callbacks === undefined) {
-    const base = host._afterUpdate;
-    host._afterUpdate = function (changedProperties: PropertyValues) {
+    const base = host._didUpdate;
+    host._didUpdate = function (changedProperties: PropertyValues) {
       base.call(this, changedProperties);
       callbacks!.forEach((callback: updateCallback) =>
         callback(changedProperties)

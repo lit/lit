@@ -826,7 +826,7 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._afterUpdate(changedProperties);
+      this._didUpdate(changedProperties);
     }
   }
 
@@ -836,7 +836,7 @@ export abstract class UpdatingElement extends HTMLElement {
 
   // Note, this is an override point for platform-support and controllers.
   // @internal
-  _afterUpdate(changedProperties: PropertyValues) {
+  _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
