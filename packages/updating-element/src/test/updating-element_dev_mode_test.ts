@@ -213,7 +213,7 @@ if (DEV_MODE) {
         await a.updateComplete;
         assert.equal(warnings.length, 1);
         assert.include(warnings[0], 'update');
-        assert.include(warnings[0], 'pending');
+        assert.include(warnings[0], 'requested');
         warnings = [];
         a.requestUpdate();
         await a.updateComplete;
