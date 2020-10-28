@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PropertyValues, UpdatingElement} from '../updating-element.js';
-import {generateElementName} from './test-helpers.js';
+import {PropertyValues, UpdatingElement} from 'updating-element';
+import * as callbacks from '../../callbacks/callbacks.js';
+import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('UpdatingElement lifecycle callbacks', () => {
@@ -66,9 +67,9 @@ suite('UpdatingElement lifecycle callbacks', () => {
 
   test('connected/disconnected callbacks', () => {
     let connectedCount = 0;
-    el.connectedCallbacks.add(() => connectedCount++);
+    callbacks.addConnectedCallback(el, () => connectedCount++);
     let disconnectedCount = 0;
-    el.disconnectedCallbacks.add(() => disconnectedCount++);
+    callbacks.addDisconnectedCallback(el, () => disconnectedCount++);
     assert.equal(el.connectedCount, 1);
     assert.equal(el.disconnectedCount, 0);
     assert.equal(connectedCount, 0);
@@ -89,12 +90,12 @@ suite('UpdatingElement lifecycle callbacks', () => {
     let updateCount = 0;
     let updateChangedProperties: PropertyValues | null = null;
     let updatedChangedProperties: PropertyValues | null = null;
-    el.updateCallbacks.add((changedProperties: PropertyValues) => {
+    callbacks.addUpdateCallback(el, (changedProperties: PropertyValues) => {
       updateChangedProperties = changedProperties;
       updateCount++;
     });
     let updatedCount = 0;
-    el.updatedCallbacks.add((changedProperties: PropertyValues) => {
+    callbacks.addUpdatedCallback(el, (changedProperties: PropertyValues) => {
       updatedChangedProperties = changedProperties;
       updatedCount++;
     });
@@ -130,14 +131,14 @@ suite('UpdatingElement lifecycle callbacks', () => {
     const updatedCallback = () => {
       updatedCount++;
     };
-    el.connectedCallbacks.add(connectedCallback);
-    el.connectedCallbacks.add(connectedCallback);
-    el.disconnectedCallbacks.add(disconnectedCallback);
-    el.disconnectedCallbacks.add(disconnectedCallback);
-    el.updateCallbacks.add(updateCallback);
-    el.updateCallbacks.add(updateCallback);
-    el.updatedCallbacks.add(updatedCallback);
-    el.updatedCallbacks.add(updatedCallback);
+    callbacks.addConnectedCallback(el, connectedCallback);
+    callbacks.addConnectedCallback(el, connectedCallback);
+    callbacks.addDisconnectedCallback(el, disconnectedCallback);
+    callbacks.addDisconnectedCallback(el, disconnectedCallback);
+    callbacks.addUpdateCallback(el, updateCallback);
+    callbacks.addUpdateCallback(el, updateCallback);
+    callbacks.addUpdatedCallback(el, updatedCallback);
+    callbacks.addUpdatedCallback(el, updatedCallback);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
@@ -165,10 +166,10 @@ suite('UpdatingElement lifecycle callbacks', () => {
     const updatedCallback = () => {
       updatedCount++;
     };
-    el.connectedCallbacks.add(connectedCallback);
-    el.disconnectedCallbacks.add(disconnectedCallback);
-    el.updateCallbacks.add(updateCallback);
-    el.updatedCallbacks.add(updatedCallback);
+    callbacks.addConnectedCallback(el, connectedCallback);
+    callbacks.addDisconnectedCallback(el, disconnectedCallback);
+    callbacks.addUpdateCallback(el, updateCallback);
+    callbacks.addUpdatedCallback(el, updatedCallback);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
@@ -177,10 +178,10 @@ suite('UpdatingElement lifecycle callbacks', () => {
     await el.updateComplete;
     assert.equal(updateCount, 1);
     assert.equal(updatedCount, 1);
-    el.connectedCallbacks.delete(connectedCallback);
-    el.disconnectedCallbacks.delete(disconnectedCallback);
-    el.updateCallbacks.delete(updateCallback);
-    el.updatedCallbacks.delete(updatedCallback);
+    callbacks.removeConnectedCallback(el, connectedCallback);
+    callbacks.removeDisconnectedCallback(el, disconnectedCallback);
+    callbacks.removeUpdateCallback(el, updateCallback);
+    callbacks.removeUpdatedCallback(el, updatedCallback);
     container.removeChild(el);
     container.appendChild(el);
     el.foo = 'foo2';

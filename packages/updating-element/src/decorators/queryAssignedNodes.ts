@@ -26,6 +26,7 @@ import {
   standardPrototypeMethod,
 } from './base.js';
 
+// TODO(sorvell): Remove when https://github.com/webcomponents/polyfills/issues/397 is addressed.
 // x-browser support for matches
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ElementProto = Element.prototype as any;
@@ -77,10 +78,13 @@ export function queryAssignedNodes(
         const slot = this.renderRoot?.querySelector(slotSelector);
         let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
         if (nodes && selector) {
-          nodes = nodes.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE && (node as Element).matches
-              ? (node as Element).matches(selector)
-              : legacyMatches.call(node as Element, selector)
+          nodes = nodes.filter(
+            (node) =>
+              node.nodeType === Node.ELEMENT_NODE &&
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((node as any).matches
+                ? (node as Element).matches(selector)
+                : legacyMatches.call(node as Element, selector))
           );
         }
         return nodes;

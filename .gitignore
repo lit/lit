@@ -44,5 +44,6 @@
 /packages/updating-element/updating-element.*
 
 # labs package
-/packages/labs/controllers/
 /packages/labs/index.*
+/packages/labs/callbacks/
+/packages/labs/controllers/
