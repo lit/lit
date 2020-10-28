@@ -13,8 +13,8 @@
  */
 
 import {PropertyValues, UpdatingElement} from 'updating-element';
-import * as callbacks from '../callbacks/callbacks.js';
-import {generateElementName} from './test-helpers.js';
+import * as callbacks from '../../callbacks/callbacks.js';
+import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('UpdatingElement lifecycle callbacks', () => {
