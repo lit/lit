@@ -23,6 +23,7 @@ import {
   svg,
   TemplateResult,
   RenderOptions,
+  SanitizerFactory,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -33,6 +34,9 @@ import './polyfills.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
+// We don't have direct access to DEV_MODE, but this is a good enough
+// proxy.
+const DEV_MODE = render.setSanitizer != null;
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -1779,6 +1783,162 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+  });
+
+  let securityHooksSuiteFunction:
+    | Mocha.SuiteFunction
+    | Mocha.PendingSuiteFunction = suite;
+  if (!DEV_MODE) {
+    securityHooksSuiteFunction = suite.skip;
+  }
+  securityHooksSuiteFunction('enahnced security hooks', () => {
+    class FakeSanitizedWrapper {
+      sanitizeTo: string;
+      constructor(sanitizeTo: string) {
+        this.sanitizeTo = sanitizeTo;
+      }
+
+      toString() {
+        return `FakeSanitizedWrapper(${this.sanitizeTo})`;
+      }
+    }
+    const sanitizerCalls: Array<{
+      name: string;
+      type: 'property' | 'attribute' | 'text';
+      nodeName: string;
+      values: readonly unknown[];
+    }> = [];
+    const testSanitizer = (value: unknown) => {
+      if (value instanceof FakeSanitizedWrapper) {
+        return value.sanitizeTo;
+      }
+      return 'safeString';
+    };
+    const testSanitizerFactory: SanitizerFactory = (node, name, type) => {
+      const values: unknown[] = [];
+      sanitizerCalls.push({values, name, type, nodeName: node.nodeName});
+      return (value) => {
+        values.push(value);
+        return testSanitizer(value);
+      };
+    };
+    setup(() => {
+      render.setSanitizer(testSanitizerFactory);
+    });
+    teardown(() => {
+      render._testOnlyClearSanitizerFactoryDoNotCallOrElse();
+      sanitizerCalls.length = 0;
+    });
+
+    test('sanitizes text content when the text is alone', () => {
+      const getTemplate = (value: unknown) => html`<div>${value}</div>`;
+      render(getTemplate('foo'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>safeString</div>'
+      );
+
+      const safeFoo = new FakeSanitizedWrapper('foo');
+      render(getTemplate(safeFoo), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>foo</div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['foo', safeFoo],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
+      ]);
+    });
+
+    test('sanitizes text content when the text is interpolated', () => {
+      const getTemplate = (value: unknown) =>
+        html`<div>hello ${value} world</div>`;
+      render(getTemplate('big'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>hello safeString world</div>'
+      );
+
+      const safeBig = new FakeSanitizedWrapper('big');
+
+      render(getTemplate(safeBig), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>hello big world</div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['big', safeBig],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
+      ]);
+    });
+
+    test('sanitizes full attribute values', () => {
+      const getTemplate = (value: unknown) => html`<div attrib=${value}></div>`;
+      render(getTemplate('bad'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="safeString"></div>'
+      );
+
+      const safe = new FakeSanitizedWrapper('good');
+      render(getTemplate(safe), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="good"></div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['bad', safe],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
+      ]);
+    });
+
+    test('sanitizes concatonated attributes after contatonation', () => {
+      render(html`<div attrib="hello ${'big'} world"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="safeString"></div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['hello big world'],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
+      ]);
+    });
+
+    test('sanitizes properties', () => {
+      const getTemplate = (value: unknown) => html`<div .foo=${value}></div>`;
+      render(getTemplate('bad'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.equal((container.querySelector('div')! as any).foo, 'safeString');
+
+      const safe = new FakeSanitizedWrapper('good');
+      render(getTemplate(safe), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.equal((container.querySelector('div')! as any).foo, 'good');
+
+      assert.deepEqual(sanitizerCalls, [
+        {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
+      ]);
     });
   });
 });
