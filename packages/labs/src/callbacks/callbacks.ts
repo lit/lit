@@ -12,167 +12,174 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {UpdatingElement, PropertyValues} from 'updating-element';
+import {PropertyValues} from 'updating-element';
 
 export type updateCallback = (changedProperties: PropertyValues) => void;
 export type connectCallback = () => void;
 
+interface UpdatingHost {
+  _connectedCallback(): void;
+  _disconnectedCallback(): void;
+  _willUpdate(changedProperties: PropertyValues): void;
+  _afterUpdate(changedProperties: PropertyValues): void;
+}
+
 // connectedCallback
 const connectedCallbacks: WeakMap<
-  UpdatingElement,
+  UpdatingHost,
   Set<connectCallback>
 > = new WeakMap();
-const getConnectedCallbacks = (element: UpdatingElement) => {
-  let callbacks = connectedCallbacks.get(element);
+const getConnectedCallbacks = (host: UpdatingHost) => {
+  let callbacks = connectedCallbacks.get(host);
   if (callbacks === undefined) {
-    const base = element._connectedCallback;
-    element._connectedCallback = function () {
+    const base = host._connectedCallback;
+    host._connectedCallback = function () {
       // TODO(sorvell): Using `.call` is marginally slower than installing the
       // base method on the object, but this needs to be measured in a real
       // benchmark. The downside of installing on the object is the potential
-      // for name collision and/or the need to reserve an unmangled name.
+      // for name collision and/or the need to reserve an un-mangled name.
       base.call(this);
       callbacks!.forEach((callback: connectCallback) => callback());
     };
-    connectedCallbacks.set(element, (callbacks = new Set()));
+    connectedCallbacks.set(host, (callbacks = new Set()));
   }
   return callbacks;
 };
 
 /**
- * Adds a connectedCallback callback to the given element.
+ * Adds a connectedCallback callback to the given host.
  */
 export const addConnectedCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: connectCallback
 ) => {
-  getConnectedCallbacks(element).add(callback);
+  getConnectedCallbacks(host).add(callback);
 };
 
 /**
- * Removes a connectedCallback callback from the given element.
+ * Removes a connectedCallback callback from the given host.
  */
 export const removeConnectedCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: connectCallback
 ) => {
-  getConnectedCallbacks(element).delete(callback);
+  getConnectedCallbacks(host).delete(callback);
 };
 
 // disconnectedCallback
 const disconnectedCallbacks: WeakMap<
-  UpdatingElement,
+  UpdatingHost,
   Set<connectCallback>
 > = new WeakMap();
-const getDisconnectedCallbacks = (element: UpdatingElement) => {
-  let callbacks = disconnectedCallbacks.get(element);
+const getDisconnectedCallbacks = (host: UpdatingHost) => {
+  let callbacks = disconnectedCallbacks.get(host);
   if (callbacks === undefined) {
-    const base = element._disconnectedCallback;
-    element._disconnectedCallback = function () {
+    const base = host._disconnectedCallback;
+    host._disconnectedCallback = function () {
       base.call(this);
       callbacks!.forEach((callback: connectCallback) => callback());
     };
-    disconnectedCallbacks.set(element, (callbacks = new Set()));
+    disconnectedCallbacks.set(host, (callbacks = new Set()));
   }
   return callbacks;
 };
 
 /**
- * Adds a disconnectedCallback callback to the given element.
+ * Adds a disconnectedCallback callback to the given host.
  */
 export const addDisconnectedCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: connectCallback
 ) => {
-  getDisconnectedCallbacks(element).add(callback);
+  getDisconnectedCallbacks(host).add(callback);
 };
 
 /**
- * Removes a disconnectedCallback callback from the given element.
+ * Removes a disconnectedCallback callback from the given host.
  */
 export const removeDisconnectedCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: connectCallback
 ) => {
-  getDisconnectedCallbacks(element).delete(callback);
+  getDisconnectedCallbacks(host).delete(callback);
 };
 
 // updateCallback
 const updateCallbacks: WeakMap<
-  UpdatingElement,
+  UpdatingHost,
   Set<updateCallback>
 > = new WeakMap();
-const getUpdateCallbacks = (element: UpdatingElement) => {
-  let callbacks = updateCallbacks.get(element);
+const getUpdateCallbacks = (host: UpdatingHost) => {
+  let callbacks = updateCallbacks.get(host);
   if (callbacks === undefined) {
-    const base = element._willUpdate;
-    element._willUpdate = function (changedProperties: PropertyValues) {
+    const base = host._willUpdate;
+    host._willUpdate = function (changedProperties: PropertyValues) {
       callbacks!.forEach((callback: updateCallback) =>
         callback(changedProperties)
       );
       base.call(this, changedProperties);
     };
-    updateCallbacks.set(element, (callbacks = new Set()));
+    updateCallbacks.set(host, (callbacks = new Set()));
   }
   return callbacks;
 };
 
 /**
- * Adds an updateCallback callback to the given element.
+ * Adds an updateCallback callback to the given host.
  */
 export const addUpdateCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: updateCallback
 ) => {
-  getUpdateCallbacks(element).add(callback);
+  getUpdateCallbacks(host).add(callback);
 };
 
 /**
- * Removes an updateCallback callback from the given element.
+ * Removes an updateCallback callback from the given host.
  */
 export const removeUpdateCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: updateCallback
 ) => {
-  getUpdateCallbacks(element).delete(callback);
+  getUpdateCallbacks(host).delete(callback);
 };
 
 // updatedCallback
 const updatedCallbacks: WeakMap<
-  UpdatingElement,
+  UpdatingHost,
   Set<updateCallback>
 > = new WeakMap();
-const getUpdatedCallbacks = (element: UpdatingElement) => {
-  let callbacks = updatedCallbacks.get(element);
+const getUpdatedCallbacks = (host: UpdatingHost) => {
+  let callbacks = updatedCallbacks.get(host);
   if (callbacks === undefined) {
-    const base = element._afterUpdate;
-    element._afterUpdate = function (changedProperties: PropertyValues) {
+    const base = host._afterUpdate;
+    host._afterUpdate = function (changedProperties: PropertyValues) {
       base.call(this, changedProperties);
       callbacks!.forEach((callback: updateCallback) =>
         callback(changedProperties)
       );
     };
-    updatedCallbacks.set(element, (callbacks = new Set()));
+    updatedCallbacks.set(host, (callbacks = new Set()));
   }
   return callbacks;
 };
 
 /**
- * Adds an updatedCallback callback to the given element.
+ * Adds an updatedCallback callback to the given host.
  */
 export const addUpdatedCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: updateCallback
 ) => {
-  getUpdatedCallbacks(element).add(callback);
+  getUpdatedCallbacks(host).add(callback);
 };
 
 /**
- * Removes an updatedCallback callback from the given element.
+ * Removes an updatedCallback callback from the given host.
  */
 export const removeUpdatedCallback = (
-  element: UpdatingElement,
+  host: UpdatingHost,
   callback: updateCallback
 ) => {
-  getUpdatedCallbacks(element).delete(callback);
+  getUpdatedCallbacks(host).delete(callback);
 };
