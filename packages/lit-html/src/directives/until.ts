@@ -34,6 +34,9 @@ interface AsyncState {
   values: unknown[];
 }
 
+const isPromise = (x: unknown) => {
+  return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
+};
 const _state = new WeakMap<Part, AsyncState>();
 // Effectively infinity, but a SMI.
 const _infinity = 0x7fffffff;
@@ -48,13 +51,7 @@ class UntilDirective extends Directive {
   }
 
   render(...args: Array<unknown>) {
-    return (
-      args.find((x) => {
-        return (
-          isPrimitive(x) || typeof (x as {then?: unknown}).then !== 'function'
-        );
-      }) ?? noChange
-    );
+    return args.find((x) => !isPromise(x)) ?? noChange;
   }
 
   update(part: Part, args: Array<unknown>) {
@@ -79,10 +76,7 @@ class UntilDirective extends Directive {
       const value = args[i];
 
       // Render non-Promise values immediately
-      if (
-        isPrimitive(value) ||
-        typeof (value as {then?: unknown}).then !== 'function'
-      ) {
+      if (!isPromise(value)) {
         state.lastRenderedIndex = i;
         // Since a lower-priority value will never overwrite a higher-priority
         // synchronous value, we can stop processing now.
