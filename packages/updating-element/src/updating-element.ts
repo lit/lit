@@ -912,8 +912,9 @@ export abstract class UpdatingElement extends HTMLElement {
       )
     ) {
       console.warn(
-        `An updating is pending after an ` +
-          `update completed. This should be avoided unless the next update ` +
+        `An update was requested (generally because a property was set) ` +
+          `after an update completed, causing a new update to be scheduled. ` +
+          `This is inefficient and should be avoided unless the next update ` +
           `can only be scheduled as a side effect of the previous update.`
       );
     }
