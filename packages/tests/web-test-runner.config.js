@@ -1,3 +1,4 @@
+import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
@@ -140,6 +141,7 @@ const browsers = (process.env.BROWSERS || 'preset:local')
   .map(parseBrowser)
   .flat();
 
+const require = createRequire(import.meta.url);
 const seenDevModeLogs = new Set();
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
@@ -159,7 +161,22 @@ export default {
     fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin(),
+    legacyPlugin({
+      polyfills: {
+        webcomponents: false,
+        custom: [
+          {
+            name: 'webcomponents-2.5.0',
+            path: require.resolve(
+              '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
+            ),
+            // Always load.
+            test: 'true',
+            module: false,
+          },
+        ],
+      },
+    }),
   ],
   filterBrowserLogs: ({args}) => {
     if (mode === 'dev' && args[0] && args[0].includes('in dev mode')) {
