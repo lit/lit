@@ -519,25 +519,31 @@ export function* renderTemplateResult(
           op.name,
           statics
         );
-        let value =
+        const value =
           part.strings === undefined ? result.values[partIndex] : result.values;
-        // Resolve any directives and contenate multiple parts into a final value
-        value = part._resolveValue(value, partIndex);
+        // Use the part setter to resolve directives/concatenate multiple parts
+        // into a final value (captured by passing in a commitValue override),
+        // and then render that
+        let committedValue: unknown = noChange;
+        // Values for EventParts are never emitted
+        if (!(part instanceof EventPart)) {
+          part._setValue(value, partIndex, (v: unknown) => {
+            committedValue = v;
+          });
+        }
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`
-        if (value !== noChange) {
+        if (committedValue !== noChange) {
           const instance = op.useCustomElementInstance
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
           if (part instanceof PropertyPart) {
-            yield* renderPropertyPart(instance, op, value);
-          } else if (part instanceof EventPart) {
-            // Event binding, do nothing with values
+            yield* renderPropertyPart(instance, op, committedValue);
           } else if (part instanceof BooleanAttributePart) {
             // Boolean attribute binding
-            yield* renderBooleanAttributePart(instance, op, value);
+            yield* renderBooleanAttributePart(instance, op, committedValue);
           } else {
-            yield* renderAttributePart(instance, op, value);
+            yield* renderAttributePart(instance, op, committedValue);
           }
         }
         partIndex += statics.length - 1;
