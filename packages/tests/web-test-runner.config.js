@@ -32,11 +32,11 @@ const browserPresets = {
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
-    'sauce:Windows 10/firefox@68', // Current ESR
-    'sauce:Windows 10/chrome@latest-3',
-    'sauce:macOS 10.15/safari@latest',
+    'sauce:Windows 10/Firefox@68', // Current ESR
+    'sauce:Windows 10/Chrome@latest-3',
+    'sauce:macOS 10.15/Safari@latest',
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    'sauce:Windows 7/internet explorer@11', // Browser start timeout
+    'sauce:Windows 7/Internet Explorer@11', // Browser start timeout
   ],
 };
 
