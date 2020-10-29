@@ -32,7 +32,7 @@ const browserPresets = {
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
     'sauce:Windows 10/firefox@68', // Current ESR
-    'sauce:Windows 10/chrome@latest-4',
+    'sauce:Windows 10/chrome@latest-2',
     'sauce:macOS 10.15/safari@latest',
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
     'sauce:Windows 7/internet explorer@11', // Browser start timeout
