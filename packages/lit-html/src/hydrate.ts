@@ -16,7 +16,6 @@
 import {TemplateResult, DirectiveResult} from './lit-html.js';
 
 import {
-  nothing,
   noChange,
   EventPart,
   NodePart,
@@ -34,6 +33,8 @@ const {
 } = $private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
+
+const noOpCommit = () => {};
 
 /**
  * Information needed to rehydrate a single TemplateResult.
@@ -349,26 +350,21 @@ const createAttributeParts = (
         options
       );
 
-      let value =
+      const value =
         instancePart.strings === undefined
           ? state.result.values[state.instancePartIndex]
           : state.result.values;
 
-      if (instancePart instanceof EventPart) {
-        // Install event listeners since they were not serialized
-        instancePart._setValue(value);
-      } else {
-        // Resolving the attribute value primes _value with the resolved
-        // directive value; we only then commit that value for event/property
-        // parts since those were not serialized
-        value = instancePart._resolveValue(value, state.instancePartIndex);
-        if (instancePart instanceof PropertyPart) {
-          if (value !== nothing && value !== noChange) {
-            // Commit property values, since they were not serialized
-            instancePart._commitValue(value);
-          }
-        }
-      }
+      // Setting the attribute value primes _value with the resolved
+      // directive value; we only then commit that value for event/property
+      // parts since those were not serialized (passing `undefined` uses the
+      // default commitValue; passing `noOpCommit` bypasses it)
+      const commitValue =
+        instancePart instanceof EventPart ||
+        instancePart instanceof PropertyPart
+          ? undefined
+          : noOpCommit;
+      instancePart._setValue(value, state.instancePartIndex, commitValue);
       state.templatePartIndex++;
       state.instancePartIndex += templatePart._strings.length - 1;
       instance._parts.push(instancePart);

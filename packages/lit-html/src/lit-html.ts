@@ -826,25 +826,25 @@ export type Part =
 export class NodePart {
   readonly type = NODE_PART;
   _value: unknown;
-  private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _directive?: Directive;
   /** @internal */
   _startNode: ChildNode;
   /** @internal */
   _endNode: ChildNode | null;
+  private _textSanitizer: ValueSanitizer | undefined;
 
   constructor(
     startNode: ChildNode,
     endNode: ChildNode | null,
     public options: RenderOptions | undefined
   ) {
+    this._startNode = startNode;
+    this._endNode = endNode;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
     }
-    this._startNode = startNode;
-    this._endNode = endNode;
   }
 
   get parentNode(): Node {
@@ -1116,17 +1116,13 @@ export class AttributePart {
   }
 
   /**
-   * Resolves the final value of the attribute from possibly multiple values
-   * and static strings. This method is called by `_setValue` on the client, and
-   * also by `hydrate()` and `lit-ssr` to retrieve the resolved value of a part
-   * without committing it.
-   *
+   * Sets the value of this part by resolving the value from possibly multiple
+   * values and static strings and committing it to the DOM.
    * If this part is single-valued, `this._strings` will be undefined, and the
    * method will be called with a single value argument. If this part is
    * multi-value, `this._strings` will be defined, and the method is called
    * with the value array of the part's owning TemplateInstance, and an offset
    * into the value array from which the values should be read.
-   *
    * This method is overloaded this way to eliminate short-lived array slices
    * of the template instance values, and allow a fast-path for single-valued
    * parts.
@@ -1134,10 +1130,16 @@ export class AttributePart {
    * @param value The part value, or an array of values for multi-valued parts
    * @param from the index to start reading values from. `undefined` for
    *   single-valued parts
-   *
+   * @param commitValue An optional method to override the _commitValue call;
+   *   is used in hydration to no-op re-setting serialized attributes, and in
+   *   to no-op the DOM operation and capture the value for serialization
    * @internal
    */
-  _resolveValue(value: unknown | Array<unknown>, from?: number): unknown {
+  _setValue(
+    value: unknown | Array<unknown>,
+    from?: number,
+    commitValue?: (v: unknown) => void
+  ) {
     const strings = this.strings;
 
     if (strings === undefined) {
@@ -1146,10 +1148,12 @@ export class AttributePart {
       // Only dirty-check primitives and `nothing`:
       // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
       // `nothing`. `v === this._value` is the dirty-check.
-      return ((isPrimitive(v) || v === nothing) && v === this._value) ||
-        v === noChange
-        ? noChange
-        : (this._value = v);
+      if (
+        !((isPrimitive(v) || v === nothing) && v === this._value) &&
+        v !== noChange
+      ) {
+        (commitValue || this._commitValue).call(this, (this._value = v));
+      }
     } else {
       // Interpolation case
       let attributeValue = strings[0];
@@ -1178,32 +1182,14 @@ export class AttributePart {
           (this._value as Array<unknown>)[i] = v;
         }
         attributeValue +=
-          (typeof v === 'string' ? v : String(v ?? '')) + strings[i + 1];
+          (typeof v === 'string' ? v : String(v)) + strings[i + 1];
       }
-      return change ? (remove ? nothing : attributeValue) : noChange;
-    }
-  }
-
-  /**
-   * Sets the value of this part by resolving the value from possibly multiple
-   * values and static strings and committing it to the DOM.
-   *
-   * This method is overloaded this way to eliminate short-lived array slices
-   * of the template instance values, and allow a fast-path for single-valued
-   * parts.
-   *
-   * @param value The part value, or an array of values for multi-valued parts
-   * @param from the index to start reading values from. `undefined` for
-   *   single-valued parts
-   *
-   * @internal
-   */
-  _setValue(value: unknown): void;
-  _setValue(value: Array<unknown>, from: number): void;
-  _setValue(value: unknown | Array<unknown>, from?: number) {
-    const resolvedValue = this._resolveValue(value, from);
-    if (resolvedValue !== noChange) {
-      this._commitValue(resolvedValue);
+      if (change) {
+        (commitValue || this._commitValue).call(
+          this,
+          remove ? nothing : attributeValue
+        );
+      }
     }
   }
 
@@ -1220,7 +1206,7 @@ export class AttributePart {
             'attribute'
           );
         }
-        value = this._sanitizer(value);
+        value = this._sanitizer(value ?? '');
       }
       this.element.setAttribute(this.name, (value ?? '') as string);
     }
