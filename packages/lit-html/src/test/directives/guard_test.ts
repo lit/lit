@@ -107,7 +107,6 @@ suite('guard', () => {
 
     const guardedTemplate = () => {
       callCount += 1;
-      // prettier-ignore
       return html`<ul>${items.map((i) => html`<li>${i}</li>`)}</ul>`;
     };
 
@@ -140,7 +139,6 @@ suite('guard', () => {
 
     const guardedTemplate = () => {
       callCount += 1;
-      // prettier-ignore
       return html`<ul>${items.map((i) => html`<li>${i}</li>`)}</ul>`;
     };
 
