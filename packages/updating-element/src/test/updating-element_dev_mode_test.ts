@@ -49,73 +49,21 @@ if (DEV_MODE) {
       }
     });
 
-    // Note, this warning is issued once only so it must be the first test
-    // in this module.
-    (missingPlatformSupport ? test : test.skip)(
-      'warning for platform-support',
-      async () => {
-        class A extends UpdatingElement {}
-        customElements.define(generateElementName(), A);
-        const a = new A();
-        container.appendChild(a);
-        await a.updateComplete;
-        assert.equal(warnings.length, 1);
-        assert.include(warnings[0], 'platform-support');
-      }
-    );
+    // TODO(sorvell): To enable these, need to either configure the test
+    // environment before loading any code or tweak the code to make the
+    // console output detectable
+    // under testing.
+    suite.skip('Initial warnings', () => {
+      test('warns for dev mode', async () => {
+        assert.include(warnings[0], 'Do not use in production!');
+      });
 
-    (missingPlatformSupport ? test : test.skip)(
-      'warning for platform-support generated only once',
-      async () => {
-        class B extends UpdatingElement {}
-        customElements.define(generateElementName(), B);
-        const b = new B();
-        container.appendChild(b);
-        await b.updateComplete;
-        assert.equal(warnings.length, 0);
-      }
-    );
-
-    test('warns when `static render` is implemented', () => {
-      class A extends UpdatingElement {
-        static render() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'render');
-    });
-
-    test('warns on first instance only', () => {
-      class A extends UpdatingElement {
-        static render() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      new A();
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'render');
-    });
-
-    test('warns when `static getStyles` is implemented', () => {
-      class A extends UpdatingElement {
-        static getStyles() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'getStyles');
-    });
-
-    test('warns when `adoptStyles` is implemented', () => {
-      class A extends UpdatingElement {
-        adoptStyles() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'adoptStyles');
+      (missingPlatformSupport ? test : test.skip)(
+        'warns for missing platform-support',
+        async () => {
+          assert.include(warnings[1], 'platform-support');
+        }
+      );
     });
 
     test('warns when `initialize` is implemented', () => {
@@ -123,6 +71,18 @@ if (DEV_MODE) {
         initialize() {}
       }
       customElements.define(generateElementName(), A);
+      new A();
+      assert.equal(warnings.length, 1);
+      assert.include(warnings[0], 'initialize');
+    });
+
+    test('warns on first instance only', () => {
+      class A extends UpdatingElement {
+        initialize() {}
+      }
+      customElements.define(generateElementName(), A);
+      new A();
+      new A();
       new A();
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'initialize');
@@ -142,6 +102,7 @@ if (DEV_MODE) {
       class A extends UpdatingElement {
         static properties = {
           fooProp: {},
+          barProp: {},
         };
 
         constructor() {
@@ -153,6 +114,12 @@ if (DEV_MODE) {
             enumerable: false,
             configurable: true,
           });
+          Object.defineProperty(this, 'barProp', {
+            value: 'bar',
+            writable: false,
+            enumerable: false,
+            configurable: true,
+          });
         }
       }
       customElements.define(generateElementName(), A);
@@ -160,7 +127,7 @@ if (DEV_MODE) {
       container.appendChild(a);
       await a.updateComplete;
       assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'fooProp');
+      assert.include(warnings[0], 'fooProp, barProp');
       assert.include(warnings[0], 'class field');
     });
 

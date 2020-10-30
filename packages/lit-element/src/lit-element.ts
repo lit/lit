@@ -60,9 +60,6 @@ export * from 'updating-element';
 export * from 'lit-html';
 
 const DEV_MODE = true;
-if (DEV_MODE) {
-  console.warn('lit-element is in dev mode. Not recommended for production!');
-}
 
 declare global {
   interface Window {
@@ -146,3 +143,35 @@ export class LitElement extends UpdatingElement {
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litElementPlatformSupport']?.({LitElement});
+
+// DEV mode warnings
+if (DEV_MODE) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (LitElement as any).finalize = function () {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finalized = (UpdatingElement as any).finalize.call(this);
+    if (!finalized) {
+      return false;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const warnRemoved = (obj: any, name: string) => {
+      if (obj[name] !== undefined) {
+        console.warn(
+          `\`${name}\` is implemented. It ` +
+            `has been removed from this version of LitElement. `
+          // TODO(sorvell): add link to changelog when location has stabilized.
+          // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/lit-element/CHANGELOG.md`
+        );
+      }
+    };
+    [`render`, `getStyles`].forEach((name: string) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      warnRemoved(this as any, name)
+    );
+    [`adoptStyles`].forEach((name: string) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      warnRemoved(this.prototype as any, name)
+    );
+    return true;
+  };
+}

@@ -29,9 +29,20 @@ export * from './css-tag.js';
 
 const DEV_MODE = true;
 if (DEV_MODE) {
-  console.warn(
-    `updating-element is in dev mode. Not recommended for production!`
-  );
+  // TODO(sorvell): Add a link to the docs about using dev v. production mode.
+  console.warn(`Running in dev mode. Do not use in production!`);
+
+  // Issue platform support warning.
+  if (
+    window.ShadyDOM?.inUse &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['updatingElementPlatformSupport'] === undefined
+  ) {
+    console.warn(
+      `Shadow DOM is being polyfilled via ShadyDOM but ` +
+        `the \`platform-support\` module has not been loaded.`
+    );
+  }
 }
 
 /*
@@ -244,7 +255,7 @@ export type Warnings = 'change-in-update' | 'migration';
  */
 export abstract class UpdatingElement extends HTMLElement {
   // Note, these are patched in only in DEV_MODE.
-  static warnings?: Set<Warnings>;
+  static enabledWarnings?: Warnings[];
   static enableWarning: (type: Warnings) => void;
   static disableWarning: (type: Warnings) => void;
   /*
@@ -463,39 +474,17 @@ export abstract class UpdatingElement extends HTMLElement {
         if (obj[name] !== undefined) {
           console.warn(
             `\`${name}\` is implemented. It ` +
-              `has been removed from this version of UpdatingElement.`
+              `has been removed from this version of UpdatingElement. `
+            // TODO(sorvell): add link to changelog when location has stabilized.
+            // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/updating-element/CHANGELOG.md`
           );
         }
       };
-      [`render`, `getStyles`].forEach((name: string) =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        warnRemoved(this as any, name)
+      [`initialize`, `requestUpdateInternal`, `_getUpdateComplete`].forEach(
+        (name: string) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          warnRemoved(this.prototype as any, name)
       );
-      [
-        `adoptStyles`,
-        `initialize`,
-        `requestUpdateInternal`,
-        `_getUpdateComplete`,
-      ].forEach((name: string) =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        warnRemoved(this.prototype as any, name)
-      );
-
-      // Issue platform support warning once only.
-      if (
-        window.ShadyDOM?.inUse &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any)['updatingElementPlatformSupport'] === undefined &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (UpdatingElement as any)._issuedPlatformSupportWarning === undefined
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (UpdatingElement as any)._issuedPlatformSupportWarning = true;
-        console.warn(
-          `Shadow DOM is being polyfilled via ShadyDOM but ` +
-            `the \`platform-support\` module has not been loaded.`
-        );
-      }
     }
     return true;
   }
@@ -693,9 +682,9 @@ export abstract class UpdatingElement extends HTMLElement {
       const attrValue = toAttribute!(value, options.type);
       if (
         DEV_MODE &&
-        (this.constructor as typeof UpdatingElement).warnings!.has(
+        (this.constructor as typeof UpdatingElement).enabledWarnings!.indexOf(
           'migration'
-        ) &&
+        ) >= 0 &&
         attrValue === undefined
       ) {
         console.warn(
@@ -851,19 +840,27 @@ export abstract class UpdatingElement extends HTMLElement {
     if (!this.hasUpdated) {
       // Produce warning if any class properties are shadowed by class fields
       if (DEV_MODE) {
+        const shadowedProperties: string[] = [];
         (this.constructor as typeof UpdatingElement).elementProperties!.forEach(
           (_v, p) => {
             if (this.hasOwnProperty(p) && !this._instanceProperties?.has(p)) {
-              console.warn(
-                `Reactive properties cannot be initialized using class ` +
-                  `fields, since these will overwrite accessors `+
-                  `used for detecting changes. Use a decorator ` +
-                  `or initialize properties in the constructor` +
-                  `instead. Property '${p as string}' will not trigger updates.`
-              );
+              shadowedProperties.push(p as string);
             }
           }
         );
+        if (shadowedProperties.length) {
+          // TODO(sorvell): Link to docs explanation of this issue.
+          console.warn(
+            `The following properties will not trigger updates as expected ` +
+              `because they are set using class fields: ` +
+              `${shadowedProperties.join(', ')}. ` +
+              `Native class fields and some compiled output will overwrite ` +
+              `accessors used for detecting changes. To fix this issue, ` +
+              `either initialize properties in the constructor or adjust ` +
+              `your compiler settings; for example, for TypeScript set ` +
+              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.`
+          );
+        }
       }
       (this as {
         renderRoot: Element | DocumentFragment;
@@ -910,9 +907,9 @@ export abstract class UpdatingElement extends HTMLElement {
     if (
       DEV_MODE &&
       this.isUpdatePending &&
-      (this.constructor as typeof UpdatingElement).warnings!.has(
+      (this.constructor as typeof UpdatingElement).enabledWarnings!.indexOf(
         'change-in-update'
-      )
+      ) >= 0
     ) {
       console.warn(
         `An update was requested (generally because a property was set) ` +
@@ -1056,18 +1053,23 @@ if (DEV_MODE) {
 
 if (DEV_MODE) {
   // Default warning set.
-  UpdatingElement.warnings = new Set(['change-in-update']);
+  UpdatingElement.enabledWarnings = ['change-in-update'];
   const ensureOwnWarnings = function (ctor: typeof UpdatingElement) {
-    if (!ctor.hasOwnProperty('warnings')) {
-      ctor.warnings = new Set(ctor.warnings);
+    if (!ctor.hasOwnProperty('enabledWarnings')) {
+      ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };
   UpdatingElement.enableWarning = function (warning: Warnings) {
     ensureOwnWarnings(this);
-    this.warnings!.add(warning);
+    if (this.enabledWarnings!.indexOf(warning) < 0) {
+      this.enabledWarnings!.push(warning);
+    }
   };
   UpdatingElement.disableWarning = function (warning: Warnings) {
     ensureOwnWarnings(this);
-    this.warnings!.delete(warning);
+    const i = this.enabledWarnings!.indexOf(warning);
+    if (i >= 0) {
+      this.enabledWarnings!.splice(i, 1);
+    }
   };
 }
