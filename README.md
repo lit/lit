@@ -13,6 +13,8 @@ following links for details on the changes being made:
 
 - [`lit-html`](./packages/lit-html)
 - [`lit-element`](./packages/lit-element)
+- [`updating-element`](./packages/updating-element)
+- [`lit-ssr`](./packages/lit-ssr)
 - [`tests`](./packages/tests)
 - [`benchmarks`](./packages/benchmarks)
 
