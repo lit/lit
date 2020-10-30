@@ -32,9 +32,11 @@ export const prodResolveRemapConfig = {
     // versions of these.
     {from: 'lit-html/development/test/', to: null},
     {from: 'lit-element/development/test/', to: null},
+    {from: 'updating-element/development/test/', to: null},
     // Remap any other development/ modules up one level to the production
     // version.
     {from: 'lit-html/development/', to: 'lit-html/'},
+    {from: 'updating-element/development/', to: 'updating-element/'},
     {from: 'lit-element/development/', to: 'lit-element/'},
   ],
 };

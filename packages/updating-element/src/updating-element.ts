@@ -28,6 +28,14 @@ import {
 export * from './css-tag.js';
 
 const DEV_MODE = true;
+
+let requestUpdateThenable: {
+  then: (
+    onfulfilled?: (value: boolean) => void,
+    _onrejected?: () => void
+  ) => void;
+};
+
 if (DEV_MODE) {
   // TODO(sorvell): Add a link to the docs about using dev v. production mode.
   console.warn(`Running in dev mode. Do not use in production!`);
@@ -43,6 +51,21 @@ if (DEV_MODE) {
         `the \`platform-support\` module has not been loaded.`
     );
   }
+
+  requestUpdateThenable = {
+    then: (
+      onfulfilled?: (value: boolean) => void,
+      _onrejected?: () => void
+    ) => {
+      console.warn(
+        `\`requestUpdate\` no longer returns a Promise.` +
+          `Use \`updateComplete\` instead.`
+      );
+      if (onfulfilled !== undefined) {
+        onfulfilled(false);
+      }
+    },
+  };
 }
 
 /*
@@ -785,6 +808,9 @@ export abstract class UpdatingElement extends HTMLElement {
     if (!this.isUpdatePending && shouldRequestUpdate) {
       this._updatePromise = this._enqueueUpdate();
     }
+    // Note, since this no longer returns a promise, in dev mode we return a
+    // thenable which warns if it's called.
+    return DEV_MODE ? requestUpdateThenable : undefined;
   }
 
   /**
@@ -1023,34 +1049,6 @@ export abstract class UpdatingElement extends HTMLElement {
 (globalThis as any)['updatingElementPlatformSupport']?.({UpdatingElement});
 
 // Dev mode warnings...
-if (DEV_MODE) {
-  const requestUpdateThenable = {
-    then: (
-      onfulfilled?: (value: boolean) => void,
-      _onrejected?: () => void
-    ) => {
-      console.warn(
-        `\`requestUpdate\` no longer returns a Promise.` +
-          `Use \`updateComplete\` instead.`
-      );
-      if (onfulfilled !== undefined) {
-        onfulfilled(false);
-      }
-    },
-  };
-
-  const requestUpdate = UpdatingElement.prototype.requestUpdate;
-  UpdatingElement.prototype.requestUpdate = function (
-    this: UpdatingElement,
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration
-  ) {
-    requestUpdate.call(this, name, oldValue, options);
-    return requestUpdateThenable;
-  };
-}
-
 if (DEV_MODE) {
   // Default warning set.
   UpdatingElement.enabledWarnings = ['change-in-update'];
