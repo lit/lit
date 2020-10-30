@@ -15,7 +15,6 @@
 import {AttributePart, directive, html, render} from '../../lit-html.js';
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
