@@ -16,7 +16,6 @@ import {until} from '../../directives/until.js';
 import {html, render} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 const laterTask = () => new Promise((resolve) => setTimeout(resolve));
 
