@@ -1134,7 +1134,7 @@ export class AttributePart {
   _setValue(
     value: unknown | Array<unknown>,
     from?: number,
-    commitValue?: (v: unknown) => void
+    noCommit?: boolean
   ) {
     const strings = this.strings;
 
@@ -1148,7 +1148,10 @@ export class AttributePart {
         !((isPrimitive(v) || v === nothing) && v === this._value) &&
         v !== noChange
       ) {
-        (commitValue || this._commitValue).call(this, (this._value = v));
+        this._value = v;
+        if (!noCommit) {
+          this._commitValue(v);
+        }
       }
     } else {
       // Interpolation case
@@ -1180,11 +1183,8 @@ export class AttributePart {
         attributeValue +=
           (typeof v === 'string' ? v : String(v)) + strings[i + 1];
       }
-      if (change) {
-        (commitValue || this._commitValue).call(
-          this,
-          remove ? nothing : attributeValue
-        );
+      if (change && !noCommit) {
+        this._commitValue(remove ? nothing : attributeValue);
       }
     }
   }
