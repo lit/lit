@@ -48,6 +48,9 @@ tsconfig.tsbuildinfo
 /packages/updating-element/platform-support.*
 /packages/updating-element/updating-element.*
 
+# labs package
+/packages/labs/index.*
+
 # lit-ssr package
 /packages/lit-ssr/lib
 /packages/lit-ssr/demo

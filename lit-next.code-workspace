@@ -17,6 +17,10 @@
 			"path": "packages/lit-ssr"
 		},
 		{
+      "name": "labs",
+      "path": "packages/labs"
+    },
+		{
 			"name": "tests",
 			"path": "packages/tests"
 		},
