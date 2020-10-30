@@ -527,9 +527,10 @@ export function* renderTemplateResult(
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
         if (!(part instanceof EventPart)) {
-          part._setValue(value, partIndex, (v: unknown) => {
-            committedValue = v;
-          });
+          part._commitValue = (value: unknown) => {
+            committedValue = value;
+          };
+          part._setValue(value, partIndex);
         }
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`

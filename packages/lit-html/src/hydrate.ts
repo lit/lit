@@ -34,8 +34,6 @@ const {
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
-const noOpCommit = () => {};
-
 /**
  * Information needed to rehydrate a single TemplateResult.
  */
@@ -357,14 +355,13 @@ const createAttributeParts = (
 
       // Setting the attribute value primes _value with the resolved
       // directive value; we only then commit that value for event/property
-      // parts since those were not serialized (passing `undefined` uses the
-      // default commitValue; passing `noOpCommit` bypasses it)
-      const commitValue =
+      // parts since those were not serialized, and pass `noCommit` for the
+      // others to avoid perf impact of touching the DOM unnecessarily
+      const noCommit = !(
         instancePart instanceof EventPart ||
         instancePart instanceof PropertyPart
-          ? undefined
-          : noOpCommit;
-      instancePart._setValue(value, state.instancePartIndex, commitValue);
+      );
+      instancePart._setValue(value, state.instancePartIndex, noCommit);
       state.templatePartIndex++;
       state.instancePartIndex += templatePart._strings.length - 1;
       instance._parts.push(instancePart);

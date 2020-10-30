@@ -55,7 +55,7 @@ const reservedProperties = [
   // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
   // crossPackagePropertyMangles once lit-ssr uses the rollup config)
   // lit-html: AttributePart (used by render-lit-html)
-  '_resolveValue',
+  '_commitValue',
   // lit-html: Directive (used by render-lit-html)
   '_resolve',
   // updating-element: UpdatingElement (used by lit-element-renderer)
