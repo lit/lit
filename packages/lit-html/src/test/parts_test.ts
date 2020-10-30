@@ -27,7 +27,6 @@ import {
   removePart,
   restoreNodePart,
 } from '../parts.js';
-import './polyfills.js';
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
