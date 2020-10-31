@@ -55,7 +55,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, UpdatingElement} from 'updating-element';
-import {render, RenderOptions} from 'lit-html';
+import {render, RenderOptions, noChange} from 'lit-html';
 export * from 'updating-element';
 export * from 'lit-html';
 
@@ -73,12 +73,6 @@ declare global {
 (window['litElementVersions'] || (window['litElementVersions'] = [])).push(
   '3.0.0-pre.1'
 );
-
-/**
- * Sentinal value used to avoid calling lit-html's render function when
- * subclasses do not implement `render`
- */
-const renderNotImplemented = {};
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -121,12 +115,9 @@ export class LitElement extends UpdatingElement {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.
-    const templateResult = this.render();
+    const value = this.render();
     super.update(changedProperties);
-    // If render is not implemented by the component, don't call lit-html render
-    if (templateResult !== renderNotImplemented) {
-      render(templateResult, this.renderRoot, this._renderOptions);
-    }
+    render(value, this.renderRoot, this._renderOptions);
   }
 
   /**
@@ -136,9 +127,13 @@ export class LitElement extends UpdatingElement {
    * the element to update.
    */
   protected render(): unknown {
-    return renderNotImplemented;
+    return noChange;
   }
 }
+
+// Install hydration if available
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any)['litElementHydrateSupport']?.({LitElement});
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
