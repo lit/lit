@@ -1318,9 +1318,9 @@ export class EventPart extends AttributePart {
     if (typeof this._value === 'function') {
       // TODO (justinfagnani): do we need to default to this._element?
       // It'll always be the same as `e.currentTarget`.
-      this._value?.call(this._eventContext ?? this.element, event);
+      this._value.call(this._eventContext ?? this.element, event);
     } else {
-      (this._value as EventListenerObject)?.handleEvent(event);
+      (this._value as EventListenerObject).handleEvent(event);
     }
   }
 }
