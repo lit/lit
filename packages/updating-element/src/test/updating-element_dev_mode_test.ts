@@ -16,7 +16,9 @@ import {UpdatingElement} from '../updating-element.js';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const DEV_MODE = true;
+// Note, since tests are not built with production support, detect DEV_MODE
+// by checking if warning API is available.
+const DEV_MODE = !!UpdatingElement.enableWarning;
 
 if (DEV_MODE) {
   suite('Developer mode warnings', () => {
