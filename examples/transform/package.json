@@ -8,8 +8,8 @@
     "serve": "es-dev-server --node-resolve"
   },
   "dependencies": {
-    "lit-element": "^2.4.0",
-    "lit-localize": "^0.3.0"
+    "@lit/localize": "^0.3.0",
+    "lit-element": "^2.4.0"
   },
   "devDependencies": {
     "es-dev-server": "^1.57.3",

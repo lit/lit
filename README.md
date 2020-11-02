@@ -1,12 +1,20 @@
-# lit-localize
+# @lit/localize
 
-[![Published on npm](https://img.shields.io/npm/v/lit-localize.svg)](https://www.npmjs.com/package/lit-localize) [![Test Status](https://github.com/PolymerLabs/lit-localize/workflows/tests/badge.svg?branch=master)](https://github.com/PolymerLabs/lit-localize/actions?query=workflow%3Atests+branch%3Amaster+event%3Apush)
+[npm-img]: https://img.shields.io/npm/v/@lit/localize
+[npm-href]: https://www.npmjs.com/package/@lit/localize
+[test-img]: https://github.com/Polymer/lit-html/workflows/Tests/badge.svg?branch=master
+[test-href]: https://github.com/Polymer/lit-html/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush
+
+[![Published on NPM][npm-img]][npm-href]
+[![Test status][test-img]][test-href]
+
+⚠️ _Active work in progress! Subject to rapid major changes._ ⚠️
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
 ###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
 
-> lit-localize is a library and command-line tool for localizing web
+> @lit/localize is a library and command-line tool for localizing web
 > applications that are based on lit-html and LitElement.
 
 ## Features
@@ -24,7 +32,7 @@ Wrap your template with the `msg` function to make it localizable:
 
 ```typescript
 import {html} from 'lit-html';
-import {msg} from 'lit-localize';
+import {msg} from '@lit/localize';
 render(msg('greeting', html`Hello <b>World</b>!`), document.body);
 ```
 
@@ -50,7 +58,7 @@ Alternatively, use _runtime_ mode to dynamically switch locales without a page
 reload:
 
 ```typescript
-import {configureLocalization} from 'lit-localize';
+import {configureLocalization} from '@lit/localize';
 
 const {setLocale} = configureLocalization({
   sourceLocale: 'en',
@@ -65,9 +73,9 @@ const {setLocale} = configureLocalization({
 ```
 
 See
-[`examples/transform`](https://github.com/PolymerLabs/lit-localize/tree/master/examples/transform)
+[`examples/transform`](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize/examples/transform)
 and
-[`examples/runtime`](https://github.com/PolymerLabs/lit-localize/tree/master/examples/runtime)
+[`examples/runtime`](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize/examples/runtime)
 for full working examples.
 
 ## Modes
@@ -84,11 +92,11 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 ## Tutorial
 
-1. Install lit-localize. You get both a client library and a command-line tool.
+1. Install `@lit/localize`. You get both a client library and a command-line tool.
    You'll always use both together.
 
    ```bash
-   npm install --save lit-localize
+   npm install --save @lit/localize
    ```
 
 2. Set up a TypeScript lit-html project if you don't have one already:
@@ -119,7 +127,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```typescript
    import {html, render} from 'lit-html';
-   import {msg} from 'lit-localize';
+   import {msg} from '@lit/localize';
 
    render(
      html`<p>${msg('greeting', html`Hello <b>World</b>!`)}</p>`,
@@ -134,7 +142,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```json
    {
-     "$schema": "https://raw.githubusercontent.com/PolymerLabs/lit-localize/master/config.schema.json",
+     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/lit-next/packages/localize/config.schema.json",
      "sourceLocale": "en",
      "targetLocales": ["es-419"],
      "tsConfig": "tsconfig.json",
@@ -148,7 +156,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    }
    ```
 
-5. Run the lit-localize CLI:
+5. Run the `lit-localize` CLI:
 
    ```bash
    npx lit-localize
@@ -202,7 +210,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 ## API
 
-The `lit-localize` module exports the following functions:
+The `@lit/localize` module exports the following functions:
 
 > Note that lit-localize relies on distinctive, annotated TypeScript type
 > signatures to identify calls to `msg` and other APIs during analysis of your
@@ -417,7 +425,7 @@ An `error` status can be followed only by a `loading` status.
 ### Event example
 
 ```typescript
-import {LIT_LOCALIZE_STATUS} from 'lit-localize';
+import {LIT_LOCALIZE_STATUS} from '@lit/localize';
 
 // Show/hide a progress indicator whenever a new locale is loading,
 // and re-render the application every time a new locale successfully loads.
@@ -445,12 +453,12 @@ window.addEventListener(LIT_LOCALIZE_STATUS, (event) => {
 If you are using [LitElement](https://lit-element.polymer-project.org/), then
 you can use the `Localized`
 [mixin](https://justinfagnani.com/2015/12/21/real-mixins-with-javascript-classes/)
-from `lit-localize/localized-element.js` to ensure that your elements
+from `@lit/localize/localized-element.js` to ensure that your elements
 automatically re-render whenever the locale changes in runtime mode.
 
 ```typescript
-import {Localized} from 'lit-localize/localized-element.js';
-import {msg} from 'lit-localize';
+import {Localized} from '@lit/localize/localized-element.js';
+import {msg} from '@lit/localize';
 import {LitElement, html} from 'lit-element';
 
 class MyElement extends Localized(LitElement) {
@@ -471,7 +479,7 @@ Running the `lit-localize` command-line program does the following:
 1. Reads your [config file](#config-file) according to the `--config` flag.
 
 2. Analyzes all TypeScript files covered by your `tsconfig.json`, and discovers
-   all calls to the lit-localize `msg` function.
+   all calls to the `msg` function.
 
 3. Creates or updates an XLIFF (`.xlf`) file for each of your target locales,
    with a `<source>` tag corresponding to each `msg` call.
@@ -483,7 +491,7 @@ Running the `lit-localize` command-line program does the following:
    version from that locale's XLIFF file.
 
 6. When in _runtime_ mode, generates a `<locale>.ts` file for each locale, which
-   can be dynamically loaded by the `lit-localize` module.
+   can be dynamically loaded by the `@lit/localize` module.
 
 It takes the following flags:
 
@@ -563,7 +571,7 @@ a new locale is selected from a drop-down list:
 import {LitElement, html} from 'lit-element';
 import {getLocale} from './localization.js';
 import {allLocales} from './locale-codes.js';
-import {Localized} from 'lit-localize/localized-element.js';
+import {Localized} from '@lit/localize/localized-element.js';
 
 export class LocalePicker extends Localized(LitElement) {
   render() {

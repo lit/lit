@@ -27,8 +27,8 @@ type Constructor<T> = new (...args: any[]) => T;
  *
  * Usage:
  *
- *   import {Localized} from 'lit-localize/localized-element.js';
- *   import {msg} from 'lit-localize';
+ *   import {Localized} from '@lit/localize/localized-element.js';
+ *   import {msg} from '@lit/localize';
  *   import {LitElement, html} from 'lit-html';
  *
  *   class MyElement extends Localized(LitElement) {

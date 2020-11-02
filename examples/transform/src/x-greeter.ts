@@ -1,5 +1,5 @@
 import {LitElement, html} from 'lit-element';
-import {msg} from 'lit-localize';
+import {msg} from '@lit/localize';
 
 export class XGreeter extends LitElement {
   render() {
