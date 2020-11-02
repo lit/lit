@@ -1,0 +1,10 @@
+lib/**/*
+lib_client/**/*
+node_modules/
+testdata/*/output
+*.js
+!ava.config.js
+*.tgz
+*.d.ts
+*.map
+.tsbuildinfo*
