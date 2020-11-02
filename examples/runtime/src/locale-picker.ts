@@ -1,7 +1,7 @@
 import {LitElement, html} from 'lit-element';
 import {getLocale, setLocaleFromUrl} from './localization.js';
 import {allLocales} from './locale-codes.js';
-import {Localized} from 'lit-localize/localized-element.js';
+import {Localized} from '@lit/localize/localized-element.js';
 
 const localeNames: {
   [L in typeof allLocales[number]]: string;

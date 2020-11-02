@@ -1,13 +1,17 @@
 {
-  "name": "lit-localize",
+  "name": "@lit/localize",
   "version": "0.4.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Localization for lit-html",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
-  "homepage": "https://github.com/PolymerLabs/lit-localize",
+  "homepage": "https://github.com/Polymer/lit-html/tree/lit-next/packages/localize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PolymerLabs/lit-localize.git"
+    "url": "https://github.com/Polymer/lit-html.git",
+    "directory": "packages/localize"
   },
   "bin": {
     "lit-localize": "bin/lit-localize.js"

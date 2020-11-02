@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
-import {msg} from 'lit-localize';
-import {Localized} from 'lit-localize/localized-element.js';
+import {msg} from '@lit/localize';
+import {Localized} from '@lit/localize/localized-element.js';
 
 export class XGreeter extends Localized(LitElement) {
   render() {

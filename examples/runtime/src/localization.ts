@@ -1,4 +1,4 @@
-import {configureLocalization} from 'lit-localize';
+import {configureLocalization} from '@lit/localize';
 import {sourceLocale, targetLocales} from './locale-codes.js';
 
 export const {getLocale, setLocale} = configureLocalization({

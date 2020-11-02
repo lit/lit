@@ -133,7 +133,7 @@ class Transformer {
       );
     }
 
-    // import ... from 'lit-localize' -> (removed)
+    // import ... from '@lit/localize' -> (removed)
     if (ts.isImportDeclaration(node)) {
       const moduleSymbol = this.typeChecker.getSymbolAtLocation(
         node.moduleSpecifier
@@ -200,7 +200,7 @@ class Transformer {
     // LOCALE_STATUS_EVENT -> "lit-localize-status"
     //
     // We want to replace this imported string constant with its static value so
-    // that we can always safely remove the 'lit-localize' module import.
+    // that we can always safely remove the '@lit/localize' module import.
     //
     // TODO(aomarks) Maybe we should error here instead, since lit-localize
     // won't fire any of these events in transform mode? But I'm still thinking

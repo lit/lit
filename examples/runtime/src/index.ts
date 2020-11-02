@@ -1,5 +1,5 @@
 import {setLocaleFromUrl} from './localization.js';
-import {LOCALE_STATUS_EVENT} from 'lit-localize';
+import {LOCALE_STATUS_EVENT} from '@lit/localize';
 import {html, render} from 'lit-html';
 import './locale-picker.js';
 import './x-greeter.js';
