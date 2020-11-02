@@ -219,6 +219,13 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
+export interface LifecycleCallbacks {
+  onConnected(): void;
+  onDisconnected(): void;
+  onUpdate(changedProperties: PropertyValues): void;
+  onUpdated(changedProperties: PropertyValues): void;
+}
+
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -515,8 +522,8 @@ export abstract class UpdatingElement extends HTMLElement {
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
 
-  protected isUpdatePending = false;
-  protected hasUpdated = false;
+  isUpdatePending = false;
+  hasUpdated = false;
 
   /**
    * Map with keys for any properties that have changed since the last
@@ -534,6 +541,12 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   private _reflectingProperty: PropertyKey | null = null;
 
+  /**
+   * Set of lifecycle callbacks.
+   */
+  // @internal
+  _callbacks?: Set<LifecycleCallbacks>;
+
   constructor() {
     super();
     this._updatePromise = new Promise((res) => (this.enableUpdating = res));
@@ -542,6 +555,17 @@ export abstract class UpdatingElement extends HTMLElement {
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+  }
+
+  addCallbacks(callbacks: LifecycleCallbacks) {
+    if (this._callbacks === undefined) {
+      this._callbacks = new Set();
+    }
+    this._callbacks.add(callbacks);
+  }
+
+  removeCallbacks(callbacks: LifecycleCallbacks) {
+    this._callbacks!.delete(callbacks);
   }
 
   /**
@@ -595,7 +619,9 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    this._connectedCallback();
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onConnected());
+    }
   }
 
   // Note, this is an override point for controller callbacks. Per spec, the
@@ -616,7 +642,9 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this._disconnectedCallback();
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onDisconnected());
+    }
   }
 
   // Note, this is an override point for controller callbacks. Per spec, the
@@ -669,7 +697,8 @@ export abstract class UpdatingElement extends HTMLElement {
     }
   }
 
-  private _attributeToProperty(name: string, value: string | null) {
+  /** @internal */
+  _attributeToProperty(name: string, value: string | null) {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
@@ -811,7 +840,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._willUpdate(changedProperties);
+        if (this._callbacks !== undefined) {
+          this._callbacks.forEach((c) => c.onUpdate(changedProperties));
+        }
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -830,10 +861,6 @@ export abstract class UpdatingElement extends HTMLElement {
     }
   }
 
-  // @internal
-  // Note, this is an override point for controller callbacks
-  _willUpdate(_changedProperties: PropertyValues) {}
-
   // Note, this is an override point for platform-support and controllers.
   // @internal
   _didUpdate(changedProperties: PropertyValues) {
@@ -842,6 +869,9 @@ export abstract class UpdatingElement extends HTMLElement {
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onUpdated(changedProperties));
+    }
   }
 
   private _markUpdated() {

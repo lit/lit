@@ -9,7 +9,7 @@
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path .gitignore --write",
     "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
     "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
-    "test": "cd packages/tests && npm test"
+    "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test)"
   },
   "dependencies": {
     "lerna": "^3.22.1"

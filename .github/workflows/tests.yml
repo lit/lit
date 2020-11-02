@@ -29,9 +29,9 @@ jobs:
 
       # Note this is the way to set an environment variable that lives across
       # all steps
-      # (https://docs.github.com/en/actions/reference/environment-variables#about-environment-variables).
+      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
       - name: Set environment variables
-        run: echo "::set-env name=PLAYWRIGHT_BROWSERS_PATH::$HOME/.playwright"
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
 
       # Cache all of our node_modules/ directories and playwright browser
       # binaries to save ~30 seconds of install time.
@@ -86,9 +86,9 @@ jobs:
 
       # Note this is the way to set an environment variable that lives across
       # all steps
-      # (https://docs.github.com/en/actions/reference/environment-variables#about-environment-variables).
+      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
       - name: Set environment variables
-        run: echo "::set-env name=PLAYWRIGHT_BROWSERS_PATH::$HOME/.playwright"
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
 
       # Cache all of our node_modules/ directories and playwright browser
       # binaries to save ~30 seconds of install time.
@@ -113,6 +113,9 @@ jobs:
       - name: Lerna bootstrap
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
+
+      - name: Lint
+        run: npm run lint
 
       - name: Build
         run: npm run build

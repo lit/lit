@@ -16,7 +16,6 @@ import {html, nothing, render} from '../../lit-html.js';
 import {guard} from '../../directives/guard.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 suite('guard', () => {
   let container: HTMLDivElement;

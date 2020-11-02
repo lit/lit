@@ -15,10 +15,6 @@
 import {litProdConfig} from '../../rollup-common.js';
 
 export default litProdConfig({
-  entryPoints: [
-    'index',
-    'callbacks/callbacks',
-    'controllers/updating-controller',
-  ],
+  entryPoints: ['index', 'controllers/updating-controller'],
   external: ['updating-element', 'lit-html', 'lit-element'],
 });

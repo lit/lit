@@ -30,7 +30,6 @@ import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-import './polyfills.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1176,6 +1175,40 @@ suite('lit-html', () => {
       assert.strictEqual((div as any).foo, undefined);
     });
 
+    test('null sets null', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, null);
+    });
+
+    test('null in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
+    test('undefined sets undefined', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('undefined in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
     test('noChange works', () => {
       const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
       go(1);
@@ -1698,8 +1731,34 @@ suite('lit-html', () => {
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
     });
 
+    test.only('renders directives on EventParts', () => {
+      const handle = directive(
+        class extends Directive {
+          count = 0;
+          render(value: string) {
+            return (e: Event) => {
+              (e.target as any).__clicked = `${value}:${++this.count}`;
+            };
+          }
+        }
+      );
+      const template = (value: string) =>
+        html`<div @click=${handle(value)}></div>`;
+      render(template('A'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:1');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:2');
+      render(template('B'), container);
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:3');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:4');
+    });
+
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective {
+      class FireEventDirective extends Directive {
         render() {
           return nothing;
         }

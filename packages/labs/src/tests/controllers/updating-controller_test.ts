@@ -31,17 +31,21 @@ suite('UpdatingController', () => {
     updatedChangedProperties: PropertyValues | null = null;
     onConnected() {
       this.connectedCount++;
+      super.onConnected();
     }
     onDisconnected() {
       this.disconnectedCount++;
+      super.onDisconnected();
     }
     onUpdate(changedProperties: PropertyValues) {
       this.updateCount++;
       this.updateChangedProperties = changedProperties;
+      super.onUpdate(changedProperties);
     }
     onUpdated(changedProperties: PropertyValues) {
       this.updatedCount++;
       this.updatedChangedProperties = changedProperties;
+      super.onUpdated(changedProperties);
     }
   }
 

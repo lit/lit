@@ -12,17 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {UpdatingElement, PropertyValues} from 'updating-element';
 import {
-  addConnectedCallback,
-  addDisconnectedCallback,
-  addUpdateCallback,
-  addUpdatedCallback,
-  removeConnectedCallback,
-  removeDisconnectedCallback,
-  removeUpdateCallback,
-  removeUpdatedCallback,
-} from '../callbacks/callbacks.js';
+  UpdatingElement,
+  PropertyValues,
+  LifecycleCallbacks,
+} from 'updating-element';
 
 /**
  * Use this module if you want to create your own base class extending
@@ -55,17 +49,8 @@ export class UpdatingController {
    */
   host?: UpdatingHost;
 
-  // Note, these are not private so they can be used with mixins.
   // @internal
-  _boundConnectedCallback = () => this._connectedCallback();
-  // @internal
-  _boundDisconnectedCallback = () => this._disconnectedCallback();
-  // @internal
-  _boundWillUpdate = (changedProperties: PropertyValues) =>
-    this._willUpdate(changedProperties);
-  // @internal
-  _boundDidUpdate = (changedProperties: PropertyValues) =>
-    this._didUpdate(changedProperties);
+  _callbacks?: Set<LifecycleCallbacks>;
 
   constructor(host: UpdatingHost) {
     this.addController(this, host);
@@ -76,22 +61,13 @@ export class UpdatingController {
       throw new Error('A controller must be removed before being added.');
     }
     controller.host = host;
-    const hostIsElement = (host as UpdatingElement).localName !== undefined;
-    controller.element = hostIsElement
-      ? (host as UpdatingElement)
-      : (host as UpdatingController).element;
-    addConnectedCallback(
-      host as UpdatingElement,
-      controller._boundConnectedCallback
-    );
-    addDisconnectedCallback(
-      host as UpdatingElement,
-      controller._boundDisconnectedCallback
-    );
-    addUpdateCallback(host as UpdatingElement, controller._boundWillUpdate);
-    addUpdatedCallback(host as UpdatingElement, controller._boundDidUpdate);
+    controller.element =
+      (host as UpdatingElement).localName !== undefined
+        ? (host as UpdatingElement)
+        : (host as UpdatingController).element;
+    host.addCallbacks(controller);
     // Allows controller to be added after element is connected.
-    if (controller.element?.isConnected) {
+    if (controller.element!.hasUpdated && controller.element!.isConnected) {
       controller.onConnected();
     }
   }
@@ -100,39 +76,45 @@ export class UpdatingController {
     if (!controller.host) {
       return;
     }
+    const host = controller.host;
+    host.removeCallbacks(controller);
     // Allows controller to perform cleanup tasks before removal.
     controller.onDisconnected();
-    const host = controller.host;
-    removeConnectedCallback(
-      host as UpdatingElement,
-      controller._boundConnectedCallback
-    );
-    removeDisconnectedCallback(
-      host as UpdatingElement,
-      controller._boundDisconnectedCallback
-    );
-    removeUpdateCallback(host as UpdatingElement, controller._boundWillUpdate);
-    removeUpdatedCallback(host as UpdatingElement, controller._boundDidUpdate);
     controller.element = undefined;
     controller.host = undefined;
+  }
+
+  addCallbacks(callbacks: LifecycleCallbacks) {
+    if (this._callbacks === undefined) {
+      this._callbacks = new Set();
+    }
+    this._callbacks.add(callbacks);
+  }
+
+  removeCallbacks(callbacks: LifecycleCallbacks) {
+    this._callbacks!.delete(callbacks);
   }
 
   requestUpdate() {
     this.host?.requestUpdate();
   }
 
-  // Note, these are patchable entry points for adding callbacks.
-  _connectedCallback() {
-    this.onConnected();
+  /**
+   * Runs after the controller's element is connected.
+   */
+  onConnected() {
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onConnected());
+    }
   }
-  _disconnectedCallback() {
-    this.onDisconnected();
-  }
-  _willUpdate(changedProperties: PropertyValues) {
-    this.onUpdate(changedProperties);
-  }
-  _didUpdate(changedProperties: PropertyValues) {
-    this.onUpdated(changedProperties);
+
+  /**
+   * Runs after the controller's element is disconnected.
+   */
+  onDisconnected() {
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onDisconnected());
+    }
   }
 
   /**
@@ -140,21 +122,19 @@ export class UpdatingController {
    * updates.
    * @param changedProperties
    */
-  onUpdate(_changedProperties: PropertyValues) {}
+  onUpdate(changedProperties: PropertyValues) {
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onUpdate(changedProperties));
+    }
+  }
 
   /**
    * Runs after the controller's element updates after its `updated` method.
    * @param changedProperties
    */
-  onUpdated(_changedProperties: PropertyValues) {}
-
-  /**
-   * Runs after the controller's element is connected.
-   */
-  onConnected() {}
-
-  /**
-   * Runs after the controller's element is disconnected.
-   */
-  onDisconnected() {}
+  onUpdated(changedProperties: PropertyValues) {
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onUpdated(changedProperties));
+    }
+  }
 }

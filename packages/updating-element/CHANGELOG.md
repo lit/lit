@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Lifecycle callbacks added for connected, disconnected, update, and updated. To use, simply add callback functions to the appropriate callbacks set: `connectedCallbacks`, `disconnectedCallbacks`, `updateCallbacks`, or `updatedCallbacks`.
+- Lifecycle callbacks added for connected, disconnected, update, and updated. To use, call `addCallbacks` or `removeCallbacks` with an object that implements functions for `onConnected`, `onDisconnected`, `onUpdate`, `onUpdated`.
 
 - UpdatingElement moved from `lit-element` package to `updating-element` package.
 
