@@ -25,7 +25,6 @@
     "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true ava --verbose",
     "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
     "test:check-eslint": "eslint 'testdata/*/output/*.ts' 'testdata/*/output/**/*.ts' --max-warnings 0",
-    "lint": "eslint 'src/*.ts' 'src/**/*.ts' 'src_client/*.ts' 'src_client/**/*.ts' --max-warnings 0",
     "prettier": "prettier 'src/**/*.ts' 'src_client/**/*.ts'",
     "format:check": "npm run prettier -- --check",
     "format": "npm run prettier -- --write",
