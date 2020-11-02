@@ -14,30 +14,30 @@ Build on each other’s ideas. We all benefit when we create together.
 
 ### We have a ZERO TOLERANCE POLICY for harassment of any kind, including but not limited to:
 
-* Stalking/following
-* Harassing comments
-* Deliberate intimidation
-* Sustained disruption of threads, channels, lists, etc.
-* Offensive comments
-* Sexual images in public spaces
-* Unwelcome sexual or otherwise aggressive attention
+- Stalking/following
+- Harassing comments
+- Deliberate intimidation
+- Sustained disruption of threads, channels, lists, etc.
+- Offensive comments
+- Sexual images in public spaces
+- Unwelcome sexual or otherwise aggressive attention
 
 #### In relation to, but not limited to:
 
-* Neurodiversity
-* Race
-* Color
-* National origin
-* Gender
-* Gender identity
-* Gender presentation
-* Sexual orientation
-* Age
-* Body size
-* Differing abilities
-* Appearance
-* Religion
-* Pregnancy
+- Neurodiversity
+- Race
+- Color
+- National origin
+- Gender
+- Gender identity
+- Gender presentation
+- Sexual orientation
+- Age
+- Body size
+- Differing abilities
+- Appearance
+- Religion
+- Pregnancy
 
 We empower and encourage you to report any behavior that makes you or others feel uncomfortable by emailing community@polymer-project.org.
 

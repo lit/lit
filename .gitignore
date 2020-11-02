@@ -1,6 +1,8 @@
 # global
 /node_modules/
 /lerna-debug.log
+.DS_Store
+tsconfig.tsbuildinfo
 
 # shared in packages
 /packages/*/node_modules/
@@ -29,11 +31,14 @@
 /packages/lit-element/lit-element.*
 /packages/lit-element/lit.min.*
 /packages/lit-element/platform-support.*
+/packages/lit-element/hydrate-support.*
 
 # lit-html package
 /packages/lit-html/directives/
 /packages/lit-html/lit-html.*
 /packages/lit-html/parts.*
+/packages/lit-html/hydrate.*
+/packages/lit-html/private-ssr-support.*
 /packages/lit-html/platform-support.*
 
 # updating-element package
@@ -42,3 +47,18 @@
 /packages/updating-element/decorators.*
 /packages/updating-element/platform-support.*
 /packages/updating-element/updating-element.*
+
+# labs package
+/packages/labs/index.*
+
+# lit-ssr package
+/packages/lit-ssr/lib
+/packages/lit-ssr/demo
+/packages/lit-ssr/test/**/*.js
+/packages/lit-ssr/test/**/*.js.map
+/packages/lit-ssr/test/**/*.d.ts
+/packages/lit-ssr/test/**/*.d.ts.map
+/packages/lit-ssr/index.js
+/packages/lit-ssr/index.js.map
+/packages/lit-ssr/index.d.ts
+/packages/lit-ssr/index.d.ts.map

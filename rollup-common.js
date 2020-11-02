@@ -52,6 +52,16 @@ const reservedProperties = [
   // can share this key with dev lit-element platform-support which
   // imports it.
   '_handlesPrepareStyles',
+  // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
+  // crossPackagePropertyMangles once lit-ssr uses the rollup config)
+  // lit-html: AttributePart (used by render-lit-html)
+  '_commitValue',
+  // lit-html: Directive (used by render-lit-html)
+  '_resolve',
+  // updating-element: UpdatingElement (used by lit-element-renderer)
+  '_attributeToProperty',
+  // hydrate-support: LitElement (added by hydrate-support)
+  '_needsHydration',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -74,6 +84,8 @@ const crossPackagePropertyMangles = {
   _afterUpdate: 'S',
   // lit-element: LitElement
   _renderOptions: 'W',
+  // lit-element: LitElement (used by hydrate-support)
+  _renderImpl: 'M',
 };
 
 const generateTerserOptions = (nameCache = null) => ({
@@ -212,6 +224,8 @@ export function litProdConfig({
         // itself.
         replace({
           'const DEV_MODE = true': 'const DEV_MODE = false',
+          'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+            'const ENABLE_EXTRA_SECURITY_HOOKS = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -272,6 +286,8 @@ export const litMonoBundleConfig = ({
     nodeResolve(),
     replace({
       'const DEV_MODE = true': 'const DEV_MODE = false',
+      'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+        'const ENABLE_EXTRA_SECURITY_HOOKS = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.

@@ -16,7 +16,6 @@ import {repeat} from '../../directives/repeat.js';
 import {render, html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 function assertItemIdentity(
   oldChildren: HTMLElement[],

@@ -16,7 +16,6 @@ import {ifDefined} from '../../directives/if-defined.js';
 import {html, render} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 suite('ifDefined directive', () => {
   let container: HTMLDivElement;
