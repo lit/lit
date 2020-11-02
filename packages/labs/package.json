@@ -17,23 +17,23 @@
       "development": "./development/index.js",
       "default": "./index.js"
     },
-    "./controllers/updating-controller.js": {
-      "development": "./development/controllers/updating-controller.js",
-      "default": "./controllers/updating-controller.js"
+    "./controllers/": {
+      "development": "./development/controllers/",
+      "default": "./controllers/"
     }
   },
   "files": [
-    "/controllers/",
     "/src/",
     "!/src/test/",
-    "/controllers/updating-controller.d.ts",
-    "/controllers/updating-controller.d.ts.map",
-    "/controllers/updating-controller.js",
-    "/controllers/updating-controller.js.map"
+    "/index.d.ts",
+    "/index.d.ts.map",
+    "/index.js",
+    "/index.js.map",
+    "/controllers/"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} controllers/ development/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
@@ -42,8 +42,6 @@
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier src/* --write",
-    "lint": "tslint --project ./",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
   "author": "The Polymer Authors",

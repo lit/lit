@@ -219,8 +219,12 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export type connectCallback = () => void;
-export type updateCallback = (changedProperties: PropertyValues) => void;
+export interface LifecycleCallbacks {
+  onConnected(): void;
+  onDisconnected(): void;
+  onUpdate(changedProperties: PropertyValues): void;
+  onUpdated(changedProperties: PropertyValues): void;
+}
 
 /**
  * The Closure JS Compiler doesn't currently have good support for static
@@ -518,8 +522,8 @@ export abstract class UpdatingElement extends HTMLElement {
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
 
-  protected isUpdatePending = false;
-  protected hasUpdated = false;
+  isUpdatePending = false;
+  hasUpdated = false;
 
   /**
    * Map with keys for any properties that have changed since the last
@@ -538,24 +542,10 @@ export abstract class UpdatingElement extends HTMLElement {
   private _reflectingProperty: PropertyKey | null = null;
 
   /**
-   * Set of callbacks called in connectedCallback.
+   * Set of lifecycle callbacks.
    */
-  connectedCallbacks: Set<connectCallback> = new Set();
-
-  /**
-   * Set of callbacks called in disconnectedCallback.
-   */
-  disconnectedCallbacks: Set<connectCallback> = new Set();
-
-  /**
-   * Set of callbacks called before update.
-   */
-  updateCallbacks: Set<updateCallback> = new Set();
-
-  /**
-   * Set of callbacks called after updated.
-   */
-  updatedCallbacks: Set<updateCallback> = new Set();
+  // @internal
+  _callbacks?: Set<LifecycleCallbacks>;
 
   constructor() {
     super();
@@ -565,6 +555,17 @@ export abstract class UpdatingElement extends HTMLElement {
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+  }
+
+  addCallbacks(callbacks: LifecycleCallbacks) {
+    if (this._callbacks === undefined) {
+      this._callbacks = new Set();
+    }
+    this._callbacks.add(callbacks);
+  }
+
+  removeCallbacks(callbacks: LifecycleCallbacks) {
+    this._callbacks!.delete(callbacks);
   }
 
   /**
@@ -618,8 +619,15 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    this.connectedCallbacks.forEach((cb) => cb());
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onConnected());
+    }
   }
+
+  // Note, this is an override point for controller callbacks. Per spec, the
+  // `connectedCallback` itself cannot be changed.
+  //@internal
+  _connectedCallback() {}
 
   /**
    * Note, this method should be considered final and not overridden. It is
@@ -634,8 +642,15 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.disconnectedCallbacks.forEach((cb) => cb());
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onDisconnected());
+    }
   }
+
+  // Note, this is an override point for controller callbacks. Per spec, the
+  // `disconnectedCallback` itself cannot be changed.
+  //@internal
+  _disconnectedCallback() {}
 
   /**
    * Synchronizes property values when attributes change.
@@ -682,7 +697,8 @@ export abstract class UpdatingElement extends HTMLElement {
     }
   }
 
-  private _attributeToProperty(name: string, value: string | null) {
+  /** @internal */
+  _attributeToProperty(name: string, value: string | null) {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
@@ -766,8 +782,11 @@ export abstract class UpdatingElement extends HTMLElement {
       // This `await` also ensures that property changes are batched.
       await this._updatePromise;
     } catch (e) {
-      // Ignore any previous errors. We only care that the previous cycle is
-      // done. Any error should have been handled in the previous update.
+      // Refire any previous errors async so they do not disrupt the update
+      // cycle. Errors are refired so developers have a chance to observe
+      // them, and this can be done by implementing
+      // `window.onunhandledrejection`.
+      Promise.reject(e);
     }
     const result = this.performUpdate();
     // If `performUpdate` returns a Promise, we await it. This is done to
@@ -821,7 +840,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.updateCallbacks.forEach((cb) => cb(changedProperties));
+        if (this._callbacks !== undefined) {
+          this._callbacks.forEach((c) => c.onUpdate(changedProperties));
+        }
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -836,18 +857,21 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._afterUpdate(changedProperties);
+      this._didUpdate(changedProperties);
     }
   }
 
-  // Note, this is an override point for platform-support.
-  private _afterUpdate(changedProperties: PropertyValues) {
+  // Note, this is an override point for platform-support and controllers.
+  // @internal
+  _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
-    this.updatedCallbacks.forEach((cb) => cb(changedProperties));
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onUpdated(changedProperties));
+    }
   }
 
   private _markUpdated() {

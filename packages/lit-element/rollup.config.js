@@ -17,6 +17,7 @@ import {litProdConfig} from '../../rollup-common.js';
 export default litProdConfig({
   entryPoints: [
     'lit-element',
+    'hydrate-support',
     'decorators',
     'decorators/customElement',
     'decorators/eventOptions',

@@ -22,5 +22,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Adds `createContext` which can be used to create providers and consumers useful for passing data down the element tree without the need to use lit parts to connect the elements.
-- Adds `UpdatingController`, a class which can interact with an `UpdatingElement` by hooking into its lifecycle, including connected, disconnected, upate, updated, and requestUpdate.
+- Adds `UpdatingController`, a class which can interact with an `UpdatingElement` by hooking into its lifecycle, including connected, disconnected, update, updated, and requestUpdate.
 - Adds `labs` package. The `labs` package is an experimental playground for Lit helpers and tools.

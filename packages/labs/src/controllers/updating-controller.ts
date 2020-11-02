@@ -15,8 +15,7 @@
 import {
   UpdatingElement,
   PropertyValues,
-  connectCallback,
-  updateCallback,
+  LifecycleCallbacks,
 } from 'updating-element';
 
 /**
@@ -50,25 +49,8 @@ export class UpdatingController {
    */
   host?: UpdatingHost;
 
-  /**
-   * Lifecycle callbacks for sub-controllers
-   */
-  connectedCallbacks: Set<connectCallback> = new Set();
-  disconnectedCallbacks: Set<connectCallback> = new Set();
-  updateCallbacks: Set<updateCallback> = new Set();
-  updatedCallbacks: Set<updateCallback> = new Set();
-
-  // Note, these are not private so they can be used with mixins.
   // @internal
-  _onConnected = () => this.onConnected();
-  // @internal
-  _onDisconnected = () => this.onDisconnected();
-  // @internal
-  _onUpdate = (changedProperties: PropertyValues) =>
-    this.onUpdate(changedProperties);
-  // @internal
-  _onUpdated = (changedProperties: PropertyValues) =>
-    this.onUpdated(changedProperties);
+  _callbacks?: Set<LifecycleCallbacks>;
 
   constructor(host: UpdatingHost) {
     this.addController(this, host);
@@ -83,12 +65,9 @@ export class UpdatingController {
       (host as UpdatingElement).localName !== undefined
         ? (host as UpdatingElement)
         : (host as UpdatingController).element;
-    host.connectedCallbacks.add(controller._onConnected);
-    host.disconnectedCallbacks.add(controller._onDisconnected);
-    host.updateCallbacks.add(controller._onUpdate);
-    host.updatedCallbacks.add(controller._onUpdated);
+    host.addCallbacks(controller);
     // Allows controller to be added after element is connected.
-    if (controller.element?.isConnected) {
+    if (controller.element!.hasUpdated && controller.element!.isConnected) {
       controller.onConnected();
     }
   }
@@ -97,19 +76,45 @@ export class UpdatingController {
     if (!controller.host) {
       return;
     }
+    const host = controller.host;
+    host.removeCallbacks(controller);
     // Allows controller to perform cleanup tasks before removal.
     controller.onDisconnected();
-    const host = controller.host;
-    host.connectedCallbacks.delete(controller._onConnected);
-    host.disconnectedCallbacks.delete(controller._onDisconnected);
-    host.updateCallbacks.delete(controller._onUpdate);
-    host.updatedCallbacks.delete(controller._onUpdated);
     controller.element = undefined;
     controller.host = undefined;
   }
 
+  addCallbacks(callbacks: LifecycleCallbacks) {
+    if (this._callbacks === undefined) {
+      this._callbacks = new Set();
+    }
+    this._callbacks.add(callbacks);
+  }
+
+  removeCallbacks(callbacks: LifecycleCallbacks) {
+    this._callbacks!.delete(callbacks);
+  }
+
   requestUpdate() {
     this.host?.requestUpdate();
+  }
+
+  /**
+   * Runs after the controller's element is connected.
+   */
+  onConnected() {
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onConnected());
+    }
+  }
+
+  /**
+   * Runs after the controller's element is disconnected.
+   */
+  onDisconnected() {
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onDisconnected());
+    }
   }
 
   /**
@@ -118,7 +123,9 @@ export class UpdatingController {
    * @param changedProperties
    */
   onUpdate(changedProperties: PropertyValues) {
-    this.updateCallbacks.forEach((cb) => cb(changedProperties));
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onUpdate(changedProperties));
+    }
   }
 
   /**
@@ -126,20 +133,8 @@ export class UpdatingController {
    * @param changedProperties
    */
   onUpdated(changedProperties: PropertyValues) {
-    this.updatedCallbacks.forEach((cb) => cb(changedProperties));
-  }
-
-  /**
-   * Runs after the controller's element is connected.
-   */
-  onConnected() {
-    this.connectedCallbacks.forEach((cb) => cb());
-  }
-
-  /**
-   * Runs after the controller's element is disconnected.
-   */
-  onDisconnected() {
-    this.disconnectedCallbacks.forEach((cb) => cb());
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((cb) => cb.onUpdated(changedProperties));
+    }
   }
 }
