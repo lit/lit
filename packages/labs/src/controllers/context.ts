@@ -1,6 +1,6 @@
 import {UpdatingController, UpdatingHost} from './updating-controller.js';
 export * from './updating-controller.js';
-import {notEqual} from 'updating-element';
+import {notEqual, PropertyValues} from 'updating-element';
 import {
   AttributePart,
   ATTRIBUTE_PART,
@@ -38,6 +38,7 @@ export class Provider extends UpdatingController {
 
   // Note, these are not private so they can be used in mixins.
   // @internal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _value: any = null;
   // @internal
   _directive?: () => DirectiveResult;
@@ -53,6 +54,7 @@ export class Provider extends UpdatingController {
 
   provide() {
     if (this._directive === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const provider = this;
       const ProviderDirective = class extends Directive {
         connected = false;
@@ -160,15 +162,11 @@ export class Consumer extends UpdatingController {
   strategy = DEFAULT_STRATEGY;
 
   // @internal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _value: any = undefined;
 
   provider?: Provider;
   key = null;
-
-  constructor(host: UpdatingHost) {
-    super(host);
-    (window as any).controllerCount++;
-  }
 
   /**
    * Sends connection signal to provider. The first ancestor provider with
@@ -187,10 +185,11 @@ export class Consumer extends UpdatingController {
     } else {
       this._connectToProvider();
     }
+    super.onConnected();
   }
 
   // Batches connection to update if possible
-  onUpdate() {
+  onUpdate(changedProperties: PropertyValues) {
     if (!this.element!.hasUpdated && this.provider === undefined) {
       const pending = pendingConsumers.get(this.element!);
       if (pending?.length) {
@@ -199,6 +198,7 @@ export class Consumer extends UpdatingController {
         pending.length = 0;
       }
     }
+    super.onUpdate(changedProperties);
   }
 
   // @internal
@@ -207,7 +207,6 @@ export class Consumer extends UpdatingController {
     // to test performance.
     // Find provider by firing event.
     if (this.strategy === EVENT_STRATEGY) {
-      (window as any).eventCount++;
       this.element!.dispatchEvent(
         new CustomEvent(connectContextEvent, {
           detail: consumers,
@@ -248,6 +247,7 @@ export class Consumer extends UpdatingController {
    */
   onDisconnected() {
     this.provider?.disconnect(this);
+    super.onDisconnected();
   }
 
   get value() {
@@ -305,12 +305,14 @@ export class Consumer extends UpdatingController {
  *
  */
 export const createContext = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   {key, initialValue}: {initialValue?: any; key: any},
   // TODO(sorvell): how to type this if these are provided in the options argument
   ProviderBase = Provider,
   ConsumerBase = Consumer
 ) => {
   const provider = class Provider extends ProviderBase {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(host: UpdatingHost, value?: any) {
       super(host, value || initialValue);
     }
