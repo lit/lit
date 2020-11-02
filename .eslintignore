@@ -1,0 +1,2 @@
+# Note we also ignore all files from .gitignore
+/packages/localize/testdata
