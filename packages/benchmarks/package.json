@@ -1,30 +1,47 @@
 {
   "name": "lit-benchmarks",
-  "private": true,
   "version": "1.0.0",
+  "private": true,
   "description": "Benchmarks for lit",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
   "author": "The Polymer Project Authors",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "format": "prettier lit-html/* lit-element/* --write",
-    "lint": "tslint --project ./",
-    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "benchmark:lit-element:list": "tach --config lit-element/list/tachometer.json",
+    "benchmark:lit-element:list-render": "tach --config lit-element/list/tachometer-render.json",
+    "benchmark:lit-element:list-update": "tach --config lit-element/list/tachometer-update.json",
+    "benchmark:lit-element:list-update-reflect": "tach --config lit-element/list/tachometer-update-reflect.json",
     "benchmark:lit-html:kitchen-sink": "tach --config lit-html/kitchen-sink/tachometer.json",
+    "benchmark:lit-html:kitchen-sink-nop-update": "tach --config lit-html/kitchen-sink/tachometer-nop-update.json",
     "benchmark:lit-html:kitchen-sink-render": "tach --config lit-html/kitchen-sink/tachometer-render.json",
     "benchmark:lit-html:kitchen-sink-update": "tach --config lit-html/kitchen-sink/tachometer-update.json",
-    "benchmark:lit-html:kitchen-sink-nop-update": "tach --config lit-html/kitchen-sink/tachometer-nop-update.json",
-    "benchmark:lit-element:stub1": "tach --config lit-element/stub1/tachometer.json"
+    "benchmark:lit-html:repeat": "tach --config lit-html/repeat/tachometer.json",
+    "benchmark:lit-html:repeat-full": "tach --config lit-html/repeat/tachometer-full.json",
+    "benchmark:lit-html:repeat-vs-map": "tach --config lit-html/repeat/tachometer-vs-map.json",
+    "benchmark:lit-html:repeat-vs-map-delay-full": "tach --config lit-html/repeat/tachometer-vs-map-delay-full.json",
+    "benchmark:lit-html:repeat-vs-map-full": "tach --config lit-html/repeat/tachometer-vs-map-full.json",
+    "benchmark:lit-html:template-heavy": "tach --config lit-html/template-heavy/tachometer.json",
+    "benchmark:updating-element:list": "tach --config updating-element/list/tachometer.json",
+    "benchmark:updating-element:list-render": "tach --config updating-element/list/tachometer-render.json",
+    "benchmark:updating-element:list-update": "tach --config updating-element/list/tachometer-update.json",
+    "benchmark:updating-element:list-update-reflect": "tach --config updating-element/list/tachometer-update-reflect.json",
+    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config updating-element/list/tachometer.json",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
+    "link:dev": "rm -f node_modules/lit-{html,element} && ln -s ../../lit-html/development node_modules/lit-html && ln -sf ../package.json ../lit-html/development/package.json && ln -s ../../lit-element/development node_modules/lit-element && ln -sf ../package.json ../lit-element/development/package.json",
+    "link:prod": "rm -f node_modules/lit-{html,element} && ln -s ../../lit-html node_modules/lit-html && ln -s ../../lit-element node_modules/lit-element",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
-    "lit-element": "^3.0.0-pre.0",
-    "lit-html": "^2.0.0-pre.0",
-    "tachometer": "^0.5.3"
+    "lit-element": "^3.0.0-pre.1",
+    "lit-html": "^2.0.0-pre.1",
+    "tachometer": "^0.5.3",
+    "updating-element": "^1.0.0-pre.1"
   },
   "devDependencies": {
-    "prettier": "^2.1.1",
+    "chromedriver": "^85.0.1",
     "typescript": "^4.0.2"
   }
 }

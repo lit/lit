@@ -9,6 +9,18 @@
 			"path": "packages/lit-element"
 		},
 		{
+			"name": "updating-element",
+			"path": "packages/updating-element"
+		},
+		{
+			"name": "lit-ssr",
+			"path": "packages/lit-ssr"
+		},
+		{
+      "name": "labs",
+      "path": "packages/labs"
+    },
+		{
 			"name": "tests",
 			"path": "packages/tests"
 		},
@@ -22,6 +34,7 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "lit-html/node_modules/typescript/lib"
+		"typescript.tsdk": "lit-html/node_modules/typescript/lib",
+		"debug.javascript.warnOnLongPrediction": false
 	}
 }

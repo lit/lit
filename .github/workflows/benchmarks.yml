@@ -3,8 +3,15 @@ name: Benchmarks
 on: [pull_request]
 
 jobs:
+
   benchmarks:
     name: benchmarks
+
+    # We can't currently run benchmarks on PRs from forked repos, because the
+    # tachometer action reports results by posting a comment, and we can't post
+    # comments without a github token.
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,9 +22,9 @@ jobs:
 
       # Note this is the way to set an environment variable that lives across
       # all steps
-      # (https://docs.github.com/en/actions/reference/environment-variables#about-environment-variables).
+      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
       - name: Set environment variables
-        run: echo "::set-env name=PLAYWRIGHT_BROWSERS_PATH::$HOME/.playwright"
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
 
       # Cache all of our node_modules/ directories and playwright browser
       # binaries to save ~30 seconds of install time.
@@ -42,6 +49,7 @@ jobs:
       - name: Build
         run: npm run build
 
+      # lit-html:kitchen-sink
       - name: Benchmark lit-html/kitchen-sink
         run: |
           cd packages/benchmarks
@@ -57,17 +65,66 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
-      - name: Benchmark lit-element/stub1
+      # lit-html:template-heavy
+      - name: Benchmark lit-html/template-heavy
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config lit-element/stub1/tachometer.json \
-            --json-file lit-element/stub1/results.json
+            --config lit-html/template-heavy/tachometer.json \
+            --json-file lit-html/template-heavy/results.json
 
-      - name: Report lit-element-stub1
+      - name: Report lit-html-template-heavy
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: lit-element-stub1
-          path: packages/benchmarks/lit-element/stub1/results.json
+          report-id: lit-html-template-heavy
+          path: packages/benchmarks/lit-html/template-heavy/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      # lit-html:repeat
+      - name: Benchmark lit-html/repeat
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-html/repeat/tachometer.json \
+            --json-file lit-html/repeat/results.json
+
+      - name: Report lit-html-repeat
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-html-repeat
+          path: packages/benchmarks/lit-html/repeat/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      # lit-element:list
+      - name: Benchmark lit-element/list
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-element/list/tachometer.json \
+            --json-file lit-element/list/results.json
+
+      - name: Report lit-element-list
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-element-list
+          path: packages/benchmarks/lit-element/list/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
+      # updating-element:list
+      - name: Benchmark updating-element/list
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config updating-element/list/tachometer.json \
+            --json-file updating-element/list/results.json
+
+      - name: Report updating-element-list
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: updating-element-list
+          path: packages/benchmarks/updating-element/list/results.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree

@@ -9,19 +9,28 @@ export type NodePartState = {};
  * The private interface for NodePartState, which should be kept opaque.
  */
 type NodePartStateInternal = {
-  __value: unknown;
-  __fragment: DocumentFragment;
+  _value: unknown;
+  _fragment: DocumentFragment;
+};
+
+/**
+ * Package private members of NodePart.
+ */
+type NodePartInternal = {
+  _startNode: NodePart['_startNode'];
+  _endNode: NodePart['_endNode'];
+  _commitNode: NodePart['_commitNode'];
 };
 
 export const detachNodePart = (part: NodePart): NodePartState => {
   const fragment = document.createDocumentFragment();
   const state: NodePartStateInternal = {
-    __value: part._value,
-    __fragment: fragment,
+    _value: part._value,
+    _fragment: fragment,
   };
-  let start = part._startNode.nextSibling;
+  let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
   let nextNode;
-  while (start !== part._endNode) {
+  while (start !== ((part as unknown) as NodePartInternal)._endNode) {
     nextNode = start!.nextSibling;
     fragment.append(start!);
     start = nextNode;
@@ -31,9 +40,10 @@ export const detachNodePart = (part: NodePart): NodePartState => {
 };
 
 export const restoreNodePart = (part: NodePart, state: NodePartState) => {
-  // TODO (justinfagnani): make an interal-only interface
-  (part as any)._commitNode((state as NodePartStateInternal).__fragment);
-  part._value = (state as NodePartStateInternal).__value;
+  ((part as unknown) as NodePartInternal)._commitNode(
+    (state as NodePartStateInternal)._fragment
+  );
+  part._value = (state as NodePartStateInternal)._value;
 };
 
 const createMarker = () => document.createComment('');
@@ -42,10 +52,13 @@ export const createAndInsertPart = (
   containerPart: NodePart,
   refPart?: NodePart
 ): NodePart => {
-  const container = containerPart._startNode.parentNode as Node;
+  const container = ((containerPart as unknown) as NodePartInternal)._startNode
+    .parentNode as Node;
 
   const refNode =
-    refPart === undefined ? containerPart._endNode : refPart._startNode;
+    refPart === undefined
+      ? ((containerPart as unknown) as NodePartInternal)._endNode
+      : ((refPart as unknown) as NodePartInternal)._startNode;
 
   const startNode = container.insertBefore(createMarker(), refNode);
   const endNode = container.insertBefore(createMarker(), refNode);
@@ -64,19 +77,30 @@ export const insertPartBefore = (
   part: NodePart,
   refPart?: NodePart
 ) => {
-  const container = containerPart._startNode.parentNode!;
+  const container = ((containerPart as unknown) as NodePartInternal)._startNode
+    .parentNode!;
 
-  const refNode = refPart ? refPart._startNode : containerPart._endNode;
+  const refNode = refPart
+    ? ((refPart as unknown) as NodePartInternal)._startNode
+    : ((containerPart as unknown) as NodePartInternal)._endNode;
 
-  const endNode = part._endNode!.nextSibling;
+  const endNode = ((part as unknown) as NodePartInternal)._endNode!.nextSibling;
 
   if (endNode !== refNode) {
-    reparentNodes(container, part._startNode, endNode, refNode);
+    reparentNodes(
+      container,
+      ((part as unknown) as NodePartInternal)._startNode,
+      endNode,
+      refNode
+    );
   }
 };
 
 export const removePart = (part: NodePart) => {
-  removeNodes(part._startNode, part._endNode!.nextSibling);
+  removeNodes(
+    ((part as unknown) as NodePartInternal)._startNode,
+    ((part as unknown) as NodePartInternal)._endNode!.nextSibling
+  );
 };
 
 /**

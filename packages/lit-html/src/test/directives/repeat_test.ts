@@ -12,14 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// import {guard} from '../../directives/guard.js';
 import {repeat} from '../../directives/repeat.js';
 import {render, html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
-
 import {assert} from '@esm-bundle/chai';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 function assertItemIdentity(
   oldChildren: HTMLElement[],

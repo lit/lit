@@ -23,6 +23,7 @@ import {
   svg,
   TemplateResult,
   RenderOptions,
+  SanitizerFactory,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -32,6 +33,9 @@ import {
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
+// We don't have direct access to DEV_MODE, but this is a good enough
+// proxy.
+const DEV_MODE = render.setSanitizer != null;
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -93,16 +97,33 @@ suite('lit-html', () => {
       );
     });
 
-    test('text child of element with unquoted attribute', () => {
+    test('text child of element with unbound quoted attribute', () => {
       assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
+
+      render(html`<script a="b" type="foo">${'d'}</script>`, container);
+      assert.include(
+        [
+          '<script a="b" type="foo">d</script>',
+          '<script type="foo" a="b">d</script>',
+        ],
+        stripExpressionComments(container.innerHTML)
+      );
     });
 
-    test('text child of element with unquoted attribute', () => {
-      assertRender(html`<div a="b">${'d'}</div>`, '<div a="b">d</div>');
+    test('text child of element with unbound unquoted attribute', () => {
+      assertRender(html`<div a=b>${'d'}</div>`, '<div a="b">d</div>');
+
+      render(html`<script a=b type="foo">${'d'}</script>`, container);
+      assert.include(
+        [
+          '<script a="b" type="foo">d</script>',
+          '<script type="foo" a="b">d</script>',
+        ],
+        stripExpressionComments(container.innerHTML)
+      );
     });
 
     test('renders parts with whitespace after them', () => {
-      // prettier-ignore
       assertRender(html`<div>${'foo'} </div>`, '<div>foo </div>');
     });
 
@@ -115,13 +136,14 @@ suite('lit-html', () => {
     });
 
     test('renders templates with comments', () => {
-      // prettier-ignore
-      assertRender(html`
+      assertRender(
+        html`
         <div>
           <!-- this is a comment -->
           <h1 class="${'foo'}">title</h1>
           <p>${'foo'}</p>
-        </div>`, `
+        </div>`,
+        `
         <div>
           <!-- this is a comment -->
           <h1 class="foo">title</h1>
@@ -131,11 +153,7 @@ suite('lit-html', () => {
     });
 
     test('text after element', () => {
-      // prettier-ignore
-      assertRender(
-        html`<div></div>${'A'}`,
-        '<div></div>A'
-      );
+      assertRender(html`<div></div>${'A'}`, '<div></div>A');
     });
 
     test('renders next templates with preceding elements', () => {
@@ -155,94 +173,88 @@ suite('lit-html', () => {
       // It doesn't matter much what marker we use in <script>, <style> and
       // <textarea> since comments aren't parsed and we have to search the text
       // anyway.
-      // prettier-ignore
       assertRender(
-        html`<script>i < j ${'A'}</script>`,
-        '<script>i < j A</script>'
+        html`<script type="foo">i < j ${'A'}</script>`,
+        '<script type="foo">i < j A</script>'
       );
     });
 
     test('text in raw text element after >', () => {
-      // prettier-ignore
       assertRender(
-        html`<script>i > j ${'A'}</script>`,
-        '<script>i > j A</script>'
+        html`<script type="foo">i > j ${'A'}</script>`,
+        '<script type="foo">i > j A</script>'
       );
     });
 
     test('text in raw text element inside tag-like string', () => {
-      // prettier-ignore
       assertRender(
-        html`<script>"<div a=${'A'}></div>";</script>`,
-        '<script>"<div a=A></div>";</script>'
+        html`<script type="foo">"<div a=${'A'}></div>";</script>`,
+        '<script type="foo">"<div a=A></div>";</script>'
       );
     });
 
     test('renders inside <script>: only node', () => {
-      // prettier-ignore
-      assertRender(html`<script>${'foo'}</script>`, '<script>foo</script>');
-    });
-
-    test('renders inside <script>: first node', () => {
-      // prettier-ignore
-      assertRender(html`<script>${'foo'}A</script>`,'<script>fooA</script>');
-    });
-
-    test('renders inside <script>: last node', () => {
-      // prettier-ignore
-      assertRender(html`<script>A${'foo'}</script>`,'<script>Afoo</script>');
-    });
-
-    test('renders inside <script>: multiple bindings', () => {
-      // prettier-ignore
       assertRender(
-        html`<script>A${'foo'}B${'bar'}C</script>`,
-        '<script>AfooBbarC</script>');
-    });
-
-    test('renders inside <script>: attribute-like', () => {
-      // prettier-ignore
-      assertRender(
-        html`<script>a=${'foo'}</script>`,
-        '<script>a=foo</script>');
-    });
-
-    test('text after script element', () => {
-      // prettier-ignore
-      assertRender(
-        html`<script></script>${'A'}`,
-        '<script></script>A'
+        html`<script type="foo">${'foo'}</script>`,
+        '<script type="foo">foo</script>'
       );
     });
 
+    test('renders inside <script>: first node', () => {
+      assertRender(
+        html`<script type="foo">${'foo'}A</script>`,
+        '<script type="foo">fooA</script>'
+      );
+    });
+
+    test('renders inside <script>: last node', () => {
+      assertRender(
+        html`<script type="foo">A${'foo'}</script>`,
+        '<script type="foo">Afoo</script>'
+      );
+    });
+
+    test('renders inside <script>: multiple bindings', () => {
+      assertRender(
+        html`<script type="foo">A${'foo'}B${'bar'}C</script>`,
+        '<script type="foo">AfooBbarC</script>'
+      );
+    });
+
+    test('renders inside <script>: attribute-like', () => {
+      assertRender(
+        html`<script type="foo">a=${'foo'}</script>`,
+        '<script type="foo">a=foo</script>'
+      );
+    });
+
+    test('text after script element', () => {
+      assertRender(html`<script></script>${'A'}`, '<script></script>A');
+    });
+
     test('text after style element', () => {
-      // prettier-ignore
       assertRender(html`<style></style>${'A'}`, '<style></style>A');
     });
 
     test('text inside raw text element, after different raw tag', () => {
-      // prettier-ignore
       assertRender(
-        html`<script><style></style>"<div a=${'A'}></div>"</script>`,
-        '<script><style></style>"<div a=A></div>"</script>'
+        html`<script type="foo"><style></style>"<div a=${'A'}></div>"</script>`,
+        '<script type="foo"><style></style>"<div a=A></div>"</script>'
       );
     });
 
     test('text inside raw text element, after different raw end tag', () => {
-      // prettier-ignore
       assertRender(
-        html`<script></style>"<div a=${'A'}></div>"</script>`,
-        '<script></style>"<div a=A></div>"</script>'
+        html`<script type="foo"></style>"<div a=${'A'}></div>"</script>`,
+        '<script type="foo"></style>"<div a=A></div>"</script>'
       );
     });
 
     test('renders inside raw-like element', () => {
-      // prettier-ignore
       assertRender(html`<scriptx>${'foo'}</scriptx>`, '<scriptx>foo</scriptx>');
     });
 
     test('attribute after raw text element', () => {
-      // prettier-ignore
       assertRender(
         html`<script></script><div a=${'A'}></div>`,
         '<script></script><div a="A"></div>'
@@ -250,25 +262,18 @@ suite('lit-html', () => {
     });
 
     test('unquoted attribute', () => {
-      // prettier-ignore
       assertRender(html`<div a=${'A'}></div>`, '<div a="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc=${'A'}></div>`, '<div abc="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc = ${'A'}></div>`, '<div abc="A"></div>');
     });
 
     test('quoted attribute', () => {
-      // prettier-ignore
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
-      // prettier-ignore
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
     });
 
     test('second quoted attribute', () => {
-      // prettier-ignore
       assertRender(
         html`<div a="b" c="${'A'}"></div>`,
         '<div a="b" c="A"></div>'
@@ -276,7 +281,6 @@ suite('lit-html', () => {
     });
 
     test('two quoted attributes', () => {
-      // prettier-ignore
       assertRender(
         html`<div a="${'A'}" b="${'A'}"></div>`,
         '<div a="A" b="A"></div>'
@@ -284,7 +288,6 @@ suite('lit-html', () => {
     });
 
     test('two unquoted attributes', () => {
-      // prettier-ignore
       assertRender(
         html`<div a=${'A'} b=${'A'}></div>`,
         '<div a="A" b="A"></div>'
@@ -296,19 +299,26 @@ suite('lit-html', () => {
     });
 
     test('quoted attribute with markup', () => {
-      // prettier-ignore
       assertRender(
         html`<div a="<table>${'A'}"></div>`,
         '<div a="<table>A"></div>'
       );
     });
 
-    test('text after quoted attribute', () => {
+    test('text after quoted bound attribute', () => {
       assertRender(html`<div a="${'A'}">${'A'}</div>`, '<div a="A">A</div>');
+      assertRender(
+        html`<script type="foo" a="${'A'}">${'A'}</script>`,
+        '<script type="foo" a="A">A</script>'
+      );
     });
 
-    test('text after unquoted attribute', () => {
+    test('text after unquoted bound attribute', () => {
       assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
+      assertRender(
+        html`<script type="foo" a=${'A'}>${'A'}</script>`,
+        '<script type="foo" a="A">A</script>'
+      );
     });
 
     // test('inside start tag', () => {
@@ -324,13 +334,27 @@ suite('lit-html', () => {
     //   );
     // });
 
-    // test('inside start tag after unquoted attribute', () => {
-    //   // prettier-ignore
-    //   assertRender(html`<div a=b ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
-    // });
+    test('inside start tag after quoted attribute', () => {
+      assertRender(html`<div a="b" ${'c'}></div>`, '<div a="b"></div>');
+      assertRender(
+        html`<script a="b" ${'c'}></script>`,
+        '<script a="b"></script>'
+      );
+    });
+
+    test('inside start tag after unquoted attribute', () => {
+      assertRender(html`<div a=b ${'c'}></div>`, '<div a="b"></div>');
+      assertRender(
+        html`<script a=b ${'c'}></script>`,
+        '<script a="b"></script>'
+      );
+    });
+
+    test('inside start tag', () => {
+      assertRender(html`<div ${'a'}></div>`, '<div></div>');
+    });
 
     // test('inside start tag after quoted attribute', () => {
-    //   // prettier-ignore
     //   assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
     // });
 
@@ -410,7 +434,7 @@ suite('lit-html', () => {
         renderBefore,
       });
       // Ensure re-render updates rather than re-rendering.
-      let containerChildNodes = Array.from(container.childNodes);
+      const containerChildNodes = Array.from(container.childNodes);
       assertRender(template, '<span></span><div></div>', {
         renderBefore,
       });
@@ -633,9 +657,7 @@ suite('lit-html', () => {
 
     test('updates when called multiple times with arrays', () => {
       const ul = (list: string[]) => {
-        // prettier-ignore
         const items = list.map((item) => html`<li>${item}</li>`);
-        // prettier-ignore
         return html`<ul>${items}</ul>`;
       };
       render(ul(['a', 'b', 'c']), container);
@@ -740,15 +762,44 @@ suite('lit-html', () => {
     });
 
     test('renders to an unquoted attribute', () => {
-      render(html`<div foo=${'bar'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar"></div>'
+      assertRender(html`<div foo=${'bar'}></div>`, '<div foo="bar"></div>');
+      assertRender(
+        html`<div foo=${'bar'}/baz></div>`,
+        '<div foo="bar/baz"></div>'
       );
     });
 
-    test('renders interpolation to an attribute', () => {
-      render(html`<div foo="A${'B'}C"></div>`, container);
+    test('renders to an unquoted attribute after an unbound unquoted attribute', () => {
+      assertRender(
+        html`<div foo=bar baz=${'qux'}></div>`,
+        '<div foo="bar" baz="qux"></div>'
+      );
+      assertRender(
+        html`<div foo=a/b baz=${'qux'}></div>`,
+        '<div foo="a/b" baz="qux"></div>'
+      );
+    });
+
+    test('renders interpolation to an unquoted attribute', () => {
+      render(html`<div foo=A${'B'}C></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+      render(html`<div foo=${'A'}B${'C'}></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+    });
+
+    test('renders interpolation to an unquoted attribute', () => {
+      render(html`<div foo=A${'B'}C></div>`, container);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="ABC"></div>'
+      );
+      render(html`<div foo=${'A'}B${'C'}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="ABC"></div>'
@@ -953,7 +1004,7 @@ suite('lit-html', () => {
     });
 
     test('renders an array to an attribute', () => {
-      render(html`<div foo=${[1, 2, 3] as any}></div>`, container);
+      render(html`<div foo=${['1', '2', '3'] as any}></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="1,2,3"></div>'
@@ -969,7 +1020,6 @@ suite('lit-html', () => {
     });
 
     test('renders to an attribute after a node', () => {
-      // prettier-ignore
       render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -1125,6 +1175,40 @@ suite('lit-html', () => {
       assert.strictEqual((div as any).foo, undefined);
     });
 
+    test('null sets null', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, null);
+    });
+
+    test('null in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
+    test('undefined sets undefined', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('undefined in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
     test('noChange works', () => {
       const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
       go(1);
@@ -1152,7 +1236,7 @@ suite('lit-html', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget; // eslint-disable-line
+      const eventContext = {} as EventTarget;
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -1177,7 +1261,7 @@ suite('lit-html', () => {
           thisValue = this;
         },
       };
-      const eventContext = {} as EventTarget; // eslint-disable-line
+      const eventContext = {} as EventTarget;
       render(html`<div @click=${listener}></div>`, container, {eventContext});
       const div = container.querySelector('div')!;
       div.click();
@@ -1227,13 +1311,11 @@ suite('lit-html', () => {
       div.addEventListener = () => addCount++;
       div.removeEventListener = () => removeCount++;
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 1);
       assert.equal(removeCount, 0);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 1);
@@ -1244,13 +1326,11 @@ suite('lit-html', () => {
       assert.equal(addCount, 1);
       assert.equal(removeCount, 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 2);
       assert.equal(removeCount, 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
       listener = () => {};
       render(t(), container);
       assert.equal(addCount, 2);
@@ -1500,7 +1580,6 @@ suite('lit-html', () => {
 
     test('updates an element', () => {
       let child: any = document.createElement('p');
-      // prettier-ignore
       const t = () => html`<div>${child}<div></div></div>`;
       render(t(), container);
       assert.equal(
@@ -1652,8 +1731,34 @@ suite('lit-html', () => {
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
     });
 
+    test.only('renders directives on EventParts', () => {
+      const handle = directive(
+        class extends Directive {
+          count = 0;
+          render(value: string) {
+            return (e: Event) => {
+              (e.target as any).__clicked = `${value}:${++this.count}`;
+            };
+          }
+        }
+      );
+      const template = (value: string) =>
+        html`<div @click=${handle(value)}></div>`;
+      render(template('A'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:1');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:2');
+      render(template('B'), container);
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:3');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:4');
+    });
+
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective {
+      class FireEventDirective extends Directive {
         render() {
           return nothing;
         }
@@ -1755,5 +1860,161 @@ suite('lit-html', () => {
     assert.isEmpty(log);
     go(false);
     assert.deepEqual(log, ['disconnected']);
+  });
+
+  let securityHooksSuiteFunction:
+    | Mocha.SuiteFunction
+    | Mocha.PendingSuiteFunction = suite;
+  if (!DEV_MODE) {
+    securityHooksSuiteFunction = suite.skip;
+  }
+  securityHooksSuiteFunction('enahnced security hooks', () => {
+    class FakeSanitizedWrapper {
+      sanitizeTo: string;
+      constructor(sanitizeTo: string) {
+        this.sanitizeTo = sanitizeTo;
+      }
+
+      toString() {
+        return `FakeSanitizedWrapper(${this.sanitizeTo})`;
+      }
+    }
+    const sanitizerCalls: Array<{
+      name: string;
+      type: 'property' | 'attribute' | 'text';
+      nodeName: string;
+      values: readonly unknown[];
+    }> = [];
+    const testSanitizer = (value: unknown) => {
+      if (value instanceof FakeSanitizedWrapper) {
+        return value.sanitizeTo;
+      }
+      return 'safeString';
+    };
+    const testSanitizerFactory: SanitizerFactory = (node, name, type) => {
+      const values: unknown[] = [];
+      sanitizerCalls.push({values, name, type, nodeName: node.nodeName});
+      return (value) => {
+        values.push(value);
+        return testSanitizer(value);
+      };
+    };
+    setup(() => {
+      render.setSanitizer(testSanitizerFactory);
+    });
+    teardown(() => {
+      render._testOnlyClearSanitizerFactoryDoNotCallOrElse();
+      sanitizerCalls.length = 0;
+    });
+
+    test('sanitizes text content when the text is alone', () => {
+      const getTemplate = (value: unknown) => html`<div>${value}</div>`;
+      render(getTemplate('foo'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>safeString</div>'
+      );
+
+      const safeFoo = new FakeSanitizedWrapper('foo');
+      render(getTemplate(safeFoo), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>foo</div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['foo', safeFoo],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
+      ]);
+    });
+
+    test('sanitizes text content when the text is interpolated', () => {
+      const getTemplate = (value: unknown) =>
+        html`<div>hello ${value} world</div>`;
+      render(getTemplate('big'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>hello safeString world</div>'
+      );
+
+      const safeBig = new FakeSanitizedWrapper('big');
+
+      render(getTemplate(safeBig), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>hello big world</div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['big', safeBig],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
+      ]);
+    });
+
+    test('sanitizes full attribute values', () => {
+      const getTemplate = (value: unknown) => html`<div attrib=${value}></div>`;
+      render(getTemplate('bad'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="safeString"></div>'
+      );
+
+      const safe = new FakeSanitizedWrapper('good');
+      render(getTemplate(safe), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="good"></div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['bad', safe],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
+      ]);
+    });
+
+    test('sanitizes concatonated attributes after contatonation', () => {
+      render(html`<div attrib="hello ${'big'} world"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="safeString"></div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['hello big world'],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
+      ]);
+    });
+
+    test('sanitizes properties', () => {
+      const getTemplate = (value: unknown) => html`<div .foo=${value}></div>`;
+      render(getTemplate('bad'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.equal((container.querySelector('div')! as any).foo, 'safeString');
+
+      const safe = new FakeSanitizedWrapper('good');
+      render(getTemplate(safe), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.equal((container.querySelector('div')! as any).foo, 'good');
+
+      assert.deepEqual(sanitizerCalls, [
+        {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
+      ]);
+    });
   });
 });
