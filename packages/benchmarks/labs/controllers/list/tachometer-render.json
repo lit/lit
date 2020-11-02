@@ -22,6 +22,10 @@
         {
           "name": "controller",
           "url": "labs/controllers/list/index.html?benchmark=render"
+        },
+        {
+          "name": "mixin",
+          "url": "labs/controllers/list/index-mixin.html?benchmark=render"
         }
       ]
     }
