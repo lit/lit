@@ -66,9 +66,13 @@ suite('UpdatingElement lifecycle callbacks', () => {
 
   test('connected/disconnected callbacks', () => {
     let connectedCount = 0;
-    el.connectedCallbacks.add(() => connectedCount++);
     let disconnectedCount = 0;
-    el.disconnectedCallbacks.add(() => disconnectedCount++);
+    el.addCallbacks({
+      onConnected: () => connectedCount++,
+      onDisconnected: () => disconnectedCount++,
+      onUpdate: () => {},
+      onUpdated: () => {},
+    });
     assert.equal(el.connectedCount, 1);
     assert.equal(el.disconnectedCount, 0);
     assert.equal(connectedCount, 0);
@@ -87,16 +91,20 @@ suite('UpdatingElement lifecycle callbacks', () => {
 
   test('update/updated callbacks', async () => {
     let updateCount = 0;
+    let updatedCount = 0;
     let updateChangedProperties: PropertyValues | null = null;
     let updatedChangedProperties: PropertyValues | null = null;
-    el.updateCallbacks.add((changedProperties: PropertyValues) => {
-      updateChangedProperties = changedProperties;
-      updateCount++;
-    });
-    let updatedCount = 0;
-    el.updatedCallbacks.add((changedProperties: PropertyValues) => {
-      updatedChangedProperties = changedProperties;
-      updatedCount++;
+    el.addCallbacks({
+      onConnected: () => {},
+      onDisconnected: () => {},
+      onUpdate: (changedProperties: PropertyValues) => {
+        updateChangedProperties = changedProperties;
+        updateCount++;
+      },
+      onUpdated: (changedProperties: PropertyValues) => {
+        updatedChangedProperties = changedProperties;
+        updatedCount++;
+      },
     });
     assert.equal(el.updateCount, 1);
     assert.equal(el.updatedCount, 1);
@@ -115,29 +123,25 @@ suite('UpdatingElement lifecycle callbacks', () => {
 
   test('callbacks added multiple times are run once', async () => {
     let connectedCount = 0;
-    const connectedCallback = () => {
-      connectedCount++;
-    };
     let disconnectedCount = 0;
-    const disconnectedCallback = () => {
-      disconnectedCount++;
-    };
     let updateCount = 0;
-    const updateCallback = () => {
-      updateCount++;
-    };
     let updatedCount = 0;
-    const updatedCallback = () => {
-      updatedCount++;
+    const callbacks = {
+      onConnected: () => {
+        connectedCount++;
+      },
+      onDisconnected: () => {
+        disconnectedCount++;
+      },
+      onUpdate: () => {
+        updateCount++;
+      },
+      onUpdated: () => {
+        updatedCount++;
+      },
     };
-    el.connectedCallbacks.add(connectedCallback);
-    el.connectedCallbacks.add(connectedCallback);
-    el.disconnectedCallbacks.add(disconnectedCallback);
-    el.disconnectedCallbacks.add(disconnectedCallback);
-    el.updateCallbacks.add(updateCallback);
-    el.updateCallbacks.add(updateCallback);
-    el.updatedCallbacks.add(updatedCallback);
-    el.updatedCallbacks.add(updatedCallback);
+    el.addCallbacks(callbacks);
+    el.addCallbacks(callbacks);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
@@ -150,25 +154,24 @@ suite('UpdatingElement lifecycle callbacks', () => {
 
   test('callbacks can be removed', async () => {
     let connectedCount = 0;
-    const connectedCallback = () => {
-      connectedCount++;
-    };
     let disconnectedCount = 0;
-    const disconnectedCallback = () => {
-      disconnectedCount++;
-    };
     let updateCount = 0;
-    const updateCallback = () => {
-      updateCount++;
-    };
     let updatedCount = 0;
-    const updatedCallback = () => {
-      updatedCount++;
+    const callbacks = {
+      onConnected: () => {
+        connectedCount++;
+      },
+      onDisconnected: () => {
+        disconnectedCount++;
+      },
+      onUpdate: () => {
+        updateCount++;
+      },
+      onUpdated: () => {
+        updatedCount++;
+      },
     };
-    el.connectedCallbacks.add(connectedCallback);
-    el.disconnectedCallbacks.add(disconnectedCallback);
-    el.updateCallbacks.add(updateCallback);
-    el.updatedCallbacks.add(updatedCallback);
+    el.addCallbacks(callbacks);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
@@ -177,10 +180,7 @@ suite('UpdatingElement lifecycle callbacks', () => {
     await el.updateComplete;
     assert.equal(updateCount, 1);
     assert.equal(updatedCount, 1);
-    el.connectedCallbacks.delete(connectedCallback);
-    el.disconnectedCallbacks.delete(disconnectedCallback);
-    el.updateCallbacks.delete(updateCallback);
-    el.updatedCallbacks.delete(updatedCallback);
+    el.removeCallbacks(callbacks);
     container.removeChild(el);
     container.appendChild(el);
     el.foo = 'foo2';

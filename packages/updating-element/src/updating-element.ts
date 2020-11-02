@@ -219,8 +219,12 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export type connectCallback = () => void;
-export type updateCallback = (changedProperties: PropertyValues) => void;
+export interface LifecycleCallbacks {
+  onConnected(): void;
+  onDisconnected(): void;
+  onUpdate(changedProperties: PropertyValues): void;
+  onUpdated(changedProperties: PropertyValues): void;
+}
 
 /**
  * The Closure JS Compiler doesn't currently have good support for static
@@ -538,24 +542,9 @@ export abstract class UpdatingElement extends HTMLElement {
   private _reflectingProperty: PropertyKey | null = null;
 
   /**
-   * Set of callbacks called in connectedCallback.
+   * Set of lifecycle callbacks.
    */
-  connectedCallbacks: Set<connectCallback> = new Set();
-
-  /**
-   * Set of callbacks called in disconnectedCallback.
-   */
-  disconnectedCallbacks: Set<connectCallback> = new Set();
-
-  /**
-   * Set of callbacks called before update.
-   */
-  updateCallbacks: Set<updateCallback> = new Set();
-
-  /**
-   * Set of callbacks called after updated.
-   */
-  updatedCallbacks: Set<updateCallback> = new Set();
+  _callbacks?: Set<LifecycleCallbacks>;
 
   constructor() {
     super();
@@ -565,6 +554,17 @@ export abstract class UpdatingElement extends HTMLElement {
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+  }
+
+  addCallbacks(callbacks: LifecycleCallbacks) {
+    if (this._callbacks === undefined) {
+      this._callbacks = new Set();
+    }
+    this._callbacks.add(callbacks);
+  }
+
+  removeCallbacks(callbacks: LifecycleCallbacks) {
+    this._callbacks!.delete(callbacks);
   }
 
   /**
@@ -618,7 +618,9 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    this.connectedCallbacks.forEach((cb) => cb());
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onConnected());
+    }
   }
 
   /**
@@ -634,7 +636,9 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.disconnectedCallbacks.forEach((cb) => cb());
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onDisconnected());
+    }
   }
 
   /**
@@ -825,7 +829,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.updateCallbacks.forEach((cb) => cb(changedProperties));
+        if (this._callbacks !== undefined) {
+          this._callbacks.forEach((c) => c.onUpdate(changedProperties));
+        }
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -851,7 +857,9 @@ export abstract class UpdatingElement extends HTMLElement {
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
-    this.updatedCallbacks.forEach((cb) => cb(changedProperties));
+    if (this._callbacks !== undefined) {
+      this._callbacks.forEach((c) => c.onUpdated(changedProperties));
+    }
   }
 
   private _markUpdated() {
