@@ -731,9 +731,9 @@ class TemplateInstance {
     this._template = template;
   }
 
-  __disconnect() {
+  _disconnect() {
     for (const part of this._parts) {
-      part?.__disconnect();
+      part?._disconnect();
     }
   }
 
@@ -864,10 +864,10 @@ export class NodePart {
     return this._startNode.parentNode!;
   }
 
-  __disconnect() {
+  _disconnect() {
     this._directive?.disconnectedCallback?.();
     if (this._value instanceof TemplateInstance) {
-      (this._value as TemplateInstance).__disconnect();
+      (this._value as TemplateInstance)._disconnect();
     }
   }
 
@@ -1056,7 +1056,7 @@ export class NodePart {
 
   private _clear(start: ChildNode | null = this._startNode.nextSibling) {
     if (this._value instanceof TemplateInstance) {
-      this._value.__disconnect();
+      this._value._disconnect();
     }
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
@@ -1108,7 +1108,7 @@ export class AttributePart {
     }
   }
 
-  __disconnect() {
+  _disconnect() {
     if (this._directives === undefined) {
       return;
     }
