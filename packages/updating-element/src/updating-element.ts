@@ -219,11 +219,15 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export interface LifecycleCallbacks {
-  onConnected(): void;
-  onDisconnected(): void;
-  onUpdate(changedProperties: PropertyValues): void;
-  onUpdated(changedProperties: PropertyValues): void;
+export type ControllerHost = Controller | UpdatingElement;
+
+export interface Controller {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [index: string]: any;
+  onConnected?(host: ControllerHost): void;
+  onDisconnected?(host: ControllerHost): void;
+  onUpdate?(changedProperties: PropertyValues, host: ControllerHost): void;
+  onUpdated?(changedProperties: PropertyValues, host: ControllerHost): void;
 }
 
 /**
@@ -542,10 +546,9 @@ export abstract class UpdatingElement extends HTMLElement {
   private _reflectingProperty: PropertyKey | null = null;
 
   /**
-   * Set of lifecycle callbacks.
+   * Set of controllers.
    */
-  // @internal
-  _callbacks?: Set<LifecycleCallbacks>;
+  _controllers?: Controller[];
 
   constructor() {
     super();
@@ -557,15 +560,18 @@ export abstract class UpdatingElement extends HTMLElement {
     this.requestUpdate();
   }
 
-  addCallbacks(callbacks: LifecycleCallbacks) {
-    if (this._callbacks === undefined) {
-      this._callbacks = new Set();
+  addController(controller: Controller) {
+    (this._controllers ??= []).push(controller);
+    if (this.hasUpdated && this.isConnected) {
+      controller.onConnected?.(this);
     }
-    this._callbacks.add(callbacks);
   }
 
-  removeCallbacks(callbacks: LifecycleCallbacks) {
-    this._callbacks!.delete(callbacks);
+  removeController(controller: Controller) {
+    controller.onDisconnected?.(this);
+    this._controllers = this._controllers?.filter(
+      (c: Controller) => c !== controller
+    );
   }
 
   /**
@@ -619,15 +625,8 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((c) => c.onConnected());
-    }
+    this._controllers?.forEach((c) => c.onConnected?.(this));
   }
-
-  // Note, this is an override point for controller callbacks. Per spec, the
-  // `connectedCallback` itself cannot be changed.
-  //@internal
-  _connectedCallback() {}
 
   /**
    * Note, this method should be considered final and not overridden. It is
@@ -642,15 +641,8 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((c) => c.onDisconnected());
-    }
+    this._controllers?.forEach((c) => c.onDisconnected?.(this));
   }
-
-  // Note, this is an override point for controller callbacks. Per spec, the
-  // `disconnectedCallback` itself cannot be changed.
-  //@internal
-  _disconnectedCallback() {}
 
   /**
    * Synchronizes property values when attributes change.
@@ -840,9 +832,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        if (this._callbacks !== undefined) {
-          this._callbacks.forEach((c) => c.onUpdate(changedProperties));
-        }
+        this._controllers?.forEach((c) =>
+          c.onUpdate?.(changedProperties, this)
+        );
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -869,9 +861,7 @@ export abstract class UpdatingElement extends HTMLElement {
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((c) => c.onUpdated(changedProperties));
-    }
+    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties, this));
   }
 
   private _markUpdated() {
