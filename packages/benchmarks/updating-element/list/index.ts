@@ -11,207 +11,302 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {UpdatingElement, PropertyDeclaration} from 'updating-element';
-import {property, customElement} from 'updating-element/decorators.js';
+import {
+  UpdatingElement,
+  PropertyDeclaration,
+  PropertyValues,
+  css,
+  ControllerHost,
+} from 'updating-element';
+import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
 
-// Settings
-const itemCount = 250;
-const itemValueCount = 99;
-const updateCount = 6;
-
-type SimpleItem = {[index: string]: string};
-
-function makeItem(prefix: number) {
-  const o: SimpleItem = {};
-  for (let i = 0; i < itemValueCount; i++) {
-    o['value' + i] = prefix + ': ' + i;
-  }
-  return o;
-}
-
-function generateData(count: number) {
-  const data = [];
-  for (let i = 0; i < count; i++) {
-    data.push(makeItem(i));
-  }
-  return data;
-}
-
-const data = generateData(itemCount);
-const otherData = generateData(itemCount * 2).slice(itemCount);
-
-const propertyOptions: PropertyDeclaration = {};
-
-@customElement('x-thing')
-export class XThing extends UpdatingElement {
-  @property(propertyOptions)
-  from = '';
-  @property(propertyOptions)
-  time = '';
-  @property(propertyOptions)
-  subject = '';
-  fromEl!: HTMLSpanElement;
-  timeEl!: HTMLSpanElement;
-  subjectEl!: HTMLDivElement;
-
-  protected firstUpdated() {
-    const container = document.createElement('div');
-    container.className = 'container';
-    this.fromEl = document.createElement('span');
-    this.fromEl.className = 'from';
-    container.appendChild(this.fromEl);
-    this.timeEl = document.createElement('span');
-    this.timeEl.className = 'time';
-    container.appendChild(this.timeEl);
-    this.subjectEl = document.createElement('div');
-    this.subjectEl.className = 'subject';
-    container.appendChild(this.subjectEl);
-    this.appendChild(container);
-  }
-
-  protected updated() {
-    this.fromEl.textContent = this.from;
-    this.timeEl.textContent = this.time;
-    this.subjectEl.textContent = this.subject;
-  }
-}
-
-@customElement('x-item')
-export class XItem extends UpdatingElement {
-  @property()
-  item!: SimpleItem;
-  count = 6;
-  things: XThing[] = [];
-
-  protected firstUpdated() {
-    const container = this.appendChild(document.createElement('div'));
-    container.className = 'item';
-    for (let i = 0; i < this.count; i++) {
-      this.things.push(
-        container.appendChild(document.createElement('x-thing')) as XThing
-      );
-    }
-  }
-
-  private updateThing(
-    thing: XThing,
-    from: string,
-    time: string,
-    subject: string
-  ) {
-    thing.from = from;
-    thing.time = time;
-    thing.subject = subject;
-  }
-
-  protected updated() {
-    let x = 0;
-    this.things.forEach((thing) => {
-      this.updateThing(
-        thing,
-        this.item[`value${x++}`],
-        this.item[`value${x++}`],
-        this.item[`value${x++}`]
-      );
-    });
-  }
-}
-
-@customElement('x-app')
-export class XApp extends UpdatingElement {
-  @property()
-  items = data;
-  itemEls: XItem[] = [];
-
-  protected firstUpdated() {
-    this.items.forEach(() => {
-      this.itemEls.push(
-        this.appendChild(document.createElement('x-item')) as XItem
-      );
-    });
-  }
-
-  protected updated() {
-    this.items.forEach((item, i) => (this.itemEls[i].item = item));
-  }
-}
-
 (async () => {
-  const container = document.createElement('div');
-  document.body.appendChild(container);
-  let el: XApp;
-
-  const create = () => {
-    const el = document.createElement('x-app') as XApp;
-    return container.appendChild(el) as XApp;
-  };
-
-  const destroy = () => {
-    container.innerHTML = '';
-  };
-
-  const updateComplete = () => new Promise((r) => requestAnimationFrame(r));
-
-  const benchmark = queryParams.benchmark;
-  const getTestStartName = (name: string) => `${name}-start`;
-
-  // Named functions are use to run the measurements so that they can be
-  // selected in the DevTools profile flame chart.
-
-  // Initial Render
-  const render = async () => {
-    const test = 'render';
-    if (benchmark === test || !benchmark) {
-      const start = getTestStartName(test);
-      performance.mark(start);
-      create();
-      await updateComplete();
-      performance.measure(test, start);
-      destroy();
-    }
-  };
-  await render();
-
-  // Update: toggle data
-  const update = async () => {
-    const test = 'update';
-    if (benchmark === test || !benchmark) {
-      el = create();
-      const start = getTestStartName(test);
-      performance.mark(start);
-      for (let i = 0; i < updateCount; i++) {
-        el.items = i % 2 ? otherData : data;
-        await updateComplete();
+  // wait until after page loads
+  if (document.readyState !== 'complete') {
+    let resolve: () => void;
+    const p = new Promise((r) => (resolve = r));
+    document.addEventListener('readystatechange', async () => {
+      if (document.readyState === 'complete') {
+        resolve();
       }
-      performance.measure(test, start);
-      destroy();
-    }
-  };
-  await update();
+    });
+    await p;
+  }
+  await new Promise((r) => setTimeout(r));
 
-  const updateReflect = async () => {
-    const test = 'update-reflect';
-    if (benchmark === test || !benchmark) {
-      el = create();
-      const start = getTestStartName(test);
-      performance.mark(start);
+  // Settings
+  const itemCount = 250;
+  const itemValueCount = 99;
+  const updateCount = 6;
+
+  type SimpleItem = {[index: string]: string};
+
+  function makeItem(prefix: number) {
+    const o: SimpleItem = {};
+    for (let i = 0; i < itemValueCount; i++) {
+      o['value' + i] = prefix + ': ' + i;
+    }
+    return o;
+  }
+
+  function generateData(count: number) {
+    const data = [];
+    for (let i = 0; i < count; i++) {
+      data.push(makeItem(i));
+    }
+    return data;
+  }
+
+  const data = generateData(itemCount);
+  const otherData = generateData(itemCount * 2).slice(itemCount);
+
+  const propertyOptions: PropertyDeclaration = {};
+
+  const useController = queryParams.controller;
+
+  class Controller {
+    isConnected = false;
+    value = '';
+    constructor(host: UpdatingElement) {
+      host.addController(this);
+    }
+    onConnected() {
+      this.isConnected = true;
+    }
+    onDisconnected() {
+      this.isConnected = false;
+    }
+    onUpdate(_changedProperties: PropertyValues, host: ControllerHost) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (propertyOptions as any).reflect = true;
-      for (let i = 0; i < updateCount; i++) {
-        el.items = i % 2 ? otherData : data;
-        await updateComplete();
+      this.value = (host as any).time;
+    }
+    onUpdated(_changedProperties: PropertyValues, _host: ControllerHost) {}
+  }
+
+  class XThing extends UpdatingElement {
+    static styles = css`
+      .container {
+        box-sizing: border-box;
+        height: 80px;
+        padding: 4px;
+        padding-left: 77px;
+        line-height: 167%;
+        cursor: default;
+        background-color: white;
+        position: relative;
+        color: black;
+        background-repeat: no-repeat;
+        background-position: 10px 10px;
+        background-size: 60px;
+        border-bottom: 1px solid #ddd;
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (propertyOptions as any).reflect = false;
-      performance.measure(test, start);
-      destroy();
-    }
-  };
-  await updateReflect();
 
-  // Log
-  performance
-    .getEntriesByType('measure')
-    .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
+      .from {
+        display: inline;
+        font-weight: bold;
+      }
+
+      .time {
+        margin-left: 10px;
+        font-size: 12px;
+        opacity: 0.8;
+      }
+    `;
+
+    @property(propertyOptions)
+    from = '';
+    @property(propertyOptions)
+    time = '';
+    @property(propertyOptions)
+    subject = '';
+    fromEl!: HTMLSpanElement;
+    timeEl!: HTMLSpanElement;
+    subjectEl!: HTMLDivElement;
+
+    controller = useController ? new Controller(this) : undefined;
+
+    protected update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+      if (!this.hasUpdated) {
+        const container = document.createElement('div');
+        container.appendChild(document.createTextNode(' '));
+        container.className = 'container';
+        this.fromEl = document.createElement('span');
+        this.fromEl.className = 'from';
+        container.appendChild(this.fromEl);
+        container.appendChild(document.createTextNode(' '));
+        this.timeEl = document.createElement('span');
+        this.timeEl.className = 'time';
+        container.appendChild(this.timeEl);
+        container.appendChild(document.createTextNode(' '));
+        this.subjectEl = document.createElement('div');
+        this.subjectEl.className = 'subject';
+        container.appendChild(this.subjectEl);
+        container.appendChild(document.createTextNode(' '));
+        this.renderRoot.appendChild(document.createTextNode(' '));
+        this.renderRoot.appendChild(container);
+        this.renderRoot.appendChild(document.createTextNode(' '));
+      }
+      this.fromEl.textContent = this.from;
+      this.timeEl.textContent = useController
+        ? this.controller!.value
+        : this.time;
+      this.subjectEl.textContent = this.subject;
+    }
+  }
+  customElements.define('x-thing', XThing);
+
+  class XItem extends UpdatingElement {
+    static styles = css`
+      .item {
+        display: flex;
+      }
+    `;
+
+    @property()
+    item!: SimpleItem;
+    count = 6;
+    things: XThing[] = [];
+
+    protected update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+      if (!this.hasUpdated) {
+        this.renderRoot.appendChild(document.createTextNode(' '));
+        const container = this.renderRoot.appendChild(
+          document.createElement('div')
+        );
+        this.renderRoot.appendChild(document.createTextNode(' '));
+        container.className = 'item';
+        container.appendChild(document.createTextNode(' '));
+        for (let i = 0; i < this.count; i++) {
+          this.things.push(
+            container.appendChild(document.createElement('x-thing')) as XThing
+          );
+          container.appendChild(document.createTextNode(' '));
+        }
+      }
+      let x = 0;
+      this.things.forEach((thing) => {
+        this.updateThing(
+          thing,
+          this.item[`value${x++}`],
+          this.item[`value${x++}`],
+          this.item[`value${x++}`]
+        );
+      });
+    }
+
+    private updateThing(
+      thing: XThing,
+      from: string,
+      time: string,
+      subject: string
+    ) {
+      thing.from = from;
+      thing.time = time;
+      thing.subject = subject;
+    }
+  }
+  customElements.define('x-item', XItem);
+
+  class XApp extends UpdatingElement {
+    @property()
+    items = data;
+    itemEls: XItem[] = [];
+
+    protected update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+      if (!this.hasUpdated) {
+        this.items.forEach(() => {
+          this.itemEls.push(
+            this.renderRoot.appendChild(
+              document.createElement('x-item')
+            ) as XItem
+          );
+        });
+      }
+      this.items.forEach((item, i) => (this.itemEls[i].item = item));
+    }
+  }
+  customElements.define('x-app', XApp);
+
+  (async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    let el: XApp;
+
+    const create = () => {
+      el = document.createElement('x-app') as XApp;
+      return container.appendChild(el) as XApp;
+    };
+
+    const destroy = () => {
+      container.innerHTML = '';
+    };
+
+    const updateComplete = () => new Promise((r) => requestAnimationFrame(r));
+
+    const benchmark = queryParams.benchmark;
+    const getTestStartName = (name: string) => `${name}-start`;
+
+    // Named functions are use to run the measurements so that they can be
+    // selected in the DevTools profile flame chart.
+
+    // Initial Render
+    const render = async () => {
+      const test = 'render';
+      if (benchmark === test || !benchmark) {
+        const start = getTestStartName(test);
+        performance.mark(start);
+        create();
+        await updateComplete();
+        performance.measure(test, start);
+        destroy();
+      }
+    };
+    await render();
+
+    // Update: toggle data
+    const update = async () => {
+      const test = 'update';
+      if (benchmark === test || !benchmark) {
+        el = create();
+        const start = getTestStartName(test);
+        performance.mark(start);
+        for (let i = 0; i < updateCount; i++) {
+          el.items = i % 2 ? otherData : data;
+          await updateComplete();
+        }
+        performance.measure(test, start);
+        destroy();
+      }
+    };
+    await update();
+
+    const updateReflect = async () => {
+      const test = 'update-reflect';
+      if (benchmark === test || !benchmark) {
+        el = create();
+        const start = getTestStartName(test);
+        performance.mark(start);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (propertyOptions as any).reflect = true;
+        for (let i = 0; i < updateCount; i++) {
+          el.items = i % 2 ? otherData : data;
+          await updateComplete();
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (propertyOptions as any).reflect = false;
+        performance.measure(test, start);
+        destroy();
+      }
+    };
+    await updateReflect();
+
+    // Log
+    performance
+      .getEntriesByType('measure')
+      .forEach((m) => console.log(`${m.name}: ${m.duration.toFixed(3)}ms`));
+  })();
 })();
