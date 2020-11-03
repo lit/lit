@@ -12,7 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PropertyValues, UpdatingElement} from 'updating-element';
+import {
+  ControllerHost,
+  PropertyValues,
+  UpdatingElement,
+} from 'updating-element';
 import {UpdatingController} from '../../controllers/updating-controller.js';
 import {generateElementName} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';
@@ -29,23 +33,23 @@ suite('UpdatingController', () => {
     disconnectedCount = 0;
     updateChangedProperties: PropertyValues | null = null;
     updatedChangedProperties: PropertyValues | null = null;
-    onConnected() {
+    onConnected(host: ControllerHost) {
       this.connectedCount++;
-      super.onConnected();
+      super.onConnected(host);
     }
-    onDisconnected() {
+    onDisconnected(host: ControllerHost) {
       this.disconnectedCount++;
-      super.onDisconnected();
+      super.onDisconnected(host);
     }
-    onUpdate(changedProperties: PropertyValues) {
+    onUpdate(changedProperties: PropertyValues, host: ControllerHost) {
       this.updateCount++;
       this.updateChangedProperties = changedProperties;
-      super.onUpdate(changedProperties);
+      super.onUpdate(changedProperties, host);
     }
-    onUpdated(changedProperties: PropertyValues) {
+    onUpdated(changedProperties: PropertyValues, host: ControllerHost) {
       this.updatedCount++;
       this.updatedChangedProperties = changedProperties;
-      super.onUpdated(changedProperties);
+      super.onUpdated(changedProperties, host);
     }
   }
 
@@ -98,6 +102,11 @@ suite('UpdatingController', () => {
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
+  });
+
+  test('have host and element', async () => {
+    assert.equal(el.controller1.host, el);
+    assert.equal(el.controller1.element, el);
   });
 
   test('calls onConnected/onDisconnected', async () => {
@@ -175,7 +184,7 @@ suite('UpdatingController', () => {
 
   test('can be added/removed', async () => {
     // Remove
-    el.controller1.removeController(el.controller1);
+    el.removeController(el.controller1);
     el.foo = 'foo2';
     await el.updateComplete;
     assert.equal(el.controller1.updateCount, 1);
@@ -186,7 +195,7 @@ suite('UpdatingController', () => {
     assert.equal(el.updateCount, 2);
     assert.equal(el.controller1.updateCount, 1);
     // Add
-    el.controller1.addController(el.controller1, el);
+    el.addController(el.controller1);
     assert.equal(el.controller1.connectedCount, 2);
     el.foo = 'foo3';
     await el.updateComplete;
@@ -198,11 +207,12 @@ suite('UpdatingController', () => {
     assert.equal(el.controller1.updateCount, 3);
   });
 
-  test('throws if added twice', () => {
-    assert.throws(() => el.controller1.addController(el.controller1, el));
-  });
-
   suite('nested controllers', () => {
+    test('have host and element', async () => {
+      assert.equal(el.controller1.nestedController.host, el.controller1);
+      assert.equal(el.controller1.nestedController.element, el);
+    });
+
     test('calls onConnected/onDisconnected', async () => {
       assert.equal(el.controller1.connectedCount, 1);
       assert.equal(el.controller1.nestedController.connectedCount, 1);
@@ -278,9 +288,7 @@ suite('UpdatingController', () => {
 
     test('can be added/removed', async () => {
       // Remove
-      el.controller1.nestedController.removeController(
-        el.controller1.nestedController
-      );
+      el.controller1.removeController(el.controller1.nestedController);
       assert.equal(el.controller1.nestedController.connectedCount, 1);
       assert.equal(el.controller1.nestedController.disconnectedCount, 1);
       el.foo = 'foo2';
@@ -291,10 +299,7 @@ suite('UpdatingController', () => {
       assert.equal(el.updateCount, 2);
       assert.equal(el.controller1.nestedController.updateCount, 1);
       // Add
-      el.controller1.addController(
-        el.controller1.nestedController,
-        el.controller1
-      );
+      el.controller1.addController(el.controller1.nestedController);
       assert.equal(el.controller1.nestedController.connectedCount, 2);
       assert.equal(el.controller1.nestedController.disconnectedCount, 1);
       el.foo = 'foo3';

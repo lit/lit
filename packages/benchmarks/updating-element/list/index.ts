@@ -16,6 +16,7 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
+  ControllerHost,
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
@@ -62,6 +63,27 @@ import {queryParams} from '../../utils/query-params.js';
 
   const propertyOptions: PropertyDeclaration = {};
 
+  const useController = queryParams.controller;
+
+  class Controller {
+    isConnected = false;
+    value = '';
+    constructor(host: UpdatingElement) {
+      host.addController(this);
+    }
+    onConnected() {
+      this.isConnected = true;
+    }
+    onDisconnected() {
+      this.isConnected = false;
+    }
+    onUpdate(_changedProperties: PropertyValues, host: ControllerHost) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.value = (host as any).time;
+    }
+    onUpdated(_changedProperties: PropertyValues, _host: ControllerHost) {}
+  }
+
   class XThing extends UpdatingElement {
     static styles = css`
       .container {
@@ -102,6 +124,8 @@ import {queryParams} from '../../utils/query-params.js';
     timeEl!: HTMLSpanElement;
     subjectEl!: HTMLDivElement;
 
+    controller = useController ? new Controller(this) : undefined;
+
     protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
@@ -125,7 +149,9 @@ import {queryParams} from '../../utils/query-params.js';
         this.renderRoot.appendChild(document.createTextNode(' '));
       }
       this.fromEl.textContent = this.from;
-      this.timeEl.textContent = this.time;
+      this.timeEl.textContent = useController
+        ? this.controller!.value
+        : this.time;
       this.subjectEl.textContent = this.subject;
     }
   }

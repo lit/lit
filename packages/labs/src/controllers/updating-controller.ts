@@ -15,7 +15,8 @@
 import {
   UpdatingElement,
   PropertyValues,
-  LifecycleCallbacks,
+  Controller,
+  ControllerHost,
 } from 'updating-element';
 
 /**
@@ -38,83 +39,61 @@ export type UpdatingHost = UpdatingController | UpdatingElement;
  * an element or another controller.
  * @noInheritDoc
  */
-export class UpdatingController {
+export class UpdatingController implements Controller {
+  host?: ControllerHost;
+
   /**
    * Root UpdatingElement to which this controller is connected.
    */
   element?: UpdatingElement;
 
-  /**
-   * Hosting controller or element to which this controller is connected.
-   */
-  host?: UpdatingHost;
-
   // @internal
-  _callbacks?: Set<LifecycleCallbacks>;
+  _controllers?: Controller[];
 
   constructor(host: UpdatingHost) {
-    this.addController(this, host);
+    host.addController(this);
   }
 
-  addController(controller: UpdatingController, host: UpdatingHost) {
-    if (controller.host) {
-      throw new Error('A controller must be removed before being added.');
-    }
-    controller.host = host;
-    controller.element =
-      (host as UpdatingElement).localName !== undefined
-        ? (host as UpdatingElement)
-        : (host as UpdatingController).element;
-    host.addCallbacks(controller);
+  addController(controller: Controller) {
+    (this._controllers ??= []).push(controller);
     // Allows controller to be added after element is connected.
-    if (controller.element!.hasUpdated && controller.element!.isConnected) {
-      controller.onConnected();
+    if (this.element?.hasUpdated && this.element?.isConnected) {
+      controller.onConnected?.(this);
     }
   }
 
-  removeController(controller: UpdatingController) {
+  removeController(controller: Controller) {
     if (!controller.host) {
       return;
     }
-    const host = controller.host;
-    host.removeCallbacks(controller);
     // Allows controller to perform cleanup tasks before removal.
-    controller.onDisconnected();
+    controller.onDisconnected?.(this);
     controller.element = undefined;
-    controller.host = undefined;
-  }
-
-  addCallbacks(callbacks: LifecycleCallbacks) {
-    if (this._callbacks === undefined) {
-      this._callbacks = new Set();
-    }
-    this._callbacks.add(callbacks);
-  }
-
-  removeCallbacks(callbacks: LifecycleCallbacks) {
-    this._callbacks!.delete(callbacks);
+    this._controllers = this._controllers?.filter((c) => c !== controller);
   }
 
   requestUpdate() {
-    this.host?.requestUpdate();
+    this.host?.requestUpdate?.();
   }
 
   /**
    * Runs after the controller's element is connected.
    */
-  onConnected() {
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((cb) => cb.onConnected());
-    }
+  onConnected(host: ControllerHost) {
+    this.host = host;
+    this.element ??= (host as UpdatingElement).localName
+      ? (host as UpdatingElement)
+      : (host as UpdatingController).element;
+    this._controllers?.forEach((c) => c.onConnected?.(this));
   }
 
   /**
    * Runs after the controller's element is disconnected.
    */
-  onDisconnected() {
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((cb) => cb.onDisconnected());
-    }
+  onDisconnected(_host: ControllerHost) {
+    this._controllers?.forEach((c) => c.onDisconnected?.(this));
+    this.host = undefined;
+    this.element = undefined;
   }
 
   /**
@@ -122,19 +101,15 @@ export class UpdatingController {
    * updates.
    * @param changedProperties
    */
-  onUpdate(changedProperties: PropertyValues) {
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((cb) => cb.onUpdate(changedProperties));
-    }
+  onUpdate(changedProperties: PropertyValues, _host: ControllerHost) {
+    this._controllers?.forEach((c) => c.onUpdate?.(changedProperties, this));
   }
 
   /**
    * Runs after the controller's element updates after its `updated` method.
    * @param changedProperties
    */
-  onUpdated(changedProperties: PropertyValues) {
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((cb) => cb.onUpdated(changedProperties));
-    }
+  onUpdated(changedProperties: PropertyValues, _host: ControllerHost) {
+    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties, this));
   }
 }

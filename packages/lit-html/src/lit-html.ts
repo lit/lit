@@ -1181,7 +1181,7 @@ export class AttributePart {
           (this._value as Array<unknown>)[i] = v;
         }
         attributeValue +=
-          (typeof v === 'string' ? v : String(v)) + strings[i + 1];
+          (typeof v === 'string' ? v : String(v ?? '')) + strings[i + 1];
       }
       if (change && !noCommit) {
         this._commitValue(remove ? nothing : attributeValue);

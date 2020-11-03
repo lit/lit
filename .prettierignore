@@ -1,0 +1,5 @@
+# Note we also ignore all files from .gitignore
+package-lock.json
+/packages/localize/testdata
+/packages/localize/examples
+/packages/localize/config.schema.json

@@ -64,3 +64,15 @@ tsconfig.tsbuildinfo
 /packages/lit-ssr/index.js.map
 /packages/lit-ssr/index.d.ts
 /packages/lit-ssr/index.d.ts.map
+
+# localize package
+/packages/localize/lib/
+/packages/localize/lib_client/
+/packages/localize/testdata/*/output/
+/packages/localize/**/*.js
+/packages/localize/**/*.d.ts
+/packages/localize/**/*.d.ts.map
+/packages/localize/**/*.map
+/packages/localize/*.tgz
+/packages/localize/.tsbuildinfo
+!/packages/localize/ava.config.js
