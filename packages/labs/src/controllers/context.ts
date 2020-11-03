@@ -42,6 +42,8 @@ export class Provider extends UpdatingController {
   _value: any = null;
   // @internal
   _directive?: () => DirectiveResult;
+  // @internal
+  _shouldProvideAll = false;
 
   constructor(host: UpdatingHost, value?: unknown) {
     super(host);
@@ -49,7 +51,21 @@ export class Provider extends UpdatingController {
   }
 
   provideAll() {
-    this.addConnectListener(this.element!);
+    this._shouldProvideAll = true;
+  }
+
+  onConnected(host: UpdatingHost) {
+    super.onConnected(host);
+    if (this._shouldProvideAll) {
+      this.addConnectListener(this.element!);
+    }
+  }
+
+  onDisconnected(host: UpdatingHost) {
+    if (this._shouldProvideAll) {
+      this.removeConnectListener(this.element!);
+    }
+    super.onDisconnected(host);
   }
 
   provide() {
@@ -172,7 +188,8 @@ export class Consumer extends UpdatingController {
    * Sends connection signal to provider. The first ancestor provider with
    * the appropriate key will become this consumer's provider.
    */
-  onConnected() {
+  onConnected(host: UpdatingHost) {
+    super.onConnected(host);
     // Purely as an optimization, batch connection to update if one is pending.
     // This allows all consumers for the element to be connected with one
     // provider search.
@@ -185,11 +202,10 @@ export class Consumer extends UpdatingController {
     } else {
       this._connectToProvider();
     }
-    super.onConnected();
   }
 
   // Batches connection to update if possible
-  onUpdate(changedProperties: PropertyValues) {
+  onUpdate(changedProperties: PropertyValues, host: UpdatingHost) {
     if (!this.element!.hasUpdated && this.provider === undefined) {
       const pending = pendingConsumers.get(this.element!);
       if (pending?.length) {
@@ -198,7 +214,7 @@ export class Consumer extends UpdatingController {
         pending.length = 0;
       }
     }
-    super.onUpdate(changedProperties);
+    super.onUpdate(changedProperties, host);
   }
 
   // @internal
@@ -245,9 +261,9 @@ export class Consumer extends UpdatingController {
   /**
    * Disconnects from the provider.
    */
-  onDisconnected() {
+  onDisconnected(host: UpdatingHost) {
     this.provider?.disconnect(this);
-    super.onDisconnected();
+    super.onDisconnected(host);
   }
 
   get value() {
