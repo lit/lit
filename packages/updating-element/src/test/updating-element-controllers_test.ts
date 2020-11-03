@@ -16,7 +16,7 @@ import {PropertyValues, UpdatingElement} from '../updating-element.js';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('UpdatingElement lifecycle callbacks', () => {
+suite('UpdatingElement controllers', () => {
   class A extends UpdatingElement {
     static properties = {foo: {}};
     foo = 'foo';
@@ -64,14 +64,12 @@ suite('UpdatingElement lifecycle callbacks', () => {
     }
   });
 
-  test('connected/disconnected callbacks', () => {
+  test('controllers can implement onConnected/onDisconnected', () => {
     let connectedCount = 0;
     let disconnectedCount = 0;
-    el.addCallbacks({
+    el.addController({
       onConnected: () => connectedCount++,
       onDisconnected: () => disconnectedCount++,
-      onUpdate: () => {},
-      onUpdated: () => {},
     });
     assert.equal(el.connectedCount, 1);
     assert.equal(el.disconnectedCount, 0);
@@ -89,14 +87,12 @@ suite('UpdatingElement lifecycle callbacks', () => {
     assert.equal(disconnectedCount, 1);
   });
 
-  test('update/updated callbacks', async () => {
+  test('controllers can implement onUpdate/onUpdated', async () => {
     let updateCount = 0;
     let updatedCount = 0;
     let updateChangedProperties: PropertyValues | null = null;
     let updatedChangedProperties: PropertyValues | null = null;
-    el.addCallbacks({
-      onConnected: () => {},
-      onDisconnected: () => {},
+    el.addController({
       onUpdate: (changedProperties: PropertyValues) => {
         updateChangedProperties = changedProperties;
         updateCount++;
@@ -121,12 +117,12 @@ suite('UpdatingElement lifecycle callbacks', () => {
     assert.deepEqual(updatedChangedProperties, expectedChangedProperties);
   });
 
-  test('callbacks added multiple times are run once', async () => {
+  test('controllers added multiple times are run once', async () => {
     let connectedCount = 0;
     let disconnectedCount = 0;
     let updateCount = 0;
     let updatedCount = 0;
-    const callbacks = {
+    const controller = {
       onConnected: () => {
         connectedCount++;
       },
@@ -140,8 +136,8 @@ suite('UpdatingElement lifecycle callbacks', () => {
         updatedCount++;
       },
     };
-    el.addCallbacks(callbacks);
-    el.addCallbacks(callbacks);
+    el.addController(controller);
+    el.addController(controller);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
@@ -152,12 +148,12 @@ suite('UpdatingElement lifecycle callbacks', () => {
     assert.equal(updatedCount, 1);
   });
 
-  test('callbacks can be removed', async () => {
+  test('controllers can be removed', async () => {
     let connectedCount = 0;
     let disconnectedCount = 0;
     let updateCount = 0;
     let updatedCount = 0;
-    const callbacks = {
+    const controller = {
       onConnected: () => {
         connectedCount++;
       },
@@ -171,7 +167,7 @@ suite('UpdatingElement lifecycle callbacks', () => {
         updatedCount++;
       },
     };
-    el.addCallbacks(callbacks);
+    el.addController(controller);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
@@ -180,7 +176,7 @@ suite('UpdatingElement lifecycle callbacks', () => {
     await el.updateComplete;
     assert.equal(updateCount, 1);
     assert.equal(updatedCount, 1);
-    el.removeCallbacks(callbacks);
+    el.removeController(controller);
     container.removeChild(el);
     container.appendChild(el);
     el.foo = 'foo2';

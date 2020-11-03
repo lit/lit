@@ -219,11 +219,11 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export interface LifecycleCallbacks {
-  onConnected(): void;
-  onDisconnected(): void;
-  onUpdate(changedProperties: PropertyValues): void;
-  onUpdated(changedProperties: PropertyValues): void;
+export interface Controller {
+  onConnected?(): void;
+  onDisconnected?(): void;
+  onUpdate?(changedProperties: PropertyValues): void;
+  onUpdated?(changedProperties: PropertyValues): void;
 }
 
 /**
@@ -542,9 +542,9 @@ export abstract class UpdatingElement extends HTMLElement {
   private _reflectingProperty: PropertyKey | null = null;
 
   /**
-   * Set of lifecycle callbacks.
+   * Set of controllers.
    */
-  _callbacks?: Set<LifecycleCallbacks>;
+  _controllers?: Set<Controller>;
 
   constructor() {
     super();
@@ -556,15 +556,12 @@ export abstract class UpdatingElement extends HTMLElement {
     this.requestUpdate();
   }
 
-  addCallbacks(callbacks: LifecycleCallbacks) {
-    if (this._callbacks === undefined) {
-      this._callbacks = new Set();
-    }
-    this._callbacks.add(callbacks);
+  addController(controller: Controller) {
+    (this._controllers ??= new Set()).add(controller);
   }
 
-  removeCallbacks(callbacks: LifecycleCallbacks) {
-    this._callbacks!.delete(callbacks);
+  removeController(controller: Controller) {
+    this._controllers?.delete(controller);
   }
 
   /**
@@ -618,9 +615,7 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((c) => c.onConnected());
-    }
+    this._controllers?.forEach((c) => c.onConnected?.());
   }
 
   /**
@@ -636,9 +631,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((c) => c.onDisconnected());
-    }
+    this._controllers?.forEach((c) => c.onDisconnected?.());
   }
 
   /**
@@ -829,9 +822,7 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        if (this._callbacks !== undefined) {
-          this._callbacks.forEach((c) => c.onUpdate(changedProperties));
-        }
+        this._controllers?.forEach((c) => c.onUpdate?.(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -857,9 +848,7 @@ export abstract class UpdatingElement extends HTMLElement {
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
-    if (this._callbacks !== undefined) {
-      this._callbacks.forEach((c) => c.onUpdated(changedProperties));
-    }
+    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties));
   }
 
   private _markUpdated() {
