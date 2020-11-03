@@ -5,9 +5,10 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "format": "npm run format:eslint && npm run format:prettier",
-    "format:eslint": "cat .gitignore .eslintignore > TEMP_ESLINT_IGNORE && eslint \"**/*.{js,ts}\" --ignore-path TEMP_ESLINT_IGNORE --fix; rm TEMP_ESLINT_IGNORE",
-    "format:prettier": "cat .gitignore .prettierignore > TEMP_PRETTIER_IGNORE && prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path TEMP_PRETTIER_IGNORE --write; rm TEMP_PRETTIER_IGNORE",
-    "lint": "cat .gitignore .eslintignore > TEMP_ESLINT_IGNORE && eslint \"**/*.{js,ts}\" --ignore-path TEMP_ESLINT_IGNORE; rm TEMP_ESLINT_IGNORE",
+    "format:eslint": "npm run make-ignore-files && eslint '**/*.{js,ts}' --fix",
+    "format:prettier": "npm run make-ignore-files && prettier '**/*.{cjs,html,js,json,md,ts}' --write",
+    "lint": "npm run make-ignore-files && eslint '**/*.{js,ts}'",
+    "make-ignore-files": "node make-ignore-files.js",
     "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
     "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test)"
   },
@@ -32,11 +33,11 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "npm run make-ignore-files && lint-staged"
     }
   },
   "lint-staged": {
-    "**/*.{cjs,html,js,json,md,ts}": "prettier --ignore-path .gitignore --write",
+    "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
     "**/*.{js,ts}": "eslint --ignore-path .gitignore --fix"
   }
 }
