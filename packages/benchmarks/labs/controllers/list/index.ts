@@ -16,6 +16,7 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
+  ControllerHost,
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../../utils/query-params.js';
@@ -67,12 +68,14 @@ import {UpdatingController} from 'lit-labs/controllers/updating-controller.js';
     value!: string;
     isConnected = false;
 
-    onConnected() {
+    onConnected(host: ControllerHost) {
       this.isConnected = true;
+      super.onConnected(host);
     }
 
-    onDisconnected() {
+    onDisconnected(host: ControllerHost) {
       this.isConnected = false;
+      super.onDisconnected(host);
     }
 
     onUpdate() {
