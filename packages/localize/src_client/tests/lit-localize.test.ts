@@ -9,7 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-const assert = chai.assert;
+import {assert} from '@esm-bundle/chai';
 
 import {
   msg,
