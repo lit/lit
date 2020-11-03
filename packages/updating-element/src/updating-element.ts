@@ -219,11 +219,15 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
+export type ControllerHost = Controller | UpdatingElement;
+
 export interface Controller {
-  onConnected?(): void;
-  onDisconnected?(): void;
-  onUpdate?(changedProperties: PropertyValues): void;
-  onUpdated?(changedProperties: PropertyValues): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [index: string]: any;
+  onConnected?(host: ControllerHost): void;
+  onDisconnected?(host: ControllerHost): void;
+  onUpdate?(changedProperties: PropertyValues, host: ControllerHost): void;
+  onUpdated?(changedProperties: PropertyValues, host: ControllerHost): void;
 }
 
 /**
@@ -522,8 +526,8 @@ export abstract class UpdatingElement extends HTMLElement {
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
 
-  protected isUpdatePending = false;
-  protected hasUpdated = false;
+  isUpdatePending = false;
+  hasUpdated = false;
 
   /**
    * Map with keys for any properties that have changed since the last
@@ -544,7 +548,7 @@ export abstract class UpdatingElement extends HTMLElement {
   /**
    * Set of controllers.
    */
-  _controllers?: Set<Controller>;
+  _controllers?: Controller[];
 
   constructor() {
     super();
@@ -557,11 +561,17 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   addController(controller: Controller) {
-    (this._controllers ??= new Set()).add(controller);
+    (this._controllers ??= []).push(controller);
+    if (this.hasUpdated && this.isConnected) {
+      controller.onConnected?.(this);
+    }
   }
 
   removeController(controller: Controller) {
-    this._controllers?.delete(controller);
+    controller.onDisconnected?.(this);
+    this._controllers = this._controllers?.filter(
+      (c: Controller) => c !== controller
+    );
   }
 
   /**
@@ -615,7 +625,7 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   connectedCallback() {
     this.enableUpdating();
-    this._controllers?.forEach((c) => c.onConnected?.());
+    this._controllers?.forEach((c) => c.onConnected?.(this));
   }
 
   /**
@@ -631,7 +641,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this._controllers?.forEach((c) => c.onDisconnected?.());
+    this._controllers?.forEach((c) => c.onDisconnected?.(this));
   }
 
   /**
@@ -822,7 +832,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._controllers?.forEach((c) => c.onUpdate?.(changedProperties));
+        this._controllers?.forEach((c) =>
+          c.onUpdate?.(changedProperties, this)
+        );
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -837,18 +849,19 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._afterUpdate(changedProperties);
+      this._didUpdate(changedProperties);
     }
   }
 
-  // Note, this is an override point for platform-support.
-  private _afterUpdate(changedProperties: PropertyValues) {
+  // Note, this is an override point for platform-support and controllers.
+  // @internal
+  _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
     this.updated(changedProperties);
-    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties));
+    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties, this));
   }
 
   private _markUpdated() {

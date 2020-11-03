@@ -12,7 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {PropertyValues, UpdatingElement} from '../updating-element.js';
+import {
+  PropertyValues,
+  UpdatingElement,
+  ControllerHost,
+} from '../updating-element.js';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -73,17 +77,17 @@ suite('UpdatingElement controllers', () => {
     });
     assert.equal(el.connectedCount, 1);
     assert.equal(el.disconnectedCount, 0);
-    assert.equal(connectedCount, 0);
+    assert.equal(connectedCount, 1);
     assert.equal(disconnectedCount, 0);
     container.removeChild(el);
     assert.equal(el.connectedCount, 1);
     assert.equal(el.disconnectedCount, 1);
-    assert.equal(connectedCount, 0);
+    assert.equal(connectedCount, 1);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
     assert.equal(el.connectedCount, 2);
     assert.equal(el.disconnectedCount, 1);
-    assert.equal(connectedCount, 1);
+    assert.equal(connectedCount, 2);
     assert.equal(disconnectedCount, 1);
   });
 
@@ -117,7 +121,7 @@ suite('UpdatingElement controllers', () => {
     assert.deepEqual(updatedChangedProperties, expectedChangedProperties);
   });
 
-  test('controllers added multiple times are run once', async () => {
+  test('controllers can be added multiple times', async () => {
     let connectedCount = 0;
     let disconnectedCount = 0;
     let updateCount = 0;
@@ -138,14 +142,20 @@ suite('UpdatingElement controllers', () => {
     };
     el.addController(controller);
     el.addController(controller);
+    assert.equal(connectedCount, 2);
     container.removeChild(el);
-    assert.equal(disconnectedCount, 1);
+    assert.equal(disconnectedCount, 2);
     container.appendChild(el);
-    assert.equal(connectedCount, 1);
+    assert.equal(connectedCount, 4);
     el.foo = 'foo2';
     await el.updateComplete;
-    assert.equal(updateCount, 1);
-    assert.equal(updatedCount, 1);
+    assert.equal(updateCount, 2);
+    assert.equal(updatedCount, 2);
+    el.removeController(controller);
+    el.foo = 'foo3';
+    await el.updateComplete;
+    assert.equal(updateCount, 2);
+    assert.equal(updatedCount, 2);
   });
 
   test('controllers can be removed', async () => {
@@ -168,22 +178,53 @@ suite('UpdatingElement controllers', () => {
       },
     };
     el.addController(controller);
+    assert.equal(connectedCount, 1);
     container.removeChild(el);
     assert.equal(disconnectedCount, 1);
     container.appendChild(el);
-    assert.equal(connectedCount, 1);
+    assert.equal(connectedCount, 2);
     el.foo = 'foo2';
     await el.updateComplete;
     assert.equal(updateCount, 1);
     assert.equal(updatedCount, 1);
     el.removeController(controller);
+    assert.equal(disconnectedCount, 2);
     container.removeChild(el);
     container.appendChild(el);
     el.foo = 'foo2';
     await el.updateComplete;
-    assert.equal(disconnectedCount, 1);
-    assert.equal(connectedCount, 1);
+    assert.equal(disconnectedCount, 2);
+    assert.equal(connectedCount, 2);
     assert.equal(updateCount, 1);
     assert.equal(updatedCount, 1);
+  });
+
+  test('controllers can can use host argument', async () => {
+    let connectedHost;
+    let disconnectedHost;
+    let updateHost;
+    let updatedHost;
+    const controller = {
+      onConnected: (host: ControllerHost) => {
+        connectedHost = host;
+      },
+      onDisconnected: (host: ControllerHost) => {
+        disconnectedHost = host;
+      },
+      onUpdate: (_changedProperties: PropertyValues, host: ControllerHost) => {
+        updateHost = host;
+      },
+      onUpdated: (_changedProperties: PropertyValues, host: ControllerHost) => {
+        updatedHost = host;
+      },
+    };
+    el.addController(controller);
+    container.removeChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(connectedHost, el);
+    assert.equal(disconnectedHost, el);
+    assert.equal(updateHost, el);
+    assert.equal(updatedHost, el);
   });
 });
