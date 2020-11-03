@@ -853,7 +853,7 @@ export abstract class UpdatingElement extends HTMLElement {
     }
   }
 
-  // Note, this is an override point for platform-support and controllers.
+  // Note, this is an override point for platform-support.
   // @internal
   _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
