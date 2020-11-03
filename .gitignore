@@ -52,8 +52,8 @@ tsconfig.tsbuildinfo
 /packages/labs/index.*
 
 # lit-ssr package
-/packages/lit-ssr/lib
-/packages/lit-ssr/demo
+/packages/lit-ssr/lib/
+/packages/lit-ssr/demo/
 /packages/lit-ssr/test/**/*.js
 /packages/lit-ssr/test/**/*.js.map
 /packages/lit-ssr/test/**/*.d.ts
@@ -73,4 +73,5 @@ tsconfig.tsbuildinfo
 /packages/localize/**/*.map
 /packages/localize/*.tgz
 /packages/localize/.tsbuildinfo
+/packages/localize/.tsbuildinfo.client
 !/packages/localize/ava.config.js
