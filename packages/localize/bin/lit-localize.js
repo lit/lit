@@ -11,4 +11,5 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-require('../lib/cli.js').runAndExit();
+import {runAndExit} from '../lib/cli.js';
+runAndExit();

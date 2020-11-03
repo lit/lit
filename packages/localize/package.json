@@ -17,8 +17,9 @@
     "lit-localize": "bin/lit-localize.js"
   },
   "main": "lit-localize.js",
+  "type": "module",
   "scripts": {
-    "clean": "rimraf 'lib/*' 'lib/.*' 'lit-localize.js' 'localized-element.js' '*.d.ts' '*.map' '.tsbuildinfo*' 'testdata/*/output'",
+    "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && npm run generate-json-schema && tsc && tsc --project tsconfig.client.json",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/config.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && ava --verbose && npm run test:check-tsc && npx karma start --single-run",

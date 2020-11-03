@@ -65,6 +65,7 @@ tsconfig.tsbuildinfo
 
 # localize package
 /packages/localize/lib/
+!/packages/localize/lib/package.json
 /packages/localize/lib_client/
 /packages/localize/testdata/*/output/
 /packages/localize/**/*.js
