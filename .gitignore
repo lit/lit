@@ -74,4 +74,5 @@ tsconfig.tsbuildinfo
 /packages/localize/*.tgz
 /packages/localize/.tsbuildinfo
 /packages/localize/.tsbuildinfo.client
+/packages/localize/examples/*/node_modules/
 !/packages/localize/ava.config.js

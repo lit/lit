@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publishConfig": {
     "access": "public"
   },
@@ -16,7 +16,7 @@
   "bin": {
     "lit-localize": "bin/lit-localize.js"
   },
-  "main": "index.js",
+  "main": "lit-localize.js",
   "scripts": {
     "clean": "rimraf 'lib/*' 'lib/.*' 'lit-localize.js' 'localized-element.js' '*.d.ts' '*.map' '.tsbuildinfo*' 'testdata/*/output'",
     "build": "npm run clean && npm run generate-json-schema && tsc && tsc --project tsconfig.client.json",
