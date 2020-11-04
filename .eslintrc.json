@@ -30,6 +30,7 @@
   "overrides": [
     {
       "files": [
+        "packages/localize/bin/lit-localize.js",
         "check-version-tracker.js",
         "karma.conf.js",
         "rollup-common.js",
