@@ -1,0 +1,5 @@
+[local]
+.gitignore
+
+[inline]
+packages/localize/testdata/

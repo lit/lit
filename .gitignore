@@ -8,8 +8,8 @@ packages/benchmarks/generated/
 packages/benchmarks/generator/build/
 packages/benchmarks/generator/generated/
 !packages/benchmarks/generator/types/deoptigate.d.ts
-packages/benchmarks/node_modules/
 !packages/benchmarks/lit-html/template-heavy/template-heavy.js
+packages/benchmarks/node_modules/
 packages/benchmarks/**/*.d.ts
 packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js

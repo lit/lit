@@ -1,0 +1,7 @@
+[local]
+.gitignore
+
+[inline]
+packages/localize/examples/
+packages/localize/testdata/
+packages/localize/config.schema.json
