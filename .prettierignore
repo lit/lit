@@ -3,12 +3,10 @@
 # https://github.com/foray1010/ignore-sync #
 ############################################
 
-# global
 node_modules/
 lerna-debug.log
 *.tgz
 
-# benchmarks package
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
 packages/benchmarks/generator/generated/
@@ -20,12 +18,10 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-# labs package
 packages/labs/development/
 packages/labs/node_modules/
 packages/labs/index.*
 
-# lit-element package
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map
@@ -40,7 +36,6 @@ packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/platform-support.*
 
-# lit-html package
 packages/lit-html/development/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
@@ -51,14 +46,12 @@ packages/lit-html/parts.*
 packages/lit-html/platform-support.*
 packages/lit-html/private-ssr-support.*
 
-# lit-ssr package
 packages/lit-ssr/demo/
 packages/lit-ssr/lib/
 packages/lit-ssr/node_modules/
 packages/lit-ssr/test/
 packages/lit-ssr/index.*
 
-# localize package
 packages/localize/lib/
 packages/localize/lib_client/
 packages/localize/node_modules/
@@ -68,7 +61,8 @@ packages/localize/.tsbuildinfo.client
 packages/localize/lit-localize.*
 packages/localize/localized-element.*
 
-# updating-element package
+packages/tests/node_modules/
+
 packages/updating-element/decorators/
 packages/updating-element/development/
 packages/updating-element/test/

@@ -23,7 +23,7 @@
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
     "husky": "^4.3.0",
-    "ignore-sync": "^2.0.1",
+    "ignore-sync": "^3.0.0",
     "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "rollup-plugin-copy": "^3.3.0",
