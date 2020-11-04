@@ -18,6 +18,7 @@ import {
   Provider,
   Consumer,
   UpdatingHost,
+  UpdatingController,
 } from '../../controllers/context.js';
 import {nextFrame, queryDeep} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';
@@ -41,9 +42,21 @@ suite('Context', () => {
     key: 'num',
   });
 
+  const subContext = createContext({
+    key: 'sub',
+  });
+
+  class MyController extends UpdatingController {
+    context = new subContext.consumer(this);
+
+    get value() {
+      return this.context.value;
+    }
+  }
+
   class CustomNameProvider extends Provider {
-    constructor(host: UpdatingHost) {
-      super(host);
+    onConnected(host: UpdatingHost) {
+      super.onConnected(host);
       this.value = this.element?.localName;
     }
   }
@@ -68,12 +81,14 @@ suite('Context', () => {
 
     data = new dataContext.consumer(this);
     num = new numContext.consumer(this);
+    controller = new MyController(this);
     root = new rootContext.consumer(this);
     customName = new customNameContext.consumer(this);
 
     render() {
       return html`<div>${this.data.value?.name}</div>
-        <div>${this.num.value}</div>`;
+        <div>${this.num.value}</div>
+        <div>${this.controller.value}</div>`;
     }
   }
   customElements.define('consumer-el', AConsumer);
@@ -95,6 +110,7 @@ suite('Context', () => {
     num1 = new numContext.provider(this, 1);
     num2 = new numContext.provider(this, 2);
     root = new rootContext.provider(this);
+    sub = new subContext.provider(this);
     customName = new customNameContext.provider(this);
 
     constructor() {
@@ -102,6 +118,8 @@ suite('Context', () => {
       // provide to entire tree
       this.root.provideAll();
       this.customName.provideAll();
+      this.sub.provideAll();
+      this.sub.value = 'sub';
     }
 
     render() {
@@ -140,17 +158,20 @@ suite('Context', () => {
 
   const testValues = ({
     root = 'root',
+    sub = 'sub',
     data,
     num1,
     num2,
   }: {
     root?: string;
+    sub?: string;
     data: {name: string};
     num1: number;
     num2: number;
   }) => {
     consumers.forEach((consumer, i) => {
       assert.deepEqual(consumer.root.value, root);
+      assert.deepEqual(consumer.controller.value, sub);
       assert.deepEqual(consumer.data.value, i < 4 ? data : undefined);
       assert.equal(consumer.num.value, i < 2 ? num1 : i < 4 ? num2 : undefined);
     });
@@ -166,7 +187,14 @@ suite('Context', () => {
     el.num1.value = 15;
     testValues({data: {name: 'bar'}, num1: 15, num2: 10});
     el.root.value = 'root2';
-    testValues({root: 'root2', data: {name: 'bar'}, num1: 15, num2: 10});
+    el.sub.value = 'sub2';
+    testValues({
+      root: 'root2',
+      sub: 'sub2',
+      data: {name: 'bar'},
+      num1: 15,
+      num2: 10,
+    });
   });
 
   test('providing values stops/starts with disconnect/connect', async () => {
