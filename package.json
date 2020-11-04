@@ -34,7 +34,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "npm run ignore-sync && lint-staged"
     }
   },
   "lint-staged": {
