@@ -12,11 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  ControllerHost,
-  PropertyValues,
-  UpdatingElement,
-} from 'updating-element';
+import {PropertyValues, UpdatingElement} from 'updating-element';
 import {UpdatingController} from '../../controllers/updating-controller.js';
 import {generateElementName} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';
@@ -27,39 +23,43 @@ suite('UpdatingController', () => {
   let container: HTMLElement;
 
   class SimpleController extends UpdatingController {
-    updateCount = 0;
-    updatedCount = 0;
     connectedCount = 0;
     disconnectedCount = 0;
+    willUpdateCount = 0;
+    updateCount = 0;
+    updatedCount = 0;
+    willUpdateChangedProperties: PropertyValues | null = null;
     updateChangedProperties: PropertyValues | null = null;
     updatedChangedProperties: PropertyValues | null = null;
-    onConnected(host: ControllerHost) {
+
+    connectedCallback() {
       this.connectedCount++;
-      super.onConnected(host);
     }
-    onDisconnected(host: ControllerHost) {
+    disconnectedCallback() {
       this.disconnectedCount++;
-      super.onDisconnected(host);
     }
-    onUpdate(changedProperties: PropertyValues, host: ControllerHost) {
+    willUpdate(changedProperties: PropertyValues) {
+      this.willUpdateCount++;
+      this.willUpdateChangedProperties = changedProperties;
+    }
+    update(changedProperties: PropertyValues) {
       this.updateCount++;
       this.updateChangedProperties = changedProperties;
-      super.onUpdate(changedProperties, host);
     }
-    onUpdated(changedProperties: PropertyValues, host: ControllerHost) {
+    updated(changedProperties: PropertyValues) {
       this.updatedCount++;
       this.updatedChangedProperties = changedProperties;
-      super.onUpdated(changedProperties, host);
     }
   }
 
   class HostController extends SimpleController {
-    nestedController = new SimpleController(this);
+    nestedController = new SimpleController(this.host);
   }
 
   class A extends UpdatingElement {
     static properties = {foo: {}};
     foo = 'foo';
+    willUpdateCount = 0;
     updateCount = 0;
     updatedCount = 0;
     connectedCount = 0;
@@ -77,14 +77,17 @@ suite('UpdatingController', () => {
       super.disconnectedCallback();
     }
 
+    willUpdate(_changedProperties: PropertyValues) {
+      this.willUpdateCount++;
+    }
+
     update(changedProperties: PropertyValues) {
       this.updateCount++;
       super.update(changedProperties);
     }
 
-    updated(changedProperties: PropertyValues) {
+    updated(_changedProperties: PropertyValues) {
       this.updatedCount++;
-      super.updated(changedProperties);
     }
   }
   customElements.define(generateElementName(), A);
@@ -104,12 +107,11 @@ suite('UpdatingController', () => {
     }
   });
 
-  test('have host and element', async () => {
+  test('host is set', async () => {
     assert.equal(el.controller1.host, el);
-    assert.equal(el.controller1.element, el);
   });
 
-  test('calls onConnected/onDisconnected', async () => {
+  test('calls connectedCallback/disconnectedCallback', async () => {
     assert.equal(el.controller1.connectedCount, 1);
     assert.equal(el.controller2.connectedCount, 1);
     container.removeChild(el);
@@ -120,10 +122,15 @@ suite('UpdatingController', () => {
     assert.equal(el.controller2.connectedCount, 2);
   });
 
-  test('calls onUpdate/onUpdated', async () => {
+  test('calls willUpdate/update/updated', async () => {
     let expectedChangedProperties: PropertyValues = new Map([
       ['foo', undefined],
     ]);
+    assert.equal(el.controller1.willUpdateCount, 1);
+    assert.deepEqual(
+      el.controller1.willUpdateChangedProperties,
+      expectedChangedProperties
+    );
     assert.equal(el.controller1.updateCount, 1);
     assert.deepEqual(
       el.controller1.updateChangedProperties,
@@ -132,6 +139,10 @@ suite('UpdatingController', () => {
     assert.equal(el.controller1.updatedCount, 1);
     assert.deepEqual(
       el.controller1.updatedChangedProperties,
+      expectedChangedProperties
+    );
+    assert.deepEqual(
+      el.controller2.willUpdateChangedProperties,
       expectedChangedProperties
     );
     assert.equal(el.controller2.updateCount, 1);
@@ -147,6 +158,11 @@ suite('UpdatingController', () => {
     el.foo = 'foo2';
     await el.updateComplete;
     expectedChangedProperties = new Map([['foo', 'foo']]);
+    assert.equal(el.controller1.willUpdateCount, 2);
+    assert.deepEqual(
+      el.controller1.willUpdateChangedProperties,
+      expectedChangedProperties
+    );
     assert.equal(el.controller1.updateCount, 2);
     assert.deepEqual(
       el.controller1.updateChangedProperties,
@@ -155,6 +171,10 @@ suite('UpdatingController', () => {
     assert.equal(el.controller1.updatedCount, 2);
     assert.deepEqual(
       el.controller1.updatedChangedProperties,
+      expectedChangedProperties
+    );
+    assert.deepEqual(
+      el.controller2.willUpdateChangedProperties,
       expectedChangedProperties
     );
     assert.equal(el.controller2.updateCount, 2);
@@ -182,38 +202,12 @@ suite('UpdatingController', () => {
     assert.equal(el.updatedCount, 3);
   });
 
-  test('can be added/removed', async () => {
-    // Remove
-    el.removeController(el.controller1);
-    el.foo = 'foo2';
-    await el.updateComplete;
-    assert.equal(el.controller1.updateCount, 1);
-    assert.equal(el.controller1.connectedCount, 1);
-    assert.equal(el.controller1.disconnectedCount, 1);
-    el.controller1.requestUpdate();
-    await el.updateComplete;
-    assert.equal(el.updateCount, 2);
-    assert.equal(el.controller1.updateCount, 1);
-    // Add
-    el.addController(el.controller1);
-    assert.equal(el.controller1.connectedCount, 2);
-    el.foo = 'foo3';
-    await el.updateComplete;
-    assert.equal(el.updateCount, 3);
-    assert.equal(el.controller1.updateCount, 2);
-    el.controller1.requestUpdate();
-    await el.updateComplete;
-    assert.equal(el.updateCount, 4);
-    assert.equal(el.controller1.updateCount, 3);
-  });
-
   suite('nested controllers', () => {
-    test('have host and element', async () => {
-      assert.equal(el.controller1.nestedController.host, el.controller1);
-      assert.equal(el.controller1.nestedController.element, el);
+    test('host is set', async () => {
+      assert.equal(el.controller1.nestedController.host, el);
     });
 
-    test('calls onConnected/onDisconnected', async () => {
+    test('calls connectedCallback/disconnectedCallback', async () => {
       assert.equal(el.controller1.connectedCount, 1);
       assert.equal(el.controller1.nestedController.connectedCount, 1);
       container.removeChild(el);
@@ -224,18 +218,13 @@ suite('UpdatingController', () => {
       assert.equal(el.controller1.nestedController.connectedCount, 2);
     });
 
-    test('calls onUpdate/onUpdated', async () => {
+    test('calls willUpdate/update/updated', async () => {
       let expectedChangedProperties: PropertyValues = new Map([
         ['foo', undefined],
       ]);
-      assert.equal(el.controller1.updateCount, 1);
+      assert.equal(el.controller1.nestedController.willUpdateCount, 1);
       assert.deepEqual(
-        el.controller1.updateChangedProperties,
-        expectedChangedProperties
-      );
-      assert.equal(el.controller1.updatedCount, 1);
-      assert.deepEqual(
-        el.controller1.updatedChangedProperties,
+        el.controller1.nestedController.willUpdateChangedProperties,
         expectedChangedProperties
       );
       assert.equal(el.controller1.nestedController.updateCount, 1);
@@ -251,14 +240,9 @@ suite('UpdatingController', () => {
       el.foo = 'foo2';
       await el.updateComplete;
       expectedChangedProperties = new Map([['foo', 'foo']]);
-      assert.equal(el.controller1.updateCount, 2);
+      assert.equal(el.controller1.nestedController.willUpdateCount, 2);
       assert.deepEqual(
-        el.controller1.updateChangedProperties,
-        expectedChangedProperties
-      );
-      assert.equal(el.controller1.updatedCount, 2);
-      assert.deepEqual(
-        el.controller1.updatedChangedProperties,
+        el.controller1.nestedController.willUpdateChangedProperties,
         expectedChangedProperties
       );
       assert.equal(el.controller1.nestedController.updateCount, 2);
@@ -284,32 +268,6 @@ suite('UpdatingController', () => {
       await el.updateComplete;
       assert.equal(el.updateCount, 3);
       assert.equal(el.updatedCount, 3);
-    });
-
-    test('can be added/removed', async () => {
-      // Remove
-      el.controller1.removeController(el.controller1.nestedController);
-      assert.equal(el.controller1.nestedController.connectedCount, 1);
-      assert.equal(el.controller1.nestedController.disconnectedCount, 1);
-      el.foo = 'foo2';
-      await el.updateComplete;
-      assert.equal(el.controller1.nestedController.updateCount, 1);
-      el.controller1.nestedController.requestUpdate();
-      await el.updateComplete;
-      assert.equal(el.updateCount, 2);
-      assert.equal(el.controller1.nestedController.updateCount, 1);
-      // Add
-      el.controller1.addController(el.controller1.nestedController);
-      assert.equal(el.controller1.nestedController.connectedCount, 2);
-      assert.equal(el.controller1.nestedController.disconnectedCount, 1);
-      el.foo = 'foo3';
-      await el.updateComplete;
-      assert.equal(el.updateCount, 3);
-      assert.equal(el.controller1.nestedController.updateCount, 2);
-      el.controller1.nestedController.requestUpdate();
-      await el.updateComplete;
-      assert.equal(el.updateCount, 4);
-      assert.equal(el.controller1.nestedController.updateCount, 3);
     });
   });
 });

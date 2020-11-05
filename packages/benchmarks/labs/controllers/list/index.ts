@@ -16,7 +16,6 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
-  ControllerHost,
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../../utils/query-params.js';
@@ -68,22 +67,20 @@ import {UpdatingController} from 'lit-labs/controllers/updating-controller.js';
     value!: string;
     isConnected = false;
 
-    onConnected(host: ControllerHost) {
+    connectedCallback() {
       this.isConnected = true;
-      super.onConnected(host);
     }
 
-    onDisconnected(host: ControllerHost) {
+    disconnectedCallback() {
       this.isConnected = false;
-      super.onDisconnected(host);
     }
 
-    onUpdate() {
+    willUpdate() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.value = (this.element as any).time;
+      this.value = (this.host as any).time;
     }
 
-    onUpdated() {}
+    updated() {}
   }
 
   class XThing extends UpdatingElement {
