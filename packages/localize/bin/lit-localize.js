@@ -11,4 +11,5 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('../lib/cli.js').runAndExit();

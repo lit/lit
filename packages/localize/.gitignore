@@ -1,0 +1,8 @@
+lib/
+lib_client/
+node_modules/
+testdata/*/output/
+tests/
+.tsbuildinfo.client
+lit-localize.*
+localized-element.*
