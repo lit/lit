@@ -19,10 +19,20 @@ litLocalize.msg('lit_variables_2', (x: string) => html`${x}y${x}y${x}`, 'x');
 
 litLocalize.msg(
   'lit_variables_3',
-  (x: string) => html`<b> ${x} </b>
-    <i> y </i>
-    <b> ${x} </b>
-    <i> y </i>
-    <b> ${x} </b>`,
+  (x: string) => html`<b>
+      ${x}
+    </b>
+    <i>
+      y
+    </i>
+    <b>
+      ${x}
+    </b>
+    <i>
+      y
+    </i>
+    <b>
+      ${x}
+    </b>`,
   'x'
 );
