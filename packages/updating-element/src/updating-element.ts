@@ -219,15 +219,13 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export type ControllerHost = Controller | UpdatingElement;
-
 export interface Controller {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [index: string]: any;
-  onConnected?(host: ControllerHost): void;
-  onDisconnected?(host: ControllerHost): void;
-  onUpdate?(changedProperties: PropertyValues, host: ControllerHost): void;
-  onUpdated?(changedProperties: PropertyValues, host: ControllerHost): void;
+  connectedCallback?(): void;
+  disconnectedCallback?(): void;
+  willUpdate?(changedProperties: PropertyValues): void;
+  update?(changedProperties: PropertyValues): void;
+  updated?(changedProperties: PropertyValues): void;
+  requestUpdate?(): void;
 }
 
 /**
@@ -562,16 +560,6 @@ export abstract class UpdatingElement extends HTMLElement {
 
   addController(controller: Controller) {
     (this._controllers ??= []).push(controller);
-    if (this.hasUpdated && this.isConnected) {
-      controller.onConnected?.(this);
-    }
-  }
-
-  removeController(controller: Controller) {
-    controller.onDisconnected?.(this);
-    this._controllers = this._controllers?.filter(
-      (c: Controller) => c !== controller
-    );
   }
 
   /**
@@ -624,8 +612,14 @@ export abstract class UpdatingElement extends HTMLElement {
    * element styling, and enables updating.
    */
   connectedCallback() {
+    // create renderRoot before first update.
+    if (!this.hasUpdated) {
+      (this as {
+        renderRoot: Element | DocumentFragment;
+      }).renderRoot = this.createRenderRoot();
+    }
     this.enableUpdating();
-    this._controllers?.forEach((c) => c.onConnected?.(this));
+    this._controllers?.forEach((c) => c.connectedCallback?.());
   }
 
   /**
@@ -641,7 +635,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this._controllers?.forEach((c) => c.onDisconnected?.(this));
+    this._controllers?.forEach((c) => c.disconnectedCallback?.());
   }
 
   /**
@@ -821,20 +815,14 @@ export abstract class UpdatingElement extends HTMLElement {
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
     }
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
-    }
     let shouldUpdate = false;
     const changedProperties = this._changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._controllers?.forEach((c) =>
-          c.onUpdate?.(changedProperties, this)
-        );
+        this._controllers?.forEach((c) => c.willUpdate?.(changedProperties));
+        this.willUpdate(changedProperties);
+        this._controllers?.forEach((c) => c.update?.(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -853,6 +841,8 @@ export abstract class UpdatingElement extends HTMLElement {
     }
   }
 
+  willUpdate(_changedProperties: PropertyValues) {}
+
   // Note, this is an override point for platform-support.
   // @internal
   _didUpdate(changedProperties: PropertyValues) {
@@ -860,8 +850,8 @@ export abstract class UpdatingElement extends HTMLElement {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
+    this._controllers?.forEach((c) => c.updated?.(changedProperties));
     this.updated(changedProperties);
-    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties, this));
   }
 
   private _markUpdated() {

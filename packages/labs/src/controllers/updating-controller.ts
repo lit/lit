@@ -12,20 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  UpdatingElement,
-  PropertyValues,
-  Controller,
-  ControllerHost,
-} from 'updating-element';
+import {UpdatingElement, PropertyValues, Controller} from 'updating-element';
 
 /**
  * Use this module if you want to create your own base class extending
  * [[UpdatingController]].
  * @packageDocumentation
  */
-
-export type UpdatingHost = UpdatingController | UpdatingElement;
 
 /**
  * Base controller class which can interact with an UpdatingElement by hooking
@@ -40,76 +33,47 @@ export type UpdatingHost = UpdatingController | UpdatingElement;
  * @noInheritDoc
  */
 export class UpdatingController implements Controller {
-  host?: ControllerHost;
-
   /**
-   * Root UpdatingElement to which this controller is connected.
+   * UpdatingElement to which this controller is connected.
    */
-  element?: UpdatingElement;
+  host: UpdatingElement;
 
-  // @internal
-  _controllers?: Controller[];
-
-  constructor(host: UpdatingHost) {
+  constructor(host: UpdatingElement) {
+    this.host = host;
     host.addController(this);
   }
 
-  addController(controller: Controller) {
-    (this._controllers ??= []).push(controller);
-    // Allows controller to be added after element is connected.
-    if (this.element?.hasUpdated && this.element?.isConnected) {
-      controller.onConnected?.(this);
-    }
-  }
-
-  removeController(controller: Controller) {
-    if (!controller.host) {
-      return;
-    }
-    // Allows controller to perform cleanup tasks before removal.
-    controller.onDisconnected?.(this);
-    controller.element = undefined;
-    this._controllers = this._controllers?.filter((c) => c !== controller);
-  }
-
   requestUpdate() {
-    this.host?.requestUpdate?.();
+    this.host.requestUpdate();
   }
 
   /**
    * Runs after the controller's element is connected.
    */
-  onConnected(host: ControllerHost) {
-    this.host = host;
-    this.element ??= (host as UpdatingElement).localName
-      ? (host as UpdatingElement)
-      : (host as UpdatingController).element;
-    this._controllers?.forEach((c) => c.onConnected?.(this));
-  }
+  connectedCallback() {}
 
   /**
    * Runs after the controller's element is disconnected.
    */
-  onDisconnected(_host: ControllerHost) {
-    this._controllers?.forEach((c) => c.onDisconnected?.(this));
-    this.host = undefined;
-    this.element = undefined;
-  }
+  disconnectedCallback() {}
 
   /**
    * Runs when the controller's element updates, before the element itself
    * updates.
    * @param changedProperties
    */
-  onUpdate(changedProperties: PropertyValues, _host: ControllerHost) {
-    this._controllers?.forEach((c) => c.onUpdate?.(changedProperties, this));
-  }
+  willUpdate(_changedProperties: PropertyValues) {}
+
+  /**
+   * Runs when the controller's element updates, when the element itself
+   * updates.
+   * @param changedProperties
+   */
+  update(_changedProperties: PropertyValues) {}
 
   /**
    * Runs after the controller's element updates after its `updated` method.
    * @param changedProperties
    */
-  onUpdated(changedProperties: PropertyValues, _host: ControllerHost) {
-    this._controllers?.forEach((c) => c.onUpdated?.(changedProperties, this));
-  }
+  updated(_changedProperties: PropertyValues) {}
 }

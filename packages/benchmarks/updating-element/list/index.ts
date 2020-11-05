@@ -16,7 +16,7 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
-  ControllerHost,
+  Controller,
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
@@ -65,23 +65,25 @@ import {queryParams} from '../../utils/query-params.js';
 
   const useController = queryParams.controller;
 
-  class Controller {
+  class MyController implements Controller {
+    host: UpdatingElement;
     isConnected = false;
     value = '';
     constructor(host: UpdatingElement) {
-      host.addController(this);
+      this.host = host;
+      this.host.addController(this);
     }
-    onConnected() {
+    connectedCallback() {
       this.isConnected = true;
     }
-    onDisconnected() {
+    disconnectedCallback() {
       this.isConnected = false;
     }
-    onUpdate(_changedProperties: PropertyValues, host: ControllerHost) {
+    willUpdate() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.value = (host as any).time;
+      this.value = (this.host as any).time;
     }
-    onUpdated(_changedProperties: PropertyValues, _host: ControllerHost) {}
+    updated() {}
   }
 
   class XThing extends UpdatingElement {
@@ -124,7 +126,7 @@ import {queryParams} from '../../utils/query-params.js';
     timeEl!: HTMLSpanElement;
     subjectEl!: HTMLDivElement;
 
-    controller = useController ? new Controller(this) : undefined;
+    controller = useController ? new MyController(this) : undefined;
 
     protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
