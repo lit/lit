@@ -27,6 +27,21 @@
     "watch": "scripts/watch.sh",
     "prepack": "npm run build"
   },
+  "files": [
+    "/src/",
+    "!/src/tests/",
+    "/src_client/",
+    "!/src_client/tests/",
+    "/lib/",
+    "!/lib/tests/",
+    "!/lib/.tsbuildinfo",
+    "/lit-localize.d.ts",
+    "/lit-localize.js",
+    "/lit-localize.js.map",
+    "/localized-element.d.d.ts",
+    "/localized-element.d.js",
+    "/localized-element.d.js.map"
+  ],
   "dependencies": {
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
