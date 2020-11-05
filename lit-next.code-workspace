@@ -38,14 +38,15 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "lit-html/node_modules/typescript/lib",
+		"typescript.tsdk": "node_modules/typescript/lib",
 		"debug.javascript.warnOnLongPrediction": false,
 		"files.insertFinalNewline": true,
 		"files.trimTrailingWhitespace": true
 	},
 	"extensions": {
 		"recommendations": [
-			"esbenp.prettier-vscode",
+			"dbaeumer.vscode-eslint",
+			"esbenp.prettier-vscode"
 		]
 	}
 }
