@@ -30,11 +30,6 @@
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.0.3"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --ignore-path .gitignore --write",
     "**/*.{js,ts}": "eslint --ignore-path .gitignore --fix"
