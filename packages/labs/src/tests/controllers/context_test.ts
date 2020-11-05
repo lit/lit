@@ -17,7 +17,6 @@ import {
   createContext,
   Provider,
   Consumer,
-  UpdatingHost,
   UpdatingController,
 } from '../../controllers/context.js';
 import {nextFrame, queryDeep} from '../test-helpers';
@@ -47,7 +46,7 @@ suite('Context', () => {
   });
 
   class MyController extends UpdatingController {
-    context = new subContext.consumer(this);
+    context = new subContext.consumer(this.host);
 
     get value() {
       return this.context.value;
@@ -55,15 +54,14 @@ suite('Context', () => {
   }
 
   class CustomNameProvider extends Provider {
-    onConnected(host: UpdatingHost) {
-      super.onConnected(host);
-      this.value = this.element?.localName;
+    connectedCallback() {
+      this.value = this.host.localName;
     }
   }
 
   class CustomNameConsumer extends Consumer {
     providerName?: any;
-    requestUpdate() {
+    willUpdate() {
       this.providerName = this.value;
     }
   }

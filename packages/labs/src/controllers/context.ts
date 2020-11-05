@@ -1,6 +1,6 @@
-import {UpdatingController, UpdatingHost} from './updating-controller.js';
+import {UpdatingController} from './updating-controller.js';
 export * from './updating-controller.js';
-import {notEqual, PropertyValues} from 'updating-element';
+import {notEqual, UpdatingElement} from 'updating-element';
 import {
   AttributePart,
   ATTRIBUTE_PART,
@@ -42,30 +42,14 @@ export class Provider extends UpdatingController {
   _value: any = null;
   // @internal
   _directive?: () => DirectiveResult;
-  // @internal
-  _shouldProvideAll = false;
 
-  constructor(host: UpdatingHost, value?: unknown) {
+  constructor(host: UpdatingElement, value?: unknown) {
     super(host);
     this.value = value;
   }
 
   provideAll() {
-    this._shouldProvideAll = true;
-  }
-
-  onConnected(host: UpdatingHost) {
-    super.onConnected(host);
-    if (this._shouldProvideAll) {
-      this.addConnectListener(this.element!);
-    }
-  }
-
-  onDisconnected(host: UpdatingHost) {
-    if (this._shouldProvideAll) {
-      this.removeConnectListener(this.element!);
-    }
-    super.onDisconnected(host);
+    this.addConnectListener(this.host);
   }
 
   provide() {
@@ -188,15 +172,14 @@ export class Consumer extends UpdatingController {
    * Sends connection signal to provider. The first ancestor provider with
    * the appropriate key will become this consumer's provider.
    */
-  onConnected(host: UpdatingHost) {
-    super.onConnected(host);
+  connectedCallback() {
     // Purely as an optimization, batch connection to update if one is pending.
     // This allows all consumers for the element to be connected with one
     // provider search.
-    if (this.element!.isUpdatePending && !this.element!.hasUpdated) {
-      let pending = pendingConsumers.get(this.element!);
+    if (this.host.isUpdatePending && !this.host.hasUpdated) {
+      let pending = pendingConsumers.get(this.host);
       if (pending === undefined) {
-        pendingConsumers.set(this.element!, (pending = []));
+        pendingConsumers.set(this.host, (pending = []));
       }
       pending.push(this);
     } else {
@@ -205,16 +188,15 @@ export class Consumer extends UpdatingController {
   }
 
   // Batches connection to update if possible
-  onUpdate(changedProperties: PropertyValues, host: UpdatingHost) {
-    if (!this.element!.hasUpdated && this.provider === undefined) {
-      const pending = pendingConsumers.get(this.element!);
+  willUpdate() {
+    if (!this.host.hasUpdated && this.provider === undefined) {
+      const pending = pendingConsumers.get(this.host);
       if (pending?.length) {
         this._connectToProvider(pending);
         // pending consumers get one shot to find a provider.
         pending.length = 0;
       }
     }
-    super.onUpdate(changedProperties, host);
   }
 
   // @internal
@@ -223,7 +205,7 @@ export class Consumer extends UpdatingController {
     // to test performance.
     // Find provider by firing event.
     if (this.strategy === EVENT_STRATEGY) {
-      this.element!.dispatchEvent(
+      this.host.dispatchEvent(
         new CustomEvent(connectContextEvent, {
           detail: consumers,
           composed: true,
@@ -232,7 +214,7 @@ export class Consumer extends UpdatingController {
       );
       // Or ascend tree to find provider.
     } else {
-      let node: Node = this.element!;
+      let node: Node = this.host;
       let connectedCount = 0;
       while ((node = node.parentNode ?? (node as ShadowRoot).host)) {
         const providers = providerMap.get(node);
@@ -261,9 +243,8 @@ export class Consumer extends UpdatingController {
   /**
    * Disconnects from the provider.
    */
-  onDisconnected(host: UpdatingHost) {
+  disconnectedCallback() {
     this.provider?.disconnect(this);
-    super.onDisconnected(host);
   }
 
   get value() {
@@ -329,7 +310,7 @@ export const createContext = (
 ) => {
   const provider = class Provider extends ProviderBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(host: UpdatingHost, value?: any) {
+    constructor(host: UpdatingElement, value?: any) {
       super(host, value || initialValue);
     }
     key = key;
