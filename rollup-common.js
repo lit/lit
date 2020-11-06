@@ -87,7 +87,6 @@ const crossPackagePropertyMangles = {
   _controllers: 'T',
   // lit-element: LitElement
   _renderOptions: 'W',
-  _controllers: 'X',
   // lit-element: LitElement (used by hydrate-support)
   _renderImpl: 'M',
 };
