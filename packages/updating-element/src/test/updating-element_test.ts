@@ -2446,10 +2446,12 @@ suite('UpdatingElement', () => {
 
     let container: HTMLElement;
 
+    const isIE = /Trident/.test(navigator.userAgent);
+
     const errorsThrown = async () => {
       await nextFrame();
       // Note, should be done by rAF, but FF/IE appears to need more time.
-      await new Promise((r) => setTimeout(r));
+      await new Promise((r) => setTimeout(r, isIE ? 50 : 0));
     };
 
     setup(() => {
