@@ -50,7 +50,6 @@ tsconfig.tsbuildinfo
 
 # labs package
 /packages/labs/index.*
-/packages/labs/callbacks/
 /packages/labs/controllers/
 
 # lit-ssr package
