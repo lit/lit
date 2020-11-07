@@ -171,7 +171,7 @@ It may be useful to expose an `@property` decorator to use on UpdatingController
 
 ## Motivating Example Use Cases
 
-### Context / DI
+### Context / Dependency Injection (DI)
 
 Controllers can be used to create an event-based context / DI system that has similar API and behavior to React's context APIs.
 
@@ -360,7 +360,7 @@ This is a simplistic example, we'd probably want ways to start and stop listenin
 
 ### FLIP Animation Directive
 
-A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callbac.
+A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callback.
 
 ### Others
 
