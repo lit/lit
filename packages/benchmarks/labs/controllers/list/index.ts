@@ -20,7 +20,7 @@ import {
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../../utils/query-params.js';
 import {UpdatingController} from 'lit-labs/controllers/updating-controller.js';
-import {documentComplete} from '../../utils/document-complete.js';
+import {documentComplete} from '../../../utils/document-complete.js';
 
 (async () => {
   // start benchmark after page loads

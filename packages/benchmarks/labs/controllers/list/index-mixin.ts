@@ -19,7 +19,7 @@ import {
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../../utils/query-params.js';
-import {documentComplete} from '../../utils/document-complete.js';
+import {documentComplete} from '../../../utils/document-complete.js';
 
 (async () => {
   // start benchmark after page loads
