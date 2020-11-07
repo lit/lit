@@ -354,7 +354,7 @@ This is a simplistic example, we'd probably want ways to start and stop listenin
 
 ### FLIP Animation Directive
 
-A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callbac.
+A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callback.
 
 ### Others
 
