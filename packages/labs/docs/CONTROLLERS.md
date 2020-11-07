@@ -165,7 +165,7 @@ Creating and using an `UpdatingController` in an element imposes a small perform
 
 ## Motivating Example Use Cases
 
-### Context / DI
+### Context / Dependency Injection (DI)
 
 Controllers can be used to create an event-based context / DI system that has similar API and behavior to React's context APIs.
 
