@@ -28,6 +28,7 @@ suite('UpdatingElement controllers', () => {
     updatedCount = 0;
     connectedCount = 0;
     disconnectedCount = 0;
+    callbackOrder: string[] = [];
     willUpdateChangedProperties?: PropertyValues;
     updateChangedProperties?: PropertyValues;
     updatedChangedProperties?: PropertyValues;
@@ -39,25 +40,30 @@ suite('UpdatingElement controllers', () => {
 
     connectedCallback() {
       this.connectedCount++;
+      this.callbackOrder.push('connectedCallback');
     }
 
     disconnectedCallback() {
       this.disconnectedCount++;
+      this.callbackOrder.push('disconnectedCallback');
     }
 
     willUpdate(changedProperties: PropertyValues) {
       this.willUpdateCount++;
       this.willUpdateChangedProperties = changedProperties;
+      this.callbackOrder.push('willUpdate');
     }
 
     update(changedProperties: PropertyValues) {
       this.updateCount++;
       this.updateChangedProperties = changedProperties;
+      this.callbackOrder.push('update');
     }
 
     updated(changedProperties: PropertyValues) {
       this.updatedCount++;
       this.updatedChangedProperties = changedProperties;
+      this.callbackOrder.push('updated');
     }
   }
 
@@ -161,5 +167,25 @@ suite('UpdatingElement controllers', () => {
       el.controller.updatedChangedProperties,
       expectedChangedProperties
     );
+  });
+
+  test('controllers callback order', async () => {
+    assert.deepEqual(el.controller.callbackOrder, [
+      'connectedCallback',
+      'willUpdate',
+      'update',
+      'updated',
+    ]);
+    el.controller.callbackOrder = [];
+    el.foo = 'new';
+    await el.updateComplete;
+    assert.deepEqual(el.controller.callbackOrder, [
+      'willUpdate',
+      'update',
+      'updated',
+    ]);
+    el.controller.callbackOrder = [];
+    container.removeChild(el);
+    assert.deepEqual(el.controller.callbackOrder, ['disconnectedCallback']);
   });
 });
