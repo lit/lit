@@ -13,20 +13,11 @@
  */
 import {html, LitElement, css, PropertyDeclaration} from 'lit-element';
 import {queryParams} from '../../utils/query-params.js';
+import {documentComplete} from '../../utils/document-complete.js';
 
 (async () => {
-  // wait until after page loads
-  if (document.readyState !== 'complete') {
-    let resolve: () => void;
-    const p = new Promise((r) => (resolve = r));
-    document.addEventListener('readystatechange', async () => {
-      if (document.readyState === 'complete') {
-        resolve();
-      }
-    });
-    await p;
-  }
-  await new Promise((r) => setTimeout(r));
+  // start benchmark after page loads
+  await documentComplete();
 
   // Note, `decorators.js` moved from the `lib` folder to top level
   // between previous release and lit-next. Handle this by trying to import
