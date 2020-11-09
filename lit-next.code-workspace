@@ -17,6 +17,10 @@
 			"path": "packages/lit-ssr"
 		},
 		{
+			"name": "localize",
+			"path": "packages/localize"
+		},
+		{
       "name": "labs",
       "path": "packages/labs"
     },

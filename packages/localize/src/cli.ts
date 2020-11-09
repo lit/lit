@@ -26,6 +26,7 @@ import {KnownError, throwUnreachable} from './error';
 import {Config, readConfigFileAndWriteSchema} from './config';
 import {Locale} from './locales';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('source-map-support').install();
 
 export async function runAndExit() {
@@ -60,6 +61,7 @@ export async function runAndLog(argv: string[]): Promise<number> {
 }
 
 function version() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   return require(path.join('..', 'package.json')).version;
 }
 
