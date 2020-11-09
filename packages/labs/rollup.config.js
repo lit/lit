@@ -15,6 +15,10 @@
 import {litProdConfig} from '../../rollup-common.js';
 
 export default litProdConfig({
-  entryPoints: ['index'],
+  entryPoints: [
+    'index',
+    'frameworks/react/create-custom-element-component',
+    'frameworks/react/create-element',
+  ],
   external: ['updating-element', 'lit-html', 'lit-element'],
 });

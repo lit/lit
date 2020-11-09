@@ -1,3 +1,5 @@
 development/
 node_modules/
 index.*
+frameworks/react/create-custom-element-component.*
+frameworks/react/create-element.*
