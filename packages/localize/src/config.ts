@@ -127,7 +127,7 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const schema = require('../config.schema.json');
-  const result = jsonSchema.validate(parsed, schema, {propertyName: 'config'});
+  const result = jsonSchema.validate(parsed, schema);
   if (result.errors.length > 0) {
     throw new KnownError(
       `Error validating config file ${configPath}:\n\n` +
