@@ -12,7 +12,6 @@ import {
   DirectiveClass,
   DirectiveParameters,
 } from 'lit-html';
-import {UpdatingElement} from 'updating-element';
 
 // TODO(sorvell): lit-html should export this?
 declare type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
