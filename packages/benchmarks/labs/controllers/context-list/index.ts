@@ -72,15 +72,14 @@ import {
   const strategy =
     queryParams.strategy === 'ascend' ? ASCEND_STRATEGY : EVENT_STRATEGY;
 
-  const context = createContext(
-    {key: 'context'},
-    class extends Provider {
+  const context = createContext({
+    ProviderClass: class extends Provider {
       strategy = strategy;
     },
-    class extends Consumer {
+    ConsumerClass: class extends Consumer {
       strategy = strategy;
-    }
-  );
+    },
+  });
 
   class XThing extends UpdatingElement {
     static styles = css`

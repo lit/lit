@@ -22,28 +22,20 @@ import {
 import {nextFrame, queryDeep} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('Context', () => {
   let container: HTMLElement;
 
   const rootContext = createContext({
-    key: 'root',
     initialValue: 'root',
   });
 
   const dataContext = createContext({
-    key: 'data',
     initialValue: {name: 'name'},
   });
 
-  const numContext = createContext({
-    key: 'num',
-  });
+  const numContext = createContext();
 
-  const subContext = createContext({
-    key: 'sub',
-  });
+  const subContext = createContext();
 
   class MyController extends UpdatingController {
     context = new subContext.consumer(this.host);
@@ -54,25 +46,24 @@ suite('Context', () => {
   }
 
   class CustomNameProvider extends Provider {
-    connectedCallback() {
+    constructor(host: LitElement, value: any) {
+      super(host, value);
       this.value = this.host.localName;
     }
   }
 
   class CustomNameConsumer extends Consumer {
     providerName?: any;
-    willUpdate() {
+    _setValue(value: any) {
+      super._setValue(value);
       this.providerName = this.value;
     }
   }
 
-  const customNameContext = createContext(
-    {
-      key: 'name',
-    },
-    CustomNameProvider,
-    CustomNameConsumer
-  );
+  const customNameContext = createContext({
+    ProviderClass: CustomNameProvider,
+    ConsumerClass: CustomNameConsumer,
+  });
 
   class AConsumer extends LitElement {
     static properties = {foo: {}};

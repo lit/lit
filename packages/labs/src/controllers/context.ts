@@ -12,6 +12,7 @@ import {
   DirectiveClass,
   DirectiveParameters,
 } from 'lit-html';
+import {UpdatingElement} from 'updating-element';
 
 // TODO(sorvell): lit-html should export this?
 declare type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
@@ -19,11 +20,18 @@ declare type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
   values: DirectiveParameters<C>;
 };
 
-const connectContextEvent = 'connect-context';
-
 const providerMap: WeakMap<Node, Provider[]> = new WeakMap();
 
-export type ConsumerEvent = CustomEvent<Consumer[]>;
+export class ProvideContextEvent extends Event {
+  consumer: Consumer;
+
+  static eventName = 'provide-context';
+
+  constructor(consumer: Consumer, options: EventInit) {
+    super(ProvideContextEvent.eventName, options);
+    this.consumer = consumer;
+  }
+}
 
 export const EVENT_STRATEGY = 1;
 export const ASCEND_STRATEGY = 2;
@@ -31,27 +39,43 @@ export const ASCEND_STRATEGY = 2;
 const DEFAULT_STRATEGY = EVENT_STRATEGY;
 
 // Note, this currently wouldn't strictly have to be an UpdatingController.
-export class Provider extends UpdatingController {
+export class Provider {
+  // TODO(sorvell): Multiple strategies are implemented primarily
+  // to test performance.
   strategy = DEFAULT_STRATEGY;
+  host: UpdatingElement;
   consumers: Set<Consumer> = new Set();
-  key = null;
+  key: object | null = null;
 
   // Note, these are not private so they can be used in mixins.
   // @internal
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _value: any = null;
+  _value: any;
+
   // @internal
   _directive?: () => DirectiveResult;
 
+  /**
+   * If set to true, this provider can be overridden by providers above
+   * it in the tree.
+   */
+  allowOverride = false;
+
   constructor(host: UpdatingElement, value?: unknown) {
-    super(host);
+    this.host = host;
     this.value = value;
   }
 
   provideAll() {
+    // TODO(sorvell): this will connect light DOM children, which is likely not desirable.
+    // However, `renderRoot` is not available until connected.
     this.addConnectListener(this.host);
   }
 
+  /**
+   * Returns a directive which provides this value to the subtree to which
+   * the directive is attached.
+   */
   provide() {
     if (this._directive === undefined) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -77,7 +101,7 @@ export class Provider extends UpdatingController {
       };
       this._directive = directive(ProviderDirective);
     }
-    return this._directive();
+    return this._directive!();
   }
 
   /**
@@ -85,10 +109,11 @@ export class Provider extends UpdatingController {
    * consumers in the element's subtree to this provider.
    */
   addConnectListener(element: Node) {
-    // TODO(sorvell): Multiple strategies are implemented primarily
-    // to test performance.
     if (this.strategy === EVENT_STRATEGY) {
-      element.addEventListener(connectContextEvent, this._connectListener);
+      element.addEventListener(
+        ProvideContextEvent.eventName,
+        this._connectListener
+      );
     } else {
       providerMap.set(element, [...(providerMap.get(element) ?? []), this]);
     }
@@ -99,43 +124,52 @@ export class Provider extends UpdatingController {
    * Removes a connection listener for the given element.
    */
   removeConnectListener(element: HTMLElement) {
-    element.removeEventListener(connectContextEvent, this._connectListener);
+    element.removeEventListener(
+      ProvideContextEvent.eventName,
+      this._connectListener
+    );
   }
 
   // @internal
   _connectListener = (event: Event) => {
-    const consumers = (event as ConsumerEvent).detail;
-    let connectedConsumers = 0;
-    consumers.forEach((consumer) => {
-      if (this.key !== consumer.key) {
-        return;
-      }
-      this.connect(consumer);
-      connectedConsumers++;
-    });
-    if (connectedConsumers === consumers.length) {
+    const consumer = (event as ProvideContextEvent).consumer;
+    if (this.key !== consumer.key) {
+      return;
+    }
+    if (this.connect(consumer)) {
       event.stopImmediatePropagation();
     }
   };
 
   /**
-   * Connects the given consumer to this provider.
+   * Connects the given consumer to this provider, first disconnecting it from
+   * any previous provider.
+   * @returns Returns true if this provider provides the value and does not
+   * allow it to be overridden by ancestor providers.
    */
   connect(consumer: Consumer) {
+    const existingProvider = consumer.provider;
+    if (existingProvider) {
+      if (existingProvider.allowOverride) {
+        existingProvider.disconnect(consumer);
+      } else {
+        return true;
+      }
+    }
     this.consumers.add(consumer);
-    consumer.value = this.value;
+    consumer._setValue(this.value);
     consumer.provider = this;
+    return !this.allowOverride;
   }
 
   /**
    * Disconnects the given consumer from this provider.
    */
   disconnect(consumer: Consumer) {
-    if (this.key !== consumer.key) {
-      return;
+    if (this.key === consumer.key) {
+      this.consumers.delete(consumer);
+      consumer.provider = undefined;
     }
-    this.consumers.delete(consumer);
-    consumer.provider = undefined;
   }
 
   get value() {
@@ -150,15 +184,15 @@ export class Provider extends UpdatingController {
       this._value = value;
       // Update all consumers when value is set.
       for (const consumer of this.consumers) {
-        consumer.value = this.value;
+        consumer._setValue(this.value);
       }
     }
   }
 }
 
-const pendingConsumers: WeakMap<Element, Consumer[]> = new WeakMap();
-
 export class Consumer extends UpdatingController {
+  // TODO(sorvell): Multiple strategies are implemented primarily
+  // to test performance.
   strategy = DEFAULT_STRATEGY;
 
   // @internal
@@ -166,48 +200,24 @@ export class Consumer extends UpdatingController {
   _value: any = undefined;
 
   provider?: Provider;
-  key = null;
+  key: object | null = null;
 
   /**
    * Sends connection signal to provider. The first ancestor provider with
    * the appropriate key will become this consumer's provider.
    */
   connectedCallback() {
-    // Purely as an optimization, batch connection to update if one is pending.
-    // This allows all consumers for the element to be connected with one
-    // provider search.
-    if (this.host.isUpdatePending && !this.host.hasUpdated) {
-      let pending = pendingConsumers.get(this.host);
-      if (pending === undefined) {
-        pendingConsumers.set(this.host, (pending = []));
-      }
-      pending.push(this);
-    } else {
-      this._connectToProvider();
-    }
-  }
-
-  // Batches connection to update if possible
-  willUpdate() {
-    if (!this.host.hasUpdated && this.provider === undefined) {
-      const pending = pendingConsumers.get(this.host);
-      if (pending?.length) {
-        this._connectToProvider(pending);
-        // pending consumers get one shot to find a provider.
-        pending.length = 0;
-      }
+    if (this.provider === undefined) {
+      this._connectToProvider(this);
     }
   }
 
   // @internal
-  _connectToProvider(consumers: Consumer[] = [this]) {
-    // TODO(sorvell): Multiple strategies are implemented primarily
-    // to test performance.
+  _connectToProvider(consumer: Consumer) {
     // Find provider by firing event.
     if (this.strategy === EVENT_STRATEGY) {
       this.host.dispatchEvent(
-        new CustomEvent(connectContextEvent, {
-          detail: consumers,
+        new ProvideContextEvent(consumer, {
           composed: true,
           bubbles: true,
         })
@@ -215,26 +225,20 @@ export class Consumer extends UpdatingController {
       // Or ascend tree to find provider.
     } else {
       let node: Node = this.host;
-      let connectedCount = 0;
       while ((node = node.parentNode ?? (node as ShadowRoot).host)) {
         const providers = providerMap.get(node);
-        if (providers !== undefined) {
-          // Try to find a provider for the consumers.
-          for (let i = 0; i < consumers.length; i++) {
-            const consumer = consumers[i];
-            const provider = providers.find(
-              (provider) => provider.key === consumer.key
-            );
-            // If a provider is found, connect the consumer and remove it from
-            // our search list.
-            if (provider !== undefined) {
-              provider.connect(consumer);
-              connectedCount++;
-            }
-          }
+        if (providers === undefined) {
+          continue;
         }
-        if (connectedCount === consumers.length) {
-          break;
+        // Try to find a provider for the consumers.
+        const provider = providers.find(
+          (provider) => provider.key === consumer.key
+        );
+        // If a provider is found, connect the consumer.
+        if (provider !== undefined) {
+          if (provider.connect(consumer)) {
+            break;
+          }
         }
       }
     }
@@ -251,7 +255,9 @@ export class Consumer extends UpdatingController {
     return this._value;
   }
 
-  set value(value) {
+  // @internal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _setValue(value: any) {
     if (notEqual(this.value, value)) {
       this._value = value;
       this.requestUpdate();
@@ -261,11 +267,11 @@ export class Consumer extends UpdatingController {
 
 /**
  * Creates a context helper that allows indirectly passing data down the
- * element tree. The `options` argument is an object which should provide a
- * `key` for the data and optionally an `initialValue` to set. In addition,
- * custom Consumer and Provider classes can be provided. Example usage:
+ * element tree. The `options` argument is an object which can optionally an
+ * `initialValue` to set. In addition, custom Consumer and Provider classes
+ * can be provided. Example usage:
  *
- * const MyContext = createContext({key: 'some-data', initialValue: 'hi'});
+ * const MyContext = createContext({initialValue: 'hi'});
  *
  * class MyElement extends LitElement {
  *   constructor() {
@@ -302,21 +308,34 @@ export class Consumer extends UpdatingController {
  *
  */
 export const createContext = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  {key, initialValue}: {initialValue?: any; key: any},
-  // TODO(sorvell): how to type this if these are provided in the options argument
-  ProviderBase = Provider,
-  ConsumerBase = Consumer
+  {
+    initialValue,
+    allowOverride = false,
+    ProviderClass = Provider,
+    ConsumerClass = Consumer,
+  }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initialValue?: any;
+    allowOverride?: boolean;
+    ProviderClass?: typeof Provider;
+    ConsumerClass?: typeof Consumer;
+  } = {
+    allowOverride: false,
+    ProviderClass: Provider,
+    ConsumerClass: Consumer,
+  }
 ) => {
-  const provider = class Provider extends ProviderBase {
+  const key = {};
+  const provider = class Provider extends ProviderClass {
+    key = key;
+    allowOverride = allowOverride;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(host: UpdatingElement, value?: any) {
       super(host, value || initialValue);
     }
-    key = key;
   };
 
-  const consumer = class Consumer extends ConsumerBase {
+  const consumer = class Consumer extends ConsumerClass {
     key = key;
   };
 
