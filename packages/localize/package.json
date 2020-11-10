@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publishConfig": {
     "access": "public"
   },
@@ -39,9 +39,10 @@
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",
-    "/localized-element.d.d.ts",
-    "/localized-element.d.js",
-    "/localized-element.d.js.map"
+    "/localized-element.d.ts",
+    "/localized-element.js",
+    "/localized-element.js.map",
+    "/config.schema.json"
   ],
   "dependencies": {
     "fs-extra": "^9.0.0",
