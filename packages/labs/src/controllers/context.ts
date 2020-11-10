@@ -9,15 +9,8 @@ import {
   nothing,
   Part,
   PROPERTY_PART,
-  DirectiveClass,
-  DirectiveParameters,
+  DirectiveResult,
 } from 'lit-html';
-
-// TODO(sorvell): lit-html should export this?
-declare type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
-  _$litDirective$: C;
-  values: DirectiveParameters<C>;
-};
 
 const providerMap: WeakMap<Node, Provider[]> = new WeakMap();
 
