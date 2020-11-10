@@ -231,7 +231,7 @@ export function litProdConfig({
         // sourcemap with the raw JS -> minified JS one that we're generating here.
         sourcemaps(),
         terser(terserOptions),
-        summary(),
+        // summary(),
         ...(CHECKSIZE
           ? [skipBundleOutput]
           : [
@@ -293,6 +293,6 @@ export const litMonoBundleConfig = ({
     // sourcemap with the raw JS -> minified JS one that we're generating here.
     sourcemaps(),
     terser(terserOptions),
-    summary(),
+    // summary(),
   ],
 });
