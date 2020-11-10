@@ -153,7 +153,7 @@ if (DEV_MODE) {
 
           foo = 'hi';
         }
-        A.enableWarning('migration');
+        A.enableWarning?.('migration');
         customElements.define(generateElementName(), A);
         const a = new A();
         container.appendChild(a);
@@ -188,7 +188,7 @@ if (DEV_MODE) {
         await a.updateComplete;
         assert.equal(warnings.length, 0);
         a.shouldUpdateAgain = true;
-        A.disableWarning('change-in-update');
+        A.disableWarning?.('change-in-update');
         a.requestUpdate();
         await a.updateComplete;
         assert.equal(warnings.length, 0);
@@ -223,17 +223,17 @@ if (DEV_MODE) {
           await b.updateComplete;
         };
         // Defeat warning in base class
-        A.disableWarning('change-in-update');
+        A.disableWarning?.('change-in-update');
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 0);
         // Explicitly turn on warning in subclass
-        B.enableWarning('change-in-update');
+        B.enableWarning?.('change-in-update');
         warnings = [];
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 1);
         // Turn of warning in subclass and back on in base class
-        B.disableWarning('change-in-update');
-        A.enableWarning('change-in-update');
+        B.disableWarning?.('change-in-update');
+        A.enableWarning?.('change-in-update');
         warnings = [];
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 1);

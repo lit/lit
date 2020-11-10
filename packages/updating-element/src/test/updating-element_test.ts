@@ -28,7 +28,7 @@ import {assert} from '@esm-bundle/chai';
 const DEV_MODE = !!UpdatingElement.enableWarning;
 
 if (DEV_MODE) {
-  UpdatingElement.disableWarning('change-in-update');
+  UpdatingElement.disableWarning?.('change-in-update');
 }
 
 suite('UpdatingElement', () => {

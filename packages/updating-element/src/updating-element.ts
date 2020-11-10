@@ -288,8 +288,8 @@ export type Warnings = 'change-in-update' | 'migration';
 export abstract class UpdatingElement extends HTMLElement {
   // Note, these are patched in only in DEV_MODE.
   static enabledWarnings?: Warnings[];
-  static enableWarning: (type: Warnings) => void;
-  static disableWarning: (type: Warnings) => void;
+  static enableWarning?: (type: Warnings) => void;
+  static disableWarning?: (type: Warnings) => void;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
