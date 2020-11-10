@@ -8,13 +8,11 @@
 
   <body>
     <script type="module">
-      // TODO(sorvell): node resolution doesn't seem to be working here.
       import {
         mocha,
         sessionFinished,
         sessionFailed,
-      } from '../../../../tests/node_modules/@web/test-runner-mocha/dist/standalone.js';
-      // import { mocha, sessionFinished, sessionFailed } from '@web/test-runner-mocha';
+      } from '@web/test-runner-mocha';
 
       (async () => {
         try {
