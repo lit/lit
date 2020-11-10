@@ -916,9 +916,6 @@ export abstract class UpdatingElement extends HTMLElement {
           );
         }
       }
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
     }
     // Mixin instance properties once, if they exist.
     if (this._instanceProperties) {
