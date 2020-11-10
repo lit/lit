@@ -8,7 +8,7 @@
     "serve": "es-dev-server --node-resolve"
   },
   "dependencies": {
-    "@lit/localize": "^0.3.0",
+    "@lit/localize": "^0.5.0",
     "@material/mwc-circular-progress": "^0.18.0",
     "lit-element": "^2.4.0"
   },
