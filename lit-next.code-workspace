@@ -38,7 +38,13 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "lit-html/node_modules/typescript/lib",
+		"typescript.tsdk": "node_modules/typescript/lib",
 		"debug.javascript.warnOnLongPrediction": false
+	},
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"esbenp.prettier-vscode"
+		]
 	}
 }
