@@ -11,5 +11,5 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-export * from './controllers/updating-controller.js';
-export * from './controllers/context.js';
+export {};
+console.warn('Labs modules must be individually imported.');

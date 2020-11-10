@@ -57,7 +57,7 @@ class MyController {
   host: UpdatingElement;
 
   #value;
-  _interval;
+  #interval;
 
   get value() {
     return this.#value;
@@ -73,13 +73,13 @@ class MyController {
   }
 
   connectedCallback() {
-    this._interval = setInterval(() => {
+    this.#interval = setInterval(() => {
       this.value = Math.random();
     }, 1000);
   }
 
   disconnected() {
-    clearInterval(this._interval);
+    clearInterval(this.#interval);
   }
 }
 ```
@@ -92,11 +92,11 @@ Note, controllers can also be composed inside other objects like lit-html direct
 
 ### constructor
 
-Classes have a constructor which can be used as usual for initialization. Controllers can be factory functions as well.
+Classes have a constructor which can be used as usual for initialization. Controllers can be created via factory functions as well.
 
 ### connectedCallback
 
-Can be used to add global event listeners, or fire events for a context API.
+Can be used to add global event listeners, or fire events for example, to implement a pending-state or context API.
 
 ### disconnectedCallback
 
@@ -163,9 +163,15 @@ export class MouseController extends UpdatingController {
 
 Creating and using an `UpdatingController` in an element imposes a small performance penalty of _~5%_ on a minimal targeted benchmark. This is slightly more expensive than using a mixin approach, but it provides additional capabilities described above that often make using a controller worth it. See the benchmarks package for runnable benchmarks.
 
+## Features Under Consideration
+
+### Property Decorator
+
+It may be useful to expose an `@property` decorator to use on UpdatingController properties that would automate calling requestUpdate and possibly do change tracking as is done in UpdatingElement. However, it's unclear how common a pattern this will be and if it might be better instead or in addition to provide a feature that automatically ties a controller property to an element property.
+
 ## Motivating Example Use Cases
 
-### Context / DI
+### Context / Dependency Injection (DI)
 
 Controllers can be used to create an event-based context / DI system that has similar API and behavior to React's context APIs.
 
@@ -354,7 +360,7 @@ This is a simplistic example, we'd probably want ways to start and stop listenin
 
 ### FLIP Animation Directive
 
-A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callbac.
+A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callback.
 
 ### Others
 

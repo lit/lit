@@ -50,30 +50,30 @@ export class UpdatingController implements Controller {
   /**
    * Runs after the controller's element is connected.
    */
-  connectedCallback() {}
+  connectedCallback?(): void;
 
   /**
    * Runs after the controller's element is disconnected.
    */
-  disconnectedCallback() {}
+  disconnectedCallback?(): void;
 
   /**
    * Runs when the controller's element updates, before the element itself
    * updates.
    * @param changedProperties
    */
-  willUpdate(_changedProperties: PropertyValues) {}
+  willUpdate?(changedProperties: PropertyValues): void;
 
   /**
    * Runs when the controller's element updates, when the element itself
    * updates.
    * @param changedProperties
    */
-  update(_changedProperties: PropertyValues) {}
+  update?(changedProperties: PropertyValues): void;
 
   /**
    * Runs after the controller's element updates after its `updated` method.
    * @param changedProperties
    */
-  updated(_changedProperties: PropertyValues) {}
+  updated?(changedProperties: PropertyValues): void;
 }
