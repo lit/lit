@@ -304,9 +304,7 @@ export type DirectiveClass = {new (part: PartInfo): Directive};
  * This utility type extracts the signature of a directive class's render()
  * method so we can use it for the type of the generated directive function.
  */
-export type DirectiveParameters<C extends DirectiveClass> = Parameters<
-  InstanceType<C>['render']
->;
+export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
 
 /**
  * A generated directive function doesn't evaluate the directive, but just
@@ -315,7 +313,7 @@ export type DirectiveParameters<C extends DirectiveClass> = Parameters<
 /** @internal */
 export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
   _$litDirective$: C;
-  values: DirectiveParameters<C>;
+  values: DirectiveParameters<InstanceType<C>>;
 };
 
 /**
@@ -326,7 +324,7 @@ export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
  * change in future pre-releases.
  */
 export const directive = <C extends DirectiveClass>(c: C) => (
-  ...values: DirectiveParameters<C>
+  ...values: DirectiveParameters<InstanceType<C>>
 ): DirectiveResult<C> => ({
   _$litDirective$: c,
   values,
@@ -708,6 +706,41 @@ class Template {
   }
 }
 
+function resolveDirective(part: NodePart, value: unknown): unknown;
+function resolveDirective(
+  part: AttributePart,
+  value: unknown,
+  i: number
+): unknown;
+function resolveDirective(
+  part: NodePart | AttributePart,
+  value: unknown,
+  i?: number
+) {
+  let directive =
+    i != null
+      ? (part as AttributePart)._directives?.[i]
+      : (part as NodePart)._directive;
+  const directiveClass = isPrimitive(value)
+    ? undefined
+    : (value as DirectiveResult)?._$litDirective$;
+  if (directive?.constructor !== directiveClass) {
+    directive =
+      directiveClass !== undefined
+        ? new directiveClass(part as PartInfo)
+        : undefined;
+    if (i != null) {
+      ((part as AttributePart)._directives ??= [])[i] = directive;
+    } else {
+      (part as NodePart)._directive = directive;
+    }
+  }
+  if (directive !== undefined) {
+    value = directive._resolve(part, (value as DirectiveResult).values);
+  }
+  return value;
+}
+
 /**
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
@@ -818,7 +851,8 @@ export type Part =
   | NodePart
   | AttributePart
   | PropertyPart
-  | BooleanAttributePart;
+  | BooleanAttributePart
+  | EventPart;
 
 export class NodePart {
   readonly type = NODE_PART;
@@ -849,24 +883,20 @@ export class NodePart {
   }
 
   _setValue(value: unknown): void {
-    // TODO (justinfagnani): when setting a non-directive over a directive,
-    // we don't yet clear this._directive.
-    // See https://github.com/Polymer/lit-html/issues/1286
+    value = resolveDirective(this, value);
     if (isPrimitive(value)) {
       if (value !== this._value) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
       this._commitTemplateResult(value as TemplateResult);
-    } else if ((value as DirectiveResult)._$litDirective$ !== undefined) {
-      this._commitDirective(value as DirectiveResult);
     } else if ((value as Node).nodeType !== undefined) {
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this._commitIterable(value);
     } else if (value === nothing) {
-      this._value = nothing;
       this._clear();
+      this._value = nothing;
     } else if (value !== noChange) {
       // Fallback, will render the string representation
       this._commitText(value);
@@ -875,18 +905,6 @@ export class NodePart {
 
   private _insert<T extends Node>(node: T, ref = this._endNode) {
     return this._startNode.parentNode!.insertBefore(node, ref);
-  }
-
-  private _commitDirective(value: DirectiveResult) {
-    const directive = value._$litDirective$;
-    if (this._directive?.constructor !== directive) {
-      this._clear();
-      this._directive = new directive(this as NodePartInfo);
-    }
-    // TODO (justinfagnani): To support nested directives, we'd need to
-    // resolve the directive result's values. We may want to offer another
-    // way of composing directives.
-    this._setValue(this._directive._resolve(this, value.values));
   }
 
   private _commitNode(value: Node): void {
@@ -956,10 +974,7 @@ export class NodePart {
   private _commitTemplateResult(result: TemplateResult): void {
     const {values, strings} = result;
     const template = this._getTemplate(strings, result);
-    if (
-      this._value != null &&
-      (this._value as TemplateInstance)._template === template
-    ) {
+    if ((this._value as TemplateInstance)?._template === template) {
       (this._value as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template!);
@@ -1055,8 +1070,10 @@ export class AttributePart {
    * this is undefined.
    */
   readonly strings?: ReadonlyArray<string>;
+  /** @internal */
   _value: unknown | Array<unknown> = nothing;
-  private _directives?: Array<Directive>;
+  /** @internal */
+  _directives?: Array<Directive | undefined>;
   protected _sanitizer: ValueSanitizer | undefined;
 
   get tagName() {
@@ -1080,35 +1097,6 @@ export class AttributePart {
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       this._sanitizer = undefined;
     }
-  }
-
-  /**
-   * Normalizes a user-provided value before writing it to the DOM. In the
-   * near future this will include invoking a directive if the value is
-   * a DirectiveResult.
-   *
-   * @param value the raw input value to normalize
-   * @param _i the index in the values array this value was read from
-   *
-   * @internal
-   */
-  _resolveDirective(value: unknown, i: number) {
-    const directiveCtor = (value as DirectiveResult)?._$litDirective$;
-    if (directiveCtor !== undefined) {
-      // TODO (justinfagnani): Initialize array to the correct value,
-      // or check length.
-      let directive: Directive = (this._directives ??= [])[i];
-      if (directive?.constructor !== directiveCtor) {
-        directive = this._directives[i] = new directiveCtor(
-          this as AttributePartInfo
-        );
-      }
-      // TODO (justinfagnani): To support nested directives, we'd need to
-      // resolve the directive result's values. We may want to offer another
-      // way of composing directives.
-      value = directive._resolve(this, (value as DirectiveResult).values);
-    }
-    return value;
   }
 
   /**
@@ -1140,7 +1128,7 @@ export class AttributePart {
 
     if (strings === undefined) {
       // Single-value binding case
-      const v = this._resolveDirective(value, 0);
+      const v = resolveDirective(this, value, 0);
       // Only dirty-check primitives and `nothing`:
       // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
       // `nothing`. `v === this._value` is the dirty-check.
@@ -1166,7 +1154,7 @@ export class AttributePart {
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = this._resolveDirective((value as Array<unknown>)[from! + i], i);
+        v = resolveDirective(this, (value as Array<unknown>)[from! + i], i);
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._value as Array<unknown>)[i];
@@ -1267,7 +1255,7 @@ export class EventPart extends AttributePart {
   // since the dirty checking is more complex
   /** @internal */
   _setValue(newListener: unknown) {
-    newListener = this._resolveDirective(newListener, 0) ?? nothing;
+    newListener = resolveDirective(this, newListener, 0) ?? nothing;
     if (newListener === noChange) {
       return;
     }
