@@ -179,7 +179,11 @@ export default {
     }),
   ],
   filterBrowserLogs: ({args}) => {
-    if (mode === 'dev' && args[0] && args[0].includes('in dev mode')) {
+    if (
+      mode === 'dev' &&
+      typeof args[0] === 'string' &&
+      args[0].includes('in dev mode')
+    ) {
       if (!seenDevModeLogs.has(args[0])) {
         seenDevModeLogs.add(args[0]);
         // Log it one time.

@@ -14,7 +14,8 @@
     "declaration": true,
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": ".tsbuildinfo.client"
+    "tsBuildInfoFile": ".tsbuildinfo.client",
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src_client/**/*"],
   "exclude": []

@@ -219,6 +219,15 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
+export interface Controller {
+  connectedCallback?(): void;
+  disconnectedCallback?(): void;
+  willUpdate?(changedProperties: PropertyValues): void;
+  update?(changedProperties: PropertyValues): void;
+  updated?(changedProperties: PropertyValues): void;
+  requestUpdate?(): void;
+}
+
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -515,8 +524,8 @@ export abstract class UpdatingElement extends HTMLElement {
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
 
-  protected isUpdatePending = false;
-  protected hasUpdated = false;
+  isUpdatePending = false;
+  hasUpdated = false;
 
   /**
    * Map with keys for any properties that have changed since the last
@@ -534,6 +543,11 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   private _reflectingProperty: PropertyKey | null = null;
 
+  /**
+   * Set of controllers.
+   */
+  _controllers?: Controller[];
+
   constructor() {
     super();
     this._updatePromise = new Promise((res) => (this.enableUpdating = res));
@@ -542,6 +556,10 @@ export abstract class UpdatingElement extends HTMLElement {
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+  }
+
+  addController(controller: Controller) {
+    (this._controllers ??= []).push(controller);
   }
 
   /**
@@ -594,7 +612,14 @@ export abstract class UpdatingElement extends HTMLElement {
    * element styling, and enables updating.
    */
   connectedCallback() {
+    // create renderRoot before first update.
+    if (!this.hasUpdated) {
+      (this as {
+        renderRoot: Element | DocumentFragment;
+      }).renderRoot = this.createRenderRoot();
+    }
     this.enableUpdating();
+    this._controllers?.forEach((c) => c.connectedCallback?.());
   }
 
   /**
@@ -609,7 +634,9 @@ export abstract class UpdatingElement extends HTMLElement {
    * reserving the possibility of making non-breaking feature additions
    * when disconnecting at some point in the future.
    */
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this._controllers?.forEach((c) => c.disconnectedCallback?.());
+  }
 
   /**
    * Synchronizes property values when attributes change.
@@ -788,17 +815,14 @@ export abstract class UpdatingElement extends HTMLElement {
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
     }
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
-    }
     let shouldUpdate = false;
     const changedProperties = this._changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
+        this._controllers?.forEach((c) => c.willUpdate?.(changedProperties));
+        this.willUpdate(changedProperties);
+        this._controllers?.forEach((c) => c.update?.(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -813,16 +837,20 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._afterUpdate(changedProperties);
+      this._didUpdate(changedProperties);
     }
   }
 
+  willUpdate(_changedProperties: PropertyValues) {}
+
   // Note, this is an override point for platform-support.
-  private _afterUpdate(changedProperties: PropertyValues) {
+  // @internal
+  _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
+    this._controllers?.forEach((c) => c.updated?.(changedProperties));
     this.updated(changedProperties);
   }
 
