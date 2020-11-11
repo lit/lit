@@ -263,9 +263,9 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 export interface Controller {
   connectedCallback?(): void;
   disconnectedCallback?(): void;
-  willUpdate?(changedProperties: PropertyValues): void;
-  update?(changedProperties: PropertyValues): void;
-  updated?(changedProperties: PropertyValues): void;
+  willUpdate?(): void;
+  update?(): void;
+  didUpdate?(): void;
   requestUpdate?(): void;
 }
 
@@ -930,9 +930,7 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._controllers?.forEach((c) => c.willUpdate?.(changedProperties));
         this.willUpdate(changedProperties);
-        this._controllers?.forEach((c) => c.update?.(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -947,20 +945,20 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._didUpdate(changedProperties);
+      this.didUpdate(changedProperties);
     }
   }
 
-  willUpdate(_changedProperties: PropertyValues) {}
+  willUpdate(_changedProperties: PropertyValues) {
+    this._controllers?.forEach((c) => c.willUpdate?.());
+  }
 
-  // Note, this is an override point for platform-support.
-  // @internal
-  _didUpdate(changedProperties: PropertyValues) {
+  didUpdate(changedProperties: PropertyValues) {
+    this._controllers?.forEach((c) => c.didUpdate?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this._controllers?.forEach((c) => c.updated?.(changedProperties));
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1042,6 +1040,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * @param _changedProperties Map of changed properties with old values
    */
   protected update(_changedProperties: PropertyValues) {
+    this._controllers?.forEach((c) => c.update?.());
     if (this._reflectingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
       // loops expecting arrays

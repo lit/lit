@@ -1289,6 +1289,11 @@ suite('UpdatingElement', () => {
         this.info.push('firstUpdated');
       }
 
+      didUpdate(props: PropertyValues) {
+        this.info.push('didUpdate');
+        super.didUpdate(props);
+      }
+
       updated() {
         this.info.push('updated');
       }
@@ -1303,6 +1308,7 @@ suite('UpdatingElement', () => {
       'willUpdate',
       'before-update',
       'after-update',
+      'didUpdate',
       'firstUpdated',
       'updated',
       'updateComplete',
@@ -2388,10 +2394,10 @@ suite('UpdatingElement', () => {
 
   test('early access of updateComplete waits until first update', async () => {
     class A extends UpdatingElement {
-      didUpdate = false;
+      hasCalledUpdated = false;
 
       updated(_changedProperties: Map<PropertyKey, unknown>) {
-        this.didUpdate = true;
+        this.hasCalledUpdated = true;
       }
     }
     customElements.define(generateElementName(), A);
@@ -2399,7 +2405,7 @@ suite('UpdatingElement', () => {
     let updated = false;
     a.updateComplete.then(() => {
       updated = true;
-      assert.isTrue(a.didUpdate);
+      assert.isTrue(a.hasCalledUpdated);
     });
     await new Promise((r) => setTimeout(r, 20));
     assert.isFalse(updated);
