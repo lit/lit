@@ -1731,7 +1731,7 @@ suite('lit-html', () => {
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
     });
 
-    test.only('renders directives on EventParts', () => {
+    test('renders directives on EventParts', () => {
       const handle = directive(
         class extends Directive {
           count = 0;

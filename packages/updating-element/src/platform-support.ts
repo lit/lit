@@ -50,7 +50,7 @@ interface PatchableUpdatingElement extends HTMLElement {
   constructor: PatchableUpdatingElementConstructor;
   connectedCallback(): void;
   hasUpdated: boolean;
-  _afterUpdate(changedProperties: unknown): void;
+  _didUpdate(changedProperties: unknown): void;
   createRenderRoot(): Element | ShadowRoot;
   _renderOptions: RenderOptions;
 }
@@ -135,13 +135,13 @@ interface PatchableUpdatingElement extends HTMLElement {
    * Patch update to apply ShadyCSS custom properties shimming for first
    * update.
    */
-  const afterUpdate = elementProto._afterUpdate;
-  elementProto._afterUpdate = function (
+  const didUpdate = elementProto._didUpdate;
+  elementProto._didUpdate = function (
     this: PatchableUpdatingElement,
     changedProperties: unknown
   ) {
     const isFirstUpdate = !this.hasUpdated;
-    afterUpdate.call(this, changedProperties);
+    didUpdate.call(this, changedProperties);
     // Note, must do first update here so rendering has completed before
     // calling this and styles are correct by updated/firstUpdated.
     if (isFirstUpdate) {
