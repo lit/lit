@@ -736,6 +736,7 @@ function resolveDirective(
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
   if (directive?.constructor !== directiveClass) {
+    directive?.disconnectedCallback?.();
     directive =
       directiveClass !== undefined
         ? new directiveClass(part as PartInfo)
@@ -811,20 +812,24 @@ class TemplateInstance {
     return fragment;
   }
 
-  _update(values: Array<unknown>) {
+  _update(values: Array<unknown>): boolean {
     let i = 0;
+    let hasDisconnect = false;
     for (const part of this._parts) {
       if (part === undefined) {
         i++;
         continue;
       }
       if ((part as AttributePart).strings !== undefined) {
-        (part as AttributePart)._setValue(values, i);
+        hasDisconnect =
+          (part as AttributePart)._setValue(values, i) || hasDisconnect;
         i += (part as AttributePart).strings!.length - 1;
       } else {
-        (part as NodePart)._setValue(values[i++]);
+        hasDisconnect =
+          (part as NodePart)._setValue(values[i++]) || hasDisconnect;
       }
     }
+    return hasDisconnect;
   }
 }
 
@@ -881,6 +886,7 @@ export class NodePart {
   /** @internal */
   _endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
+  private _hasDisconnect = false;
 
   constructor(
     startNode: ChildNode,
@@ -900,24 +906,38 @@ export class NodePart {
   }
 
   _disconnect() {
-    this._directive?.disconnectedCallback?.();
-    if (this._value instanceof TemplateInstance) {
-      (this._value as TemplateInstance)._disconnect();
+    if (this._hasDisconnect) {
+      this._directive?.disconnectedCallback?.();
+      this._disconnectValue();
     }
   }
 
-  _setValue(value: unknown): void {
+  _disconnectValue() {
+    if (this._value instanceof TemplateInstance) {
+      (this._value as TemplateInstance)._disconnect();
+    } else if (Array.isArray(this._value)) {
+      for (const v of this._value) {
+        if (v instanceof NodePart) {
+          v._disconnect();
+        }
+      }
+    }
+  }
+
+  _setValue(value: unknown): boolean {
     value = resolveDirective(this, value);
+    let hasDisconnect = !!this._directive?.disconnectedCallback;
     if (isPrimitive(value)) {
       if (value !== this._value) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
-      this._commitTemplateResult(value as TemplateResult);
+      hasDisconnect =
+        this._commitTemplateResult(value as TemplateResult) || hasDisconnect;
     } else if ((value as Node).nodeType !== undefined) {
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
-      this._commitIterable(value);
+      hasDisconnect = this._commitIterable(value) || hasDisconnect;
     } else if (value === nothing) {
       this._clear();
       this._value = nothing;
@@ -925,6 +945,7 @@ export class NodePart {
       // Fallback, will render the string representation
       this._commitText(value);
     }
+    return (this._hasDisconnect = hasDisconnect);
   }
 
   private _insert<T extends Node>(node: T, ref = this._endNode) {
@@ -995,18 +1016,20 @@ export class NodePart {
     this._value = value;
   }
 
-  private _commitTemplateResult(result: TemplateResult): void {
+  private _commitTemplateResult(result: TemplateResult): boolean {
     const {values, strings} = result;
     const template = this._getTemplate(strings, result);
+    let hasDisconnect;
     if ((this._value as TemplateInstance)?._template === template) {
-      (this._value as TemplateInstance)._update(values);
+      hasDisconnect = (this._value as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template!);
       const fragment = instance._clone(this.options);
-      instance._update(values);
+      hasDisconnect = instance._update(values);
       this._commitNode(fragment);
       this._value = instance;
     }
+    return hasDisconnect;
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
@@ -1019,7 +1042,7 @@ export class NodePart {
     return template;
   }
 
-  private _commitIterable(value: Iterable<unknown>): void {
+  private _commitIterable(value: Iterable<unknown>): boolean {
     // For an Iterable, we create a new InstancePart per item, then set its
     // value to the item. This is a little bit of overhead for every item in
     // an Iterable, but it lets us recurse easily and efficiently update Arrays
@@ -1040,6 +1063,7 @@ export class NodePart {
     const itemParts = this._value as NodePart[];
     let partIndex = 0;
     let itemPart: NodePart | undefined;
+    let hasDisconnect = false;
 
     for (const item of value) {
       if (partIndex === itemParts.length) {
@@ -1058,7 +1082,7 @@ export class NodePart {
         // Reuse an existing part
         itemPart = itemParts[partIndex];
       }
-      itemPart._setValue(item);
+      hasDisconnect = itemPart._setValue(item) || hasDisconnect;
       partIndex++;
     }
 
@@ -1068,11 +1092,12 @@ export class NodePart {
       // itemParts always have end nodes
       this._clear(itemPart?._endNode!.nextSibling);
     }
+    return hasDisconnect;
   }
 
   private _clear(start: ChildNode | null = this._startNode.nextSibling) {
-    if (this._value instanceof TemplateInstance) {
-      this._value._disconnect();
+    if (this._hasDisconnect) {
+      this._disconnectValue();
     }
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
@@ -1159,7 +1184,7 @@ export class AttributePart {
     value: unknown | Array<unknown>,
     from?: number,
     noCommit?: boolean
-  ) {
+  ): boolean {
     const strings = this.strings;
 
     if (strings === undefined) {
@@ -1177,6 +1202,7 @@ export class AttributePart {
           this._commitValue(v);
         }
       }
+      return !!this._directives?.[0]?.disconnectedCallback;
     } else {
       // Interpolation case
       let attributeValue = strings[0];
@@ -1188,9 +1214,13 @@ export class AttributePart {
       // remove the entire attribute.
       let remove = false;
 
+      let hasDisconnect = false;
+
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
         v = resolveDirective(this, (value as Array<unknown>)[from! + i], i);
+        hasDisconnect =
+          !!this._directives?.[i]?.disconnectedCallback || hasDisconnect;
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._value as Array<unknown>)[i];
@@ -1210,6 +1240,7 @@ export class AttributePart {
       if (change && !noCommit) {
         this._commitValue(remove ? nothing : attributeValue);
       }
+      return hasDisconnect;
     }
   }
 
@@ -1290,48 +1321,48 @@ export class EventPart extends AttributePart {
   // EventPart does not use the base _setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
-  _setValue(newListener: unknown) {
+  _setValue(newListener: unknown): boolean {
     newListener = resolveDirective(this, newListener, 0) ?? nothing;
-    if (newListener === noChange) {
-      return;
-    }
-    const oldListener = this._value;
+    if (newListener !== noChange) {
+      const oldListener = this._value;
 
-    // If the new value is nothing or any options change we have to remove the
-    // part as a listener.
-    const shouldRemoveListener =
-      (newListener === nothing && oldListener !== nothing) ||
-      (newListener as EventListenerWithOptions).capture !==
-        (oldListener as EventListenerWithOptions).capture ||
-      (newListener as EventListenerWithOptions).once !==
-        (oldListener as EventListenerWithOptions).once ||
-      (newListener as EventListenerWithOptions).passive !==
-        (oldListener as EventListenerWithOptions).passive;
+      // If the new value is nothing or any options change we have to remove the
+      // part as a listener.
+      const shouldRemoveListener =
+        (newListener === nothing && oldListener !== nothing) ||
+        (newListener as EventListenerWithOptions).capture !==
+          (oldListener as EventListenerWithOptions).capture ||
+        (newListener as EventListenerWithOptions).once !==
+          (oldListener as EventListenerWithOptions).once ||
+        (newListener as EventListenerWithOptions).passive !==
+          (oldListener as EventListenerWithOptions).passive;
 
-    // If the new value is not nothing and we removed the listener, we have
-    // to add the part as a listener.
-    const shouldAddListener =
-      newListener !== nothing &&
-      (oldListener === nothing || shouldRemoveListener);
+      // If the new value is not nothing and we removed the listener, we have
+      // to add the part as a listener.
+      const shouldAddListener =
+        newListener !== nothing &&
+        (oldListener === nothing || shouldRemoveListener);
 
-    if (shouldRemoveListener) {
-      this.element.removeEventListener(
-        this.name,
-        this,
-        oldListener as EventListenerWithOptions
-      );
+      if (shouldRemoveListener) {
+        this.element.removeEventListener(
+          this.name,
+          this,
+          oldListener as EventListenerWithOptions
+        );
+      }
+      if (shouldAddListener) {
+        // Beware: IE11 and Chrome 41 don't like using the listener as the
+        // options object. Figure out how to deal w/ this in IE11 - maybe
+        // patch addEventListener?
+        this.element.addEventListener(
+          this.name,
+          this,
+          newListener as EventListenerWithOptions
+        );
+      }
+      this._value = newListener;
     }
-    if (shouldAddListener) {
-      // Beware: IE11 and Chrome 41 don't like using the listener as the
-      // options object. Figure out how to deal w/ this in IE11 - maybe
-      // patch addEventListener?
-      this.element.addEventListener(
-        this.name,
-        this,
-        newListener as EventListenerWithOptions
-      );
-    }
-    this._value = newListener;
+    return !!this._directives?.[0]?.disconnectedCallback;
   }
 
   handleEvent(event: Event) {
