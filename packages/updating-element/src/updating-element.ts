@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/* eslint-disable no-prototype-builtins */
-
 /**
  * Use this module if you want to create your own base class extending
  * [[UpdatingElement]].
@@ -220,6 +218,15 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   reflect: false,
   hasChanged: notEqual,
 };
+
+export interface Controller {
+  connectedCallback?(): void;
+  disconnectedCallback?(): void;
+  willUpdate?(changedProperties: PropertyValues): void;
+  update?(changedProperties: PropertyValues): void;
+  updated?(changedProperties: PropertyValues): void;
+  requestUpdate?(): void;
+}
 
 /**
  * The Closure JS Compiler doesn't currently have good support for static
@@ -517,8 +524,8 @@ export abstract class UpdatingElement extends HTMLElement {
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
 
-  protected isUpdatePending = false;
-  protected hasUpdated = false;
+  isUpdatePending = false;
+  hasUpdated = false;
 
   /**
    * Map with keys for any properties that have changed since the last
@@ -536,6 +543,11 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   private _reflectingProperty: PropertyKey | null = null;
 
+  /**
+   * Set of controllers.
+   */
+  _controllers?: Controller[];
+
   constructor() {
     super();
     this._updatePromise = new Promise((res) => (this.enableUpdating = res));
@@ -544,6 +556,10 @@ export abstract class UpdatingElement extends HTMLElement {
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+  }
+
+  addController(controller: Controller) {
+    (this._controllers ??= []).push(controller);
   }
 
   /**
@@ -596,7 +612,14 @@ export abstract class UpdatingElement extends HTMLElement {
    * element styling, and enables updating.
    */
   connectedCallback() {
+    // create renderRoot before first update.
+    if (!this.hasUpdated) {
+      (this as {
+        renderRoot: Element | DocumentFragment;
+      }).renderRoot = this.createRenderRoot();
+    }
     this.enableUpdating();
+    this._controllers?.forEach((c) => c.connectedCallback?.());
   }
 
   /**
@@ -611,7 +634,9 @@ export abstract class UpdatingElement extends HTMLElement {
    * reserving the possibility of making non-breaking feature additions
    * when disconnecting at some point in the future.
    */
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this._controllers?.forEach((c) => c.disconnectedCallback?.());
+  }
 
   /**
    * Synchronizes property values when attributes change.
@@ -658,7 +683,8 @@ export abstract class UpdatingElement extends HTMLElement {
     }
   }
 
-  private _attributeToProperty(name: string, value: string | null) {
+  /** @internal */
+  _attributeToProperty(name: string, value: string | null) {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
@@ -742,8 +768,11 @@ export abstract class UpdatingElement extends HTMLElement {
       // This `await` also ensures that property changes are batched.
       await this._updatePromise;
     } catch (e) {
-      // Ignore any previous errors. We only care that the previous cycle is
-      // done. Any error should have been handled in the previous update.
+      // Refire any previous errors async so they do not disrupt the update
+      // cycle. Errors are refired so developers have a chance to observe
+      // them, and this can be done by implementing
+      // `window.onunhandledrejection`.
+      Promise.reject(e);
     }
     const result = this.performUpdate();
     // If `performUpdate` returns a Promise, we await it. This is done to
@@ -786,17 +815,14 @@ export abstract class UpdatingElement extends HTMLElement {
       this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
       this._instanceProperties = undefined;
     }
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
-    }
     let shouldUpdate = false;
     const changedProperties = this._changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
+        this._controllers?.forEach((c) => c.willUpdate?.(changedProperties));
+        this.willUpdate(changedProperties);
+        this._controllers?.forEach((c) => c.update?.(changedProperties));
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -811,12 +837,21 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      if (!this.hasUpdated) {
-        this.hasUpdated = true;
-        this.firstUpdated(changedProperties);
-      }
-      this.updated(changedProperties);
+      this._didUpdate(changedProperties);
     }
+  }
+
+  willUpdate(_changedProperties: PropertyValues) {}
+
+  // Note, this is an override point for platform-support.
+  // @internal
+  _didUpdate(changedProperties: PropertyValues) {
+    if (!this.hasUpdated) {
+      this.hasUpdated = true;
+      this.firstUpdated(changedProperties);
+    }
+    this._controllers?.forEach((c) => c.updated?.(changedProperties));
+    this.updated(changedProperties);
   }
 
   private _markUpdated() {
@@ -916,3 +951,7 @@ export abstract class UpdatingElement extends HTMLElement {
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
+
+// Apply polyfills if available
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any)['updatingElementPlatformSupport']?.({UpdatingElement});

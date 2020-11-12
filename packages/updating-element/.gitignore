@@ -1,5 +1,7 @@
-/development/
-/decorators/
-/updating-element.*
-/css-tag.*
-/decorators.*
+decorators/
+development/
+test/
+css-tag.*
+decorators.*
+platform-support.*
+updating-element.*

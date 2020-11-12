@@ -1,0 +1,17 @@
+[local]
+.gitignore
+
+[relative]
+packages/benchmarks/.gitignore
+packages/labs/.gitignore
+packages/lit-element/.gitignore
+packages/lit-html/.gitignore
+packages/lit-ssr/.gitignore
+packages/localize/.gitignore
+packages/tests/.gitignore
+packages/updating-element/.gitignore
+
+[inline]
+packages/localize/examples/
+packages/localize/testdata/
+packages/localize/config.schema.json

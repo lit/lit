@@ -1,7 +1,6 @@
 # LitElement 3.0 Pre-release
 
-[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next
-)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
+[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/lit-element/next-major)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
@@ -22,31 +21,33 @@ for unexpected changes not noted below or in the changelog.
 While `LitElement` 3.0 is intended to be a mostly backward-compatible change for the
 majority of 2.x users, please be aware of the following notable breaking
 changes:
-  * This `LitElement` pre-release uses the `lit-html` pre-release as well.
-    Please see the `lit-html` pre-release [README](../lit-html/README.md) and
-    [changelog](../lit-html/CHANGELOG.md#200-pre1---2020-09-21) for information on
-    any breaking changes to `lit-html` features in your components.
-  * Decorators are no longer exported from the top-level `lit-element` module.
-    Instead, import any decorators you use from `lit-element/decorators/*`.
-  * `requestUpdate()` no longer returns a Promise. Instead await the
-    `updateComplete` Promise.
+
+- This `LitElement` pre-release uses the `lit-html` pre-release as well.
+  Please see the `lit-html` pre-release [README](../lit-html/README.md) and
+  [changelog](../lit-html/CHANGELOG.md#200-pre1---2020-09-21) for information on
+  any breaking changes to `lit-html` features in your components.
+- Decorators are no longer exported from the top-level `lit-element` module.
+  Instead, import any decorators you use from `lit-element/decorators/*`.
+- `requestUpdate()` no longer returns a Promise. Instead await the
+  `updateComplete` Promise.
 
 See the full [changelog](CHANGELOG.md#300-pre1---2020-09-21) for more details on
 these and other minor breaking changes.
 
 ## 🚨 Known issues/limitations
 
-* **Browser support**: This pre-release should run on modern browsers, however a
+- **Browser support**: This pre-release should run on modern browsers, however a
   change to factor legacy browser support (IE11, etc.) into an opt-in package is
   ongoing. As such, this release will not run on some older browsers. This is a
   temporary state.
-* **lit-html limitations**: Some features of `lit-html` are still in progress.
+- **lit-html limitations**: Some features of `lit-html` are still in progress.
   Please refer to the pre-release [README](../lit-html/README.md) for a list of
   known `lit-html` issues.
 
 <hr>
 
 # LitElement
+
 A simple base class for creating fast, lightweight web components with [lit-html](https://lit-html.polymer-project.org/).
 
 ## Documentation
@@ -62,32 +63,32 @@ and renders declaratively using `lit-html`. See the [lit-html guide](https://lit
 for additional information on how to create templates for lit-element.
 
 ```ts
-    import {LitElement, html, css, customElement, property} from 'lit-element';
+import {LitElement, html, css} from 'lit-element';
+import {customElement, property} from 'lit-element/decorators.js';
 
-    // This decorator defines the element.
-    @customElement('my-element')
-    export class MyElement extends LitElement {
+// This decorator defines the element.
+@customElement('my-element')
+export class MyElement extends LitElement {
+  // This decorator creates a property accessor that triggers rendering and
+  // an observed attribute.
+  @property()
+  mood = 'great';
 
-      // This decorator creates a property accessor that triggers rendering and
-      // an observed attribute.
-      @property()
-      mood = 'great';
-
-      static styles = css`
-        span {
-          color: green;
-        }`;
-
-      // Render element DOM by returning a `lit-html` template.
-      render() {
-        return html`Web Components are <span>${this.mood}</span>!`;
-      }
-
+  static styles = css`
+    span {
+      color: green;
     }
+  `;
+
+  // Render element DOM by returning a `lit-html` template.
+  render() {
+    return html`Web Components are <span>${this.mood}</span>!`;
+  }
+}
 ```
 
 ```html
-    <my-element mood="awesome"></my-element>
+<my-element mood="awesome"></my-element>
 ```
 
 Note, this example uses decorators to create properties. Decorators are a proposed
@@ -95,12 +96,12 @@ standard currently available in [TypeScript](https://www.typescriptlang.org/) or
 
 ## Examples
 
-  * Runs in all [supported](#supported-browsers) browsers: [Glitch](https://glitch.com/edit/#!/hello-lit-element?path=index.html)
+- Runs in all [supported](#supported-browsers) browsers: [Glitch](https://glitch.com/edit/#!/hello-lit-element?path=index.html)
 
-  * Runs in browsers with [JavaScript Modules](https://caniuse.com/#search=modules): [Stackblitz](https://stackblitz.com/edit/lit-element-demo?file=src%2Fmy-element.js), [JSFiddle](https://jsfiddle.net/sorvell1/801f9cdu/), [JSBin](http://jsbin.com/vecuyan/edit?html,output),
-[CodePen](https://codepen.io/sorvell/pen/RYQyoe?editors=1000).
+- Runs in browsers with [JavaScript Modules](https://caniuse.com/#search=modules): [Stackblitz](https://stackblitz.com/edit/lit-element-demo?file=src%2Fmy-element.js), [JSFiddle](https://jsfiddle.net/sorvell1/801f9cdu/), [JSBin](http://jsbin.com/vecuyan/edit?html,output),
+  [CodePen](https://codepen.io/sorvell/pen/RYQyoe?editors=1000).
 
-  * You can also copy [this HTML file](https://gist.githubusercontent.com/sorvell/48f4b7be35c8748e8f6db5c66d36ee29/raw/67346e4e8bc4c81d5a7968d18f0a6a8bc00d792e/index.html) into a local file and run it in any browser that supports [JavaScript Modules]((https://caniuse.com/#search=modules)).
+- You can also copy [this HTML file](https://gist.githubusercontent.com/sorvell/48f4b7be35c8748e8f6db5c66d36ee29/raw/67346e4e8bc4c81d5a7968d18f0a6a8bc00d792e/index.html) into a local file and run it in any browser that supports [JavaScript Modules](<(https://caniuse.com/#search=modules)>).
 
 ## Installation
 
@@ -131,7 +132,7 @@ resolve configuration.
 ```js
 {
   nodeResolve: {
-    exportConditions: [ "development" ]
+    exportConditions: ['development'];
   }
 }
 ```
@@ -144,9 +145,9 @@ resolve configuration.
 {
   plugins: [
     nodeResolve({
-      exportConditions: [ "development" ]
-    })
-  ]
+      exportConditions: ['development'],
+    }),
+  ];
 }
 ```
 
@@ -157,7 +158,7 @@ resolve configuration.
 ```js
 {
   resolve: {
-    conditionNames: [ "development" ]
+    conditionNames: ['development'];
   }
 }
 ```

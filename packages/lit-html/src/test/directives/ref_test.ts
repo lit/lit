@@ -14,7 +14,6 @@
 import {html, render} from '../../lit-html.js';
 import {ref, Ref} from '../../directives/ref.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 suite('ref', () => {
   let container: HTMLDivElement;

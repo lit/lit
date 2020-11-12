@@ -1,8 +1,8 @@
 # lit-html 2.0 Pre-release
+
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
-[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next
-)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
+[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/lit-html/next-major)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
@@ -23,25 +23,26 @@ for unexpected changes not noted below or in the changelog.
 While `lit-html` 2.0 is intended to be a backward-compatible change for the
 majority of 1.x users, please be aware of the following notable breaking
 changes:
-  * New `directive` and `Part` API (see below for migration info)
-  * `render()` no longer clears its container on first render
-  * Custom `templateFactory`, `TemplateProcessor`, and custom tag functions are no
-    longer supported
+
+- New `directive` and `Part` API (see below for migration info)
+- `render()` no longer clears its container on first render
+- Custom `templateFactory`, `TemplateProcessor`, and custom tag functions are no
+  longer supported
 
 See the full [changelog](CHANGELOG.md) for more details on
 these and other minor breaking changes.
 
 ## 🚨 Known issues/limitations
 
-* **Browser support**: This pre-release should run on modern browsers, however a
+- **Browser support**: This pre-release should run on modern browsers, however a
   change to factor legacy browser support (IE11, etc.) into an opt-in package is
   ongoing. As such, this release will not run on some older browsers. This is a
   temporary state.
-* **Limited directive implementation**: The following directives are not yet
+- **Limited directive implementation**: The following directives are not yet
   implemented. This is a temporary state:
-  * `asyncAppend`
-  * `asyncReplace`
-  * `until`
+  - `asyncAppend`
+  - `asyncReplace`
+  - `until`
 
 ## 🚨 Migrating directives
 
@@ -58,19 +59,22 @@ change in future pre-releases.**
 <summary>Expand here for details on migrating directives.</summary>
 
 ### Overview of directive API changes
-| | 1.x API | 2.0 API |
-|-|-----|-----|
-| Code idiom for directive | function that takes directive arguments, and returns function that takes `part` and returns value | class with `update` & `render` methods which accept directive arguments |
-| Where to do declarative rendering | pass value to `part.setValue()` | return value from `render()` method |
-| Where to do imperative DOM/part manipulation | directive function | `update()` method |
-| Where state is stored between renders | `WeakMap` keyed on `part` | class instance fields |
-| How part validation is done | `instanceof` check on `part` in every render | `part.type` check in constructor
+
+|                                              | 1.x API                                                                                           | 2.0 API                                                                 |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Code idiom for directive                     | function that takes directive arguments, and returns function that takes `part` and returns value | class with `update` & `render` methods which accept directive arguments |
+| Where to do declarative rendering            | pass value to `part.setValue()`                                                                   | return value from `render()` method                                     |
+| Where to do imperative DOM/part manipulation | directive function                                                                                | `update()` method                                                       |
+| Where state is stored between renders        | `WeakMap` keyed on `part`                                                                         | class instance fields                                                   |
+| How part validation is done                  | `instanceof` check on `part` in every render                                                      | `part.type` check in constructor                                        |
 
 ### Example directive migration
+
 Below is an example of a lit-html 1.x directive, and how to migrate it to the
 new API:
 
 1.x Directive API:
+
 ```js
 import {directive, NodePart, html} from 'lit-html';
 
@@ -99,36 +103,40 @@ export const renderCounter = directive((initialValue) => (part) => {
 ```
 
 2.0 Directive API:
+
 ```js
 import {directive, Directive, NODE_PART, html} from 'lit-html';
 
 // Class-based directive API
-export const renderCounter = directive(class extends Directive {
-  // State stored in class field
-  value = undefined;
-  constructor(part) {
-    super();
-    // When necessary, validate part in constructor using `part.type`
-    if (part.type !== NODE_PART) {
-      throw new Error('renderCounter only supports NodePart');
+export const renderCounter = directive(
+  class extends Directive {
+    // State stored in class field
+    value = undefined;
+    constructor(part) {
+      super();
+      // When necessary, validate part in constructor using `part.type`
+      if (part.type !== NODE_PART) {
+        throw new Error('renderCounter only supports NodePart');
+      }
+    }
+    // Any imperative updates to DOM/parts would go here
+    update(part, [initialValue]) {
+      // ...
+    }
+    // Do SSR-compatible rendering (arguments are passed from call site)
+    render(initialValue) {
+      // Previous state available on class field
+      if (this.value === undefined) {
+        this.value = initialValue;
+      } else {
+        this.value++;
+      }
+      return html`<p>${this.value}</p>`;
     }
   }
-  // Any imperative updates to DOM/parts would go here
-  update(part, [initialValue]) {
-    // ...
-  }
-  // Do SSR-compatible rendering (arguments are passed from call site)
-  render(initialValue) {
-    // Previous state available on class field
-    if (this.value === undefined) {
-      this.value = initialValue;
-    } else {
-      this.value++;
-    }
-    return html`<p>${this.value}</p>`;
-  }
-});
+);
 ```
+
 </details>
 
 <hr>
@@ -156,8 +164,8 @@ render(helloTemplate('Kevin'), document.body);
 
 `lit-html` provides two main exports:
 
- * `html`: A JavaScript [template tag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
- * `render()`: A function that renders a `TemplateResult` to a DOM container, such as an element or shadow root.
+- `html`: A JavaScript [template tag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals) used to produce a `TemplateResult`, which is a container for a template, and the values that should populate the template.
+- `render()`: A function that renders a `TemplateResult` to a DOM container, such as an element or shadow root.
 
 ## Installation
 
@@ -180,7 +188,7 @@ resolve configuration.
 ```js
 {
   nodeResolve: {
-    exportConditions: [ "development" ]
+    exportConditions: ['development'];
   }
 }
 ```
@@ -193,9 +201,9 @@ resolve configuration.
 {
   plugins: [
     nodeResolve({
-      exportConditions: [ "development" ]
-    })
-  ]
+      exportConditions: ['development'],
+    }),
+  ];
 }
 ```
 
@@ -206,7 +214,7 @@ resolve configuration.
 ```js
 {
   resolve: {
-    conditionNames: [ "development" ]
+    conditionNames: ['development'];
   }
 }
 ```

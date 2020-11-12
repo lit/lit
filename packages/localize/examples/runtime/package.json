@@ -1,0 +1,19 @@
+{
+  "name": "lit-localize-examples-runtime",
+  "description": "Example of using lit-localize in runtime mode",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf lib/* && lit-localize && tsc",
+    "serve": "es-dev-server --node-resolve"
+  },
+  "dependencies": {
+    "@lit/localize": "^0.5.1",
+    "@material/mwc-circular-progress": "^0.18.0",
+    "lit-element": "^2.4.0"
+  },
+  "devDependencies": {
+    "es-dev-server": "^1.57.3",
+    "typescript": "^4.0.2"
+  }
+}

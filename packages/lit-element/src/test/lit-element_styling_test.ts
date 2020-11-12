@@ -62,9 +62,7 @@ import {assert} from '@esm-bundle/chai';
       );
     });
 
-    // TODO(sorvell): To be compatible with shady-render style elements cannot
-    // be node values.
-    test.skip('shared styling rendered into shadowRoot is styled', async () => {
+    test('shared styling rendered into shadowRoot is styled', async () => {
       const style = htmlWithStyles`<style>
         div {
           border: 4px solid blue;
@@ -316,6 +314,13 @@ import {assert} from '@esm-bundle/chai';
         getComputedStyleValue(span!, 'border-top-width').trim(),
         '3px'
       );
+      // Verify there is one scoping style under ShadyDOM
+      if (window.ShadyDOM?.inUse) {
+        assert.equal(
+          document.querySelectorAll(`style[scope=${name}`).length,
+          1
+        );
+      }
     });
   });
 

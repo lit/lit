@@ -1,18 +1,25 @@
 {
   "name": "updating-element",
   "version": "1.0.0-pre.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A simple low level base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit-element.polymer-project.org/",
   "repository": "Polymer/lit-html",
-  "type": "module",
+  "author": "The Polymer Authors",
+  "homepage": "https://lit-element.polymer-project.org/",
   "main": "updating-element.js",
   "module": "updating-element.js",
-  "typings": "updating-element.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "development": "./development/updating-element.js",
       "default": "./updating-element.js"
+    },
+    "./platform-support.js": {
+      "development": "./development/platform-support.js",
+      "default": "./platform-support.js"
     },
     "./css-tag.js": {
       "development": "./development/css-tag.js",
@@ -27,19 +34,27 @@
       "default": "./decorators/"
     }
   },
-  "directories": {
-    "test": "test"
+  "scripts": {
+    "build": "npm run clean && tsc && rollup -c",
+    "build:watch": "rollup -c --watch",
+    "build:ts": "tsc",
+    "build:ts:watch": "tsc --watch",
+    "check-version": "node scripts/check-version-tracker.js",
+    "checksize": "rollup -c --environment=CHECKSIZE",
+    "clean": "rm -rf updating-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
+    "dev": "scripts/dev.sh",
+    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
+    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
+    "prepublishOnly": "npm run check-version && npm run lint && npm test",
+    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
+    "test": "npm run test:dev && npm run test:prod",
+    "test:dev": "cd ../tests && npx wtr '../updating-element/development/**/*_test.(js|html)'",
+    "test:prod": "MODE=prod npm run test:dev",
+    "test:prod:watch": "MODE=prod npm run test:dev -- --watch",
+    "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/decorators/",
-    "/src/",
-    "/development/",
-    "!/src/demo/",
-    "!/src/test/",
-    "/updating-element.d.ts",
-    "/updating-element.d.ts.map",
-    "/updating-element.js",
-    "/updating-element.js.map",
     "/css-tag.d.ts",
     "/css-tag.d.ts.map",
     "/css-tag.js",
@@ -47,28 +62,22 @@
     "/decorators.d.ts",
     "/decorators.d.ts.map",
     "/decorators.js",
-    "/decorators.js.map"
+    "/decorators.js.map",
+    "/decorators/",
+    "/development/",
+    "/platform-support.d.ts",
+    "/platform-support.d.ts.map",
+    "/platform-support.js",
+    "/platform-support.js.map",
+    "/src/",
+    "!/src/demo/",
+    "!/src/test/",
+    "/updating-element.d.ts",
+    "/updating-element.d.ts.map",
+    "/updating-element.js",
+    "/updating-element.js.map"
   ],
-  "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf updating-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} decorators/ development/",
-    "dev": "scripts/dev.sh",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../updating-element/development/**/*_test.js'",
-    "test:prod": "MODE=prod npm run test:dev",
-    "test:prod:watch": "MODE=prod npm run test:dev -- --watch",
-    "test:watch": "npm run test:dev -- --watch",
-    "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier \"**/*{cjs,html,js,json,md,ts}\" --write",
-    "lint": "eslint \"**/*.{js,ts}\" --ignore-path .gitignore",
-    "check-version": "node scripts/check-version-tracker.js",
-    "prepublishOnly": "npm run check-version && npm run lint && npm test",
-    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
-    "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev"
-  },
-  "author": "The Polymer Authors",
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/plugin-proposal-class-properties": "^7.2.3",
@@ -77,13 +86,15 @@
     "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",
+    "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/webcomponentsjs": "^2.2.3",
     "chokidar-cli": "^2.1.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",
     "typescript": "^4.0.2"
   },
-  "dependencies": {},
-  "publishConfig": {
-    "access": "public"
+  "typings": "updating-element.d.ts",
+  "directories": {
+    "test": "test"
   }
 }

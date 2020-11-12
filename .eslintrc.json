@@ -10,7 +10,11 @@
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint"],
+  "env": {
+    "browser": true
+  },
   "rules": {
+    "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "error",
@@ -26,16 +30,24 @@
   "overrides": [
     {
       "files": [
+        "packages/localize/bin/lit-localize.js",
         "check-version-tracker.js",
+        "karma.conf.js",
         "rollup-common.js",
-        "rollup.config.js"
+        "rollup.config.js",
+        "web-test-runner.config.js"
       ],
       "env": {
         "node": true
       }
     },
     {
-      "files": ["*_test.ts"],
+      "files": [
+        "*_test.ts",
+        "**/custom_typings/*.ts",
+        "packages/lit-ssr/src/test/integration/tests/**",
+        "packages/lit-ssr/src/lib/util/parse5-utils.ts"
+      ],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
       }
