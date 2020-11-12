@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {html, render} from '../../lit-html.js';
-import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {ref, Ref} from '../../directives/ref.js';
+import {assert} from '@esm-bundle/chai';
+import '../polyfills.js';
 
 suite('ref', () => {
   let container: HTMLDivElement;
@@ -28,7 +28,6 @@ suite('ref', () => {
     render(html`<div ${ref(divRef)}></div>`, container);
     const div = container.firstElementChild;
     assert.equal(divRef.value, div);
-    assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
   });
 
   test.only('two refs', () => {
@@ -38,6 +37,5 @@ suite('ref', () => {
     const div = container.firstElementChild;
     assert.equal(divRef1.value, div);
     assert.equal(divRef2.value, div);
-    assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
   });
 });
