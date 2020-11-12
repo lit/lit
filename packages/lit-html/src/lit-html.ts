@@ -1104,6 +1104,11 @@ export class NodePart {
     }
 
     if (partIndex < itemParts.length) {
+      if (this._hasDisconnect) {
+        for (let i = partIndex; i < itemParts.length; i++) {
+          itemParts[i]._disconnect();
+        }
+      }
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
@@ -1112,12 +1117,19 @@ export class NodePart {
     return hasDisconnect;
   }
 
-  private _clear(start: ChildNode | null = this._startNode.nextSibling) {
-    if (this._hasDisconnect) {
-      this._disconnectValue();
+  private _clear(start?: ChildNode | null) {
+    if (start === undefined) {
+      start = this._startNode.nextSibling;
+      // Only disconnect directive in this part's value if we are fully clearing
+      // part; when partially clearing, it is the caller's responsibility to
+      // ensure that parts corresponding to the partially cleared nodes are
+      // disconnected
+      if (this._hasDisconnect) {
+        this._disconnectValue();
+      }
     }
     while (start && start !== this._endNode) {
-      const n = start!.nextSibling;
+      const n: ChildNode | null = start!.nextSibling;
       start!.remove();
       start = n;
     }

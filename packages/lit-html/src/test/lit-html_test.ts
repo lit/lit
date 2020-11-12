@@ -1863,9 +1863,7 @@ suite('lit-html', () => {
     assert.deepEqual(log, ['disconnected']);
   });
 
-  // TODO(kschaaf): Iterables partially clear a part, which currently removes
-  // directives
-  test.skip('directives can be disconnected from iterables', () => {
+  test('directives can be disconnected from iterables', () => {
     const log: Array<string> = [];
     const go = (items: string[] | undefined) =>
       render(
@@ -1882,7 +1880,12 @@ suite('lit-html', () => {
     go(['0', '2']);
     assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
     go(undefined);
-    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+    assert.deepEqual(log, [
+      'disconnected-2',
+      'disconnected-3',
+      'disconnected-0',
+      'disconnected-2',
+    ]);
   });
 
   // TODO(kschaaf): There's currently no way to pass up the `hasConnected` state
