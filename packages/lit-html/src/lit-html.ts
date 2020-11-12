@@ -293,7 +293,6 @@ export type AttributePartInfo = {
 
 export type ElementPartInfo = {
   readonly type: typeof ELEMENT_PART;
-  tagName: string;
 };
 
 /**
@@ -1331,24 +1330,15 @@ export class EventPart extends AttributePart {
 
 export class ElementPart {
   readonly type = ELEMENT_PART;
-  _value: unknown;
-  _directive?: Directive;
+  private _directive?: Directive;
 
   constructor(public element: Element) {}
 
-  get tagName() {
-    return this.element.tagName;
-  }
-
   _setValue(value: unknown): void {
-    const directive = (value as DirectiveResult)._$litDirective$;
+    const directive = (value as DirectiveResult)?._$litDirective$;
     if (this._directive?.constructor !== directive) {
-      // if (this._directive !== undefined) {
-      //   this._directive.disconnectedCallback();
-      // }
-      if (directive !== undefined) {
-        this._directive = new directive(this);
-      }
+      this._directive =
+        directive === undefined ? undefined : new directive(this);
     }
     this._directive?.update(this, (value as DirectiveResult).values);
   }
