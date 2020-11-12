@@ -1,22 +1,10 @@
-import {
-  playwrightLauncher
-} from '@web/test-runner-playwright';
-import {
-  fromRollup
-} from '@web/dev-server-rollup';
-import {
-  createSauceLabsLauncher
-} from '@web/test-runner-saucelabs';
-import {
-  legacyPlugin
-} from '@web/dev-server-legacy';
-import {
-  resolveRemap
-} from './rollup-resolve-remap.js';
-import {
-  prodResolveRemapConfig,
-  devResolveRemapConfig
-} from './wtr-config.js';
+import {createRequire} from 'module';
+import {playwrightLauncher} from '@web/test-runner-playwright';
+import {fromRollup} from '@web/dev-server-rollup';
+import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
+import {legacyPlugin} from '@web/dev-server-legacy';
+import {resolveRemap} from './rollup-resolve-remap.js';
+import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -44,11 +32,11 @@ const browserPresets = {
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
-    'sauce:Windows 10/firefox@68', // Current ESR
-    'sauce:Windows 10/chrome@latest-3',
-    'sauce:macOS 10.15/safari@latest',
+    'sauce:Windows 10/Firefox@68', // Current ESR
+    'sauce:Windows 10/Chrome@latest-3',
+    'sauce:macOS 10.15/Safari@latest',
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    "sauce:Windows 7/internet explorer@11", // Browser start timeout
+    'sauce:Windows 7/Internet Explorer@11', // Browser start timeout
   ],
 };
 
@@ -61,12 +49,12 @@ function makeSauceLauncherOnce() {
     if (!user || !key) {
       throw new Error(
         'To test on Sauce, set the SAUCE_USERNAME' +
-        ' and SAUCE_ACCESS_KEY environment variables.'
+          ' and SAUCE_ACCESS_KEY environment variables.'
       );
     }
     sauceLauncher = createSauceLabsLauncher({
       user,
-      key
+      key,
     });
   }
   return sauceLauncher;
@@ -99,7 +87,7 @@ function parseBrowser(browser) {
     if (!entries) {
       throw new Error(
         `Unknown preset "${preset}", please pick one of: ` +
-        Object.keys(browserPresets).join(', ')
+          Object.keys(browserPresets).join(', ')
       );
     }
     return entries.map(parseBrowser).flat();
@@ -125,7 +113,7 @@ Valid examples:
 
 See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
     }
-    const [_, platformName, browserName, browserVersion] = match;
+    const [, platformName, browserName, browserVersion] = match;
     return [
       makeSauceLauncherOnce()({
         browserName,
@@ -141,9 +129,11 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  return [playwrightLauncher({
-    product: browser
-  })];
+  return [
+    playwrightLauncher({
+      product: browser,
+    }),
+  ];
 }
 
 const browsers = (process.env.BROWSERS || 'preset:local')
@@ -151,6 +141,7 @@ const browsers = (process.env.BROWSERS || 'preset:local')
   .map(parseBrowser)
   .flat();
 
+const require = createRequire(import.meta.url);
 const seenDevModeLogs = new Set();
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
@@ -158,8 +149,9 @@ export default {
   rootDir: '../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
-    '../lit-html/development/**/*_test.js',
+    '../lit-html/development/**/*_test.(js|html)',
     '../lit-element/development/**/*_test.(js|html)',
+    '../updating-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
   concurrency: 6, // default cores / 2
@@ -169,12 +161,29 @@ export default {
     fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin(),
+    legacyPlugin({
+      polyfills: {
+        webcomponents: false,
+        custom: [
+          {
+            name: 'webcomponents-2.5.0',
+            path: require.resolve(
+              '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
+            ),
+            // Always load.
+            test: 'true',
+            module: false,
+          },
+        ],
+      },
+    }),
   ],
-  filterBrowserLogs: ({
-    args
-  }) => {
-    if (mode === 'dev' && args[0] && args[0].includes('in dev mode')) {
+  filterBrowserLogs: ({args}) => {
+    if (
+      mode === 'dev' &&
+      typeof args[0] === 'string' &&
+      args[0].includes('in dev mode')
+    ) {
       if (!seenDevModeLogs.has(args[0])) {
         seenDevModeLogs.add(args[0]);
         // Log it one time.

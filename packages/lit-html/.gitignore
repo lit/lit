@@ -1,4 +1,9 @@
-/development/
-/directives/
-/lit-html.*
-/parts.*
+development/
+directives/
+node_modules/
+test/
+hydrate.*
+lit-html.*
+parts.*
+platform-support.*
+private-ssr-support.*

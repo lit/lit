@@ -24,16 +24,19 @@ import {
   svg,
   TemplateResult,
   unsafeStatic,
+  SanitizerFactory,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-import './polyfills.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
+// We don't have direct access to DEV_MODE, but this is a good enough
+// proxy.
+const DEV_MODE = render.setSanitizer != null;
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -1173,6 +1176,40 @@ suite('lit-html', () => {
       assert.strictEqual((div as any).foo, undefined);
     });
 
+    test('null sets null', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, null);
+    });
+
+    test('null in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', null);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
+    test('undefined sets undefined', () => {
+      const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
+
+      go(undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('undefined in multiple part sets empty string', () => {
+      const go = (v1: any, v2: any) =>
+        render(html`<div .foo="${v1}${v2}"></div>`, container);
+
+      go('hi', undefined);
+      const div = container.querySelector('div')!;
+      assert.strictEqual((div as any).foo, 'hi');
+    });
+
     test('noChange works', () => {
       const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
       go(1);
@@ -1394,7 +1431,10 @@ suite('lit-html', () => {
     test('static tag binding', () => {
       const tagName = unsafeStatic('div');
       render(html`<${tagName}>${'A'}</${tagName}>`, container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div>A</div>');
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div>A</div>'
+      );
     });
 
     test('static attribute name binding', () => {
@@ -1412,13 +1452,15 @@ suite('lit-html', () => {
     });
 
     test('static attribute name binding', () => {
-      render(html`<div ${unsafeStatic('foo')}="${unsafeStatic('bar')}"></div>`, container);
+      render(
+        html`<div ${unsafeStatic('foo')}="${unsafeStatic('bar')}"></div>`,
+        container
+      );
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="bar"></div>'
       );
     });
-
 
     test('dynamic binding after static text binding', () => {
       render(html`${unsafeStatic('<p>Hello</p>')}${'<p>World</p>'}`, container);
@@ -1760,8 +1802,34 @@ suite('lit-html', () => {
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
     });
 
+    test('renders directives on EventParts', () => {
+      const handle = directive(
+        class extends Directive {
+          count = 0;
+          render(value: string) {
+            return (e: Event) => {
+              (e.target as any).__clicked = `${value}:${++this.count}`;
+            };
+          }
+        }
+      );
+      const template = (value: string) =>
+        html`<div @click=${handle(value)}></div>`;
+      render(template('A'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:1');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'A:2');
+      render(template('B'), container);
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:3');
+      (container.firstElementChild as HTMLDivElement).click();
+      assert.strictEqual((container.firstElementChild as any).__clicked, 'B:4');
+    });
+
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective {
+      class FireEventDirective extends Directive {
         render() {
           return nothing;
         }
@@ -1785,6 +1853,162 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+  });
+
+  let securityHooksSuiteFunction:
+    | Mocha.SuiteFunction
+    | Mocha.PendingSuiteFunction = suite;
+  if (!DEV_MODE) {
+    securityHooksSuiteFunction = suite.skip;
+  }
+  securityHooksSuiteFunction('enahnced security hooks', () => {
+    class FakeSanitizedWrapper {
+      sanitizeTo: string;
+      constructor(sanitizeTo: string) {
+        this.sanitizeTo = sanitizeTo;
+      }
+
+      toString() {
+        return `FakeSanitizedWrapper(${this.sanitizeTo})`;
+      }
+    }
+    const sanitizerCalls: Array<{
+      name: string;
+      type: 'property' | 'attribute' | 'text';
+      nodeName: string;
+      values: readonly unknown[];
+    }> = [];
+    const testSanitizer = (value: unknown) => {
+      if (value instanceof FakeSanitizedWrapper) {
+        return value.sanitizeTo;
+      }
+      return 'safeString';
+    };
+    const testSanitizerFactory: SanitizerFactory = (node, name, type) => {
+      const values: unknown[] = [];
+      sanitizerCalls.push({values, name, type, nodeName: node.nodeName});
+      return (value) => {
+        values.push(value);
+        return testSanitizer(value);
+      };
+    };
+    setup(() => {
+      render.setSanitizer(testSanitizerFactory);
+    });
+    teardown(() => {
+      render._testOnlyClearSanitizerFactoryDoNotCallOrElse();
+      sanitizerCalls.length = 0;
+    });
+
+    test('sanitizes text content when the text is alone', () => {
+      const getTemplate = (value: unknown) => html`<div>${value}</div>`;
+      render(getTemplate('foo'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>safeString</div>'
+      );
+
+      const safeFoo = new FakeSanitizedWrapper('foo');
+      render(getTemplate(safeFoo), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>foo</div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['foo', safeFoo],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
+      ]);
+    });
+
+    test('sanitizes text content when the text is interpolated', () => {
+      const getTemplate = (value: unknown) =>
+        html`<div>hello ${value} world</div>`;
+      render(getTemplate('big'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>hello safeString world</div>'
+      );
+
+      const safeBig = new FakeSanitizedWrapper('big');
+
+      render(getTemplate(safeBig), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>hello big world</div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['big', safeBig],
+          name: 'data',
+          type: 'property',
+          nodeName: '#text',
+        },
+      ]);
+    });
+
+    test('sanitizes full attribute values', () => {
+      const getTemplate = (value: unknown) => html`<div attrib=${value}></div>`;
+      render(getTemplate('bad'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="safeString"></div>'
+      );
+
+      const safe = new FakeSanitizedWrapper('good');
+      render(getTemplate(safe), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="good"></div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['bad', safe],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
+      ]);
+    });
+
+    test('sanitizes concatonated attributes after contatonation', () => {
+      render(html`<div attrib="hello ${'big'} world"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div attrib="safeString"></div>'
+      );
+
+      assert.deepEqual(sanitizerCalls, [
+        {
+          values: ['hello big world'],
+          name: 'attrib',
+          type: 'attribute',
+          nodeName: 'DIV',
+        },
+      ]);
+    });
+
+    test('sanitizes properties', () => {
+      const getTemplate = (value: unknown) => html`<div .foo=${value}></div>`;
+      render(getTemplate('bad'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.equal((container.querySelector('div')! as any).foo, 'safeString');
+
+      const safe = new FakeSanitizedWrapper('good');
+      render(getTemplate(safe), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+      assert.equal((container.querySelector('div')! as any).foo, 'good');
+
+      assert.deepEqual(sanitizerCalls, [
+        {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
+      ]);
     });
   });
 });

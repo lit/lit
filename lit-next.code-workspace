@@ -9,6 +9,22 @@
 			"path": "packages/lit-element"
 		},
 		{
+			"name": "updating-element",
+			"path": "packages/updating-element"
+		},
+		{
+			"name": "lit-ssr",
+			"path": "packages/lit-ssr"
+		},
+		{
+			"name": "localize",
+			"path": "packages/localize"
+		},
+		{
+      "name": "labs",
+      "path": "packages/labs"
+    },
+		{
 			"name": "tests",
 			"path": "packages/tests"
 		},
@@ -22,6 +38,13 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "lit-html/node_modules/typescript/lib"
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"debug.javascript.warnOnLongPrediction": false
+	},
+	"extensions": {
+		"recommendations": [
+			"dbaeumer.vscode-eslint",
+			"esbenp.prettier-vscode"
+		]
 	}
 }

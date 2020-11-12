@@ -14,6 +14,7 @@
 
 import {
   directive,
+  NODE_PART,
   NodePart,
   Directive,
   noChange,
@@ -66,7 +67,7 @@ class RepeatDirective extends Directive {
 
   constructor(part: PartInfo) {
     super();
-    if (!(part instanceof NodePart)) {
+    if (part.type !== NODE_PART) {
       throw new Error('repeat can only be used in text bindings');
     }
   }

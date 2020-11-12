@@ -16,7 +16,6 @@ import {unsafeSVG} from '../../directives/unsafe-svg.js';
 import {render, html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import '../polyfills.js';
 
 suite('unsafeSVG', () => {
   let container: HTMLElement;

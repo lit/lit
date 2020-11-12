@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {litRollupConfig} from '../../rollup-common.js';
+import {litProdConfig} from '../../rollup-common.js';
 
-export default litRollupConfig({
+export default litProdConfig({
   entryPoints: [
     'directives/cache',
     'directives/class-map',
@@ -26,7 +26,16 @@ export default litRollupConfig({
     'directives/template-content',
     'directives/unsafe-html',
     'directives/unsafe-svg',
+    'directives/render-light',
     'lit-html',
     'parts',
+    'hydrate',
+    'private-ssr-support',
+    'platform-support',
+  ],
+  bundled: [
+    {
+      file: 'platform-support',
+    },
   ],
 });

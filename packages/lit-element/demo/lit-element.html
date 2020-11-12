@@ -9,147 +9,18 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>lit-element demo</title>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <script type="module" src="./my-element.js"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
-  <title>lit-element demo</title>
-  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script type="module" src="./ts-element.js"></script>
-</head>
-
-<body>
-  <my-element bar="5" whales="5" foobar="17">Hi</my-element>
-  <hr />
-  <ts-element message="Yo" more-info="person"></ts-element>
-
-  <script type="module">
-    import {LitElement, html, css} from '../lib/lit-element.js';
-
-      class Inner extends LitElement {
-        static get styles() {
-          return [
-            css`
-              :host {
-                color: green;
-              }
-            `,
-          ];
-        }
-        render() {
-          return html`Hello world`;
-        }
-      }
-
-      customElements.define('x-inner', Inner);
-
-      class MyElement extends LitElement {
-        static get properties() {
-          return {
-            nug: {},
-            foo: {},
-            bar: {},
-            whales: {type: Number},
-            fooBar: {
-              converter: {
-                fromAttribute: parseInt,
-                toAttribute: (value) => value + '-attr',
-              },
-              reflect: true,
-            },
-          };
-        }
-
-        constructor() {
-          super();
-          this.foo = 'foo';
-          this.nug = [1, 2, 3];
-          this.whales = 0;
-          this.addEventListener('click', async (e) => {
-            this.whales++;
-            await this.updateComplete;
-            this.dispatchEvent(
-              new CustomEvent('whales', {detail: {whales: this.whales}})
-            );
-            console.log(this.shadowRoot.querySelector('.count').textContent);
-          });
-        }
-
-        static get styles() {
-          return [
-            css`
-              h4 {
-                color: orange;
-              }
-            `,
-          ];
-        }
-
-        render() {
-          const {foo, bar, whales, fooBar, nug} = this;
-          return html`
-            <style>
-              :host {
-                display: block;
-              }
-
-              :host([hidden]) {
-                display: none;
-              }
-
-              .count {
-                color: green;
-              }
-
-              .content {
-                border: 1px solid black;
-                padding: 8px;
-              }
-            </style>
-            <h4 on-click="${(e) => console.log(this, e.target)}">
-              Foo: ${foo}, Bar: ${bar}
-            </h4>
-            <div class="content">
-              <slot></slot>
-            </div>
-            <div class="count">whales: ${'🐳'.repeat(whales)}</div>
-            <ul>
-              ${nug.map((n) => html`<li>${n}</li>`)}
-            </ul>
-            <x-inner></x-inner>
-          `;
-        }
-
-        update(changedProps) {
-          super.update(changedProps);
-          console.log('updated!', changedProps);
-        }
-
-        firstUpdated() {
-          this._inner = this.shadowRoot.querySelector('x-inner');
-        }
-
-        get updateComplete() {
-          return (async () => {
-            return (
-              (await super.updateComplete) && (await this._inner.updateComplete)
-            );
-          })();
-        }
-      }
-
-      customElements.define('my-element', MyElement);
-
-      (async () => {
-        const x = document.querySelector('my-element');
-        await x.updateComplete;
-        console.log(
-          'updateComplete!',
-          x.shadowRoot.querySelector('x-inner').shadowRoot.textContent,
-          x.whales
-        );
-      })();
-    </script>
-</body>
-
+  <body>
+    <my-element bar="5" whales="5" foobar="17">Slotted Content</my-element>
+  </body>
 </html>
