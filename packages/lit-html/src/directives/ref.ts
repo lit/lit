@@ -41,12 +41,12 @@ class RefDirective extends Directive {
  * Sets the value of a Ref object to the element it's bound to.
  *
  * A Ref acts as a container for a reference to an element. The ref
- * directive sets the value of the Ref obejct during rendering.
+ * directive sets the value of the Ref object during rendering.
  *
  * @example
  *
  *     const inputRef = new Ref();
- *     render(html`<input ${inputRef}>`, container);
- *     input.value.focus();
+ *     render(html`<input ${ref(inputRef)}>`, container);
+ *     inputRef.value.focus();
  */
 export const ref = directive(RefDirective);
