@@ -23,6 +23,14 @@ import {
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+// Note, since tests are not built with production support, detect DEV_MODE
+// by checking if warning API is available.
+const DEV_MODE = !!UpdatingElement.enableWarning;
+
+if (DEV_MODE) {
+  UpdatingElement.disableWarning?.('change-in-update');
+}
+
 suite('UpdatingElement', () => {
   let container: HTMLElement;
 
