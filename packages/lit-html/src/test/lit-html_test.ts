@@ -30,6 +30,7 @@ import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
+import {repeat} from '../directives/repeat.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1787,21 +1788,21 @@ suite('lit-html', () => {
 
   class DisconnectingDirective extends Directive {
     log!: Array<string>;
+    id!: string;
 
-    render(log: Array<string>) {
+    render(log: Array<string>, id = '') {
       this.log = log;
+      this.id = id;
       return 'hello';
     }
 
     disconnectedCallback() {
-      this.log.push('disconnected');
+      this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
     }
   }
   const disconnectingDirective = directive(DisconnectingDirective);
 
-  // TODO (justinfagnani): dynamic directives are not handled correctly in
-  // general. We may not even want to support them. TBD.
-  test.skip('directives can be disconnected from NodeParts', () => {
+  test('directives can be disconnected from NodeParts', () => {
     const log: Array<string> = [];
     const go = (x: boolean) =>
       render(html`${x ? disconnectingDirective(log) : nothing}`, container);
@@ -1860,6 +1861,51 @@ suite('lit-html', () => {
     assert.isEmpty(log);
     go(false);
     assert.deepEqual(log, ['disconnected']);
+  });
+
+  // TODO(kschaaf): Iterables partially clear a part, which currently removes
+  // directives
+  test.skip('directives can be disconnected from iterables', () => {
+    const log: Array<string> = [];
+    const go = (items: string[] | undefined) =>
+      render(
+        items
+          ? items.map(
+              (item) =>
+                html`<div foo=${disconnectingDirective(log, item)}></div>`
+            )
+          : nothing,
+        container
+      );
+    go(['0', '1', '2', '3']);
+    assert.isEmpty(log);
+    go(['0', '2']);
+    assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
+    go(undefined);
+    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+  });
+
+  // TODO(kschaaf): There's currently no way to pass up the `hasConnected` state
+  // from dynamically-created NodeParts using `createAndInsertPart`
+  test.skip('directives can be disconnected from repeat', () => {
+    const log: Array<string> = [];
+    const go = (items: string[] | undefined) =>
+      render(
+        items
+          ? repeat(
+              items,
+              (item) =>
+                html`<div foo=${disconnectingDirective(log, item)}></div>`
+            )
+          : nothing,
+        container
+      );
+    go(['0', '1', '2', '3']);
+    assert.isEmpty(log);
+    go(['0', '2']);
+    assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
+    go(undefined);
+    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
   });
 
   let securityHooksSuiteFunction:

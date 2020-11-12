@@ -762,14 +762,21 @@ class TemplateInstance {
   _template: Template;
   /** @internal */
   _parts: Array<Part | undefined> = [];
+  private _hasDisconnect = false;
 
   constructor(template: Template) {
     this._template = template;
   }
 
+  /**
+   * Recursively walks down the tree of parts/TemplateInstances to run
+   * `disconnectCallback` on any Directives that implement `disconnectCallback`.
+   */
   _disconnect() {
-    for (const part of this._parts) {
-      part?._disconnect();
+    if (this._hasDisconnect) {
+      for (const part of this._parts) {
+        part?._disconnect();
+      }
     }
   }
 
@@ -829,7 +836,7 @@ class TemplateInstance {
           (part as NodePart)._setValue(values[i++]) || hasDisconnect;
       }
     }
-    return hasDisconnect;
+    return (this._hasDisconnect = hasDisconnect);
   }
 }
 
@@ -905,6 +912,11 @@ export class NodePart {
     return this._startNode.parentNode!;
   }
 
+  /**
+   * Runs `disconnectCallback` on the part's directive (if present) and,
+   * any directives contained within the committed value of this part (i.e.
+   * within a TemplateInstance or iterable of NodeParts).
+   */
   _disconnect() {
     if (this._hasDisconnect) {
       this._directive?.disconnectedCallback?.();
@@ -912,6 +924,11 @@ export class NodePart {
     }
   }
 
+  /**
+   * Runs `disconnectCallback` on any directives contained within the committed
+   * value of this part (i.e. within a TemplateInstance or iterable of
+   * NodeParts).
+   */
   _disconnectValue() {
     if (this._value instanceof TemplateInstance) {
       (this._value as TemplateInstance)._disconnect();
@@ -1115,6 +1132,7 @@ export class AttributePart {
     | typeof EVENT_PART;
   readonly element: HTMLElement;
   readonly name: string;
+  private _hasDisconnect = false;
 
   /**
    * If this attribute part represents an interpolation, this contains the
@@ -1151,12 +1169,14 @@ export class AttributePart {
     }
   }
 
+  /**
+   * Runs `disconnectCallback` on any directives contained within this part
+   */
   _disconnect() {
-    if (this._directives === undefined) {
-      return;
-    }
-    for (const directive of this._directives) {
-      directive?.disconnectedCallback?.();
+    if (this._hasDisconnect && this._directives !== undefined) {
+      for (const directive of this._directives) {
+        directive?.disconnectedCallback?.();
+      }
     }
   }
 
@@ -1202,7 +1222,8 @@ export class AttributePart {
           this._commitValue(v);
         }
       }
-      return !!this._directives?.[0]?.disconnectedCallback;
+      return (this._hasDisconnect = !!this._directives?.[0]
+        ?.disconnectedCallback);
     } else {
       // Interpolation case
       let attributeValue = strings[0];
@@ -1240,7 +1261,7 @@ export class AttributePart {
       if (change && !noCommit) {
         this._commitValue(remove ? nothing : attributeValue);
       }
-      return hasDisconnect;
+      return (this._hasDisconnect = hasDisconnect);
     }
   }
 
