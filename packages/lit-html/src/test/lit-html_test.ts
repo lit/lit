@@ -353,7 +353,7 @@ suite('lit-html', () => {
 
     test('"dynamic" tag name', () => {
       render(html`<${'A'}></${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<:0></:0>');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
     });
 
     test('malformed "dynamic" tag name', () => {
@@ -361,7 +361,7 @@ suite('lit-html', () => {
       render(html`<${'A'}></ ${'A'}>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<:0><!-- --></:0>'
+        '<><!-- --></>'
       );
 
       // Currently fails:
@@ -770,7 +770,7 @@ suite('lit-html', () => {
       );
     });
 
-    test.only('renders interpolation to an unquoted attribute', () => {
+    test('renders interpolation to an unquoted attribute', () => {
       render(html`<div foo=A${'B'}C></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),

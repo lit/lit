@@ -86,7 +86,8 @@ const comment2EndRegex = />/g;
 
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
- * position. It either matches a `>` or an attribute.
+ * position. It either matches a `>`, an attribute-like sequence, or the end
+ * of the string after a space (attribute-name position ending).
  *
  * See attributes in the HTML spec:
  * https://www.w3.org/TR/html5/syntax.html#elements-attributes
@@ -109,7 +110,7 @@ const comment2EndRegex = />/g;
  *    * (') then any non-(')
  */
 const tagEndRegex = new RegExp(
-  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))`,
+  `>|${SPACE_CHAR}(?:(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))|$)`,
   'g'
 );
 const ENTIRE_MATCH = 0;
@@ -370,6 +371,8 @@ class Template {
       // The index of the end of the last attribute name. When this is
       // positive at end of a string, it means we're in an attribute value
       // position and need to rewrite the attribute name.
+      // We also use a special value of -2 to indicate that we encountered
+      // the end of a string in attribute name position.
       let attrNameEndIndex = -1;
       let attrName: string | undefined;
       let lastIndex = 0;
@@ -382,16 +385,6 @@ class Template {
         regex.lastIndex = lastIndex;
         match = regex.exec(s);
         if (match === null) {
-          // If the current regex doesn't match we've come to a binding inside
-          // that state and must break and insert a marker
-          if (regex === tagEndRegex) {
-            // When tagEndRegex doesn't match we must have a binding in
-            // attribute-name position, since tagEndRegex does match static
-            // attribute names and end-of-tag. We need to clear
-            // attrNameEndIndex which may have been set by a previous
-            // tagEndRegex match.
-            attrNameEndIndex = -1;
-          }
           break;
         }
         lastIndex = regex.lastIndex;
@@ -404,7 +397,7 @@ class Template {
           } else if (match[TAG_NAME] !== undefined) {
             if (rawTextElement.test(match[TAG_NAME])) {
               // Record if we encounter a raw-text element. We'll switch to
-              // this regex at the end of the tag
+              // this regex at the end of the tag.
               rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
             }
             regex = tagEndRegex;
@@ -420,9 +413,12 @@ class Template {
             // We may be ending an unquoted attribute value, so make sure we
             // clear any pending attrNameEndIndex
             attrNameEndIndex = -1;
+          } else if (match[ATTRIBUTE_NAME] === undefined) {
+            // Attribute name position
+            attrNameEndIndex = -2;
           } else {
             attrNameEndIndex =
-              regex.lastIndex - match[SPACES_AND_EQUALS].length;
+                regex.lastIndex - match[SPACES_AND_EQUALS].length;
             attrName = match[ATTRIBUTE_NAME];
             regex =
               match[QUOTE_CHAR] === undefined
@@ -459,39 +455,27 @@ class Template {
         );
       }
 
-      let regexName =
-          regex === textEndRegex ? 'text' :
-          regex === tagEndRegex ? 'tag' :
-          '?';
-      console.log('A', attrNameEndIndex, regexName, match === null);
-
-      // We support three cases:
+      // We have four cases:
       //  1. We're in text position, and not in a raw text element
       //     (regex === textEndRegex): insert a comment marker.
-      //  2. We have a attrNameEndIndex which means we need to rewrite the
-      //     attribute name to add a bound attribute suffix.
+      //  2. We have a non-negtive attrNameEndIndex which means we need to
+      //     rewrite the attribute name to add a bound attribute suffix.
       //  3. Otherwise, we're at the non-first binding in a multi-binding
       //     attribute, or somewhere else inside the tag. Use a plain marker,
-      //     but if we're in attribute name position, add a sequential suffix
-      //     to generate a unique attribute name.
+      //     but if we're in attribute name position (attrNameEndIndex === -2),
+      //     add a sequential suffix to generate a unique attribute name.
       html +=
         regex === textEndRegex
           ? s + nodeMarker
-          : attrNameEndIndex !== -1
+          : attrNameEndIndex >= 0
           ? ((attrNames.push(attrName!),
             s.slice(0, attrNameEndIndex) +
               boundAttributeSuffix +
               s.slice(attrNameEndIndex)) + marker)
           : (s +
             marker +
-            (regex === tagEndRegex && match === null ? `:${i}` : ''));
+            (attrNameEndIndex === -2 ? `:${i}` : ''));
     }
-
-    console.log('B', html + this._strings[l]);
-
-
-    // TODO (justinfagnani): if regex is not textRegex log a warning for a
-    // malformed template in dev mode.
 
     // Note, we don't add '</svg>' for SVG result types because the parser
     // will close the <svg> tag for us.
