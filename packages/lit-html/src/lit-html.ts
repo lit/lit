@@ -1090,10 +1090,10 @@ export class NodePart {
     }
   }
 
-  private _clear(start?: ChildNode | null, from?: number) {
+  private _clear(start: ChildNode | null = this._startNode.nextSibling, from?: number) {
     this._setValueConnected?.(false, true, from);
     while (start && start !== this._endNode) {
-      const n: ChildNode | null = start!.nextSibling;
+      const n = start!.nextSibling;
       start!.remove();
       start = n;
     }
