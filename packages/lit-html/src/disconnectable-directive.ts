@@ -27,7 +27,8 @@ type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
 type DisconnectableChild = NodePart | AttributePart | TemplateInstance;
 
-const disconnectableChildrenSets: WeakMap<
+// Contains the sparse tree of Parts/TemplateInstances needing disconnect
+const disconnectableChildrenForParent: WeakMap<
   DisconnectableChild,
   Set<DisconnectableChild>
 > = new WeakMap();
@@ -42,7 +43,7 @@ const setConnected = (
   isConnected: boolean,
   removeFromParent?: DisconnectableChild
 ) => {
-  const children = disconnectableChildrenSets.get(child);
+  const children = disconnectableChildrenForParent.get(child);
   if (children !== undefined) {
     for (const child of children) {
       if (child instanceof NodePart) {
@@ -54,7 +55,7 @@ const setConnected = (
       }
     }
     if (removeFromParent !== undefined) {
-      disconnectableChildrenSets.get(removeFromParent)?.delete(child);
+      disconnectableChildrenForParent.get(removeFromParent)?.delete(child);
     }
   }
 };
@@ -106,15 +107,17 @@ function _setValueConnected(
     }
   }
   if (removeFromParent) {
-    let children = disconnectableChildrenSets.get(this);
+    let children = disconnectableChildrenForParent.get(this);
     if (children !== undefined && children.size === 0) {
-      disconnectableChildrenSets.delete(this);
+      disconnectableChildrenForParent.delete(this);
       for (
         let current = this as DisconnectableChild, parent;
         (parent = current._parent);
         current = parent
       ) {
-        (children = disconnectableChildrenSets.get(parent)!).delete(current);
+        (children = disconnectableChildrenForParent.get(parent)!).delete(
+          current
+        );
         if (children.size > 0) {
           break;
         }
@@ -140,6 +143,21 @@ function _setDirectiveConnected(
 }
 
 /**
+ * TODO(kschaaf): Patches disconnection API onto the parent; we could also just
+ * install this on the prototype once, or bite the bullet and put it in core;
+ * the former would add a small runtime tax, and the latter would add a large
+ * code size tax.
+ */
+const installDisconnectAPI = (child: DisconnectableChild) => {
+  if (child instanceof AttributePart) {
+    child._setDirectiveConnected = _setDirectiveConnected;
+  } else if (child instanceof NodePart) {
+    child._setValueConnected = _setValueConnected;
+    child._setDirectiveConnected = _setDirectiveConnected;
+  }
+};
+
+/**
  * An abstract `Directive` base class whose `disconnectedCallback` will be
  * called when the part containing the directive is cleared as a result of
  * re-rendering, or when the user calls `part.setDirectiveConnection(false)` on
@@ -155,32 +173,27 @@ export abstract class DisconnectableDirective extends Directive {
   isDisconnected = false;
   constructor(partInfo: PartInfo) {
     super();
-    if (partInfo instanceof AttributePart) {
-      partInfo._setDirectiveConnected = _setDirectiveConnected;
-    } else if (partInfo instanceof NodePart) {
-      partInfo._setValueConnected = _setValueConnected;
-      partInfo._setDirectiveConnected = _setDirectiveConnected;
-    }
+    // Climb the parent tree, creating a sparse tree of children needing
+    // disconnection
     for (
       let current = (partInfo as unknown) as DisconnectableChild, parent;
       (parent = current._parent);
       current = parent
     ) {
-      let children = disconnectableChildrenSets.get(parent);
+      let children = disconnectableChildrenForParent.get(parent);
       if (children === undefined) {
-        disconnectableChildrenSets.set(parent, (children = new Set()));
+        disconnectableChildrenForParent.set(parent, (children = new Set()));
       } else if (children.has(current)) {
+        // Once we've reached a parent that already contains this child, we
+        // can short-circuit
         break;
       }
-      if (parent instanceof AttributePart) {
-        parent._setDirectiveConnected = _setDirectiveConnected;
-      } else if (parent instanceof NodePart) {
-        parent._setValueConnected = _setValueConnected;
-        parent._setDirectiveConnected = _setDirectiveConnected;
-      }
       children.add(current);
+      installDisconnectAPI(parent);
     }
+    installDisconnectAPI(partInfo as Part);
   }
+  /** @internal */
   _setConnected(isConnected: boolean) {
     if (isConnected && this.isDisconnected) {
       this.isDisconnected = false;
@@ -190,6 +203,7 @@ export abstract class DisconnectableDirective extends Directive {
       this.disconnectedCallback?.();
     }
   }
+  /** @internal */
   _resolve(part: Part, props: Array<unknown>): unknown {
     this._setConnected(true);
     return super._resolve(part, props);
