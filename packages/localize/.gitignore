@@ -6,3 +6,4 @@ tests/
 .tsbuildinfo.client
 lit-localize.*
 localized-element.*
+examples/*/node_modules/
