@@ -560,10 +560,10 @@ const getTemplateHtml = (
   // Returned as an array for terseness
   return [
     // We don't technically need to close the SVG tag since the parser will
-    // handle it for us, but the SSR parser doesn't like that Note that the html
-    // must end with a node after the final expression to ensure the last
-    // NodePart has an end node, hence adding a comment if the last string
-    // was empty
+    // handle it for us, but the SSR parser doesn't like that.
+    // Note that the html must end with a node after the final expression to
+    // ensure the last NodePart has an end node, hence adding a comment if the
+    // last string was empty.
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
   ];
@@ -1090,7 +1090,10 @@ export class NodePart {
     }
   }
 
-  private _clear(start: ChildNode | null = this._startNode.nextSibling, from?: number) {
+  private _clear(
+    start: ChildNode | null = this._startNode.nextSibling,
+    from?: number
+  ) {
     this._setValueConnected?.(false, true, from);
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
