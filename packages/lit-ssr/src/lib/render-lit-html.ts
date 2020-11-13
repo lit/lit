@@ -517,7 +517,8 @@ export function* renderTemplateResult(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (null as any) as HTMLElement,
           op.name,
-          statics
+          statics,
+          undefined
         );
         const value =
           part.strings === undefined ? result.values[partIndex] : result.values;

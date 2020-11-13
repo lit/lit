@@ -96,13 +96,15 @@ const setAttributePartConnected = (
 function _setValueConnected(
   this: NodePart,
   isConnected: boolean,
-  removeFromParent = false
+  removeFromParent = false,
+  from?: number
 ) {
   if (this._value instanceof TemplateInstance) {
     setConnected(this._value, isConnected, removeFromParent ? this : undefined);
   } else if (Array.isArray(this._value)) {
     const parent = removeFromParent ? this : undefined;
-    for (const part of this._value) {
+    const array = from === undefined ? this._value : this._value.slice(from);
+    for (const part of array) {
       setConnected(part, isConnected, parent);
     }
   }

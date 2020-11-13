@@ -887,7 +887,8 @@ export class NodePart {
   /** @internal */
   _setValueConnected?: (
     isConnected: boolean,
-    removeFromParent?: boolean
+    removeFromParent?: boolean,
+    from?: number
   ) => void = undefined;
   /** @internal */
   _setDirectiveConnected?: (
@@ -1082,29 +1083,15 @@ export class NodePart {
     }
 
     if (partIndex < itemParts.length) {
-      // If DisconnectableDirectives are in use, disconnect any contained
-      // within the truncated parts being cleared
-      if (this._setValueConnected !== undefined) {
-        for (let i = partIndex; i < itemParts.length; i++) {
-          itemParts[i]._setValueConnected?.(false, true);
-        }
-      }
+      // itemParts always have end nodes
+      this._clear(itemPart?._endNode!.nextSibling, partIndex);
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
-      // itemParts always have end nodes
-      this._clear(itemPart?._endNode!.nextSibling);
     }
   }
 
-  private _clear(start?: ChildNode | null) {
-    if (start === undefined) {
-      start = this._startNode.nextSibling;
-      // Only disconnect directive in this part's value if we are fully clearing
-      // part; when partially clearing, it is the caller's responsibility to
-      // ensure that parts corresponding to the partially cleared nodes are
-      // disconnected
-      this._setValueConnected?.(false, true);
-    }
+  private _clear(start?: ChildNode | null, from?: number) {
+    this._setValueConnected?.(false, true, from);
     while (start && start !== this._endNode) {
       const n: ChildNode | null = start!.nextSibling;
       start!.remove();
@@ -1131,7 +1118,7 @@ export class AttributePart {
   /** @internal */
   _value: unknown | Array<unknown> = nothing;
   /** @internal */
-  _parent: HasParent;
+  _parent: HasParent | undefined;
   /** @internal */
   _directives?: Array<Directive | undefined>;
   protected _sanitizer: ValueSanitizer | undefined;
@@ -1149,7 +1136,7 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent: HasParent,
+    parent: HasParent | undefined,
     _options?: RenderOptions
   ) {
     this.element = element;
