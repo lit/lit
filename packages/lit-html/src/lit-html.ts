@@ -267,20 +267,6 @@ export const noChange = {};
 export const nothing = {};
 
 /**
- * Wraps a string so that it behaves like part of the static template
- * strings instead of a dynamic value.
- *
- * This is a very unsafe operation and may break templates if changes
- * the structure of a template. Do not pass user input to this function
- * without sanitizing it.
- */
-export const unsafeStatic = (value: string) => ({
-  _$litStatic$: value,
-});
-
-type StaticValue = ReturnType<typeof unsafeStatic>;
-
-/**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
  * and _not_ accounting for the specific template tag used. This means that
  * template tags cannot be dynamic - the must statically be one of html, svg,
@@ -441,9 +427,8 @@ export abstract class Directive {
  */
 const getTemplateHtml = (
   strings: TemplateStringsArray,
-  values: ReadonlyArray<unknown>,
   type: ResultType
-): [string, string[], boolean] => {
+): [string, string[]] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -462,25 +447,9 @@ const getTemplateHtml = (
   // The current parsing state, represented as a reference to one of the
   // regexes
   let regex = textEndRegex;
-  let i = 0;
-  let hasStatics = false;
 
-  while (i < l) {
-    let s = strings[i];
-
-    // Collect any unsafeStatic values, and their following template strings
-    // so taht we treat a run of template strings and unsafe static values as
-    // a single template string.
-    while (i < l && (values[i] as StaticValue)?._$litStatic$ !== undefined) {
-      s += (values[i] as StaticValue)?._$litStatic$ + strings[++i];
-      hasStatics = true;
-    }
-    // If by consuming unsafe static values we use the last template string,
-    // then this template has no dynamic bindings.
-    if (i++ > l) {
-      break;
-    }
-
+  for (let i = 0; i < l; i++) {
+    const s = strings[i];
     // The index of the end of the last attribute name. When this is
     // positive at end of a string, it means we're in an attribute value
     // position and need to rewrite the attribute name.
@@ -592,9 +561,8 @@ const getTemplateHtml = (
   return [
     // We don't technically need to close the SVG tag since the parser
     // will handle it for us, but the SSR parser doesn't like that
-    html + (i > l ? '' : strings[l]) + (type === SVG_RESULT ? '</svg>' : ''),
+    html + strings[l] + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
-    hasStatics,
   ];
 };
 
@@ -603,12 +571,11 @@ class Template {
   _element!: HTMLTemplateElement;
   /** @internal */
   _parts: Array<TemplatePart> = [];
-  _hasStatics = false;
   // Note, this is used by the `platform-support` module.
   _options?: RenderOptions;
 
   constructor(
-    {strings, _$litType$: type, values}: TemplateResult,
+    {strings, _$litType$: type}: TemplateResult,
     options?: RenderOptions
   ) {
     this._options = options;
@@ -619,12 +586,7 @@ class Template {
     const l = strings.length - 1;
 
     // Create template element
-    const [html, attrNames, hasStatics] = getTemplateHtml(
-      strings,
-      values,
-      type
-    );
-    this._hasStatics = hasStatics;
+    const [html, attrNames] = getTemplateHtml(strings, type);
     this._element = this._createElement(html);
     walker.currentNode = this._element.content;
 
@@ -755,12 +717,9 @@ class TemplateInstance {
   _template: Template;
   /** @internal */
   _parts: Array<Part | undefined> = [];
-  /** @internal */
-  _hasStatics: boolean;
 
   constructor(template: Template) {
     this._template = template;
-    this._hasStatics = template._hasStatics;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -804,11 +763,6 @@ class TemplateInstance {
 
   _update(values: Array<unknown>) {
     let i = 0;
-    if (this._hasStatics) {
-      values = values.filter(
-        (v) => v != null && (v as StaticValue)._$litStatic$ === undefined
-      );
-    }
     for (const part of this._parts) {
       if (part === undefined) {
         i++;
