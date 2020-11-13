@@ -910,6 +910,12 @@ export class NodePart {
     }
   }
 
+  /**
+   * Sets the connection state for any `DisconnectableDirectives` contained
+   * within this part and runs their `disconnectedCallback` or
+   * `reconnectedCallback`, according to the `isConnected` argument.
+   * @param isConnected
+   */
   setDirectiveConnection(isConnected: boolean) {
     this._setValueConnected?.(isConnected);
   }

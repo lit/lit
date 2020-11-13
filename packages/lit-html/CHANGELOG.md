@@ -29,15 +29,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added `DisconnectableDirective`, which is a `Directive` subclass whose
   `disconnectedCallback` will be called when the part containing the directive
-  is cleared as a result of re-rendering, or when the user calls
-  `part.setDirectiveConnection(false)` on a part that was previously
-  rendered containing the directive. If `part.setDirectiveConnection(true)`
-  is subsequently called on container, the directive's `reconnectedCallback`
-  will be called prior to its next `update`/`render` callbacks. When
-  implementing `disconnectedCallback`, `reconnectedCallback` should also be
-  implemented to be compatible with reconnection. Note that `LitElement` will
-  disconnect directives upon element disconnection, and re-connect directives
-  upon element re-connection.
+  is cleared or manually disconnected using the `setDirectiveConnection` API ,
+  and whose `reconnectedCallback` will be called when upon next render or when
+  manually re-connected using `setDirectiveConnection`. When implementing
+  `disconnectedCallback`, `reconnectedCallback` should also be implemented to be
+  compatible with reconnection. Note that `LitElement` will disconnect
+  directives upon element disconnection, and re-connect directives upon element
+  re-connection.
+- Added `setDirectiveConnection(isConnected: boolean)` to `NodePart`; when
+  called with `false`, `disconnectedCallback` will be run on any directives
+  contained within the part (directly or transitively), but without clearing or
+  causing a re-render to the tree. When called with `true`, any such directives'
+  `reconnectedCallback` will be called prior to its next `update`/`render`
+  callbacks.
   <!-- ### Fixed -->
   <!-- ### Removed -->
 
