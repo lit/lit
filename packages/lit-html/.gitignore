@@ -2,9 +2,9 @@ development/
 directives/
 node_modules/
 test/
-hydrate.*
-lit-html.*
-parts.*
-disconnectable-directive.*
-platform-support.*
-private-ssr-support.*
+/hydrate.*
+/lit-html.*
+/parts.*
+/disconnectable-directive.*
+/platform-support.*
+/private-ssr-support.*

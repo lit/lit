@@ -6,8 +6,8 @@ demo/**/*.js.map
 development/
 node_modules/
 test/
-decorators.*
-hydrate-support.*
-lit-element.*
-lit.min.*
-platform-support.*
+/decorators.*
+/hydrate-support.*
+/lit-element.*
+/lit.min.*
+/platform-support.*
