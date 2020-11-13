@@ -1,4 +1,4 @@
-import {NodePart, nothing} from './lit-html.js';
+import {AttributePart, NodePart, Part, nothing} from './lit-html.js';
 
 /**
  * The state of a NodePart, which can be detached and reattached.
@@ -65,8 +65,23 @@ export const createAndInsertPart = (
   return new NodePart(startNode, endNode, containerPart.options);
 };
 
-export const setPartValue = (part: NodePart, value: unknown) => {
-  part._setValue(value);
+export const setPartValue = <T extends Part>(
+  part: T,
+  value: unknown,
+  index?: number
+): T => {
+  if ((part as AttributePart).strings !== undefined) {
+    if (index === undefined) {
+      throw new Error(
+        "An index must be provided to set an AttributePart's value."
+      );
+    }
+    const newValues = [...(part._value as Array<unknown>)];
+    newValues[index] = value;
+    (part as AttributePart)._setValue(newValues, 0);
+  } else {
+    part._setValue(value);
+  }
   return part;
 };
 
