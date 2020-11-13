@@ -562,9 +562,9 @@ const getTemplateHtml = (
     // We don't technically need to close the SVG tag since the parser will
     // handle it for us, but the SSR parser doesn't like that Note that the html
     // must end with a node after the final expression to ensure the last
-    // NodePart has an end marker, hence adding a nodeMarker if the last string
+    // NodePart has an end node, hence adding a comment if the last string
     // was empty
-    html + (strings[l] || nodeMarker) + (type === SVG_RESULT ? '</svg>' : ''),
+    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
   ];
 };
