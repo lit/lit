@@ -352,7 +352,7 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-) => {
+): NodePart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: NodePart = (partOwnerNode as any).$lit$;
@@ -362,10 +362,12 @@ export const render = (
     (partOwnerNode as any).$lit$ = part = new NodePart(
       container.insertBefore(createMarker(), endNode),
       endNode,
+      undefined,
       options
     );
   }
   part._setValue(value);
+  return part;
 };
 
 if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -557,9 +559,12 @@ const getTemplateHtml = (
   // malformed template in dev mode.
   // Returned as an array for terseness
   return [
-    // We don't technically need to close the SVG tag since the parser
-    // will handle it for us, but the SSR parser doesn't like that
-    html + strings[l] + (type === SVG_RESULT ? '</svg>' : ''),
+    // We don't technically need to close the SVG tag since the parser will
+    // handle it for us, but the SSR parser doesn't like that Note that the html
+    // must end with a node after the final expression to ensure the last
+    // NodePart has an end marker, hence adding a nodeMarker if the last string
+    // was empty
+    html + (strings[l] || nodeMarker) + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
   ];
 };
@@ -706,6 +711,8 @@ class Template {
   }
 }
 
+type HasParent = NodePart | AttributePart | TemplateInstance;
+
 function resolveDirective(part: NodePart, value: unknown): unknown;
 function resolveDirective(
   part: AttributePart,
@@ -725,6 +732,7 @@ function resolveDirective(
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
   if (directive?.constructor !== directiveClass) {
+    part._setDirectiveConnected?.(directive, false);
     directive =
       directiveClass !== undefined
         ? new directiveClass(part as PartInfo)
@@ -750,9 +758,12 @@ class TemplateInstance {
   _template: Template;
   /** @internal */
   _parts: Array<Part | undefined> = [];
+  /** @internal */
+  _parent: HasParent;
 
-  constructor(template: Template) {
+  constructor(template: Template, parent: NodePart) {
     this._template = template;
+    this._parent = parent;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -774,12 +785,18 @@ class TemplateInstance {
       if (nodeIndex === templatePart._index) {
         let part: Part | undefined;
         if (templatePart._type === NODE_PART) {
-          part = new NodePart(node as HTMLElement, node.nextSibling, options);
+          part = new NodePart(
+            node as HTMLElement,
+            node.nextSibling,
+            this,
+            options
+          );
         } else if (templatePart._type === ATTRIBUTE_PART) {
           part = new templatePart._constructor(
             node as HTMLElement,
             templatePart._name,
             templatePart._strings,
+            this,
             options
           );
         }
@@ -864,18 +881,37 @@ export class NodePart {
   /** @internal */
   _endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
+  /** @internal */
+  _parent: HasParent | undefined;
+
+  /** @internal */
+  _setValueConnected?: (
+    isConnected: boolean,
+    removeFromParent?: boolean
+  ) => void = undefined;
+  /** @internal */
+  _setDirectiveConnected?: (
+    directive: Directive | undefined,
+    isConnected: boolean
+  ) => void = undefined;
 
   constructor(
     startNode: ChildNode,
     endNode: ChildNode | null,
+    parent: TemplateInstance | NodePart | undefined,
     public options: RenderOptions | undefined
   ) {
     this._startNode = startNode;
     this._endNode = endNode;
+    this._parent = parent;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
     }
+  }
+
+  setDirectiveConnection(isConnected: boolean) {
+    this._setValueConnected?.(isConnected);
   }
 
   get parentNode(): Node {
@@ -977,7 +1013,7 @@ export class NodePart {
     if ((this._value as TemplateInstance)?._template === template) {
       (this._value as TemplateInstance)._update(values);
     } else {
-      const instance = new TemplateInstance(template!);
+      const instance = new TemplateInstance(template!, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
@@ -1027,6 +1063,7 @@ export class NodePart {
           (itemPart = new NodePart(
             this._insert(createMarker()),
             this._insert(createMarker()),
+            this,
             this.options
           ))
         );
@@ -1039,6 +1076,13 @@ export class NodePart {
     }
 
     if (partIndex < itemParts.length) {
+      // If DisconnectableDirectives are in use, disconnect any contained
+      // within the truncated parts being cleared
+      if (this._setValueConnected !== undefined) {
+        for (let i = partIndex; i < itemParts.length; i++) {
+          itemParts[i]._setValueConnected?.(false, true);
+        }
+      }
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
       // itemParts always have end nodes
@@ -1046,9 +1090,17 @@ export class NodePart {
     }
   }
 
-  private _clear(start: ChildNode | null = this._startNode.nextSibling) {
+  private _clear(start?: ChildNode | null) {
+    if (start === undefined) {
+      start = this._startNode.nextSibling;
+      // Only disconnect directive in this part's value if we are fully clearing
+      // part; when partially clearing, it is the caller's responsibility to
+      // ensure that parts corresponding to the partially cleared nodes are
+      // disconnected
+      this._setValueConnected?.(false, true);
+    }
     while (start && start !== this._endNode) {
-      const n = start!.nextSibling;
+      const n: ChildNode | null = start!.nextSibling;
       start!.remove();
       start = n;
     }
@@ -1073,8 +1125,15 @@ export class AttributePart {
   /** @internal */
   _value: unknown | Array<unknown> = nothing;
   /** @internal */
+  _parent: HasParent;
+  /** @internal */
   _directives?: Array<Directive | undefined>;
   protected _sanitizer: ValueSanitizer | undefined;
+  /** @internal */
+  _setDirectiveConnected?: (
+    directive: Directive | undefined,
+    isConnected: boolean
+  ) => void = undefined;
 
   get tagName() {
     return this.element.tagName;
@@ -1084,10 +1143,12 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
+    parent: HasParent,
     _options?: RenderOptions
   ) {
     this.element = element;
     this.name = name;
+    this._parent = parent;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this._value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
@@ -1248,7 +1309,7 @@ export class EventPart extends AttributePart {
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
     super(...args);
-    this._eventContext = args[3]?.eventContext;
+    this._eventContext = args[4]?.eventContext;
   }
 
   // EventPart does not use the base _setValue/_resolveValue implementation

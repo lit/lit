@@ -17,6 +17,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+<!-- ## [X.Y.Z] - YYYY-MM-DD -->
+
+## Unreleased
+
+<!-- ### Changed -->
+
+### Added
+
+- `render` now returns the `NodePart` that was created/updated by `render`.
+
+- Added `DisconnectableDirective`, which is a `Directive` subclass whose
+  `disconnectedCallback` will be called when the part containing the directive
+  is cleared as a result of re-rendering, or when the user calls
+  `part.setDirectiveConnection(false)` on a part that was previously
+  rendered containing the directive. If `part.setDirectiveConnection(true)`
+  is subsequently called on container, the directive's `reconnectedCallback`
+  will be called prior to its next `update`/`render` callbacks. When
+  implementing `disconnectedCallback`, `reconnectedCallback` should also be
+  implemented to be compatible with reconnection. Note that `LitElement` will
+  disconnect directives upon element disconnection, and re-connect directives
+  upon element re-connection.
+  <!-- ### Fixed -->
+  <!-- ### Removed -->
+
 ## [2.0.0-pre.3] - 2020-09-21
 
 ### Changed

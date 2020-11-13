@@ -191,16 +191,19 @@ const openNodePart = (
   // We know the startNode now. We'll know the endNode when we get to
   // the matching marker and set it in closeNodePart()
   // TODO(kschaaf): Current constructor takes both nodes
-  const part = new NodePart(marker, null, options);
+  let part;
   if (stack.length === 0) {
+    part = new NodePart(marker, null, undefined, options);
     value = rootValue;
   } else {
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
+      part = new NodePart(marker, null, state.instance, options);
       state.instance._parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
+      part = new NodePart(marker, null, part, options);
       const result = state.iterator.next();
       if (result.done) {
         value = undefined;
@@ -210,6 +213,8 @@ const openNodePart = (
         value = result.value;
       }
       (state.part._value as Array<NodePart>).push(part);
+    } else {
+      throw new Error('Unsupported dynamically created NodePart');
     }
   }
 
@@ -246,7 +251,7 @@ const openNodePart = (
         (value as TemplateResult).strings,
         value as TemplateResult
       );
-      const instance = new TemplateInstance(template);
+      const instance = new TemplateInstance(template, part);
       stack.push({
         type: 'template-instance',
         instance,
@@ -345,6 +350,7 @@ const createAttributeParts = (
         node.parentElement as HTMLElement,
         templatePart._name,
         templatePart._strings,
+        state.instance,
         options
       );
 

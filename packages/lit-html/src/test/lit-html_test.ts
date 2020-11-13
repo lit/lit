@@ -30,6 +30,8 @@ import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
+import {repeat} from '../directives/repeat.js';
+import {DisconnectableDirective} from '../disconnectable-directive.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -506,6 +508,15 @@ suite('lit-html', () => {
         containerRenderedNode
       );
       assert.equal(container.querySelector('span'), beforeRenderedNode);
+    });
+
+    test('back-to-back expressions', () => {
+      const template = (a: unknown, b: unknown) =>
+        html`${html`${a}`}${html`${b}`}`;
+      assertRender(template('a', 'b'), 'ab');
+      assertRender(template(nothing, 'b'), 'b');
+      assertRender(template(nothing, nothing), '');
+      assertRender(template('a', 'b'), 'ab');
     });
   });
 
@@ -1783,6 +1794,161 @@ suite('lit-html', () => {
       );
       assert.isOk(event);
     });
+  });
+
+  class DisconnectingDirective extends DisconnectableDirective {
+    log!: Array<string>;
+    id!: string;
+
+    render(log: Array<string>, id = '') {
+      this.log = log;
+      this.id = id;
+      return 'hello';
+    }
+
+    disconnectedCallback() {
+      this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+    }
+    reconnectedCallback() {
+      this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
+    }
+  }
+  const disconnectingDirective = directive(DisconnectingDirective);
+
+  test('directives can be disconnected from NodeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(html`${x ? disconnectingDirective(log) : nothing}`, container);
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives are disconnected when their template is', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(x ? html`${disconnectingDirective(log)}` : nothing, container);
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives are disconnected when their nested template is', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives in different subtrees can be disconnected in separate renders', () => {
+    const log: Array<string> = [];
+    const go = (left: boolean, right: boolean) =>
+      render(
+        html`
+          ${html`${html`${
+            left ? disconnectingDirective(log, 'left') : nothing
+          }`}`}
+          ${html`${html`${
+            right ? disconnectingDirective(log, 'right') : nothing
+          }`}`}
+        `,
+        container
+      );
+    go(true, true);
+    assert.isEmpty(log);
+    go(true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    go(false, false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(true, true);
+    assert.isEmpty(log);
+    go(false, true);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(false, false);
+    assert.deepEqual(log, ['disconnected-right']);
+  });
+
+  test('directives can be disconnected from AttributeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('deeply nested directives can be disconnected from AttributeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x
+          ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
+          : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives can be disconnected from iterables', () => {
+    const log: Array<string> = [];
+    const go = (items: string[] | undefined) =>
+      render(
+        items
+          ? items.map(
+              (item) =>
+                html`<div foo=${disconnectingDirective(log, item)}></div>`
+            )
+          : nothing,
+        container
+      );
+    go(['0', '1', '2', '3']);
+    assert.isEmpty(log);
+    go(['0', '2']);
+    assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
+    log.length = 0;
+    go(undefined);
+    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+  });
+
+  test('directives can be disconnected from repeat', () => {
+    const log: Array<string> = [];
+    const go = (items: string[] | undefined) =>
+      render(
+        items
+          ? repeat(
+              items,
+              (item) => item,
+              (item) =>
+                html`<div foo=${disconnectingDirective(log, item)}></div>`
+            )
+          : nothing,
+        container
+      );
+    go(['0', '1', '2', '3']);
+    assert.isEmpty(log);
+    go(['0', '2']);
+    assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
+    log.length = 0;
+    go(undefined);
+    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
   });
 
   let securityHooksSuiteFunction:

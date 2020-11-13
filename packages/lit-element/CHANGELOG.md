@@ -17,6 +17,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+<!-- ## [x.y.z] - YYYY-MM-DD -->
+
+## Unreleased
+
+### Changed
+
+- [Breaking] Update and render callbacks will only be called when the element is
+  connected to the document. If an element is disconnected while an update is
+  pending, or if an update is requested while the element is disconnected,
+  update callbacks will be called if/when the element is re-connected.
+
+<!-- ### Added -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
 ## [3.0.0-pre.1] - 2020-09-21
 
 ### Changed

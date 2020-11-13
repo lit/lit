@@ -28,6 +28,7 @@ export const detachNodePart = (part: NodePart): NodePartState => {
     _value: part._value,
     _fragment: fragment,
   };
+  part._setValueConnected?.(false, true);
   let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
   let nextNode;
   while (start !== ((part as unknown) as NodePartInternal)._endNode) {
@@ -62,7 +63,7 @@ export const createAndInsertPart = (
 
   const startNode = container.insertBefore(createMarker(), refNode);
   const endNode = container.insertBefore(createMarker(), refNode);
-  return new NodePart(startNode, endNode, containerPart.options);
+  return new NodePart(startNode, endNode, containerPart, containerPart.options);
 };
 
 export const setPartValue = (part: NodePart, value: unknown) => {
@@ -97,6 +98,7 @@ export const insertPartBefore = (
 };
 
 export const removePart = (part: NodePart) => {
+  part._setValueConnected?.(false, true);
   removeNodes(
     ((part as unknown) as NodePartInternal)._startNode,
     ((part as unknown) as NodePartInternal)._endNode!.nextSibling

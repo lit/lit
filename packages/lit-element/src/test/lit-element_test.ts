@@ -14,8 +14,13 @@
 
 import {html, LitElement} from '../lit-element.js';
 import {
+  directive,
+  DisconnectableDirective,
+} from 'lit-html/disconnectable-directive.js';
+import {
   canTestLitElement,
   generateElementName,
+  nextFrame,
   stripExpressionComments,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -314,4 +319,177 @@ import {assert} from '@esm-bundle/chai';
       assert.equal(a.shadowRoot, undefined);
     }
   );
+
+  suite('disconnection handling', () => {
+    let host: Host;
+    const log: string[] = [];
+
+    const d = directive(
+      class extends DisconnectableDirective {
+        id!: unknown;
+        render(id: unknown) {
+          log.push(`render-${id}`);
+          return (this.id = id);
+        }
+        disconnectedCallback() {
+          log.push(`disconnect-${this.id}`);
+        }
+        reconnectedCallback() {
+          log.push(`reconnect-${this.id}`);
+        }
+      }
+    );
+
+    class Child extends LitElement {
+      static properties = {
+        attr: {type: String},
+        prop: {type: String},
+      };
+      attr = 'default';
+      prop = 'default';
+      render() {
+        return html`<div attr=${d('child-attr')} .prop=${d('child-prop')}>
+          ${d('child-node')}
+        </div>`;
+      }
+      get child() {
+        return this.shadowRoot!.firstElementChild as Child;
+      }
+    }
+    customElements.define('disc-child', Child);
+
+    class Host extends LitElement {
+      render() {
+        return html`<disc-child attr=${d('host-attr')} .prop=${d('host-prop')}
+          >${d('host-node')}</disc-child
+        >`;
+      }
+      get child() {
+        return this.shadowRoot!.firstElementChild as Child;
+      }
+    }
+    customElements.define('disc-host', Host);
+
+    const assertRendering = (host: Host) => {
+      let child = host.child;
+      assert.equal(child.getAttribute('attr'), 'host-attr');
+      assert.equal(child.prop, 'host-prop');
+      assert.equal(child.textContent?.trim(), 'host-node');
+      child = child.child;
+      assert.equal(child.getAttribute('attr'), 'child-attr');
+      assert.equal(child.prop, 'child-prop');
+      assert.equal(child.textContent?.trim(), 'child-node');
+    };
+
+    setup(() => {
+      log.length = 0;
+      host = new Host();
+    });
+
+    teardown(() => {
+      if (host.isConnected) {
+        container.removeChild(host);
+      }
+    });
+
+    test('directives render on connection', async () => {
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'render-host-attr',
+        'render-host-prop',
+        'render-host-node',
+        'render-child-attr',
+        'render-child-prop',
+        'render-child-node',
+      ]);
+    });
+
+    test('directives disconnect on disconnection', async () => {
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      log.length = 0;
+      container.removeChild(host);
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'disconnect-host-attr',
+        'disconnect-host-prop',
+        'disconnect-host-node',
+        'disconnect-child-attr',
+        'disconnect-child-prop',
+        'disconnect-child-node',
+      ]);
+    });
+
+    test('directives reconnect on reconnection', async () => {
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      container.removeChild(host);
+      log.length = 0;
+      container.appendChild(host);
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'reconnect-host-attr',
+        'reconnect-host-prop',
+        'reconnect-host-node',
+        'reconnect-child-attr',
+        'reconnect-child-prop',
+        'reconnect-child-node',
+      ]);
+    });
+
+    test('directives reconnect and render on reconnection with pending render', async () => {
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      container.removeChild(host);
+      log.length = 0;
+      host.requestUpdate();
+      host.child.requestUpdate();
+      container.appendChild(host);
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'reconnect-host-attr',
+        'reconnect-host-prop',
+        'reconnect-host-node',
+        'reconnect-child-attr',
+        'reconnect-child-prop',
+        'reconnect-child-node',
+      ]);
+      log.length = 0;
+      await nextFrame();
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'render-host-attr',
+        'render-host-prop',
+        'render-host-node',
+        'render-child-attr',
+        'render-child-prop',
+        'render-child-node',
+      ]);
+    });
+
+    test('directives reconnect on reconnection', async () => {
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      container.removeChild(host);
+      await nextFrame();
+      log.length = 0;
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'reconnect-host-attr',
+        'reconnect-host-prop',
+        'reconnect-host-node',
+        'reconnect-child-attr',
+        'reconnect-child-prop',
+        'reconnect-child-node',
+      ]);
+    });
+  });
 });

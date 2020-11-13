@@ -29,6 +29,7 @@ export default litProdConfig({
     'directives/render-light',
     'lit-html',
     'parts',
+    'disconnectable-directive',
     'hydrate',
     'private-ssr-support',
     'platform-support',

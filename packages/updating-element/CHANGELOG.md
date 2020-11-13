@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - UpdatingElement's `renderRoot` is now created when the element's `connectedCallback` is initially run.
 
+- [Breaking] Update callbacks will only be called when the element is connected
+  to the document. If an element is disconnected while an update is pending, or
+  if an update is requested while the element is disconnected, update callbacks
+  will be called if/when the element is re-connected.
+
 ### Added
 
 - Added ability to add a controller to an element. A controller can implement callbacks that tie into element lifecycle, including `connectedCallback`, `disconnectedCallback`, `willUpdate`, `update`, and `updated`. To ensure it has access to the element lifecycle, a controller should be added in the element's constructor. To add a controller to the element, call `addController(controller)`.
