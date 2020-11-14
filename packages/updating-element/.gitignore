@@ -1,6 +1,6 @@
-decorators/
-development/
-test/
+/decorators/
+/development/
+/test/
 /css-tag.*
 /decorators.*
 /platform-support.*

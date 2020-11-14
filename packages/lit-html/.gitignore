@@ -1,7 +1,7 @@
-development/
-directives/
+/development/
+/directives/
 node_modules/
-test/
+/test/
 /hydrate.*
 /lit-html.*
 /parts.*
