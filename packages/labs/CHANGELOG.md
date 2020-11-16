@@ -21,4 +21,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Adds `UpdatingController`, a class which can interact with an `UpdatingElement` by hooking into its lifecycle, including connected, disconnected, willUpdate, update, didUpdate, and requestUpdate.
 - Adds `labs` package. The `labs` package is an experimental playground for Lit helpers and tools.

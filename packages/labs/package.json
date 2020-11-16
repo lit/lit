@@ -16,6 +16,10 @@
     ".": {
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./controllers/": {
+      "development": "./development/controllers/",
+      "default": "./controllers/"
     }
   },
   "files": [
@@ -24,7 +28,8 @@
     "/index.d.ts",
     "/index.d.ts.map",
     "/index.js",
-    "/index.js.map"
+    "/index.js.map",
+    "/controllers/"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
@@ -37,8 +42,6 @@
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "format": "prettier src/* --write",
-    "lint": "tslint --project ./",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
   "author": "The Polymer Authors",

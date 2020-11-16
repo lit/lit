@@ -13,8 +13,12 @@
  */
 import {html, LitElement, css, PropertyDeclaration} from 'lit-element';
 import {queryParams} from '../../utils/query-params.js';
+import {documentComplete} from '../../utils/document-complete.js';
 
 (async () => {
+  // start benchmark after page loads
+  await documentComplete();
+
   // Note, `decorators.js` moved from the `lib` folder to top level
   // between previous release and lit-next. Handle this by trying to import
   // from each location.

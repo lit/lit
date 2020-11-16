@@ -20,20 +20,11 @@ import {
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
+import {documentComplete} from '../../utils/document-complete.js';
 
 (async () => {
-  // wait until after page loads
-  if (document.readyState !== 'complete') {
-    let resolve: () => void;
-    const p = new Promise((r) => (resolve = r));
-    document.addEventListener('readystatechange', async () => {
-      if (document.readyState === 'complete') {
-        resolve();
-      }
-    });
-    await p;
-  }
-  await new Promise((r) => setTimeout(r));
+  // start benchmark after page loads
+  await documentComplete();
 
   // Settings
   const itemCount = 250;

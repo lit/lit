@@ -48,6 +48,8 @@ const reservedProperties = [
   '_value',
   '_setValue',
   'createTreeWalker',
+  // TODO(sorvell): The properties below are only reserved so dev and prod can
+  // work together x-package.
   // Note, reserved so that prod updating-element platform-support
   // can share this key with dev lit-element platform-support which
   // imports it.

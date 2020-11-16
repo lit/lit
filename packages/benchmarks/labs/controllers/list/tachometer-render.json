@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 100,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ],
+      "expand": [
+        {
+          "name": "updating-element",
+          "url": "updating-element/list/index.html?benchmark=render"
+        },
+        {
+          "name": "controller",
+          "url": "updating-element/list/index.html?benchmark=render&controller"
+        },
+        {
+          "name": "updating-controller",
+          "url": "labs/controllers/list/index.html?benchmark=render"
+        },
+        {
+          "name": "mixin",
+          "url": "labs/controllers/list/index-mixin.html?benchmark=render"
+        }
+      ]
+    }
+  ]
+}

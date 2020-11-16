@@ -62,6 +62,17 @@
                   "npm run bootstrap -- --concurrency=1",
                   "npm run build"
                 ]
+              },
+              "lit-labs": {
+                "kind": "git",
+                "repo": "https://github.com/Polymer/lit-html.git",
+                "ref": "lit-next",
+                "subdir": "packages/labs",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap -- --concurrency=1",
+                  "npm run build"
+                ]
               }
             }
           }
@@ -79,6 +90,17 @@
                 "repo": "https://github.com/Polymer/lit-html.git",
                 "ref": "lit-next",
                 "subdir": "packages/updating-element",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap -- --concurrency=1",
+                  "npm run build"
+                ]
+              },
+              "lit-labs": {
+                "kind": "git",
+                "repo": "https://github.com/Polymer/lit-html.git",
+                "ref": "lit-next",
+                "subdir": "packages/labs",
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",

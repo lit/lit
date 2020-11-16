@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 export {};
-console.log("there's nothing here");
+console.warn('Labs modules must be individually imported.');
