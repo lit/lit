@@ -14,6 +14,7 @@
 
 import {PropertyValues, UpdatingElement} from 'updating-element';
 import {property} from 'updating-element/decorators/property.js';
+import {internalProperty} from 'updating-element/decorators/internalProperty.js';
 import {
   UpdatingController,
   PropertyDeclarations,
@@ -21,10 +22,83 @@ import {
 import {generateElementName} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';
 
-// tslint:disable:no-any ok in tests
-
 suite('UpdatingController', () => {
   let container: HTMLElement;
+
+  class StatusService {
+    status: Map<number, boolean> = new Map();
+    callbacks: Map<number, Set<(status: boolean) => void>> = new Map();
+    subscribe(id: number, callback: (status: boolean) => void) {
+      let set = this.callbacks.get(id);
+      if (set === undefined) {
+        this.callbacks.set(id, (set = new Set()));
+      }
+      set.add(callback);
+      callback(this.status.get(id) ?? false);
+    }
+
+    unsubscribe(id: number, callback: (status: boolean) => void) {
+      this.callbacks.get(id)!.delete(callback);
+    }
+
+    setStatus(id: number, status: boolean) {
+      const set = this.callbacks.get(id);
+      this.status.set(id, status);
+      if (set !== undefined) {
+        set.forEach((cb) => cb(status));
+      }
+    }
+  }
+
+  const service = new StatusService();
+
+  class ResourceStatusController extends UpdatingController {
+    @property()
+    id?: number;
+
+    @property()
+    status = false;
+
+    handleStatus = (status: boolean) => {
+      this.status = status;
+    };
+
+    willUpdate(changedProperties: PropertyValues) {
+      const oldId = changedProperties.get('id');
+      if (this.id !== oldId) {
+        if (oldId !== undefined) {
+          service.unsubscribe(oldId as number, this.handleStatus);
+        }
+        service.subscribe(this.id!, this.handleStatus);
+      }
+    }
+
+    connectedCallback() {
+      if (this.id !== undefined) {
+        service.subscribe(this.id!, this.handleStatus);
+      }
+    }
+
+    disconnectedCallback() {
+      if (this.id !== undefined) {
+        service.unsubscribe(this.id!, this.handleStatus);
+      }
+    }
+  }
+
+  class NameController extends UpdatingController {
+    @property()
+    first = '';
+    @property()
+    last = '';
+    @internalProperty()
+    fullName = '';
+    willUpdate(changedProperties: PropertyValues) {
+      if (changedProperties.has('first') || changedProperties.has('last')) {
+        this.fullName = `${this.first} ${this.last}`;
+      }
+    }
+  }
 
   class SimpleController extends UpdatingController {
     connectedCount = 0;
@@ -79,13 +153,22 @@ suite('UpdatingController', () => {
   class A extends UpdatingElement {
     static properties = {foo: {}};
     foo = 'foo';
+    bar = 'bar';
+    @property()
+    resourceId = 0;
+    @property()
+    resourceStatus = false;
     willUpdateCount = 0;
     updateCount = 0;
     didUpdateCount = 0;
     connectedCount = 0;
     disconnectedCount = 0;
+    nameController = new NameController(this);
+    statusController = new ResourceStatusController(this);
     controller1 = new HostController(this);
     controller2 = new HostController(this);
+
+    nameControllerFullName = '';
 
     connectedCallback() {
       this.connectedCount++;
@@ -99,7 +182,12 @@ suite('UpdatingController', () => {
 
     willUpdate(changedProperties: PropertyValues) {
       this.willUpdateCount++;
+      this.nameController.first = this.foo;
+      this.nameController.last = this.bar;
+      this.statusController.id = this.resourceId;
       super.willUpdate(changedProperties);
+      this.nameControllerFullName = this.nameController.fullName;
+      this.resourceStatus = this.statusController.status;
     }
 
     update(changedProperties: PropertyValues) {
@@ -240,6 +328,48 @@ suite('UpdatingController', () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 3);
     assert.equal(el.didUpdateCount, 3);
+  });
+
+  test('can use properties computed in controller', async () => {
+    assert.equal(el.nameControllerFullName, 'foo bar');
+    el.foo = 'foo2';
+    el.bar = 'bar2';
+    await el.updateComplete;
+    assert.equal(el.nameControllerFullName, 'foo2 bar2');
+  });
+
+  test('can trigger updates based on controller using service', async () => {
+    // initially false
+    assert.equal(el.resourceStatus, false);
+    // responds to status change
+    service.setStatus(0, true);
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, true);
+    // responds to resourceId change
+    el.resourceId = 5;
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, false);
+    // responds to status change on new resourceId
+    service.setStatus(5, true);
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, true);
+    // does not respond to status change on old resourceId
+    service.setStatus(0, false);
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, true);
+    container.removeChild(el);
+    // does not respond to status change while disconnected
+    service.setStatus(5, false);
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, true);
+    // updates status change when connected
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, false);
+    // responds to status change after re-connected
+    service.setStatus(5, true);
+    await el.updateComplete;
+    assert.equal(el.resourceStatus, true);
   });
 
   suite('nested controllers', () => {

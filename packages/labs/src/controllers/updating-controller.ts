@@ -66,13 +66,12 @@ export class UpdatingController extends UpdatingBase {
       update: this.update
         ? () => this.update!(this._changedProperties)
         : undefined,
-      didUpdate: this.didUpdate
-        ? () => {
-            const changedProperties = this._changedProperties;
-            this._changedProperties = new Map();
-            this.didUpdate!(changedProperties);
-          }
-        : undefined,
+      // Note, `didUpdate` is required since it resets `changedProperties`.
+      didUpdate: () => {
+        const changedProperties = this._changedProperties;
+        this._resolveUpdate();
+        this.didUpdate?.(changedProperties);
+      },
     };
     host.addController(callbacks);
   }
