@@ -1951,6 +1951,168 @@ suite('lit-html', () => {
     assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
   });
 
+  test('directives in NodeParts can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: boolean, right: boolean) => {
+      return render(
+        html`
+          ${html`${html`${
+            left ? disconnectingDirective(log, 'left') : nothing
+          }`}`}
+          ${html`${html`${
+            right ? disconnectingDirective(log, 'right') : nothing
+          }`}`}
+        `,
+        container
+      );
+    };
+    const part = go(true, true);
+    assert.isEmpty(log);
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+    log.length = 0;
+    go(true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, ['reconnected-left']);
+  });
+
+  test('directives in AttributeParts can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: boolean, right: boolean) => {
+      return render(
+        html`
+          ${html`${html`<div a=${
+            left ? disconnectingDirective(log, 'left') : nothing
+          }></div>`}`}
+          ${html`${html`<div a=${
+            right ? disconnectingDirective(log, 'right') : nothing
+          }></div>`}`}
+        `,
+        container
+      );
+    };
+    const part = go(true, true);
+    assert.isEmpty(log);
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+    log.length = 0;
+    go(true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, ['reconnected-left']);
+  });
+
+  test('directives in iterables can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: unknown[], right: unknown[]) => {
+      return render(
+        html`
+          ${html`${html`${left.map(
+            (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+          )}`}`}
+          ${html`${html`${right.map(
+            (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+          )}`}`}
+        `,
+        container
+      );
+    };
+    const part = go([0, 1], [0, 1]);
+    assert.isEmpty(log);
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, [
+      'disconnected-left-0',
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, [
+      'reconnected-left-0',
+      'reconnected-left-1',
+      'reconnected-right-0',
+      'reconnected-right-1',
+    ]);
+    log.length = 0;
+    go([0], []);
+    assert.deepEqual(log, [
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, ['disconnected-left-0']);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, ['reconnected-left-0']);
+  });
+
+  test('directives in repeat can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: unknown[], right: unknown[]) => {
+      return render(
+        html`
+          ${html`${html`${repeat(
+            left,
+            (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+          )}`}`}
+          ${html`${html`${repeat(
+            right,
+            (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+          )}`}`}
+        `,
+        container
+      );
+    };
+    const part = go([0, 1], [0, 1]);
+    assert.isEmpty(log);
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, [
+      'disconnected-left-0',
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, [
+      'reconnected-left-0',
+      'reconnected-left-1',
+      'reconnected-right-0',
+      'reconnected-right-1',
+    ]);
+    log.length = 0;
+    go([0], []);
+    assert.deepEqual(log, [
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setDirectiveConnection(false);
+    assert.deepEqual(log, ['disconnected-left-0']);
+    log.length = 0;
+    part.setDirectiveConnection(true);
+    assert.deepEqual(log, ['reconnected-left-0']);
+  });
+
   let securityHooksSuiteFunction:
     | Mocha.SuiteFunction
     | Mocha.PendingSuiteFunction = suite;

@@ -732,7 +732,7 @@ function resolveDirective(
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
   if (directive?.constructor !== directiveClass) {
-    part._setDirectiveConnected?.(directive, false);
+    part._setDirectiveConnected?.(directive, false, true);
     directive =
       directiveClass !== undefined
         ? new directiveClass(part as PartInfo)
@@ -893,7 +893,8 @@ export class NodePart {
   /** @internal */
   _setDirectiveConnected?: (
     directive: Directive | undefined,
-    isConnected: boolean
+    isConnected: boolean,
+    removeFromParent?: boolean
   ) => void = undefined;
 
   constructor(
@@ -1128,7 +1129,8 @@ export class AttributePart {
   /** @internal */
   _setDirectiveConnected?: (
     directive: Directive | undefined,
-    isConnected: boolean
+    isConnected: boolean,
+    removeFromParent?: boolean
   ) => void = undefined;
 
   get tagName() {
