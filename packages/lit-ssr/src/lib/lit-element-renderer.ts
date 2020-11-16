@@ -43,8 +43,7 @@ export class LitElementRenderer extends ElementRenderer {
 
   *renderShadow(): IterableIterator<string> {
     // Render styles.
-    const styles = (this.element.constructor as typeof LitElement)
-      .elementStyles;
+    const styles = (this.element.constructor as typeof LitElement).classStyles;
     if (styles !== undefined && styles.length > 0) {
       yield '<style>';
       for (const style of styles) {
