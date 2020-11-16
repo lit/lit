@@ -17,6 +17,7 @@ import {litProdConfig} from '../../rollup-common.js';
 export default litProdConfig({
   entryPoints: [
     'updating-element',
+    'updating-mixin',
     'css-tag',
     'decorators',
     'decorators/base',

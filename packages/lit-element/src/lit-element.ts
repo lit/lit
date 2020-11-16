@@ -90,7 +90,7 @@ export class LitElement extends UpdatingElement {
    * Note this property name is a string to prevent breaking Closure JS Compiler
    * optimizations. See updating-element for more information.
    */
-  protected static ['finalized'] = true;
+  static ['finalized'] = true;
 
   readonly _renderOptions: RenderOptions = {eventContext: this};
 
@@ -111,7 +111,7 @@ export class LitElement extends UpdatingElement {
    * this method will *not* trigger another update.
    * @param changedProperties Map of changed properties with old values
    */
-  protected update(changedProperties: PropertyValues) {
+  update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.

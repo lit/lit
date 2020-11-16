@@ -16,24 +16,14 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
-  Controller,
 } from 'updating-element';
 import {property} from 'updating-element/decorators.js';
-import {queryParams} from '../../utils/query-params.js';
+import {queryParams} from '../../../utils/query-params.js';
+import {documentComplete} from '../../../utils/document-complete.js';
 
 (async () => {
-  // wait until after page loads
-  if (document.readyState !== 'complete') {
-    let resolve: () => void;
-    const p = new Promise((r) => (resolve = r));
-    document.addEventListener('readystatechange', async () => {
-      if (document.readyState === 'complete') {
-        resolve();
-      }
-    });
-    await p;
-  }
-  await new Promise((r) => setTimeout(r));
+  // start benchmark after page loads
+  await documentComplete();
 
   // Settings
   const itemCount = 250;
@@ -63,30 +53,34 @@ import {queryParams} from '../../utils/query-params.js';
 
   const propertyOptions: PropertyDeclaration = {};
 
-  const useController = queryParams.controller;
+  const MyMixin = (Base: typeof UpdatingElement) => {
+    return class extends Base {
+      value!: string;
+      isMixinConnected = false;
 
-  class MyController implements Controller {
-    host: UpdatingElement;
-    isConnected = false;
-    value = '';
-    constructor(host: UpdatingElement) {
-      this.host = host;
-      this.host.addController(this);
-    }
-    connectedCallback() {
-      this.isConnected = true;
-    }
-    disconnectedCallback() {
-      this.isConnected = false;
-    }
-    willUpdate() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.value = (this.host as any).time;
-    }
-    updated() {}
-  }
+      connectedCallback() {
+        super.connectedCallback();
+        this.isMixinConnected = true;
+      }
 
-  class XThing extends UpdatingElement {
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this.isMixinConnected = false;
+      }
+
+      update(changedProperties: PropertyValues) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.value = (this as any).time;
+        super.update(changedProperties);
+      }
+
+      updated(changedProperties: PropertyValues) {
+        super.updated(changedProperties);
+      }
+    };
+  };
+
+  class XThing extends MyMixin(UpdatingElement) {
     static styles = css`
       .container {
         box-sizing: border-box;
@@ -126,8 +120,6 @@ import {queryParams} from '../../utils/query-params.js';
     timeEl!: HTMLSpanElement;
     subjectEl!: HTMLDivElement;
 
-    controller = useController ? new MyController(this) : undefined;
-
     update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
@@ -151,9 +143,7 @@ import {queryParams} from '../../utils/query-params.js';
         this.renderRoot.appendChild(document.createTextNode(' '));
       }
       this.fromEl.textContent = this.from;
-      this.timeEl.textContent = useController
-        ? this.controller!.value
-        : this.time;
+      this.timeEl.textContent = this.value;
       this.subjectEl.textContent = this.subject;
     }
   }

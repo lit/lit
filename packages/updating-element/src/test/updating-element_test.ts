@@ -2394,10 +2394,10 @@ suite('UpdatingElement', () => {
 
   test('early access of updateComplete waits until first update', async () => {
     class A extends UpdatingElement {
-      hasCalledUpdated = false;
+      didCallUpdated = false;
 
       updated(_changedProperties: Map<PropertyKey, unknown>) {
-        this.hasCalledUpdated = true;
+        this.didCallUpdated = true;
       }
     }
     customElements.define(generateElementName(), A);
@@ -2405,7 +2405,7 @@ suite('UpdatingElement', () => {
     let updated = false;
     a.updateComplete.then(() => {
       updated = true;
-      assert.isTrue(a.hasCalledUpdated);
+      assert.isTrue(a.didCallUpdated);
     });
     await new Promise((r) => setTimeout(r, 20));
     assert.isFalse(updated);
