@@ -305,6 +305,25 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     if (didFinalize) {
       this._attributeToPropertyMap = new Map();
       this.classStyles = this.finalizeStyles(this.styles);
+      // DEV mode warnings
+      if (DEV_MODE) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const warnRemoved = (obj: any, name: string) => {
+          if (obj[name] !== undefined) {
+            console.warn(
+              `\`${name}\` is implemented. It ` +
+                `has been removed from this version of UpdatingElement. `
+              // TODO(sorvell): add link to changelog when location has stabilized.
+              // See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/updating-element/CHANGELOG.md`
+            );
+          }
+        };
+        [`initialize`, `requestUpdateInternal`, `_getUpdateComplete`].forEach(
+          (name: string) =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            warnRemoved(this.prototype as any, name)
+        );
+      }
     }
     return didFinalize;
   }

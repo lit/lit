@@ -39,7 +39,7 @@ type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
 
 interface PatchableUpdatingElementConstructor {
   [SCOPED]: boolean;
-  elementStyles: CSSResults;
+  classStyles: CSSResults;
   shadowRootOptions: ShadowRootInit;
   _handlesPrepareStyles?: boolean;
 }
@@ -91,7 +91,7 @@ interface PatchableUpdatingElement extends HTMLElement {
         ] = true;
         // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
         const css = (this
-          .constructor as PatchableUpdatingElementConstructor).elementStyles.map(
+          .constructor as PatchableUpdatingElementConstructor).classStyles.map(
           (v) =>
             v instanceof CSSStyleSheet
               ? Array.from(v.cssRules).reduce(
