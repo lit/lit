@@ -19,6 +19,7 @@ packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
 packages/labs/development/
+packages/labs/controllers/
 packages/labs/node_modules/
 packages/labs/index.*
 
@@ -71,6 +72,7 @@ packages/updating-element/css-tag.*
 packages/updating-element/decorators.*
 packages/updating-element/platform-support.*
 packages/updating-element/updating-element.*
+packages/updating-element/updating-mixin.*
 
 packages/localize/examples/
 packages/localize/testdata/
