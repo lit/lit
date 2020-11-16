@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [Breaking] The `templateFactory` option of `RenderOptions` has been removed.
 - [Breaking] TemplateProcessor has been removed.
 - [Breaking] Symbols are not converted to a string before mutating DOM, so passing a Symbol to an attribute or text binding will result in an exception.
-- [Breaking] The `until`, `asyncAppend` and `asyncReplace` directives are not implemented.
+- [Breaking] The `asyncAppend` and `asyncReplace` directives are not implemented.
 
 ## [1.3.0] - 2020-08-19
 
