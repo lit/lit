@@ -44,7 +44,7 @@ A controller is an object which can hook into the lifecycle of an UpdatingElemen
 - `disconnectedCallback`: called via the element's `disconnectedCallback`
 - `willUpdate(changedProperties)`: called before the element's `willUpdate` method.
 - `update(changedProperties)`: called before the element's `update` method.
-- `Updated(changedProperties)`: called before the element's `updated` method.
+- `didUpdate(changedProperties)`: called before the element's `didUpdate` method.
 
 For adding and removing controllers:
 
@@ -110,7 +110,7 @@ Can be used to calculate derived state using element state. Note, this will be c
 
 Access element DOM state, layout, and other styles, etc. Animation directives that need to record the initial state of an animated element are a prime use case.
 
-### updated
+### didUpdate
 
 Can be used to introspect and measure DOM, add event handlers on rendered DOM, etc.
 
@@ -140,13 +140,16 @@ To facilitate reactivity, a controller need only call `this.host.requestUpdate`.
 
 ### UpdatingController Class
 
-`UpdatingController` is a minimal controller base class designed to make these patterns more ergonomic. It automatically sets up the `host` property and provides a `requestUpdate` method. Here's an example:
+`UpdatingController` is a minimal controller base class designed to make these patterns more ergonomic. It automatically sets up the `host` property and supprots defining reactive properties similar to UpdatingElement:
 
-```js
+```ts
 export class MouseController extends UpdatingController {
+  @property()
+  position?: [number, number];
+
   _onMouseMove = ({clientX, clientY}) => {
+    // This reactive property triggers an update on the host element.
     this.position = [clientX, clientY];
-    this.requestUpdate();
   };
 
   connectedCallback() {
@@ -162,12 +165,6 @@ export class MouseController extends UpdatingController {
 ## Performance
 
 Creating and using an `UpdatingController` in an element imposes a small performance penalty of _~5%_ on a minimal targeted benchmark. This is slightly more expensive than using a mixin approach, but it provides additional capabilities described above that often make using a controller worth it. See the benchmarks package for runnable benchmarks.
-
-## Features Under Consideration
-
-### Property Decorator
-
-It may be useful to expose an `@property` decorator to use on UpdatingController properties that would automate calling requestUpdate and possibly do change tracking as is done in UpdatingElement. However, it's unclear how common a pattern this will be and if it might be better instead or in addition to provide a feature that automatically ties a controller property to an element property.
 
 ## Motivating Example Use Cases
 
@@ -360,7 +357,7 @@ This is a simplistic example, we'd probably want ways to start and stop listenin
 
 ### FLIP Animation Directive
 
-A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `update` callback and perform the FLIP animation in the `updated` callback.
+A [FLIP](https://aerotwist.com/blog/flip-your-animations/) animation directive can function as a controller. It would measure initial DOM state in the `willUpdate` callback and perform the FLIP animation in the `didUpdate` callback.
 
 ### Others
 
