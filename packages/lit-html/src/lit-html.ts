@@ -1091,6 +1091,15 @@ export class NodePart {
     }
   }
 
+  /**
+   * Removes the nodes contained within this Part from the DOM.
+   *
+   * @param start Start node to clear from, for clearing a subset of the part's
+   *  DOM (used when truncating iterables)
+   * @param from  When `start` is specified, the index within the iterable from
+   *  which NodeParts are being removed, used for disconnecting directives in
+   *  those Parts.
+   */
   private _clear(
     start: ChildNode | null = this._startNode.nextSibling,
     from?: number
