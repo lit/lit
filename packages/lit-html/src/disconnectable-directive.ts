@@ -25,7 +25,11 @@ export {directive} from './lit-html.js';
 const {_TemplateInstance: TemplateInstance} = $private;
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
-type DisconnectableChild = NodePart | AttributePart | TemplateInstance;
+type DisconnectableChild =
+  | NodePart
+  | AttributePart
+  | TemplateInstance
+  | DisconnectableDirective;
 
 // Contains the sparse tree of Parts/TemplateInstances needing disconnect
 const disconnectableChildrenForParent: WeakMap<
@@ -41,45 +45,41 @@ const disconnectableChildrenForParent: WeakMap<
 const setConnected = (
   child: DisconnectableChild,
   isConnected: boolean,
-  removeFromParent?: DisconnectableChild
+  shouldRemoveFromParent = false
 ) => {
   const children = disconnectableChildrenForParent.get(child);
   if (children !== undefined) {
     for (const child of children) {
-      if (child instanceof NodePart) {
-        setNodePartConnected(child, isConnected);
-      } else if (child instanceof AttributePart) {
-        setAttributePartConnected(child, isConnected);
+      if (child instanceof DisconnectableDirective) {
+        child._setConnected(isConnected);
       } else {
         setConnected(child, isConnected);
       }
     }
-    if (removeFromParent !== undefined) {
-      disconnectableChildrenForParent.get(removeFromParent)?.delete(child);
+    if (shouldRemoveFromParent) {
+      disconnectableChildrenForParent.get(child._parent!)?.delete(child);
     }
   }
 };
 
 /**
- * Sets the connected state on the part's directive (if present) and,
- * any directives contained within the committed value of this part (i.e.
- * within a TemplateInstance or iterable of NodeParts).
+ * Removes the given child from its parent list of disconnectable children if
+ * its own list is empty, and so forth up the tree when that causes subsequent
+ * parent lists to become empty.
  */
-const setNodePartConnected = (part: NodePart, isConnected: boolean) => {
-  part._setDirectiveConnected!(part._directive, isConnected);
-  part._setValueConnected!(isConnected);
-};
-
-/**
- * Sets the connected state on the part's directives.
- */
-const setAttributePartConnected = (
-  part: AttributePart,
-  isConnected: boolean
-) => {
-  if (part._directives !== undefined) {
-    for (const directive of part._directives) {
-      part._setDirectiveConnected!(directive, isConnected);
+const removeFromParentIfEmpty = (child: DisconnectableChild) => {
+  for (
+    let parent = child._parent,
+      children = disconnectableChildrenForParent.get(child);
+    children !== undefined && children.size === 0;
+    child = parent, parent = child._parent
+  ) {
+    disconnectableChildrenForParent.delete(child);
+    if (parent !== undefined) {
+      children = disconnectableChildrenForParent.get(parent)!;
+      children.delete(child);
+    } else {
+      break;
     }
   }
 };
@@ -89,6 +89,12 @@ const setAttributePartConnected = (
  * value of this part (i.e. within a TemplateInstance or iterable of NodeParts)
  * and runs their `disconnectedCallback`/`reconnectedCallback`s.
  *
+ * `shouldRemoveFromParent` should be passed as `true` on a top-level part that
+ * is clearing itself, and not as a result of recursively disconnecting
+ * directives as part of a `clear` operation, as a performance optimization to
+ * avoid needless bookkeeping when a subtree is going away; when clearing a
+ * subtree, only the top-most part need to remove itself from the parent.
+ *
  * Note, this method will be patched onto NodePart instances and called from the
  * core code when parts are cleared or the connection state is changed by the
  * user.
@@ -96,35 +102,19 @@ const setAttributePartConnected = (
 function _setValueConnected(
   this: NodePart,
   isConnected: boolean,
-  removeFromParent = false,
-  from?: number
+  shouldRemoveFromParent = false,
+  from = 0
 ) {
-  if (this._value instanceof TemplateInstance) {
-    setConnected(this._value, isConnected, removeFromParent ? this : undefined);
-  } else if (Array.isArray(this._value)) {
-    const parent = removeFromParent ? this : undefined;
-    const array = from === undefined ? this._value : this._value.slice(from);
-    for (const part of array) {
-      setConnected(part, isConnected, parent);
+  const value = this._value;
+  if (value instanceof TemplateInstance) {
+    setConnected(value, isConnected, shouldRemoveFromParent);
+  } else if (Array.isArray(value)) {
+    for (let i = from; i < value.length; i++) {
+      setConnected(value[i], isConnected, shouldRemoveFromParent);
     }
   }
-  if (removeFromParent) {
-    let children = disconnectableChildrenForParent.get(this);
-    if (children !== undefined && children.size === 0) {
-      disconnectableChildrenForParent.delete(this);
-      for (
-        let current = this as DisconnectableChild, parent;
-        (parent = current._parent);
-        current = parent
-      ) {
-        (children = disconnectableChildrenForParent.get(parent)!).delete(
-          current
-        );
-        if (children.size > 0) {
-          break;
-        }
-      }
-    }
+  if (shouldRemoveFromParent) {
+    removeFromParentIfEmpty(this);
   }
 }
 
@@ -132,15 +122,27 @@ function _setValueConnected(
  * Sets the connected state on given directive if disconnectable and runs its
  * `disconnectedCallback`/`reconnectedCallback`s.
  *
+ * `shouldRemoveFromParent` should be passed as `true` only when a directive
+ * itself is disconnecting as a result of the part value changing, and not as a
+ * result of recursively disconnecting directives as part of a `clear`
+ * operation, as a performance optimization to avoid needless bookkeeping when a
+ * subtree is going away.
+ *
  * Note, this method will be patched onto NodePart and AttributePart instances
  * and called from the core code when directives are changed or removed.
  */
 function _setDirectiveConnected(
+  this: Part,
   directive: Directive | undefined,
-  isConnected: boolean
+  isConnected: boolean,
+  shouldRemoveFromParent = false
 ) {
   if (directive instanceof DisconnectableDirective) {
     directive._setConnected(isConnected);
+    if (shouldRemoveFromParent) {
+      disconnectableChildrenForParent.get(this)!.delete(directive);
+      removeFromParentIfEmpty(this);
+    }
   }
 }
 
@@ -173,12 +175,14 @@ const installDisconnectAPI = (child: DisconnectableChild) => {
  */
 export abstract class DisconnectableDirective extends Directive {
   isDisconnected = false;
+  _parent: Part;
   constructor(partInfo: PartInfo) {
     super();
+    this._parent = partInfo as Part;
     // Climb the parent tree, creating a sparse tree of children needing
     // disconnection
     for (
-      let current = (partInfo as unknown) as DisconnectableChild, parent;
+      let current = this as DisconnectableChild, parent;
       (parent = current._parent);
       current = parent
     ) {
@@ -193,7 +197,6 @@ export abstract class DisconnectableDirective extends Directive {
       children.add(current);
       installDisconnectAPI(parent);
     }
-    installDisconnectAPI(partInfo as Part);
   }
   /** @internal */
   _setConnected(isConnected: boolean) {
