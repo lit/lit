@@ -56,6 +56,8 @@ suite('UpdatingController', () => {
     @property()
     id?: number;
 
+    wasDisconnected = false;
+
     @property()
     status = false;
 
@@ -74,12 +76,13 @@ suite('UpdatingController', () => {
     }
 
     connectedCallback() {
-      if (this.id !== undefined) {
+      if (this.wasDisconnected && this.id !== undefined) {
         service.subscribe(this.id!, this.handleStatus);
       }
     }
 
     disconnectedCallback() {
+      this.wasDisconnected = true;
       if (this.id !== undefined) {
         service.unsubscribe(this.id!, this.handleStatus);
       }
