@@ -83,6 +83,9 @@ const crossPackagePropertyMangles = {
   // lit-html: TemplateInstance
   _template: 'H',
   // updating-element: UpdatingElement
+  _changedProperties: 'Q',
+  _resolveUpdate: 'R',
+  _propertyChanged: 'S',
   _controllers: 'T',
   // lit-element: LitElement
   _renderOptions: 'W',
