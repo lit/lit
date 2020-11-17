@@ -20,8 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   After:
 
   ```ts
-  msg(template: string|TemplateResult|Function, options: {id: string: args?: any[]})
+  msg(template: string|TemplateResult|Function, options?: {id?: string: args?: any[]})
   ```
+
+- It is no longer necessary to provide a message `id`. When omitted, an id will
+  be automatically generated from the string contents of the template.
 
 ## [0.5.1] - 2020-11-09
 

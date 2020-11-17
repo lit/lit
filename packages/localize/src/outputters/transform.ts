@@ -18,6 +18,7 @@ import {
   isMsgCall,
   extractTemplate,
   extractOptions,
+  generateMsgIdFromAstNode,
 } from '../program-analysis';
 import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
@@ -278,11 +279,7 @@ class Transformer {
       throw new Error(optionsResult.error.toString());
     }
     const options = optionsResult.result;
-    if (options.id === undefined) {
-      // TODO(aomarks) Implement.
-      throw new Error('Not yet implemented: auto ID');
-    }
-    const id = options.id;
+    const id = options.id ?? generateMsgIdFromAstNode(template, isLitTagged);
 
     // If translations are available, replace the source template from the
     // second argument with the corresponding translation.
@@ -310,7 +307,7 @@ class Transformer {
     // are the 3rd and onwards arguments to our `msg` function, so we must
     // substitute those arguments into the expressions.
     //
-    // Given: msg((name) => html`Hello <b>${name}</b>`, {id: "foo", args: ["World"]})
+    // Given: msg((name) => html`Hello <b>${name}</b>`, {args: ["World"]})
     // Generate: html`Hello <b>${"World"}</b>`
     if (ts.isArrowFunction(templateArg) && ts.isTemplateExpression(template)) {
       if (!paramNames || !options.args) {

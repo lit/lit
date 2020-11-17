@@ -10,6 +10,7 @@
  */
 
 import {TemplateResult} from 'lit-html';
+import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -307,34 +308,35 @@ const setLocale: ((newLocale: string) => Promise<void>) & {
  *
  * @param template A string, a lit-html template, or a function that returns
  * either a string or lit-html template.
- * @param options Configuration object with the following properties:
- *   - id: Project-wide unique identifier for this template.
+ * @param options Optional configuration object with the following properties:
+ *   - id: Optional project-wide unique identifier for this template. If
+ *     omitted, an id will be automatically generated from the template strings.
  *   - args: In the case that `template` is a function, it will be invoked with
  *     these arguments.
  */
-export function _msg(template: string, options: {id: string}): string;
+export function _msg(template: string, options?: {id?: string}): string;
 
 export function _msg(
   template: TemplateResult,
-  options: {id: string}
+  options?: {id?: string}
 ): TemplateResult;
 
 export function _msg<F extends (...args: any[]) => string>(
   fn: F,
-  options: {id: string; args: Parameters<F>}
+  options: {id?: string; args: Parameters<F>}
 ): string;
 
 export function _msg<F extends (...args: any[]) => TemplateResult>(
   fn: F,
-  options: {id: string; args: Parameters<F>}
+  options: {id?: string; args: Parameters<F>}
 ): TemplateResult;
 
 export function _msg(
   template: TemplateLike,
-  options: {id: string; args?: any[]}
+  options?: {id?: string; args?: any[]}
 ): string | TemplateResult {
   if (templates) {
-    const id = options.id;
+    const id = options?.id ?? generateId(template);
     const localized = templates[id];
     if (localized) {
       template = localized;
@@ -344,6 +346,26 @@ export function _msg(
     return template(...(options?.args ?? []));
   }
   return template;
+}
+
+const hashCache = new Map<TemplateStringsArray | string, string>();
+
+function generateId(template: TemplateLike): string {
+  if (typeof template === 'function') {
+    const numParams = template.length;
+    // Note that by using HASH_DELIMITER as the template parameter here, we can
+    // skip splitting and re-joining when we perform the hash.
+    const params = Array(numParams).fill(HASH_DELIMITER);
+    template = template(...params);
+  }
+
+  const strings = typeof template === 'string' ? template : template.strings;
+  let id = hashCache.get(strings);
+  if (id === undefined) {
+    id = generateMsgId(strings, typeof template !== 'string');
+    hashCache.set(strings, id);
+  }
+  return id;
 }
 
 export const msg: typeof _msg & {_LIT_LOCALIZE_MSG_?: never} = _msg;

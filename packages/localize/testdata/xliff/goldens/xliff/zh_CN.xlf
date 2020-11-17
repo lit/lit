@@ -27,6 +27,18 @@
 <trans-unit id="comment">
   <source>Hello <ph id="0">&lt;b>&lt;!-- comment --></ph>World!<ph id="1">&lt;/b></ph></source>
 </trans-unit>
+<trans-unit id="0s8c0ec8d1fb9e6e32">
+  <source>Hello World!</source>
+</trans-unit>
+<trans-unit id="0s00ad08ebae1e0f74">
+  <source>Hello <ph id="0">${name}</ph>!</source>
+</trans-unit>
+<trans-unit id="0h3c44aff2d5f5ef6b">
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+</trans-unit>
+<trans-unit id="0h82ccc38d4d46eaa9">
+  <source>Hello <ph id="0">&lt;b>${name}&lt;/b></ph>!</source>
+</trans-unit>
 </body>
 </file>
 </xliff>
