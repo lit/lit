@@ -10,7 +10,7 @@ class TSElement extends UpdatingElement {
   })
   extra = '';
 
-  update(changedProperties: PropertyValues) {
+  protected update(changedProperties: PropertyValues) {
     super.update(changedProperties);
     this.innerHTML = `${this.localName} says: ${this.message} ${this.extra}`;
   }

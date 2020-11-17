@@ -119,7 +119,7 @@ import {documentComplete} from '../../utils/document-complete.js';
 
     controller = useController ? new MyController(this) : undefined;
 
-    update(changedProperties: PropertyValues) {
+    protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         const container = document.createElement('div');
@@ -162,7 +162,7 @@ import {documentComplete} from '../../utils/document-complete.js';
     count = 6;
     things: XThing[] = [];
 
-    update(changedProperties: PropertyValues) {
+    protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         this.renderRoot.appendChild(document.createTextNode(' '));
@@ -208,7 +208,7 @@ import {documentComplete} from '../../utils/document-complete.js';
     items = data;
     itemEls: XItem[] = [];
 
-    update(changedProperties: PropertyValues) {
+    protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         this.items.forEach(() => {

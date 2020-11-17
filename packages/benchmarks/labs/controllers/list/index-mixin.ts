@@ -68,7 +68,7 @@ import {documentComplete} from '../../../utils/document-complete.js';
         this.isMixinConnected = false;
       }
 
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.value = (this as any).time;
         super.update(changedProperties);
@@ -120,7 +120,7 @@ import {documentComplete} from '../../../utils/document-complete.js';
     timeEl!: HTMLSpanElement;
     subjectEl!: HTMLDivElement;
 
-    update(changedProperties: PropertyValues) {
+    protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         const container = document.createElement('div');
@@ -161,7 +161,7 @@ import {documentComplete} from '../../../utils/document-complete.js';
     count = 6;
     things: XThing[] = [];
 
-    update(changedProperties: PropertyValues) {
+    protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         this.renderRoot.appendChild(document.createTextNode(' '));
@@ -207,7 +207,7 @@ import {documentComplete} from '../../../utils/document-complete.js';
     items = data;
     itemEls: XItem[] = [];
 
-    update(changedProperties: PropertyValues) {
+    protected update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         this.items.forEach(() => {

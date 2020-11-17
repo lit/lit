@@ -654,7 +654,7 @@ suite('UpdatingElement', () => {
         foo = 5;
         [zug] = 6;
 
-        update(changedProperties: PropertyValues) {
+        protected update(changedProperties: PropertyValues) {
           this.updateCount++;
           super.update(changedProperties);
         }
@@ -1186,7 +1186,7 @@ suite('UpdatingElement', () => {
       wasFirstUpdated = 0;
       changedProperties: PropertyValues | undefined;
 
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this.wasUpdatedCount++;
         super.update(changedProperties);
       }
@@ -1230,7 +1230,7 @@ suite('UpdatingElement', () => {
         return this.triedToUpdatedCount > 1;
       }
 
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this.wasUpdatedCount++;
         super.update(changedProperties);
       }
@@ -1389,7 +1389,7 @@ suite('UpdatingElement', () => {
 
       changedProperties: PropertyValues | undefined = undefined;
 
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         (this as any).zot = (this as any).foo + (this as any).bar;
         super.update(changedProperties);
         this.changedProperties = changedProperties;
@@ -1447,7 +1447,7 @@ suite('UpdatingElement', () => {
 
       changedProperties: PropertyValues | undefined = undefined;
 
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         (this as any).zot = (this as any).foo + (this as any).bar;
         super.update(changedProperties);
         this.changedProperties = changedProperties;
@@ -1508,7 +1508,7 @@ suite('UpdatingElement', () => {
       get bar() {
         return this._bar as string;
       }
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this._updateCount++;
         super.update(changedProperties);
       }
@@ -1571,7 +1571,7 @@ suite('UpdatingElement', () => {
       get foo(): number {
         return this._foo as number;
       }
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this._oldFoo = changedProperties.get('foo');
         super.update(changedProperties);
       }
@@ -1684,7 +1684,7 @@ suite('UpdatingElement', () => {
       get foo(): number {
         return this._foo as number;
       }
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this._oldFoo = changedProperties.get('foo');
         super.update(changedProperties);
       }
@@ -1909,7 +1909,7 @@ suite('UpdatingElement', () => {
         const setter = defaultDescriptor.set;
         return Object.assign(defaultDescriptor, {
           set(this: E, value: unknown) {
-            setter.call(this, value);
+            setter!.call(this, value);
             if (options.sync && this.hasUpdated && !this.isUpdating) {
               ((this as unknown) as E).performUpdate();
             }
@@ -1929,7 +1929,7 @@ suite('UpdatingElement', () => {
         this.isUpdating = false;
       }
 
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this.zug = this.foo + 1;
         super.update(changedProperties);
       }
@@ -1996,7 +1996,7 @@ suite('UpdatingElement', () => {
       get bar() {
         return this.getAttribute('bar') || 'defaultBar';
       }
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this._updateCount++;
         super.update(changedProperties);
       }
@@ -2057,7 +2057,7 @@ suite('UpdatingElement', () => {
         super.attributeChangedCallback(name, old, value);
         this.requestUpdate(name, old);
       }
-      update(changedProperties: PropertyValues) {
+      protected update(changedProperties: PropertyValues) {
         this._updateCount++;
         super.update(changedProperties);
       }
@@ -2307,7 +2307,7 @@ suite('UpdatingElement', () => {
         await super.performUpdate();
       }
 
-      update(changedProperties: Map<PropertyKey, unknown>) {
+      protected update(changedProperties: Map<PropertyKey, unknown>) {
         this.updateCalled = true;
         super.update(changedProperties);
       }
@@ -2488,7 +2488,7 @@ suite('UpdatingElement', () => {
         foo = 5;
         updatedFoo = 0;
 
-        update(changedProperties: Map<PropertyKey, unknown>) {
+        protected update(changedProperties: Map<PropertyKey, unknown>) {
           if (shouldThrow) {
             throw new Error('test error');
           }
@@ -2528,7 +2528,7 @@ suite('UpdatingElement', () => {
         firstUpdatedCalled = false;
         updatedCalled = false;
 
-        update(changedProperties: Map<PropertyKey, unknown>) {
+        protected update(changedProperties: Map<PropertyKey, unknown>) {
           if (shouldThrow) {
             throw new Error('test error');
           }

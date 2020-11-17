@@ -123,15 +123,75 @@ const finalized = 'finalized';
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Constructor = new (...args: any[]) => {};
+type Constructor<T = object> = new (...args: any[]) => T;
 
+// Note: `UpdatingMixinBase` and `UpdatingMixinStatics` exist to be able to type
+// the output of the `UpdatingMixin` function. They work around the TypeScript
+// limitation (for the non-static side) that visibility modifiers cannot be
+// used with mixins.
+
+// TODO(sorvell): Using this pattern, static members cannot use visibility
+// modifiers (protected). Considering this ok since these are static
+// (not often used) members.
+export declare class UpdatingMixinBaseStatics {
+  [finalized]: boolean;
+  classProperties: PropertyDeclarationMap;
+  properties: PropertyDeclarations;
+
+  createProperty(_name: PropertyKey, _options: PropertyDeclaration): void;
+
+  getPropertyDescriptor(
+    _name: PropertyKey,
+    _key: string | symbol,
+    _options: PropertyDeclaration
+  ): PropertyDescriptor;
+
+  getPropertyOptions(_name: PropertyKey): PropertyDeclaration;
+
+  finalize(): boolean;
+}
+
+export declare class UpdatingMixinBase {
+  protected _changedProperties: PropertyValues;
+
+  requestUpdate(
+    _name?: PropertyKey,
+    _oldValue?: unknown,
+    _options?: PropertyDeclaration
+  ): unknown;
+
+  protected _propertyChanged(
+    _name: PropertyKey,
+    _oldValue: unknown,
+    _options: PropertyDeclaration
+  ): void;
+
+  protected _resolveUpdate(): void;
+
+  connectedCallback?(): void;
+
+  disconnectedCallback?(): void;
+
+  protected willUpdate?(changedProperties: PropertyValues): void;
+
+  protected update?(changedProperties: PropertyValues): void;
+
+  protected didUpdate?(changedProperties: PropertyValues): void;
+}
+
+/**
+ * `UpdatingMixin` is a mixin that creates reactive properties defined using the
+ * `static properties` property or the `@property` decorator. It provides
+ * an interface for an update lifecycle which must be implemented by the
+ * subclass, including requestUpdate, willUpdate, update, and didUpdate.
+ */
 export function UpdatingMixin<T extends Constructor>(Base: T) {
-  return class UpdatingComponent extends Base {
+  class UpdatingComponent extends Base {
     /**
      * Marks class as having finished creating properties.
      */
     //@internal
-    static ['finalized'] = true;
+    protected static [finalized] = true;
 
     /**
      * Memoized list of all element properties, including any superclass properties.
@@ -211,7 +271,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
      *
      * @nocollapse
      */
-    static getPropertyDescriptor(
+    protected static getPropertyDescriptor(
       name: PropertyKey,
       key: string | symbol,
       options: PropertyDeclaration
@@ -250,7 +310,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
      * @final
      * @internal
      */
-    static getPropertyOptions(name: PropertyKey) {
+    protected static getPropertyOptions(name: PropertyKey) {
       return this.classProperties!.get(name) || defaultPropertyDeclaration;
     }
 
@@ -261,7 +321,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
      * @nocollapse
      * @internal
      */
-    static finalize() {
+    protected static finalize() {
       if (this.hasOwnProperty(finalized)) {
         return false;
       }
@@ -298,7 +358,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
      * update cycle with previous values.
      */
     // @internal
-    _changedProperties!: PropertyValues;
+    protected _changedProperties: PropertyValues;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
@@ -343,7 +403,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
     }
 
     // @internal
-    _propertyChanged(
+    protected _propertyChanged(
       name: PropertyKey,
       oldValue: unknown,
       _options: PropertyDeclaration
@@ -353,7 +413,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
       }
     }
 
-    _resolveUpdate() {
+    protected _resolveUpdate() {
       this._changedProperties = new Map();
     }
 
@@ -361,10 +421,13 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
 
     disconnectedCallback?(): void;
 
-    willUpdate?(changedProperties: PropertyValues): void;
+    protected willUpdate?(changedProperties: PropertyValues): void;
 
-    update?(changedProperties: PropertyValues): void;
+    protected update?(changedProperties: PropertyValues): void;
 
-    didUpdate?(changedProperties: PropertyValues): void;
-  };
+    protected didUpdate?(changedProperties: PropertyValues): void;
+  }
+  return (UpdatingComponent as unknown) as T &
+    Constructor<UpdatingMixinBase> &
+    UpdatingMixinBaseStatics;
 }

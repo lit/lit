@@ -589,8 +589,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     }
   }
 
-  /** @internal */
-  _propertyChanged(
+  protected _propertyChanged(
     name: PropertyKey,
     oldValue: unknown,
     options: PropertyDeclaration
@@ -732,7 +731,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
   }
 
   //@internal
-  _resolveUpdate() {
+  protected _resolveUpdate() {
     super._resolveUpdate();
     this.isUpdatePending = false;
   }
@@ -748,8 +747,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     return true;
   }
 
-  /** @internal */
-  willUpdate(_changedProperties: PropertyValues) {
+  protected willUpdate(_changedProperties: PropertyValues) {
     this._controllers?.forEach((c) => c.willUpdate?.());
   }
 
@@ -760,9 +758,8 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
    * another update.
    *
    * @param _changedProperties Map of changed properties with old values
-   * @internal
    */
-  update(_changedProperties: PropertyValues) {
+  protected update(_changedProperties: PropertyValues) {
     this._controllers?.forEach((c) => c.update?.());
     if (this._reflectingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
@@ -776,8 +773,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
   }
 
   // Note, this is an override point for platform-support.
-  // @internal
-  didUpdate(changedProperties: PropertyValues) {
+  protected didUpdate(changedProperties: PropertyValues) {
     this._controllers?.forEach((c) => c.didUpdate?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;

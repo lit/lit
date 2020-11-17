@@ -111,7 +111,7 @@ export class LitElement extends UpdatingElement {
    * this method will *not* trigger another update.
    * @param changedProperties Map of changed properties with old values
    */
-  update(changedProperties: PropertyValues) {
+  protected update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.
