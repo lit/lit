@@ -76,26 +76,14 @@ export class UpdatingController extends UpdatingBase {
     host.addController(callbacks);
   }
 
-  _propertyChanged(
-    name: PropertyKey,
-    oldValue: unknown,
-    _options: PropertyDeclaration
-  ) {
-    if (!this._changedProperties.has(name)) {
-      this._changedProperties.set(name, oldValue);
-    }
-    // When the property changes, provoke an update on the host.
-    this.host.requestUpdate();
-  }
-
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
   ) {
-    return name !== undefined
-      ? super.requestUpdate(name, oldValue, options)
-      : // if no property is given, still provoke a host update.
-        this.host.requestUpdate();
+    const needsUpdate = super.requestUpdate(name, oldValue, options);
+    if (needsUpdate) {
+      this.host.requestUpdate();
+    }
   }
 }

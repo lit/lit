@@ -48,12 +48,6 @@ const reservedProperties = [
   '_value',
   '_setValue',
   'createTreeWalker',
-  // TODO(sorvell): The properties below are only reserved so dev and prod can
-  // work together x-package.
-  // Note, reserved so that prod updating-element platform-support
-  // can share this key with dev lit-element platform-support which
-  // imports it.
-  '_handlesPrepareStyles',
   // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
   // crossPackagePropertyMangles once lit-ssr uses the rollup config)
   // lit-html: AttributePart (used by render-lit-html)
@@ -83,6 +77,7 @@ const crossPackagePropertyMangles = {
   // lit-html: TemplateInstance
   _template: 'H',
   // updating-element: UpdatingElement
+  _handlesPrepareStyles: 'P',
   _changedProperties: 'Q',
   _resolveUpdate: 'R',
   _propertyChanged: 'S',
