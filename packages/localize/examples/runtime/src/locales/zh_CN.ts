@@ -8,6 +8,6 @@
     /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const templates = {
-      greeting: html`你好, <b>世界!</b>`,
+      'greeting': html`你好, <b>世界!</b>`,
     };
   

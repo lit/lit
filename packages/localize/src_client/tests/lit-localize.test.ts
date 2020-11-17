@@ -84,7 +84,7 @@ suite('lit-localize', () => {
     });
 
     test('renders regular template in English', () => {
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hello World');
     });
 
@@ -92,13 +92,16 @@ suite('lit-localize', () => {
       const loaded = setLocale('es-419');
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hola Mundo');
     });
 
     test('renders parameterized template in English', () => {
       render(
-        msg('parameterized', (name: string) => html`Hello ${name}`, 'friend'),
+        msg((name: string) => html`Hello ${name}`, {
+          id: 'parameterized',
+          args: ['friend'],
+        }),
         container
       );
       assert.equal(container.textContent, 'Hello friend');
@@ -109,7 +112,10 @@ suite('lit-localize', () => {
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
       render(
-        msg('parameterized', (name: string) => html`Hello ${name}`, 'friend'),
+        msg((name: string) => html`Hello ${name}`, {
+          id: 'parameterized',
+          args: ['friend'],
+        }),
         container
       );
       assert.equal(container.textContent, 'Hola friend');
@@ -119,7 +125,7 @@ suite('lit-localize', () => {
   suite('Localized mixin', () => {
     class XGreeter extends Localized(LitElement) {
       render() {
-        return msg('greeting', html`<b>Hello World</b>`);
+        return msg(html`<b>Hello World</b>`, {id: 'greeting'});
       }
     }
     customElements.define('x-greeter', XGreeter);
@@ -177,13 +183,13 @@ suite('lit-localize', () => {
 
     function assertEnglish() {
       assert.equal(getLocale(), 'en');
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hello World');
     }
 
     function assertSpanish() {
       assert.equal(getLocale(), 'es-419');
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hola Mundo');
     }
 
