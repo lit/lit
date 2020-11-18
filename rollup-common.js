@@ -48,9 +48,8 @@ const reservedProperties = [
   '_value',
   '_setValue',
   'createTreeWalker',
-  // Note, reserved so that prod updating-element platform-support
-  // can share this key with dev lit-element platform-support which
-  // imports it.
+  // Note, used in platform-support and reserved so platform-support can work
+  // x-version.
   '_handlesPrepareStyles',
   // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
   // crossPackagePropertyMangles once lit-ssr uses the rollup config)
