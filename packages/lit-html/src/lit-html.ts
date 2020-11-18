@@ -718,7 +718,7 @@ function resolveDirective(
   i?: number
 ) {
   let directive =
-    i != null
+    i !== undefined
       ? (part as AttributePart)._directives?.[i]
       : (part as NodePart)._directive;
   const directiveClass = isPrimitive(value)
@@ -729,7 +729,7 @@ function resolveDirective(
       directiveClass !== undefined
         ? new directiveClass(part as PartInfo)
         : undefined;
-    if (i != null) {
+    if (i !== undefined) {
       ((part as AttributePart)._directives ??= [])[i] = directive;
     } else {
       (part as NodePart)._directive = directive;
