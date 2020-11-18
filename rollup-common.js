@@ -48,6 +48,9 @@ const reservedProperties = [
   '_value',
   '_setValue',
   'createTreeWalker',
+  // Note, used in platform-support and reserved so platform-support can work
+  // x-version.
+  '_handlesPrepareStyles',
   // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
   // crossPackagePropertyMangles once lit-ssr uses the rollup config)
   // lit-html: AttributePart (used by render-lit-html)
@@ -77,7 +80,6 @@ const crossPackagePropertyMangles = {
   // lit-html: TemplateInstance
   _template: 'H',
   // updating-element: UpdatingElement
-  _handlesPrepareStyles: 'R',
   _didUpdate: 'S',
   _controllers: 'T',
   // lit-element: LitElement
