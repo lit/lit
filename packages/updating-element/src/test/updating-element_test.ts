@@ -23,6 +23,14 @@ import {
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+// Note, since tests are not built with production support, detect DEV_MODE
+// by checking if warning API is available.
+const DEV_MODE = !!UpdatingElement.enableWarning;
+
+if (DEV_MODE) {
+  UpdatingElement.disableWarning?.('change-in-update');
+}
+
 suite('UpdatingElement', () => {
   let container: HTMLElement;
 
@@ -35,6 +43,20 @@ suite('UpdatingElement', () => {
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
+  });
+
+  test(`renderRoot exists after connectedCallback`, async () => {
+    class E extends UpdatingElement {
+      hasRenderRoot = false;
+      connectedCallback() {
+        super.connectedCallback();
+        this.hasRenderRoot = !!this.renderRoot;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    assert.isTrue(el.hasRenderRoot);
   });
 
   test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
@@ -61,32 +83,51 @@ suite('UpdatingElement', () => {
   test('`shouldUpdate` controls update', async () => {
     class E extends UpdatingElement {
       needsUpdate = true;
+      willUpdateCount = 0;
       updateCount = 0;
+      updatedCount = 0;
 
       shouldUpdate() {
         return this.needsUpdate;
       }
 
-      updated() {
+      willUpdate() {
+        this.willUpdateCount++;
+      }
+
+      update(props: PropertyValues) {
+        super.update(props);
         this.updateCount++;
+      }
+
+      updated() {
+        this.updatedCount++;
       }
     }
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
+    assert.equal(el.willUpdateCount, 1);
     assert.equal(el.updateCount, 1);
+    assert.equal(el.updatedCount, 1);
     el.needsUpdate = false;
     el.requestUpdate();
     await el.updateComplete;
+    assert.equal(el.willUpdateCount, 1);
     assert.equal(el.updateCount, 1);
+    assert.equal(el.updatedCount, 1);
     el.needsUpdate = true;
     el.requestUpdate();
     await el.updateComplete;
+    assert.equal(el.willUpdateCount, 2);
     assert.equal(el.updateCount, 2);
+    assert.equal(el.updatedCount, 2);
     el.requestUpdate();
     await el.updateComplete;
+    assert.equal(el.willUpdateCount, 3);
     assert.equal(el.updateCount, 3);
+    assert.equal(el.updatedCount, 3);
   });
 
   test('property options', async () => {
@@ -1234,6 +1275,10 @@ suite('UpdatingElement', () => {
         return true;
       }
 
+      willUpdate() {
+        this.info.push('willUpdate');
+      }
+
       update(props: PropertyValues) {
         this.info.push('before-update');
         super.update(props);
@@ -1255,6 +1300,7 @@ suite('UpdatingElement', () => {
     el.info.push('updateComplete');
     assert.deepEqual(el.info, [
       'shouldUpdate',
+      'willUpdate',
       'before-update',
       'after-update',
       'firstUpdated',
@@ -2408,10 +2454,12 @@ suite('UpdatingElement', () => {
 
     let container: HTMLElement;
 
+    const isIE = /Trident/.test(navigator.userAgent);
+
     const errorsThrown = async () => {
       await nextFrame();
       // Note, should be done by rAF, but FF/IE appears to need more time.
-      await new Promise((r) => setTimeout(r));
+      await new Promise((r) => setTimeout(r, isIE ? 50 : 0));
     };
 
     setup(() => {

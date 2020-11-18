@@ -61,6 +61,7 @@ packages/localize/tests/
 packages/localize/.tsbuildinfo.client
 packages/localize/lit-localize.*
 packages/localize/localized-element.*
+packages/localize/examples/*/node_modules/
 
 packages/tests/node_modules/
 
