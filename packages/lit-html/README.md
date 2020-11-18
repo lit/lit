@@ -42,7 +42,6 @@ these and other minor breaking changes.
   implemented. This is a temporary state:
   - `asyncAppend`
   - `asyncReplace`
-  - `until`
 
 ## 🚨 Migrating directives
 

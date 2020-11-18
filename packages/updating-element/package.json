@@ -87,7 +87,7 @@
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/webcomponentsjs": "^2.2.3",
+    "@webcomponents/webcomponentsjs": "^2.5.0",
     "chokidar-cli": "^2.1.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",

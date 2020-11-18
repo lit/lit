@@ -298,7 +298,9 @@ export type AttributePartInfo = {
  */
 export type PartInfo = NodePartInfo | AttributePartInfo;
 
-export type DirectiveClass = {new (part: PartInfo): Directive};
+export type DirectiveClass = {
+  new (part: PartInfo, index?: number): Directive;
+};
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -727,7 +729,7 @@ function resolveDirective(
   if (directive?.constructor !== directiveClass) {
     directive =
       directiveClass !== undefined
-        ? new directiveClass(part as PartInfo)
+        ? new directiveClass(part as PartInfo, i)
         : undefined;
     if (i !== undefined) {
       ((part as AttributePart)._directives ??= [])[i] = directive;
