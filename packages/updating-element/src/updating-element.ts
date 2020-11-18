@@ -265,7 +265,7 @@ export interface Controller {
   disconnectedCallback?(): void;
   willUpdate?(): void;
   update?(): void;
-  didUpdate?(): void;
+  updated?(): void;
   requestUpdate?(): void;
 }
 
@@ -930,7 +930,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
+        this._controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
+        this._controllers?.forEach((c) => c.update?.());
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -945,20 +947,20 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this.didUpdate(changedProperties);
+      this._didUpdate(changedProperties);
     }
   }
 
-  willUpdate(_changedProperties: PropertyValues) {
-    this._controllers?.forEach((c) => c.willUpdate?.());
-  }
+  willUpdate(_changedProperties: PropertyValues) {}
 
-  didUpdate(changedProperties: PropertyValues) {
-    this._controllers?.forEach((c) => c.didUpdate?.());
+  // Note, this is an override point for platform-support.
+  // @internal
+  _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
+    this._controllers?.forEach((c) => c.updated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1040,7 +1042,6 @@ export abstract class UpdatingElement extends HTMLElement {
    * @param _changedProperties Map of changed properties with old values
    */
   protected update(_changedProperties: PropertyValues) {
-    this._controllers?.forEach((c) => c.update?.());
     if (this._reflectingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
       // loops expecting arrays
