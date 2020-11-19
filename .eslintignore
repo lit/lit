@@ -21,7 +21,7 @@ packages/benchmarks/**/*.js.map
 packages/labs/development/
 packages/labs/node_modules/
 packages/labs/index.*
-packages/labs/frameworks/react/create-custom-element-component.*
+packages/labs/frameworks/react/create-component.*
 packages/labs/frameworks/react/create-element.*
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
