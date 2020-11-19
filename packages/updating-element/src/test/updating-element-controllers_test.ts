@@ -29,9 +29,6 @@ suite('UpdatingElement controllers', () => {
     connectedCount = 0;
     disconnectedCount = 0;
     callbackOrder: string[] = [];
-    willUpdateChangedProperties?: PropertyValues;
-    updateChangedProperties?: PropertyValues;
-    updatedChangedProperties?: PropertyValues;
 
     constructor(host: UpdatingElement) {
       this.host = host;
@@ -48,21 +45,18 @@ suite('UpdatingElement controllers', () => {
       this.callbackOrder.push('disconnectedCallback');
     }
 
-    willUpdate(changedProperties: PropertyValues) {
+    willUpdate() {
       this.willUpdateCount++;
-      this.willUpdateChangedProperties = changedProperties;
       this.callbackOrder.push('willUpdate');
     }
 
-    update(changedProperties: PropertyValues) {
+    update() {
       this.updateCount++;
-      this.updateChangedProperties = changedProperties;
       this.callbackOrder.push('update');
     }
 
-    updated(changedProperties: PropertyValues) {
+    updated() {
       this.updatedCount++;
-      this.updatedChangedProperties = changedProperties;
       this.callbackOrder.push('updated');
     }
   }
@@ -154,19 +148,6 @@ suite('UpdatingElement controllers', () => {
     assert.equal(el.controller.willUpdateCount, 2);
     assert.equal(el.controller.updateCount, 2);
     assert.equal(el.controller.updatedCount, 2);
-    const expectedChangedProperties = new Map([['foo', 'foo']]);
-    assert.deepEqual(
-      el.controller.willUpdateChangedProperties,
-      expectedChangedProperties
-    );
-    assert.deepEqual(
-      el.controller.updateChangedProperties,
-      expectedChangedProperties
-    );
-    assert.deepEqual(
-      el.controller.updatedChangedProperties,
-      expectedChangedProperties
-    );
   });
 
   test('controllers callback order', async () => {
