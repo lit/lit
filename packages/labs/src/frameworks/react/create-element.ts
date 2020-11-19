@@ -15,7 +15,7 @@
 // TODO: Write a UMD->module shim or take React as an argument to
 // createReactComponent so we don't have to worry about how to load React.
 import * as ReactModule from 'react';
-import {createCustomElementComponent} from './create-custom-element-component.js';
+import {createComponent} from './create-component.js';
 
 const isCustomElement = (tagName: unknown) =>
   typeof tagName === 'string' && customElements.get(tagName);
@@ -39,10 +39,7 @@ export const createElement = (React: any) => {
       const tagName = type;
       type = componentMap.get(type);
       if (type === undefined) {
-        componentMap.set(
-          tagName,
-          (type = createCustomElementComponent(React, tagName))
-        );
+        componentMap.set(tagName, (type = createComponent(React, tagName)));
       }
     }
     return createElement(type, props, ...children);
