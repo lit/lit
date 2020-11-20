@@ -20,6 +20,9 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  * This is a very unsafe operation and may break templates if changes
  * the structure of a template. Do not pass user input to this function
  * without sanitizing it.
+ *
+ * Static values can be changed, but they will cause a complete re-render
+ * since they effectively create a new template.
  */
 export const unsafeStatic = (value: string) => ({
   _$litStatic$: value,
@@ -37,8 +40,6 @@ const tag = (coreTag: typeof coreHtml) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {
-  // TODO: join template strings with values - a joiner or the static value
-
   let key = strings[0];
   for (let i = 0; i < strings.length; i++) {
     if ((values[i] as StaticValue)?._$litStatic$ !== undefined) {
@@ -54,30 +55,36 @@ const tag = (coreTag: typeof coreHtml) => (
     const newStrings: Array<string> = [];
     const l = strings.length - 1;
     let i = 0;
+    let hasStatics = false;
+    let staticValue;
+    let s;
 
     while (i < l) {
-      let s = strings[i];
-
+      s = strings[i];
       // Collect any unsafeStatic values, and their following template strings
       // so that we treat a run of template strings and unsafe static values as
       // a single template string.
-      while (i < l && (values[i] as StaticValue)?._$litStatic$ !== undefined) {
-        s += (values[i] as StaticValue)._$litStatic$ + strings[++i];
+      while (
+        i < l &&
+        (staticValue = (values[i] as StaticValue)?._$litStatic$) !== undefined
+      ) {
+        s += staticValue + strings[++i];
+        hasStatics = true;
       }
       newStrings.push(s);
-      // If by consuming unsafe static values we use the last template string,
-      // then this template has no dynamic bindings.
-      if (i++ > l) {
-        break;
-      }
+      i++;
     }
-    if (i <= l) {
+    // If the last value isn't static (which would have consumed the last
+    // string), then we need to add the last string.
+    if (i === l) {
       newStrings.push(strings[l]);
     }
     // (newStrings as any as {raw: Array<string>}).raw = newStrings;
     stringsCache.set(
       key,
-      (processedStrings = (newStrings as unknown) as TemplateStringsArray)
+      (processedStrings = hasStatics
+        ? ((newStrings as unknown) as TemplateStringsArray)
+        : strings)
     );
   }
 
