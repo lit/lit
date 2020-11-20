@@ -40,60 +40,50 @@ const tag = (coreTag: typeof coreHtml) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {
-  let key = strings[0];
-  for (let i = 0; i < strings.length; i++) {
-    if ((values[i] as StaticValue)?._$litStatic$ !== undefined) {
-      key += (values[i] as StaticValue)._$litStatic$;
-    } else {
-      key += '${lit-html-joiner}';
+  const l = values.length;
+  let staticValue: string | undefined;
+  let dynamicValue: unknown;
+  const staticStrings: Array<string> = [];
+  const dynamicValues: Array<unknown> = [];
+  let i = 0;
+  let hasStatics = false;
+  let s: string;
+
+  while (i < l) {
+    s = strings[i];
+    // Collect any unsafeStatic values, and their following template strings
+    // so that we treat a run of template strings and unsafe static values as
+    // a single template string.
+    while (
+      i < l &&
+      ((dynamicValue = values[i]),
+      (staticValue = (dynamicValue as StaticValue)?._$litStatic$)) !== undefined
+    ) {
+      s += staticValue + strings[++i];
+      hasStatics = true;
     }
-    key += strings[i + 1];
+    dynamicValues.push(dynamicValue);
+    staticStrings.push(s);
+    i++;
+  }
+  // If the last value isn't static (which would have consumed the last
+  // string), then we need to add the last string.
+  if (i === l) {
+    staticStrings.push(strings[l]);
   }
 
-  let processedStrings = stringsCache.get(key);
-  if (processedStrings === undefined) {
-    const newStrings: Array<string> = [];
-    const l = strings.length - 1;
-    let i = 0;
-    let hasStatics = false;
-    let staticValue;
-    let s;
-
-    while (i < l) {
-      s = strings[i];
-      // Collect any unsafeStatic values, and their following template strings
-      // so that we treat a run of template strings and unsafe static values as
-      // a single template string.
-      while (
-        i < l &&
-        (staticValue = (values[i] as StaticValue)?._$litStatic$) !== undefined
-      ) {
-        s += staticValue + strings[++i];
-        hasStatics = true;
-      }
-      newStrings.push(s);
-      i++;
+  if (hasStatics) {
+    const key = staticStrings.join('$$lit$$');
+    strings = stringsCache.get(key)!;
+    if (strings === undefined) {
+      stringsCache.set(
+        key,
+        (strings = (staticStrings as unknown) as TemplateStringsArray)
+      );
     }
-    // If the last value isn't static (which would have consumed the last
-    // string), then we need to add the last string.
-    if (i === l) {
-      newStrings.push(strings[l]);
-    }
-    // (newStrings as any as {raw: Array<string>}).raw = newStrings;
-    stringsCache.set(
-      key,
-      (processedStrings = hasStatics
-        ? ((newStrings as unknown) as TemplateStringsArray)
-        : strings)
-    );
+    values = dynamicValues;
   }
-
-  return coreTag(
-    processedStrings,
-    ...values.filter(
-      (v) => v != null && (v as StaticValue)._$litStatic$ === undefined
-    )
-  );
+  return coreTag(strings, ...values);
 };
 
 /**
