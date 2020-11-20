@@ -530,7 +530,7 @@ export function* renderTemplateResult(
           part._commitValue = (value: unknown) => {
             committedValue = value;
           };
-          part._setValue(value, partIndex);
+          part._setValue(value, part, partIndex);
         }
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`

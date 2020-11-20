@@ -1,4 +1,25 @@
-import {AttributePart, NodePart, Part, nothing} from './lit-html.js';
+/**
+ * @license
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+import {
+  AttributePart,
+  NodePart,
+  Part,
+  nothing,
+  Directive,
+  DirectiveParent,
+} from './lit-html.js';
 
 /**
  * The state of a NodePart, which can be detached and reattached.
@@ -68,7 +89,8 @@ export const createAndInsertPart = (
 export const setPartValue = <T extends Part>(
   part: T,
   value: unknown,
-  index?: number
+  index?: number,
+  directiveParent: DirectiveParent = part
 ): T => {
   if ((part as AttributePart).strings !== undefined) {
     if (index === undefined) {
@@ -78,11 +100,15 @@ export const setPartValue = <T extends Part>(
     }
     const newValues = [...(part._value as Array<unknown>)];
     newValues[index] = value;
-    (part as AttributePart)._setValue(newValues, 0);
+    (part as AttributePart)._setValue(newValues, directiveParent, 0);
   } else {
-    part._setValue(value);
+    part._setValue(value, directiveParent);
   }
   return part;
+};
+
+export const updateDirectiveValue = (directive: Directive, value: unknown) => {
+  setPartValue(directive._part, value, directive._attributeIndex, directive);
 };
 
 export const getPartValue = (part: NodePart) => part._value;
