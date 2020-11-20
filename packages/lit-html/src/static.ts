@@ -14,7 +14,7 @@ export const unsafeStatic = (value: string) => ({
 
 type StaticValue = ReturnType<typeof unsafeStatic>;
 
-const stringsCache = new WeakMap<TemplateStringsArray, TemplateStringsArray>();
+const stringsCache = new Map<string, TemplateStringsArray>();
 
 /**
  * Generates a template literal tag function that returns a TemplateResult with
@@ -24,7 +24,19 @@ const tag = (coreTag: typeof coreHtml) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {
-  let processedStrings = stringsCache.get(strings);
+  // TODO: join template strings with values - a joiner or the static value
+
+  let key = strings[0];
+  for (let i = 0; i < strings.length; i++) {
+    if ((values[i] as StaticValue)?._$litStatic$ !== undefined) {
+      key += (values[i] as StaticValue)._$litStatic$;
+    } else {
+      key += '${lit-html-joiner}';
+    }
+    key += strings[i + 1];
+  }
+
+  let processedStrings = stringsCache.get(key);
   if (processedStrings === undefined) {
     const newStrings: Array<string> = [];
     const l = strings.length - 1;
@@ -37,7 +49,7 @@ const tag = (coreTag: typeof coreHtml) => (
       // so that we treat a run of template strings and unsafe static values as
       // a single template string.
       while (i < l && (values[i] as StaticValue)?._$litStatic$ !== undefined) {
-        s += (values[i] as StaticValue)?._$litStatic$ + strings[++i];
+        s += (values[i] as StaticValue)._$litStatic$ + strings[++i];
       }
       newStrings.push(s);
       // If by consuming unsafe static values we use the last template string,
@@ -51,7 +63,7 @@ const tag = (coreTag: typeof coreHtml) => (
     }
     // (newStrings as any as {raw: Array<string>}).raw = newStrings;
     stringsCache.set(
-      strings,
+      key,
       (processedStrings = (newStrings as unknown) as TemplateStringsArray)
     );
   }

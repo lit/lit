@@ -81,4 +81,55 @@ suite('static', () => {
     render(html`${unsafeStatic('<p>Hello</p>')}${null}`, container);
     assert.equal(stripExpressionComments(container.innerHTML), '<p>Hello</p>');
   });
+
+  test('static bindings are keyed by static values', () => {
+    // A template with a bound tag name. We should be able to re-render
+    // this template with different tag names and have the tag names update.
+    // New tag names will act as different templates.
+    const t = (tag: string, text: string) =>
+      html`<${unsafeStatic(tag)}>${text}</${unsafeStatic(tag)}>`;
+
+    render(t('div', 'abc'), container);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div>abc</div>'
+    );
+    const div = container.querySelector('div');
+
+    render(t('div', 'def'), container);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div>def</div>'
+    );
+    const div2 = container.querySelector('div');
+    // Static values are stable between renders like static template strings
+    assert.strictEqual(div2, div);
+
+    render(t('span', 'abc'), container);
+    // Rendering with a new static value should work, though it re-renders
+    // since we have a new template.
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<span>abc</span>'
+    );
+    const span = container.querySelector('div');
+
+    render(t('span', 'def'), container);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<span>def</span>'
+    );
+    const span2 = container.querySelector('div');
+    assert.strictEqual(span2, span);
+
+    render(t('div', 'abc'), container);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div>abc</div>'
+    );
+    const div3 = container.querySelector('div');
+    // Static values do not have any caching behavior. Re-rendering with a
+    // previously used value does not restore static DOM
+    assert.notStrictEqual(div3, div);
+  });
 });
