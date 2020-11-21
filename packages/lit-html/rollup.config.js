@@ -27,6 +27,7 @@ export default litProdConfig({
     'directives/template-content',
     'directives/unsafe-html',
     'directives/unsafe-svg',
+    'directives/until',
     'directives/render-light',
     'lit-html',
     'parts',

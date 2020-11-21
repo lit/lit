@@ -303,7 +303,10 @@ export type ElementPartInfo = {
  */
 export type PartInfo = NodePartInfo | AttributePartInfo | ElementPartInfo;
 
-export type DirectiveClass = {new (part: PartInfo): Directive};
+export type DirectiveClass = {
+  new (part: PartInfo): Directive;
+  new (part: AttributePartInfo, index: number): Directive;
+};
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -1107,7 +1110,8 @@ export class AttributePart {
       let directive: Directive = (this._directives ??= [])[i];
       if (directive?.constructor !== directiveCtor) {
         directive = this._directives[i] = new directiveCtor(
-          this as AttributePartInfo
+          this as AttributePartInfo,
+          i
         );
       }
       // TODO (justinfagnani): To support nested directives, we'd need to
