@@ -547,12 +547,13 @@ const getTemplateHtml = (
     // We have four cases:
     //  1. We're in text position, and not in a raw text element
     //     (regex === textEndRegex): insert a comment marker.
-    //  2. We have a non-negtive attrNameEndIndex which means we need to
+    //  2. We have a non-negative attrNameEndIndex which means we need to
     //     rewrite the attribute name to add a bound attribute suffix.
-    //  3. Otherwise, we're at the non-first binding in a multi-binding
-    //     attribute, or somewhere else inside the tag. Use a plain marker,
-    //     but if we're in attribute name position (attrNameEndIndex === -2),
-    //     add a sequential suffix to generate a unique attribute name.
+    //  3. We're at the non-first binding in a multi-binding attribute, use a
+    //     plain marker.
+    //  4. We're somewhere else inside the tag. If we're in attribute name
+    //     position (attrNameEndIndex === -2), add a sequential suffix to
+    //     generate a unique attribute name.
     html +=
       regex === textEndRegex
         ? s + nodeMarker

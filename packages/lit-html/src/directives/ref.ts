@@ -14,23 +14,33 @@
 import {Directive, directive, nothing, ElementPart} from '../lit-html.js';
 
 /**
- * A container for a reference to an element.
+ * Creates a new Ref object, which is container for a reference to an element.
  */
-export class Ref<T = Element> {
+export const createRef = <T = Element>() => new Ref<T>();
+
+class Ref<T = Element> {
   value?: T;
 
-  set(v: T): void {
+  set(v: T | undefined): void {
     this.value = v;
   }
 }
 
+type RefOrCallback = Ref | ((el: Element | undefined) => void);
+
 class RefDirective extends Directive {
-  render(_ref: Ref) {
+  private _element?: Element;
+
+  render(_ref: RefOrCallback) {
     return nothing;
   }
 
   update(part: ElementPart, [ref]: Parameters<this['render']>) {
-    if (ref.value !== part.element) {
+    if (typeof ref === 'function') {
+      if (this._element !== part.element) {
+        ref((this._element = part.element));
+      }
+    } else if (ref.value !== part.element) {
       ref.set(part.element);
     }
     return nothing;
@@ -38,14 +48,22 @@ class RefDirective extends Directive {
 }
 
 /**
- * Sets the value of a Ref object to the element it's bound to.
+ * Sets the value of a Ref object or ref callback to the element it's bound
+ * to.
  *
- * A Ref acts as a container for a reference to an element. The ref
- * directive sets the value of the Ref object during rendering.
+ * A Ref object acts as a container for a reference to an element. A ref
+ * callbacks is a function that takes an element as its only argument.
+ *
+ * The ref directive sets the value of the Ref object or calls the ref
+ * callback during rendering, if the referenced element changed.
+ *
+ * Note: ref() does not currently clear a Ref object or call a callback
+ * when an element is disposed of during conditional rendering. This will
+ * be enabled when disconnectable directives are added.
  *
  * @example
  *
- *     const inputRef = new Ref();
+ *     const inputRef = createRef();
  *     render(html`<input ${ref(inputRef)}>`, container);
  *     inputRef.value.focus();
  */
