@@ -1336,6 +1336,8 @@ export class EventPart extends AttributePart {
 export class ElementPart {
   readonly type = ELEMENT_PART;
   private _directive?: Directive;
+  // This is to ensure that every Part has a _value.
+  _value: undefined;
 
   constructor(public element: Element) {}
 
