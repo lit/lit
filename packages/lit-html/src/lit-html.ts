@@ -923,25 +923,29 @@ export class NodePart {
     return this._startNode.parentNode!.insertBefore(node, ref);
   }
 
+  private _clearAndInsertNode(value: Node): Node | null {
+    this._clear();
+    if (
+      ENABLE_EXTRA_SECURITY_HOOKS &&
+      sanitizerFactoryInternal !== noopSanitizer
+    ) {
+      const parentNodeName = this._startNode.parentNode?.nodeName;
+      if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
+        this._insert(
+          new Text(
+            '/* lit-html will not write ' +
+              'TemplateResults to scripts and styles */'
+          )
+        );
+        return null;
+      }
+    }
+    return this._insert(value);
+  }
+
   private _commitNode(value: Node): void {
     if (this._value !== value) {
-      this._clear();
-      if (
-        ENABLE_EXTRA_SECURITY_HOOKS &&
-        sanitizerFactoryInternal !== noopSanitizer
-      ) {
-        const parentNodeName = this._startNode.parentNode?.nodeName;
-        if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
-          this._insert(
-            new Text(
-              '/* lit-html will not write ' +
-                'TemplateResults to scripts and styles */'
-            )
-          );
-          return;
-        }
-      }
-      this._value = this._insert(value);
+      this._value = this._clearAndInsertNode(value);
     }
   }
 
@@ -970,7 +974,7 @@ export class NodePart {
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         const textNode = document.createTextNode('');
-        this._commitNode(textNode);
+        this._clearAndInsertNode(textNode);
         // When setting text content, for security purposes it matters a lot
         // what the parent is. For example, <style> and <script> need to be
         // handled with care, while <span> does not. So first we need to put a
@@ -981,7 +985,7 @@ export class NodePart {
         value = this._textSanitizer(value);
         textNode.data = value as string;
       } else {
-        this._commitNode(d.createTextNode(value as string));
+        this._clearAndInsertNode(d.createTextNode(value as string));
       }
     }
     this._value = value;
@@ -996,7 +1000,7 @@ export class NodePart {
       const instance = new TemplateInstance(template!);
       const fragment = instance._clone(this.options);
       instance._update(values);
-      this._commitNode(fragment);
+      this._clearAndInsertNode(fragment);
       this._value = instance;
     }
   }

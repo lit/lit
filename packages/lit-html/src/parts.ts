@@ -107,7 +107,7 @@ export const setPartValue = <T extends Part>(
   return part;
 };
 
-export const updateDirectiveValue = (directive: Directive, value: unknown) => {
+export const setDirectiveValue = (directive: Directive, value: unknown) => {
   setPartValue(directive._part, value, directive._attributeIndex, directive);
 };
 

@@ -13,7 +13,7 @@
  */
 
 import {Directive, directive, Part, noChange, $private} from '../lit-html.js';
-import {updateDirectiveValue} from '../parts.js';
+import {setDirectiveValue} from '../parts.js';
 
 const DEV_MODE = true;
 
@@ -95,7 +95,7 @@ class UntilDirective extends Directive {
         // higher-priority than what's already been rendered.
         if (index > -1 && index < state.lastRenderedIndex) {
           state.lastRenderedIndex = index;
-          updateDirectiveValue(this, resolvedValue);
+          setDirectiveValue(this, resolvedValue);
         }
       });
     }
