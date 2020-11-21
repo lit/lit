@@ -33,10 +33,9 @@ type StaticValue = ReturnType<typeof unsafeStatic>;
 const stringsCache = new Map<string, TemplateStringsArray>();
 
 /**
- * Generates a template literal tag function that returns a TemplateResult with
- * the given result type.
+ * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
  */
-const tag = (coreTag: typeof coreHtml) => (
+export const withStatic = (coreTag: typeof coreHtml) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {
@@ -89,11 +88,15 @@ const tag = (coreTag: typeof coreHtml) => (
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
+ *
+ * Includes static value support from `lit-html/static.js`.
  */
-export const html = tag(coreHtml);
+export const html = withStatic(coreHtml);
 
 /**
  * Interprets a template literal as an SVG template that can efficiently
  * render to and update a container.
+ *
+ * Includes static value support from `lit-html/static.js`.
  */
-export const svg = tag(coreSvg);
+export const svg = withStatic(coreSvg);

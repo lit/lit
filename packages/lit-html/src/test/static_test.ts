@@ -95,6 +95,7 @@ suite('static', () => {
       '<div>abc</div>'
     );
     const div = container.querySelector('div');
+    assert.isNotNull(div);
 
     render(t('div', 'def'), container);
     assert.equal(
@@ -112,14 +113,15 @@ suite('static', () => {
       stripExpressionComments(container.innerHTML),
       '<span>abc</span>'
     );
-    const span = container.querySelector('div');
+    const span = container.querySelector('span');
+    assert.isNotNull(span);
 
     render(t('span', 'def'), container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
       '<span>def</span>'
     );
-    const span2 = container.querySelector('div');
+    const span2 = container.querySelector('span');
     assert.strictEqual(span2, span);
 
     render(t('div', 'abc'), container);
