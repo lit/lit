@@ -20,9 +20,9 @@ import {
   NodePart,
   nothing,
   render,
+  RenderOptions,
   svg,
   TemplateResult,
-  RenderOptions,
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
