@@ -20,10 +20,11 @@ import {
   NodePart,
   nothing,
   render,
+  RenderOptions,
   svg,
   TemplateResult,
-  RenderOptions,
   SanitizerFactory,
+  Part,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -32,6 +33,7 @@ import {
 } from './test-utils/strip-markers.js';
 import {repeat} from '../directives/repeat.js';
 import {DisconnectableDirective} from '../disconnectable-directive.js';
+import {setDirectiveValue} from '../parts.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1793,6 +1795,130 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+
+    suite('nested directives', () => {
+      const aDirective = directive(
+        class ADirective extends Directive {
+          render(bool: boolean, v: unknown) {
+            return bool ? v : nothing;
+          }
+        }
+      );
+      const bDirective = directive(
+        class BDirective extends Directive {
+          count = 0;
+          render(v: unknown) {
+            return `[B:${this.count++}:${v}]`;
+          }
+        }
+      );
+
+      test('nested directives in NodePart', () => {
+        const template = (bool: boolean, v: unknown) =>
+          html`<div>${aDirective(bool, bDirective(v))}`;
+        assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
+        assertRender(template(true, 'Y'), `<div>[B:1:Y]</div>`);
+        assertRender(template(false, 'X'), `<div></div>`);
+        assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
+      });
+
+      test('nested directives in AttributePart', () => {
+        const template = (bool: boolean, v: unknown) =>
+          html`<div a=${aDirective(bool, bDirective(v))}></div>`;
+        assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
+        assertRender(template(true, 'Y'), `<div a="[B:1:Y]"></div>`);
+        assertRender(template(false, 'X'), `<div></div>`);
+        assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
+      });
+    });
+
+    suite('async nested directives', () => {
+      const aDirective = directive(
+        class ADirective extends Directive {
+          value: unknown;
+          promise!: Promise<unknown>;
+          render(_promise: Promise<unknown>) {
+            return 'initial';
+          }
+          update(_part: Part, [promise]: Parameters<this['render']>) {
+            if (promise !== this.promise) {
+              this.promise = promise;
+              promise.then((value) =>
+                setDirectiveValue(this, (this.value = value))
+              );
+            }
+            return this.value ?? this.render(promise);
+          }
+        }
+      );
+      const bDirective = directive(
+        class BDirective extends Directive {
+          count = 0;
+          render(v: unknown) {
+            return `[B:${this.count++}:${v}]`;
+          }
+        }
+      );
+
+      test('async nested directives in NodePart', async () => {
+        const template = (promise: Promise<unknown>) =>
+          html`<div>${aDirective(promise)}`;
+        let promise = Promise.resolve(bDirective('X'));
+        render(template(promise), container);
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div>initial</div>`
+        );
+        await promise;
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div>[B:0:X]</div>`
+        );
+        render(template(promise), container);
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div>[B:1:X]</div>`
+        );
+        promise = Promise.resolve(bDirective('Y'));
+        render(template(promise), container);
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div>[B:2:X]</div>`
+        );
+        await promise;
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div>[B:3:Y]</div>`
+        );
+      });
+
+      test('async nested directives in AttributePart', async () => {
+        const template = (promise: Promise<unknown>) =>
+          html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
+        let promise = Promise.resolve(bDirective('X'));
+        render(template(promise), container);
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div a="**initial##"></div>`
+        );
+        await promise;
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div a="**[B:0:X]##"></div>`
+        );
+        promise = Promise.resolve(bDirective('Y'));
+        render(template(promise), container);
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div a="**[B:1:X]##"></div>`
+        );
+        await promise;
+        assert.equal(
+          stripExpressionComments(container.innerHTML),
+          `<div a="**[B:2:Y]##"></div>`
+        );
+      });
     });
   });
 

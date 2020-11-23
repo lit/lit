@@ -176,8 +176,8 @@ const installDisconnectAPI = (child: DisconnectableChild) => {
 export abstract class DisconnectableDirective extends Directive {
   isDisconnected = false;
   _parent: Part;
-  constructor(partInfo: PartInfo) {
-    super();
+  constructor(partInfo: PartInfo, attributeIndex?: number) {
+    super(partInfo, attributeIndex);
     this._parent = partInfo as Part;
     // Climb the parent tree, creating a sparse tree of children needing
     // disconnection
@@ -209,9 +209,9 @@ export abstract class DisconnectableDirective extends Directive {
     }
   }
   /** @internal */
-  _resolve(part: Part, props: Array<unknown>): unknown {
+  _resolve(props: Array<unknown>): unknown {
     this._setConnected(true);
-    return super._resolve(part, props);
+    return super._resolve(props);
   }
   abstract disconnectedCallback(): void;
   abstract reconnectedCallback(): void;

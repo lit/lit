@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Console warnings added for removed API and other element problems in developer mode.
 - Adds `static shadowRootOptions` for customizing shadowRoot options. Rather than implementing `createRenderRoot`, this property can be set. For example, to create a closed shadowRoot using delegates focus: `static shadowRootOptions = {mode: 'closed', delegatesFocus: true}`.
 - Adds development mode, which can be enabled by setting the `development` Node exports condition. See `README.md` for more details.
 

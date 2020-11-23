@@ -298,7 +298,9 @@ export type AttributePartInfo = {
  */
 export type PartInfo = NodePartInfo | AttributePartInfo;
 
-export type DirectiveClass = {new (part: PartInfo): Directive};
+export type DirectiveClass = {
+  new (part: PartInfo, index?: number): Directive;
+};
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -394,6 +396,10 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 // Interfaces and type aliases can be interleaved freely.
 //
 
+// Type for classes that have a `_directive` or `_directives[]` field, used by
+// `resolveDirective`
+export type DirectiveParent = AttributePart | NodePart | Directive;
+
 /**
  * Base class for creating custom directives. Users should extend this class,
  * implement `render` and/or `update`, and then pass their subclass to
@@ -403,9 +409,25 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
  * change in future pre-releases.
  */
 export abstract class Directive {
+  //@internal
+  _part: NodePart | AttributePart;
+  //@internal
+  _attributeIndex: number | undefined;
+  //@internal
+  _directive?: Directive;
+  constructor(part: PartInfo, attributeIndex: number | undefined) {
+    this._part = part as Part;
+    this._attributeIndex = attributeIndex;
+  }
   /** @internal */
-  _resolve(part: Part, props: Array<unknown>): unknown {
-    return this.update(part, props);
+  _resolve(props: Array<unknown>): unknown {
+    const {_part, _attributeIndex} = this;
+    return resolveDirective(
+      _part,
+      this.update(_part, props),
+      this,
+      _attributeIndex
+    );
   }
   abstract render(...props: Array<unknown>): unknown;
   update(_part: Part, props: Array<unknown>): unknown {
@@ -713,38 +735,35 @@ class Template {
 
 type HasParent = NodePart | AttributePart | TemplateInstance;
 
-function resolveDirective(part: NodePart, value: unknown): unknown;
-function resolveDirective(
-  part: AttributePart,
-  value: unknown,
-  i: number
-): unknown;
 function resolveDirective(
   part: NodePart | AttributePart,
   value: unknown,
-  i?: number
-) {
-  let directive =
-    i != null
-      ? (part as AttributePart)._directives?.[i]
-      : (part as NodePart)._directive;
-  const directiveClass = isPrimitive(value)
+  directiveParent: DirectiveParent = part,
+  attributeIndex?: number
+): unknown {
+  let currentDirective =
+    attributeIndex !== undefined
+      ? (directiveParent as AttributePart)._directives?.[attributeIndex]
+      : (directiveParent as NodePart | Directive)._directive;
+  const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
-  if (directive?.constructor !== directiveClass) {
-    part._setDirectiveConnected?.(directive, false, true);
-    directive =
-      directiveClass !== undefined
-        ? new directiveClass(part as PartInfo)
-        : undefined;
-    if (i != null) {
-      ((part as AttributePart)._directives ??= [])[i] = directive;
+  if (currentDirective?.constructor !== nextDirectiveConstructor) {
+    part._setDirectiveConnected?.(currentDirective, false, true);
+    currentDirective =
+      nextDirectiveConstructor === undefined
+        ? undefined
+        : new nextDirectiveConstructor(part as PartInfo, attributeIndex);
+    if (attributeIndex !== undefined) {
+      ((directiveParent as AttributePart)._directives ??= [])[
+        attributeIndex
+      ] = currentDirective;
     } else {
-      (part as NodePart)._directive = directive;
+      (directiveParent as NodePart | Directive)._directive = currentDirective;
     }
   }
-  if (directive !== undefined) {
-    value = directive._resolve(part, (value as DirectiveResult).values);
+  if (currentDirective !== undefined) {
+    value = currentDirective._resolve((value as DirectiveResult).values);
   }
   return value;
 }
@@ -819,7 +838,7 @@ class TemplateInstance {
         continue;
       }
       if ((part as AttributePart).strings !== undefined) {
-        (part as AttributePart)._setValue(values, i);
+        (part as AttributePart)._setValue(values, part as AttributePart, i);
         i += (part as AttributePart).strings!.length - 1;
       } else {
         (part as NodePart)._setValue(values[i++]);
@@ -926,8 +945,8 @@ export class NodePart {
     return this._startNode.parentNode!;
   }
 
-  _setValue(value: unknown): void {
-    value = resolveDirective(this, value);
+  _setValue(value: unknown, directiveParent: DirectiveParent = this): void {
+    value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
       if (value !== this._value) {
         this._commitText(value);
@@ -1180,7 +1199,7 @@ export class AttributePart {
    * parts.
    *
    * @param value The part value, or an array of values for multi-valued parts
-   * @param from the index to start reading values from. `undefined` for
+   * @param valueIndex the index to start reading values from. `undefined` for
    *   single-valued parts
    * @param commitValue An optional method to override the _commitValue call;
    *   is used in hydration to no-op re-setting serialized attributes, and in
@@ -1189,24 +1208,25 @@ export class AttributePart {
    */
   _setValue(
     value: unknown | Array<unknown>,
-    from?: number,
+    directiveParent: DirectiveParent = this,
+    valueIndex?: number,
     noCommit?: boolean
   ) {
     const strings = this.strings;
 
     if (strings === undefined) {
       // Single-value binding case
-      const v = resolveDirective(this, value, 0);
+      value = resolveDirective(this, value, directiveParent, 0);
       // Only dirty-check primitives and `nothing`:
       // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
       // `nothing`. `v === this._value` is the dirty-check.
       if (
-        !((isPrimitive(v) || v === nothing) && v === this._value) &&
-        v !== noChange
+        !((isPrimitive(value) || value === nothing) && value === this._value) &&
+        value !== noChange
       ) {
-        this._value = v;
+        this._value = value;
         if (!noCommit) {
-          this._commitValue(v);
+          this._commitValue(value);
         }
       }
     } else {
@@ -1222,7 +1242,12 @@ export class AttributePart {
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = resolveDirective(this, (value as Array<unknown>)[from! + i], i);
+        v = resolveDirective(
+          this,
+          (value as Array<unknown>)[valueIndex! + i],
+          directiveParent,
+          i
+        );
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._value as Array<unknown>)[i];
@@ -1322,8 +1347,9 @@ export class EventPart extends AttributePart {
   // EventPart does not use the base _setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
-  _setValue(newListener: unknown) {
-    newListener = resolveDirective(this, newListener, 0) ?? nothing;
+  _setValue(newListener: unknown, directiveParent: DirectiveParent = this) {
+    newListener =
+      resolveDirective(this, newListener, directiveParent, 0) ?? nothing;
     if (newListener === noChange) {
       return;
     }
@@ -1400,6 +1426,7 @@ export const $private = {
   _TemplateInstance: TemplateInstance,
   _isPrimitive: isPrimitive,
   _isIterable: isIterable,
+  _resolveDirective: resolveDirective,
 };
 
 // Apply polyfills if available

@@ -1,6 +1,6 @@
 /development/
 /directives/
-node_modules/
+/node_modules/
 /test/
 /hydrate.*
 /lit-html.*

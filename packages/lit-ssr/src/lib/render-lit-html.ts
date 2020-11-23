@@ -21,7 +21,6 @@ import {
   nothing,
   noChange,
   Directive,
-  Part,
   NODE_PART,
   AttributePart,
   PropertyPart,
@@ -63,17 +62,13 @@ declare module 'parse5' {
 
 // Switch directive resolution to SSR-compatible `render`; the rule is that only
 // `render` (and not `update`) is run on the server
-Directive.prototype._resolve = function (
-  this: Directive,
-  _part: Part,
-  values: unknown[]
-) {
+Directive.prototype._resolve = function (this: Directive, values: unknown[]) {
   return this.render(...values);
 };
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
-
 /**
+
  * Operation to output static text
  */
 type TextOp = {
@@ -531,7 +526,7 @@ export function* renderTemplateResult(
           part._commitValue = (value: unknown) => {
             committedValue = value;
           };
-          part._setValue(value, partIndex);
+          part._setValue(value, part, partIndex);
         }
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`
