@@ -742,12 +742,10 @@ function resolveDirective(
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
-    if (nextDirectiveConstructor !== undefined) {
-      currentDirective =
-        nextDirectiveConstructor === undefined
-          ? undefined
-          : new nextDirectiveConstructor(part as PartInfo, attributeIndex);
-    }
+    currentDirective =
+      nextDirectiveConstructor === undefined
+        ? undefined
+        : new nextDirectiveConstructor(part as PartInfo, attributeIndex);
     if (attributeIndex !== undefined) {
       ((directiveParent as AttributePart)._directives ??= [])[
         attributeIndex
