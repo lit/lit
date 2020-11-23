@@ -35,12 +35,12 @@ class ClassMap extends Directive {
    */
   previousClasses?: Set<string>;
 
-  constructor(part: PartInfo) {
-    super();
+  constructor(partInfo: PartInfo, index?: number) {
+    super(partInfo, index);
     if (
-      part.type !== ATTRIBUTE_PART ||
-      part.name !== 'class' ||
-      (part.strings !== undefined && part.strings.length > 2)
+      partInfo.type !== ATTRIBUTE_PART ||
+      partInfo.name !== 'class' ||
+      (partInfo.strings !== undefined && partInfo.strings.length > 2)
     ) {
       throw new Error(
         'The `classMap` directive must be used in the `class` attribute ' +

@@ -24,7 +24,6 @@ import {
   TemplateResult,
   RenderOptions,
   SanitizerFactory,
-  PartInfo,
   Part,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
@@ -32,7 +31,7 @@ import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-import {setPartValue} from '../parts.js';
+import {setDirectiveValue} from '../parts.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1828,17 +1827,14 @@ suite('lit-html', () => {
         class ADirective extends Directive {
           value: unknown;
           promise!: Promise<unknown>;
-          constructor(_partInfo: PartInfo, public index: number | undefined) {
-            super();
-          }
           render(_promise: Promise<unknown>) {
             return 'initial';
           }
-          update(part: Part, [promise]: Parameters<this['render']>) {
+          update(_part: Part, [promise]: Parameters<this['render']>) {
             if (promise !== this.promise) {
               this.promise = promise;
               promise.then((value) =>
-                setPartValue(part, (this.value = value), this.index, this)
+                setDirectiveValue(this, (this.value = value))
               );
             }
             return this.value ?? this.render(promise);

@@ -35,12 +35,12 @@ export interface StyleInfo {
 class StyleMap extends Directive {
   previousStyleProperties?: Set<string>;
 
-  constructor(part: PartInfo) {
-    super();
+  constructor(partInfo: PartInfo, index?: number) {
+    super(partInfo, index);
     if (
-      part.type !== ATTRIBUTE_PART ||
-      part.name !== 'style' ||
-      (part.strings !== undefined && part.strings.length > 2)
+      partInfo.type !== ATTRIBUTE_PART ||
+      partInfo.name !== 'style' ||
+      (partInfo.strings !== undefined && partInfo.strings.length > 2)
     ) {
       throw new Error(
         'The `styleMap` directive must be used in the `style` attribute ' +

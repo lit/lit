@@ -407,12 +407,25 @@ export type DirectiveParent = AttributePart | NodePart | Directive;
  * change in future pre-releases.
  */
 export abstract class Directive {
-  _part!: NodePart | AttributePart;
-  _attributeIndex!: number | undefined;
+  //@internal
+  _part: NodePart | AttributePart;
+  //@internal
+  _attributeIndex: number | undefined;
+  //@internal
   _directive?: Directive;
+  constructor(part: PartInfo, attributeIndex: number | undefined) {
+    this._part = part as Part;
+    this._attributeIndex = attributeIndex;
+  }
   /** @internal */
-  _resolve(part: Part, props: Array<unknown>, index?: number): unknown {
-    return resolveDirective(part, this.update(part, props), this, index);
+  _resolve(props: Array<unknown>): unknown {
+    const {_part, _attributeIndex} = this;
+    return resolveDirective(
+      _part,
+      this.update(_part, props),
+      this,
+      _attributeIndex
+    );
   }
   abstract render(...props: Array<unknown>): unknown;
   update(_part: Part, props: Array<unknown>): unknown {
@@ -730,14 +743,10 @@ function resolveDirective(
     : (value as DirectiveResult)?._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
     if (nextDirectiveConstructor !== undefined) {
-      currentDirective = new nextDirectiveConstructor(
-        part as PartInfo,
-        attributeIndex
-      );
-      currentDirective._part = part;
-      currentDirective._attributeIndex = attributeIndex;
-    } else {
-      currentDirective = undefined;
+      currentDirective =
+        nextDirectiveConstructor === undefined
+          ? undefined
+          : new nextDirectiveConstructor(part as PartInfo, attributeIndex);
     }
     if (attributeIndex !== undefined) {
       ((directiveParent as AttributePart)._directives ??= [])[
@@ -748,11 +757,7 @@ function resolveDirective(
     }
   }
   if (currentDirective !== undefined) {
-    value = currentDirective._resolve(
-      part,
-      (value as DirectiveResult).values,
-      attributeIndex
-    );
+    value = currentDirective._resolve((value as DirectiveResult).values);
   }
   return value;
 }
@@ -923,29 +928,25 @@ export class NodePart {
     return this._startNode.parentNode!.insertBefore(node, ref);
   }
 
-  private _clearAndInsertNode(value: Node): Node | null {
-    this._clear();
-    if (
-      ENABLE_EXTRA_SECURITY_HOOKS &&
-      sanitizerFactoryInternal !== noopSanitizer
-    ) {
-      const parentNodeName = this._startNode.parentNode?.nodeName;
-      if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
-        this._insert(
-          new Text(
-            '/* lit-html will not write ' +
-              'TemplateResults to scripts and styles */'
-          )
-        );
-        return null;
-      }
-    }
-    return this._insert(value);
-  }
-
   private _commitNode(value: Node): void {
     if (this._value !== value) {
-      this._value = this._clearAndInsertNode(value);
+      this._clear();
+      if (
+        ENABLE_EXTRA_SECURITY_HOOKS &&
+        sanitizerFactoryInternal !== noopSanitizer
+      ) {
+        const parentNodeName = this._startNode.parentNode?.nodeName;
+        if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
+          this._insert(
+            new Text(
+              '/* lit-html will not write ' +
+                'TemplateResults to scripts and styles */'
+            )
+          );
+          return;
+        }
+      }
+      this._value = this._insert(value);
     }
   }
 
@@ -974,7 +975,7 @@ export class NodePart {
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         const textNode = document.createTextNode('');
-        this._clearAndInsertNode(textNode);
+        this._commitNode(textNode);
         // When setting text content, for security purposes it matters a lot
         // what the parent is. For example, <style> and <script> need to be
         // handled with care, while <span> does not. So first we need to put a
@@ -985,7 +986,7 @@ export class NodePart {
         value = this._textSanitizer(value);
         textNode.data = value as string;
       } else {
-        this._clearAndInsertNode(d.createTextNode(value as string));
+        this._commitNode(d.createTextNode(value as string));
       }
     }
     this._value = value;
@@ -1000,7 +1001,7 @@ export class NodePart {
       const instance = new TemplateInstance(template!);
       const fragment = instance._clone(this.options);
       instance._update(values);
-      this._clearAndInsertNode(fragment);
+      this._commitNode(fragment);
       this._value = instance;
     }
   }

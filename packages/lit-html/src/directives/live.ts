@@ -31,14 +31,14 @@ import {
 const RESET_VALUE = {};
 
 class LiveDirective extends Directive {
-  constructor(part: PartInfo) {
-    super();
-    if (part.type === EVENT_PART || part.type === NODE_PART) {
+  constructor(partInfo: PartInfo, index?: number) {
+    super(partInfo, index);
+    if (partInfo.type === EVENT_PART || partInfo.type === NODE_PART) {
       throw new Error(
         'The `live` directive is not allowed on text or event bindings'
       );
     }
-    if (part.strings !== undefined) {
+    if (partInfo.strings !== undefined) {
       throw new Error('`live` bindings can only contain a single expression');
     }
   }
