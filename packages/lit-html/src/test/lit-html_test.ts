@@ -1922,24 +1922,33 @@ suite('lit-html', () => {
     });
   });
 
-  class DisconnectingDirective extends DisconnectableDirective {
-    log!: Array<string>;
-    id!: string;
+  const disconnectingDirective = directive(
+    class extends DisconnectableDirective {
+      log!: Array<string>;
+      id!: string;
 
-    render(log: Array<string>, id = '') {
-      this.log = log;
-      this.id = id;
-      return 'hello';
-    }
+      render(log: Array<string>, id = '', value?: unknown, bool = true) {
+        this.log = log;
+        this.id = id;
+        return bool ? value : nothing;
+      }
 
-    disconnectedCallback() {
-      this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+      disconnectedCallback() {
+        this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+      }
+      reconnectedCallback() {
+        this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
+      }
     }
-    reconnectedCallback() {
-      this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
+  );
+
+  const passthroughDirective = directive(
+    class extends Directive {
+      render(value: unknown, bool = true) {
+        return bool ? value : nothing;
+      }
     }
-  }
-  const disconnectingDirective = directive(DisconnectingDirective);
+  );
 
   test('directives can be disconnected from NodeParts', () => {
     const log: Array<string> = [];
@@ -2003,6 +2012,122 @@ suite('lit-html', () => {
     log.length = 0;
     go(false, false);
     assert.deepEqual(log, ['disconnected-right']);
+  });
+
+  test('directives returned from other directives can be disconnected', () => {
+    const log: Array<string> = [];
+    const go = (clearAll: boolean, left: boolean, right: boolean) =>
+      render(
+        clearAll
+          ? nothing
+          : html`
+          ${html`${html`${passthroughDirective(
+            disconnectingDirective(log, 'left'),
+            left
+          )}`}`}
+          ${html`${html`${passthroughDirective(
+            disconnectingDirective(log, 'right'),
+            right
+          )}`}`}
+        `,
+        container
+      );
+    go(false, true, true);
+    assert.isEmpty(log);
+    go(true, true, true);
+    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+    log.length = 0;
+    go(false, true, true);
+    assert.isEmpty(log);
+    go(false, true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    go(false, false, false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(false, true, true);
+    assert.isEmpty(log);
+    go(false, false, true);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(false, false, false);
+    assert.deepEqual(log, ['disconnected-right']);
+  });
+
+  // TODO(kschaaf): clearing the outer directive does not disconnect the inner
+  // directive since we currently use `part` as the parent, rather than the
+  // correct `directiveParent`; we'd need that passed into the constructor and
+  // stored for all directives, even non-disconnectable ones, to form the
+  // correct tree
+  test.skip('directives returned from other DisconnectableDirectives can be disconnected', () => {
+    const log: Array<string> = [];
+    const go = (
+      clearAll: boolean,
+      leftOuter: boolean,
+      leftInner: boolean,
+      rightOuter: boolean,
+      rightInner: boolean
+    ) =>
+      render(
+        clearAll
+          ? nothing
+          : html`
+          ${html`${html`${
+            leftOuter
+              ? disconnectingDirective(
+                  log,
+                  'left-outer',
+                  disconnectingDirective(log, 'left-inner'),
+                  leftInner
+                )
+              : nothing
+          }`}`}
+          ${html`${html`${
+            rightOuter
+              ? disconnectingDirective(
+                  log,
+                  'right-outer',
+                  disconnectingDirective(log, 'right-inner'),
+                  rightInner
+                )
+              : nothing
+          }`}`}
+        `,
+        container
+      );
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(true, true, true, true, true);
+    assert.deepEqual(log, [
+      'disconnected-left-outer',
+      'disconnected-left-inner',
+      'disconnected-right-outer',
+      'disconnected-right-inner',
+    ]);
+    log.length = 0;
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(false, false, true, true, true);
+    assert.deepEqual(log, [
+      'disconnected-left-outer',
+      'disconnected-left-inner',
+    ]);
+    log.length = 0;
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(false, true, true, false, true);
+    assert.deepEqual(log, [
+      'disconnected-right-outer',
+      'disconnected-right-inner',
+    ]);
+    log.length = 0;
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(false, true, false, true, true);
+    assert.deepEqual(log, ['disconnected-left-inner']);
+    log.length = 0;
+    go(false, true, false, true, false);
+    assert.deepEqual(log, ['disconnected-right-inner']);
   });
 
   test('directives can be disconnected from AttributeParts', () => {
