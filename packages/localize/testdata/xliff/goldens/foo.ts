@@ -31,3 +31,14 @@ msg(`Hello World!`);
 msg((name) => `Hello ${name}!`, {args: ['Friend']});
 msg(html`Hello <b>World</b>!`);
 msg((name) => html`Hello <b>${name}</b>!`, {args: ['Friend']});
+
+// msgdesc: Description of 0
+msg('described 0');
+
+// msgdesc: Parent description
+export function described() {
+  // msgdesc: Description of 1
+  msg('described 1');
+  // msgdesc: Description of 2
+  msg('described 2');
+}

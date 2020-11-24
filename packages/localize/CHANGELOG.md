@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - It is no longer necessary to provide a message `id`. When omitted, an id will
   be automatically generated from the string contents of the template.
 
+### Fixed
+
+- `// msgdesc` descriptions are now correctly emitted as XLIFF `<note>`
+  elements, instead of crashing.
+
 ## [0.5.1] - 2020-11-09
 
 ### Fixed
