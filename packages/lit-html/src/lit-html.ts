@@ -415,6 +415,16 @@ export abstract class Directive {
   _attributeIndex: number | undefined;
   //@internal
   _directive?: Directive;
+
+  //@internal
+  _$parent: DisconnectableParent | undefined;
+
+  // These will only exist on the DisconnectableDirective subclass
+  //@internal
+  _$disconnetableChildren?: Set<DisconnectableParent>;
+  //@internal
+  _$setConnected?(isConnected: boolean): void;
+
   constructor(part: PartInfo, attributeIndex: number | undefined) {
     this._part = part as Part;
     this._attributeIndex = attributeIndex;
@@ -733,7 +743,10 @@ class Template {
   }
 }
 
-type HasParent = NodePart | AttributePart | TemplateInstance;
+export interface DisconnectableParent {
+  _$parent: DisconnectableParent | undefined;
+  _$disconnetableChildren?: Set<DisconnectableParent>;
+}
 
 function resolveDirective(
   part: NodePart | AttributePart,
@@ -749,7 +762,7 @@ function resolveDirective(
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
-    part._setDirectiveConnected?.(currentDirective, false, true);
+    currentDirective?._$setConnected?.(false);
     currentDirective =
       nextDirectiveConstructor === undefined
         ? undefined
@@ -777,12 +790,15 @@ class TemplateInstance {
   _template: Template;
   /** @internal */
   _parts: Array<Part | undefined> = [];
+
   /** @internal */
-  _parent: HasParent;
+  _$parent: DisconnectableParent;
+  /** @internal */
+  _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
 
   constructor(template: Template, parent: NodePart) {
     this._template = template;
-    this._parent = parent;
+    this._$parent = parent;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -900,21 +916,20 @@ export class NodePart {
   /** @internal */
   _endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
-  /** @internal */
-  _parent: HasParent | undefined;
 
   /** @internal */
-  _setValueConnected?: (
+  _$parent: DisconnectableParent | undefined;
+
+  // The following fields will be patched onto NodeParts when required by
+  // DisconnectableDirective
+  /** @internal */
+  _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
+  /** @internal */
+  _$setValueConnected?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
-  ) => void = undefined;
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
+  ): void;
 
   constructor(
     startNode: ChildNode,
@@ -924,7 +939,7 @@ export class NodePart {
   ) {
     this._startNode = startNode;
     this._endNode = endNode;
-    this._parent = parent;
+    this._$parent = parent;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
@@ -938,7 +953,7 @@ export class NodePart {
    * @param isConnected
    */
   setDirectiveConnection(isConnected: boolean) {
-    this._setValueConnected?.(isConnected);
+    this._$setValueConnected?.(isConnected);
   }
 
   get parentNode(): Node {
@@ -1123,7 +1138,7 @@ export class NodePart {
     start: ChildNode | null = this._startNode.nextSibling,
     from?: number
   ) {
-    this._setValueConnected?.(false, true, from);
+    this._$setValueConnected?.(false, true, from);
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -1150,9 +1165,13 @@ export class AttributePart {
   /** @internal */
   _value: unknown | Array<unknown> = nothing;
   /** @internal */
-  _parent: HasParent | undefined;
-  /** @internal */
   _directives?: Array<Directive | undefined>;
+
+  /** @internal */
+  _$parent: DisconnectableParent | undefined;
+  /** @internal */
+  _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
+
   protected _sanitizer: ValueSanitizer | undefined;
   /** @internal */
   _setDirectiveConnected?: (
@@ -1169,12 +1188,12 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent: HasParent | undefined,
+    parent: DisconnectableParent | undefined,
     _options?: RenderOptions
   ) {
     this.element = element;
     this.name = name;
-    this._parent = parent;
+    this._$parent = parent;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this._value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;

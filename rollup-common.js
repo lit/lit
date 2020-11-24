@@ -86,6 +86,11 @@ const crossPackagePropertyMangles = {
   _renderOptions: 'W',
   // lit-element: LitElement (used by hydrate-support)
   _renderImpl: 'M',
+  // Used by disconnectable-directive
+  _$parent: 'I',
+  _$setConnected: 'J',
+  _$setValueConnected: 'K',
+  _$disconnetableChildren: 'L',
 };
 
 const generateTerserOptions = (nameCache = null) => ({

@@ -56,7 +56,7 @@ export const detachNodePart = (part: NodePart): NodePartState => {
     _value: part._value,
     _fragment: fragment,
   };
-  part._setValueConnected?.(false, true);
+  part._$setValueConnected?.(false, true);
   let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
   let nextNode;
   while (start !== ((part as unknown) as NodePartInternal)._endNode) {
@@ -81,6 +81,7 @@ export const restoreNodePart = (part: NodePart, state: NodePartState) => {
     (state as NodePartStateInternal)._fragment
   );
   part._value = (state as NodePartStateInternal)._value;
+  part._$setValueConnected?.(true);
 };
 
 const createMarker = () => document.createComment('');
@@ -215,7 +216,7 @@ export const insertPartBefore = (
  * @param part The Part to remove
  */
 export const removePart = (part: NodePart) => {
-  part._setValueConnected?.(false, true);
+  part._$setValueConnected?.(false, true);
   removeNodes(
     ((part as unknown) as NodePartInternal)._startNode,
     ((part as unknown) as NodePartInternal)._endNode!.nextSibling
