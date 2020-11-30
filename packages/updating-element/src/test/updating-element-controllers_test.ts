@@ -25,7 +25,7 @@ suite('UpdatingElement controllers', () => {
     host: UpdatingElement;
     willUpdateCount = 0;
     updateCount = 0;
-    didUpdateCount = 0;
+    updatedCount = 0;
     connectedCount = 0;
     disconnectedCount = 0;
     callbackOrder: string[] = [];
@@ -55,9 +55,9 @@ suite('UpdatingElement controllers', () => {
       this.callbackOrder.push('update');
     }
 
-    didUpdate() {
-      this.didUpdateCount++;
-      this.callbackOrder.push('didUpdate');
+    updated() {
+      this.updatedCount++;
+      this.callbackOrder.push('updated');
     }
   }
 
@@ -66,7 +66,7 @@ suite('UpdatingElement controllers', () => {
     foo = 'foo';
     willUpdateCount = 0;
     updateCount = 0;
-    didUpdateCount = 0;
+    updatedCount = 0;
     connectedCount = 0;
     disconnectedCount = 0;
 
@@ -92,9 +92,9 @@ suite('UpdatingElement controllers', () => {
       super.update(changedProperties);
     }
 
-    didUpdate(changedProperties: PropertyValues) {
-      this.didUpdateCount++;
-      super.didUpdate(changedProperties);
+    updated(changedProperties: PropertyValues) {
+      this.updatedCount++;
+      super.updated(changedProperties);
     }
   }
   customElements.define(generateElementName(), A);
@@ -133,21 +133,21 @@ suite('UpdatingElement controllers', () => {
     assert.equal(el.controller.disconnectedCount, 1);
   });
 
-  test('controllers can implement willUpdate/update/didUpdate', async () => {
+  test('controllers can implement willUpdate/update/updated', async () => {
     assert.equal(el.willUpdateCount, 1);
     assert.equal(el.updateCount, 1);
-    assert.equal(el.didUpdateCount, 1);
+    assert.equal(el.updatedCount, 1);
     assert.equal(el.controller.willUpdateCount, 1);
     assert.equal(el.controller.updateCount, 1);
-    assert.equal(el.controller.didUpdateCount, 1);
+    assert.equal(el.controller.updatedCount, 1);
     el.foo = 'new';
     await el.updateComplete;
     assert.equal(el.willUpdateCount, 2);
     assert.equal(el.updateCount, 2);
-    assert.equal(el.didUpdateCount, 2);
+    assert.equal(el.updatedCount, 2);
     assert.equal(el.controller.willUpdateCount, 2);
     assert.equal(el.controller.updateCount, 2);
-    assert.equal(el.controller.didUpdateCount, 2);
+    assert.equal(el.controller.updatedCount, 2);
   });
 
   test('controllers callback order', async () => {
@@ -155,7 +155,7 @@ suite('UpdatingElement controllers', () => {
       'connectedCallback',
       'willUpdate',
       'update',
-      'didUpdate',
+      'updated',
     ]);
     el.controller.callbackOrder = [];
     el.foo = 'new';
@@ -163,7 +163,7 @@ suite('UpdatingElement controllers', () => {
     assert.deepEqual(el.controller.callbackOrder, [
       'willUpdate',
       'update',
-      'didUpdate',
+      'updated',
     ]);
     el.controller.callbackOrder = [];
     container.removeChild(el);

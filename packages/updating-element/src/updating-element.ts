@@ -229,7 +229,7 @@ export interface Controller {
   disconnectedCallback?(): void;
   willUpdate?(): void;
   update?(): void;
-  didUpdate?(): void;
+  updated?(): void;
   requestUpdate?(): void;
 }
 
@@ -612,14 +612,16 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     oldValue?: unknown,
     options?: PropertyDeclaration
   ) {
-    const needsUpdate =
-      super.requestUpdate(name, oldValue, options) && !this.isUpdatePending;
-    if (needsUpdate) {
-      this._updatePromise = this._enqueueUpdate();
-    }
+    super.requestUpdate(name, oldValue, options);
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? requestUpdateThenable : needsUpdate;
+    return DEV_MODE ? requestUpdateThenable : undefined;
+  }
+
+  protected _scheduleUpdate() {
+    if (!this.isUpdatePending) {
+      this._updatePromise = this._enqueueUpdate();
+    }
   }
 
   /**
@@ -711,7 +713,9 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
+        this._controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
+        this._controllers?.forEach((c) => c.update?.());
         this.update(changedProperties);
       } else {
         this._resolveUpdate();
@@ -726,7 +730,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this.didUpdate(changedProperties);
+      this._didUpdate(changedProperties);
     }
   }
 
@@ -747,9 +751,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     return true;
   }
 
-  protected willUpdate(_changedProperties: PropertyValues) {
-    this._controllers?.forEach((c) => c.willUpdate?.());
-  }
+  protected willUpdate(_changedProperties: PropertyValues) {}
 
   /**
    * Updates the element. This method reflects property values to attributes.
@@ -760,7 +762,6 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
    * @param _changedProperties Map of changed properties with old values
    */
   protected update(_changedProperties: PropertyValues) {
-    this._controllers?.forEach((c) => c.update?.());
     if (this._reflectingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
       // loops expecting arrays
@@ -773,12 +774,12 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
   }
 
   // Note, this is an override point for platform-support.
-  protected didUpdate(changedProperties: PropertyValues) {
-    this._controllers?.forEach((c) => c.didUpdate?.());
+  protected _didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
+    this._controllers?.forEach((c) => c.updated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
