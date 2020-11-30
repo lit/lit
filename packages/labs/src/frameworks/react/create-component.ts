@@ -20,32 +20,28 @@ const reservedReactProperties = new Set([
   'children',
   'localName',
   'ref',
-  // TODO(sorvell): can we use forwardRef to avoid this?
-  'elementRef',
   // TODO(sorvell): why are the properties below included?
   'style',
   'className',
 ]);
 
-interface ComponentEvents {
-  [index: string]: string;
-}
-
-const setProperty = (
-  node: Element,
+const setProperty = <E extends Element, T>(
+  node: E,
   name: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   old: any,
-  events: ComponentEvents
+  events?: T
 ) => {
   // Dirty check and prevent setting reserved properties.
-  if (Object.is(value, old) || reservedReactProperties.has(name)) {
+  if (Object.is(value, old) || reservedReactProperties.has(name as string)) {
     return;
   }
   // For events, use an explicit list.
-  const event = events[name];
+  const event = (events?.[
+    name as keyof T
+  ] as unknown) as keyof HTMLElementEventMap;
   if (event !== undefined) {
     if (old !== undefined) {
       node.removeEventListener(event, old);
@@ -55,7 +51,7 @@ const setProperty = (
     // For properties, use an `in` check
     if (name in node) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (node as any)[name] = value;
+      node[name as keyof E] = value;
       // And for everything else, set the attribute.
     } else if (value == null) {
       node.removeAttribute(name);
@@ -65,29 +61,36 @@ const setProperty = (
   }
 };
 
+type ForwardedRef = {
+  __forwardedRef?: React.Ref<unknown>;
+};
+
+type Events<S> = {
+  [P in keyof S]?: (e: Event) => unknown;
+};
+
 /**
  *  Creates a React component from a CustomElement.
  */
-export const createComponent = <T extends HTMLElement>(
+// TODO(sorvell): Was unable to remove type E here.
+export const createComponent = <T extends HTMLElement, E>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  React: any,
+  React: typeof ReactModule,
   tagName: string,
-  events: ComponentEvents = {}
-): ReactModule.ComponentClass<T, void> => {
-  const Component: ReactModule.ComponentClass = React.Component;
-  const createElement: typeof ReactModule.createElement = React.createElement;
+  events?: E
+) => {
+  const Component = React.Component;
+  const createElement = React.createElement;
 
-  const CustomElement = customElements.get(tagName);
+  // TODO(sorvell): Cannot get type from this.
+  // const CustomElement = customElements.get(tagName);
 
-  interface ReactComponentProps
-    extends ReactModule.ComponentProps<typeof CustomElement> {
-    __forwardedRef: React.Ref<Node>;
-  }
+  type ElementProps = Partial<T> & Events<E>;
 
-  class ReactComponent extends Component {
+  type Props = React.PropsWithoutRef<ElementProps> & ForwardedRef;
+
+  class ReactComponent extends Component<Props> {
     element!: T;
-
-    props!: ReactComponentProps;
 
     ref = (element: T) => {
       this.element = element;
@@ -100,7 +103,7 @@ export const createComponent = <T extends HTMLElement>(
         // doesn't seem like there's good support for forwarding a ref and
         // also using it yourself.
         if (typeof forwardedRef === 'function') {
-          forwardedRef(element);
+          (forwardedRef as (e: T) => void)(element);
         } else {
           // This has to be `any` because `current` is readonly.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,14 +112,14 @@ export const createComponent = <T extends HTMLElement>(
       }
     };
 
-    updateElement(oldProps?: ReactComponentProps) {
+    updateElement(oldProps?: Props) {
       // Set element properties to the values in `this.props`
       for (const prop in this.props) {
         setProperty(
           this.element,
           prop,
-          this.props[prop],
-          oldProps ? oldProps[prop] : undefined,
+          this.props[prop as keyof Props],
+          oldProps ? oldProps[prop as keyof Props] : undefined,
           events
         );
       }
@@ -142,7 +145,7 @@ export const createComponent = <T extends HTMLElement>(
      * Updates element properties correctly setting attributes v. properties
      * on every update. Note, this does not include mount.
      */
-    componentDidUpdate(old: ReactComponentProps) {
+    componentDidUpdate(old: Props) {
       this.updateElement(old);
     }
 
@@ -159,13 +162,14 @@ export const createComponent = <T extends HTMLElement>(
   }
 
   return React.forwardRef(
-    (props: ReactComponentProps, ref: React.Ref<Node>) => {
-      props = {...props, __forwardedRef: ref};
-      return createElement(
+    (
+      props?: React.PropsWithChildren<React.PropsWithRef<ElementProps>>,
+      ref?: React.Ref<unknown>
+    ) =>
+      createElement(
         ReactComponent,
-        props as React.Attributes,
-        props.children
-      );
-    }
+        {...props, __forwardedRef: ref} as Props,
+        props?.children
+      )
   );
 };

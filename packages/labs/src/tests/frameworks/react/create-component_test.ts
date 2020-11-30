@@ -21,37 +21,43 @@ import {createComponent} from '../../../frameworks/react/create-component.js';
 // import {generateElementName, nextFrame} from '../../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+@customElement('basic-element')
+class BasicElement extends UpdatingElement {
+  @property({type: Boolean})
+  bool = false;
+  @property({type: String})
+  str = '';
+  @property({type: Number})
+  num = -1;
+  @property({type: Object})
+  obj: {[index: string]: unknown} | null | undefined = null;
+  @property({type: Array})
+  arr: unknown[] | null | undefined = null;
+
+  @property({type: Boolean, reflect: true})
+  rbool = false;
+  @property({type: String, reflect: true})
+  rstr = '';
+  @property({type: Number, reflect: true})
+  rnum = -1;
+  @property({type: Object, reflect: true})
+  robj: {[index: string]: unknown} | null | undefined = null;
+  @property({type: Array, reflect: true})
+  rarr: unknown[] | null | undefined = null;
+
+  fire(name: string) {
+    this.dispatchEvent(new Event(name));
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'basic-element': BasicElement;
+  }
+}
+
 suite('React createComponent', () => {
   let container: HTMLElement;
-
-  @customElement('basic-element')
-  class BasicElement extends UpdatingElement {
-    @property({type: Boolean})
-    bool = false;
-    @property({type: String})
-    str = '';
-    @property({type: Number})
-    num = -1;
-    @property({type: Object})
-    obj = null;
-    @property({type: Array})
-    arr = null;
-
-    @property({type: Boolean, reflect: true})
-    rbool = false;
-    @property({type: String, reflect: true})
-    rstr = '';
-    @property({type: Number, reflect: true})
-    rnum = -1;
-    @property({type: Object, reflect: true})
-    robj = null;
-    @property({type: Array, reflect: true})
-    rarr = null;
-
-    fire(name: string) {
-      this.dispatchEvent(new Event(name));
-    }
-  }
 
   setup(() => {
     container = document.createElement('div');
@@ -64,19 +70,27 @@ suite('React createComponent', () => {
     }
   });
 
-  const BasicElementComponent = createComponent(window.React, 'basic-element', {
+  const BasicElementComponent = createComponent<
+    BasicElement,
+    {
+      onFoo: string;
+      onBar: string;
+    }
+  >(window.React, 'basic-element', {
     onFoo: 'foo',
     onBar: 'bar',
   });
 
   let el: BasicElement;
 
-  const renderReactComponent = async (props: object = {}) => {
+  const renderReactComponent = async (
+    props: React.ComponentProps<typeof BasicElementComponent> = {}
+  ) => {
     window.ReactDOM.render(
-      window.React.createElement(BasicElementComponent, props as any),
+      window.React.createElement(BasicElementComponent, props),
       container
     );
-    el = container.querySelector('basic-element') as BasicElement;
+    el = container.querySelector('basic-element')!;
     await el.updateComplete;
   };
 
@@ -97,8 +111,7 @@ suite('React createComponent', () => {
   });
 
   test('can set attributes', async () => {
-    await renderReactComponent({name: 'foo', id: 'id'});
-    assert.equal(el.getAttribute('name'), 'foo');
+    await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
   });
 
