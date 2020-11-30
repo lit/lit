@@ -1,5 +1,4 @@
-development/
-node_modules/
-index.*
-frameworks/react/create-component.*
-frameworks/react/create-element.*
+/development/
+/node_modules/
+/index.*
+/frameworks/
