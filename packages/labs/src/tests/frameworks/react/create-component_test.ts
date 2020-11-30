@@ -18,7 +18,6 @@ import {customElement} from 'updating-element/decorators/customElement.js';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '../../../frameworks/react/create-component.js';
-// import {generateElementName, nextFrame} from '../../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 @customElement('basic-element')
