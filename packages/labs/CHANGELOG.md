@@ -21,5 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Adds `AsyncTask`, a controller that performs an asynchronous task like a fetch and performs an update on the host element when the task completes.
 - Adds `UpdatingController`, a class which can interact with an `UpdatingElement` by hooking into its lifecycle, including connected, disconnected, willUpdate, update, didUpdate, and requestUpdate.
 - Adds `labs` package. The `labs` package is an experimental playground for Lit helpers and tools.

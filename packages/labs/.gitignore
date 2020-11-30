@@ -1,4 +1,4 @@
-development/
-controllers/
-node_modules/
-index.*
+/development/
+/controllers/
+/node_modules/
+/index.*
