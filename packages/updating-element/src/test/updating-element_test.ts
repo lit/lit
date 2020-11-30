@@ -1289,11 +1289,6 @@ suite('UpdatingElement', () => {
         this.info.push('firstUpdated');
       }
 
-      didUpdate(props: PropertyValues) {
-        this.info.push('didUpdate');
-        super.didUpdate(props);
-      }
-
       updated() {
         this.info.push('updated');
       }
@@ -1308,14 +1303,13 @@ suite('UpdatingElement', () => {
       'willUpdate',
       'before-update',
       'after-update',
-      'didUpdate',
       'firstUpdated',
       'updated',
       'updateComplete',
     ]);
   });
 
-  test('setting properties in update does not trigger update', async () => {
+  test('setting properties in `update` does not trigger `update`', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {foo: {}};
@@ -1349,7 +1343,7 @@ suite('UpdatingElement', () => {
     assert.equal(el.updatedText, '6');
   });
 
-  test('setting properties in update after calling `super.update` *does* trigger update', async () => {
+  test('setting properties in `update` after calling `super.update` *does* trigger `update`', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {foo: {}};
@@ -1381,7 +1375,7 @@ suite('UpdatingElement', () => {
     assert.equal(el.updatedText, '1');
   });
 
-  test('setting properties in update reflects to attribute and is included in `changedProperties`', async () => {
+  test('setting properties in `update` reflects to attribute and is included in `changedProperties`', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {foo: {}, bar: {}, zot: {reflect: true}};
@@ -2095,7 +2089,7 @@ suite('UpdatingElement', () => {
     assert.equal(el._updateCount, 3);
   });
 
-  test('setting properties in `updated` does trigger update and does not block updateComplete', async () => {
+  test('setting properties in `updated` does trigger an update and does not block `updateComplete`', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {foo: {}};
@@ -2130,7 +2124,7 @@ suite('UpdatingElement', () => {
     assert.isTrue(result);
   });
 
-  test('setting properties in `updated` can await until updateComplete returns true', async () => {
+  test('setting properties in `updated` can await until `updateComplete` returns true', async () => {
     class E extends UpdatingElement {
       static get properties() {
         return {foo: {}};

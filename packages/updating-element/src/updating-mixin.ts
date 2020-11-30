@@ -166,6 +166,8 @@ export declare class UpdatingMixinBase {
     _options: PropertyDeclaration
   ): void;
 
+  protected _scheduleUpdate(): void;
+
   protected _resolveUpdate(): void;
 
   connectedCallback?(): void;
@@ -176,7 +178,7 @@ export declare class UpdatingMixinBase {
 
   protected update?(changedProperties: PropertyValues): void;
 
-  protected didUpdate?(changedProperties: PropertyValues): void;
+  protected updated?(changedProperties: PropertyValues): void;
 }
 
 /**
@@ -383,7 +385,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
       name?: PropertyKey,
       oldValue?: unknown,
       options?: PropertyDeclaration
-    ): unknown {
+    ) {
       let needsUpdate = true;
       if (name !== undefined) {
         options =
@@ -399,7 +401,9 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
           this._propertyChanged(name, oldValue, options);
         }
       }
-      return needsUpdate;
+      if (needsUpdate) {
+        this._scheduleUpdate();
+      }
     }
 
     // @internal
@@ -413,6 +417,9 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
       }
     }
 
+    // @internal
+    protected _scheduleUpdate() {}
+
     protected _resolveUpdate() {
       this._changedProperties = new Map();
     }
@@ -425,7 +432,7 @@ export function UpdatingMixin<T extends Constructor>(Base: T) {
 
     protected update?(changedProperties: PropertyValues): void;
 
-    protected didUpdate?(changedProperties: PropertyValues): void;
+    protected updated?(changedProperties: PropertyValues): void;
   }
   return (UpdatingComponent as unknown) as T &
     Constructor<UpdatingMixinBase> &

@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {UpdatingElement} from 'updating-element';
+import {UpdatingElement, Controller} from 'updating-element';
 import {
   UpdatingMixin,
-  PropertyDeclaration,
+  PropertyValues,
 } from 'updating-element/updating-mixin.js';
 export {
   PropertyDeclaration,
@@ -53,37 +53,32 @@ export class UpdatingController extends UpdatingBase {
     super();
     (this.constructor as typeof UpdatingController).finalize();
     this.host = host;
-    const callbacks = {
-      connectedCallback: this.connectedCallback
-        ? () => this.connectedCallback!()
-        : undefined,
-      disconnectedCallback: this.disconnectedCallback
-        ? () => this.disconnectedCallback!()
-        : undefined,
-      willUpdate: this.willUpdate
-        ? () => this.willUpdate!(this._changedProperties)
-        : undefined,
-      update: this.update
-        ? () => this.update!(this._changedProperties)
-        : undefined,
-      // Note, `didUpdate` is required since it resets `changedProperties`.
-      didUpdate: () => {
-        const changedProperties = this._changedProperties;
-        this._resolveUpdate();
-        this.didUpdate?.(changedProperties);
-      },
-    };
-    host.addController(callbacks);
+    host.addController((this as unknown) as Controller);
   }
 
-  requestUpdate(
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration
-  ) {
-    const needsUpdate = super.requestUpdate(name, oldValue, options);
-    if (needsUpdate) {
-      this.host.requestUpdate();
+  protected _scheduleUpdate() {
+    this.host.requestUpdate();
+  }
+
+  protected update() {
+    this.handleChanges(this._changedProperties);
+    this._resolveUpdate();
+  }
+
+  /**
+   * Implement to compute properties based on changes in other properties.
+   * Can return a set of properties that become the return value of `getProps`.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected handleChanges(_changedProperties: PropertyValues): any {}
+
+  /**
+   * Implement to return properties that should be used in rendering.
+   */
+  takeChanges(callback?: () => void) {
+    if (callback !== undefined) {
+      callback();
     }
+    return this.handleChanges(this._changedProperties);
   }
 }

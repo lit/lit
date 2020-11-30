@@ -14,7 +14,6 @@
 
 import {PropertyValues, UpdatingElement} from 'updating-element';
 import {property} from 'updating-element/decorators/property.js';
-import {internalProperty} from 'updating-element/decorators/internalProperty.js';
 import {
   UpdatingController,
   PropertyDeclarations,
@@ -38,7 +37,7 @@ suite('UpdatingController', () => {
     }
 
     unsubscribe(id: number, callback: (status: boolean) => void) {
-      this.callbacks.get(id)!.delete(callback);
+      this.callbacks.get(id)?.delete(callback);
     }
 
     setStatus(id: number, status: boolean) {
@@ -65,7 +64,7 @@ suite('UpdatingController', () => {
       this.status = status;
     };
 
-    willUpdate(changedProperties: PropertyValues) {
+    handleChanges(changedProperties: PropertyValues) {
       const oldId = changedProperties.get('id');
       if (this.id !== oldId) {
         if (oldId !== undefined) {
@@ -94,12 +93,13 @@ suite('UpdatingController', () => {
     first = '';
     @property()
     last = '';
-    @internalProperty()
-    fullName = '';
-    willUpdate(changedProperties: PropertyValues) {
+
+    _fullName = '';
+    handleChanges(changedProperties: PropertyValues) {
       if (changedProperties.has('first') || changedProperties.has('last')) {
-        this.fullName = `${this.first} ${this.last}`;
+        this._fullName = `${this.first} ${this.last}`;
       }
+      return {fullName: this._fullName};
     }
   }
 
@@ -108,10 +108,8 @@ suite('UpdatingController', () => {
     disconnectedCount = 0;
     willUpdateCount = 0;
     updateCount = 0;
-    didUpdateCount = 0;
-    willUpdateChangedProperties: PropertyValues | null = null;
-    updateChangedProperties: PropertyValues | null = null;
-    didUpdateChangedProperties: PropertyValues | null = null;
+    updatedCount = 0;
+    computeChangedProperties: PropertyValues | null = null;
 
     static properties: PropertyDeclarations = {foo: {}};
 
@@ -126,17 +124,19 @@ suite('UpdatingController', () => {
     disconnectedCallback() {
       this.disconnectedCount++;
     }
-    willUpdate(changedProperties: PropertyValues) {
+    willUpdate() {
       this.willUpdateCount++;
-      this.willUpdateChangedProperties = changedProperties;
     }
-    update(changedProperties: PropertyValues) {
+    update() {
       this.updateCount++;
-      this.updateChangedProperties = changedProperties;
+      super.update();
     }
-    didUpdate(changedProperties: PropertyValues) {
-      this.didUpdateCount++;
-      this.didUpdateChangedProperties = changedProperties;
+    updated() {
+      this.updatedCount++;
+    }
+
+    handleChanges(changedProperties: PropertyValues) {
+      this.computeChangedProperties = changedProperties;
     }
   }
 
@@ -163,7 +163,7 @@ suite('UpdatingController', () => {
     resourceStatus = false;
     willUpdateCount = 0;
     updateCount = 0;
-    didUpdateCount = 0;
+    updatedCount = 0;
     connectedCount = 0;
     disconnectedCount = 0;
     nameController = new NameController(this);
@@ -183,24 +183,24 @@ suite('UpdatingController', () => {
       super.disconnectedCallback();
     }
 
-    willUpdate(changedProperties: PropertyValues) {
+    willUpdate() {
       this.willUpdateCount++;
-      this.nameController.first = this.foo;
-      this.nameController.last = this.bar;
       this.statusController.id = this.resourceId;
-      super.willUpdate(changedProperties);
-      this.nameControllerFullName = this.nameController.fullName;
-      this.resourceStatus = this.statusController.status;
     }
 
     update(changedProperties: PropertyValues) {
       this.updateCount++;
+      const {fullName} = this.nameController.takeChanges(() => {
+        this.nameController.first = this.foo;
+        this.nameController.last = this.bar;
+      });
       super.update(changedProperties);
+      this.nameControllerFullName = fullName;
+      this.resourceStatus = this.statusController.status;
     }
 
-    didUpdate(changedProperties: PropertyValues) {
-      this.didUpdateCount++;
-      super.didUpdate(changedProperties);
+    updated() {
+      this.updatedCount++;
     }
   }
   customElements.define(generateElementName(), A);
@@ -235,7 +235,7 @@ suite('UpdatingController', () => {
     assert.equal(el.controller2.connectedCount, 2);
   });
 
-  test('calls willUpdate/update/didUpdate and tracks properties', async () => {
+  test('calls willUpdate/update/updated and tracks properties', async () => {
     let expectedChangedProperties1: PropertyValues = new Map([
       ['foo', undefined],
       ['bar', undefined],
@@ -244,33 +244,17 @@ suite('UpdatingController', () => {
     ]);
     let expectedChangedProperties2 = expectedChangedProperties1;
     assert.equal(el.controller1.willUpdateCount, 1);
-    assert.deepEqual(
-      el.controller1.willUpdateChangedProperties,
-      expectedChangedProperties1
-    );
     assert.equal(el.controller1.updateCount, 1);
+    assert.equal(el.controller1.updatedCount, 1);
     assert.deepEqual(
-      el.controller1.updateChangedProperties,
-      expectedChangedProperties1
-    );
-    assert.equal(el.controller1.didUpdateCount, 1);
-    assert.deepEqual(
-      el.controller1.didUpdateChangedProperties,
+      el.controller1.computeChangedProperties,
       expectedChangedProperties1
     );
     assert.equal(el.controller2.willUpdateCount, 1);
-    assert.deepEqual(
-      el.controller2.willUpdateChangedProperties,
-      expectedChangedProperties2
-    );
     assert.equal(el.controller2.updateCount, 1);
+    assert.equal(el.controller2.updatedCount, 1);
     assert.deepEqual(
-      el.controller2.updateChangedProperties,
-      expectedChangedProperties2
-    );
-    assert.equal(el.controller2.didUpdateCount, 1);
-    assert.deepEqual(
-      el.controller2.didUpdateChangedProperties,
+      el.controller2.computeChangedProperties,
       expectedChangedProperties2
     );
     el.controller1.foo = 'foo2';
@@ -289,48 +273,32 @@ suite('UpdatingController', () => {
       ['prop', 'prop'],
     ] as Array<[string, number | string]>);
     assert.equal(el.controller1.willUpdateCount, 2);
-    assert.deepEqual(
-      el.controller1.willUpdateChangedProperties,
-      expectedChangedProperties1
-    );
     assert.equal(el.controller1.updateCount, 2);
+    assert.equal(el.controller1.updatedCount, 2);
     assert.deepEqual(
-      el.controller1.updateChangedProperties,
-      expectedChangedProperties1
-    );
-    assert.equal(el.controller1.didUpdateCount, 2);
-    assert.deepEqual(
-      el.controller1.didUpdateChangedProperties,
+      el.controller1.computeChangedProperties,
       expectedChangedProperties1
     );
     assert.equal(el.controller2.willUpdateCount, 2);
-    assert.deepEqual(
-      el.controller2.willUpdateChangedProperties,
-      expectedChangedProperties2
-    );
     assert.equal(el.controller2.updateCount, 2);
+    assert.equal(el.controller2.updatedCount, 2);
     assert.deepEqual(
-      el.controller2.updateChangedProperties,
-      expectedChangedProperties2
-    );
-    assert.equal(el.controller2.didUpdateCount, 2);
-    assert.deepEqual(
-      el.controller2.didUpdateChangedProperties,
+      el.controller2.computeChangedProperties,
       expectedChangedProperties2
     );
   });
 
   test('requestUpdate causes element to requestUpdate', async () => {
     assert.equal(el.updateCount, 1);
-    assert.equal(el.didUpdateCount, 1);
+    assert.equal(el.updatedCount, 1);
     el.controller1.requestUpdate();
     await el.updateComplete;
     assert.equal(el.updateCount, 2);
-    assert.equal(el.didUpdateCount, 2);
+    assert.equal(el.updatedCount, 2);
     el.controller2.requestUpdate();
     await el.updateComplete;
     assert.equal(el.updateCount, 3);
-    assert.equal(el.didUpdateCount, 3);
+    assert.equal(el.updatedCount, 3);
   });
 
   test('can use properties computed in controller', async () => {
@@ -391,24 +359,16 @@ suite('UpdatingController', () => {
       assert.equal(el.controller1.nestedController.connectedCount, 2);
     });
 
-    test('calls willUpdate/update/didUpdate', async () => {
+    test('calls willUpdate/update/updated and tracks properties', async () => {
       let expectedChangedProperties: PropertyValues = new Map([
         ['foo', undefined],
         ['bar', undefined],
       ]);
       assert.equal(el.controller1.nestedController.willUpdateCount, 1);
-      assert.deepEqual(
-        el.controller1.nestedController.willUpdateChangedProperties,
-        expectedChangedProperties
-      );
       assert.equal(el.controller1.nestedController.updateCount, 1);
+      assert.equal(el.controller1.nestedController.updatedCount, 1);
       assert.deepEqual(
-        el.controller1.nestedController.updateChangedProperties,
-        expectedChangedProperties
-      );
-      assert.equal(el.controller1.nestedController.didUpdateCount, 1);
-      assert.deepEqual(
-        el.controller1.nestedController.didUpdateChangedProperties,
+        el.controller1.nestedController.computeChangedProperties,
         expectedChangedProperties
       );
       el.controller1.nestedController.foo = 'foo2';
@@ -417,18 +377,10 @@ suite('UpdatingController', () => {
         [string, number | string]
       >);
       assert.equal(el.controller1.nestedController.willUpdateCount, 2);
-      assert.deepEqual(
-        el.controller1.nestedController.willUpdateChangedProperties,
-        expectedChangedProperties
-      );
       assert.equal(el.controller1.nestedController.updateCount, 2);
+      assert.equal(el.controller1.nestedController.updatedCount, 2);
       assert.deepEqual(
-        el.controller1.nestedController.updateChangedProperties,
-        expectedChangedProperties
-      );
-      assert.equal(el.controller1.nestedController.didUpdateCount, 2);
-      assert.deepEqual(
-        el.controller1.nestedController.didUpdateChangedProperties,
+        el.controller1.nestedController.computeChangedProperties,
         expectedChangedProperties
       );
       el.controller1.nestedController.bar = 'bar2';
@@ -437,33 +389,25 @@ suite('UpdatingController', () => {
         [string, number | string]
       >);
       assert.equal(el.controller1.nestedController.willUpdateCount, 3);
-      assert.deepEqual(
-        el.controller1.nestedController.willUpdateChangedProperties,
-        expectedChangedProperties
-      );
       assert.equal(el.controller1.nestedController.updateCount, 3);
+      assert.equal(el.controller1.nestedController.updatedCount, 3);
       assert.deepEqual(
-        el.controller1.nestedController.updateChangedProperties,
-        expectedChangedProperties
-      );
-      assert.equal(el.controller1.nestedController.didUpdateCount, 3);
-      assert.deepEqual(
-        el.controller1.nestedController.didUpdateChangedProperties,
+        el.controller1.nestedController.computeChangedProperties,
         expectedChangedProperties
       );
     });
 
     test('requestUpdate causes element to requestUpdate', async () => {
       assert.equal(el.updateCount, 1);
-      assert.equal(el.didUpdateCount, 1);
+      assert.equal(el.updatedCount, 1);
       el.controller1.nestedController.requestUpdate();
       await el.updateComplete;
       assert.equal(el.updateCount, 2);
-      assert.equal(el.didUpdateCount, 2);
+      assert.equal(el.updatedCount, 2);
       el.controller2.nestedController.requestUpdate();
       await el.updateComplete;
       assert.equal(el.updateCount, 3);
-      assert.equal(el.didUpdateCount, 3);
+      assert.equal(el.updatedCount, 3);
     });
   });
 });
