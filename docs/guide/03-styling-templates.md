@@ -47,7 +47,7 @@ const myTemplate = () => {
     backgroundColor: highlight ? myHighlightColor : myBackgroundColor,
   };
 
-  html`
+  return html`
     <div style=${styleMap(styles)}>
       Hi there!
     </div>
