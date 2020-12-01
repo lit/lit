@@ -23,8 +23,8 @@ import {
 class TemplateContent extends Directive {
   private _previousTemplate?: HTMLTemplateElement;
 
-  constructor(partInfo: PartInfo, index?: number) {
-    super(partInfo, index);
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
     if (partInfo.type !== NODE_PART) {
       throw new Error('templateContent can only be used in text bindings');
     }

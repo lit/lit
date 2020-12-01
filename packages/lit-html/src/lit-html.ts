@@ -277,6 +277,9 @@ const templateCache = new Map<TemplateStringsArray, Template>();
 
 export type NodePartInfo = {
   readonly type: typeof NODE_PART;
+  readonly _$part: NodePart;
+  readonly _$parent: DisconnectableParent;
+  readonly _$attributeIndex: number | undefined;
 };
 
 export type AttributePartInfo = {
@@ -285,9 +288,12 @@ export type AttributePartInfo = {
     | typeof PROPERTY_PART
     | typeof BOOLEAN_ATTRIBUTE_PART
     | typeof EVENT_PART;
-  strings?: ReadonlyArray<string>;
-  name: string;
-  tagName: string;
+  readonly strings?: ReadonlyArray<string>;
+  readonly name: string;
+  readonly tagName: string;
+  readonly _$part: AttributePart;
+  readonly _$parent: DisconnectableParent;
+  readonly _$attributeIndex: number | undefined;
 };
 
 /**
@@ -299,7 +305,7 @@ export type AttributePartInfo = {
 export type PartInfo = NodePartInfo | AttributePartInfo;
 
 export type DirectiveClass = {
-  new (part: PartInfo, index?: number): Directive;
+  new (part: PartInfo): Directive;
 };
 
 /**
@@ -417,17 +423,18 @@ export abstract class Directive {
   _directive?: Directive;
 
   //@internal
-  _$parent: DisconnectableParent | undefined;
+  _$parent: DisconnectableParent;
 
   // These will only exist on the DisconnectableDirective subclass
   //@internal
   _$disconnetableChildren?: Set<DisconnectableParent>;
   //@internal
-  _$setConnected?(isConnected: boolean): void;
+  _$setDirectiveConnected?(isConnected: boolean): void;
 
-  constructor(part: PartInfo, attributeIndex: number | undefined) {
-    this._part = part as Part;
-    this._attributeIndex = attributeIndex;
+  constructor(partInfo: PartInfo) {
+    this._$parent = partInfo._$parent;
+    this._part = partInfo._$part;
+    this._attributeIndex = partInfo._$attributeIndex;
   }
   /** @internal */
   _resolve(props: Array<unknown>): unknown {
@@ -751,28 +758,33 @@ export interface DisconnectableParent {
 function resolveDirective(
   part: NodePart | AttributePart,
   value: unknown,
-  directiveParent: DirectiveParent = part,
-  attributeIndex?: number
+  _$parent: DirectiveParent = part,
+  _$attributeIndex?: number
 ): unknown {
   let currentDirective =
-    attributeIndex !== undefined
-      ? (directiveParent as AttributePart)._directives?.[attributeIndex]
-      : (directiveParent as NodePart | Directive)._directive;
+    _$attributeIndex !== undefined
+      ? (_$parent as AttributePart)._directives?.[_$attributeIndex]
+      : (_$parent as NodePart | Directive)._directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)?._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
-    currentDirective?._$setConnected?.(false);
+    currentDirective?._$setDirectiveConnected?.(false);
     currentDirective =
       nextDirectiveConstructor === undefined
         ? undefined
-        : new nextDirectiveConstructor(part as PartInfo, attributeIndex);
-    if (attributeIndex !== undefined) {
-      ((directiveParent as AttributePart)._directives ??= [])[
-        attributeIndex
+        : new nextDirectiveConstructor({
+            ...part,
+            _$part: part,
+            _$parent,
+            _$attributeIndex,
+          } as PartInfo);
+    if (_$attributeIndex !== undefined) {
+      ((_$parent as AttributePart)._directives ??= [])[
+        _$attributeIndex
       ] = currentDirective;
     } else {
-      (directiveParent as NodePart | Directive)._directive = currentDirective;
+      (_$parent as NodePart | Directive)._directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -925,7 +937,7 @@ export class NodePart {
   /** @internal */
   _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
   /** @internal */
-  _$setValueConnected?(
+  _$setNodePartConnected?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -953,7 +965,7 @@ export class NodePart {
    * @param isConnected
    */
   setDirectiveConnection(isConnected: boolean) {
-    this._$setValueConnected?.(isConnected);
+    this._$setNodePartConnected?.(isConnected);
   }
 
   get parentNode(): Node {
@@ -1138,7 +1150,7 @@ export class NodePart {
     start: ChildNode | null = this._startNode.nextSibling,
     from?: number
   ) {
-    this._$setValueConnected?.(false, true, from);
+    this._$setNodePartConnected?.(false, true, from);
     while (start && start !== this._endNode) {
       const n = start!.nextSibling;
       start!.remove();

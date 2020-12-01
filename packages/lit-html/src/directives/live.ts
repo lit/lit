@@ -31,8 +31,8 @@ import {
 const RESET_VALUE = {};
 
 class LiveDirective extends Directive {
-  constructor(partInfo: PartInfo, index?: number) {
-    super(partInfo, index);
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
     if (partInfo.type === EVENT_PART || partInfo.type === NODE_PART) {
       throw new Error(
         'The `live` directive is not allowed on text or event bindings'

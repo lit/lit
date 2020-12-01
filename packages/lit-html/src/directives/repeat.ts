@@ -65,8 +65,8 @@ const generateMap = (list: unknown[], start: number, end: number) => {
 class RepeatDirective extends Directive {
   itemKeys?: unknown[];
 
-  constructor(partInfo: PartInfo, index?: number) {
-    super(partInfo, index);
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
     if (partInfo.type !== NODE_PART) {
       throw new Error('repeat can only be used in text bindings');
     }

@@ -2059,7 +2059,7 @@ suite('lit-html', () => {
   // correct `directiveParent`; we'd need that passed into the constructor and
   // stored for all directives, even non-disconnectable ones, to form the
   // correct tree
-  test.skip('directives returned from other DisconnectableDirectives can be disconnected', () => {
+  test('directives returned from other DisconnectableDirectives can be disconnected', () => {
     const log: Array<string> = [];
     const go = (
       clearAll: boolean,
