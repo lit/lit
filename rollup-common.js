@@ -88,8 +88,8 @@ const crossPackagePropertyMangles = {
   _renderImpl: 'M',
   // Used by disconnectable-directive
   _$parent: 'I',
-  _$setConnected: 'J',
-  _$setValueConnected: 'K',
+  _$setDirectiveConnected: 'J',
+  _$setNodePartConnected: 'K',
   _$disconnetableChildren: 'L',
 };
 
