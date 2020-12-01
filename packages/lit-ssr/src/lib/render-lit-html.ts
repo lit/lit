@@ -15,7 +15,7 @@
  */
 
 // Type-only imports
-import {TemplateResult, DirectiveResult} from 'lit-html';
+import {TemplateResult, DirectiveResult, PartInfo} from 'lit-html';
 
 import {
   nothing,
@@ -443,7 +443,7 @@ export function* renderValue(
     const directive = (value as DirectiveResult)._$litDirective$;
     // Note that we are calling the SSR-compatible `render`; the rule is that
     // only `render` (and not `update`) is run on the server
-    value = new directive({type: NODE_PART}).render(
+    value = new directive({type: NODE_PART} as PartInfo).render(
       ...(value as DirectiveResult).values
     );
   }
