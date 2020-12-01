@@ -60,7 +60,7 @@ declare global {
   }
 }
 
-suite('React createElement', () => {
+suite('React', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -74,7 +74,7 @@ suite('React createElement', () => {
     }
   });
 
-  createComponent<
+  const BasicElementComponent = createComponent<
     BasicElement,
     {
       onFoo: string;
@@ -87,20 +87,44 @@ suite('React createElement', () => {
 
   let el: BasicElement;
 
-  const reactCreateElement = createElement(window.React);
+  const webComponentCreateElement = createElement(window.React);
 
-  const runTests = (
-    suiteName: string,
-    elementName: string,
-    shouldTestEvents: boolean
-  ) => {
-    const renderReactComponent = async (props?: any, tag = elementName) => {
-      window.ReactDOM.render(reactCreateElement(tag, props), container);
+  /**
+   * Note, this tests different scenarios with the same set of tests, including:
+   * 1. directly rendering a component that wraps a custom element.
+   * 2. patched createElement which renders a pre-wrapped element.
+   * 3. patched createElement which renders an auto-wrapped element.
+   */
+  const runTests = ({
+    name,
+    tag,
+    component,
+    testEvents,
+  }: {
+    name: string;
+    tag: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component?:
+      | string
+      | React.FunctionComponent<any>
+      | React.ComponentClass<any, any>;
+    testEvents: boolean;
+  }) => {
+    const createElementImpl = (component
+      ? window.React.createElement
+      : webComponentCreateElement) as typeof window.React.createElement;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const renderReactComponent = async (props?: any) => {
+      window.ReactDOM.render(
+        createElementImpl(component || tag, props),
+        container
+      );
       el = container.querySelector(tag)! as BasicElement;
       await el.updateComplete;
     };
 
-    suite(suiteName, () => {
+    suite(name, () => {
       test('wrapper renders custom element that updates', async () => {
         await renderReactComponent();
         assert.isOk(el);
@@ -184,47 +208,58 @@ suite('React createElement', () => {
         assert.equal(el.getAttribute('rarr'), '[1,2,3]');
       });
 
-      (shouldTestEvents ? test : test.skip)(
-        'can listen to events',
-        async () => {
-          let fooEvent: Event | undefined, barEvent: Event | undefined;
-          const onFoo = (e: Event) => {
-            fooEvent = e;
-          };
-          const onBar = (e: Event) => {
-            barEvent = e;
-          };
-          await renderReactComponent({
-            onFoo,
-            onBar,
-          });
-          el.fire('foo');
-          assert.equal(fooEvent!.type, 'foo');
-          el.fire('bar');
-          assert.equal(barEvent!.type, 'bar');
-          fooEvent = undefined;
-          barEvent = undefined;
-          await renderReactComponent({
-            onFoo: undefined,
-          });
-          el.fire('foo');
-          assert.equal(fooEvent, undefined);
-          el.fire('bar');
-          assert.equal(barEvent!.type, 'bar');
-          fooEvent = undefined;
-          barEvent = undefined;
-          await renderReactComponent({
-            onFoo,
-          });
-          el.fire('foo');
-          assert.equal(fooEvent!.type, 'foo');
-          el.fire('bar');
-          assert.equal(barEvent!.type, 'bar');
-        }
-      );
+      (testEvents ? test : test.skip)('can listen to events', async () => {
+        let fooEvent: Event | undefined, barEvent: Event | undefined;
+        const onFoo = (e: Event) => {
+          fooEvent = e;
+        };
+        const onBar = (e: Event) => {
+          barEvent = e;
+        };
+        await renderReactComponent({
+          onFoo,
+          onBar,
+        });
+        el.fire('foo');
+        assert.equal(fooEvent!.type, 'foo');
+        el.fire('bar');
+        assert.equal(barEvent!.type, 'bar');
+        fooEvent = undefined;
+        barEvent = undefined;
+        await renderReactComponent({
+          onFoo: undefined,
+        });
+        el.fire('foo');
+        assert.equal(fooEvent, undefined);
+        el.fire('bar');
+        assert.equal(barEvent!.type, 'bar');
+        fooEvent = undefined;
+        barEvent = undefined;
+        await renderReactComponent({
+          onFoo,
+        });
+        el.fire('foo');
+        assert.equal(fooEvent!.type, 'foo');
+        el.fire('bar');
+        assert.equal(barEvent!.type, 'bar');
+      });
     });
   };
 
-  runTests('pre-wrapped element', 'basic-element', true);
-  runTests('auto-wrapped element', 'other-element', false);
+  runTests({
+    name: 'createComponent',
+    tag: 'basic-element',
+    component: BasicElementComponent,
+    testEvents: true,
+  });
+  runTests({
+    name: 'createElement: pre-wrapped element',
+    tag: 'basic-element',
+    testEvents: true,
+  });
+  runTests({
+    name: 'createElement: auto-wrapped element',
+    tag: 'other-element',
+    testEvents: false,
+  });
 });

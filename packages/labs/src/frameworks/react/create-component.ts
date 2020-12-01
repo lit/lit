@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// TODO: Write a UMD->module shim or take React as an argument to
-// createReactComponent so we don't have to worry about how to load React.
 import * as ReactModule from 'react';
 
 const reservedReactProperties = new Set([
@@ -50,7 +48,6 @@ const setProperty = <E extends Element, T>(
   } else {
     // For properties, use an `in` check
     if (name in node) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       node[name as keyof E] = value;
       // And for everything else, set the attribute.
     } else if (value == null) {
@@ -82,7 +79,6 @@ const componentMap: Map<
  */
 // TODO(sorvell): Was unable to remove type E here.
 export const createComponent = <T extends HTMLElement, E>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   React: typeof ReactModule,
   tagName: string,
   events?: E
@@ -90,14 +86,11 @@ export const createComponent = <T extends HTMLElement, E>(
   const Component = React.Component;
   const createElement = React.createElement;
 
-  // TODO(sorvell): Cannot get type from this.
-  // const CustomElement = customElements.get(tagName);
-
   type ElementProps = Partial<T> & Events<E>;
 
   type Props = React.PropsWithoutRef<ElementProps> & ForwardedRef;
 
-  // Only create wrapper 1x
+  // Use cached value if available.
   let ComponentClass = componentMap.get(tagName);
   if (ComponentClass !== undefined) {
     return ComponentClass;
@@ -113,9 +106,8 @@ export const createComponent = <T extends HTMLElement, E>(
       // so use `__forwardedRef` via `React.forwardRef`.
       const forwardedRef = this.props?.__forwardedRef;
       if (forwardedRef) {
-        // TODO(sorvell): You're not support to set this yourself, but it
-        // doesn't seem like there's good support for forwarding a ref and
-        // also using it yourself.
+        // Note, there are 2 kinds of refs and we manually fulfill them here.
+        // There is no built in React API for this.
         if (typeof forwardedRef === 'function') {
           (forwardedRef as (e: T) => void)(element);
         } else {
@@ -138,7 +130,7 @@ export const createComponent = <T extends HTMLElement, E>(
         );
       }
 
-      // TODO(sorvell): there's no safe value to set here.
+      // TODO(sorvell): There's no safe value to set here.
       // Unset any `oldProps` that are not currently in `this.props`
       // for (const prop in oldProps) {
       //   if (!(prop in this.props)) {
@@ -187,7 +179,7 @@ export const createComponent = <T extends HTMLElement, E>(
       )
   );
 
-  // memoize
+  // cache component
   componentMap.set(tagName, ComponentClass);
   return ComponentClass;
 };

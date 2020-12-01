@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// TODO: Write a UMD->module shim or take React as an argument to
-// createReactComponent so we don't have to worry about how to load React.
 import * as ReactModule from 'react';
 import {createComponent} from './create-component.js';
 
@@ -28,7 +26,6 @@ const isCustomElement = (tagName: unknown) =>
  *
  * @param React React module.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createElement = (React: typeof ReactModule) => {
   const createElement = React.createElement;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
