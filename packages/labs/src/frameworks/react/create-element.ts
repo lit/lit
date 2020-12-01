@@ -20,8 +20,6 @@ import {createComponent} from './create-component.js';
 const isCustomElement = (tagName: unknown) =>
   typeof tagName === 'string' && customElements.get(tagName);
 
-const componentMap: Map<string, unknown> = new Map();
-
 /**
  * React `createElement` that supports custom elements by automatically
  * producing a react wrapper component that binds to properties and events
@@ -31,16 +29,12 @@ const componentMap: Map<string, unknown> = new Map();
  * @param React React module.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createElement = (React: any) => {
+export const createElement = (React: typeof ReactModule) => {
   const createElement = React.createElement;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (type: any, props?: any, ...children: ReactModule.ReactNode[]) => {
     if (isCustomElement(type)) {
-      const tagName = type;
-      type = componentMap.get(type);
-      if (type === undefined) {
-        componentMap.set(tagName, (type = createComponent(React, tagName)));
-      }
+      type = createComponent(React, type);
     }
     return createElement(type, props, ...children);
   };

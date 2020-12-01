@@ -69,6 +69,14 @@ type Events<S> = {
   [P in keyof S]?: (e: Event) => unknown;
 };
 
+const componentMap: Map<
+  string,
+  React.ForwardRefExoticComponent<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    React.PropsWithChildren<React.PropsWithRef<any>>
+  >
+> = new Map();
+
 /**
  *  Creates a React component from a CustomElement.
  */
@@ -88,6 +96,12 @@ export const createComponent = <T extends HTMLElement, E>(
   type ElementProps = Partial<T> & Events<E>;
 
   type Props = React.PropsWithoutRef<ElementProps> & ForwardedRef;
+
+  // Only create wrapper 1x
+  let ComponentClass = componentMap.get(tagName);
+  if (ComponentClass !== undefined) {
+    return ComponentClass;
+  }
 
   class ReactComponent extends Component<Props> {
     element!: T;
@@ -161,7 +175,7 @@ export const createComponent = <T extends HTMLElement, E>(
     }
   }
 
-  return React.forwardRef(
+  ComponentClass = React.forwardRef(
     (
       props?: React.PropsWithChildren<React.PropsWithRef<ElementProps>>,
       ref?: React.Ref<unknown>
@@ -172,4 +186,8 @@ export const createComponent = <T extends HTMLElement, E>(
         props?.children
       )
   );
+
+  // memoize
+  componentMap.set(tagName, ComponentClass);
+  return ComponentClass;
 };
