@@ -26,6 +26,7 @@ import {
   detachNodePart,
   removePart,
   restoreNodePart,
+  getPartValue,
 } from '../parts.js';
 
 suite('lit-html', () => {
@@ -46,9 +47,9 @@ suite('lit-html', () => {
         return items.map((i) => html`<li>${i}</li>`);
       }
       update(part: NodePart, [items]: Parameters<this['render']>) {
-        if (part._value !== undefined) {
+        if (getPartValue(part) !== undefined) {
           // this is the second render, let's swap some parts
-          const parts = part._value as Array<NodePart>;
+          const parts = getPartValue(part) as Array<NodePart>;
           const state1 = detachNodePart(parts[1]);
           const state2 = detachNodePart(parts[2]);
           restoreNodePart(parts[1], state2);

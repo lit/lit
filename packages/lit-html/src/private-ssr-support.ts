@@ -12,7 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {$private as p} from './lit-html.js';
+import {
+  $private as p,
+  AttributePart,
+  Directive,
+  noChange,
+  Part,
+} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -29,4 +35,22 @@ export const $private = {
   markerMatch: p._markerMatch,
   HTML_RESULT: p._HTML_RESULT,
   getTemplateHtml: p._getTemplateHtml,
+  patchDirectiveResolve: (
+    directive: Directive,
+    fn: (this: Directive, _part: Part, values: unknown[]) => unknown
+  ) => {
+    directive._resolve = fn;
+  },
+  getAtributePartCommittedValue: (
+    part: AttributePart,
+    value: unknown,
+    index: number | undefined
+  ) => {
+    // Use the part setter to resolve directives/concatenate multiple parts
+    // into a final value (captured by passing in a commitValue override)
+    let committedValue: unknown = noChange;
+    part._commitValue = (value: unknown) => (committedValue = value);
+    part._setValue(value, index);
+    return committedValue;
+  },
 };

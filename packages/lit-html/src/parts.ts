@@ -87,6 +87,12 @@ export const setPartValue = <T extends Part>(
 
 export const getPartValue = (part: NodePart) => part._value;
 
+// A sentinal value that can never appear as a part value except when set by
+// live(). Used to force a dirty-check to fail and cause a re-render.
+const RESET_VALUE = {};
+
+export const resetPartValue = (part: Part) => (part._value = RESET_VALUE);
+
 export const insertPartBefore = (
   containerPart: NodePart,
   part: NodePart,

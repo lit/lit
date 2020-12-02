@@ -1216,6 +1216,7 @@ export class AttributePart {
 export class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
+  /** @internal */
   _commitValue(value: unknown) {
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       if (this._sanitizer === undefined) {
@@ -1235,6 +1236,7 @@ export class PropertyPart extends AttributePart {
 export class BooleanAttributePart extends AttributePart {
   readonly type = BOOLEAN_ATTRIBUTE_PART;
 
+  /** @internal */
   _commitValue(value: unknown) {
     if (value && value !== nothing) {
       this.element.setAttribute(this.name, '');

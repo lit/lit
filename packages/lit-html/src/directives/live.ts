@@ -25,10 +25,7 @@ import {
   BOOLEAN_ATTRIBUTE_PART,
   ATTRIBUTE_PART,
 } from '../lit-html.js';
-
-// A sentinal value that can never appear as a part value except when set by
-// live(). Used to force a dirty-check to fail and cause a re-render.
-const RESET_VALUE = {};
+import {resetPartValue} from '../parts.js';
 
 class LiveDirective extends Directive {
   constructor(part: PartInfo) {
@@ -73,9 +70,9 @@ class LiveDirective extends Directive {
         return noChange;
       }
     }
-    // Setting the part's value to RESET_VALUE causes its dirty-check to fail
-    // so that it always sets the value.
-    part._value = RESET_VALUE;
+    // Resets the part's value, causing its dirty-check to fail so that it
+    // always sets the value.
+    resetPartValue(part);
     return value;
   }
 }

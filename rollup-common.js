@@ -43,24 +43,7 @@ const skipBundleOutput = {
 const reservedProperties = [
   '_$litType$',
   '_$litDirective$',
-  // TODO Decide on public API
-  // https://github.com/Polymer/lit-html/issues/1261
-  '_value',
-  '_setValue',
   'createTreeWalker',
-  // Note, used in platform-support and reserved so platform-support can work
-  // x-version.
-  '_handlesPrepareStyles',
-  // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
-  // crossPackagePropertyMangles once lit-ssr uses the rollup config)
-  // lit-html: AttributePart (used by render-lit-html)
-  '_commitValue',
-  // lit-html: Directive (used by render-lit-html)
-  '_resolve',
-  // updating-element: UpdatingElement (used by lit-element-renderer)
-  '_attributeToProperty',
-  // hydrate-support: LitElement (added by hydrate-support)
-  '_needsHydration',
 ];
 
 // Any private properties which we share between different _packages_ are
@@ -86,6 +69,15 @@ const crossPackagePropertyMangles = {
   _renderOptions: 'W',
   // lit-element: LitElement (used by hydrate-support)
   _renderImpl: 'M',
+  // hydrate-support: LitElement (added by hydrate-support)
+  _needsHydration: 'N',
+  // lit-html: Part
+  _value: 'O',
+  _setValue: 'P',
+  // platform-support: LitElement (added by platform-support)
+  _handlesPrepareStyles: 'Q',
+  // lit-element: UpdatingElement
+  _attributeToProperty: 'R',
 };
 
 const generateTerserOptions = (nameCache = null) => ({

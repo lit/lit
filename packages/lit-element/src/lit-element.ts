@@ -170,3 +170,13 @@ if (DEV_MODE) {
     return true;
   };
 }
+
+export const $private = {
+  _attributeToProperty: (
+    el: LitElement,
+    name: string,
+    value: string | null
+  ) => {
+    el._attributeToProperty(name, value);
+  },
+};
