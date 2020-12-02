@@ -35,6 +35,7 @@ packages/lit-element/hydrate-support.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/platform-support.*
+packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
 packages/lit-html/directives/
@@ -45,7 +46,7 @@ packages/lit-html/lit-html.*
 packages/lit-html/parts.*
 packages/lit-html/platform-support.*
 packages/lit-html/private-ssr-support.*
-
+packages/lit-html/static.*
 packages/lit-ssr/demo/
 packages/lit-ssr/lib/
 packages/lit-ssr/node_modules/
