@@ -21,6 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Adds react component wrapper for custom elements. Use directly by calling `createComponent` via the `frameworks/react/create-component` module, or custom React's createElement by calling `createElement` via the `frameworks/react/create-element` module.
+- Adds react component wrapper for custom elements. Use by calling `createComponent` via the `frameworks/react/create-component` module.
 
 - Adds `labs` package. The `labs` package is an experimental playground for Lit helpers and tools.

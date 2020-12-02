@@ -32,11 +32,7 @@
     "/frameworks/react/create-component.d.ts",
     "/frameworks/react/create-component.d.ts.map",
     "/frameworks/react/create-component.js",
-    "/frameworks/react/create-component.js.map",
-    "/frameworks/react/create-element.d.ts",
-    "/frameworks/react/create-element.d.ts.map",
-    "/frameworks/react/create-element.js",
-    "/frameworks/react/create-element.js.map"
+    "/frameworks/react/create-component.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
