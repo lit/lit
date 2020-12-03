@@ -612,7 +612,7 @@ export abstract class UpdatingElement extends HTMLElement {
   /**
    * Set of controllers.
    */
-  _controllers?: Controller[];
+  _$controllers?: Controller[];
 
   constructor() {
     super();
@@ -625,7 +625,7 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   addController(controller: Controller) {
-    (this._controllers ??= []).push(controller);
+    (this._$controllers ??= []).push(controller);
   }
 
   /**
@@ -685,7 +685,7 @@ export abstract class UpdatingElement extends HTMLElement {
       }).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating();
-    this._controllers?.forEach((c) => c.connectedCallback?.());
+    this._$controllers?.forEach((c) => c.connectedCallback?.());
   }
 
   /**
@@ -701,7 +701,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this._controllers?.forEach((c) => c.disconnectedCallback?.());
+    this._$controllers?.forEach((c) => c.disconnectedCallback?.());
   }
 
   /**
@@ -712,7 +712,7 @@ export abstract class UpdatingElement extends HTMLElement {
     _old: string | null,
     value: string | null
   ) {
-    this._attributeToProperty(name, value);
+    this._$attributeToProperty(name, value);
   }
 
   private _propertyToAttribute(
@@ -764,7 +764,7 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   /** @internal */
-  _attributeToProperty(name: string, value: string | null) {
+  _$attributeToProperty(name: string, value: string | null) {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
@@ -930,9 +930,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._controllers?.forEach((c) => c.willUpdate?.());
+        this._$controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this._controllers?.forEach((c) => c.update?.());
+        this._$controllers?.forEach((c) => c.update?.());
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -947,7 +947,7 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._didUpdate(changedProperties);
+      this._$didUpdate(changedProperties);
     }
   }
 
@@ -955,12 +955,12 @@ export abstract class UpdatingElement extends HTMLElement {
 
   // Note, this is an override point for platform-support.
   // @internal
-  _didUpdate(changedProperties: PropertyValues) {
+  _$didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this._controllers?.forEach((c) => c.updated?.());
+    this._$controllers?.forEach((c) => c.updated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&

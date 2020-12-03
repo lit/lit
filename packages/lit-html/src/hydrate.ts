@@ -209,7 +209,7 @@ const openNodePart = (
       } else {
         value = result.value;
       }
-      (state.part._value as Array<NodePart>).push(part);
+      (state.part._$value as Array<NodePart>).push(part);
     }
   }
 
@@ -235,14 +235,14 @@ const openNodePart = (
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
-    part._value = value;
+    part._$value = value;
   } else if ((value as TemplateResult)._$litType$ !== undefined) {
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(
       value as TemplateResult
     )}`;
     if (marker.data === markerWithDigest) {
-      const template = NodePart.prototype._getTemplate(
+      const template = NodePart.prototype._$getTemplate(
         (value as TemplateResult).strings,
         value as TemplateResult
       );
@@ -257,7 +257,7 @@ const openNodePart = (
       });
       // For TemplateResult values, we set the part value to the
       // generated TemplateInstance
-      part._value = instance;
+      part._$value = instance;
     } else {
       // TODO: if this isn't the server-rendered template, do we
       // need to stop hydrating this subtree? Clear it? Add tests.
@@ -272,14 +272,14 @@ const openNodePart = (
       iterator: value[Symbol.iterator](),
       done: false,
     });
-    part._value = [];
+    part._$value = [];
   } else {
     // Fallback for everything else (nothing, Objects, Functions,
     // etc.): we just initialize the part's value
     // Note that `Node` value types are not currently supported during
     // SSR, so that part of the cascade is missing.
     stack.push({part: part, type: 'leaf'});
-    part._value = value == null ? '' : value;
+    part._$value = value == null ? '' : value;
   }
   return part;
 };
@@ -293,7 +293,7 @@ const closeNodePart = (
     throw new Error('unbalanced part marker');
   }
 
-  part._endNode = marker;
+  part._$endNode = marker;
 
   const currentState = stack.pop()!;
 
@@ -329,7 +329,7 @@ const createAttributeParts = (
     while (true) {
       // If the next template part is in attribute-position on the current node,
       // create the instance part for it and prime its state
-      const templatePart = instance._template._parts[state.templatePartIndex];
+      const templatePart = instance._$template._parts[state.templatePartIndex];
       if (
         templatePart === undefined ||
         templatePart._type !== ATTRIBUTE_PART ||
@@ -353,7 +353,7 @@ const createAttributeParts = (
           ? state.result.values[state.instancePartIndex]
           : state.result.values;
 
-      // Setting the attribute value primes _value with the resolved
+      // Setting the attribute value primes _$value with the resolved
       // directive value; we only then commit that value for event/property
       // parts since those were not serialized, and pass `noCommit` for the
       // others to avoid perf impact of touching the DOM unnecessarily
@@ -361,7 +361,7 @@ const createAttributeParts = (
         instancePart instanceof EventPart ||
         instancePart instanceof PropertyPart
       );
-      instancePart._setValue(value, state.instancePartIndex, noCommit);
+      instancePart._$setValue(value, state.instancePartIndex, noCommit);
       state.templatePartIndex++;
       state.instancePartIndex += templatePart._strings.length - 1;
       instance._parts.push(instancePart);

@@ -15,5 +15,5 @@
 import {$private as p} from './lit-element.js';
 
 export const $private = {
-  attributeToProperty: p._attributeToProperty,
+  attributeToProperty: p._$attributeToProperty,
 };

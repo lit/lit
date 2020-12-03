@@ -26,7 +26,7 @@ interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableLitElement;
   createRenderRoot(): Element | ShadowRoot;
-  _needsHydration: boolean;
+  _$needsHydration: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,7 +39,7 @@ interface PatchableLitElement extends HTMLElement {
   const createRenderRoot = LitElement.prototype.createRenderRoot;
   LitElement.prototype.createRenderRoot = function () {
     if (this.shadowRoot) {
-      this._needsHydration = true;
+      this._$needsHydration = true;
       return this.shadowRoot;
     } else {
       return createRenderRoot.call(this);
@@ -52,11 +52,11 @@ interface PatchableLitElement extends HTMLElement {
     // Since this is a patch, we can't call super.update()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (UpdatingElement.prototype as any).update.call(this, changedProperties);
-    if (this._needsHydration) {
-      this._needsHydration = false;
-      hydrate(value, this.renderRoot, this._renderOptions);
+    if (this._$needsHydration) {
+      this._$needsHydration = false;
+      hydrate(value, this.renderRoot, this._$renderOptions);
     } else {
-      render(value, this.renderRoot, this._renderOptions);
+      render(value, this.renderRoot, this._$renderOptions);
     }
   };
 };

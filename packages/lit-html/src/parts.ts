@@ -17,25 +17,25 @@ type NodePartStateInternal = {
  * Package private members of NodePart.
  */
 type NodePartInternal = {
-  _startNode: NodePart['_startNode'];
-  _endNode: NodePart['_endNode'];
+  _$startNode: NodePart['_$startNode'];
+  _$endNode: NodePart['_$endNode'];
   _commitNode: NodePart['_commitNode'];
 };
 
 export const detachNodePart = (part: NodePart): NodePartState => {
   const fragment = document.createDocumentFragment();
   const state: NodePartStateInternal = {
-    _value: part._value,
+    _value: part._$value,
     _fragment: fragment,
   };
-  let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
+  let start = ((part as unknown) as NodePartInternal)._$startNode.nextSibling;
   let nextNode;
-  while (start !== ((part as unknown) as NodePartInternal)._endNode) {
+  while (start !== ((part as unknown) as NodePartInternal)._$endNode) {
     nextNode = start!.nextSibling;
     fragment.append(start!);
     start = nextNode;
   }
-  part._value = nothing;
+  part._$value = nothing;
   return state;
 };
 
@@ -43,7 +43,7 @@ export const restoreNodePart = (part: NodePart, state: NodePartState) => {
   ((part as unknown) as NodePartInternal)._commitNode(
     (state as NodePartStateInternal)._fragment
   );
-  part._value = (state as NodePartStateInternal)._value;
+  part._$value = (state as NodePartStateInternal)._value;
 };
 
 const createMarker = () => document.createComment('');
@@ -52,13 +52,13 @@ export const createAndInsertPart = (
   containerPart: NodePart,
   refPart?: NodePart
 ): NodePart => {
-  const container = ((containerPart as unknown) as NodePartInternal)._startNode
+  const container = ((containerPart as unknown) as NodePartInternal)._$startNode
     .parentNode as Node;
 
   const refNode =
     refPart === undefined
-      ? ((containerPart as unknown) as NodePartInternal)._endNode
-      : ((refPart as unknown) as NodePartInternal)._startNode;
+      ? ((containerPart as unknown) as NodePartInternal)._$endNode
+      : ((refPart as unknown) as NodePartInternal)._$startNode;
 
   const startNode = container.insertBefore(createMarker(), refNode);
   const endNode = container.insertBefore(createMarker(), refNode);
@@ -76,41 +76,43 @@ export const setPartValue = <T extends Part>(
         "An index must be provided to set an AttributePart's value."
       );
     }
-    const newValues = [...(part._value as Array<unknown>)];
+    const newValues = [...(part._$value as Array<unknown>)];
     newValues[index] = value;
-    (part as AttributePart)._setValue(newValues, 0);
+    (part as AttributePart)._$setValue(newValues, 0);
   } else {
-    part._setValue(value);
+    part._$setValue(value);
   }
   return part;
 };
 
-export const getPartValue = (part: NodePart) => part._value;
+export const getPartValue = (part: NodePart) => part._$value;
 
 // A sentinal value that can never appear as a part value except when set by
 // live(). Used to force a dirty-check to fail and cause a re-render.
 const RESET_VALUE = {};
 
-export const resetPartValue = (part: Part) => (part._value = RESET_VALUE);
+export const resetPartValue = (part: Part, value: unknown = RESET_VALUE) =>
+  (part._$value = value);
 
 export const insertPartBefore = (
   containerPart: NodePart,
   part: NodePart,
   refPart?: NodePart
 ) => {
-  const container = ((containerPart as unknown) as NodePartInternal)._startNode
+  const container = ((containerPart as unknown) as NodePartInternal)._$startNode
     .parentNode!;
 
   const refNode = refPart
-    ? ((refPart as unknown) as NodePartInternal)._startNode
-    : ((containerPart as unknown) as NodePartInternal)._endNode;
+    ? ((refPart as unknown) as NodePartInternal)._$startNode
+    : ((containerPart as unknown) as NodePartInternal)._$endNode;
 
-  const endNode = ((part as unknown) as NodePartInternal)._endNode!.nextSibling;
+  const endNode = ((part as unknown) as NodePartInternal)._$endNode!
+    .nextSibling;
 
   if (endNode !== refNode) {
     reparentNodes(
       container,
-      ((part as unknown) as NodePartInternal)._startNode,
+      ((part as unknown) as NodePartInternal)._$startNode,
       endNode,
       refNode
     );
@@ -119,8 +121,8 @@ export const insertPartBefore = (
 
 export const removePart = (part: NodePart) => {
   removeNodes(
-    ((part as unknown) as NodePartInternal)._startNode,
-    ((part as unknown) as NodePartInternal)._endNode!.nextSibling
+    ((part as unknown) as NodePartInternal)._$startNode,
+    ((part as unknown) as NodePartInternal)._$endNode!.nextSibling
   );
 };
 

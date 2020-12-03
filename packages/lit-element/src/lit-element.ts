@@ -92,7 +92,7 @@ export class LitElement extends UpdatingElement {
    */
   protected static ['finalized'] = true;
 
-  readonly _renderOptions: RenderOptions = {eventContext: this};
+  readonly _$renderOptions: RenderOptions = {eventContext: this};
 
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
@@ -101,7 +101,7 @@ export class LitElement extends UpdatingElement {
     // any styles in Lit content render before adoptedStyleSheets. This is
     // important so that adoptedStyleSheets have precedence over styles in
     // the shadowRoot.
-    this._renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    this._$renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
     return renderRoot;
   }
 
@@ -117,7 +117,7 @@ export class LitElement extends UpdatingElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    render(value, this.renderRoot, this._renderOptions);
+    render(value, this.renderRoot, this._$renderOptions);
   }
 
   /**
@@ -172,11 +172,11 @@ if (DEV_MODE) {
 }
 
 export const $private = {
-  _attributeToProperty: (
+  _$attributeToProperty: (
     el: LitElement,
     name: string,
     value: string | null
   ) => {
-    el._attributeToProperty(name, value);
+    el._$attributeToProperty(name, value);
   },
 };

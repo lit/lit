@@ -50,7 +50,7 @@ export const $private = {
     // into a final value (captured by passing in a commitValue override)
     let committedValue: unknown = noChange;
     part._commitValue = (value: unknown) => (committedValue = value);
-    part._setValue(value, index);
+    part._$setValue(value, index);
     return committedValue;
   },
 };

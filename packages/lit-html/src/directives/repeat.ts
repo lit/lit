@@ -25,6 +25,7 @@ import {
   getPartValue,
   insertPartBefore,
   removePart,
+  resetPartValue,
   setPartValue,
 } from '../parts.js';
 
@@ -451,8 +452,7 @@ class RepeatDirective extends Directive {
     // Save order of new parts for next round
     this.itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
-    // TODO (justinfagnani): resolve with https://github.com/Polymer/lit-html/issues/1261
-    containerPart._value = newParts;
+    resetPartValue(containerPart, newParts);
     return noChange;
   }
 }
