@@ -12,6 +12,117 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+/**
+ * Overview:
+ *
+ * This module is designed to add `disconnectedCallback` support to directives
+ * with the least impact on the core runtime or payload when that feature is not
+ * used.
+ *
+ * The strategy is to introduce a `DisconnectableDirective` subclass of
+ * `Directive` that climbs the "parent" tree in its constructor to note which
+ * branches of lit-html's "logical tree" of data structures contain such
+ * directives and thus need to be crawled when a subtree is being cleared
+ * (or manually disconnected) in order to run the `disconnectedCallback`.
+ *
+ * The "nodes" of the logical tree include Parts, TemplateInstances (for when a
+ * TemplateResult is committed to a value of a NodePart), and Directives; these
+ * all implement a common interface called `DisconnectableChild`. Each
+ * has a `_$parent` reference which is set during construction in the core code.
+ *
+ * The sparse tree is maintained by placing a `_$disconnectableChildren` Set on
+ * each parent, referencing each child that contains a `DisconnectableDirective`
+ * directly or transitively via its children. To disconnect (or reconnect) a
+ * tree, the `_$setNodePartConnected` API is patched onto NodeParts as a
+ * directive climbs the parent tree, which is called by the core when clearing a
+ * part if it exists. When called, that method iterates over the sparse tree of
+ * Set<DisconnectableChildren> built up by DisconnectableDirectives, and calls
+ * `_$setDirectiveConnected` on any directives that are encountered in that
+ * tree.
+ *
+ * A given "logical tree" of lit-html data-structures might look like this:
+ *
+ *  NodePart(N1) _$dC=[D2,T3]
+ *   ._directive
+ *     DisconnectableDirective(D2)
+ *   ._value // user value was TemplateResult
+ *     TemplateInstance(T3) _$dC=[A4,A6,N10,N12]
+ *      ._parts[]
+ *        AttributePart(A4) _$dC=[D5]
+ *         ._directives[]
+ *           DisconnectableDirective(D5)
+ *        AttributePart(A6) _$dC=[D7,D8]
+ *         ._directives[]
+ *           DisconnectableDirective(D7)
+ *           Directive(D8) _$dC=[D9]
+ *            ._directive
+ *              DisconnectableDirective(D9)
+ *        NodePart(N10) _$dC=[D11]
+ *         ._directive
+ *           DisconnectableDirective(D11)
+ *         ._value
+ *           string
+ *        NodePart(N12) _$dC=[D13,N14,N16]
+ *         ._directive
+ *           DisconnectableDirective(D13)
+ *         ._value // user value was iterable
+ *           Array<NodePart>
+ *             NodePart(N14) _$dC=[D15]
+ *              ._value
+ *                string
+ *             NodePart(N16) _$dC=[D17,T18]
+ *              ._directive
+ *                DisconnectableDirective(D17)
+ *              ._value // user value was TemplateResult
+ *                TemplateInstance(T18) _$dC=[A19,A21,N25]
+ *                 ._parts[]
+ *                   AttributePart(A19) _$dC=[D20]
+ *                    ._directives[]
+ *                      DisconnectableDirective(D20)
+ *                   AttributePart(A21) _$dC=[22,23]
+ *                    ._directives[]
+ *                      DisconnectableDirective(D22)
+ *                      Directive(D23) _$dC=[D24]
+ *                       ._directive
+ *                         DisconnectableDirective(D24)
+ *                   NodePart(N25) _$dC=[D26]
+ *                    ._directive
+ *                      DisconnectableDirective(D26)
+ *                    ._value
+ *                      string
+ *
+ * Example 1: The directive in NodePart(N12) updates and returns `nothing`. The
+ * NodePart will _clear() itself, and so we need to disconnect the "value" of
+ * the NodePart (but not its directive). In this case, when `_clear()` calls
+ * `_$setNodePartConnected()`, we don't iterate all of the
+ * _$disconnectableChildren, rather we do a value-specific disconnection: i.e.
+ * since the _value was an Array<NodePart> (because an iterable had been
+ * committed), we iterate the array of NodeParts (N14, N16) and run
+ * `setConnected` on them (which does recurse down the full tree of
+ * `_$disconnectableChildren` below it, and also removes N14 and N16 from N12's
+ * `_$disconnectableChildren`). Once the values have been disconnected, we then
+ * check whether the NodePart(N12)'s list of `_$disconnectableChildren` is empty
+ * (and would remove it from its parent TemplateInstance(T3) if so), but since
+ * it would still contain its directive D13, it stays in the disconnectable
+ * tree.
+ *
+ * Example 2: In the course of Example 1, `setConnected` will reach
+ * NodePart(N16); in this case the entire part is being disconnected, so we
+ * simply iterate all of N16's `_$disconnectableChildren` (D17,T18) and
+ * recursively run `setConnected` on them. Note that we only remove children
+ * from `_$disconnectableChildren` for the top-level values being disconnected
+ * on a clear; doing this bookkeeping lower in the tree is wasteful since it's
+ * all being thrown away.
+ *
+ * Example 3: If the LitElement containing the entire tree above becomes
+ * disconnected, it will run `setDirectiveConnection()` (which calls
+ * `part._$setNodePartConnected()` if it exists); in this case, we recursively
+ * run `setConnected()` over the entire tree, without removing any children from
+ * `_$disconnectableChildren`, since this tree is required to re-connect the
+ * tree, which does the same operation, simply passing `isConnectd: true` down
+ * the tree, signaling which callback to run.
+ */
+
 import {
   Directive,
   PartInfo,
@@ -106,17 +217,22 @@ function setNodePartConnected(
   if (this._$disconnetableChildren !== undefined) {
     if (valueOnly) {
       if (Array.isArray(value)) {
-        // Iterable case
+        // Iterable case: Any NodeParts created by the iterable should be
+        // disconnected and removed from this NodePart's disconnectable
+        // children, and we will remove this NodePart from its parent in the
+        // call to `removeFromParentIfEmpty` below if that causes this NodePart
+        // to become empty
         for (let i = from; i < value.length; i++) {
-          setChildrenConnected(value[i], isConnected, valueOnly);
+          setChildrenConnected(value[i], isConnected, true);
         }
       } else if (value != null) {
-        // Part or Directive case
-        setChildrenConnected(
-          value as DisconnectableParent,
-          isConnected,
-          valueOnly
-        );
+        // TemplateInstance case: If the value has disconnectable children (will
+        // only be in the case that it is a TemplateInstance), we disconnect it
+        // and remove it from this NodePart's disconnectable children, and we
+        // will remove this NodePart from its parent in the call to
+        // `removeFromParentIfEmpty` below if that causes this NodePart to
+        // become empty
+        setChildrenConnected(value as DisconnectableParent, isConnected, true);
       }
       removeFromParentIfEmpty(this);
     } else {
