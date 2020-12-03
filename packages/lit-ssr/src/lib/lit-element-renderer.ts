@@ -14,12 +14,12 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, UpdatingElement} from 'lit-element';
-import {$private} from 'lit-element/private-ssr-support.js';
+import {_$private} from 'lit-element/private-ssr-support.js';
 import {render, renderValue, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty} = $private;
+const {attributeToProperty} = _$private;
 
 /**
  * ElementRenderer implementation for LitElements

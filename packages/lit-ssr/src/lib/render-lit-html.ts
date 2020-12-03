@@ -30,7 +30,7 @@ import {
   EventPart,
 } from 'lit-html';
 
-import {$private} from 'lit-html/private-ssr-support.js';
+import {_$private} from 'lit-html/private-ssr-support.js';
 
 const {
   getTemplateHtml,
@@ -39,7 +39,7 @@ const {
   boundAttributeSuffix,
   patchDirectiveResolve,
   getAtributePartCommittedValue,
-} = $private;
+} = _$private;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
 

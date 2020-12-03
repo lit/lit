@@ -23,14 +23,14 @@ import {
   NodePartInfo,
   RenderOptions,
   ATTRIBUTE_PART,
-  $private,
+  _$private,
 } from './lit-html.js';
 
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _isPrimitive: isPrimitive,
-} = $private;
+} = _$private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 

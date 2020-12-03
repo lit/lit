@@ -18,7 +18,7 @@ import {
   Part,
   PartInfo,
   noChange,
-  $private,
+  _$private,
 } from '../lit-html.js';
 import {setPartValue} from '../parts.js';
 
@@ -31,7 +31,7 @@ if (DEV_MODE) {
   );
 }
 
-const isPrimitive = $private._isPrimitive;
+const isPrimitive = _$private._isPrimitive;
 
 interface AsyncState {
   /**
