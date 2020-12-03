@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {html, render} from '../../lit-html.js';
-import {ref, createRef} from '../../directives/ref.js';
+import {ref, createRef, RefOrCallback} from '../../directives/ref.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('ref', () => {
@@ -35,6 +35,77 @@ suite('ref', () => {
     render(html`<div ${ref(divCallback)}></div>`, container);
     const div = container.firstElementChild;
     assert.equal(divRef, div);
+  });
+
+  test('sets a ref when Ref object changes', () => {
+    const divRef1 = createRef();
+    const divRef2 = createRef();
+
+    const go = (r: RefOrCallback) =>
+      render(html`<div ${ref(r)}></div>`, container);
+    go(divRef1);
+    const div1 = container.firstElementChild;
+    assert.equal(divRef1.value, div1);
+
+    go(divRef2);
+    const div2 = container.firstElementChild;
+    assert.equal(divRef1.value, div2);
+  });
+
+  test('calls a ref callback when callback changes', () => {
+    let divRef: Element | undefined;
+    const divCallback1 = (el: Element | undefined) => (divRef = el);
+    const divCallback2 = (el: Element | undefined) => (divRef = el);
+
+    const go = (r: RefOrCallback) =>
+      render(html`<div ${ref(r)}></div>`, container);
+
+    go(divCallback1);
+    const div1 = container.firstElementChild;
+    assert.equal(divRef, div1);
+
+    go(divCallback2);
+    const div2 = container.firstElementChild;
+    assert.equal(divRef, div2);
+  });
+
+  test('only sets a ref when element changes', () => {
+    let queriedEl: Element | null;
+    let callCount = 0;
+    const elRef = createRef();
+
+    const originalSet = elRef.set;
+    elRef.set = function (v: Element | undefined) {
+      originalSet.call(elRef, v);
+      callCount++;
+    };
+
+    const go = (x: boolean) =>
+      render(
+        x ? html`<div ${ref(elRef)}></div>` : html`<span ${ref(elRef)}></span>`,
+        container
+      );
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.equal(elRef.value, queriedEl);
+    assert.equal(callCount, 1);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.equal(elRef.value, queriedEl);
+    assert.equal(callCount, 1);
+
+    go(false);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'SPAN');
+    assert.equal(elRef.value, queriedEl);
+    assert.equal(callCount, 2);
+
+    // TODO (justinfagnani): when ref() is disconnectable, should the
+    // callback be called in this case? Or only called with the new element?
   });
 
   test('only calls a ref callback when element changes', () => {

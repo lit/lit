@@ -26,22 +26,25 @@ class Ref<T = Element> {
   }
 }
 
-type RefOrCallback = Ref | ((el: Element | undefined) => void);
+export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 
 class RefDirective extends Directive {
   private _element?: Element;
+  private _ref?: RefOrCallback;
 
   render(_ref: RefOrCallback) {
     return nothing;
   }
 
   update(part: ElementPart, [ref]: Parameters<this['render']>) {
-    if (typeof ref === 'function') {
-      if (this._element !== part.element) {
-        ref((this._element = part.element));
+    if (ref !== this._ref || part.element !== this._element) {
+      this._ref = ref;
+      this._element = part.element;
+      if (typeof ref === 'function') {
+        ref(this._element);
+      } else {
+        ref.set(this._element);
       }
-    } else if (ref.value !== part.element) {
-      ref.set(part.element);
     }
     return nothing;
   }
@@ -52,7 +55,7 @@ class RefDirective extends Directive {
  * to.
  *
  * A Ref object acts as a container for a reference to an element. A ref
- * callbacks is a function that takes an element as its only argument.
+ * callback is a function that takes an element as its only argument.
  *
  * The ref directive sets the value of the Ref object or calls the ref
  * callback during rendering, if the referenced element changed.
