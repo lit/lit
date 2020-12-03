@@ -20,9 +20,9 @@ import {
   NodePart,
   nothing,
   render,
+  RenderOptions,
   svg,
   TemplateResult,
-  RenderOptions,
   SanitizerFactory,
 } from '../lit-html.js';
 import {assert} from '@esm-bundle/chai';
