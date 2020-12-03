@@ -15,7 +15,7 @@
  */
 
 // Type-only imports
-import {TemplateResult, DirectiveResult, PartInfo} from 'lit-html';
+import {NodePart, TemplateResult} from 'lit-html';
 
 import {
   nothing,
@@ -30,7 +30,13 @@ import {
 
 import {$private} from 'lit-html/private-ssr-support.js';
 
-const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = $private;
+const {
+  getTemplateHtml,
+  marker,
+  markerMatch,
+  boundAttributeSuffix,
+  resolveDirective,
+} = $private;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
@@ -62,8 +68,9 @@ declare module 'parse5' {
 
 // Switch directive resolution to SSR-compatible `render`; the rule is that only
 // `render` (and not `update`) is run on the server
-Directive.prototype._resolve = function (this: Directive, values: unknown[]) {
-  return this.render(...values);
+Directive.prototype._resolve = function (this: Directive, props: unknown[]) {
+  const {_part, _attributeIndex} = this;
+  return resolveDirective(_part, this.render(...props), this, _attributeIndex);
 };
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
@@ -439,13 +446,8 @@ export function* renderValue(
       yield* instance.renderLight(renderInfo);
     }
     value = null;
-  } else if (value != null && (value as DirectiveResult)._$litDirective$) {
-    const directive = (value as DirectiveResult)._$litDirective$;
-    // Note that we are calling the SSR-compatible `render`; the rule is that
-    // only `render` (and not `update`) is run on the server
-    value = new directive({type: NODE_PART} as PartInfo).render(
-      ...(value as DirectiveResult).values
-    );
+  } else {
+    value = resolveDirective({type: NODE_PART} as NodePart, value);
   }
   if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
