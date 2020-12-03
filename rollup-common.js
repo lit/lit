@@ -63,32 +63,32 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
 // FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
 const stableProperties = {
-  // lit-html: Template
+  // lit-html: Template (used by platform-support)
   _$createElement: 'A',
   _$element: 'B',
   _$options: 'C',
-  // lit-html: NodePart
+  // lit-html: NodePart (used by platform-support)
   _$startNode: 'D',
   _$endNode: 'E',
   _$getTemplate: 'F',
-  // lit-html: TemplateInstance
+  // lit-html: TemplateInstance (used by platform-support)
   _$template: 'G',
-  // updating-element: UpdatingElement
+  // updating-element: UpdatingElement (used by platform-support)
   _$didUpdate: 'H',
-  _$controllers: 'I',
   // lit-element: LitElement
-  _$renderOptions: 'J',
+  _$renderOptions: 'I',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'K',
+  _$renderImpl: 'J',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'L',
-  // lit-html: Part
-  _$value: 'M',
-  _$setValue: 'N',
+  _$needsHydration: 'K',
+  // lit-html: Part (used by hydrate, platform-support)
+  _$value: 'L',
+  // lit-html: Part (used by hydrate, parts, platform-support, ssr-support)
+  _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)
-  _$handlesPrepareStyles: 'O',
-  // lit-element: UpdatingElement
-  _$attributeToProperty: 'P',
+  _$handlesPrepareStyles: 'N',
+  // lit-element: UpdatingElement (used bby ssr-support)
+  _$attributeToProperty: 'O',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
