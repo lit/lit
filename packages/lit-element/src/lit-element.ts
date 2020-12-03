@@ -128,7 +128,7 @@ export class LitElement extends UpdatingElement {
   }
 
   disconnectedCallback() {
-    super.connectedCallback();
+    super.disconnectedCallback();
     this._nodePart?.setDirectiveConnection(false);
   }
 
