@@ -29,4 +29,5 @@ export const $private = {
   markerMatch: p._markerMatch,
   HTML_RESULT: p._HTML_RESULT,
   getTemplateHtml: p._getTemplateHtml,
+  resolveDirective: p._resolveDirective,
 };
