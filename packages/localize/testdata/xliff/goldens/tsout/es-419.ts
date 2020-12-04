@@ -14,9 +14,9 @@ export const templates = {
   string: `Hola Mundo!`,
   variables_1: (name: any) => `Hola ${name}!`,
   lit_variables_2: (x: any) => html`${x}y${x}y${x}`,
-  lit_variables_3: (x: any) => html`<b> ${x} </b>
-    <i> y </i>
-    <b> ${x} </b>
-    <i> y </i>
-    <b> ${x} </b>`,
+  lit_variables_3: (x: any) => html`<b>${x}</b>
+    <i>y</i>
+    <b>${x}</b>
+    <i>y</i>
+    <b>${x}</b>`,
 };

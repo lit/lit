@@ -13,7 +13,12 @@ import {Message} from '../messages';
 import {Locale, writeLocaleCodesModule} from '../locales';
 import {Config} from '../config';
 import * as ts from 'typescript';
-import {isLitTemplate, isMsgCall, isStaticString} from '../program-analysis';
+import {
+  isLitTemplate,
+  isMsgCall,
+  extractTemplate,
+  extractOptions,
+} from '../program-analysis';
 import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as pathLib from 'path';
@@ -86,8 +91,16 @@ export function litLocalizeTransform(
   program: ts.Program
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
-    const transformer = new Transformer(context, translations, locale, program);
-    return (file) => ts.visitNode(file, transformer.boundVisitNode);
+    return (file) => {
+      const transformer = new Transformer(
+        context,
+        translations,
+        locale,
+        program,
+        file
+      );
+      return ts.visitNode(file, transformer.boundVisitNode);
+    };
   };
 }
 
@@ -100,17 +113,20 @@ class Transformer {
   private locale: string;
   private typeChecker: ts.TypeChecker;
   boundVisitNode = this.visitNode.bind(this);
+  sourceFile: ts.SourceFile;
 
   constructor(
     context: ts.TransformationContext,
     translations: Map<string, Message> | undefined,
     locale: string,
-    program: ts.Program
+    program: ts.Program,
+    sourceFile: ts.SourceFile
   ) {
     this.context = context;
     this.translations = translations;
     this.locale = locale;
     this.typeChecker = program.getTypeChecker();
+    this.sourceFile = sourceFile;
   }
 
   /**
@@ -245,58 +261,28 @@ class Transformer {
   replaceMsgCall(
     call: ts.CallExpression
   ): ts.TemplateLiteral | ts.TaggedTemplateExpression | ts.StringLiteral {
-    const [arg0, arg1] = call.arguments;
+    const [templateArg, optionsArg] = call.arguments;
 
-    if (arg0 === undefined || !isStaticString(arg0) || arg0.text === '') {
-      // TODO(aomarks) Here and below, we should surface these as diagnostics.
-      throw new KnownError('Expected arg0 to be a non-empty string');
+    const templateResult = extractTemplate(templateArg, this.sourceFile);
+    if (templateResult.error) {
+      throw new Error(templateResult.error.toString());
     }
-    const id = arg0.text;
+    const {
+      isLitTemplate: isLitTagged,
+      params: paramNames,
+    } = templateResult.result;
+    let {template} = templateResult.result;
 
-    if (
-      arg1 === undefined ||
-      !(
-        ts.isStringLiteral(arg1) ||
-        ts.isTemplateLiteral(arg1) ||
-        isLitTemplate(arg1) ||
-        ts.isArrowFunction(arg1)
-      )
-    ) {
-      throw new KnownError(
-        'Expected arg1 to be a template, string, or function'
-      );
+    const optionsResult = extractOptions(optionsArg, this.sourceFile);
+    if (optionsResult.error) {
+      throw new Error(optionsResult.error.toString());
     }
-
-    let template: ts.TemplateLiteral | ts.StringLiteral;
-    let isLitTagged = false;
-
-    // If the second argument is a function, we need to extract the actual
-    // template from the body of that function.
-    //
-    // Given: msg("foo", (name) => html`Hello ${name}`, "World")
-    // Extract: html`Hello ${name}`
-    if (ts.isArrowFunction(arg1)) {
-      if (
-        !ts.isStringLiteral(arg1.body) &&
-        !ts.isTemplateLiteral(arg1.body) &&
-        !isLitTemplate(arg1.body)
-      ) {
-        throw new KnownError(
-          'Expected function body to be a template or string'
-        );
-      }
-      if (isLitTemplate(arg1.body)) {
-        isLitTagged = true;
-        template = arg1.body.template;
-      } else {
-        template = arg1.body;
-      }
-    } else if (isLitTemplate(arg1)) {
-      isLitTagged = true;
-      template = arg1.template;
-    } else {
-      template = arg1;
+    const options = optionsResult.result;
+    if (options.id === undefined) {
+      // TODO(aomarks) Implement.
+      throw new Error('Not yet implemented: auto ID');
     }
+    const id = options.id;
 
     // If translations are available, replace the source template from the
     // second argument with the corresponding translation.
@@ -324,20 +310,17 @@ class Transformer {
     // are the 3rd and onwards arguments to our `msg` function, so we must
     // substitute those arguments into the expressions.
     //
-    // Given: msg("foo", (name) => html`Hello <b>${name}</b>`, "World")
+    // Given: msg((name) => html`Hello <b>${name}</b>`, {id: "foo", args: ["World"]})
     // Generate: html`Hello <b>${"World"}</b>`
-    if (ts.isArrowFunction(arg1) && ts.isTemplateExpression(template)) {
-      const paramNames = [];
-      for (const param of arg1.parameters) {
-        if (ts.isIdentifier(param.name)) {
-          paramNames.push(param.name.text);
-        } else {
-          throw new KnownError('Expected parameter to be identifier');
-        }
+    if (ts.isArrowFunction(templateArg) && ts.isTemplateExpression(template)) {
+      if (!paramNames || !options.args) {
+        throw new KnownError(
+          'Internal error, expected paramNames and options.args to be defined'
+        );
       }
       const paramValues = new Map<string, ts.Expression>();
       for (let i = 0; i < paramNames.length; i++) {
-        paramValues.set(paramNames[i], call.arguments[i + 2]);
+        paramValues.set(paramNames[i], options.args[i]);
       }
       template = this.substituteIdentsInExpressions(template, paramValues);
     }

@@ -305,41 +305,43 @@ const setLocale: ((newLocale: string) => Promise<void>) & {
 /**
  * Make a string or lit-html template localizable.
  *
- * @param id A project-wide unique identifier for this template.
  * @param template A string, a lit-html template, or a function that returns
  * either a string or lit-html template.
- * @param args In the case that `template` is a function, it is invoked with
- * the 3rd and onwards arguments to `msg`.
+ * @param options Configuration object with the following properties:
+ *   - id: Project-wide unique identifier for this template.
+ *   - args: In the case that `template` is a function, it will be invoked with
+ *     these arguments.
  */
-export function _msg(id: string, template: string): string;
+export function _msg(template: string, options: {id: string}): string;
 
-export function _msg(id: string, template: TemplateResult): TemplateResult;
+export function _msg(
+  template: TemplateResult,
+  options: {id: string}
+): TemplateResult;
 
 export function _msg<F extends (...args: any[]) => string>(
-  id: string,
   fn: F,
-  ...params: Parameters<F>
+  options: {id: string; args: Parameters<F>}
 ): string;
 
 export function _msg<F extends (...args: any[]) => TemplateResult>(
-  id: string,
   fn: F,
-  ...params: Parameters<F>
+  options: {id: string; args: Parameters<F>}
 ): TemplateResult;
 
 export function _msg(
-  id: string,
   template: TemplateLike,
-  ...params: any[]
+  options: {id: string; args?: any[]}
 ): string | TemplateResult {
   if (templates) {
+    const id = options.id;
     const localized = templates[id];
     if (localized) {
       template = localized;
     }
   }
   if (typeof template === 'function') {
-    return template(...params);
+    return template(...(options?.args ?? []));
   }
   return template;
 }

@@ -1,8 +1,14 @@
 import {html} from 'lit-html';
 import {msg} from '../../../lit-localize.js';
 
-msg('extra-expression', `Hello World`);
-msg('missing-expression', (name: string) => `Hello ${name}`, 'Friend');
-msg('changed-expression', (name: string) => `Hello ${name}`, 'Friend');
-msg('missing-html', html`<b>Hello World</b>`);
-msg('changed-html', html`<b>Hello World</b>`);
+msg(`Hello World`, {id: 'extra-expression'});
+msg((name: string) => `Hello ${name}`, {
+  id: 'missing-expression',
+  args: ['Friend'],
+});
+msg((name: string) => `Hello ${name}`, {
+  id: 'changed-expression',
+  args: ['Friend'],
+});
+msg(html`<b>Hello World</b>`, {id: 'missing-html'});
+msg(html`<b>Hello World</b>`, {id: 'changed-html'});

@@ -76,7 +76,7 @@ test('irrelevant code', (t) => {
 test('string message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('greeting', 'Hello World');
+    msg('Hello World', {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
@@ -89,7 +89,7 @@ test('string message', (t) => {
 test('HTML message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('greeting', html\`<b>Hello World</b>\`);
+    msg(html\`<b>Hello World</b>\`, {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
@@ -106,7 +106,7 @@ test('HTML message', (t) => {
 test('HTML message with comment', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('greeting', html\`<b><!-- greeting -->Hello World</b>\`);
+    msg(html\`<b><!-- greeting -->Hello World</b>\`, {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
@@ -123,7 +123,7 @@ test('HTML message with comment', (t) => {
 test('parameterized string message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('greeting', (name: string) => \`Hello \${name}\`, "friend");
+    msg((name: string) => \`Hello \${name}\`, {id: 'greeting', args: ["friend"]});
   `;
   checkAnalysis(t, src, [
     {
@@ -137,7 +137,7 @@ test('parameterized string message', (t) => {
 test('parameterized HTML message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('greeting', (name: string) => html\`<b>Hello \${name}</b>\`, "friend");
+    msg((name: string) => html\`<b>Hello \${name}</b>\`, {id: 'greeting', args: ["friend"]);
   `;
   checkAnalysis(t, src, [
     {
@@ -156,7 +156,7 @@ test('immediate description', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
     // msgdesc: Greeting
-    msg('greeting', 'Hello World');
+    msg('Hello World', {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
@@ -174,7 +174,7 @@ test('inherited description', (t) => {
     class XGreeter extends HTMLElement {
       render() {
         // msgdesc: Greeting
-        return msg('greeting', 'Hello World');
+        return msg('Hello World', {id: 'greeting'});
       }
     }
   `;
@@ -192,7 +192,7 @@ test('different msg function', (t) => {
     function msg(id: string, template: string) {
       return template;
     }
-    msg('greeting', 'Greeting');
+    msg('Greeting', {id: 'greeting'});
   `;
   checkAnalysis(t, src, []);
 });
@@ -200,14 +200,46 @@ test('different msg function', (t) => {
 test('error: message id cannot be empty', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('', 'Hello World');
+    msg('Hello World', {id: ''});
   `;
   checkAnalysis(
     t,
     src,
     [],
     [
-      '__DUMMY__.ts(3,9): error TS2324: Expected first argument to msg() to be a static and non-empty string',
+      '__DUMMY__.ts(3,29): error TS2324: Options id property must be a non-empty string literal',
+    ]
+  );
+});
+
+test('error: options must be object literal', (t) => {
+  const src = `
+    import {msg} from './lit-localize.js';
+    const options = {id: 'greeting'};
+    msg('Hello World', options);
+  `;
+  checkAnalysis(
+    t,
+    src,
+    [],
+    [
+      '__DUMMY__.ts(4,24): error TS2324: Expected second argument to msg() to be an object literal',
+    ]
+  );
+});
+
+test('error: options must be long-form', (t) => {
+  const src = `
+    import {msg} from './lit-localize.js';
+    const id = 'greeting';
+    msg('Hello World', {id});
+  `;
+  checkAnalysis(
+    t,
+    src,
+    [],
+    [
+      '__DUMMY__.ts(4,25): error TS2324: Options object must use identifier or string literal property assignments. Shorthand and spread assignments are not supported.',
     ]
   );
 });
@@ -216,16 +248,16 @@ test('error: message id must be static', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
     const id = 'greeting';
-    msg(id, 'Hello World');
-    msg(\`\${id}\`, 'Hello World');
+    msg('Hello World', {id: id});
+    msg('Hello World', {id: \`\${id}\`});
   `;
   checkAnalysis(
     t,
     src,
     [],
     [
-      '__DUMMY__.ts(4,9): error TS2324: Expected first argument to msg() to be a static and non-empty string',
-      '__DUMMY__.ts(5,9): error TS2324: Expected first argument to msg() to be a static and non-empty string',
+      '__DUMMY__.ts(4,29): error TS2324: Options id property must be a non-empty string literal',
+      '__DUMMY__.ts(5,29): error TS2324: Options id property must be a non-empty string literal',
     ]
   );
 });
@@ -234,16 +266,16 @@ test('error: placeholders must use function', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
     const foo = 'foo';
-    msg('greeting', \`Hello \${name}\`);
-    msg('greeting', html\`<b>Hello \${name}</b>\`);
+    msg(\`Hello \${name}\`, {id: 'greeting'});
+    msg(html\`<b>Hello \${name}</b>\`, {id: 'greeting'});
   `;
   checkAnalysis(
     t,
     src,
     [],
     [
-      '__DUMMY__.ts(4,21): error TS2324: To use a variable, pass an arrow function.',
-      '__DUMMY__.ts(5,21): error TS2324: To use a variable, pass an arrow function.',
+      '__DUMMY__.ts(4,9): error TS2324: To use a variable, pass an arrow function.',
+      '__DUMMY__.ts(5,9): error TS2324: To use a variable, pass an arrow function.',
     ]
   );
 });
@@ -252,14 +284,14 @@ test('error: placeholders must only reference function parameters', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
     const foo = 'foo';
-    msg('greeting', (name) => \`Hello \${name} \${foo}\`, 'Friend');
+    msg((name) => \`Hello \${name} \${foo}\`, {id: 'greeting', args: ['Friend']);
   `;
   checkAnalysis(
     t,
     src,
     [],
     [
-      '__DUMMY__.ts(4,48): error TS2324: Placeholder must be one of the following identifiers: name',
+      '__DUMMY__.ts(4,36): error TS2324: Placeholder must be one of the following identifiers: name',
     ]
   );
 });
@@ -267,8 +299,8 @@ test('error: placeholders must only reference function parameters', (t) => {
 test('error: different message contents', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg('greeting', 'Hello World');
-    msg('greeting', 'Hello Friend');
+    msg('Hello World', {id: 'greeting'});
+    msg('Hello Friend', {id: 'greeting'});
   `;
   checkAnalysis(
     t,

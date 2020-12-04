@@ -5,7 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- **[BREAKING]** The signature for the `msg` function has changed:
+
+  Before:
+
+  ```ts
+  msg(id: string, template: string|TemplateResult|Function, ...args: any[])
+  ```
+
+  After:
+
+  ```ts
+  msg(template: string|TemplateResult|Function, options: {id: string: args?: any[]})
+  ```
 
 ## [0.5.1] - 2020-11-09
 

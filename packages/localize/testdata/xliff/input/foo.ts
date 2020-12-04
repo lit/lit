@@ -1,40 +1,27 @@
 import {html} from 'lit-html';
 import {msg} from '../../../lit-localize.js';
 
-msg('string', 'Hello World!');
+msg('Hello World!', {id: 'string'});
 
-msg('lit', html`Hello <b><i>World!</i></b>`);
+msg(html`Hello <b><i>World!</i></b>`, {id: 'lit'});
 
-msg('variables_1', (name: string) => `Hello ${name}!`, 'World');
+msg((name: string) => `Hello ${name}!`, {id: 'variables_1', args: ['World']});
 
 msg(
-  'lit_variables_1',
   (url: string, name: string) =>
     html`Hello ${name}, click <a href="${url}">here</a>!`,
-  'World',
-  'https://www.example.com/'
+  {id: 'lit_variables_1', args: ['World', 'https://www.example.com/']}
 );
 
-msg('lit_variables_2', (x: string) => html`${x}y${x}y${x}`, 'x');
+msg((x: string) => html`${x}y${x}y${x}`, {id: 'lit_variables_2', args: ['x']});
 
 msg(
-  'lit_variables_3',
-  (x: string) => html`<b>
-      ${x}
-    </b>
-    <i>
-      y
-    </i>
-    <b>
-      ${x}
-    </b>
-    <i>
-      y
-    </i>
-    <b>
-      ${x}
-    </b>`,
-  'x'
+  (x: string) => html`<b>${x}</b>
+    <i>y</i>
+    <b>${x}</b>
+    <i>y</i>
+    <b>${x}</b>`,
+  {id: 'lit_variables_3', args: ['x']}
 );
 
-msg('comment', html`Hello <b><!-- comment -->World!</b>`);
+msg(html`Hello <b><!-- comment -->World!</b>`, {id: 'comment'});

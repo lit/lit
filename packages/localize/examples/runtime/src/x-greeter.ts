@@ -4,7 +4,7 @@ import {Localized} from '@lit/localize/localized-element.js';
 
 export class XGreeter extends Localized(LitElement) {
   render() {
-    return html`<p>${msg('greeting', html`Hello <b>World</b>!`)}</p>`;
+    return html`<p>${msg(html`Hello <b>World</b>!`, {id: 'greeting'})}</p>`;
   }
 }
 customElements.define('x-greeter', XGreeter);

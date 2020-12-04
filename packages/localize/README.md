@@ -33,7 +33,7 @@ Wrap your template with the `msg` function to make it localizable:
 ```typescript
 import {html} from 'lit-html';
 import {msg} from '@lit/localize';
-render(msg('greeting', html`Hello <b>World</b>!`), document.body);
+render(msg(html`Hello <b>World</b>!`, {id: 'greeting'}), document.body);
 ```
 
 Run `lit-localize` to extract all localizable templates and generate an XLIFF
@@ -130,7 +130,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    import {msg} from '@lit/localize';
 
    render(
-     html`<p>${msg('greeting', html`Hello <b>World</b>!`)}</p>`,
+     html`<p>${msg(html`Hello <b>World</b>!`, {id: 'greeting'})}</p>`,
      document.body
    );
    ```
@@ -216,8 +216,7 @@ The `@lit/localize` module exports the following functions:
 > signatures to identify calls to `msg` and other APIs during analysis of your
 > code. Casting a lit-localize function to a type that does not include its
 > annotation will prevent lit-localize from being able to extract and transform
-> templates from your application. For example, a cast like
-> `(msg as any)("greeting", "Hello")` will not be identified. It is safe to
+> templates from your application. For example, a cast like `(msg as any)("Hello", {id: "greeting"})` will not be identified. It is safe to
 > re-assign lit-localize functions or pass them as parameters, as long as the
 > distinctive type signature is preserved. If needed, you can reference each
 > function's distinctive type with e.g. `typeof msg`.
@@ -324,18 +323,18 @@ promise resolves.
 Throws if the given locale is not contained by the configured `sourceLocale` or
 `targetLocales`.
 
-### `msg(id: string, template, ...args) => string|TemplateResult`
+### `msg(template: string|TemplateResult|Function, options: {id: string, args?: any[]}) => string|TemplateResult`
 
 Make a string or lit-html template localizable.
 
-The `id` parameter is a project-wide unique identifier for this template.
+The `options.id` parameter is a project-wide unique identifier for this template.
 
 The `template` parameter can have any of these types:
 
 - A plain string with no placeholders:
 
   ```typescript
-  msg('greeting', 'Hello World!');
+  msg('Hello World!', {id: 'greeting'});
   ```
 
 - A lit-html
@@ -343,27 +342,30 @@ The `template` parameter can have any of these types:
   that may contain embedded HTML:
 
   ```typescript
-  msg('greeting', html`Hello <b>World</b>!`);
+  msg(html`Hello <b>World</b>!`, {id: 'greeting'});
   ```
 
 - A function that returns a [template
   literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
   string that may contain placeholders. Placeholders may only reference
-  parameters of the function, which will be called with the 3rd and onwards
-  parameters to `msg`.
+  parameters of the function. The function will be invoked with the
+  `options.args` array as its parameters:
 
   ```typescript
-  msg('greeting', (name) => `Hello ${name}!`, getUsername());
+  msg((name) => `Hello ${name}!`, {id: 'greeting', args: [getUsername()]});
   ```
 
 - A function that returns a lit-html
   [`TemplateResult`](https://lit-html.polymer-project.org/api/classes/_lit_html_.templateresult.html)
   that may contain embedded HTML, and may contain placeholders. Placeholders may
-  only reference parameters of the function, which will be called with the 3rd
-  and onwards parameters to `msg`:
+  only reference parameters of the function. The function will be invoked with
+  the `options.args` array as its parameters:
 
   ```typescript
-  msg('greeting', (name) => html`Hello <b>${name}</b>!`, getUsername());
+  msg((name) => html`Hello <b>${name}</b>!`, {
+    id: 'greeting',
+    args: [getUsername()],
+  });
   ```
 
 In transform mode, calls to this function are replaced with the static localized
@@ -465,7 +467,7 @@ class MyElement extends Localized(LitElement) {
   render() {
     // Whenever setLocale() is called, and templates for that locale have
     // finished loading, this render() function will be re-invoked.
-    return html`<p>${msg('greeting', html`Hello <b>World!</b>`)}</p>`;
+    return html`<p>${msg(html`Hello <b>World!</b>`, {id: 'greeting'})}</p>`;
   }
 }
 ```
