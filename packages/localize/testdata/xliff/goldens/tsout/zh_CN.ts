@@ -19,4 +19,8 @@ export const templates = {
     <i>y</i>
     <b>${x}</b>`,
   comment: html`Hello <b><!-- comment -->World!</b>`,
+  as8c0ec8d1fb9e6e32: `Hello World!`,
+  as00ad08ebae1e0f74: (name: any) => `Hello ${name}!`,
+  ah3c44aff2d5f5ef6b: html`Hello <b>World</b>!`,
+  ah82ccc38d4d46eaa9: (name: any) => html`Hello <b>${name}</b>!`,
 };

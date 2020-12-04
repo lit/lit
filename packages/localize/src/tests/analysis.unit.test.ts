@@ -86,6 +86,19 @@ test('string message', (t) => {
   ]);
 });
 
+test('string message (auto ID)', (t) => {
+  const src = `
+    import {msg} from './lit-localize.js';
+    msg('Hello World');
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 'as3d58dee72d4e0c27',
+      contents: ['Hello World'],
+    },
+  ]);
+});
+
 test('HTML message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
@@ -94,6 +107,23 @@ test('HTML message', (t) => {
   checkAnalysis(t, src, [
     {
       name: 'greeting',
+      contents: [
+        {untranslatable: '<b>'},
+        'Hello World',
+        {untranslatable: '</b>'},
+      ],
+    },
+  ]);
+});
+
+test('HTML message (auto ID)', (t) => {
+  const src = `
+    import {msg} from './lit-localize.js');
+    msg(html\`<b>Hello World</b>\`);
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 'ahc468c061c2d171f4',
       contents: [
         {untranslatable: '<b>'},
         'Hello World',
@@ -128,6 +158,20 @@ test('parameterized string message', (t) => {
   checkAnalysis(t, src, [
     {
       name: 'greeting',
+      contents: ['Hello ', {untranslatable: '${name}'}],
+      params: ['name'],
+    },
+  ]);
+});
+
+test('parameterized string message (auto ID)', (t) => {
+  const src = `
+    import {msg} from './lit-localize.js';
+    msg((name: string) => \`Hello \${name}\`);
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 'asaed7d3734ce7f09d',
       contents: ['Hello ', {untranslatable: '${name}'}],
       params: ['name'],
     },

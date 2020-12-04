@@ -8,6 +8,5 @@
     /* eslint-disable @typescript-eslint/no-explicit-any */
 
     export const templates = {
-      'greeting': html`你好, <b>世界!</b>`,
+      'ah3c44aff2d5f5ef6b': html`你好, <b>世界!</b>`,
     };
-  

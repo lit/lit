@@ -13,6 +13,7 @@ import * as ts from 'typescript';
 import * as parse5 from 'parse5';
 import {ProgramMessage, Placeholder, Message} from './messages';
 import {createDiagnostic} from './typescript';
+import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
 
 type ResultOrError<R, E> =
   | {result: R; error?: undefined}
@@ -108,18 +109,14 @@ function extractMsg(
   if (templateResult.error) {
     return {error: templateResult.error};
   }
-  const {contents, params, isLitTemplate} = templateResult.result;
+  const {contents, template, params, isLitTemplate} = templateResult.result;
 
   const optionsResult = extractOptions(optionsArg, file);
   if (optionsResult.error) {
     return {error: optionsResult.error};
   }
   const options = optionsResult.result;
-  if (options.id === undefined) {
-    // TODO(aomarks) Implement.
-    throw new Error('Not yet implemented: auto ID');
-  }
-  const name = options.id;
+  const name = options.id ?? generateMsgIdFromAstNode(template, isLitTemplate);
 
   return {
     result: {
@@ -308,6 +305,32 @@ export function extractTemplate(
         `template, or an arrow function that returns one of those.`
     ),
   };
+}
+
+export function generateMsgIdFromAstNode(
+  template: ts.TemplateLiteral | ts.StringLiteral,
+  isHtmlTagged: boolean
+): string {
+  const strings = [];
+  if (
+    ts.isStringLiteral(template) ||
+    ts.isNoSubstitutionTemplateLiteral(template)
+  ) {
+    strings.push(template.text);
+  } else {
+    // TemplateExpression
+    strings.push(template.head.text);
+    for (const span of template.templateSpans) {
+      strings.push(span.literal.text);
+    }
+  }
+  for (const s of strings) {
+    if (s.includes(HASH_DELIMITER)) {
+      // TODO(aomarks) Surface diagnostic
+      throw new Error('String cannot contain hash delimiter');
+    }
+  }
+  return generateMsgId(strings, isHtmlTagged);
 }
 
 /**
