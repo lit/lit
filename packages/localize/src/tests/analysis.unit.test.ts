@@ -223,7 +223,7 @@ test('error: options must be object literal', (t) => {
     src,
     [],
     [
-      '__DUMMY__.ts(4,24): error TS2324: Expected second argument to msg() to be an object',
+      '__DUMMY__.ts(4,24): error TS2324: Expected second argument to msg() to be an object literal',
     ]
   );
 });
@@ -239,7 +239,7 @@ test('error: options must be long-form', (t) => {
     src,
     [],
     [
-      '__DUMMY__.ts(4,25): error TS2324: Options shorthand object assignment is not supported',
+      '__DUMMY__.ts(4,25): error TS2324: Options object must use identifier or string literal property assignments. Shorthand and spread assignments are not supported.',
     ]
   );
 });
