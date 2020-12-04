@@ -12,7 +12,7 @@
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
-###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
+###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
 
 > @lit/localize is a library and command-line tool for localizing web
 > applications that are based on lit-html and LitElement.
@@ -86,7 +86,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Output                    | A full build of your application for each locale, with all `msg` calls replaced with static localized templates. | A dynamically loadable template module for each target locale.                                                                                       |
 | Make template localizable | `msg()`                                                                                                          | `msg()`                                                                                                                                              |
-| Configure                 | `const {getLocale, setLocale} =`<br>`configureLocalization(...);`                                                | (Optional)<br><br> `const {getLocale} =`<br>`configureTransformLocalization(...);`                                                                   |
+| Configure                 | (Optional)<br><br> `const {getLocale} =`<br>`configureTransformLocalization(...);`                               | `const {getLocale, setLocale} =`<br>`configureLocalization(...);`                                                                                    |
 | Switch locales            | Refresh page and load a different `.js` file                                                                     | Call `setLocale()` and re-render using any of:<br><br>- `lit-localize-status` event<br>- `setLocale` promise<br>- `Localized` mixin for `LitElement` |
 | Advantages                | - Fastest rendering<br>- Fewer bytes for a single locale                                                         | - Faster locale switching<br>- Fewer _marginal_ bytes when switching locales                                                                         |
 
@@ -375,6 +375,49 @@ html`Hola <b>${getUsername()}!</b>`;
 ### `LOCALE_STATUS_EVENT`
 
 Name of the [`lit-localize-status`](#lit-localize-status-event) event.
+
+## Descriptions
+
+You can add descriptions to messages using special `// msgdesc:` comments.
+Message descriptions help translators understand the context of each string they
+are translating.
+
+```ts
+// msgdesc: Greeting to everybody on homepage
+msg(html`Hello <b>World</b>!`);
+```
+
+Descriptions are represented in XLIFF using `<note>` elements.
+
+```xml
+<trans-unit id="0h3c44aff2d5f5ef6b">
+  <note>Greeting to everybody on homepage</note>
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+</trans-unit>
+```
+
+You can also apply a `// msgdesc:` comment to a class, function, or block, in
+which case the description will apply recursively to all `msg` calls within it.
+If there are multiple descriptions that apply to a `msg` call, then they are
+concatenated with a forward-slash in top-down order. This can be useful for
+describing the context of an entire group of messages.
+
+```ts
+// msgdesc: Homepage
+class MyHomepage extends Localized(LitElement) {
+  render() {
+    // msgdesc: Greeting to everybody
+    return msg(html`Hello <b>World</b>!`);
+  }
+}
+```
+
+```xml
+<trans-unit id="0h3c44aff2d5f5ef6b">
+  <note>Homepage / Greeting to everybody</note>
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+</trans-unit>
+```
 
 ## `lit-localize-status` event
 

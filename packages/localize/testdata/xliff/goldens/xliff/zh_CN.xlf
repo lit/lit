@@ -39,6 +39,18 @@
 <trans-unit id="ah82ccc38d4d46eaa9">
   <source>Hello <ph id="0">&lt;b>${name}&lt;/b></ph>!</source>
 </trans-unit>
+<trans-unit id="as03c68d79ad36e8d4">
+  <note>Description of 0</note>
+  <source>described 0</source>
+</trans-unit>
+<trans-unit id="as03c68e79ad36ea87">
+  <note>Parent description / Description of 1</note>
+  <source>described 1</source>
+</trans-unit>
+<trans-unit id="as03c68f79ad36ec3a">
+  <note>Parent description / Description of 2</note>
+  <source>described 2</source>
+</trans-unit>
 </body>
 </file>
 </xliff>
