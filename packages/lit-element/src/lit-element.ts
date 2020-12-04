@@ -183,6 +183,8 @@ if (DEV_MODE) {
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
+ *
+ * @private
  */
 export const _$private = {
   _$attributeToProperty: (
