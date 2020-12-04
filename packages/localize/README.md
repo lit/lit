@@ -393,7 +393,7 @@ Descriptions are represented in XLIFF using `<note>` elements.
 <trans-unit id="0h3c44aff2d5f5ef6b">
   <note>Greeting to everybody on homepage</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
-</trans-unit
+</trans-unit>
 ```
 
 You can also apply a `// msgdesc:` comment to a class, function, or block, in
