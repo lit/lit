@@ -152,7 +152,7 @@ export function extractOptions(
       error: createDiagnostic(
         file,
         node,
-        `Expected second argument to msg() to be an object`
+        `Expected second argument to msg() to be an object literal`
       ),
     };
   }
@@ -161,12 +161,21 @@ export function extractOptions(
   let args: ts.NodeArray<ts.Expression> | undefined = undefined;
 
   for (const property of node.properties) {
+    // {
+    //   a: 0,     // PropertyAssignment > Identifier
+    //   'b': 0,   // PropertyAssignment > StringLiteral
+    //   ['c']: 0, // PropertyAssignment > ComputedPropertyName
+    //   d,        // ShorthandPropertyAssignment
+    //   ...e,     // SpreadAssignment
+    // }
+
     if (!ts.isPropertyAssignment(property)) {
       return {
         error: createDiagnostic(
           file,
           property,
-          `Options shorthand object assignment is not supported`
+          `Options object must use identifier or string literal property ` +
+            `assignments. Shorthand and spread assignments are not supported.`
         ),
       };
     }
@@ -181,7 +190,8 @@ export function extractOptions(
         error: createDiagnostic(
           file,
           property.name,
-          `Options shorthand object assignment must be identifier or string literal`
+          `Options object must use identifier or string literal property ` +
+            `assignments. Computed assignments are not supported.`
         ),
       };
     }
@@ -217,7 +227,7 @@ export function extractOptions(
         error: createDiagnostic(
           file,
           property,
-          `Options shorthand object property must be "id" or "args"`
+          `Options object property must be "id" or "args"`
         ),
       };
     }
@@ -226,18 +236,20 @@ export function extractOptions(
   return {result: {id, args}};
 }
 
+interface ExtractedTemplate {
+  contents: Array<string | Placeholder>;
+  params?: string[];
+  isLitTemplate: boolean;
+  template: ts.TemplateLiteral | ts.StringLiteral;
+}
+
 /**
  * Analyze the template argument to a msg call.
  */
 export function extractTemplate(
   templateArg: ts.Node,
   file: ts.SourceFile
-): ResultOrError<
-  Pick<ProgramMessage, 'contents' | 'params' | 'isLitTemplate'> & {
-    template: ts.TemplateLiteral | ts.StringLiteral;
-  },
-  ts.DiagnosticWithLocation
-> {
+): ResultOrError<ExtractedTemplate, ts.DiagnosticWithLocation> {
   if (isStaticString(templateArg)) {
     // E.g. 'Hello World'
     return {
@@ -306,12 +318,7 @@ export function extractTemplate(
 function functionTemplate(
   fn: ts.ArrowFunction,
   file: ts.SourceFile
-): ResultOrError<
-  Pick<ProgramMessage, 'contents' | 'params' | 'isLitTemplate'> & {
-    template: ts.TemplateLiteral | ts.StringLiteral;
-  },
-  ts.DiagnosticWithLocation
-> {
+): ResultOrError<ExtractedTemplate, ts.DiagnosticWithLocation> {
   if (fn.parameters.length === 0) {
     return {
       error: createDiagnostic(
