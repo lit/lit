@@ -314,24 +314,24 @@ const setLocale: ((newLocale: string) => Promise<void>) & {
  *   - args: In the case that `template` is a function, it will be invoked with
  *     these arguments.
  */
-export function _msg(template: string, options?: {id?: string}): string;
+function _msg(template: string, options?: {id?: string}): string;
 
-export function _msg(
+function _msg(
   template: TemplateResult,
   options?: {id?: string}
 ): TemplateResult;
 
-export function _msg<F extends (...args: any[]) => string>(
+function _msg<F extends (...args: any[]) => string>(
   fn: F,
   options: {id?: string; args: Parameters<F>}
 ): string;
 
-export function _msg<F extends (...args: any[]) => TemplateResult>(
+function _msg<F extends (...args: any[]) => TemplateResult>(
   fn: F,
   options: {id?: string; args: Parameters<F>}
 ): TemplateResult;
 
-export function _msg(
+function _msg(
   template: TemplateLike,
   options?: {id?: string; args?: any[]}
 ): string | TemplateResult {
