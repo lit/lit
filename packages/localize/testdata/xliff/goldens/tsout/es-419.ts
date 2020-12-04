@@ -7,10 +7,10 @@ import {html} from 'lit-html';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const templates = {
-  '0h3c44aff2d5f5ef6b': html`Hola <b>Mundo</b>!`,
-  '0h82ccc38d4d46eaa9': (name: any) => html`Hola <b>${name}</b>!`,
-  '0s00ad08ebae1e0f74': (name: any) => `Hola ${name}!`,
-  '0s8c0ec8d1fb9e6e32': `Hola Mundo!`,
+  ah3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
+  ah82ccc38d4d46eaa9: (name: any) => html`Hola <b>${name}</b>!`,
+  as00ad08ebae1e0f74: (name: any) => `Hola ${name}!`,
+  as8c0ec8d1fb9e6e32: `Hola Mundo!`,
   comment: html`Hola <b><!-- comment -->Mundo!</b>`,
   lit: html`Hola <b><i>Galaxia!</i></b>`,
   lit_variables_1: (url: any, name: any) =>

@@ -23,7 +23,7 @@ export const HASH_DELIMITER = String.fromCharCode(30);
  * Id scheme version prefix to distinguish this implementation from potential
  * changes in the future.
  */
-const VERSION_PREFIX = '0';
+const VERSION_PREFIX = 'a';
 
 /**
  * Id prefix on html-tagged templates to distinguish e.g. `<b>x</b>` from
@@ -43,11 +43,11 @@ const STRING_PREFIX = 's';
  * Example:
  *   Template: html`Hello <b>${who}</b>!`
  *     Params: ["Hello <b>", "</b>!"], true
- *     Output: 0h82ccc38d4d46eaa9
+ *     Output: ah82ccc38d4d46eaa9
  *
  * The ID is constructed as:
  *
- *   [0]    Version number indicating this ID generation scheme.
+ *   [0]    Version indicator for this ID generation scheme ("a").
  *   [1]    Kind of template: [h]tml or [s]tring.
  *   [2,17] 64-bit FNV-1a hash hex digest of the template strings, where each
  *          string is UTF-8 encoded and delineated by an ASCII "record separator"
