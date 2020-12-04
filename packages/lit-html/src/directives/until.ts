@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive, directive, Part, noChange, $private} from '../lit-html.js';
-import {setDirectiveValue} from '../parts.js';
+import {directive, Part, noChange, $private} from '../lit-html.js';
+import {DisconnectableDirective} from '../disconnectable-directive.js';
 
 const DEV_MODE = true;
 
@@ -42,7 +42,7 @@ const isPromise = (x: unknown) => {
 // Effectively infinity, but a SMI.
 const _infinity = 0x7fffffff;
 
-class UntilDirective extends Directive {
+class UntilDirective extends DisconnectableDirective {
   private _state: WeakMap<Part, AsyncState> = new WeakMap<Part, AsyncState>();
 
   render(...args: Array<unknown>) {
@@ -95,7 +95,7 @@ class UntilDirective extends Directive {
         // higher-priority than what's already been rendered.
         if (index > -1 && index < state.lastRenderedIndex) {
           state.lastRenderedIndex = index;
-          setDirectiveValue(this, resolvedValue);
+          this.setValue(resolvedValue);
         }
       });
     }

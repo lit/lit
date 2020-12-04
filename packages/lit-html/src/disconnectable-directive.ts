@@ -131,7 +131,9 @@ import {
   NodePart,
   NODE_PART,
   DisconnectableParent,
+  noChange,
 } from './lit-html.js';
+import {setPartValue} from './parts.js';
 export {directive} from './lit-html.js';
 
 /**
@@ -266,6 +268,7 @@ const installDisconnectAPI = (child: DisconnectableParent) => {
  */
 export abstract class DisconnectableDirective extends Directive {
   isConnected = true;
+  _pendingValue: unknown = noChange;
   _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -312,12 +315,20 @@ export abstract class DisconnectableDirective extends Directive {
    * call the respective `disconnectedCallback` or `reconnectedCallback`
    * callback. Note that since `isConnected` defaults to true, we do not run
    * `reconnectedCallback` on first render.
+   *
+   * If a call to `setValue` was made while disconnected, flush it to the part
+   * before reconnecting.
+   *
    * @param isConnected
    * @internal
    */
   private _setConnected(isConnected: boolean) {
     if (isConnected && !this.isConnected) {
       this.isConnected = true;
+      if (this._pendingValue !== noChange) {
+        this.setValue(this._pendingValue);
+        this._pendingValue = noChange;
+      }
       this.reconnectedCallback?.();
     } else if (!isConnected && this.isConnected) {
       this.isConnected = false;
@@ -328,24 +339,46 @@ export abstract class DisconnectableDirective extends Directive {
    * Override of the base `_resolve` method to ensure `reconnectedCallback` is
    * run prior to the next render.
    *
-   * TODO(kschaaf): Note that rather than automatically re-connecting directives
-   * upon re-render, we could also treat this like an error and throw if the
-   * user has not called `part.setDirectiveConnection(true)` before rendering
-   * again.
-   *
    * @override
    * @internal
    */
   _resolve(props: Array<unknown>): unknown {
-    this._setConnected(true);
+    if (!this.isConnected) {
+      throw new Error(
+        `DisconnectableDirective ${this.constructor.name} was ` +
+          `rendered while its tree was disconnected.`
+      );
+    }
     return super._resolve(props);
   }
+
   /**
-   * User callback for implementing logic to release any resources/subscriptions
+   * Sets the value of a the asynchronously, outside the normal
+   * `update`/`render` lifecycle of a directive.
+   *
+   * This method should not be called synchronously from a directive's `update`
+   * or `render`.
+   *
+   * If the method is called while the part is disconnected, the value will be
+   * queued until directive is reconnected.
+   *
+   * @param directive The directive to update
+   * @param value The value to set
+   */
+  setValue(value: unknown) {
+    if (this.isConnected) {
+      setPartValue(this._part, value, this._attributeIndex, this);
+    } else {
+      this._pendingValue = value;
+    }
+  }
+
+  /**
+   * User callbacks for implementing logic to release any resources/subscriptions
    * that may have been retained by this directive. Since directives may also be
    * re-connected, `reconnectedCallback` should also be implemented to restore
    * working state of the directive prior to the next render.
    */
-  abstract disconnectedCallback(): void;
-  abstract reconnectedCallback(): void;
+  protected disconnectedCallback() {}
+  protected reconnectedCallback() {}
 }

@@ -17,7 +17,6 @@ import {
   NodePart,
   Part,
   nothing,
-  Directive,
   DirectiveParent,
 } from './lit-html.js';
 
@@ -117,9 +116,10 @@ export const createAndInsertPart = (
  *
  * Note that this should only be used to set/update the value of user-created
  * parts (i.e. those created using `createAndInsertPart`); it should not be used
- * by directives to set the value of the directive's container part; directives
- * should either return a value from `update`/`render`, or else call
- * `setDirectiveValue` to set the value of a directive asynchronously.
+ * by directives to set the value of the directive's container part. Directives
+ * should return a value from `update`/`render` to update their part state. For
+ * directives that require setting their part value asynchronously, they should
+ * extend `DisconnectableDirective` and call `this.setValue()`.
  *
  * @param part Part to set
  * @param value Value to set
@@ -145,20 +145,6 @@ export const setPartValue = <T extends Part>(
     part._setValue(value, directiveParent);
   }
   return part;
-};
-
-/**
- * Sets the value of a directive asynchronously, outside the normal
- * `update`/`render` lifecycle of a directive.
- *
- * This function should not be called synchronously from a directive's `update`
- * or `render`.
- *
- * @param directive The directive to update
- * @param value The value to set
- */
-export const setDirectiveValue = (directive: Directive, value: unknown) => {
-  setPartValue(directive._part, value, directive._attributeIndex, directive);
 };
 
 /**
