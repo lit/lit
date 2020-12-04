@@ -354,7 +354,9 @@ function generateId(template: TemplateLike): string {
   if (typeof template === 'function') {
     const numParams = template.length;
     // Note that by using HASH_DELIMITER as the template parameter here, we can
-    // skip splitting and re-joining when we perform the hash.
+    // skip splitting and re-joining when we perform the hash. It's safe to do
+    // this because we enforce that template expressions are only identifiers
+    // that reference function parameters.
     const params = Array(numParams).fill(HASH_DELIMITER);
     template = template(...params);
   }
