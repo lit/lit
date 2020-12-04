@@ -415,6 +415,8 @@ import {assert} from '@esm-bundle/chai';
       log.length = 0;
       container.removeChild(host);
       assertRendering(host);
+      // Note: directive disconnection/reconnection is synchronous to
+      // connected/disconnectedCallback
       assert.deepEqual(log, [
         'disconnect-host-attr',
         'disconnect-host-prop',
@@ -473,8 +475,6 @@ import {assert} from '@esm-bundle/chai';
       host.child.requestUpdate();
       container.appendChild(host);
       assertRendering(host);
-      // Note: directive disconnection/reconnection is synchronous to
-      // connected/disconnectedCallback
       assert.deepEqual(log, [
         'reconnect-host-attr',
         'reconnect-host-prop',
