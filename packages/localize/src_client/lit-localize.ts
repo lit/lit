@@ -357,7 +357,11 @@ function generateId(template: TemplateLike): string {
     // skip splitting and re-joining when we perform the hash. It's safe to do
     // this because we enforce that template expressions are only identifiers
     // that reference function parameters.
-    const params = Array(numParams).fill(HASH_DELIMITER);
+    const params = [];
+    // Note Array.fill is not supported in IE11.
+    for (let i = 0; i < numParams; i++) {
+      params[i] = HASH_DELIMITER;
+    }
     template = template(...params);
   }
 
