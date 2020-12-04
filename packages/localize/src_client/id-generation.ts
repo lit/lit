@@ -17,7 +17,7 @@ import {fnv1a64} from './fnv1a64.js';
  *
  * This is the "record separator" ASCII character.
  */
-export const HASH_DELIMITER = String.fromCharCode(30);
+export const HASH_DELIMITER = '\x1E';
 
 /**
  * Id scheme version prefix to distinguish this implementation from potential
