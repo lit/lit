@@ -2844,6 +2844,39 @@ suite('UpdatingElement', () => {
       assert.isTrue(updated);
     });
 
+    test('thrash disconnection', async () => {
+      // Connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // requestUpdate, then disconnect + reconnect + disconnect
+      updated = false;
+      el.foo++;
+      container.removeChild(el);
+      assert.isFalse(updated);
+      container.appendChild(el);
+      assert.isFalse(updated);
+      container.removeChild(el);
+      await nextFrame();
+      // still no update: reconnect + disconnect
+      assert.isFalse(updated);
+      container.appendChild(el);
+      assert.isFalse(updated);
+      container.removeChild(el);
+      await nextFrame();
+      // still no update: reconnect
+      assert.isFalse(updated);
+      container.appendChild(el);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Resume normal updates
+      updated = false;
+      el.foo++;
+      await nextFrame();
+      assert.isTrue(updated);
+    });
+
     test('connect and immediately disconnect before first update', async () => {
       // Connect and disconnect
       container.appendChild(el);
