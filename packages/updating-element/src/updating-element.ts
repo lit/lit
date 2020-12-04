@@ -263,9 +263,9 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 export interface Controller {
   connectedCallback?(): void;
   disconnectedCallback?(): void;
-  willUpdate?(changedProperties: PropertyValues): void;
-  update?(changedProperties: PropertyValues): void;
-  updated?(changedProperties: PropertyValues): void;
+  willUpdate?(): void;
+  update?(): void;
+  updated?(): void;
   requestUpdate?(): void;
 }
 
@@ -930,9 +930,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._controllers?.forEach((c) => c.willUpdate?.(changedProperties));
+        this._controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this._controllers?.forEach((c) => c.update?.(changedProperties));
+        this._controllers?.forEach((c) => c.update?.());
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -960,7 +960,7 @@ export abstract class UpdatingElement extends HTMLElement {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this._controllers?.forEach((c) => c.updated?.(changedProperties));
+    this._controllers?.forEach((c) => c.updated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&

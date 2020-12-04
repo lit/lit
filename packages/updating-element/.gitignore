@@ -1,7 +1,7 @@
-decorators/
-development/
-test/
-css-tag.*
-decorators.*
-platform-support.*
-updating-element.*
+/decorators/
+/development/
+/test/
+/css-tag.*
+/decorators.*
+/platform-support.*
+/updating-element.*
