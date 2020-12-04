@@ -2219,19 +2219,19 @@ suite('lit-html', () => {
     };
     const part = go(true, true);
     assert.isEmpty(log);
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
     log.length = 0;
     go(true, false);
     assert.deepEqual(log, ['disconnected-right']);
     log.length = 0;
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, ['disconnected-left']);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left']);
   });
 
@@ -2252,19 +2252,19 @@ suite('lit-html', () => {
     };
     const part = go(true, true);
     assert.isEmpty(log);
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
     log.length = 0;
     go(true, false);
     assert.deepEqual(log, ['disconnected-right']);
     log.length = 0;
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, ['disconnected-left']);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left']);
   });
 
@@ -2285,7 +2285,7 @@ suite('lit-html', () => {
     };
     const part = go([0, 1], [0, 1]);
     assert.isEmpty(log);
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, [
       'disconnected-left-0',
       'disconnected-left-1',
@@ -2293,7 +2293,7 @@ suite('lit-html', () => {
       'disconnected-right-1',
     ]);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, [
       'reconnected-left-0',
       'reconnected-left-1',
@@ -2308,10 +2308,10 @@ suite('lit-html', () => {
       'disconnected-right-1',
     ]);
     log.length = 0;
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, ['disconnected-left-0']);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left-0']);
   });
 
@@ -2334,7 +2334,7 @@ suite('lit-html', () => {
     };
     const part = go([0, 1], [0, 1]);
     assert.isEmpty(log);
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, [
       'disconnected-left-0',
       'disconnected-left-1',
@@ -2342,7 +2342,7 @@ suite('lit-html', () => {
       'disconnected-right-1',
     ]);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, [
       'reconnected-left-0',
       'reconnected-left-1',
@@ -2357,10 +2357,10 @@ suite('lit-html', () => {
       'disconnected-right-1',
     ]);
     log.length = 0;
-    part.setDirectiveConnection(false);
+    part.setConnected(false);
     assert.deepEqual(log, ['disconnected-left-0']);
     log.length = 0;
-    part.setDirectiveConnection(true);
+    part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left-0']);
   });
 

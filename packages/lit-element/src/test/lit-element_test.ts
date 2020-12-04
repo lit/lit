@@ -353,6 +353,7 @@ import {assert} from '@esm-bundle/chai';
         </div>`;
       }
       get child() {
+        // Cast to child so we can access .prop off of the div
         return this.shadowRoot!.firstElementChild as Child;
       }
     }
@@ -365,6 +366,7 @@ import {assert} from '@esm-bundle/chai';
         >`;
       }
       get child() {
+        // Cast to child so we can access .prop off of the div
         return this.shadowRoot!.firstElementChild as Child;
       }
     }
@@ -441,6 +443,26 @@ import {assert} from '@esm-bundle/chai';
       ]);
     });
 
+    test('directives reconnect on reconnection', async () => {
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      container.removeChild(host);
+      await nextFrame();
+      log.length = 0;
+      container.appendChild(host);
+      await nextFrame();
+      assertRendering(host);
+      assert.deepEqual(log, [
+        'reconnect-host-attr',
+        'reconnect-host-prop',
+        'reconnect-host-node',
+        'reconnect-child-attr',
+        'reconnect-child-prop',
+        'reconnect-child-node',
+      ]);
+    });
+
     test('directives reconnect and render on reconnection with pending render', async () => {
       container.appendChild(host);
       await nextFrame();
@@ -451,6 +473,8 @@ import {assert} from '@esm-bundle/chai';
       host.child.requestUpdate();
       container.appendChild(host);
       assertRendering(host);
+      // Note: directive disconnection/reconnection is synchronous to
+      // connected/disconnectedCallback
       assert.deepEqual(log, [
         'reconnect-host-attr',
         'reconnect-host-prop',
@@ -469,26 +493,6 @@ import {assert} from '@esm-bundle/chai';
         'render-child-attr',
         'render-child-prop',
         'render-child-node',
-      ]);
-    });
-
-    test('directives reconnect on reconnection', async () => {
-      container.appendChild(host);
-      await nextFrame();
-      assertRendering(host);
-      container.removeChild(host);
-      await nextFrame();
-      log.length = 0;
-      container.appendChild(host);
-      await nextFrame();
-      assertRendering(host);
-      assert.deepEqual(log, [
-        'reconnect-host-attr',
-        'reconnect-host-prop',
-        'reconnect-host-node',
-        'reconnect-child-attr',
-        'reconnect-child-prop',
-        'reconnect-child-node',
       ]);
     });
   });

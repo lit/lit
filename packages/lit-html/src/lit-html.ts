@@ -964,7 +964,7 @@ export class NodePart {
    * `reconnectedCallback`, according to the `isConnected` argument.
    * @param isConnected
    */
-  setDirectiveConnection(isConnected: boolean) {
+  setConnected(isConnected: boolean) {
     this._$setNodePartConnected?.(isConnected);
   }
 
@@ -1200,7 +1200,7 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent: DisconnectableParent | undefined,
+    parent?: DisconnectableParent,
     _options?: RenderOptions
   ) {
     this.element = element;

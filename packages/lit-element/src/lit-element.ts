@@ -122,14 +122,17 @@ export class LitElement extends UpdatingElement {
     this._nodePart = render(value, this.renderRoot, this._renderOptions);
   }
 
+  // TODO(kschaaf): Consider debouncing directive disconnection so element moves
+  // do not thrash directive callbacks
+  // https://github.com/Polymer/lit-html/issues/1457
   connectedCallback() {
     super.connectedCallback();
-    this._nodePart?.setDirectiveConnection(true);
+    this._nodePart?.setConnected(true);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this._nodePart?.setDirectiveConnection(false);
+    this._nodePart?.setConnected(false);
   }
 
   /**

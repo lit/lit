@@ -29,9 +29,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added `DisconnectableDirective`, which is a `Directive` subclass whose
   `disconnectedCallback` will be called when the part containing the directive
-  is cleared or manually disconnected using the `setDirectiveConnection` API ,
-  and whose `reconnectedCallback` will be called when upon next render or when
-  manually re-connected using `setDirectiveConnection`. When implementing
+  is cleared (or transitively cleared by a Part higher in the tree) or manually
+  disconnected using the `setDirectiveConnection` API, and whose
+  `reconnectedCallback` will be called when upon next render or when manually
+  re-connected using `setDirectiveConnection`. When implementing
   `disconnectedCallback`, `reconnectedCallback` should also be implemented to be
   compatible with reconnection. Note that `LitElement` will disconnect
   directives upon element disconnection, and re-connect directives upon element
