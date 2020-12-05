@@ -767,7 +767,7 @@ function resolveDirective(
       : (_$parent as NodePart | Directive)._directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
-    : (value as DirectiveResult)?._$litDirective$;
+    : (value as DirectiveResult)._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
     currentDirective?._$setDirectiveConnected?.(false);
     currentDirective =
