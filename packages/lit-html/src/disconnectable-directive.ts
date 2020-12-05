@@ -354,8 +354,8 @@ export abstract class DisconnectableDirective extends Directive {
   }
 
   /**
-   * Sets the value of a the asynchronously, outside the normal
-   * `update`/`render` lifecycle of a directive.
+   * Sets the value of the directive's Part outside the normal `update`/`render`
+   * lifecycle of a directive.
    *
    * This method should not be called synchronously from a directive's `update`
    * or `render`.

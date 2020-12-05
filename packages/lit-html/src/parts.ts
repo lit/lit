@@ -117,9 +117,10 @@ export const createAndInsertPart = (
  * Note that this should only be used to set/update the value of user-created
  * parts (i.e. those created using `createAndInsertPart`); it should not be used
  * by directives to set the value of the directive's container part. Directives
- * should return a value from `update`/`render` to update their part state. For
- * directives that require setting their part value asynchronously, they should
- * extend `DisconnectableDirective` and call `this.setValue()`.
+ * should return a value from `update`/`render` to update their part state.
+ *
+ * For directives that require setting their part value asynchronously, they
+ * should extend `DisconnectableDirective` and call `this.setValue()`.
  *
  * @param part Part to set
  * @param value Value to set
