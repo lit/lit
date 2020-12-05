@@ -175,7 +175,7 @@ const setChildrenConnected = (
  * parent, and so forth up the tree when that causes subsequent parent lists to
  * become empty.
  */
-const removeDisconnectable = (obj: Disconnectable) => {
+const removeDisconnectableFromParent = (obj: Disconnectable) => {
   let parent,
     children,
     current: Disconnectable | undefined = obj;
@@ -230,14 +230,14 @@ function setNodePartConnected(
       // children (starting at `fromPartIndex` in the case of truncation)
       for (let i = fromPartIndex; i < value.length; i++) {
         setChildrenConnected(value[i], isConnected);
-        removeDisconnectable(value[i]);
+        removeDisconnectableFromParent(value[i]);
       }
     } else if (value != null) {
       // TemplateInstance case: If the value has disconnectable children (will
       // only be in the case that it is a TemplateInstance), we disconnect it
       // and remove it from this NodePart's disconnectable children
       setChildrenConnected(value as Disconnectable, isConnected);
-      removeDisconnectable(value as Disconnectable);
+      removeDisconnectableFromParent(value as Disconnectable);
     }
   } else {
     setChildrenConnected(this, isConnected);
@@ -307,7 +307,7 @@ export abstract class DisconnectableDirective extends Directive {
     this._setConnected(isConnected);
     if (isClearingDirective) {
       setChildrenConnected(this, isConnected);
-      removeDisconnectable(this);
+      removeDisconnectableFromParent(this);
     }
   }
   /**
