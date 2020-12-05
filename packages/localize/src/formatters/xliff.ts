@@ -250,9 +250,10 @@ export class XliffFormatter implements Formatter {
 
       if (descStack.length > 0) {
         // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
-        const note = document.createElement('note');
+        const note = doc.createElement('note');
         note.appendChild(doc.createTextNode(descStack.join(' / ')));
         transUnit.appendChild(note);
+        indent(transUnit, 1);
       }
 
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#source

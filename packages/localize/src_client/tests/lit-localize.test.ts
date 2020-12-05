@@ -84,7 +84,7 @@ suite('lit-localize', () => {
     });
 
     test('renders regular template in English', () => {
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hello World');
     });
 
@@ -92,13 +92,16 @@ suite('lit-localize', () => {
       const loaded = setLocale('es-419');
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hola Mundo');
     });
 
     test('renders parameterized template in English', () => {
       render(
-        msg('parameterized', (name: string) => html`Hello ${name}`, 'friend'),
+        msg((name: string) => html`Hello ${name}`, {
+          id: 'parameterized',
+          args: ['friend'],
+        }),
         container
       );
       assert.equal(container.textContent, 'Hello friend');
@@ -109,17 +112,63 @@ suite('lit-localize', () => {
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
       render(
-        msg('parameterized', (name: string) => html`Hello ${name}`, 'friend'),
+        msg((name: string) => html`Hello ${name}`, {
+          id: 'parameterized',
+          args: ['friend'],
+        }),
         container
       );
       assert.equal(container.textContent, 'Hola friend');
     });
   });
 
+  suite('auto ID', () => {
+    const autoSpanishModule = {
+      templates: {
+        as8c0ec8d1fb9e6e32: 'Hola Mundo!',
+        as00ad08ebae1e0f74: (name: string) => `Hola ${name}!`,
+        ah3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
+        ah82ccc38d4d46eaa9: (name: string) => html`Hola <b>${name}</b>!`,
+      },
+    };
+
+    setup(async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(autoSpanishModule);
+      await loaded;
+    });
+
+    test('renders string template', () => {
+      render(msg(`Hello World!`), container);
+      assert.equal(container.textContent, 'Hola Mundo!');
+    });
+
+    test('renders parameterized string template', () => {
+      render(
+        msg((name) => `Hello ${name}!`, {args: ['Friend']}),
+        container
+      );
+      assert.equal(container.textContent, 'Hola Friend!');
+    });
+
+    test('renders html template', () => {
+      render(msg(html`Hello <b>World</b>!`), container);
+      assert.equal(container.textContent, 'Hola Mundo!');
+    });
+
+    test('renders parameterized html template', () => {
+      render(
+        msg((name) => html`Hello <b>${name}</b>!`, {args: ['Friend']}),
+        container
+      );
+      assert.equal(container.textContent, 'Hola Friend!');
+    });
+  });
+
   suite('Localized mixin', () => {
     class XGreeter extends Localized(LitElement) {
       render() {
-        return msg('greeting', html`<b>Hello World</b>`);
+        return msg(html`<b>Hello World</b>`, {id: 'greeting'});
       }
     }
     customElements.define('x-greeter', XGreeter);
@@ -177,13 +226,13 @@ suite('lit-localize', () => {
 
     function assertEnglish() {
       assert.equal(getLocale(), 'en');
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hello World');
     }
 
     function assertSpanish() {
       assert.equal(getLocale(), 'es-419');
-      render(msg('greeting', html`<b>Hello World</b>`), container);
+      render(msg(html`<b>Hello World</b>`, {id: 'greeting'}), container);
       assert.equal(container.textContent, 'Hola Mundo');
     }
 

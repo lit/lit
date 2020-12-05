@@ -131,7 +131,7 @@ function generateLocaleModule(
     translatedMsgNames.add(msg.name);
     const msgStr = makeMessageString(msg.contents, canon);
     const patchedMsgStr = applyPatches(patches, locale, msg.name, msgStr);
-    entries.push(`${msg.name}: ${patchedMsgStr},`);
+    entries.push(`'${msg.name}': ${patchedMsgStr},`);
   }
   for (const msg of canonMsgs) {
     if (msg.isLitTemplate) {
@@ -144,7 +144,7 @@ function generateLocaleModule(
       `${locale} message ${msg.name} is missing, using canonical text as fallback`
     );
     const msgStr = makeMessageString(msg.contents, msg);
-    entries.push(`${msg.name}: ${msgStr},`);
+    entries.push(`'${msg.name}': ${msgStr},`);
   }
   return `
     // Do not modify this file by hand!

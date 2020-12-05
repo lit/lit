@@ -47,7 +47,7 @@
   "dependencies": {
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
-    "jsonschema": "^1.2.6",
+    "jsonschema": "^1.4.0",
     "lit-element": "^2.3.1",
     "lit-html": "^1.2.1",
     "minimist": "^1.2.5",
@@ -62,7 +62,6 @@
     "@types/diff": "^4.0.2",
     "@types/fs-extra": "^9.0.1",
     "@types/glob": "^7.1.1",
-    "@types/jsonschema": "^1.1.1",
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^8.0.2",
     "@types/node": "^14.0.1",
