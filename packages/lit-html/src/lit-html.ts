@@ -278,7 +278,7 @@ const templateCache = new Map<TemplateStringsArray, Template>();
 export type NodePartInfo = {
   readonly type: typeof NODE_PART;
   readonly _$part: NodePart;
-  readonly _$parent: DisconnectableParent;
+  readonly _$parent: Disconnectable;
   readonly _$attributeIndex: number | undefined;
 };
 
@@ -292,7 +292,7 @@ export type AttributePartInfo = {
   readonly name: string;
   readonly tagName: string;
   readonly _$part: AttributePart;
-  readonly _$parent: DisconnectableParent;
+  readonly _$parent: Disconnectable;
   readonly _$attributeIndex: number | undefined;
 };
 
@@ -423,11 +423,11 @@ export abstract class Directive {
   _directive?: Directive;
 
   //@internal
-  _$parent: DisconnectableParent;
+  _$parent: Disconnectable;
 
   // These will only exist on the DisconnectableDirective subclass
   //@internal
-  _$disconnetableChildren?: Set<DisconnectableParent>;
+  _$disconnetableChildren?: Set<Disconnectable>;
   //@internal
   _$setDirectiveConnected?(isConnected: boolean): void;
 
@@ -750,9 +750,9 @@ class Template {
   }
 }
 
-export interface DisconnectableParent {
-  _$parent: DisconnectableParent | undefined;
-  _$disconnetableChildren?: Set<DisconnectableParent>;
+export interface Disconnectable {
+  _$parent: Disconnectable | undefined;
+  _$disconnetableChildren?: Set<Disconnectable>;
 }
 
 function resolveDirective(
@@ -804,9 +804,9 @@ class TemplateInstance {
   _parts: Array<Part | undefined> = [];
 
   /** @internal */
-  _$parent: DisconnectableParent;
+  _$parent: Disconnectable;
   /** @internal */
-  _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
+  _$disconnetableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: NodePart) {
     this._template = template;
@@ -930,12 +930,12 @@ export class NodePart {
   private _textSanitizer: ValueSanitizer | undefined;
 
   /** @internal */
-  _$parent: DisconnectableParent | undefined;
+  _$parent: Disconnectable | undefined;
 
   // The following fields will be patched onto NodeParts when required by
   // DisconnectableDirective
   /** @internal */
-  _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
+  _$disconnetableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
   _$setNodePartConnected?(
     isConnected: boolean,
@@ -1180,9 +1180,9 @@ export class AttributePart {
   _directives?: Array<Directive | undefined>;
 
   /** @internal */
-  _$parent: DisconnectableParent | undefined;
+  _$parent: Disconnectable | undefined;
   /** @internal */
-  _$disconnetableChildren?: Set<DisconnectableParent> = undefined;
+  _$disconnetableChildren?: Set<Disconnectable> = undefined;
 
   protected _sanitizer: ValueSanitizer | undefined;
   /** @internal */
@@ -1200,7 +1200,7 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent?: DisconnectableParent,
+    parent?: Disconnectable,
     _options?: RenderOptions
   ) {
     this.element = element;
