@@ -299,12 +299,13 @@ export abstract class DisconnectableDirective extends Directive {
    * be false).
    *
    * @param isConnected
-   * @param shouldRemoveFromParent
+   * @param isClearingDirective - True when the directive itself is being
+   *   removed; false when the tree is being disconnected
    * @internal
    */
-  _$setDirectiveConnected(isConnected: boolean, shouldRemoveFromParent = true) {
+  _$setDirectiveConnected(isConnected: boolean, isClearingDirective = true) {
     this._setConnected(isConnected);
-    if (shouldRemoveFromParent) {
+    if (isClearingDirective) {
       setChildrenConnected(this, isConnected);
       removeDisconnectable(this);
     }
