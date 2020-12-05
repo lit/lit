@@ -437,6 +437,85 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['ol', 'li'],
   },
 
+  'NodePart accepts simple directive': () => {
+    const basic = directive(
+      class extends Directive {
+        count = 0;
+        lastValue: string | undefined = undefined;
+        render(v: string) {
+          if (v !== this.lastValue) {
+            this.lastValue = v;
+            this.count++;
+          }
+          return `[${this.count}:${v}]`;
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html`<div>${basic(v)}</div>`;
+      },
+      expectations: [
+        {
+          args: ['one'],
+          html: '<div>[1:one]</div>',
+        },
+        {
+          args: ['two'],
+          html: '<div>[2:two]</div>',
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  'NodePart accepts nested directives': () => {
+    const aDirective = directive(
+      class ADirective extends Directive {
+        render(bool: boolean, v: unknown) {
+          return bool ? v : nothing;
+        }
+      }
+    );
+    const bDirective = directive(
+      class BDirective extends Directive {
+        count = 0;
+        lastValue: string | undefined = undefined;
+        render(v: string) {
+          if (v !== this.lastValue) {
+            this.lastValue = v;
+            this.count++;
+          }
+          return `[B:${this.count}:${v}]`;
+        }
+      }
+    );
+    return {
+      render(bool: boolean, v: string) {
+        return html`<div>${aDirective(bool, bDirective(v))}</div>`;
+      },
+      expectations: [
+        {
+          args: [true, 'X'],
+          html: '<div>[B:1:X]</div>',
+        },
+        {
+          args: [true, 'Y'],
+          html: '<div>[B:2:Y]</div>',
+        },
+        {
+          args: [false, 'X'],
+          html: '<div></div>',
+        },
+        {
+          args: [true, 'X'],
+          html: '<div>[B:1:X]</div>',
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
   'NodePart accepts directive: repeat (with strings)': {
     render(words: string[]) {
       return html`${repeat(words, (word, i) => `(${i} ${word})`)}`;
@@ -910,6 +989,85 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
     // Setting an object/array always results in setAttribute being called
     expectMutationsOnFirstRender: true,
+  },
+
+  'AttributePart accepts simple directive': () => {
+    const basic = directive(
+      class extends Directive {
+        count = 0;
+        lastValue: string | undefined = undefined;
+        render(v: string) {
+          if (v !== this.lastValue) {
+            this.lastValue = v;
+            this.count++;
+          }
+          return `[${this.count}:${v}]`;
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html`<div a="${basic(v)}"></div>`;
+      },
+      expectations: [
+        {
+          args: ['one'],
+          html: '<div a="[1:one]"></div>',
+        },
+        {
+          args: ['two'],
+          html: '<div a="[2:two]"></div>',
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  'AttributePart accepts nested directives': () => {
+    const aDirective = directive(
+      class ADirective extends Directive {
+        render(bool: boolean, v: unknown) {
+          return bool ? v : nothing;
+        }
+      }
+    );
+    const bDirective = directive(
+      class BDirective extends Directive {
+        count = 0;
+        lastValue: string | undefined = undefined;
+        render(v: string) {
+          if (v !== this.lastValue) {
+            this.lastValue = v;
+            this.count++;
+          }
+          return `[B:${this.count}:${v}]`;
+        }
+      }
+    );
+    return {
+      render(bool: boolean, v: string) {
+        return html`<div a="${aDirective(bool, bDirective(v))}"></div>`;
+      },
+      expectations: [
+        {
+          args: [true, 'X'],
+          html: '<div a="[B:1:X]"></div>',
+        },
+        {
+          args: [true, 'Y'],
+          html: '<div a="[B:2:Y]"></div>',
+        },
+        {
+          args: [false, 'X'],
+          html: '<div></div>',
+        },
+        {
+          args: [true, 'X'],
+          html: '<div a="[B:1:X]"></div>',
+        },
+      ],
+      stableSelectors: ['div'],
+    };
   },
 
   'AttributePart accepts directive: classMap': {

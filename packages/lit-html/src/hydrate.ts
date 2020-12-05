@@ -13,14 +13,13 @@
  */
 
 // Type-only imports
-import {TemplateResult, DirectiveResult} from './lit-html.js';
+import {TemplateResult} from './lit-html.js';
 
 import {
   noChange,
   EventPart,
   NodePart,
   PropertyPart,
-  NodePartInfo,
   RenderOptions,
   ATTRIBUTE_PART,
   $private,
@@ -30,6 +29,7 @@ const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _isPrimitive: isPrimitive,
+  _resolveDirective: resolveDirective,
 } = $private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -225,12 +225,7 @@ const openNodePart = (
   // 6. Iterable
   // 7. nothing (handled in fallback)
   // 8. Fallback for everything else
-  const directive =
-    value != null ? (value as DirectiveResult)._$litDirective$ : undefined;
-  if (directive !== undefined) {
-    part._directive = new directive(part as NodePartInfo);
-    value = part._directive!.update(part, (value as DirectiveResult).values);
-  }
+  value = resolveDirective(part, value);
   if (value === noChange) {
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
@@ -361,7 +356,12 @@ const createAttributeParts = (
         instancePart instanceof EventPart ||
         instancePart instanceof PropertyPart
       );
-      instancePart._setValue(value, state.instancePartIndex, noCommit);
+      instancePart._setValue(
+        value,
+        instancePart,
+        state.instancePartIndex,
+        noCommit
+      );
       state.templatePartIndex++;
       state.instancePartIndex += templatePart._strings.length - 1;
       instance._parts.push(instancePart);

@@ -15,13 +15,12 @@
  */
 
 // Type-only imports
-import {TemplateResult, DirectiveResult} from 'lit-html';
+import {NodePart, TemplateResult} from 'lit-html';
 
 import {
   nothing,
   noChange,
   Directive,
-  Part,
   NODE_PART,
   AttributePart,
   PropertyPart,
@@ -31,7 +30,13 @@ import {
 
 import {$private} from 'lit-html/private-ssr-support.js';
 
-const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = $private;
+const {
+  getTemplateHtml,
+  marker,
+  markerMatch,
+  boundAttributeSuffix,
+  resolveDirective,
+} = $private;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
@@ -63,17 +68,14 @@ declare module 'parse5' {
 
 // Switch directive resolution to SSR-compatible `render`; the rule is that only
 // `render` (and not `update`) is run on the server
-Directive.prototype._resolve = function (
-  this: Directive,
-  _part: Part,
-  values: unknown[]
-) {
-  return this.render(...values);
+Directive.prototype._resolve = function (this: Directive, props: unknown[]) {
+  const {_part, _attributeIndex} = this;
+  return resolveDirective(_part, this.render(...props), this, _attributeIndex);
 };
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
-
 /**
+
  * Operation to output static text
  */
 type TextOp = {
@@ -444,13 +446,8 @@ export function* renderValue(
       yield* instance.renderLight(renderInfo);
     }
     value = null;
-  } else if (value != null && (value as DirectiveResult)._$litDirective$) {
-    const directive = (value as DirectiveResult)._$litDirective$;
-    // Note that we are calling the SSR-compatible `render`; the rule is that
-    // only `render` (and not `update`) is run on the server
-    value = new directive({type: NODE_PART}).render(
-      ...(value as DirectiveResult).values
-    );
+  } else {
+    value = resolveDirective({type: NODE_PART} as NodePart, value);
   }
   if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -530,7 +527,7 @@ export function* renderTemplateResult(
           part._commitValue = (value: unknown) => {
             committedValue = value;
           };
-          part._setValue(value, partIndex);
+          part._setValue(value, part, partIndex);
         }
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`
