@@ -176,18 +176,14 @@ const setChildrenConnected = (
  * become empty.
  */
 const removeDisconnectableFromParent = (obj: Disconnectable) => {
-  let parent,
-    children,
-    current: Disconnectable | undefined = obj;
+  let parent, children;
   do {
-    parent = current._$parent;
-    if (parent !== undefined) {
-      children = parent._$disconnetableChildren!;
-      children.delete(current);
-    } else {
+    if ((parent = obj._$parent) == undefined) {
       break;
     }
-    current = parent;
+    children = parent._$disconnetableChildren!;
+    children.delete(obj);
+    obj = parent;
   } while (children !== undefined && children.size === 0);
 };
 
