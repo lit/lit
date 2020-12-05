@@ -216,7 +216,7 @@ function setNodePartConnected(
 ) {
   const value = this._value;
   const children = this._$disconnetableChildren;
-  if (children === undefined) {
+  if (children === undefined || children.size === 0) {
     return;
   }
   if (isClearingValue) {
@@ -225,14 +225,14 @@ function setNodePartConnected(
       // disconnected and removed from this NodePart's disconnectable
       // children (starting at `fromPartIndex` in the case of truncation)
       for (let i = fromPartIndex; i < value.length; i++) {
-        setChildrenConnected(value[i], isConnected);
+        setChildrenConnected(value[i], false);
         removeDisconnectableFromParent(value[i]);
       }
     } else if (value != null) {
       // TemplateInstance case: If the value has disconnectable children (will
       // only be in the case that it is a TemplateInstance), we disconnect it
       // and remove it from this NodePart's disconnectable children
-      setChildrenConnected(value as Disconnectable, isConnected);
+      setChildrenConnected(value as Disconnectable, false);
       removeDisconnectableFromParent(value as Disconnectable);
     }
   } else {
