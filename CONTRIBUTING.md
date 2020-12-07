@@ -90,7 +90,7 @@ npm run build
 
 ### Test on a custom set of browsers
 
-1. `BROWSERS="chromium,sauce:Windows 10/firefox@68" npm test`
+1. `BROWSERS="chromium,sauce:Windows 10/firefox@78" npm test`
 
    Examples:
 
@@ -99,7 +99,7 @@ npm run build
    sauce:Windows 10/MicrosoftEdge@18
    sauce:Windows 7/internet explorer@11
    sauce:Linux/chrome@latest-3
-   sauce:Linux/firefox@68
+   sauce:Linux/firefox@78
    ```
 
    See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all

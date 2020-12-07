@@ -55,7 +55,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, UpdatingElement} from 'updating-element';
-import {render, RenderOptions, noChange} from 'lit-html';
+import {render, RenderOptions, noChange, NodePart} from 'lit-html';
 export * from 'updating-element';
 export * from 'lit-html';
 
@@ -94,6 +94,8 @@ export class LitElement extends UpdatingElement {
 
   readonly _$renderOptions: RenderOptions = {eventContext: this};
 
+  private _nodePart: NodePart | undefined = undefined;
+
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
@@ -117,7 +119,20 @@ export class LitElement extends UpdatingElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    render(value, this.renderRoot, this._$renderOptions);
+    this._nodePart = render(value, this.renderRoot, this._$renderOptions);
+  }
+
+  // TODO(kschaaf): Consider debouncing directive disconnection so element moves
+  // do not thrash directive callbacks
+  // https://github.com/Polymer/lit-html/issues/1457
+  connectedCallback() {
+    super.connectedCallback();
+    this._nodePart?.setConnected(true);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._nodePart?.setConnected(false);
   }
 
   /**

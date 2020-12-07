@@ -89,6 +89,14 @@ const stableProperties = {
   _$handlesPrepareStyles: 'N',
   // lit-element: UpdatingElement (used bby ssr-support)
   _$attributeToProperty: 'O',
+  // lit-html: NodePart, AttributePart, TemplateInstance, Directive (accessed by
+  // disconnectable-directive)
+  _$parent: 'P',
+  _$disconnetableChildren: 'Q',
+  // disconnectable-directive: DisconnectableDirective
+  _$setDirectiveConnected: 'R',
+  // lit-html: NodePart (added by disconnectable-directive)
+  _$setNodePartConnected: 'S',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and

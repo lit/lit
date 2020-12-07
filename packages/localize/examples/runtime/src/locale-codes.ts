@@ -8,7 +8,7 @@ export const sourceLocale = `en`;
 
 /**
  * The other locale codes that this application is localized into. Sorted
- * longest first, then lexicographically.
+ * lexicographically.
  */
 export const targetLocales = [
   `es-419`,
@@ -16,11 +16,10 @@ export const targetLocales = [
 ] as const;
 
 /**
- * All valid project locale codes. Sorted longest first, then
- * lexicographically.
+ * All valid project locale codes. Sorted lexicographically.
  */
 export const allLocales = [
+  `en`,
   `es-419`,
   `zh_CN`,
-  `en`,
 ] as const;

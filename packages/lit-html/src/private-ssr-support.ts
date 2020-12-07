@@ -17,7 +17,6 @@ import {
   AttributePart,
   Directive,
   noChange,
-  Part,
 } from './lit-html.js';
 
 /**
@@ -40,7 +39,7 @@ export const _$private = {
   getTemplateHtml: p._getTemplateHtml,
   patchDirectiveResolve: (
     directive: Directive,
-    fn: (this: Directive, _part: Part, values: unknown[]) => unknown
+    fn: (this: Directive, values: unknown[]) => unknown
   ) => {
     directive._resolve = fn;
   },
@@ -53,7 +52,8 @@ export const _$private = {
     // into a final value (captured by passing in a commitValue override)
     let committedValue: unknown = noChange;
     part._commitValue = (value: unknown) => (committedValue = value);
-    part._$setValue(value, index);
+    part._$setValue(value, part, index);
     return committedValue;
   },
+  resolveDirective: p._resolveDirective,
 };

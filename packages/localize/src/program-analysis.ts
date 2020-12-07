@@ -13,6 +13,11 @@ import * as ts from 'typescript';
 import * as parse5 from 'parse5';
 import {ProgramMessage, Placeholder, Message} from './messages';
 import {createDiagnostic} from './typescript';
+import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
+
+type ResultOrError<R, E> =
+  | {result: R; error?: undefined}
+  | {result?: undefined; error: E};
 
 /**
  * Extract translation messages from all files in a TypeScript program.
@@ -63,13 +68,11 @@ function extractMessagesFromNode(
     descStack = dedupeMsgDescs([...descStack, ...newDescs]);
   }
 
-  const msg = extractMsg(file, program, node, descStack);
-  if (msg !== undefined) {
-    if ('contents' in msg) {
-      messages.push(msg);
-    } else {
-      errors.push(msg);
-    }
+  const extractResult = extractMsg(file, program, node, descStack);
+  if (extractResult.error) {
+    errors.push(extractResult.error);
+  } else if (extractResult.result !== undefined) {
+    messages.push(extractResult.result);
   }
 
   ts.forEachChild(node, (node) => {
@@ -86,112 +89,279 @@ function extractMsg(
   program: ts.Program,
   node: ts.Node,
   descStack: MsgDesc[]
-): ProgramMessage | ts.Diagnostic | undefined {
+): ResultOrError<ProgramMessage | undefined, ts.Diagnostic> {
   if (!isMsgCall(node, program.getTypeChecker())) {
     // We're not interested.
-    return;
+    return {result: undefined};
   }
-  if (node.arguments.length < 2) {
-    return createDiagnostic(
-      file,
-      node,
-      `Expected at least 2 arguments to msg(), got ${node.arguments.length}`
-    );
-  }
-  const [nameArg, contentsArg] = node.arguments;
-  if (!isStaticString(nameArg) || !nameArg.text) {
-    return createDiagnostic(
-      file,
-      nameArg,
-      `Expected first argument to msg() to be a static and non-empty string`
-    );
-  }
-  const name = nameArg.text;
-
-  if (isStaticString(contentsArg)) {
-    // E.g. msg('foo', 'bar')
+  if (node.arguments.length < 1 || node.arguments.length > 2) {
     return {
+      error: createDiagnostic(
+        file,
+        node,
+        `Expected 1 or 2 arguments to msg(), got ${node.arguments.length}`
+      ),
+    };
+  }
+  const [templateArg, optionsArg] = node.arguments;
+
+  const templateResult = extractTemplate(templateArg, file);
+  if (templateResult.error) {
+    return {error: templateResult.error};
+  }
+  const {contents, template, params, isLitTemplate} = templateResult.result;
+
+  const optionsResult = extractOptions(optionsArg, file);
+  if (optionsResult.error) {
+    return {error: optionsResult.error};
+  }
+  const options = optionsResult.result;
+  const name = options.id ?? generateMsgIdFromAstNode(template, isLitTemplate);
+
+  return {
+    result: {
       name,
-      contents: [contentsArg.text],
-      node,
       file,
+      node,
+      contents,
+      params,
+      isLitTemplate,
       descStack: descStack.map((desc) => desc.text),
-      isLitTemplate: false,
+    },
+  };
+}
+
+/**
+ * Analyze the options argument to a msg call.
+ */
+export function extractOptions(
+  node: ts.Node | undefined,
+  file: ts.SourceFile
+): ResultOrError<
+  {id?: string; args?: ts.NodeArray<ts.Expression>},
+  ts.Diagnostic
+> {
+  if (node === undefined) {
+    return {result: {}};
+  }
+  if (!ts.isObjectLiteralExpression(node)) {
+    return {
+      error: createDiagnostic(
+        file,
+        node,
+        `Expected second argument to msg() to be an object literal`
+      ),
     };
   }
 
-  if (isLitTemplate(contentsArg)) {
-    if (ts.isNoSubstitutionTemplateLiteral(contentsArg.template)) {
-      // E.g. msg('foo', html`bar <b>baz</b>`)
+  let id: string | undefined = undefined;
+  let args: ts.NodeArray<ts.Expression> | undefined = undefined;
+
+  for (const property of node.properties) {
+    // {
+    //   a: 0,     // PropertyAssignment > Identifier
+    //   'b': 0,   // PropertyAssignment > StringLiteral
+    //   ['c']: 0, // PropertyAssignment > ComputedPropertyName
+    //   d,        // ShorthandPropertyAssignment
+    //   ...e,     // SpreadAssignment
+    // }
+
+    if (!ts.isPropertyAssignment(property)) {
       return {
-        name,
-        contents: combineAdjacentPlaceholders(
-          replaceHtmlWithPlaceholders(contentsArg.template.text)
+        error: createDiagnostic(
+          file,
+          property,
+          `Options object must use identifier or string literal property ` +
+            `assignments. Shorthand and spread assignments are not supported.`
         ),
-        node,
-        file,
-        descStack: descStack.map((desc) => desc.text),
-        isLitTemplate: true,
       };
     }
-    // E.g. msg('foo', html`bar ${baz}`)
-    return createDiagnostic(
+
+    let name;
+    if (ts.isIdentifier(property.name)) {
+      name = property.name.escapedText;
+    } else if (ts.isStringLiteral(property.name)) {
+      name = property.name.text;
+    } else {
+      return {
+        error: createDiagnostic(
+          file,
+          property.name,
+          `Options object must use identifier or string literal property ` +
+            `assignments. Computed assignments are not supported.`
+        ),
+      };
+    }
+
+    if (name === 'id') {
+      if (
+        (!ts.isStringLiteral(property.initializer) &&
+          !ts.isNoSubstitutionTemplateLiteral(property.initializer)) ||
+        property.initializer.text.trim() === ''
+      ) {
+        return {
+          error: createDiagnostic(
+            file,
+            property.initializer,
+            `Options id property must be a non-empty string literal`
+          ),
+        };
+      }
+      id = property.initializer.text;
+    } else if (name === 'args') {
+      if (!ts.isArrayLiteralExpression(property.initializer)) {
+        return {
+          error: createDiagnostic(
+            file,
+            property.initializer,
+            `Options args property must be an array literal`
+          ),
+        };
+      }
+      args = property.initializer.elements;
+    } else {
+      return {
+        error: createDiagnostic(
+          file,
+          property,
+          `Options object property must be "id" or "args"`
+        ),
+      };
+    }
+  }
+
+  return {result: {id, args}};
+}
+
+interface ExtractedTemplate {
+  contents: Array<string | Placeholder>;
+  params?: string[];
+  isLitTemplate: boolean;
+  template: ts.TemplateLiteral | ts.StringLiteral;
+}
+
+/**
+ * Analyze the template argument to a msg call.
+ */
+export function extractTemplate(
+  templateArg: ts.Node,
+  file: ts.SourceFile
+): ResultOrError<ExtractedTemplate, ts.DiagnosticWithLocation> {
+  if (isStaticString(templateArg)) {
+    // E.g. 'Hello World'
+    return {
+      result: {
+        template: templateArg,
+        contents: [templateArg.text],
+        isLitTemplate: false,
+      },
+    };
+  }
+
+  if (isLitTemplate(templateArg)) {
+    if (ts.isNoSubstitutionTemplateLiteral(templateArg.template)) {
+      // E.g. html`Hello <b>World</b>`
+      return {
+        result: {
+          template: templateArg.template,
+          contents: combineAdjacentPlaceholders(
+            replaceHtmlWithPlaceholders(templateArg.template.text)
+          ),
+          isLitTemplate: true,
+        },
+      };
+    }
+    // E.g. html`Hello ${who}`
+    return {
+      error: createDiagnostic(
+        file,
+        templateArg,
+        `To use a variable, pass an arrow function.`
+      ),
+    };
+  }
+
+  if (ts.isTemplateExpression(templateArg)) {
+    // E.g. `Hello ${who}`
+    return {
+      error: createDiagnostic(
+        file,
+        templateArg,
+        `To use a variable, pass an arrow function.`
+      ),
+    };
+  }
+
+  if (ts.isArrowFunction(templateArg)) {
+    // E.g. (who) => html`Hello ${who}`
+    return functionTemplate(templateArg, file);
+  }
+
+  return {
+    error: createDiagnostic(
       file,
-      contentsArg,
-      `To use a variable, pass an arrow function.`
-    );
-  }
+      templateArg,
+      `Expected second argument to msg() to be a string, a lit-html ` +
+        `template, or an arrow function that returns one of those.`
+    ),
+  };
+}
 
-  if (ts.isTemplateExpression(contentsArg)) {
-    // E.g. msg('foo', `bar ${baz}`)
-    return createDiagnostic(
-      file,
-      contentsArg,
-      `To use a variable, pass an arrow function.`
-    );
+export function generateMsgIdFromAstNode(
+  template: ts.TemplateLiteral | ts.StringLiteral,
+  isHtmlTagged: boolean
+): string {
+  const strings = [];
+  if (
+    ts.isStringLiteral(template) ||
+    ts.isNoSubstitutionTemplateLiteral(template)
+  ) {
+    strings.push(template.text);
+  } else {
+    // TemplateExpression
+    strings.push(template.head.text);
+    for (const span of template.templateSpans) {
+      strings.push(span.literal.text);
+    }
   }
-
-  if (ts.isArrowFunction(contentsArg)) {
-    // E.g. msg('foo', (name) => html`Hello ${name}`, name)
-    return functionTemplate(contentsArg, name, file, node, descStack);
+  for (const s of strings) {
+    if (s.includes(HASH_DELIMITER)) {
+      // TODO(aomarks) Surface diagnostic
+      throw new Error('String cannot contain hash delimiter');
+    }
   }
-
-  return createDiagnostic(
-    file,
-    contentsArg,
-    `Expected second argument to msg() to be a string, a lit-html ` +
-      `template, or an arrow function that returns one of those.`
-  );
+  return generateMsgId(strings, isHtmlTagged);
 }
 
 /**
  * Extract a message from calls like:
- *   msg('foo', (name) => `Hello ${name}`, name)
- *   msg('foo', (name) => html`Hello <b>${name}</b>`, name)
+ *   (name) => `Hello ${name}`
+ *   (name) => html`Hello <b>${name}</b>`
  */
 function functionTemplate(
   fn: ts.ArrowFunction,
-  name: string,
-  file: ts.SourceFile,
-  node: ts.Node,
-  descStack: MsgDesc[]
-): ProgramMessage | ts.Diagnostic | undefined {
+  file: ts.SourceFile
+): ResultOrError<ExtractedTemplate, ts.DiagnosticWithLocation> {
   if (fn.parameters.length === 0) {
-    return createDiagnostic(
-      file,
-      fn,
-      `Expected template function to have at least one parameter. ` +
-        `Use a regular string or lit-html template if there are no variables.`
-    );
+    return {
+      error: createDiagnostic(
+        file,
+        fn,
+        `Expected template function to have at least one parameter. ` +
+          `Use a regular string or lit-html template if there are no variables.`
+      ),
+    };
   }
   const params = [];
   for (const param of fn.parameters) {
     if (!ts.isIdentifier(param.name)) {
-      return createDiagnostic(
-        file,
-        param,
-        `Expected template function parameter to be an identifier`
-      );
+      return {
+        error: createDiagnostic(
+          file,
+          param,
+          `Expected template function parameter to be an identifier`
+        ),
+      };
     }
     params.push(param.name.text);
   }
@@ -201,12 +371,14 @@ function functionTemplate(
     !ts.isNoSubstitutionTemplateLiteral(body) &&
     !isLitTemplate(body)
   ) {
-    return createDiagnostic(
-      file,
-      body,
-      `Expected template function to return a template string literal ` +
-        `or a lit-html template, without braces`
-    );
+    return {
+      error: createDiagnostic(
+        file,
+        body,
+        `Expected template function to return a template string literal ` +
+          `or a lit-html template, without braces`
+      ),
+    };
   }
   const template = isLitTemplate(body) ? body.template : body;
   const parts: Array<string | {identifier: string}> = [];
@@ -218,12 +390,14 @@ function functionTemplate(
         !ts.isIdentifier(span.expression) ||
         !params.includes(span.expression.text)
       ) {
-        return createDiagnostic(
-          file,
-          span.expression,
-          `Placeholder must be one of the following identifiers: ` +
-            params.join(', ')
-        );
+        return {
+          error: createDiagnostic(
+            file,
+            span.expression,
+            `Placeholder must be one of the following identifiers: ` +
+              params.join(', ')
+          ),
+        };
       }
       const identifier = span.expression.text;
       parts.push({identifier});
@@ -242,13 +416,12 @@ function functionTemplate(
           : {untranslatable: '${' + part.identifier + '}'}
       );
   return {
-    name,
-    contents: combineAdjacentPlaceholders(contents),
-    node,
-    file,
-    descStack: descStack.map((desc) => desc.text),
-    params,
-    isLitTemplate: isLit,
+    result: {
+      template,
+      contents: combineAdjacentPlaceholders(contents),
+      params,
+      isLitTemplate: isLit,
+    },
   };
 }
 

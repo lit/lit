@@ -13,14 +13,13 @@
  */
 
 // Type-only imports
-import {TemplateResult, DirectiveResult} from './lit-html.js';
+import {TemplateResult} from './lit-html.js';
 
 import {
   noChange,
   EventPart,
   NodePart,
   PropertyPart,
-  NodePartInfo,
   RenderOptions,
   ATTRIBUTE_PART,
   _$private,
@@ -30,6 +29,7 @@ const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _isPrimitive: isPrimitive,
+  _resolveDirective: resolveDirective,
 } = _$private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -191,16 +191,19 @@ const openNodePart = (
   // We know the startNode now. We'll know the endNode when we get to
   // the matching marker and set it in closeNodePart()
   // TODO(kschaaf): Current constructor takes both nodes
-  const part = new NodePart(marker, null, options);
+  let part;
   if (stack.length === 0) {
+    part = new NodePart(marker, null, undefined, options);
     value = rootValue;
   } else {
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
+      part = new NodePart(marker, null, state.instance, options);
       state.instance._parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
+      part = new NodePart(marker, null, state.part, options);
       const result = state.iterator.next();
       if (result.done) {
         value = undefined;
@@ -210,13 +213,25 @@ const openNodePart = (
         value = result.value;
       }
       (state.part._$value as Array<NodePart>).push(part);
+    } else {
+      // state.type === 'leaf'
+      // TODO(kschaaf): This is unexpected, and likely a result of a primitive
+      // been rendered on the client when a TemplateResult was rendered on the
+      // server; this part will be hydrated but not used. We can detect it, but
+      // we need to decide what to do in this case. Note that this part won't be
+      // retained by any parent TemplateInstance, since a primitive had been
+      // rendered in its place.
+      // https://github.com/Polymer/lit-html/issues/1434
+      // throw new Error('Hydration value mismatch: Found a TemplateInstance' +
+      //  'where a leaf value was expected');
+      part = new NodePart(marker, null, state.part, options);
     }
   }
 
   // Initialize the NodePart state depending on the type of value and push
   // it onto the stack. This logic closely follows the NodePart commit()
   // cascade order:
-  // 1. directive (not yet implemented)
+  // 1. directive
   // 2. noChange
   // 3. primitive (note strings must be handled before iterables, since they
   //    are iterable)
@@ -225,17 +240,19 @@ const openNodePart = (
   // 6. Iterable
   // 7. nothing (handled in fallback)
   // 8. Fallback for everything else
-  const directive =
-    value != null ? (value as DirectiveResult)._$litDirective$ : undefined;
-  if (directive !== undefined) {
-    part._directive = new directive(part as NodePartInfo);
-    value = part._directive!.update(part, (value as DirectiveResult).values);
-  }
+  value = resolveDirective(part, value);
   if (value === noChange) {
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
     part._$value = value;
+    // TODO(kschaaf): We can detect when a primitive is being hydrated on the
+    // client where a TemplateResult was rendered on the server, but we need to
+    // decide on a strategy for what to do next.
+    // https://github.com/Polymer/lit-html/issues/1434
+    // if (marker.data !== 'lit-part') {
+    //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
+    // }
   } else if ((value as TemplateResult)._$litType$ !== undefined) {
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(
@@ -246,7 +263,7 @@ const openNodePart = (
         (value as TemplateResult).strings,
         value as TemplateResult
       );
-      const instance = new TemplateInstance(template);
+      const instance = new TemplateInstance(template, part);
       stack.push({
         type: 'template-instance',
         instance,
@@ -261,7 +278,9 @@ const openNodePart = (
     } else {
       // TODO: if this isn't the server-rendered template, do we
       // need to stop hydrating this subtree? Clear it? Add tests.
-      throw new Error('unimplemented');
+      throw new Error(
+        'Hydration value mismatch: Unexpected TemplateResult rendered to part'
+      );
     }
   } else if (isIterable(value)) {
     // currentNodePart.value will contain an array of NodeParts
@@ -345,6 +364,7 @@ const createAttributeParts = (
         node.parentElement as HTMLElement,
         templatePart._name,
         templatePart._strings,
+        state.instance,
         options
       );
 
@@ -361,7 +381,12 @@ const createAttributeParts = (
         instancePart instanceof EventPart ||
         instancePart instanceof PropertyPart
       );
-      instancePart._$setValue(value, state.instancePartIndex, noCommit);
+      instancePart._$setValue(
+        value,
+        instancePart,
+        state.instancePartIndex,
+        noCommit
+      );
       state.templatePartIndex++;
       state.instancePartIndex += templatePart._strings.length - 1;
       instance._parts.push(instancePart);

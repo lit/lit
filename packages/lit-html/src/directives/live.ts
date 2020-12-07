@@ -28,14 +28,14 @@ import {
 import {resetPartValue} from '../parts.js';
 
 class LiveDirective extends Directive {
-  constructor(part: PartInfo) {
-    super();
-    if (part.type === EVENT_PART || part.type === NODE_PART) {
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
+    if (partInfo.type === EVENT_PART || partInfo.type === NODE_PART) {
       throw new Error(
         'The `live` directive is not allowed on text or event bindings'
       );
     }
-    if (part.strings !== undefined) {
+    if (partInfo.strings !== undefined) {
       throw new Error('`live` bindings can only contain a single expression');
     }
   }
@@ -88,8 +88,8 @@ class LiveDirective extends Directive {
  *
  * In these cases if the DOM value changes, but the value set through lit-html
  * bindings hasn't, lit-html won't know to update the DOM value and will leave
- * it alone. If this is not what you want—if you want to overwrite the DOM
- * value with the bound value no matter what—use the `live()` directive:
+ * it alone. If this is not what you want--if you want to overwrite the DOM
+ * value with the bound value no matter what--use the `live()` directive:
  *
  *     html`<input .value=${live(x)}>`
  *
