@@ -35,8 +35,8 @@ export interface StyleInfo {
 class StyleMap extends Directive {
   previousStyleProperties?: Set<string>;
 
-  constructor(partInfo: PartInfo, index?: number) {
-    super(partInfo, index);
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
     if (
       partInfo.type !== ATTRIBUTE_PART ||
       partInfo.name !== 'style' ||

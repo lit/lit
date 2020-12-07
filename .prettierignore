@@ -43,8 +43,10 @@ packages/lit-html/test/
 packages/lit-html/hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/parts.*
+packages/lit-html/disconnectable-directive.*
 packages/lit-html/platform-support.*
 packages/lit-html/private-ssr-support.*
+packages/lit-html/static.*
 
 packages/lit-ssr/demo/
 packages/lit-ssr/lib/

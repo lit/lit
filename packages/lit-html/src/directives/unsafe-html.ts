@@ -31,8 +31,8 @@ export class UnsafeHTML extends Directive {
   value: unknown = nothing;
   templateResult?: TemplateResult;
 
-  constructor(partInfo: PartInfo, index?: number) {
-    super(partInfo, index);
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
     if (partInfo.type !== NODE_PART) {
       throw new Error(
         `${

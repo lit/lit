@@ -191,16 +191,19 @@ const openNodePart = (
   // We know the startNode now. We'll know the endNode when we get to
   // the matching marker and set it in closeNodePart()
   // TODO(kschaaf): Current constructor takes both nodes
-  const part = new NodePart(marker, null, options);
+  let part;
   if (stack.length === 0) {
+    part = new NodePart(marker, null, undefined, options);
     value = rootValue;
   } else {
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
+      part = new NodePart(marker, null, state.instance, options);
       state.instance._parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
+      part = new NodePart(marker, null, state.part, options);
       const result = state.iterator.next();
       if (result.done) {
         value = undefined;
@@ -210,6 +213,18 @@ const openNodePart = (
         value = result.value;
       }
       (state.part._value as Array<NodePart>).push(part);
+    } else {
+      // state.type === 'leaf'
+      // TODO(kschaaf): This is unexpected, and likely a result of a primitive
+      // been rendered on the client when a TemplateResult was rendered on the
+      // server; this part will be hydrated but not used. We can detect it, but
+      // we need to decide what to do in this case. Note that this part won't be
+      // retained by any parent TemplateInstance, since a primitive had been
+      // rendered in its place.
+      // https://github.com/Polymer/lit-html/issues/1434
+      // throw new Error('Hydration value mismatch: Found a TemplateInstance' +
+      //  'where a leaf value was expected');
+      part = new NodePart(marker, null, state.part, options);
     }
   }
 
@@ -231,6 +246,13 @@ const openNodePart = (
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
     part._value = value;
+    // TODO(kschaaf): We can detect when a primitive is being hydrated on the
+    // client where a TemplateResult was rendered on the server, but we need to
+    // decide on a strategy for what to do next.
+    // https://github.com/Polymer/lit-html/issues/1434
+    // if (marker.data !== 'lit-part') {
+    //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
+    // }
   } else if ((value as TemplateResult)._$litType$ !== undefined) {
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(
@@ -241,7 +263,7 @@ const openNodePart = (
         (value as TemplateResult).strings,
         value as TemplateResult
       );
-      const instance = new TemplateInstance(template);
+      const instance = new TemplateInstance(template, part);
       stack.push({
         type: 'template-instance',
         instance,
@@ -256,7 +278,9 @@ const openNodePart = (
     } else {
       // TODO: if this isn't the server-rendered template, do we
       // need to stop hydrating this subtree? Clear it? Add tests.
-      throw new Error('unimplemented');
+      throw new Error(
+        'Hydration value mismatch: Unexpected TemplateResult rendered to part'
+      );
     }
   } else if (isIterable(value)) {
     // currentNodePart.value will contain an array of NodeParts
@@ -340,6 +364,7 @@ const createAttributeParts = (
         node.parentElement as HTMLElement,
         templatePart._name,
         templatePart._strings,
+        state.instance,
         options
       );
 

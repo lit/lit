@@ -31,7 +31,8 @@ import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-import {setDirectiveValue} from '../parts.js';
+import {repeat} from '../directives/repeat.js';
+import {DisconnectableDirective} from '../disconnectable-directive.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -51,7 +52,12 @@ suite('lit-html', () => {
     expected: string,
     options?: RenderOptions
   ) => {
-    render(r, container, options);
+    const part = render(r, container, options);
+    assert.equal(stripExpressionComments(container.innerHTML), expected);
+    return part;
+  };
+
+  const assertContent = (expected: string) => {
     assert.equal(stripExpressionComments(container.innerHTML), expected);
   };
 
@@ -509,48 +515,48 @@ suite('lit-html', () => {
       );
       assert.equal(container.querySelector('span'), beforeRenderedNode);
     });
+
+    test('back-to-back expressions', () => {
+      const template = (a: unknown, b: unknown) =>
+        html`${html`${a}`}${html`${b}`}`;
+      assertRender(template('a', 'b'), 'ab');
+      assertRender(template(nothing, 'b'), 'b');
+      assertRender(template(nothing, nothing), '');
+      assertRender(template('a', 'b'), 'ab');
+    });
   });
 
   suite('text', () => {
     test('renders plain text expression', () => {
       render(html`test`, container);
-      assert.equal(stripExpressionComments(container.innerHTML), 'test');
+      assertContent('test');
     });
 
     test('renders a string', () => {
       render(html`<div>${'foo'}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>foo</div>'
-      );
+      assertContent('<div>foo</div>');
     });
 
     test('renders a number', () => {
       render(html`<div>${123}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>123</div>'
-      );
+      assertContent('<div>123</div>');
     });
 
     test('renders undefined as empty string', () => {
       render(html`<div>${undefined}</div>`, container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
     });
 
     test('renders null as empty string', () => {
       render(html`<div>${null}</div>`, container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
     });
 
     test('renders noChange', () => {
       const template = (i: any) => html`<div>${i}</div>`;
       render(template('foo'), container);
       render(template(noChange), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>foo</div>'
-      );
+      assertContent('<div>foo</div>');
     });
 
     test('renders nothing', () => {
@@ -581,28 +587,19 @@ suite('lit-html', () => {
     test('renders nested templates', () => {
       const partial = html`<h1>${'foo'}</h1>`;
       render(html`${partial}${'bar'}`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<h1>foo</h1>bar'
-      );
+      assertContent('<h1>foo</h1>bar');
     });
 
     test('renders a template nested multiple times', () => {
       const partial = html`<h1>${'foo'}</h1>`;
       render(html`${partial}${'bar'}${partial}${'baz'}qux`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<h1>foo</h1>bar<h1>foo</h1>bazqux'
-      );
+      assertContent('<h1>foo</h1>bar<h1>foo</h1>bazqux');
     });
 
     test('renders an element', () => {
       const child = document.createElement('p');
       render(html`<div>${child}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div><p></p></div>'
-      );
+      assertContent('<div><p></p></div>');
     });
 
     test('renders forms as elements', () => {
@@ -620,28 +617,19 @@ suite('lit-html', () => {
 
       render(html`${form}`, container);
 
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<form><input name="one"><input name="two"></form>'
-      );
+      assertContent('<form><input name="one"><input name="two"></form>');
     });
   });
 
   suite('arrays & iterables', () => {
     test('renders arrays', () => {
       render(html`<div>${[1, 2, 3]}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>123</div>'
-      );
+      assertContent('<div>123</div>');
     });
 
     test('renders arrays of nested templates', () => {
       render(html`<div>${[1, 2, 3].map((i) => html`${i}`)}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>123</div>'
-      );
+      assertContent('<div>123</div>');
     });
 
     test('renders an array of elements', () => {
@@ -651,10 +639,7 @@ suite('lit-html', () => {
         document.createElement('span'),
       ];
       render(html`<div>${children}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div><p></p><a></a><span></span></div>'
-      );
+      assertContent('<div><p></p><a></a><span></span></div>');
     });
 
     test('updates when called multiple times with arrays', () => {
@@ -663,32 +648,20 @@ suite('lit-html', () => {
         return html`<ul>${items}</ul>`;
       };
       render(ul(['a', 'b', 'c']), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>a</li><li>b</li><li>c</li></ul>'
-      );
+      assertContent('<ul><li>a</li><li>b</li><li>c</li></ul>');
       render(ul(['x', 'y']), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<ul><li>x</li><li>y</li></ul>'
-      );
+      assertContent('<ul><li>x</li><li>y</li></ul>');
     });
 
     test('updates arrays', () => {
       let items = [1, 2, 3];
       const t = () => html`<div>${items}</div>`;
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>123</div>'
-      );
+      assertContent('<div>123</div>');
 
       items = [3, 2, 1];
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>321</div>'
-      );
+      assertContent('<div>321</div>');
     });
 
     test('updates arrays that shrink then grow', () => {
@@ -697,24 +670,15 @@ suite('lit-html', () => {
 
       items = [1, 2, 3];
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>123</div>'
-      );
+      assertContent('<div>123</div>');
 
       items = [4];
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>4</div>'
-      );
+      assertContent('<div>4</div>');
 
       items = [5, 6, 7];
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>567</div>'
-      );
+      assertContent('<div>567</div>');
     });
 
     test('updates an array of elements', () => {
@@ -725,21 +689,15 @@ suite('lit-html', () => {
       ];
       const t = () => html`<div>${children}</div>`;
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div><p></p><a></a><span></span></div>'
-      );
+      assertContent('<div><p></p><a></a><span></span></div>');
 
       children = null;
       render(t(), container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
 
       children = document.createTextNode('foo');
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>foo</div>'
-      );
+      assertContent('<div>foo</div>');
     });
   });
 
@@ -757,10 +715,7 @@ suite('lit-html', () => {
   suite('attributes', () => {
     test('renders to a quoted attribute', () => {
       render(html`<div foo="${'bar'}"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar"></div>'
-      );
+      assertContent('<div foo="bar"></div>');
     });
 
     test('renders to an unquoted attribute', () => {
@@ -784,45 +739,27 @@ suite('lit-html', () => {
 
     test('renders interpolation to an unquoted attribute', () => {
       render(html`<div foo=A${'B'}C></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="ABC"></div>'
-      );
+      assertContent('<div foo="ABC"></div>');
       render(html`<div foo=${'A'}B${'C'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="ABC"></div>'
-      );
+      assertContent('<div foo="ABC"></div>');
     });
 
     test('renders interpolation to an unquoted attribute', () => {
       render(html`<div foo=A${'B'}C></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="ABC"></div>'
-      );
+      assertContent('<div foo="ABC"></div>');
       render(html`<div foo=${'A'}B${'C'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="ABC"></div>'
-      );
+      assertContent('<div foo="ABC"></div>');
     });
 
     test('renders multiple bindings in an attribute', () => {
       render(html`<div foo="a${'b'}c${'d'}e"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="abcde"></div>'
-      );
+      assertContent('<div foo="abcde"></div>');
     });
 
     test('renders two attributes on one element', () => {
       const result = html`<div a="${1}" b="${2}"></div>`;
       render(result, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="1" b="2"></div>'
-      );
+      assertContent('<div a="1" b="2"></div>');
     });
 
     test('renders multiple bindings in two attributes', () => {
@@ -830,10 +767,7 @@ suite('lit-html', () => {
         html`<div foo="a${'b'}c${'d'}e" bar="a${'b'}c${'d'}e"></div>`,
         container
       );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="abcde" bar="abcde"></div>'
-      );
+      assertContent('<div foo="abcde" bar="abcde"></div>');
     });
 
     test.skip('renders a Symbol to an attribute', () => {
@@ -856,15 +790,9 @@ suite('lit-html', () => {
       const t = html`<div style="color: ${'red'}"></div>`;
       render(t, container);
       if (isIe) {
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          '<div style="color: red;"></div>'
-        );
+        assertContent('<div style="color: red;"></div>');
       } else {
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          '<div style="color: red"></div>'
-        );
+        assertContent('<div style="color: red"></div>');
       }
     });
 
@@ -872,32 +800,20 @@ suite('lit-html', () => {
       const t = html`<div style="${'color'}: ${'red'}"></div>`;
       render(t, container);
       if (isIe) {
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          '<div style="color: red;"></div>'
-        );
+        assertContent('<div style="color: red;"></div>');
       } else {
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          '<div style="color: red"></div>'
-        );
+        assertContent('<div style="color: red"></div>');
       }
     });
 
     test('renders a binding in a class attribute', () => {
       render(html`<div class="${'red'}"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div class="red"></div>'
-      );
+      assertContent('<div class="red"></div>');
     });
 
     test('renders a binding in an input value attribute', () => {
       render(html`<input value="${'the-value'}" />`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<input value="the-value">'
-      );
+      assertContent('<input value="the-value">');
       assert.equal(container.querySelector('input')!.value, 'the-value');
     });
 
@@ -942,18 +858,12 @@ suite('lit-html', () => {
         html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
         container
       );
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        `<a class="bar" href="foo"><div id="a"></div></a>`
-      );
+      assertContent(`<a class="bar" href="foo"><div id="a"></div></a>`);
     });
 
     test('renders a bound attribute without quotes', () => {
       render(html`<div foo=${'bar'}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar"></div>'
-      );
+      assertContent('<div foo="bar"></div>');
     });
 
     test('renders multiple bound attributes', () => {
@@ -982,18 +892,12 @@ suite('lit-html', () => {
 
     test('renders multi-expression attribute without quotes', () => {
       render(html`<div foo="${'Foo'}${'Bar'}"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="FooBar"></div>'
-      );
+      assertContent('<div foo="FooBar"></div>');
     });
 
     test('renders to attributes with attribute-like values', () => {
       render(html`<div foo="bar=${'foo'}"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar=foo"></div>'
-      );
+      assertContent('<div foo="bar=foo"></div>');
     });
 
     test('does not call a function bound to an attribute', () => {
@@ -1007,26 +911,17 @@ suite('lit-html', () => {
 
     test('renders an array to an attribute', () => {
       render(html`<div foo=${['1', '2', '3'] as any}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="1,2,3"></div>'
-      );
+      assertContent('<div foo="1,2,3"></div>');
     });
 
     test('renders to an attribute before a node', () => {
       render(html`<div foo="${'bar'}">${'baz'}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo="bar">baz</div>'
-      );
+      assertContent('<div foo="bar">baz</div>');
     });
 
     test('renders to an attribute after a node', () => {
       render(html`<div>${'baz'}</div><div foo="${'bar'}"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>baz</div><div foo="bar"></div>'
-      );
+      assertContent('<div>baz</div><div foo="bar"></div>');
     });
 
     test('renders undefined in attributes', () => {
@@ -1039,37 +934,28 @@ suite('lit-html', () => {
 
     test('renders undefined in attributes', () => {
       render(html`<div attribute="${undefined as any}"></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div attribute=""></div>'
-      );
+      assertContent('<div attribute=""></div>');
     });
 
     test('nothing sentinel removes an attribute', () => {
       const go = (v: any) => html`<div a=${v}></div>`;
       render(go(nothing), container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
 
       render(go('a'), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="a"></div>'
-      );
+      assertContent('<div a="a"></div>');
 
       render(go(nothing), container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
     });
 
     test('interpolated nothing sentinel removes an attribute', () => {
       const go = (v: any) => html`<div a="A${v}"></div>`;
       render(go('a'), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="Aa"></div>'
-      );
+      assertContent('<div a="Aa"></div>');
 
       render(go(nothing), container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
     });
 
     test('noChange works', () => {
@@ -1113,47 +999,35 @@ suite('lit-html', () => {
   suite('boolean attributes', () => {
     test('adds attributes for true values', () => {
       render(html`<div ?foo=${true}></div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo=""></div>'
-      );
+      assertContent('<div foo=""></div>');
     });
 
     test('removes attributes for false values', () => {
       render(html`<div ?foo=${false}></div>`, container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
     });
 
     test('removes attributes for nothing values', () => {
       const go = (v: any) => render(html`<div ?foo=${v}></div>`, container);
 
       go(nothing);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
 
       go(true);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo=""></div>'
-      );
+      assertContent('<div foo=""></div>');
 
       go(nothing);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
     });
 
     test('noChange works', () => {
       const go = (v: any) => render(html`<div ?foo=${v}></div>`, container);
       go(true);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo=""></div>'
-      );
+      assertContent('<div foo=""></div>');
       const observer = new MutationObserver(() => {});
       observer.observe(container, {attributes: true, subtree: true});
       go(noChange);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div foo=""></div>'
-      );
+      assertContent('<div foo=""></div>');
       assert.isEmpty(observer.takeRecords());
     });
   });
@@ -1410,22 +1284,13 @@ suite('lit-html', () => {
   });
 
   suite('updates', () => {
-    let container: HTMLElement;
-
-    setup(() => {
-      container = document.createElement('div');
-    });
-
     test('dirty checks simple values', () => {
       const foo = 'aaa';
 
       const t = () => html`<div>${foo}</div>`;
 
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>aaa</div>'
-      );
+      assertContent('<div>aaa</div>');
       const text = container.querySelector('div')!;
       assert.equal(text.textContent, 'aaa');
 
@@ -1434,17 +1299,11 @@ suite('lit-html', () => {
       // persist through the next render with the same value.
       text.textContent = 'bbb';
       assert.equal(text.textContent, 'bbb');
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>bbb</div>'
-      );
+      assertContent('<div>bbb</div>');
 
       // Re-render with the same content, should be a no-op
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>bbb</div>'
-      );
+      assertContent('<div>bbb</div>');
       const text2 = container.querySelector('div')!;
 
       // The next node should be the same too
@@ -1458,9 +1317,9 @@ suite('lit-html', () => {
       const observer = new MutationObserver(() => {});
       observer.observe(container, {childList: true, subtree: true});
 
-      assert.equal(stripExpressionComments(container.innerHTML), '');
+      assertContent('');
       render(t(), container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
 
       const elementNodes: Node[] = [];
       let mutationRecords: MutationRecord[] = observer.takeRecords();
@@ -1475,7 +1334,7 @@ suite('lit-html', () => {
 
       mutationRecords = [];
       render(t(), container);
-      assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+      assertContent('<div></div>');
       mutationRecords = observer.takeRecords();
       assert.equal(mutationRecords.length, 0);
     });
@@ -1486,19 +1345,13 @@ suite('lit-html', () => {
       const t = () => html`<div>${foo}</div>`;
 
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>aaa</div>'
-      );
+      assertContent('<div>aaa</div>');
       const div = container.querySelector('div')!;
       assert.equal(div.tagName, 'DIV');
 
       foo = 'bbb';
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>bbb</div>'
-      );
+      assertContent('<div>bbb</div>');
       const div2 = container.querySelector('div')!;
       // check that only the part changed
       assert.equal(div, div2);
@@ -1511,17 +1364,11 @@ suite('lit-html', () => {
       const t = () => html`<div>${foo}${bar}</div>`;
 
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>foobar</div>'
-      );
+      assertContent('<div>foobar</div>');
 
       foo = 'bbb';
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>bbbbar</div>'
-      );
+      assertContent('<div>bbbbar</div>');
     });
 
     test('renders and updates attributes', () => {
@@ -1531,17 +1378,11 @@ suite('lit-html', () => {
       const t = () => html`<div a="${foo}:${bar}"></div>`;
 
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="foo:bar"></div>'
-      );
+      assertContent('<div a="foo:bar"></div>');
 
       foo = 'bbb';
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div a="bbb:bar"></div>'
-      );
+      assertContent('<div a="bbb:bar"></div>');
     });
 
     test('updates nested templates', () => {
@@ -1561,47 +1402,29 @@ suite('lit-html', () => {
       };
 
       render(t(true), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<h1>foo</h1>baz'
-      );
+      assertContent('<h1>foo</h1>baz');
 
       foo = 'bbb';
       render(t(true), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<h1>bbb</h1>baz'
-      );
+      assertContent('<h1>bbb</h1>baz');
 
       render(t(false), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<h2>bar</h2>baz'
-      );
+      assertContent('<h2>bar</h2>baz');
     });
 
     test('updates an element', () => {
       let child: any = document.createElement('p');
       const t = () => html`<div>${child}<div></div></div>`;
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div><p></p><div></div></div>'
-      );
+      assertContent('<div><p></p><div></div></div>');
 
       child = undefined;
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div><div></div></div>'
-      );
+      assertContent('<div><div></div></div>');
 
       child = document.createTextNode('foo');
       render(t(), container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>foo<div></div></div>'
-      );
+      assertContent('<div>foo<div></div></div>');
     });
 
     test(
@@ -1644,10 +1467,7 @@ suite('lit-html', () => {
       const testDirective = directive(TestDirective);
 
       render(html`<div>${testDirective('A')}</div>`, container);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>TEST:A</div>'
-      );
+      assertContent('<div>TEST:A</div>');
     });
 
     test('directives are stateful', () => {
@@ -1655,20 +1475,11 @@ suite('lit-html', () => {
         render(html`<div>${count(v)}</div>`, container);
       };
       go('A');
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>A:1</div>'
-      );
+      assertContent('<div>A:1</div>');
       go('A');
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>A:2</div>'
-      );
+      assertContent('<div>A:2</div>');
       go('B');
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>B:3</div>'
-      );
+      assertContent('<div>B:3</div>');
     });
 
     test('directives can update', () => {
@@ -1691,10 +1502,7 @@ suite('lit-html', () => {
         render(html`<div>${update(v)}</div>`, container);
       };
       go(true);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        '<div>true</div>'
-      );
+      assertContent('<div>true</div>');
       assert.instanceOf(receivedPart!, NodePart);
       assert.equal(receivedValue, true);
     });
@@ -1822,9 +1630,9 @@ suite('lit-html', () => {
       });
     });
 
-    suite('async nested directives', () => {
+    suite('async directives', () => {
       const aDirective = directive(
-        class ADirective extends Directive {
+        class ADirective extends DisconnectableDirective {
           value: unknown;
           promise!: Promise<unknown>;
           render(_promise: Promise<unknown>) {
@@ -1833,9 +1641,7 @@ suite('lit-html', () => {
           update(_part: Part, [promise]: Parameters<this['render']>) {
             if (promise !== this.promise) {
               this.promise = promise;
-              promise.then((value) =>
-                setDirectiveValue(this, (this.value = value))
-              );
+              promise.then((value) => this.setValue((this.value = value)));
             }
             return this.value ?? this.render(promise);
           }
@@ -1850,65 +1656,551 @@ suite('lit-html', () => {
         }
       );
 
+      test('async directives in NodePart', async () => {
+        const template = (promise: Promise<unknown>) =>
+          html`<div>${aDirective(promise)}</div>`;
+        let promise = Promise.resolve('resolved1');
+        assertRender(template(promise), `<div>initial</div>`);
+        await promise;
+        assertContent(`<div>resolved1</div>`);
+        promise = Promise.resolve('resolved2');
+        assertRender(template(promise), `<div>resolved1</div>`);
+        await promise;
+        assertContent(`<div>resolved2</div>`);
+      });
+
+      test('async directives while disconnected in NodePart', async () => {
+        const template = (promise: Promise<unknown>) =>
+          html`<div>${aDirective(promise)}</div>`;
+        const promise = Promise.resolve('resolved1');
+        const part = assertRender(template(promise), `<div>initial</div>`);
+        part.setConnected(false);
+        await promise;
+        assertContent(`<div>initial</div>`);
+        part.setConnected(true);
+        assertContent(`<div>resolved1</div>`);
+      });
+
+      test('async directives while disconnected in NodePart clears its value', async () => {
+        const log: string[] = [];
+        const template = (promise: Promise<unknown>) =>
+          html`<div>${aDirective(promise)}</div>`;
+        // Async render a TemplateResult containing a DisconnectableDirective
+        let promise: Promise<unknown> = Promise.resolve(
+          html`${disconnectingDirective(log, 'dd', 'dd')}`
+        );
+        const part = assertRender(template(promise), `<div>initial</div>`);
+        await promise;
+        assertContent(`<div>dd</div>`);
+        // Eneuque an async clear of the TemplateResult+DisconnectableDirective
+        promise = Promise.resolve(nothing);
+        assertRender(template(promise), `<div>dd</div>`);
+        assert.deepEqual(log, []);
+        // Disconnect the tree before the clear is committed
+        part.setConnected(false);
+        assert.deepEqual(log, ['disconnected-dd']);
+        await promise;
+        assert.deepEqual(log, ['disconnected-dd']);
+        assertContent(`<div>dd</div>`);
+        // Re-connect the tree, which should clear the part but not reconnect
+        // the DisconnectableDirective that was cleared
+        part.setConnected(true);
+        assertRender(template(promise), `<div></div>`);
+        assert.deepEqual(log, ['disconnected-dd']);
+      });
+
       test('async nested directives in NodePart', async () => {
         const template = (promise: Promise<unknown>) =>
-          html`<div>${aDirective(promise)}`;
+          html`<div>${aDirective(promise)}</div>`;
         let promise = Promise.resolve(bDirective('X'));
-        render(template(promise), container);
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div>initial</div>`
-        );
+        assertRender(template(promise), `<div>initial</div>`);
         await promise;
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div>[B:0:X]</div>`
-        );
-        render(template(promise), container);
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div>[B:1:X]</div>`
-        );
+        assertContent(`<div>[B:0:X]</div>`);
+        assertRender(template(promise), `<div>[B:1:X]</div>`);
         promise = Promise.resolve(bDirective('Y'));
-        render(template(promise), container);
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div>[B:2:X]</div>`
-        );
+        assertRender(template(promise), `<div>[B:2:X]</div>`);
         await promise;
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div>[B:3:Y]</div>`
+        assertContent(`<div>[B:3:Y]</div>`);
+      });
+
+      test('async directives in AttributePart', async () => {
+        const template = (promise: Promise<unknown>) =>
+          html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
+        let promise = Promise.resolve('resolved1');
+        assertRender(template(promise), `<div a="**initial##"></div>`);
+        await promise;
+        assertContent(`<div a="**resolved1##"></div>`);
+        promise = Promise.resolve('resolved2');
+        assertRender(template(promise), `<div a="**resolved1##"></div>`);
+        await promise;
+        assertContent(`<div a="**resolved2##"></div>`);
+      });
+
+      test('async directives while disconnected in AttributePart', async () => {
+        const template = (promise: Promise<unknown>) =>
+          html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
+        const promise = Promise.resolve('resolved1');
+        const part = assertRender(
+          template(promise),
+          `<div a="**initial##"></div>`
         );
+        part.setConnected(false);
+        await promise;
+        assertContent(`<div a="**initial##"></div>`);
+        part.setConnected(true);
+        assertContent(`<div a="**resolved1##"></div>`);
       });
 
       test('async nested directives in AttributePart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
         let promise = Promise.resolve(bDirective('X'));
-        render(template(promise), container);
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div a="**initial##"></div>`
-        );
+        assertRender(template(promise), `<div a="**initial##"></div>`);
         await promise;
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div a="**[B:0:X]##"></div>`
-        );
+        assertContent(`<div a="**[B:0:X]##"></div>`);
         promise = Promise.resolve(bDirective('Y'));
-        render(template(promise), container);
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div a="**[B:1:X]##"></div>`
-        );
+        assertRender(template(promise), `<div a="**[B:1:X]##"></div>`);
         await promise;
-        assert.equal(
-          stripExpressionComments(container.innerHTML),
-          `<div a="**[B:2:Y]##"></div>`
-        );
+        assertContent(`<div a="**[B:2:Y]##"></div>`);
       });
     });
+  });
+
+  const disconnectingDirective = directive(
+    class extends DisconnectableDirective {
+      log!: Array<string>;
+      id!: string;
+
+      render(log: Array<string>, id = '', value?: unknown, bool = true) {
+        this.log = log;
+        this.id = id;
+        return bool ? value : nothing;
+      }
+
+      disconnectedCallback() {
+        this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+      }
+      reconnectedCallback() {
+        this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
+      }
+    }
+  );
+
+  const passthroughDirective = directive(
+    class extends Directive {
+      render(value: unknown, bool = true) {
+        return bool ? value : nothing;
+      }
+    }
+  );
+
+  test('directives can be disconnected from NodeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(html`${x ? disconnectingDirective(log) : nothing}`, container);
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives are disconnected when their template is', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(x ? html`${disconnectingDirective(log)}` : nothing, container);
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives are disconnected when their nested template is', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives in different subtrees can be disconnected in separate renders', () => {
+    const log: Array<string> = [];
+    const go = (left: boolean, right: boolean) =>
+      render(
+        html`
+          ${html`${html`${
+            left ? disconnectingDirective(log, 'left') : nothing
+          }`}`}
+          ${html`${html`${
+            right ? disconnectingDirective(log, 'right') : nothing
+          }`}`}
+        `,
+        container
+      );
+    go(true, true);
+    assert.isEmpty(log);
+    go(true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    go(false, false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(true, true);
+    assert.isEmpty(log);
+    go(false, true);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(false, false);
+    assert.deepEqual(log, ['disconnected-right']);
+  });
+
+  test('directives returned from other directives can be disconnected', () => {
+    const log: Array<string> = [];
+    const go = (clearAll: boolean, left: boolean, right: boolean) =>
+      render(
+        clearAll
+          ? nothing
+          : html`
+          ${html`${html`${passthroughDirective(
+            disconnectingDirective(log, 'left'),
+            left
+          )}`}`}
+          ${html`${html`${passthroughDirective(
+            disconnectingDirective(log, 'right'),
+            right
+          )}`}`}
+        `,
+        container
+      );
+    go(false, true, true);
+    assert.isEmpty(log);
+    go(true, true, true);
+    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+    log.length = 0;
+    go(false, true, true);
+    assert.isEmpty(log);
+    go(false, true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    go(false, false, false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(false, true, true);
+    assert.isEmpty(log);
+    go(false, false, true);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    go(false, false, false);
+    assert.deepEqual(log, ['disconnected-right']);
+  });
+
+  test('directives returned from other DisconnectableDirectives can be disconnected', () => {
+    const log: Array<string> = [];
+    const go = (
+      clearAll: boolean,
+      leftOuter: boolean,
+      leftInner: boolean,
+      rightOuter: boolean,
+      rightInner: boolean
+    ) =>
+      render(
+        clearAll
+          ? nothing
+          : html`
+          ${html`${html`${
+            leftOuter
+              ? disconnectingDirective(
+                  log,
+                  'left-outer',
+                  disconnectingDirective(log, 'left-inner'),
+                  leftInner
+                )
+              : nothing
+          }`}`}
+          ${html`${html`${
+            rightOuter
+              ? disconnectingDirective(
+                  log,
+                  'right-outer',
+                  disconnectingDirective(log, 'right-inner'),
+                  rightInner
+                )
+              : nothing
+          }`}`}
+        `,
+        container
+      );
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(true, true, true, true, true);
+    assert.deepEqual(log, [
+      'disconnected-left-outer',
+      'disconnected-left-inner',
+      'disconnected-right-outer',
+      'disconnected-right-inner',
+    ]);
+    log.length = 0;
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(false, false, true, true, true);
+    assert.deepEqual(log, [
+      'disconnected-left-outer',
+      'disconnected-left-inner',
+    ]);
+    log.length = 0;
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(false, true, true, false, true);
+    assert.deepEqual(log, [
+      'disconnected-right-outer',
+      'disconnected-right-inner',
+    ]);
+    log.length = 0;
+    go(false, true, true, true, true);
+    assert.isEmpty(log);
+    go(false, true, false, true, true);
+    assert.deepEqual(log, ['disconnected-left-inner']);
+    log.length = 0;
+    go(false, true, false, true, false);
+    assert.deepEqual(log, ['disconnected-right-inner']);
+  });
+
+  test('directives can be disconnected from AttributeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('deeply nested directives can be disconnected from AttributeParts', () => {
+    const log: Array<string> = [];
+    const go = (x: boolean) =>
+      render(
+        x
+          ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
+          : nothing,
+        container
+      );
+    go(true);
+    assert.isEmpty(log);
+    go(false);
+    assert.deepEqual(log, ['disconnected']);
+  });
+
+  test('directives can be disconnected from iterables', () => {
+    const log: Array<string> = [];
+    const go = (items: string[] | undefined) =>
+      render(
+        items
+          ? items.map(
+              (item) =>
+                html`<div foo=${disconnectingDirective(log, item)}></div>`
+            )
+          : nothing,
+        container
+      );
+    go(['0', '1', '2', '3']);
+    assert.isEmpty(log);
+    go(['0', '2']);
+    assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
+    log.length = 0;
+    go(undefined);
+    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+  });
+
+  test('directives can be disconnected from repeat', () => {
+    const log: Array<string> = [];
+    const go = (items: string[] | undefined) =>
+      render(
+        items
+          ? repeat(
+              items,
+              (item) => item,
+              (item) =>
+                html`<div foo=${disconnectingDirective(log, item)}></div>`
+            )
+          : nothing,
+        container
+      );
+    go(['0', '1', '2', '3']);
+    assert.isEmpty(log);
+    go(['0', '2']);
+    assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
+    log.length = 0;
+    go(undefined);
+    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+  });
+
+  test('directives in NodeParts can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: boolean, right: boolean) => {
+      return render(
+        html`
+          ${html`${html`${
+            left ? disconnectingDirective(log, 'left') : nothing
+          }`}`}
+          ${html`${html`${
+            right ? disconnectingDirective(log, 'right') : nothing
+          }`}`}
+        `,
+        container
+      );
+    };
+    const part = go(true, true);
+    assert.isEmpty(log);
+    part.setConnected(false);
+    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+    log.length = 0;
+    go(true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    part.setConnected(false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, ['reconnected-left']);
+  });
+
+  test('directives in AttributeParts can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: boolean, right: boolean) => {
+      return render(
+        html`
+          ${html`${html`<div a=${
+            left ? disconnectingDirective(log, 'left') : nothing
+          }></div>`}`}
+          ${html`${html`<div a=${
+            right ? disconnectingDirective(log, 'right') : nothing
+          }></div>`}`}
+        `,
+        container
+      );
+    };
+    const part = go(true, true);
+    assert.isEmpty(log);
+    part.setConnected(false);
+    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+    log.length = 0;
+    go(true, false);
+    assert.deepEqual(log, ['disconnected-right']);
+    log.length = 0;
+    part.setConnected(false);
+    assert.deepEqual(log, ['disconnected-left']);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, ['reconnected-left']);
+  });
+
+  test('directives in iterables can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: unknown[], right: unknown[]) => {
+      return render(
+        html`
+          ${html`${html`${left.map(
+            (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+          )}`}`}
+          ${html`${html`${right.map(
+            (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+          )}`}`}
+        `,
+        container
+      );
+    };
+    const part = go([0, 1], [0, 1]);
+    assert.isEmpty(log);
+    part.setConnected(false);
+    assert.deepEqual(log, [
+      'disconnected-left-0',
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, [
+      'reconnected-left-0',
+      'reconnected-left-1',
+      'reconnected-right-0',
+      'reconnected-right-1',
+    ]);
+    log.length = 0;
+    go([0], []);
+    assert.deepEqual(log, [
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setConnected(false);
+    assert.deepEqual(log, ['disconnected-left-0']);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, ['reconnected-left-0']);
+  });
+
+  test('directives in repeat can be reconnected', () => {
+    const log: Array<string> = [];
+    const go = (left: unknown[], right: unknown[]) => {
+      return render(
+        html`
+          ${html`${html`${repeat(
+            left,
+            (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+          )}`}`}
+          ${html`${html`${repeat(
+            right,
+            (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+          )}`}`}
+        `,
+        container
+      );
+    };
+    const part = go([0, 1], [0, 1]);
+    assert.isEmpty(log);
+    part.setConnected(false);
+    assert.deepEqual(log, [
+      'disconnected-left-0',
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, [
+      'reconnected-left-0',
+      'reconnected-left-1',
+      'reconnected-right-0',
+      'reconnected-right-1',
+    ]);
+    log.length = 0;
+    go([0], []);
+    assert.deepEqual(log, [
+      'disconnected-left-1',
+      'disconnected-right-0',
+      'disconnected-right-1',
+    ]);
+    log.length = 0;
+    part.setConnected(false);
+    assert.deepEqual(log, ['disconnected-left-0']);
+    log.length = 0;
+    part.setConnected(true);
+    assert.deepEqual(log, ['reconnected-left-0']);
   });
 
   let securityHooksSuiteFunction:

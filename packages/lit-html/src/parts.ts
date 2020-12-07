@@ -17,7 +17,6 @@ import {
   NodePart,
   Part,
   nothing,
-  Directive,
   DirectiveParent,
 } from './lit-html.js';
 
@@ -56,6 +55,7 @@ export const detachNodePart = (part: NodePart): NodePartState => {
     _value: part._value,
     _fragment: fragment,
   };
+  part._$setNodePartConnected?.(false, true);
   let start = ((part as unknown) as NodePartInternal)._startNode.nextSibling;
   let nextNode;
   while (start !== ((part as unknown) as NodePartInternal)._endNode) {
@@ -80,6 +80,7 @@ export const restoreNodePart = (part: NodePart, state: NodePartState) => {
     (state as NodePartStateInternal)._fragment
   );
   part._value = (state as NodePartStateInternal)._value;
+  part._$setNodePartConnected?.(true);
 };
 
 const createMarker = () => document.createComment('');
@@ -107,7 +108,7 @@ export const createAndInsertPart = (
 
   const startNode = container.insertBefore(createMarker(), refNode);
   const endNode = container.insertBefore(createMarker(), refNode);
-  return new NodePart(startNode, endNode, containerPart.options);
+  return new NodePart(startNode, endNode, containerPart, containerPart.options);
 };
 
 /**
@@ -115,9 +116,11 @@ export const createAndInsertPart = (
  *
  * Note that this should only be used to set/update the value of user-created
  * parts (i.e. those created using `createAndInsertPart`); it should not be used
- * by directives to set the value of the directive's container part; directives
- * should either return a value from `update`/`render`, or else call
- * `setDirectiveValue` to set the value of a directive asynchronously.
+ * by directives to set the value of the directive's container part. Directives
+ * should return a value from `update`/`render` to update their part state.
+ *
+ * For directives that require setting their part value asynchronously, they
+ * should extend `DisconnectableDirective` and call `this.setValue()`.
  *
  * @param part Part to set
  * @param value Value to set
@@ -143,20 +146,6 @@ export const setPartValue = <T extends Part>(
     part._setValue(value, directiveParent);
   }
   return part;
-};
-
-/**
- * Sets the value of a directive asynchronously, outside the normal
- * `update`/`render` lifecycle of a directive.
- *
- * This function should not be called synchronously from a directive's `update`
- * or `render`.
- *
- * @param directive The directive to update
- * @param value The value to set
- */
-export const setDirectiveValue = (directive: Directive, value: unknown) => {
-  setPartValue(directive._part, value, directive._attributeIndex, directive);
 };
 
 /**
@@ -214,6 +203,7 @@ export const insertPartBefore = (
  * @param part The Part to remove
  */
 export const removePart = (part: NodePart) => {
+  part._$setNodePartConnected?.(false, true);
   removeNodes(
     ((part as unknown) as NodePartInternal)._startNode,
     ((part as unknown) as NodePartInternal)._endNode!.nextSibling
