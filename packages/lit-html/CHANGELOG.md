@@ -213,6 +213,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+= [Breaking] The `eventContext` render option has been changed to `host`.
+
 - [Breaking] Directives are now defined by passing the entire directive factory function to `directive()`. ([#562](https://github.com/Polymer/lit-html/pull/562))
 
 ### Fixed
