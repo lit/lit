@@ -18,6 +18,7 @@ export default litProdConfig({
   entryPoints: [
     'lit-element',
     'hydrate-support',
+    'private-ssr-support',
     'decorators',
     'decorators/customElement',
     'decorators/eventOptions',

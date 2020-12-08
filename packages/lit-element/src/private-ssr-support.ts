@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -12,12 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  _$private as p,
-  AttributePart,
-  Directive,
-  noChange,
-} from './lit-html.js';
+import {_$private as p} from './lit-element.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -32,28 +27,5 @@ import {
  * @private
  */
 export const _$private = {
-  boundAttributeSuffix: p._boundAttributeSuffix,
-  marker: p._marker,
-  markerMatch: p._markerMatch,
-  HTML_RESULT: p._HTML_RESULT,
-  getTemplateHtml: p._getTemplateHtml,
-  patchDirectiveResolve: (
-    directive: Directive,
-    fn: (this: Directive, values: unknown[]) => unknown
-  ) => {
-    directive._resolve = fn;
-  },
-  getAtributePartCommittedValue: (
-    part: AttributePart,
-    value: unknown,
-    index: number | undefined
-  ) => {
-    // Use the part setter to resolve directives/concatenate multiple parts
-    // into a final value (captured by passing in a commitValue override)
-    let committedValue: unknown = noChange;
-    part._commitValue = (value: unknown) => (committedValue = value);
-    part._$setValue(value, part, index);
-    return committedValue;
-  },
-  resolveDirective: p._resolveDirective,
+  attributeToProperty: p._$attributeToProperty,
 };

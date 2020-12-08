@@ -214,7 +214,7 @@ function setNodePartConnected(
   isClearingValue = false,
   fromPartIndex = 0
 ) {
-  const value = this._value;
+  const value = this._$value;
   const children = this._$disconnetableChildren;
   if (children === undefined || children.size === 0) {
     return;

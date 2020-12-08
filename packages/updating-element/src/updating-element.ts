@@ -724,7 +724,7 @@ export abstract class UpdatingElement extends HTMLElement {
     _old: string | null,
     value: string | null
   ) {
-    this._attributeToProperty(name, value);
+    this._$attributeToProperty(name, value);
   }
 
   private _propertyToAttribute(
@@ -776,7 +776,7 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   /** @internal */
-  _attributeToProperty(name: string, value: string | null) {
+  _$attributeToProperty(name: string, value: string | null) {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
@@ -963,7 +963,7 @@ export abstract class UpdatingElement extends HTMLElement {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._didUpdate(changedProperties);
+      this._$didUpdate(changedProperties);
     }
   }
 
@@ -971,7 +971,7 @@ export abstract class UpdatingElement extends HTMLElement {
 
   // Note, this is an override point for platform-support.
   // @internal
-  _didUpdate(changedProperties: PropertyValues) {
+  _$didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
