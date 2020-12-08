@@ -12,15 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  Directive,
-  directive,
-  Part,
-  PartInfo,
-  noChange,
-  $private,
-} from '../lit-html.js';
-import {setPartValue} from '../parts.js';
+import {directive, Part, noChange, _$private} from '../lit-html.js';
+import {DisconnectableDirective} from '../disconnectable-directive.js';
 
 const DEV_MODE = true;
 
@@ -31,7 +24,7 @@ if (DEV_MODE) {
   );
 }
 
-const isPrimitive = $private._isPrimitive;
+const isPrimitive = _$private._isPrimitive;
 
 interface AsyncState {
   /**
@@ -49,16 +42,8 @@ const isPromise = (x: unknown) => {
 // Effectively infinity, but a SMI.
 const _infinity = 0x7fffffff;
 
-class UntilDirective extends Directive {
-  private _state: WeakMap<Part, AsyncState>;
-  private _attrPartIndex: number | undefined;
-
-  constructor(_part: PartInfo, index?: number) {
-    super();
-
-    this._attrPartIndex = index;
-    this._state = new WeakMap<Part, AsyncState>();
-  }
+class UntilDirective extends DisconnectableDirective {
+  private _state: WeakMap<Part, AsyncState> = new WeakMap<Part, AsyncState>();
 
   render(...args: Array<unknown>) {
     return args.find((x) => !isPromise(x)) ?? noChange;
@@ -110,7 +95,7 @@ class UntilDirective extends Directive {
         // higher-priority than what's already been rendered.
         if (index > -1 && index < state.lastRenderedIndex) {
           state.lastRenderedIndex = index;
-          setPartValue(part, resolvedValue, this._attrPartIndex);
+          this.setValue(resolvedValue);
         }
       });
     }

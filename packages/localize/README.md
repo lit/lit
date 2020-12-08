@@ -12,7 +12,7 @@
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
-###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
+###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
 
 > @lit/localize is a library and command-line tool for localizing web
 > applications that are based on lit-html and LitElement.
@@ -33,14 +33,14 @@ Wrap your template with the `msg` function to make it localizable:
 ```typescript
 import {html} from 'lit-html';
 import {msg} from '@lit/localize';
-render(msg('greeting', html`Hello <b>World</b>!`), document.body);
+render(msg(html`Hello <b>World</b>!`), document.body);
 ```
 
 Run `lit-localize` to extract all localizable templates and generate an XLIFF
 file, a format which is supported by many localization tools and services:
 
 ```xml
-<trans-unit id="greeting">
+<trans-unit id="ah3c44aff2d5f5ef6b">
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
   <!-- target tag added by your localization process -->
   <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
@@ -86,7 +86,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Output                    | A full build of your application for each locale, with all `msg` calls replaced with static localized templates. | A dynamically loadable template module for each target locale.                                                                                       |
 | Make template localizable | `msg()`                                                                                                          | `msg()`                                                                                                                                              |
-| Configure                 | `const {getLocale, setLocale} =`<br>`configureLocalization(...);`                                                | (Optional)<br><br> `const {getLocale} =`<br>`configureTransformLocalization(...);`                                                                   |
+| Configure                 | (Optional)<br><br> `const {getLocale} =`<br>`configureTransformLocalization(...);`                               | `const {getLocale, setLocale} =`<br>`configureLocalization(...);`                                                                                    |
 | Switch locales            | Refresh page and load a different `.js` file                                                                     | Call `setLocale()` and re-render using any of:<br><br>- `lit-localize-status` event<br>- `setLocale` promise<br>- `Localized` mixin for `LitElement` |
 | Advantages                | - Fastest rendering<br>- Fewer bytes for a single locale                                                         | - Faster locale switching<br>- Fewer _marginal_ bytes when switching locales                                                                         |
 
@@ -129,10 +129,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    import {html, render} from 'lit-html';
    import {msg} from '@lit/localize';
 
-   render(
-     html`<p>${msg('greeting', html`Hello <b>World</b>!`)}</p>`,
-     document.body
-   );
+   render(html`<p>${msg(html`Hello <b>World</b>!`)}</p>`, document.body);
    ```
 
 4. Make a JSON config file at the root of your project called
@@ -168,7 +165,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    into `<ph>` tags.
 
    ```xml
-   <trans-unit id="greeting">
+   <trans-unit id="ah3c44aff2d5f5ef6b">
      <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
    </trans-unit>
    ```
@@ -178,7 +175,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    this tag by feeding it this XLIFF file.
 
    ```xml
-   <trans-unit id="greeting">
+   <trans-unit id="ah3c44aff2d5f5ef6b">
      <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
      <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
    </trans-unit>
@@ -217,10 +214,10 @@ The `@lit/localize` module exports the following functions:
 > code. Casting a lit-localize function to a type that does not include its
 > annotation will prevent lit-localize from being able to extract and transform
 > templates from your application. For example, a cast like
-> `(msg as any)("greeting", "Hello")` will not be identified. It is safe to
-> re-assign lit-localize functions or pass them as parameters, as long as the
-> distinctive type signature is preserved. If needed, you can reference each
-> function's distinctive type with e.g. `typeof msg`.
+> `(msg as any)("Hello")` will not be identified. It is safe to re-assign
+> lit-localize functions or pass them as parameters, as long as the distinctive
+> type signature is preserved. If needed, you can reference each function's
+> distinctive type with e.g. `typeof msg`.
 
 ### `configureLocalization(configuration)`
 
@@ -324,18 +321,20 @@ promise resolves.
 Throws if the given locale is not contained by the configured `sourceLocale` or
 `targetLocales`.
 
-### `msg(id: string, template, ...args) => string|TemplateResult`
+### `msg(template: string|TemplateResult|Function, options?: {id?: string, args?: any[]}) => string|TemplateResult`
 
 Make a string or lit-html template localizable.
 
-The `id` parameter is a project-wide unique identifier for this template.
+The `options.id` parameter is an optional project-wide unique identifier for
+this template. If omitted, an id will be automatically generated from the
+template strings.
 
 The `template` parameter can have any of these types:
 
 - A plain string with no placeholders:
 
   ```typescript
-  msg('greeting', 'Hello World!');
+  msg('Hello World!');
   ```
 
 - A lit-html
@@ -343,27 +342,27 @@ The `template` parameter can have any of these types:
   that may contain embedded HTML:
 
   ```typescript
-  msg('greeting', html`Hello <b>World</b>!`);
+  msg(html`Hello <b>World</b>!`);
   ```
 
 - A function that returns a [template
   literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
   string that may contain placeholders. Placeholders may only reference
-  parameters of the function, which will be called with the 3rd and onwards
-  parameters to `msg`.
+  parameters of the function. The function will be invoked with the
+  `options.args` array as its parameters:
 
   ```typescript
-  msg('greeting', (name) => `Hello ${name}!`, getUsername());
+  msg((name) => `Hello ${name}!`, {args: [getUsername()]});
   ```
 
 - A function that returns a lit-html
   [`TemplateResult`](https://lit-html.polymer-project.org/api/classes/_lit_html_.templateresult.html)
   that may contain embedded HTML, and may contain placeholders. Placeholders may
-  only reference parameters of the function, which will be called with the 3rd
-  and onwards parameters to `msg`:
+  only reference parameters of the function. The function will be invoked with
+  the `options.args` array as its parameters:
 
   ```typescript
-  msg('greeting', (name) => html`Hello <b>${name}</b>!`, getUsername());
+  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
   ```
 
 In transform mode, calls to this function are replaced with the static localized
@@ -376,6 +375,49 @@ html`Hola <b>${getUsername()}!</b>`;
 ### `LOCALE_STATUS_EVENT`
 
 Name of the [`lit-localize-status`](#lit-localize-status-event) event.
+
+## Descriptions
+
+You can add descriptions to messages using special `// msgdesc:` comments.
+Message descriptions help translators understand the context of each string they
+are translating.
+
+```ts
+// msgdesc: Greeting to everybody on homepage
+msg(html`Hello <b>World</b>!`);
+```
+
+Descriptions are represented in XLIFF using `<note>` elements.
+
+```xml
+<trans-unit id="0h3c44aff2d5f5ef6b">
+  <note>Greeting to everybody on homepage</note>
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+</trans-unit>
+```
+
+You can also apply a `// msgdesc:` comment to a class, function, or block, in
+which case the description will apply recursively to all `msg` calls within it.
+If there are multiple descriptions that apply to a `msg` call, then they are
+concatenated with a forward-slash in top-down order. This can be useful for
+describing the context of an entire group of messages.
+
+```ts
+// msgdesc: Homepage
+class MyHomepage extends Localized(LitElement) {
+  render() {
+    // msgdesc: Greeting to everybody
+    return msg(html`Hello <b>World</b>!`);
+  }
+}
+```
+
+```xml
+<trans-unit id="0h3c44aff2d5f5ef6b">
+  <note>Homepage / Greeting to everybody</note>
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+</trans-unit>
+```
 
 ## `lit-localize-status` event
 
@@ -465,7 +507,7 @@ class MyElement extends Localized(LitElement) {
   render() {
     // Whenever setLocale() is called, and templates for that locale have
     // finished loading, this render() function will be re-invoked.
-    return html`<p>${msg('greeting', html`Hello <b>World!</b>`)}</p>`;
+    return html`<p>${msg(html`Hello <b>World!</b>`)}</p>`;
   }
 }
 ```

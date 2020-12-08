@@ -17,6 +17,46 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+<!-- ## [X.Y.Z] - YYYY-MM-DD -->
+
+## Unreleased
+
+### Added
+
+- `render` now returns the `NodePart` that was created/updated by `render`.
+
+- Added `DisconnectableDirective`, which is a `Directive` subclass whose
+  `disconnectedCallback` will be called when the part containing the directive
+  is cleared (or transitively cleared by a Part higher in the tree) or manually
+  disconnected using the `setConnected` API, and whose `reconnectedCallback`
+  will be called when manually re-connected using `setConnected`. When
+  implementing `disconnectedCallback`, `reconnectedCallback` should also be
+  implemented to return the directive to a usable state. Note that `LitElement`
+  will disconnect directives upon element disconnection, and re-connect
+  directives upon element re-connection.
+
+- Added `setConnected(isConnected: boolean)` to `NodePart`; when called with
+  `false`, `disconnectedCallback` will be run on any directives contained within
+  the part (directly or transitively), but without clearing or causing a
+  re-render to the tree. When called with `true`, any such directives'
+  `reconnectedCallback` will be called prior to its next `update`/`render`
+  callbacks. Note that `LitElement` will call this method by default on the
+  rendered part in its `connectedCallback` and `disconnetedCallback`.
+
+- Added `unsafeStatic()`, which allows template authors to add strings to the
+  static structure of the template, before it's parsed as HTML.
+
+### Changed
+
+- [Breaking] Directives that asynchronously update their part value must now
+  extend `DisconnectableDirective` and call `this.setValue()`, a new API exposed
+  on the `DisconnectableDirective` class. Directives that render synchronously
+  to their `update` lifecycle should simply return the value to be committed to
+  their part from `update`/`render`.
+
+  <!-- ### Fixed -->
+  <!-- ### Removed -->
+
 ## [2.0.0-pre.3] - 2020-09-21
 
 ### Changed
@@ -33,9 +73,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
 - Added development mode, which can be enabled by setting the `development` Node exports condition. See `README.md` for more details.
-
-* Added `unsafeStatic()`, which allows template authors to add strings to the
-  static structure of the template, before it's parsed as HTML.
 
 ### Fixed
 

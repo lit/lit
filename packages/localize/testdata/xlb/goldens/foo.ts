@@ -1,28 +1,34 @@
 import {html} from 'lit-html';
 import * as litLocalize from '../../../lit-localize.js';
 
-litLocalize.msg('string', 'Hello World!');
+litLocalize.msg('Hello World!', {id: 'string'});
 
-litLocalize.msg('lit', html`Hello <b><i>World!</i></b>`);
+litLocalize.msg(html`Hello <b><i>World!</i></b>`, {id: 'lit'});
 
-litLocalize.msg('variables_1', (name: string) => `Hello ${name}!`, 'World');
+litLocalize.msg((name: string) => `Hello ${name}!`, {
+  id: 'variables_1',
+  args: ['World'],
+});
 
 litLocalize.msg(
-  'lit_variables_1',
   (url: string, name: string) =>
     html`Hello ${name}, click <a href="${url}">here</a>!`,
-  'World',
-  'https://www.example.com/'
+  {
+    id: 'lit_variables_1',
+    args: ['World', 'https://www.example.com/'],
+  }
 );
 
-litLocalize.msg('lit_variables_2', (x: string) => html`${x}y${x}y${x}`, 'x');
+litLocalize.msg((x: string) => html`${x}y${x}y${x}`, {
+  id: 'lit_variables_2',
+  args: ['x'],
+});
 
 litLocalize.msg(
-  'lit_variables_3',
-  (x: string) => html`<b> ${x} </b>
-    <i> y </i>
-    <b> ${x} </b>
-    <i> y </i>
-    <b> ${x} </b>`,
-  'x'
+  (x: string) => html`<b>${x}</b>
+    <i>y</i>
+    <b>${x}</b>
+    <i>y</i>
+    <b>${x}</b>`,
+  {id: 'lit_variables_3', args: ['x']}
 );
