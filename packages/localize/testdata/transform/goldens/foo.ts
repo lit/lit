@@ -13,24 +13,22 @@ window.addEventListener(LOCALE_STATUS_EVENT, (event) => {
   console.log(event.detail.status);
 });
 
-msg('string', 'Hello World!');
+msg('Hello World!', {id: 'string'});
 
-msg('lit', html`Hello <b><i>World!</i></b>`);
+msg(html`Hello <b><i>World!</i></b>`, {id: 'lit'});
 
-msg('variables_1', (name: string) => `Hello ${name}!`, 'World');
+msg((name: string) => `Hello ${name}!`, {id: 'variables_1', args: ['World']});
 
 msg(
-  'lit_variables_1',
   (url: string, name: string) =>
     html`Hello ${name}, click <a href="${url}">here</a>!`,
-  'https://www.example.com/',
-  'World'
+  {id: 'lit_variables_1', args: ['https://www.example.com/', 'World']}
 );
 
 export class MyElement extends Localized(LitElement) {
   render() {
     return html`<p>
-      ${msg('lit', html`Hello <b><i>World!</i></b>`)} (${getLocale()})
+      ${msg(html`Hello <b><i>World!</i></b>`, {id: 'lit'})} (${getLocale()})
     </p>`;
   }
 }

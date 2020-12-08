@@ -36,6 +36,7 @@ packages/lit-element/hydrate-support.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/platform-support.*
+packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
 packages/lit-html/directives/
@@ -44,8 +45,10 @@ packages/lit-html/test/
 packages/lit-html/hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/parts.*
+packages/lit-html/disconnectable-directive.*
 packages/lit-html/platform-support.*
 packages/lit-html/private-ssr-support.*
+packages/lit-html/static.*
 
 packages/lit-ssr/demo/
 packages/lit-ssr/lib/
@@ -62,6 +65,8 @@ packages/localize/.tsbuildinfo.client
 packages/localize/lit-localize.*
 packages/localize/localized-element.*
 packages/localize/examples/*/node_modules/
+packages/localize/fnv1a64.*
+packages/localize/id-generation.*
 
 packages/tests/node_modules/
 

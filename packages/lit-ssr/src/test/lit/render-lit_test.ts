@@ -259,6 +259,8 @@ test('repeat directive with a string', async (t: Test) => {
       'qux' +
       '<!--/lit-part-->' +
       '<!--/lit-part-->' +
+      '<?>' +             // endNode for template instance since it had no
+                          // static end node
       '<!--/lit-part-->'
   );
 });

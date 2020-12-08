@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "rm -rf lib/* && lit-localize && tsc",
-    "serve": "es-dev-server --node-resolve"
+    "serve": "es-dev-server --node-resolve --preserve-symlinks"
   },
   "dependencies": {
     "@lit/localize": "^0.5.1",

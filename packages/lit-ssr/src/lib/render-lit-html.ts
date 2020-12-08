@@ -15,23 +15,33 @@
  */
 
 // Type-only imports
-import {TemplateResult, DirectiveResult} from 'lit-html';
+import {TemplateResult, NodePart} from 'lit-html';
 
 import {
   nothing,
   noChange,
   Directive,
-  Part,
   NODE_PART,
+  EVENT_PART,
+  PROPERTY_PART,
+  BOOLEAN_ATTRIBUTE_PART,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
 } from 'lit-html';
 
-import {$private} from 'lit-html/private-ssr-support.js';
+import {_$private} from 'lit-html/private-ssr-support.js';
 
-const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = $private;
+const {
+  getTemplateHtml,
+  marker,
+  markerMatch,
+  boundAttributeSuffix,
+  patchDirectiveResolve,
+  getAtributePartCommittedValue,
+  resolveDirective,
+} = _$private;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
@@ -61,19 +71,22 @@ declare module 'parse5' {
   }
 }
 
-// Switch directive resolution to SSR-compatible `render`; the rule is that only
-// `render` (and not `update`) is run on the server
-Directive.prototype._resolve = function (
-  this: Directive,
-  _part: Part,
-  values: unknown[]
-) {
-  return this.render(...values);
-};
+patchDirectiveResolve(
+  Directive.prototype,
+  function (this: Directive, values: unknown[]) {
+    const {_part, _attributeIndex} = this;
+    return resolveDirective(
+      _part,
+      this.render(...values),
+      this,
+      _attributeIndex
+    );
+  }
+);
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
-
 /**
+
  * Operation to output static text
  */
 type TextOp = {
@@ -444,13 +457,8 @@ export function* renderValue(
       yield* instance.renderLight(renderInfo);
     }
     value = null;
-  } else if (value != null && (value as DirectiveResult)._$litDirective$) {
-    const directive = (value as DirectiveResult)._$litDirective$;
-    // Note that we are calling the SSR-compatible `render`; the rule is that
-    // only `render` (and not `update`) is run on the server
-    value = new directive({type: NODE_PART}).render(
-      ...(value as DirectiveResult).values
-    );
+  } else {
+    value = resolveDirective({type: NODE_PART} as NodePart, value);
   }
   if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -521,16 +529,14 @@ export function* renderTemplateResult(
         );
         const value =
           part.strings === undefined ? result.values[partIndex] : result.values;
-        // Use the part setter to resolve directives/concatenate multiple parts
-        // into a final value (captured by passing in a commitValue override),
-        // and then render that
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
-        if (!(part instanceof EventPart)) {
-          part._commitValue = (value: unknown) => {
-            committedValue = value;
-          };
-          part._setValue(value, partIndex);
+        if (!(part.type === EVENT_PART)) {
+          committedValue = getAtributePartCommittedValue(
+            part,
+            value,
+            partIndex
+          );
         }
         // We don't emit anything on the server when value is `noChange` or
         // `nothing`
@@ -538,9 +544,9 @@ export function* renderTemplateResult(
           const instance = op.useCustomElementInstance
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
-          if (part instanceof PropertyPart) {
+          if (part.type === PROPERTY_PART) {
             yield* renderPropertyPart(instance, op, committedValue);
-          } else if (part instanceof BooleanAttributePart) {
+          } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
             // Boolean attribute binding
             yield* renderBooleanAttributePart(instance, op, committedValue);
           } else {

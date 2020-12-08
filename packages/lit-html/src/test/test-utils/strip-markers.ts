@@ -13,7 +13,7 @@
  */
 
 export const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
+  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->/g, '');
 
 export const stripExpressionMarkers = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->|lit\$[0-9]+\$/g, '');
+  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->|lit\$[0-9]+\$/g, '');
