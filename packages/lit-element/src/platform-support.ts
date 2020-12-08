@@ -43,7 +43,7 @@ interface RenderOptions {
 }
 
 interface PatchableLitElementConstructor {
-  _handlesPrepareStyles?: boolean;
+  _$handlesPrepareStyles?: boolean;
 }
 
 interface PatchableLitElement extends HTMLElement {
@@ -51,7 +51,7 @@ interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
   createRenderRoot(): Element | ShadowRoot;
-  _renderOptions: RenderOptions;
+  _$renderOptions: RenderOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,7 +69,7 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
-  ((LitElement as unknown) as PatchableLitElementConstructor)._handlesPrepareStyles = true;
+  ((LitElement as unknown) as PatchableLitElementConstructor)._$handlesPrepareStyles = true;
 
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
@@ -80,7 +80,7 @@ interface PatchableLitElement extends HTMLElement {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
     // due to @apply.
-    this._renderOptions.scope = this.localName;
+    this._$renderOptions.scope = this.localName;
     return createRenderRoot.call(this);
   };
 };

@@ -40,58 +40,82 @@ const skipBundleOutput = {
   },
 };
 
-const reservedProperties = [
-  '_$litType$',
-  '_$litDirective$',
-  // TODO Decide on public API
-  // https://github.com/Polymer/lit-html/issues/1261
-  '_value',
-  '_setValue',
-  'createTreeWalker',
-  // Note, used in platform-support and reserved so platform-support can work
-  // x-version.
-  '_handlesPrepareStyles',
-  // TODO(kschaaf) TBD: lit-ssr required "private" fields (can be in
-  // crossPackagePropertyMangles once lit-ssr uses the rollup config)
-  // lit-html: AttributePart (used by render-lit-html)
-  '_commitValue',
-  // lit-html: Directive (used by render-lit-html)
-  '_resolve',
-  // updating-element: UpdatingElement (used by lit-element-renderer)
-  '_attributeToProperty',
-  // hydrate-support: LitElement (added by hydrate-support)
-  '_needsHydration',
-];
+// Private properties which should never be mangled. They need to be long/obtuse
+// to avoid collisions since they are used to brand values in positions that
+// accept any value. We don't use a Symbol for these to support mixing and
+// matching values from different versions.
+const reservedProperties = ['_$litType$', '_$litDirective$'];
 
-// Any private properties which we share between different _packages_ are
-// hard-coded here because they must never change between versions. Mangled
-// names are uppercase letters, in case we ever might want to
-// use lowercase letters for short, public APIs.
-// Note, these are used for `platform-support`.
-const crossPackagePropertyMangles = {
-  // lit-html: Template
-  _createElement: 'A',
-  _element: 'B',
-  _options: 'C',
-  // lit-html: NodePart
-  _startNode: 'D',
-  _endNode: 'E',
-  _getTemplate: 'F',
-  // lit-html: TemplateInstance
-  _template: 'H',
-  // updating-element: UpdatingElement
-  _didUpdate: 'S',
-  _controllers: 'T',
+// Private properties which should be stable between versions but are used on
+// unambiguous objects and thus are safe to mangle. These include properties on
+// objects accessed between packages or objects used as values which may be
+// accessed between different versions of a given package.
+//
+// By convention, stable properties should be prefixed with `_$` in the code so
+// they are easily identifiable as properties requiring version stability and
+// thus special attention.
+//
+// Mangled names are uppercase letters, in case we ever might want to use
+// lowercase letters for short, public APIs. Keep this list in order by mangled
+// name to avoid accidental re-assignments. When adding a name, add to the end
+// and choose the next letter.
+//
+// ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
+// FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
+const stableProperties = {
+  // lit-html: Template (used by platform-support)
+  _$createElement: 'A',
+  _$element: 'B',
+  _$options: 'C',
+  // lit-html: NodePart (used by platform-support)
+  _$startNode: 'D',
+  _$endNode: 'E',
+  _$getTemplate: 'F',
+  // lit-html: TemplateInstance (used by platform-support)
+  _$template: 'G',
+  // updating-element: UpdatingElement (used by platform-support)
+  _$didUpdate: 'H',
   // lit-element: LitElement
-  _renderOptions: 'W',
+  _$renderOptions: 'I',
   // lit-element: LitElement (used by hydrate-support)
-  _renderImpl: 'M',
-  // Used by disconnectable-directive
-  _$parent: 'I',
-  _$setDirectiveConnected: 'J',
-  _$setNodePartConnected: 'K',
-  _$disconnetableChildren: 'L',
+  _$renderImpl: 'J',
+  // hydrate-support: LitElement (added by hydrate-support)
+  _$needsHydration: 'K',
+  // lit-html: Part (used by hydrate, platform-support)
+  _$value: 'L',
+  // lit-html: Part (used by hydrate, parts, platform-support, ssr-support)
+  _$setValue: 'M',
+  // platform-support: LitElement (added by platform-support)
+  _$handlesPrepareStyles: 'N',
+  // lit-element: UpdatingElement (used bby ssr-support)
+  _$attributeToProperty: 'O',
+  // lit-html: NodePart, AttributePart, TemplateInstance, Directive (accessed by
+  // disconnectable-directive)
+  _$parent: 'P',
+  _$disconnetableChildren: 'Q',
+  // disconnectable-directive: DisconnectableDirective
+  _$setDirectiveConnected: 'R',
+  // lit-html: NodePart (added by disconnectable-directive)
+  _$setNodePartConnected: 'S',
 };
+
+// Validate stableProperties list, just to be safe; catches dupes and
+// out-of-order mangled names
+Object.entries(stableProperties).forEach(([prop, mangle], i) => {
+  if (!prop.startsWith('_$')) {
+    throw new Error(
+      `stableProperties should start with prefix '_$' ` +
+        `(property '${prop}' violates the convention)`
+    );
+  }
+  if (mangle.charCodeAt(0) !== 'A'.charCodeAt(0) + i) {
+    throw new Error(
+      `Add new stableProperties to the end of the list using ` +
+        `the next available letter (mangled name '${mangle}' for property ` +
+        `${prop} was unexpected)`
+    );
+  }
+});
 
 const generateTerserOptions = (nameCache = null) => ({
   warnings: true,
@@ -151,7 +175,7 @@ export function litProdConfig({
     props: {
       // Note all properties in the terser name cache are prefixed with '$'
       // (presumably to avoid collisions with built-ins).
-      props: Object.entries(crossPackagePropertyMangles).reduce(
+      props: Object.entries(stableProperties).reduce(
         (obj, [name, val]) => ({
           ...obj,
           ['$' + name]: val,
@@ -168,7 +192,7 @@ export function litProdConfig({
     // Synthesize a property access for all cross-package mangled property names
     // so that even if we don't access a property in this package, we will still
     // reserve other properties from re-using that name.
-    ...Object.keys(crossPackagePropertyMangles).map(
+    ...Object.keys(stableProperties).map(
       (name) => `console.log(window.${name});`
     ),
   ].join('\n');

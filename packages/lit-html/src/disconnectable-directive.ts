@@ -178,13 +178,13 @@ const setChildrenConnected = (
 const removeDisconnectableFromParent = (obj: Disconnectable) => {
   let parent, children;
   do {
-    if ((parent = obj._$parent) == undefined) {
+    if ((parent = obj._$parent) === undefined) {
       break;
     }
     children = parent._$disconnetableChildren!;
     children.delete(obj);
     obj = parent;
-  } while (children !== undefined && children.size === 0);
+  } while (children?.size === 0);
 };
 
 /**
@@ -214,7 +214,7 @@ function setNodePartConnected(
   isClearingValue = false,
   fromPartIndex = 0
 ) {
-  const value = this._value;
+  const value = this._$value;
   const children = this._$disconnetableChildren;
   if (children === undefined || children.size === 0) {
     return;

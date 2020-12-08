@@ -92,7 +92,9 @@ export class LitElement extends UpdatingElement {
    */
   protected static ['finalized'] = true;
 
-  readonly _renderOptions: RenderOptions = {eventContext: this};
+  readonly _$renderOptions: RenderOptions = {eventContext: this};
+
+  private _nodePart: NodePart | undefined = undefined;
 
   private _nodePart: NodePart | undefined = undefined;
 
@@ -103,7 +105,7 @@ export class LitElement extends UpdatingElement {
     // any styles in Lit content render before adoptedStyleSheets. This is
     // important so that adoptedStyleSheets have precedence over styles in
     // the shadowRoot.
-    this._renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    this._$renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
     return renderRoot;
   }
 
@@ -119,7 +121,7 @@ export class LitElement extends UpdatingElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this._nodePart = render(value, this.renderRoot, this._renderOptions);
+    this._nodePart = render(value, this.renderRoot, this._$renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
@@ -185,3 +187,28 @@ if (DEV_MODE) {
     return true;
   };
 }
+
+/**
+ * END USERS SHOULD NOT RELY ON THIS OBJECT.
+ *
+ * Private exports for use by other Lit packages, not intended for use by
+ * external users.
+ *
+ * We currently do not make a mangled rollup build of the lit-ssr code. In order
+ * to keep a number of (otherwise private) top-level exports  mangled in the
+ * client side code, we export a _$private object containing those members (or
+ * helper methods for accessing private fields of those members), and then
+ * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
+ * client-side code is being used in `dev` mode or `prod` mode.
+ *
+ * @private
+ */
+export const _$private = {
+  _$attributeToProperty: (
+    el: LitElement,
+    name: string,
+    value: string | null
+  ) => {
+    el._$attributeToProperty(name, value);
+  },
+};

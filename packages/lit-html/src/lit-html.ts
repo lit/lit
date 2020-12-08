@@ -374,7 +374,7 @@ export const render = (
       options
     );
   }
-  part._setValue(value);
+  part._$setValue(value);
   return part;
 };
 
@@ -610,17 +610,17 @@ const getTemplateHtml = (
 
 class Template {
   /** @internal */
-  _element!: HTMLTemplateElement;
+  _$element!: HTMLTemplateElement;
   /** @internal */
   _parts: Array<TemplatePart> = [];
   // Note, this is used by the `platform-support` module.
-  _options?: RenderOptions;
+  _$options?: RenderOptions;
 
   constructor(
     {strings, _$litType$: type}: TemplateResult,
     options?: RenderOptions
   ) {
-    this._options = options;
+    this._$options = options;
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
@@ -629,12 +629,12 @@ class Template {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
-    this._element = this._createElement(html);
-    walker.currentNode = this._element.content;
+    this._$element = this._$createElement(html);
+    walker.currentNode = this._$element.content;
 
     // Reparent SVG nodes into template root
     if (type === SVG_RESULT) {
-      const content = this._element.content;
+      const content = this._$element.content;
       const svgElement = content.firstChild!;
       svgElement.remove();
       content.append(...svgElement.childNodes);
@@ -743,7 +743,7 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
-  _createElement(html: string) {
+  _$createElement(html: string) {
     const template = d.createElement('template');
     template.innerHTML = html;
     return template;
@@ -799,7 +799,7 @@ function resolveDirective(
  */
 class TemplateInstance {
   /** @internal */
-  _template: Template;
+  _$template: Template;
   /** @internal */
   _parts: Array<Part | undefined> = [];
 
@@ -809,7 +809,7 @@ class TemplateInstance {
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: NodePart) {
-    this._template = template;
+    this._$template = template;
     this._$parent = parent;
   }
 
@@ -817,9 +817,9 @@ class TemplateInstance {
   // DocumentFragment and we don't want to hold onto it with an instance field.
   _clone(options: RenderOptions | undefined) {
     const {
-      _element: {content},
+      _$element: {content},
       _parts: parts,
-    } = this._template;
+    } = this._$template;
     const fragment = d.importNode(content, true);
     walker.currentNode = fragment;
 
@@ -866,10 +866,10 @@ class TemplateInstance {
         continue;
       }
       if ((part as AttributePart).strings !== undefined) {
-        (part as AttributePart)._setValue(values, part as AttributePart, i);
+        (part as AttributePart)._$setValue(values, part as AttributePart, i);
         i += (part as AttributePart).strings!.length - 1;
       } else {
-        (part as NodePart)._setValue(values[i++]);
+        (part as NodePart)._$setValue(values[i++]);
       }
     }
   }
@@ -920,13 +920,13 @@ export type Part =
 
 export class NodePart {
   readonly type = NODE_PART;
-  _value: unknown;
+  _$value: unknown;
   /** @internal */
   _directive?: Directive;
   /** @internal */
-  _startNode: ChildNode;
+  _$startNode: ChildNode;
   /** @internal */
-  _endNode: ChildNode | null;
+  _$endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
 
   /** @internal */
@@ -949,8 +949,8 @@ export class NodePart {
     parent: TemplateInstance | NodePart | undefined,
     public options: RenderOptions | undefined
   ) {
-    this._startNode = startNode;
-    this._endNode = endNode;
+    this._$startNode = startNode;
+    this._$endNode = endNode;
     this._$parent = parent;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
@@ -969,13 +969,13 @@ export class NodePart {
   }
 
   get parentNode(): Node {
-    return this._startNode.parentNode!;
+    return this._$startNode.parentNode!;
   }
 
-  _setValue(value: unknown, directiveParent: DirectiveParent = this): void {
+  _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
-      if (value !== this._value) {
+      if (value !== this._$value) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -986,25 +986,25 @@ export class NodePart {
       this._commitIterable(value);
     } else if (value === nothing) {
       this._clear();
-      this._value = nothing;
+      this._$value = nothing;
     } else if (value !== noChange) {
       // Fallback, will render the string representation
       this._commitText(value);
     }
   }
 
-  private _insert<T extends Node>(node: T, ref = this._endNode) {
-    return this._startNode.parentNode!.insertBefore(node, ref);
+  private _insert<T extends Node>(node: T, ref = this._$endNode) {
+    return this._$startNode.parentNode!.insertBefore(node, ref);
   }
 
   private _commitNode(value: Node): void {
-    if (this._value !== value) {
+    if (this._$value !== value) {
       this._clear();
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
         sanitizerFactoryInternal !== noopSanitizer
       ) {
-        const parentNodeName = this._startNode.parentNode?.nodeName;
+        const parentNodeName = this._$startNode.parentNode?.nodeName;
         if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
           this._insert(
             new Text(
@@ -1015,22 +1015,22 @@ export class NodePart {
           return;
         }
       }
-      this._value = this._insert(value);
+      this._$value = this._insert(value);
     }
   }
 
   private _commitText(value: unknown): void {
-    const node = this._startNode.nextSibling;
+    const node = this._$startNode.nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
-    // TODO(justinfagnani): Can we just check if this._value is primitive?
+    // TODO(justinfagnani): Can we just check if this._$value is primitive?
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this._endNode === null
+      (this._$endNode === null
         ? node.nextSibling === null
-        : node === this._endNode.previousSibling)
+        : node === this._$endNode.previousSibling)
     ) {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
@@ -1058,26 +1058,26 @@ export class NodePart {
         this._commitNode(d.createTextNode(value as string));
       }
     }
-    this._value = value;
+    this._$value = value;
   }
 
   private _commitTemplateResult(result: TemplateResult): void {
     const {values, strings} = result;
-    const template = this._getTemplate(strings, result);
-    if ((this._value as TemplateInstance)?._template === template) {
-      (this._value as TemplateInstance)._update(values);
+    const template = this._$getTemplate(strings, result);
+    if ((this._$value as TemplateInstance)?._$template === template) {
+      (this._$value as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template!, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
-      this._value = instance;
+      this._$value = instance;
     }
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
   /** @internal */
-  _getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
+  _$getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
     let template = templateCache.get(strings);
     if (template === undefined) {
       templateCache.set(strings, (template = new Template(result)));
@@ -1096,14 +1096,14 @@ export class NodePart {
     // iterable and value will contain the NodeParts from the previous
     // render. If value is not an array, clear this part and make a new
     // array for NodeParts.
-    if (!isArray(this._value)) {
-      this._value = [];
+    if (!isArray(this._$value)) {
+      this._$value = [];
       this._clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._value as NodePart[];
+    const itemParts = this._$value as NodePart[];
     let partIndex = 0;
     let itemPart: NodePart | undefined;
 
@@ -1125,13 +1125,13 @@ export class NodePart {
         // Reuse an existing part
         itemPart = itemParts[partIndex];
       }
-      itemPart._setValue(item);
+      itemPart._$setValue(item);
       partIndex++;
     }
 
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
-      this._clear(itemPart?._endNode!.nextSibling, partIndex);
+      this._clear(itemPart?._$endNode!.nextSibling, partIndex);
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1147,11 +1147,11 @@ export class NodePart {
    *  those Parts.
    */
   private _clear(
-    start: ChildNode | null = this._startNode.nextSibling,
+    start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
     this._$setNodePartConnected?.(false, true, from);
-    while (start && start !== this._endNode) {
+    while (start && start !== this._$endNode) {
       const n = start!.nextSibling;
       start!.remove();
       start = n;
@@ -1175,7 +1175,7 @@ export class AttributePart {
    */
   readonly strings?: ReadonlyArray<string>;
   /** @internal */
-  _value: unknown | Array<unknown> = nothing;
+  _$value: unknown | Array<unknown> = nothing;
   /** @internal */
   _directives?: Array<Directive | undefined>;
 
@@ -1207,10 +1207,10 @@ export class AttributePart {
     this.name = name;
     this._$parent = parent;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this._value = new Array(strings.length - 1).fill(nothing);
+      this._$value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
     } else {
-      this._value = nothing;
+      this._$value = nothing;
     }
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       this._sanitizer = undefined;
@@ -1237,7 +1237,7 @@ export class AttributePart {
    *   to no-op the DOM operation and capture the value for serialization
    * @internal
    */
-  _setValue(
+  _$setValue(
     value: unknown | Array<unknown>,
     directiveParent: DirectiveParent = this,
     valueIndex?: number,
@@ -1250,12 +1250,15 @@ export class AttributePart {
       value = resolveDirective(this, value, directiveParent, 0);
       // Only dirty-check primitives and `nothing`:
       // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
-      // `nothing`. `v === this._value` is the dirty-check.
+      // `nothing`. `v === this._$value` is the dirty-check.
       if (
-        !((isPrimitive(value) || value === nothing) && value === this._value) &&
+        !(
+          (isPrimitive(value) || value === nothing) &&
+          value === this._$value
+        ) &&
         value !== noChange
       ) {
-        this._value = value;
+        this._$value = value;
         if (!noCommit) {
           this._commitValue(value);
         }
@@ -1281,16 +1284,16 @@ export class AttributePart {
         );
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
-          v = (this._value as Array<unknown>)[i];
+          v = (this._$value as Array<unknown>)[i];
         } else {
           remove = remove || v === nothing;
           change =
             change ||
             !(
               (isPrimitive(v) || v === nothing) &&
-              v === (this._value as Array<unknown>)[i]
+              v === (this._$value as Array<unknown>)[i]
             );
-          (this._value as Array<unknown>)[i] = v;
+          (this._$value as Array<unknown>)[i] = v;
         }
         attributeValue +=
           (typeof v === 'string' ? v : String(v ?? '')) + strings[i + 1];
@@ -1324,6 +1327,7 @@ export class AttributePart {
 export class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
+  /** @internal */
   _commitValue(value: unknown) {
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       if (this._sanitizer === undefined) {
@@ -1343,6 +1347,7 @@ export class PropertyPart extends AttributePart {
 export class BooleanAttributePart extends AttributePart {
   readonly type = BOOLEAN_ATTRIBUTE_PART;
 
+  /** @internal */
   _commitValue(value: unknown) {
     if (value && value !== nothing) {
       this.element.setAttribute(this.name, '');
@@ -1375,16 +1380,16 @@ export class EventPart extends AttributePart {
     this._host = args[4]?.host;
   }
 
-  // EventPart does not use the base _setValue/_resolveValue implementation
+  // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
-  _setValue(newListener: unknown, directiveParent: DirectiveParent = this) {
+  _$setValue(newListener: unknown, directiveParent: DirectiveParent = this) {
     newListener =
       resolveDirective(this, newListener, directiveParent, 0) ?? nothing;
     if (newListener === noChange) {
       return;
     }
-    const oldListener = this._value;
+    const oldListener = this._$value;
 
     // If the new value is nothing or any options change we have to remove the
     // part as a listener.
@@ -1420,16 +1425,16 @@ export class EventPart extends AttributePart {
         newListener as EventListenerWithOptions
       );
     }
-    this._value = newListener;
+    this._$value = newListener;
   }
 
   handleEvent(event: Event) {
-    if (typeof this._value === 'function') {
-      // TODO (justinfagnani): do we need to default to this._element?
+    if (typeof this._$value === 'function') {
+      // TODO (justinfagnani): do we need to default to this._$element?
       // It'll always be the same as `e.currentTarget`.
-      this._value.call(this._host ?? this.element, event);
+      this._$value.call(this._host ?? this.element, event);
     } else {
-      (this._value as EventListenerObject).handleEvent(event);
+      (this._$value as EventListenerObject).handleEvent(event);
     }
   }
 }
@@ -1441,12 +1446,15 @@ export class EventPart extends AttributePart {
  * external users.
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
- * to keep a number of (otherwise private) top-level exports mangled in the
- * client side code, we export a $private object containing those members, and
- * then re-export them for use in lit-ssr. This keeps lit-ssr agnostic to
- * whether the client-side code is being used in `dev` mode or `prod` mode.
+ * to keep a number of (otherwise private) top-level exports  mangled in the
+ * client side code, we export a _$private object containing those members (or
+ * helper methods for accessing private fields of those members), and then
+ * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
+ * client-side code is being used in `dev` mode or `prod` mode.
+ *
+ * @private
  */
-export const $private = {
+export const _$private = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
   _marker: marker,

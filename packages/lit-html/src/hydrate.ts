@@ -22,7 +22,7 @@ import {
   PropertyPart,
   RenderOptions,
   ATTRIBUTE_PART,
-  $private,
+  _$private,
 } from './lit-html.js';
 
 const {
@@ -30,7 +30,7 @@ const {
   _isIterable: isIterable,
   _isPrimitive: isPrimitive,
   _resolveDirective: resolveDirective,
-} = $private;
+} = _$private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
@@ -212,7 +212,7 @@ const openNodePart = (
       } else {
         value = result.value;
       }
-      (state.part._value as Array<NodePart>).push(part);
+      (state.part._$value as Array<NodePart>).push(part);
     } else {
       // state.type === 'leaf'
       // TODO(kschaaf): This is unexpected, and likely a result of a primitive
@@ -231,7 +231,7 @@ const openNodePart = (
   // Initialize the NodePart state depending on the type of value and push
   // it onto the stack. This logic closely follows the NodePart commit()
   // cascade order:
-  // 1. directive (not yet implemented)
+  // 1. directive
   // 2. noChange
   // 3. primitive (note strings must be handled before iterables, since they
   //    are iterable)
@@ -245,7 +245,7 @@ const openNodePart = (
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
-    part._value = value;
+    part._$value = value;
     // TODO(kschaaf): We can detect when a primitive is being hydrated on the
     // client where a TemplateResult was rendered on the server, but we need to
     // decide on a strategy for what to do next.
@@ -259,7 +259,7 @@ const openNodePart = (
       value as TemplateResult
     )}`;
     if (marker.data === markerWithDigest) {
-      const template = NodePart.prototype._getTemplate(
+      const template = NodePart.prototype._$getTemplate(
         (value as TemplateResult).strings,
         value as TemplateResult
       );
@@ -274,7 +274,7 @@ const openNodePart = (
       });
       // For TemplateResult values, we set the part value to the
       // generated TemplateInstance
-      part._value = instance;
+      part._$value = instance;
     } else {
       // TODO: if this isn't the server-rendered template, do we
       // need to stop hydrating this subtree? Clear it? Add tests.
@@ -291,14 +291,14 @@ const openNodePart = (
       iterator: value[Symbol.iterator](),
       done: false,
     });
-    part._value = [];
+    part._$value = [];
   } else {
     // Fallback for everything else (nothing, Objects, Functions,
     // etc.): we just initialize the part's value
     // Note that `Node` value types are not currently supported during
     // SSR, so that part of the cascade is missing.
     stack.push({part: part, type: 'leaf'});
-    part._value = value == null ? '' : value;
+    part._$value = value == null ? '' : value;
   }
   return part;
 };
@@ -312,7 +312,7 @@ const closeNodePart = (
     throw new Error('unbalanced part marker');
   }
 
-  part._endNode = marker;
+  part._$endNode = marker;
 
   const currentState = stack.pop()!;
 
@@ -348,7 +348,7 @@ const createAttributeParts = (
     while (true) {
       // If the next template part is in attribute-position on the current node,
       // create the instance part for it and prime its state
-      const templatePart = instance._template._parts[state.templatePartIndex];
+      const templatePart = instance._$template._parts[state.templatePartIndex];
       if (
         templatePart === undefined ||
         templatePart._type !== ATTRIBUTE_PART ||
@@ -373,7 +373,7 @@ const createAttributeParts = (
           ? state.result.values[state.instancePartIndex]
           : state.result.values;
 
-      // Setting the attribute value primes _value with the resolved
+      // Setting the attribute value primes _$value with the resolved
       // directive value; we only then commit that value for event/property
       // parts since those were not serialized, and pass `noCommit` for the
       // others to avoid perf impact of touching the DOM unnecessarily
@@ -381,7 +381,7 @@ const createAttributeParts = (
         instancePart instanceof EventPart ||
         instancePart instanceof PropertyPart
       );
-      instancePart._setValue(
+      instancePart._$setValue(
         value,
         instancePart,
         state.instancePartIndex,

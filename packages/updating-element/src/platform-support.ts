@@ -41,7 +41,7 @@ interface PatchableUpdatingElementConstructor {
   [SCOPED]: boolean;
   elementStyles: CSSResults;
   shadowRootOptions: ShadowRootInit;
-  _handlesPrepareStyles?: boolean;
+  _$handlesPrepareStyles?: boolean;
 }
 
 interface PatchableUpdatingElement extends HTMLElement {
@@ -50,9 +50,9 @@ interface PatchableUpdatingElement extends HTMLElement {
   constructor: PatchableUpdatingElementConstructor;
   connectedCallback(): void;
   hasUpdated: boolean;
-  _didUpdate(changedProperties: unknown): void;
+  _$didUpdate(changedProperties: unknown): void;
   createRenderRoot(): Element | ShadowRoot;
-  _renderOptions: RenderOptions;
+  _$renderOptions: RenderOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,7 +101,7 @@ interface PatchableUpdatingElement extends HTMLElement {
               : v.cssText
         );
         window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
-        if (this.constructor._handlesPrepareStyles === undefined) {
+        if (this.constructor._$handlesPrepareStyles === undefined) {
           window.ShadyCSS!.prepareTemplateStyles(
             document.createElement('template'),
             name
@@ -135,8 +135,8 @@ interface PatchableUpdatingElement extends HTMLElement {
    * Patch update to apply ShadyCSS custom properties shimming for first
    * update.
    */
-  const didUpdate = elementProto._didUpdate;
-  elementProto._didUpdate = function (
+  const didUpdate = elementProto._$didUpdate;
+  elementProto._$didUpdate = function (
     this: PatchableUpdatingElement,
     changedProperties: unknown
   ) {
