@@ -647,20 +647,18 @@ class Template {
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
-          const {attributes} = node as Element;
           // We defer removing bound attributes because on IE we might not be
           // iterating attributes in their template order, and would sometimes
           // remove an attribute that we still need to create a part for.
           const attrsToRemove = [];
-          for (let i = 0; i < attributes.length; i++) {
-            // This is the name of the attribute we're iterating over, but not
+          for (const name of (node as Element).getAttributeNames()) {
+            // `name` is the name of the attribute we're iterating over, but not
             // _neccessarily_ the name of the attribute we will create a part
             // for. They can be different in browsers that don't iterate on
             // attributes in source order. In that case the attrNames array
             // contains the attribute name we'll process next. We only need the
             // attribute name here to know if we should process a bound attribute
             // on this element.
-            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
               const realName = attrNames[attrNameIndex++];
               // Lowercase for case-sensitive SVG attributes like viewBox
