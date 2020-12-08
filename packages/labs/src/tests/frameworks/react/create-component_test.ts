@@ -15,6 +15,7 @@
 import {UpdatingElement} from 'updating-element';
 import {property} from 'updating-element/decorators/property.js';
 import {customElement} from 'updating-element/decorators/customElement.js';
+import * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '../../../frameworks/react/create-component.js';
@@ -70,21 +71,21 @@ suite('React createComponent', () => {
     }
   });
 
-  const BasicElementComponent = createComponent<
-    BasicElement,
-    {
-      onFoo: string;
-      onBar: string;
-    }
-  >(window.React, elementName, {
+  const basicElementEvents = {
     onFoo: 'foo',
     onBar: 'bar',
-  });
+  };
+
+  const BasicElementComponent = createComponent<
+    BasicElement,
+    typeof basicElementEvents
+  >(window.React, elementName, basicElementEvents);
 
   let el: BasicElement;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderReactComponent = async (props?: any) => {
+  const renderReactComponent = async (
+    props?: ReactModule.ComponentProps<typeof BasicElementComponent>
+  ) => {
     window.ReactDOM.render(
       window.React.createElement(BasicElementComponent, props),
       container
@@ -108,11 +109,15 @@ suite('React createComponent', () => {
   test('can set attributes', async () => {
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
+    await renderReactComponent({id: null});
+    assert.equal(el.getAttribute('id'), null);
+    await renderReactComponent({id: 'id2'});
+    assert.equal(el.getAttribute('id'), 'id2');
   });
 
   test('can set properties', async () => {
-    const o = {foo: true};
-    const a = [1, 2, 3];
+    let o = {foo: true};
+    let a = [1, 2, 3];
     await renderReactComponent({
       bool: true,
       str: 'str',
@@ -125,11 +130,28 @@ suite('React createComponent', () => {
     assert.equal(el.num, 5);
     assert.deepEqual(el.obj, o);
     assert.deepEqual(el.arr, a);
+    const firstEl = el;
+    // update
+    o = {foo: false};
+    a = [1, 2, 3, 4];
+    await renderReactComponent({
+      bool: false,
+      str: 'str2',
+      num: 10,
+      obj: o,
+      arr: a,
+    });
+    assert.equal(firstEl, el);
+    assert.equal(el.bool, false);
+    assert.equal(el.str, 'str2');
+    assert.equal(el.num, 10);
+    assert.deepEqual(el.obj, o);
+    assert.deepEqual(el.arr, a);
   });
 
   test('can set properties that reflect', async () => {
-    const o = {foo: true};
-    const a = [1, 2, 3];
+    let o = {foo: true};
+    let a = [1, 2, 3];
     await renderReactComponent({
       rbool: true,
       rstr: 'str',
@@ -137,6 +159,7 @@ suite('React createComponent', () => {
       robj: o,
       rarr: a,
     });
+    const firstEl = el;
     assert.equal(el.rbool, true);
     assert.equal(el.rstr, 'str');
     assert.equal(el.rnum, 5);
@@ -147,33 +170,27 @@ suite('React createComponent', () => {
     assert.equal(el.getAttribute('rnum'), '5');
     assert.equal(el.getAttribute('robj'), '{"foo":true}');
     assert.equal(el.getAttribute('rarr'), '[1,2,3]');
-  });
-
-  test('can update reflecting properties', async () => {
-    await renderReactComponent({
-      rbool: true,
-      rstr: 'str',
-      rnum: 5,
-      robj: {foo: 1},
-      rarr: [1, 2, 3],
-    });
-    const firstEl = el;
+    // update
+    o = {foo: false};
+    a = [1, 2, 3, 4];
     await renderReactComponent({
       rbool: false,
+      rstr: 'str2',
       rnum: 10,
-      robj: {foo: 2},
+      robj: o,
+      rarr: a,
     });
     assert.equal(firstEl, el);
     assert.equal(el.rbool, false);
-    assert.equal(el.rstr, 'str');
+    assert.equal(el.rstr, 'str2');
     assert.equal(el.rnum, 10);
-    assert.deepEqual(el.robj, {foo: 2});
-    assert.deepEqual(el.rarr, [1, 2, 3]);
+    assert.deepEqual(el.robj, o);
+    assert.deepEqual(el.rarr, a);
     assert.equal(el.getAttribute('rbool'), null);
-    assert.equal(el.getAttribute('rstr'), 'str');
+    assert.equal(el.getAttribute('rstr'), 'str2');
     assert.equal(el.getAttribute('rnum'), '10');
-    assert.equal(el.getAttribute('robj'), '{"foo":2}');
-    assert.equal(el.getAttribute('rarr'), '[1,2,3]');
+    assert.equal(el.getAttribute('robj'), '{"foo":false}');
+    assert.equal(el.getAttribute('rarr'), '[1,2,3,4]');
   });
 
   test('can listen to events', async () => {

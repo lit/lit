@@ -23,6 +23,8 @@ const reservedReactProperties = new Set([
   'className',
 ]);
 
+const dummyEl = document.createElement(`dummy-element${Math.random()}`);
+
 const setProperty = <E extends Element, T>(
   node: E,
   name: string,
@@ -33,13 +35,11 @@ const setProperty = <E extends Element, T>(
   events?: T
 ) => {
   // Dirty check and prevent setting reserved properties.
-  if (Object.is(value, old) || reservedReactProperties.has(name as string)) {
+  if (value === old || reservedReactProperties.has(name as string)) {
     return;
   }
   // For events, use an explicit list.
-  const event = (events?.[
-    name as keyof T
-  ] as unknown) as keyof HTMLElementEventMap;
+  const event = (events?.[name as keyof T] as unknown) as string;
   if (event !== undefined) {
     if (old !== undefined) {
       node.removeEventListener(event, old);
@@ -47,9 +47,11 @@ const setProperty = <E extends Element, T>(
     node.addEventListener(event, value);
   } else {
     // For properties, use an `in` check
-    if (name in node) {
+    if (name in node && !(name in dummyEl)) {
       node[name as keyof E] = value;
       // And for everything else, set the attribute.
+      // Note, this matches standard React behavior to remove attributes if
+      // their value is null.
     } else if (value == null) {
       node.removeAttribute(name);
     } else {
@@ -58,6 +60,10 @@ const setProperty = <E extends Element, T>(
   }
 };
 
+// Note, this is a custom type used for forwarding an outer Ref to the inner
+// web component. Our use case here is somewhat unique in that, we need to
+// pass the user's ref forward but also intercept the ref value ourselves
+// for use in the component wrapper.
 type ForwardedRef = {
   __forwardedRef?: React.Ref<unknown>;
 };
@@ -97,10 +103,10 @@ export const createComponent = <T extends HTMLElement, E>(
   }
 
   class ReactComponent extends Component<Props> {
-    element!: T;
+    private _element!: T;
 
-    ref = (element: T) => {
-      this.element = element;
+    private _ref = (element: T) => {
+      this._element = element;
       // Fulfill any ref we receive in our props.
       // The `ref` prop is special and cannot be accessed without an error
       // so use `__forwardedRef` via `React.forwardRef`.
@@ -118,11 +124,11 @@ export const createComponent = <T extends HTMLElement, E>(
       }
     };
 
-    updateElement(oldProps?: Props) {
+    private _updateElement(oldProps?: Props) {
       // Set element properties to the values in `this.props`
       for (const prop in this.props) {
         setProperty(
-          this.element,
+          this._element,
           prop,
           this.props[prop as keyof Props],
           oldProps ? oldProps[prop as keyof Props] : undefined,
@@ -144,7 +150,7 @@ export const createComponent = <T extends HTMLElement, E>(
      * on mount.
      */
     componentDidMount() {
-      this.updateElement();
+      this._updateElement();
     }
 
     /**
@@ -152,7 +158,7 @@ export const createComponent = <T extends HTMLElement, E>(
      * on every update. Note, this does not include mount.
      */
     componentDidUpdate(old: Props) {
-      this.updateElement(old);
+      this._updateElement(old);
     }
 
     /**
@@ -163,7 +169,8 @@ export const createComponent = <T extends HTMLElement, E>(
      *
      */
     render() {
-      return createElement(tagName, {ref: this.ref}, this.props.children);
+      const props = {ref: this._ref};
+      return createElement(tagName, props, this.props.children);
     }
   }
 
