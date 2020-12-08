@@ -1112,14 +1112,14 @@ suite('lit-html', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget;
-      render(html`<div @click=${listener}></div>`, container, {eventContext});
+      const host = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {host});
       const div = container.querySelector('div')!;
       div.click();
       if (event === undefined) {
         throw new Error(`Event listener never fired!`);
       }
-      assert.equal(thisValue, eventContext);
+      assert.equal(thisValue, host);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
@@ -1137,8 +1137,10 @@ suite('lit-html', () => {
           thisValue = this;
         },
       };
-      const eventContext = {} as EventTarget;
-      render(html`<div @click=${listener}></div>`, container, {eventContext});
+      const host = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {
+        host,
+      });
       const div = container.querySelector('div')!;
       div.click();
       assert.equal(thisValue, listener);
@@ -1592,6 +1594,32 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+
+    test('directives have access to renderOptions', () => {
+      const hostEl = document.createElement('input');
+      hostEl.value = 'host';
+
+      class HostDirective extends Directive {
+        host?: HTMLInputElement;
+
+        render(v: string) {
+          return `${(this.host as HTMLInputElement)?.value}:${v}`;
+        }
+
+        update(part: Part, props: [v: string]) {
+          this.host ??= part.options!.host as HTMLInputElement;
+          return this.render(...props);
+        }
+      }
+      const hostDirective = directive(HostDirective);
+
+      render(
+        html`<div attr=${hostDirective('attr')}>${hostDirective('node')}</div>`,
+        container,
+        {host: hostEl}
+      );
+      assertContent('<div attr="host:attr">host:node</div>');
     });
 
     suite('nested directives', () => {

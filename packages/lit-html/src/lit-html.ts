@@ -343,7 +343,7 @@ export interface RenderOptions {
    * An object to use as the `this` value for event listeners. It's often
    * useful to set this to the host component rendering a template.
    */
-  eventContext?: EventTarget;
+  host?: EventTarget;
   /**
    * A DOM node before which to render content in the container.
    */
@@ -1200,8 +1200,8 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent?: Disconnectable,
-    _options?: RenderOptions
+    parent: Disconnectable | undefined,
+    public options: RenderOptions | undefined
   ) {
     this.element = element;
     this.name = name;
@@ -1368,11 +1368,11 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
-  private _eventContext?: unknown;
+  private _host?: unknown;
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
     super(...args);
-    this._eventContext = args[4]?.eventContext;
+    this._host = args[4]?.host;
   }
 
   // EventPart does not use the base _setValue/_resolveValue implementation
@@ -1427,7 +1427,7 @@ export class EventPart extends AttributePart {
     if (typeof this._value === 'function') {
       // TODO (justinfagnani): do we need to default to this._element?
       // It'll always be the same as `e.currentTarget`.
-      this._value.call(this._eventContext ?? this.element, event);
+      this._value.call(this._host ?? this.element, event);
     } else {
       (this._value as EventListenerObject).handleEvent(event);
     }
