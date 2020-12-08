@@ -615,7 +615,7 @@ export abstract class UpdatingElement extends HTMLElement {
   /**
    * Set of controllers.
    */
-  _$controllers?: Controller[];
+  _controllers?: Controller[];
 
   constructor() {
     super();
@@ -628,7 +628,7 @@ export abstract class UpdatingElement extends HTMLElement {
   }
 
   addController(controller: Controller) {
-    (this._$controllers ??= []).push(controller);
+    (this._controllers ??= []).push(controller);
   }
 
   /**
@@ -688,7 +688,7 @@ export abstract class UpdatingElement extends HTMLElement {
       }).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating();
-    this._$controllers?.forEach((c) => c.connectedCallback?.());
+    this._controllers?.forEach((c) => c.connectedCallback?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
     if (this._enableConnection) {
@@ -710,7 +710,7 @@ export abstract class UpdatingElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this._$controllers?.forEach((c) => c.disconnectedCallback?.());
+    this._controllers?.forEach((c) => c.disconnectedCallback?.());
     this._pendingConnectionPromise = new Promise(
       (r) => (this._enableConnection = r)
     );
@@ -946,9 +946,9 @@ export abstract class UpdatingElement extends HTMLElement {
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._$controllers?.forEach((c) => c.willUpdate?.());
+        this._controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this._$controllers?.forEach((c) => c.update?.());
+        this._controllers?.forEach((c) => c.update?.());
         this.update(changedProperties);
       } else {
         this._markUpdated();
@@ -976,7 +976,7 @@ export abstract class UpdatingElement extends HTMLElement {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this._$controllers?.forEach((c) => c.updated?.());
+    this._controllers?.forEach((c) => c.updated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
