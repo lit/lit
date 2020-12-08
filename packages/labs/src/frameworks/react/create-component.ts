@@ -25,6 +25,37 @@ const reservedReactProperties = new Set([
 
 const dummyEl = document.createElement(`dummy-element${Math.random()}`);
 
+const listenedEvents: WeakMap<
+  Element,
+  Map<string, EventListenerObject>
+> = new WeakMap();
+
+const setEvent = (
+  node: Element,
+  event: string,
+  value: (event?: Event) => void
+) => {
+  let events = listenedEvents.get(node);
+  if (events === undefined) {
+    listenedEvents.set(node, (events = new Map()));
+  }
+  let handler = events.get(event);
+  if (value !== undefined) {
+    // If necessary, add listener and track handler
+    if (handler === undefined) {
+      events.set(event, (handler = {handleEvent: value}));
+      node.addEventListener(event, handler);
+      // Otherwise just update the listener with new value
+    } else {
+      handler.handleEvent = value;
+    }
+    // Remove listener if one exists and value is undefined
+  } else if (handler !== undefined) {
+    events.delete(event);
+    node.removeEventListener(event, handler);
+  }
+};
+
 const setProperty = <E extends Element, T>(
   node: E,
   name: string,
@@ -41,10 +72,7 @@ const setProperty = <E extends Element, T>(
   // For events, use an explicit list.
   const event = (events?.[name as keyof T] as unknown) as string;
   if (event !== undefined) {
-    if (old !== undefined) {
-      node.removeEventListener(event, old);
-    }
-    node.addEventListener(event, value);
+    setEvent(node, event, value);
   } else {
     // For properties, use an `in` check
     if (name in node && !(name in dummyEl)) {

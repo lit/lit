@@ -194,9 +194,14 @@ suite('React createComponent', () => {
   });
 
   test('can listen to events', async () => {
-    let fooEvent: Event | undefined, barEvent: Event | undefined;
+    let fooEvent: Event | undefined,
+      fooEvent2: Event | undefined,
+      barEvent: Event | undefined;
     const onFoo = (e: Event) => {
       fooEvent = e;
+    };
+    const onFoo2 = (e: Event) => {
+      fooEvent2 = e;
     };
     const onBar = (e: Event) => {
       barEvent = e;
@@ -227,5 +232,21 @@ suite('React createComponent', () => {
     assert.equal(fooEvent!.type, 'foo');
     el.fire('bar');
     assert.equal(barEvent!.type, 'bar');
+    await renderReactComponent({
+      onFoo: onFoo2,
+    });
+    fooEvent = undefined;
+    fooEvent2 = undefined;
+    el.fire('foo');
+    assert.equal(fooEvent, undefined);
+    assert.equal(fooEvent2!.type, 'foo');
+    await renderReactComponent({
+      onFoo,
+    });
+    fooEvent = undefined;
+    fooEvent2 = undefined;
+    el.fire('foo');
+    assert.equal(fooEvent!.type, 'foo');
+    assert.equal(fooEvent2, undefined);
   });
 });
