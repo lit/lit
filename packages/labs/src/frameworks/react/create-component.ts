@@ -23,8 +23,6 @@ const reservedReactProperties = new Set([
   'className',
 ]);
 
-const dummyEl = document.createElement(`dummy-element${Math.random()}`);
-
 const listenedEvents: WeakMap<
   Element,
   Map<string, EventListenerObject>
@@ -74,17 +72,7 @@ const setProperty = <E extends Element, T>(
   if (event !== undefined) {
     setEvent(node, event, value);
   } else {
-    // For properties, use an `in` check
-    if (name in node && !(name in dummyEl)) {
-      node[name as keyof E] = value;
-      // And for everything else, set the attribute.
-      // Note, this matches standard React behavior to remove attributes if
-      // their value is null.
-    } else if (value == null) {
-      node.removeAttribute(name);
-    } else {
-      node.setAttribute(name, value);
-    }
+    node[name as keyof E] = value;
   }
 };
 
@@ -108,32 +96,52 @@ const componentMap: Map<
   >
 > = new Map();
 
+type Constructor<T> = {new (): T};
+
 /**
  *  Creates a React component from a CustomElement.
  */
-// TODO(sorvell): Was unable to remove type E here.
-export const createComponent = <T extends HTMLElement, E>(
+export const createComponent = <
+  C extends Constructor<I>,
+  I extends HTMLElement,
+  E
+>(
   React: typeof ReactModule,
   tagName: string,
+  elementClass: C,
   events?: E
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
 
-  type ElementProps = Partial<T> & Events<E>;
+  type ElementProps = Partial<I> & Events<E>;
 
   type Props = React.PropsWithoutRef<ElementProps> & ForwardedRef;
 
   // Use cached value if available.
   let ComponentClass = componentMap.get(tagName);
   if (ComponentClass !== undefined) {
-    return ComponentClass;
+    return ComponentClass as React.ForwardRefExoticComponent<
+      React.PropsWithChildren<React.PropsWithRef<ElementProps>>
+    >;
+  }
+
+  // List of properties/events which should be specially handled by the wrapper
+  // and not handled directly by React.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const elementProps: {[index: string]: any} = {...(events ?? {})};
+  for (const p in elementClass.prototype) {
+    if (!(p in HTMLElement.prototype)) {
+      elementProps[p] = true;
+    }
   }
 
   class ReactComponent extends Component<Props> {
-    private _element!: T;
+    private _element!: I;
 
-    private _ref = (element: T) => {
+    private _elementProps!: typeof elementProps;
+
+    private _ref = (element: I) => {
       this._element = element;
       // Fulfill any ref we receive in our props.
       // The `ref` prop is special and cannot be accessed without an error
@@ -143,7 +151,7 @@ export const createComponent = <T extends HTMLElement, E>(
         // Note, there are 2 kinds of refs and we manually fulfill them here.
         // There is no built in React API for this.
         if (typeof forwardedRef === 'function') {
-          (forwardedRef as (e: T) => void)(element);
+          (forwardedRef as (e: I) => void)(element);
         } else {
           // This has to be `any` because `current` is readonly.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,7 +162,7 @@ export const createComponent = <T extends HTMLElement, E>(
 
     private _updateElement(oldProps?: Props) {
       // Set element properties to the values in `this.props`
-      for (const prop in this.props) {
+      for (const prop in this._elementProps) {
         setProperty(
           this._element,
           prop,
@@ -163,18 +171,13 @@ export const createComponent = <T extends HTMLElement, E>(
           events
         );
       }
-
-      // TODO(sorvell): There's no safe value to set here.
-      // Unset any `oldProps` that are not currently in `this.props`
-      // for (const prop in oldProps) {
-      //   if (!(prop in this.props)) {
-      //     setProperty(this.element, prop, undefined, oldProps[prop], eventNames);
-      //   }
-      // }
+      // Note, the spirit of React might be to "unset" any old values that
+      // are no longer included; however, there's no reasonable value to set
+      // them to so we just leave the previous state as is.
     }
 
     /**
-     * Updates element properties correctly setting attributes v. properties
+     * Updates element properties correctly setting properties
      * on mount.
      */
     componentDidMount() {
@@ -182,7 +185,7 @@ export const createComponent = <T extends HTMLElement, E>(
     }
 
     /**
-     * Updates element properties correctly setting attributes v. properties
+     * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
     componentDidUpdate(old: Props) {
@@ -197,8 +200,23 @@ export const createComponent = <T extends HTMLElement, E>(
      *
      */
     render() {
-      const props = {ref: this._ref};
-      return createElement(tagName, props, this.props.children);
+      // Filter class properties out of React's props and pass the remaining
+      // attributes to React. This allows attributes to use React's rules
+      // for setting attributes and render correctly under SSR.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const props: any = {ref: this._ref};
+      // Note, save element props while iterating to avoid the need to
+      // iterate again when setting properties.
+      this._elementProps = {};
+      for (const p in this.props) {
+        const v = this.props[p as keyof Props];
+        if (elementProps[p]) {
+          this._elementProps[p] = v;
+        } else {
+          props[p as keyof Props] = v;
+        }
+      }
+      return createElement(tagName, props, props.children);
     }
   }
 

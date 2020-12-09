@@ -76,10 +76,12 @@ suite('React createComponent', () => {
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createComponent<
+  const BasicElementComponent = createComponent(
+    window.React,
+    elementName,
     BasicElement,
-    typeof basicElementEvents
-  >(window.React, elementName, basicElementEvents);
+    basicElementEvents
+  );
 
   let el: BasicElement;
 
