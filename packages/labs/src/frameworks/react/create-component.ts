@@ -76,82 +76,64 @@ const setProperty = <E extends Element, T>(
   }
 };
 
-// Note, this is a custom type used for forwarding an outer Ref to the inner
-// web component. Our use case here is somewhat unique in that, we need to
-// pass the user's ref forward but also intercept the ref value ourselves
-// for use in the component wrapper.
-type ForwardedRef = {
-  __forwardedRef?: React.Ref<unknown>;
-};
-
 type Events<S> = {
   [P in keyof S]?: (e: Event) => unknown;
 };
-
-const componentMap: Map<
-  string,
-  React.ForwardRefExoticComponent<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    React.PropsWithChildren<React.PropsWithRef<any>>
-  >
-> = new Map();
 
 type Constructor<T> = {new (): T};
 
 /**
  *  Creates a React component from a CustomElement.
  */
-export const createComponent = <
-  C extends Constructor<I>,
-  I extends HTMLElement,
-  E
->(
+export const createComponent = <I extends HTMLElement, E>(
   React: typeof ReactModule,
   tagName: string,
-  elementClass: C,
+  elementClass: Constructor<I>,
   events?: E
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
 
-  type ElementProps = Partial<I> & Events<E>;
+  // Props the user is allowed to use, includes standard attributes, children,
+  // ref, as well as special event and element properties.
+  type UserProps = React.PropsWithChildren<
+    React.PropsWithRef<Partial<I> & Events<E>>
+  >;
 
-  type Props = React.PropsWithoutRef<ElementProps> & ForwardedRef;
-
-  // Use cached value if available.
-  let ComponentClass = componentMap.get(tagName);
-  if (ComponentClass !== undefined) {
-    return ComponentClass as React.ForwardRefExoticComponent<
-      React.PropsWithChildren<React.PropsWithRef<ElementProps>>
-    >;
-  }
+  // Props used by this component wrapper. This is the UserProps and the
+  // special `__forwardedRef` property. Note, this ref is special because
+  // it's both needed in this component to get access to the rendered element
+  // and must fulfill any ref passed by the user.
+  type ComponentProps = UserProps & {
+    __forwardedRef?: React.Ref<unknown>;
+  };
 
   // List of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const elementProps: {[index: string]: any} = {...(events ?? {})};
+  const elementPropsMap: {[index: string]: any} = {...(events ?? {})};
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
-      elementProps[p] = true;
+      elementPropsMap[p] = true;
     }
   }
 
-  class ReactComponent extends Component<Props> {
-    private _element!: I;
+  class ReactComponent extends Component<ComponentProps> {
+    private _element: I | null = null;
 
-    private _elementProps!: typeof elementProps;
+    private _elementProps!: typeof elementPropsMap;
 
-    private _ref = (element: I) => {
+    private _ref = (element: I | null) => {
       this._element = element;
       // Fulfill any ref we receive in our props.
       // The `ref` prop is special and cannot be accessed without an error
-      // so use `__forwardedRef` via `React.forwardRef`.
+      // so use `__forwardedRef`.
       const forwardedRef = this.props?.__forwardedRef;
       if (forwardedRef) {
         // Note, there are 2 kinds of refs and we manually fulfill them here.
         // There is no built in React API for this.
         if (typeof forwardedRef === 'function') {
-          (forwardedRef as (e: I) => void)(element);
+          (forwardedRef as (e: I | null) => void)(element);
         } else {
           // This has to be `any` because `current` is readonly.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,14 +142,17 @@ export const createComponent = <
       }
     };
 
-    private _updateElement(oldProps?: Props) {
+    private _updateElement(oldProps?: ComponentProps) {
+      if (this._element === null) {
+        return;
+      }
       // Set element properties to the values in `this.props`
       for (const prop in this._elementProps) {
         setProperty(
           this._element,
           prop,
-          this.props[prop as keyof Props],
-          oldProps ? oldProps[prop as keyof Props] : undefined,
+          this.props[prop as keyof ComponentProps],
+          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
           events
         );
       }
@@ -188,20 +173,21 @@ export const createComponent = <
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    componentDidUpdate(old: Props) {
+    componentDidUpdate(old: ComponentProps) {
       this._updateElement(old);
     }
 
     /**
-     * Renders creates the custom element with a `ref` prop which allows this
+     * Renders the custom element with a `ref` prop which allows this
      * component to reference the custom element.
      *
-     * Note, element properties are updated in DidMount/DidUpdate.
+     * Standard attributes are passed to React and element properties and events
+     * are updated in componentDidMount/componentDidUpdate.
      *
      */
     render() {
-      // Filter class properties out of React's props and pass the remaining
-      // attributes to React. This allows attributes to use React's rules
+      // Filters class properties out and passes the remaining
+      // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const props: any = {ref: this._ref};
@@ -209,30 +195,22 @@ export const createComponent = <
       // iterate again when setting properties.
       this._elementProps = {};
       for (const p in this.props) {
-        const v = this.props[p as keyof Props];
-        if (elementProps[p]) {
+        const v = this.props[p as keyof ComponentProps];
+        if (elementPropsMap[p]) {
           this._elementProps[p] = v;
         } else {
-          props[p as keyof Props] = v;
+          props[p as keyof ComponentProps] = v;
         }
       }
       return createElement(tagName, props, props.children);
     }
   }
 
-  ComponentClass = React.forwardRef(
-    (
-      props?: React.PropsWithChildren<React.PropsWithRef<ElementProps>>,
-      ref?: React.Ref<unknown>
-    ) =>
-      createElement(
-        ReactComponent,
-        {...props, __forwardedRef: ref} as Props,
-        props?.children
-      )
+  return React.forwardRef((props?: UserProps, ref?: React.Ref<unknown>) =>
+    createElement(
+      ReactComponent,
+      {...props, __forwardedRef: ref} as ComponentProps,
+      props?.children
+    )
   );
-
-  // cache component
-  componentMap.set(tagName, ComponentClass);
-  return ComponentClass;
 };

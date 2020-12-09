@@ -111,7 +111,7 @@ suite('React createComponent', () => {
   test('can set attributes', async () => {
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
-    await renderReactComponent({id: null});
+    await renderReactComponent({id: undefined});
     assert.equal(el.getAttribute('id'), null);
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
