@@ -49,7 +49,8 @@ suite('ref', () => {
 
     go(divRef2);
     const div2 = container.firstElementChild;
-    assert.equal(divRef1.value, div2);
+    assert.equal(divRef1.value, undefined);
+    assert.equal(divRef2.value, div2);
   });
 
   test('calls a ref callback when callback changes', () => {
@@ -103,18 +104,13 @@ suite('ref', () => {
     assert.equal(queriedEl?.tagName, 'SPAN');
     assert.equal(elRef.value, queriedEl);
     assert.equal(callCount, 2);
-
-    // TODO (justinfagnani): when ref() is disconnectable, should the
-    // callback be called in this case? Or only called with the new element?
   });
 
   test('only calls a ref callback when element changes', () => {
-    let el: Element | undefined;
     let queriedEl: Element | null;
-    let callCount = 0;
+    const calls: Array<string | undefined> = [];
     const elCallback = (e: Element | undefined) => {
-      el = e;
-      callCount++;
+      calls.push(e?.tagName);
     };
     const go = (x: boolean) =>
       render(
@@ -127,23 +123,22 @@ suite('ref', () => {
     go(true);
     queriedEl = container.firstElementChild;
     assert.equal(queriedEl?.tagName, 'DIV');
-    assert.equal(el, queriedEl);
-    assert.equal(callCount, 1);
+    assert.deepEqual(calls, ['DIV']);
 
     go(true);
     queriedEl = container.firstElementChild;
     assert.equal(queriedEl?.tagName, 'DIV');
-    assert.equal(el, queriedEl);
-    assert.equal(callCount, 1);
+    assert.deepEqual(calls, ['DIV']);
 
     go(false);
     queriedEl = container.firstElementChild;
     assert.equal(queriedEl?.tagName, 'SPAN');
-    assert.equal(el, queriedEl);
-    assert.equal(callCount, 2);
+    assert.deepEqual(calls, ['DIV', undefined, 'SPAN']);
 
-    // TODO (justinfagnani): when ref() is disconnectable, should the
-    // callback be called in this case? Or only called with the new element?
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(calls, ['DIV', undefined, 'SPAN', undefined, 'DIV']);
   });
 
   test('two refs', () => {
@@ -153,5 +148,48 @@ suite('ref', () => {
     const div = container.firstElementChild;
     assert.equal(divRef1.value, div);
     assert.equal(divRef2.value, div);
+  });
+
+  test('two ref callbacks alternating', () => {
+    let queriedEl: Element | null;
+    const divCalls: Array<string | undefined> = [];
+    const divCallback = (e: Element | undefined) => {
+      divCalls.push(e?.tagName);
+    };
+    const spanCalls: Array<string | undefined> = [];
+    const spanCallback = (e: Element | undefined) => {
+      spanCalls.push(e?.tagName);
+    };
+    const go = (x: boolean) =>
+      render(
+        x
+          ? html`<div ${ref(divCallback)}></div>`
+          : html`<span ${ref(spanCallback)}></span>`,
+        container
+      );
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(divCalls, ['DIV']);
+    assert.deepEqual(spanCalls, []);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(divCalls, ['DIV']);
+    assert.deepEqual(spanCalls, []);
+
+    go(false);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'SPAN');
+    assert.deepEqual(divCalls, ['DIV', undefined]);
+    assert.deepEqual(spanCalls, ['SPAN']);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(divCalls, ['DIV', undefined, 'DIV']);
+    assert.deepEqual(spanCalls, ['SPAN', undefined]);
   });
 });
