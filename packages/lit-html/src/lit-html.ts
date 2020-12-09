@@ -1375,12 +1375,6 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
-  private _host?: unknown;
-
-  constructor(...args: ConstructorParameters<typeof AttributePart>) {
-    super(...args);
-    this._host = this.options?.host;
-  }
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
@@ -1434,7 +1428,7 @@ export class EventPart extends AttributePart {
     if (typeof this._$value === 'function') {
       // TODO (justinfagnani): do we need to default to this._$element?
       // It'll always be the same as `e.currentTarget`.
-      this._$value.call(this._host ?? this.element, event);
+      this._$value.call(this.options?.host ?? this.element, event);
     } else {
       (this._$value as EventListenerObject).handleEvent(event);
     }
