@@ -20,12 +20,6 @@ import {fnv1a64} from './fnv1a64.js';
 export const HASH_DELIMITER = '\x1e';
 
 /**
- * Id scheme version prefix to distinguish this implementation from potential
- * changes in the future.
- */
-const VERSION_PREFIX = 'a';
-
-/**
  * Id prefix on html-tagged templates to distinguish e.g. `<b>x</b>` from
  * html`<b>x</b>`.
  */
@@ -43,13 +37,12 @@ const STRING_PREFIX = 's';
  * Example:
  *   Template: html`Hello <b>${who}</b>!`
  *     Params: ["Hello <b>", "</b>!"], true
- *     Output: ah82ccc38d4d46eaa9
+ *     Output: h82ccc38d4d46eaa9
  *
  * The ID is constructed as:
  *
- *   [0]    Version indicator for this ID generation scheme ("a").
- *   [1]    Kind of template: [h]tml or [s]tring.
- *   [2,17] 64-bit FNV-1a hash hex digest of the template strings, as UTF-16
+ *   [0]    Kind of template: [h]tml or [s]tring.
+ *   [1,16] 64-bit FNV-1a hash hex digest of the template strings, as UTF-16
  *          code points, delineated by an ASCII "record separator" character.
  *
  * We choose FNV-1a because:
@@ -70,7 +63,6 @@ export function generateMsgId(
   isHtmlTagged: boolean
 ): string {
   return (
-    VERSION_PREFIX +
     (isHtmlTagged ? HTML_PREFIX : STRING_PREFIX) +
     fnv1a64(
       typeof strings === 'string' ? strings : strings.join(HASH_DELIMITER)

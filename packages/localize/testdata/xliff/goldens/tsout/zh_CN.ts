@@ -19,11 +19,11 @@ export const templates = {
     <i>y</i>
     <b>${x}</b>`,
   comment: html`Hello <b><!-- comment -->World!</b>`,
-  as8c0ec8d1fb9e6e32: `Hello World!`,
-  as00ad08ebae1e0f74: (name: any) => `Hello ${name}!`,
-  ah3c44aff2d5f5ef6b: html`Hello <b>World</b>!`,
-  ah82ccc38d4d46eaa9: (name: any) => html`Hello <b>${name}</b>!`,
-  as03c68d79ad36e8d4: `described 0`,
-  as03c68e79ad36ea87: `described 1`,
-  as03c68f79ad36ec3a: `described 2`,
+  s8c0ec8d1fb9e6e32: `Hello World!`,
+  s00ad08ebae1e0f74: (name: any) => `Hello ${name}!`,
+  h3c44aff2d5f5ef6b: html`Hello <b>World</b>!`,
+  h82ccc38d4d46eaa9: (name: any) => html`Hello <b>${name}</b>!`,
+  s03c68d79ad36e8d4: `described 0`,
+  s03c68e79ad36ea87: `described 1`,
+  s03c68f79ad36ec3a: `described 2`,
 };
