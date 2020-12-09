@@ -152,9 +152,9 @@ const scopeCssStore: Map<string, string[]> = new Map();
         }
         const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
-        const styles = template.content.querySelectorAll('style') as NodeListOf<
-          HTMLStyleElement
-        >;
+        const styles = template.content.querySelectorAll(
+          'style'
+        ) as NodeListOf<HTMLStyleElement>;
         // Store the css in this template in the scope css and remove the <style>
         // from the template _before_ the node-walk captures part indices
         scopeCss.push(
