@@ -1240,67 +1240,54 @@ export class AttributePart {
   _$setValue(
     value: unknown | Array<unknown>,
     directiveParent: DirectiveParent = this,
-    valueIndex?: number,
-    noCommit?: boolean
-  ) {
+    valueIndex?: number) {
     const strings = this.strings;
+
+    // Whether any of the values has changed, for dirty-checking
+    let change = false;
+
+    // Whether any of the values is the `nothing` sentinel. If any are, we
+    // remove the entire attribute.
+    // let remove = false;
 
     if (strings === undefined) {
       // Single-value binding case
       value = resolveDirective(this, value, directiveParent, 0);
-      // Only dirty-check primitives and `nothing`:
-      // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
-      // `nothing`. `v === this._$value` is the dirty-check.
-      if (
-        !(
-          (isPrimitive(value) || value === nothing) &&
-          value === this._$value
-        ) &&
-        value !== noChange
-      ) {
+      if (change = ((!isPrimitive(value) || value !== this._$value) && value !== noChange)) {
         this._$value = value;
-        if (!noCommit) {
-          this._commitValue(value);
-        }
       }
     } else {
       // Interpolation case
-      let attributeValue = strings[0];
-
-      // Whether any of the values has changed, for dirty-checking
-      let change = false;
-
-      // Whether any of the values is the `nothing` sentinel. If any are, we
-      // remove the entire attribute.
-      let remove = false;
+      const values = value as Array<unknown>;
+      value = strings[0];
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
         v = resolveDirective(
           this,
-          (value as Array<unknown>)[valueIndex! + i],
+          values[valueIndex! + i],
           directiveParent,
           i
         );
+
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._$value as Array<unknown>)[i];
-        } else {
-          remove = remove || v === nothing;
-          change =
-            change ||
-            !(
-              (isPrimitive(v) || v === nothing) &&
-              v === (this._$value as Array<unknown>)[i]
-            );
-          (this._$value as Array<unknown>)[i] = v;
         }
-        attributeValue +=
-          (typeof v === 'string' ? v : String(v ?? '')) + strings[i + 1];
+        if (v === nothing || value === nothing) {
+          change = true;
+          value = nothing;
+        } else {
+          change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+          value += (v ?? '') + strings[i + 1];
+        }
+        // We always record each value, even if one is `nothing`, for future
+        // change detection
+        (this._$value as Array<unknown>)[i] = v;
       }
-      if (change && !noCommit) {
-        this._commitValue(remove ? nothing : attributeValue);
-      }
+    }
+    if (change) {
+      this._commitValue(value);
     }
   }
 
