@@ -8,7 +8,7 @@
     "serve": "es-dev-server --node-resolve --preserve-symlinks"
   },
   "dependencies": {
-    "@lit/localize": "^0.6.0",
+    "@lit/localize": "^0.6.1",
     "@material/mwc-circular-progress": "^0.18.0",
     "lit-element": "^2.4.0"
   },
