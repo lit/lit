@@ -93,7 +93,7 @@ test('string message (auto ID)', (t) => {
   `;
   checkAnalysis(t, src, [
     {
-      name: 'as3d58dee72d4e0c27',
+      name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
     },
   ]);
@@ -123,7 +123,7 @@ test('HTML message (auto ID)', (t) => {
   `;
   checkAnalysis(t, src, [
     {
-      name: 'ahc468c061c2d171f4',
+      name: 'hc468c061c2d171f4',
       contents: [
         {untranslatable: '<b>'},
         'Hello World',
@@ -171,7 +171,7 @@ test('parameterized string message (auto ID)', (t) => {
   `;
   checkAnalysis(t, src, [
     {
-      name: 'asaed7d3734ce7f09d',
+      name: 'saed7d3734ce7f09d',
       contents: ['Hello ', {untranslatable: '${name}'}],
       params: ['name'],
     },

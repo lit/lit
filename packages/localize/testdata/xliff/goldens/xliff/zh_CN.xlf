@@ -27,27 +27,27 @@
 <trans-unit id="comment">
   <source>Hello <ph id="0">&lt;b>&lt;!-- comment --></ph>World!<ph id="1">&lt;/b></ph></source>
 </trans-unit>
-<trans-unit id="as8c0ec8d1fb9e6e32">
+<trans-unit id="s8c0ec8d1fb9e6e32">
   <source>Hello World!</source>
 </trans-unit>
-<trans-unit id="as00ad08ebae1e0f74">
+<trans-unit id="s00ad08ebae1e0f74">
   <source>Hello <ph id="0">${name}</ph>!</source>
 </trans-unit>
-<trans-unit id="ah3c44aff2d5f5ef6b">
+<trans-unit id="h3c44aff2d5f5ef6b">
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>
-<trans-unit id="ah82ccc38d4d46eaa9">
+<trans-unit id="h82ccc38d4d46eaa9">
   <source>Hello <ph id="0">&lt;b>${name}&lt;/b></ph>!</source>
 </trans-unit>
-<trans-unit id="as03c68d79ad36e8d4">
+<trans-unit id="s03c68d79ad36e8d4">
   <note>Description of 0</note>
   <source>described 0</source>
 </trans-unit>
-<trans-unit id="as03c68e79ad36ea87">
+<trans-unit id="s03c68e79ad36ea87">
   <note>Parent description / Description of 1</note>
   <source>described 1</source>
 </trans-unit>
-<trans-unit id="as03c68f79ad36ec3a">
+<trans-unit id="s03c68f79ad36ec3a">
   <note>Parent description / Description of 2</note>
   <source>described 2</source>
 </trans-unit>
