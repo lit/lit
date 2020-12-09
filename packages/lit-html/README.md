@@ -111,10 +111,10 @@ export const renderCounter = directive(
   class extends Directive {
     // State stored in class field
     value = undefined;
-    constructor(part) {
-      super();
+    constructor(partInfo: PartInfo, index?: number) {
+      super(partInfo, index);
       // When necessary, validate part in constructor using `part.type`
-      if (part.type !== NODE_PART) {
+      if (partInfo.type !== NODE_PART) {
         throw new Error('renderCounter only supports NodePart');
       }
     }

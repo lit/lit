@@ -1,8 +1,8 @@
-decorators/
-development/
-test/
-css-tag.*
-decorators.*
-platform-support.*
-updating-element.*
-updating-mixin.*
+/decorators/
+/development/
+/test/
+/css-tag.*
+/decorators.*
+/platform-support.*
+/updating-element.*
+/updating-mixin.*

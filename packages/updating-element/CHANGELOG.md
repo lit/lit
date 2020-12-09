@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - UpdatingElement's `renderRoot` is now created when the element's `connectedCallback` is initially run.
 
+- [Breaking] Update callbacks will only be called when the element is connected
+  to the document. If an element is disconnected while an update is pending, or
+  if an update is requested while the element is disconnected, update callbacks
+  will be called if/when the element is re-connected.
+
 ### Added
 
 - Console warnings added for removed API and other element problems in developer mode. Some warnings are errors and are always issued while others are optional. Optional warnings can be configured per class via `MyElement.enable/disableWarning`. Making changes in update warns by default and can be toggled via `MyElement.disableWarning('change-in-update)`; migration warnings are off by default and can be toggled via `MyElement.enableWarning('migration')`.

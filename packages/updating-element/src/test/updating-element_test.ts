@@ -2745,4 +2745,155 @@ suite('UpdatingElement', () => {
       assert.equal(a.updateCount, 4);
     });
   });
+
+  suite('disconnection handling', () => {
+    let el: El;
+    let updated: boolean;
+
+    class El extends UpdatingElement {
+      static properties = {foo: {}};
+      foo = 5;
+
+      update(_changedProperties: Map<PropertyKey, unknown>) {
+        super.update(_changedProperties);
+        updated = true;
+      }
+    }
+    customElements.define(generateElementName(), El);
+
+    setup(() => {
+      updated = false;
+      el = new El();
+    });
+
+    teardown(() => {
+      if (el.isConnected) {
+        container.removeChild(el);
+      }
+    });
+
+    test('disconnect then requestUpdate', async () => {
+      // Connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Disconnect, then requestUpdate
+      updated = false;
+      container.removeChild(el);
+      assert.isFalse(updated);
+      el.foo++;
+      await nextFrame();
+      assert.isFalse(updated);
+      // Re-connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Resume normal updates
+      updated = false;
+      el.foo++;
+      await nextFrame();
+      assert.isTrue(updated);
+    });
+
+    test('requestUpdate then disconnect', async () => {
+      // Connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // requestUpdate, then disconnect
+      updated = false;
+      el.foo++;
+      container.removeChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isFalse(updated);
+      // Re-connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Resume normal updates
+      updated = false;
+      el.foo++;
+      await nextFrame();
+      assert.isTrue(updated);
+    });
+
+    test('requestUpdate, then disconnect and immediately reconnect', async () => {
+      // Connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // requestUpdate, then disconnect + reconnect
+      updated = false;
+      el.foo++;
+      container.removeChild(el);
+      assert.isFalse(updated);
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Resume normal updates
+      updated = false;
+      el.foo++;
+      await nextFrame();
+      assert.isTrue(updated);
+    });
+
+    test('thrash disconnection', async () => {
+      // Connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // requestUpdate, then disconnect + reconnect + disconnect
+      updated = false;
+      el.foo++;
+      container.removeChild(el);
+      assert.isFalse(updated);
+      container.appendChild(el);
+      assert.isFalse(updated);
+      container.removeChild(el);
+      await nextFrame();
+      // still no update: reconnect + disconnect
+      assert.isFalse(updated);
+      container.appendChild(el);
+      assert.isFalse(updated);
+      container.removeChild(el);
+      await nextFrame();
+      // still no update: reconnect
+      assert.isFalse(updated);
+      container.appendChild(el);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Resume normal updates
+      updated = false;
+      el.foo++;
+      await nextFrame();
+      assert.isTrue(updated);
+    });
+
+    test('connect and immediately disconnect before first update', async () => {
+      // Connect and disconnect
+      container.appendChild(el);
+      container.removeChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isFalse(updated);
+      // Re-connect
+      container.appendChild(el);
+      assert.isFalse(updated);
+      await nextFrame();
+      assert.isTrue(updated);
+      // Resume normal updates
+      updated = false;
+      el.foo++;
+      await nextFrame();
+      assert.isTrue(updated);
+    });
+  });
 });

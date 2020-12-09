@@ -397,6 +397,9 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
   // connected before first update.
   private _updatePromise!: Promise<unknown>;
 
+  private _pendingConnectionPromise: Promise<unknown> | undefined = undefined;
+  private _enableConnection: (() => void) | undefined = undefined;
+
   isUpdatePending = false;
   hasUpdated = false;
 
@@ -486,6 +489,12 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     }
     this.enableUpdating();
     this._controllers?.forEach((c) => c.connectedCallback?.());
+    // If we were disconnected, re-enable updating by resolving the pending
+    // connection promise
+    if (this._enableConnection) {
+      this._enableConnection();
+      this._pendingConnectionPromise = this._enableConnection = undefined;
+    }
   }
 
   /**
@@ -502,6 +511,9 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
    */
   disconnectedCallback() {
     this._controllers?.forEach((c) => c.disconnectedCallback?.());
+    this._pendingConnectionPromise = new Promise(
+      (r) => (this._enableConnection = r)
+    );
   }
 
   /**
@@ -512,7 +524,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     _old: string | null,
     value: string | null
   ) {
-    this._attributeToProperty(name, value);
+    this._$attributeToProperty(name, value);
   }
 
   private _propertyToAttribute(
@@ -564,7 +576,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
   }
 
   /** @internal */
-  _attributeToProperty(name: string, value: string | null) {
+  _$attributeToProperty(name: string, value: string | null) {
     const ctor = this.constructor as typeof UpdatingElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
@@ -633,6 +645,10 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
       await this._updatePromise;
+      // If we were disconnected, wait until re-connected to flush an update
+      while (this._pendingConnectionPromise) {
+        await this._pendingConnectionPromise;
+      }
     } catch (e) {
       // Refire any previous errors async so they do not disrupt the update
       // cycle. Errors are refired so developers have a chance to observe
@@ -730,7 +746,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
     }
     // The update is no longer considered pending and further updates are now allowed.
     if (shouldUpdate) {
-      this._didUpdate(changedProperties);
+      this._$didUpdate(changedProperties);
     }
   }
 
@@ -774,7 +790,7 @@ export abstract class UpdatingElement extends UpdatingMixin(HTMLElement) {
   }
 
   // Note, this is an override point for platform-support.
-  protected _didUpdate(changedProperties: PropertyValues) {
+  protected _$didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);

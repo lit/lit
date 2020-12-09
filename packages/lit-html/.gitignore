@@ -5,5 +5,7 @@
 /hydrate.*
 /lit-html.*
 /parts.*
+/disconnectable-directive.*
 /platform-support.*
 /private-ssr-support.*
+/static.*

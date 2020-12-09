@@ -42,7 +42,7 @@
     "lit-labs": "^1.0.0-pre.1"
   },
   "devDependencies": {
-    "chromedriver": "^85.0.1",
+    "chromedriver": "^87.0.1",
     "typescript": "^4.0.2"
   }
 }

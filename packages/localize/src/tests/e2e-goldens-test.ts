@@ -83,6 +83,10 @@ export function e2eGoldensTest(
       process.stderr.write = realStderrWrite;
     }
 
+    if (expectedExitCode === 0 && exitCode !== 0) {
+      console.log(stdOutErr);
+    }
+
     t.is(exitCode, expectedExitCode);
     t.assert(
       stdOutErr.includes(expectedStdOutErr),

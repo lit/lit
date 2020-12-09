@@ -14,9 +14,12 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, UpdatingElement} from 'lit-element';
+import {_$private} from 'lit-element/private-ssr-support.js';
 import {render, renderValue, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
+
+const {attributeToProperty} = _$private;
 
 /**
  * ElementRenderer implementation for LitElements
@@ -38,7 +41,7 @@ export class LitElementRenderer extends ElementRenderer {
     _old: string | null,
     value: string | null
   ) {
-    (this.element as LitElement)._attributeToProperty(name, value);
+    attributeToProperty(this.element as LitElement, name, value);
   }
 
   *renderShadow(): IterableIterator<string> {

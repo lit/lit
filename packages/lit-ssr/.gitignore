@@ -1,5 +1,5 @@
-demo/
-lib/
-node_modules/
-test/
-index.*
+/demo/
+/lib/
+/node_modules/
+/test/
+/index.*

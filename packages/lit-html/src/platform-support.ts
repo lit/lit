@@ -50,12 +50,12 @@ interface ShadyTemplateResult {
 interface PatchableNodePart {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableNodePart;
-  _value: unknown;
-  _startNode: ChildNode;
-  _endNode: ChildNode | null;
+  _$value: unknown;
+  _$startNode: ChildNode;
+  _$endNode: ChildNode | null;
   options: RenderOptions;
-  _setValue(value: unknown): void;
-  _getTemplate(
+  _$setValue(value: unknown): void;
+  _$getTemplate(
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ): HTMLTemplateElement;
@@ -64,13 +64,13 @@ interface PatchableNodePart {
 interface PatchableTemplate {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableTemplate;
-  _createElement(html: string): HTMLTemplateElement;
-  _element: HTMLTemplateElement;
-  _options: RenderOptions;
+  _$createElement(html: string): HTMLTemplateElement;
+  _$element: HTMLTemplateElement;
+  _$options: RenderOptions;
 }
 
 interface PatchableTemplateInstance {
-  _template: PatchableTemplate;
+  _$template: PatchableTemplate;
 }
 
 // Scopes that have had styling prepared. Note, must only be done once per
@@ -82,8 +82,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
 /**
  * lit-html patches. These properties cannot be renamed.
- * * NodePart.prototype._getTemplate
- * * NodePart.prototype._setValue
+ * * NodePart.prototype._$getTemplate
+ * * NodePart.prototype._$setValue
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= ({
@@ -143,18 +143,18 @@ const scopeCssStore: Map<string, string[]> = new Map();
      * Override to extract style elements from the template
      * and store all style.textContent in the shady scope data.
      */
-    _createElement(html: string) {
-      const template = super._createElement(html);
-      const scope = this._options?.scope;
+    _$createElement(html: string) {
+      const template = super._$createElement(html);
+      const scope = this._$options?.scope;
       if (scope !== undefined) {
         if (!window.ShadyCSS!.nativeShadow) {
           window.ShadyCSS!.prepareTemplateDom(template, scope);
         }
         const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
-        const styles = template.content.querySelectorAll('style') as NodeListOf<
-          HTMLStyleElement
-        >;
+        const styles = template.content.querySelectorAll(
+          'style'
+        ) as NodeListOf<HTMLStyleElement>;
         // Store the css in this template in the scope css and remove the <style>
         // from the template _before_ the node-walk captures part indices
         scopeCss.push(
@@ -175,9 +175,12 @@ const scopeCssStore: Map<string, string[]> = new Map();
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
-  const setValue = nodePartProto._setValue;
-  nodePartProto._setValue = function (this: PatchableNodePart, value: unknown) {
-    const container = this._startNode.parentNode!;
+  const setValue = nodePartProto._$setValue;
+  nodePartProto._$setValue = function (
+    this: PatchableNodePart,
+    value: unknown
+  ) {
+    const container = this._$startNode.parentNode!;
     const scope = this.options.scope;
     if (container instanceof ShadowRoot && needsPrepareStyles(scope)) {
       // Note, @apply requires outer => inner scope rendering on initial
@@ -188,13 +191,13 @@ const scopeCssStore: Map<string, string[]> = new Map();
       // into a fragment first so the hosting element can prepare styles first.
       // If rendering is done in the constructor, this won't work, but that's
       // not supported in ShadyDOM anyway.
-      const startNode = this._startNode;
-      const endNode = this._endNode;
+      const startNode = this._$startNode;
+      const endNode = this._$endNode;
 
       // Temporarily move this part into the renderContainer.
       renderContainer.appendChild(renderContainerMarker);
-      this._startNode = renderContainerMarker;
-      this._endNode = null;
+      this._$startNode = renderContainerMarker;
+      this._$endNode = null;
 
       // Note, any nested template results render here and their styles will
       // be extracted and collected.
@@ -203,7 +206,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
       const template = (value as ShadyTemplateResult)?._$litType$
-        ? (this._value as PatchableTemplateInstance)._template._element
+        ? (this._$value as PatchableTemplateInstance)._$template._$element
         : document.createElement('template');
       prepareStyles(scope!, template);
 
@@ -218,18 +221,18 @@ const scopeCssStore: Map<string, string[]> = new Map();
       }
       container.insertBefore(renderContainer, endNode);
       // Move part back to original container.
-      this._startNode = startNode;
-      this._endNode = endNode;
+      this._$startNode = startNode;
+      this._$endNode = endNode;
     } else {
       setValue.call(this, value);
     }
   };
 
   /**
-   * Patch NodePart._getTemplate to look up templates in a cache bucketed
+   * Patch NodePart._$getTemplate to look up templates in a cache bucketed
    * by element name.
    */
-  nodePartProto._getTemplate = function (
+  nodePartProto._$getTemplate = function (
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {
