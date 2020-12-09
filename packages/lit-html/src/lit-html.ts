@@ -259,12 +259,12 @@ export const svg = tag(SVG_RESULT);
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
  */
-export const noChange = {};
+export const noChange = Symbol.for('lit-noChange');
 
 /**
  * A sentinel value that signals a NodePart to fully clear its content.
  */
-export const nothing = {};
+export const nothing = Symbol.for('lit-nothing');
 
 /**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
@@ -975,7 +975,10 @@ export class NodePart {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
-      if (value !== this._$value) {
+      if (value === nothing) {
+        this._clear();
+        this._$value = nothing;
+      } else if (value !== this._$value && value !== noChange) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -984,10 +987,7 @@ export class NodePart {
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this._commitIterable(value);
-    } else if (value === nothing) {
-      this._clear();
-      this._$value = nothing;
-    } else if (value !== noChange) {
+    } else {
       // Fallback, will render the string representation
       this._commitText(value);
     }
