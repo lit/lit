@@ -1232,28 +1232,30 @@ export class AttributePart {
    * @param value The part value, or an array of values for multi-valued parts
    * @param valueIndex the index to start reading values from. `undefined` for
    *   single-valued parts
-   * @param commitValue An optional method to override the _commitValue call;
-   *   is used in hydration to no-op re-setting serialized attributes, and in
-   *   to no-op the DOM operation and capture the value for serialization
+   * @param noCommit causes the part to not commit its value to the DOM. Used
+   *   in hydration to prime attribute parts with their first-rendered value,
+   *   but not set the attribute, and in SSR to no-op the DOM operation and
+   *   capture the value for serialization.
+   *
    * @internal
    */
   _$setValue(
     value: unknown | Array<unknown>,
     directiveParent: DirectiveParent = this,
-    valueIndex?: number) {
+    valueIndex?: number,
+    noCommit?: boolean
+  ) {
     const strings = this.strings;
 
     // Whether any of the values has changed, for dirty-checking
     let change = false;
 
-    // Whether any of the values is the `nothing` sentinel. If any are, we
-    // remove the entire attribute.
-    // let remove = false;
-
     if (strings === undefined) {
       // Single-value binding case
       value = resolveDirective(this, value, directiveParent, 0);
-      if (change = ((!isPrimitive(value) || value !== this._$value) && value !== noChange)) {
+      change =
+        !isPrimitive(value) || (value !== this._$value && value !== noChange);
+      if (change) {
         this._$value = value;
       }
     } else {
@@ -1263,30 +1265,24 @@ export class AttributePart {
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = resolveDirective(
-          this,
-          values[valueIndex! + i],
-          directiveParent,
-          i
-        );
+        v = resolveDirective(this, values[valueIndex! + i], directiveParent, i);
 
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._$value as Array<unknown>)[i];
         }
-        if (v === nothing || value === nothing) {
-          change = true;
+        change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+        if (v === nothing) {
           value = nothing;
-        } else {
-          change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+        } else if (value !== nothing) {
           value += (v ?? '') + strings[i + 1];
         }
         // We always record each value, even if one is `nothing`, for future
-        // change detection
+        // change detection.
         (this._$value as Array<unknown>)[i] = v;
       }
     }
-    if (change) {
+    if (change && !noCommit) {
       this._commitValue(value);
     }
   }
