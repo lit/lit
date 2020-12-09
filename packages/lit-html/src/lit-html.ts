@@ -920,6 +920,7 @@ export type Part =
 
 export class NodePart {
   readonly type = NODE_PART;
+  readonly options: RenderOptions | undefined;
   _$value: unknown;
   /** @internal */
   _directive?: Directive;
@@ -928,7 +929,6 @@ export class NodePart {
   /** @internal */
   _$endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
-
   /** @internal */
   _$parent: Disconnectable | undefined;
 
@@ -947,11 +947,12 @@ export class NodePart {
     startNode: ChildNode,
     endNode: ChildNode | null,
     parent: TemplateInstance | NodePart | undefined,
-    public options: RenderOptions | undefined
+    options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
     this._$endNode = endNode;
     this._$parent = parent;
+    this.options = options;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
@@ -1167,6 +1168,7 @@ export class AttributePart {
     | typeof EVENT_PART;
   readonly element: HTMLElement;
   readonly name: string;
+  readonly options: RenderOptions | undefined;
 
   /**
    * If this attribute part represents an interpolation, this contains the
@@ -1178,7 +1180,6 @@ export class AttributePart {
   _$value: unknown | Array<unknown> = nothing;
   /** @internal */
   _directives?: Array<Directive | undefined>;
-
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
@@ -1201,11 +1202,12 @@ export class AttributePart {
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable | undefined,
-    public options: RenderOptions | undefined
+    options: RenderOptions | undefined
   ) {
     this.element = element;
     this.name = name;
     this._$parent = parent;
+    this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this._$value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
@@ -1377,7 +1379,7 @@ export class EventPart extends AttributePart {
 
   constructor(...args: ConstructorParameters<typeof AttributePart>) {
     super(...args);
-    this._host = args[4]?.host;
+    this._host = this.options?.host;
   }
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
