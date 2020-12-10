@@ -133,7 +133,7 @@ import {
   Disconnectable,
   noChange,
 } from './lit-html.js';
-import {setPartValue} from './parts.js';
+import {setPartValue} from './directive-helpers.js';
 export {directive} from './lit-html.js';
 
 /**

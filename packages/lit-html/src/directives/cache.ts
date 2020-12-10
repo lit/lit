@@ -13,7 +13,11 @@
  */
 
 import {directive, TemplateResult, NodePart, Directive} from '../lit-html.js';
-import {detachNodePart, restoreNodePart, NodePartState} from '../parts.js';
+import {
+  detachNodePart,
+  restoreNodePart,
+  NodePartState,
+} from '../directive-helpers.js';
 
 /**
  * Enables fast switching between multiple templates by caching the DOM nodes

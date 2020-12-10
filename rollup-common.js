@@ -83,7 +83,7 @@ const stableProperties = {
   _$needsHydration: 'K',
   // lit-html: Part (used by hydrate, platform-support)
   _$value: 'L',
-  // lit-html: Part (used by hydrate, parts, platform-support, ssr-support)
+  // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
   _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)
   _$handlesPrepareStyles: 'N',
@@ -148,8 +148,8 @@ export function litProdConfig({
   // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
-  // consistently across modules, so that e.g. parts.js can safely access internal
-  // details of lit-html.js.
+  // consistently across modules, so that e.g. directive-helpers.js can safely
+  // access internal details of lit-html.js.
   //
   // However, we still have to account for the problem of mangled names getting
   // re-used for different properties across files, because Terser does not

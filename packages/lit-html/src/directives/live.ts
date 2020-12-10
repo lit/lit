@@ -25,7 +25,7 @@ import {
   BOOLEAN_ATTRIBUTE_PART,
   ATTRIBUTE_PART,
 } from '../lit-html.js';
-import {resetPartValue} from '../parts.js';
+import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
