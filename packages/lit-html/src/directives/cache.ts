@@ -12,12 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateResult, NodePart} from '../lit-html.js';
+import {TemplateResult, NodePart, render, nothing} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 import {
-  detachNodePart,
-  restoreNodePart,
-  NodePartState,
+  clearPart,
+  getPartValue,
+  insertPart,
+  resetPartValue,
 } from '../directive-helpers.js';
 
 /**
@@ -36,30 +37,50 @@ import {
  */
 export const cache = directive(
   class extends Directive {
-    templateCache = new WeakMap<TemplateStringsArray, NodePartState>();
+    templateCache = new WeakMap<TemplateStringsArray, NodePart>();
     value?: TemplateResult;
 
     render(v: unknown) {
-      return v;
+      // Return an array of the value to induce lit-html to create a NodePart
+      // for the value that we can move into the cache.
+      return [v];
     }
 
-    update(part: NodePart, [v]: Parameters<this['render']>) {
+    update(containerPart: NodePart, [v]: Parameters<this['render']>) {
       // If the new value is not a TemplateResult from the same Template as the
       // previous value, move the nodes from the DOM into the cache.
       if (
         this.value !== undefined &&
         this.value.strings !== (v as TemplateResult).strings
       ) {
-        this.templateCache.set(this.value.strings, detachNodePart(part));
+        // This is always an array because we return [v] in render()
+        const partValue = getPartValue(containerPart) as Array<NodePart>;
+        const childPart = partValue.pop()!;
+        let cachedContainerPart = this.templateCache.get(this.value.strings);
+        if (cachedContainerPart === undefined) {
+          const fragment = new DocumentFragment();
+          cachedContainerPart = render(nothing, fragment);
+          resetPartValue(cachedContainerPart, [childPart]);
+          this.templateCache.set(this.value.strings, cachedContainerPart);
+        }
+        // Move into cache
+        insertPart(containerPart, undefined, childPart);
+        clearPart(containerPart);
       }
-
       // If the new value is a TemplateResult, try to restore it from cache
       if ((v as TemplateResult)._$litType$ !== undefined) {
-        const cachedTemplate = this.templateCache.get(
+        const cachedContainerPart = this.templateCache.get(
           (v as TemplateResult).strings
         );
-        if (cachedTemplate !== undefined) {
-          restoreNodePart(part, cachedTemplate);
+        if (cachedContainerPart !== undefined) {
+          // Move the cached part back into the container part value
+          const partValue = getPartValue(
+            cachedContainerPart
+          ) as Array<NodePart>;
+          const cachedPart = partValue.pop()!;
+          resetPartValue(containerPart, cachedPart);
+          // Move cached part back into DOM
+          insertPart(containerPart, cachedPart);
         }
         this.value = v as TemplateResult;
       } else {
