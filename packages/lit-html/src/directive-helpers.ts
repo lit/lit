@@ -61,12 +61,13 @@ export const insertPart = (
     const endNode = ((part as unknown) as NodePartInternal)._$endNode!
       .nextSibling;
     if (endNode !== refNode) {
-      reparentNodes(
-        container,
-        ((part as unknown) as NodePartInternal)._$startNode,
-        endNode,
-        refNode
-      );
+      let start: Node | null = ((part as unknown) as NodePartInternal)
+        ._$startNode;
+      while (start !== endNode) {
+        const n: Node | null = start!.nextSibling;
+        container.insertBefore(start!, refNode);
+        start = n;
+      }
     }
   }
 
@@ -148,45 +149,17 @@ export const getPartValue = (part: NodePart) => part._$value;
  */
 export const removePart = (part: NodePart) => {
   part._$setNodePartConnected?.(false, true);
-  removeNodes(
-    ((part as unknown) as NodePartInternal)._$startNode,
-    ((part as unknown) as NodePartInternal)._$endNode!.nextSibling
-  );
+  let start: ChildNode | null = ((part as unknown) as NodePartInternal)
+    ._$startNode;
+  const end: ChildNode | null = ((part as unknown) as NodePartInternal)
+    ._$endNode!.nextSibling;
+  while (start !== end) {
+    const n: ChildNode | null = start!.nextSibling;
+    start!.remove();
+    start = n;
+  }
 };
 
 export const clearPart = (part: NodePart) => {
   part._$clear();
-};
-
-/**
- * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
- * into another container (could be the same container), before `before`. If
- * `before` is null, it appends the nodes to the container.
- */
-const reparentNodes = (
-  container: Node,
-  start: Node | null,
-  end: Node | null = null,
-  before: Node | null = null
-): void => {
-  while (start !== end) {
-    const n = start!.nextSibling;
-    container.insertBefore(start!, before);
-    start = n;
-  }
-};
-
-/**
- * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
- * `container`.
- */
-const removeNodes = (
-  start: ChildNode | null,
-  end: ChildNode | null = null
-): void => {
-  while (start !== end) {
-    const n = start!.nextSibling;
-    start!.remove();
-    start = n;
-  }
 };
