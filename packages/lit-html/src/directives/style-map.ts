@@ -13,7 +13,7 @@
  */
 
 import {AttributePart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, ATTRIBUTE_PART} from '../directive.js';
+import {directive, Directive, PartType} from '../directive.js';
 
 /**
  * A key-value set of CSS properties and values.
@@ -32,7 +32,7 @@ class StyleMap extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
-      partInfo.type !== ATTRIBUTE_PART ||
+      partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'style' ||
       (partInfo.strings !== undefined && partInfo.strings.length > 2)
     ) {

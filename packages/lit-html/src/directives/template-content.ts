@@ -13,14 +13,14 @@
  */
 
 import {noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, NODE_PART} from '../directive.js';
+import {directive, Directive, PartType} from '../directive.js';
 
 class TemplateContent extends Directive {
   private _previousTemplate?: HTMLTemplateElement;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== NODE_PART) {
+    if (partInfo.type !== PartType.NODE) {
       throw new Error('templateContent can only be used in text bindings');
     }
   }

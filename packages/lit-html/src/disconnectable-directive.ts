@@ -127,7 +127,7 @@
 
 import {PartInfo, NodePart, Disconnectable, noChange} from './lit-html.js';
 import {setPartValue} from './directive-helpers.js';
-import {Directive, NODE_PART} from './directive.js';
+import {Directive, PartType} from './directive.js';
 export {directive} from './directive.js';
 
 /**
@@ -238,7 +238,7 @@ function setNodePartConnected(
  * Patches disconnection API onto NodeParts.
  */
 const installDisconnectAPI = (obj: Disconnectable) => {
-  if ((obj as NodePart).type == NODE_PART) {
+  if ((obj as NodePart).type == PartType.NODE) {
     (obj as NodePart)._$setNodePartConnected ??= setNodePartConnected;
   }
 };

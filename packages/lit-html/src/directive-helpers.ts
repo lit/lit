@@ -12,26 +12,54 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, NodePart, Part, DirectiveParent} from './lit-html.js';
+import {
+  AttributePart,
+  NodePart,
+  Part,
+  DirectiveParent,
+  TemplateResult,
+  DirectiveResult,
+  DirectiveClass,
+} from './lit-html.js';
 
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
 /**
- * Test if a value is a primitive value.
- * 
+ * Tests if a value is a primitive value.
+ *
  * See https://tc39.github.io/ecma262/#sec-typeof-operator
  */
 export const isPrimitive = (value: unknown): value is Primitive =>
   value === null || (typeof value != 'object' && typeof value != 'function');
 
+export const TemplateResultType = {
+  HTML: 1,
+  SVG: 2,
+} as const;
+
+export type TemplateResultType = typeof TemplateResultType[keyof typeof TemplateResultType];
+
 /**
- * Package private members of NodePart.
+ * Tests if a value is a TemplateResult.
  */
-type NodePartInternal = {
-  _$startNode: NodePart['_$startNode'];
-  _$endNode: NodePart['_$endNode'];
-  _commitNode: NodePart['_commitNode'];
-};
+export const isTemplateResult = (
+  value: unknown,
+  type?: TemplateResultType
+): value is TemplateResult =>
+  type === undefined
+    ? (value as TemplateResult)?._$litType$ !== undefined
+    : (value as TemplateResult)?._$litType$ === type;
+
+/**
+ * Tests if a value is a DirectiveResult.
+ */
+export const isDirectiveResult = (
+  value: unknown,
+  klass?: DirectiveClass
+): value is DirectiveResult =>
+  klass === undefined
+    ? (value as DirectiveResult)?._$litDirective$ !== undefined
+    : (value as DirectiveResult)?._$litDirective$ === klass;
 
 const createMarker = () => document.createComment('');
 
@@ -50,13 +78,10 @@ export const insertPart = (
   part: NodePart | undefined,
   refPart?: NodePart
 ): NodePart => {
-  const container = ((containerPart as unknown) as NodePartInternal)._$startNode
-    .parentNode!;
+  const container = containerPart._$startNode.parentNode!;
 
   const refNode =
-    refPart === undefined
-      ? ((containerPart as unknown) as NodePartInternal)._$endNode
-      : ((refPart as unknown) as NodePartInternal)._$startNode;
+    refPart === undefined ? containerPart._$endNode : refPart._$startNode;
 
   if (part === undefined) {
     const startNode = container.insertBefore(createMarker(), refNode);
@@ -68,11 +93,9 @@ export const insertPart = (
       containerPart.options
     );
   } else {
-    const endNode = ((part as unknown) as NodePartInternal)._$endNode!
-      .nextSibling;
+    const endNode = part._$endNode!.nextSibling;
     if (endNode !== refNode) {
-      let start: Node | null = ((part as unknown) as NodePartInternal)
-        ._$startNode;
+      let start: Node | null = part._$startNode;
       while (start !== endNode) {
         const n: Node | null = start!.nextSibling;
         container.insertBefore(start!, refNode);
@@ -159,10 +182,8 @@ export const getPartValue = (part: NodePart) => part._$value;
  */
 export const removePart = (part: NodePart) => {
   part._$setNodePartConnected?.(false, true);
-  let start: ChildNode | null = ((part as unknown) as NodePartInternal)
-    ._$startNode;
-  const end: ChildNode | null = ((part as unknown) as NodePartInternal)
-    ._$endNode!.nextSibling;
+  let start: ChildNode | null = part._$startNode;
+  const end: ChildNode | null = part._$endNode!.nextSibling;
   while (start !== end) {
     const n: ChildNode | null = start!.nextSibling;
     start!.remove();
