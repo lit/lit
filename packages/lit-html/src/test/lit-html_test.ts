@@ -773,16 +773,16 @@ suite('lit-html', () => {
     test.skip('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
       assert.include(
-        container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
-        'symbol'
+        container.querySelector('div')!.getAttribute('foo'),
+        ''
       );
     });
 
     test.skip('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')] as any}></div>`, container);
       assert.include(
-        container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
-        'symbol'
+        container.querySelector('div')!.getAttribute('foo')!,
+        ''
       );
     });
 

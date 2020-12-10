@@ -45,7 +45,7 @@ class LiveDirective extends Directive {
   }
 
   update(part: AttributePart, [value]: Parameters<this['render']>) {
-    if (value === noChange) {
+    if (value === noChange || value === nothing) {
       return value;
     }
     const element = part.element;
@@ -60,9 +60,7 @@ class LiveDirective extends Directive {
         return noChange;
       }
     } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
-      if (
-        (value === nothing ? false : !!value) === element.hasAttribute(name)
-      ) {
+      if (!!value === element.hasAttribute(name)) {
         return noChange;
       }
     } else if (part.type === ATTRIBUTE_PART) {
