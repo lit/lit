@@ -21,9 +21,9 @@ import {
   NodePart,
   PropertyPart,
   RenderOptions,
-  ATTRIBUTE_PART,
   _$private,
 } from './lit-html.js';
+import {ATTRIBUTE_PART} from './directive.js';
 
 const {
   _TemplateInstance: TemplateInstance,

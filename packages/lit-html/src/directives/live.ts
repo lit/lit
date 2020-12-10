@@ -12,18 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {AttributePart, noChange, nothing, PartInfo} from '../lit-html.js';
 import {
-  AttributePart,
-  noChange,
-  nothing,
-  PartInfo,
+  directive,
+  Directive,
   NODE_PART,
   EVENT_PART,
   PROPERTY_PART,
   BOOLEAN_ATTRIBUTE_PART,
   ATTRIBUTE_PART,
-} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+} from '../directive.js';
 import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {

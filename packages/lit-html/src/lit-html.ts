@@ -207,13 +207,11 @@ const HTML_RESULT = 1;
 const SVG_RESULT = 2;
 
 /** TemplatePart types */
-// TODO (justinfagnani): since these are exported, consider shorter names,
-// like just `ATTRIBUTE`.
-export const ATTRIBUTE_PART = 1;
-export const NODE_PART = 2;
-export const PROPERTY_PART = 3;
-export const BOOLEAN_ATTRIBUTE_PART = 4;
-export const EVENT_PART = 5;
+const ATTRIBUTE_PART = 1;
+const NODE_PART = 2;
+const PROPERTY_PART = 3;
+const BOOLEAN_ATTRIBUTE_PART = 4;
+const EVENT_PART = 5;
 const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
 
