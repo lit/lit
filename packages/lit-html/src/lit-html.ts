@@ -33,12 +33,12 @@ if (DEV_MODE) {
  * for this technique (https://github.com/WICG/trusted-types).
  *
  * @param node The HTML node (usually either a #text node or an Element) that
- *   is being written to. Note that this is just an exemplar node, the write
- *   may take place against another instance of the same class of node.
+ *     is being written to. Note that this is just an exemplar node, the write
+ *     may take place against another instance of the same class of node.
  * @param name The name of an attribute or property (for example, 'href').
  * @param type Indicates whether the write that's about to be performed will
- *   be to a property or a node.
- * @returns A function that will sanitize this class of writes.
+ *     be to a property or a node.
+ * @return A function that will sanitize this class of writes.
  */
 export type SanitizerFactory = (
   node: Node,
@@ -53,9 +53,9 @@ export type SanitizerFactory = (
  * See SanitizerFactory.
  *
  * @param value The value to sanitize. Will be the actual value passed into
- *   the lit-html template literal, so this could be of any type.
- * @returns The value to write to the DOM. Usually the same as the input value,
- *   unless sanitization is needed.
+ *     the lit-html template literal, so this could be of any type.
+ * @return The value to write to the DOM. Usually the same as the input value,
+ *     unless sanitization is needed.
  */
 export type ValueSanitizer = (value: unknown) => unknown;
 
@@ -461,8 +461,8 @@ export abstract class Directive {
  * @param strings template strings array
  * @param type HTML or SVG
  * @return Array containing `[html, attrNames]` (array returned for terseness,
- *   to avoid object fields since this code is shared with non-minified SSR
- *   code)
+ *     to avoid object fields since this code is shared with non-minified SSR
+ *     code)
  */
 const getTemplateHtml = (
   strings: TemplateStringsArray,
@@ -1141,10 +1141,10 @@ export class NodePart {
    * Removes the nodes contained within this Part from the DOM.
    *
    * @param start Start node to clear from, for clearing a subset of the part's
-   *  DOM (used when truncating iterables)
+   *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *  which NodeParts are being removed, used for disconnecting directives in
-   *  those Parts.
+   *     which NodeParts are being removed, used for disconnecting directives in
+   *     those Parts.
    */
   private _clear(
     start: ChildNode | null = this._$startNode.nextSibling,

@@ -110,6 +110,6 @@ class ClassMap extends Directive {
  * For example `{foo: bar}` applies the class `foo` if the value of `bar` is
  * truthy.
  *
- * @param classInfo {ClassInfo}
+ * @param classInfo
  */
 export const classMap = directive(ClassMap);

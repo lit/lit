@@ -141,7 +141,7 @@ export {directive} from './lit-html.js';
  * the connected state of directives and run `disconnectedCallback`/
  * `reconnectedCallback`s.
  *
- * @returns True if there were children to disconnect; false otherwise
+ * @return True if there were children to disconnect; false otherwise
  */
 const setChildrenConnected = (
   parent: Disconnectable,
@@ -296,7 +296,7 @@ export abstract class DisconnectableDirective extends Directive {
    *
    * @param isConnected
    * @param isClearingDirective - True when the directive itself is being
-   *   removed; false when the tree is being disconnected
+   *     removed; false when the tree is being disconnected
    * @internal
    */
   _$setDirectiveConnected(isConnected: boolean, isClearingDirective = true) {

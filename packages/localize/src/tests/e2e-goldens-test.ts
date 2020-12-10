@@ -35,12 +35,13 @@ import {formatDirDiff} from './format-dir-diff';
  * update the goldens/ directory to match output/, and fail the test to prevent
  * accidentally having this setting on.
  *
- * @param {name} Name of a sub-directory in "<repo root>/testdata/". Must
- * contain input/ and goldens/ sub-directories.
- * @param {args} Command line arguments to lit-localize (not including the node
- * binary and script name). Note that we chdir to the output/ directory before
- * running the command, so relative paths in arguments can be used here.
- * @param {expectedExitCode} The expected process exit code.
+ * @param name Name of a sub-directory in "<repo root>/testdata/". Must
+ *     contain input/ and goldens/ sub-directories.
+ * @param args Command line arguments to lit-localize (not including the node
+ *     binary and script name). Note that we chdir to the output/ directory
+ *     before running the command, so relative paths in arguments can be used
+ *     here.
+ * @param expectedExitCode The expected process exit code.
  */
 export function e2eGoldensTest(
   name: string,

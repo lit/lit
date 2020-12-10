@@ -390,7 +390,7 @@ msg(html`Hello <b>World</b>!`);
 Descriptions are represented in XLIFF using `<note>` elements.
 
 ```xml
-<trans-unit id="0h3c44aff2d5f5ef6b">
+<trans-unit id="h3c44aff2d5f5ef6b">
   <note>Greeting to everybody on homepage</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>
@@ -413,7 +413,7 @@ class MyHomepage extends Localized(LitElement) {
 ```
 
 ```xml
-<trans-unit id="0h3c44aff2d5f5ef6b">
+<trans-unit id="h3c44aff2d5f5ef6b">
   <note>Homepage / Greeting to everybody</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>

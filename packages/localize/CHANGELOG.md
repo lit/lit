@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--## Unreleased-->
 
+## [0.6.1] - 2020-12-09
+
+### Fixed
+
+- Fixed missing `.js` files from NPM package.
+
 ## [0.6.0] - 2020-12-09
 
 ### Changed
