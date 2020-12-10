@@ -103,9 +103,31 @@ suite('React createComponent', () => {
   });
 
   test('can get ref to element', async () => {
-    const elementRef = window.React.createRef();
-    renderReactComponent({ref: elementRef});
-    assert.equal(elementRef.current, el);
+    const elementRef1 = window.React.createRef();
+    renderReactComponent({ref: elementRef1});
+    assert.equal(elementRef1.current, el);
+    const elementRef2 = window.React.createRef();
+    renderReactComponent({ref: elementRef2});
+    assert.equal(elementRef1.current, null);
+    assert.equal(elementRef2.current, el);
+    renderReactComponent({ref: elementRef1});
+    assert.equal(elementRef1.current, el);
+    assert.equal(elementRef2.current, null);
+  });
+
+  test('can get ref to element via callbacks', async () => {
+    const ref1Calls: Array<string | undefined> = [];
+    const refCb1 = (e: Element | null) => ref1Calls.push(e?.localName);
+    const ref2Calls: Array<string | undefined> = [];
+    const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
+    renderReactComponent({ref: refCb1});
+    assert.deepEqual(ref1Calls, [elementName]);
+    renderReactComponent({ref: refCb2});
+    assert.deepEqual(ref1Calls, [elementName, undefined]);
+    assert.deepEqual(ref2Calls, [elementName]);
+    renderReactComponent({ref: refCb1});
+    assert.deepEqual(ref1Calls, [elementName, undefined, elementName]);
+    assert.deepEqual(ref2Calls, [elementName, undefined]);
   });
 
   test('can set attributes', async () => {

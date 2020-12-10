@@ -59,20 +59,29 @@ const setProperty = <E extends Element, T>(
   name: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  old: any,
+  old: unknown,
   events?: T
 ) => {
   // Dirty check and prevent setting reserved properties.
-  if (value === old || reservedReactProperties.has(name as string)) {
+  if (value === old || reservedReactProperties.has(name)) {
     return;
   }
   // For events, use an explicit list.
   const event = (events?.[name as keyof T] as unknown) as string;
   if (event !== undefined) {
-    setEvent(node, event, value);
+    setEvent(node, event, value as (e?: Event) => void);
   } else {
     node[name as keyof E] = value;
+  }
+};
+
+// Set a React ref. Note, there are 2 kinds of refs and there's no built in
+// React API to set a ref.
+const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
+  if (typeof ref === 'function') {
+    (ref as (e: Element | null) => void)(value);
+  } else {
+    (ref as {current: Element | null}).current = value;
   }
 };
 
@@ -110,8 +119,7 @@ export const createComponent = <I extends HTMLElement, E>(
 
   // List of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const elementPropsMap: {[index: string]: any} = {...(events ?? {})};
+  const elementPropsMap: {[index: string]: unknown} = {...(events ?? {})};
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
       elementPropsMap[p] = true;
@@ -120,27 +128,9 @@ export const createComponent = <I extends HTMLElement, E>(
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
-
     private _elementProps!: typeof elementPropsMap;
-
-    private _ref = (element: I | null) => {
-      this._element = element;
-      // Fulfill any ref we receive in our props.
-      // The `ref` prop is special and cannot be accessed without an error
-      // so use `__forwardedRef`.
-      const forwardedRef = this.props?.__forwardedRef;
-      if (forwardedRef) {
-        // Note, there are 2 kinds of refs and we manually fulfill them here.
-        // There is no built in React API for this.
-        if (typeof forwardedRef === 'function') {
-          (forwardedRef as (e: I | null) => void)(element);
-        } else {
-          // This has to be `any` because `current` is readonly.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (forwardedRef as any).current = element;
-        }
-      }
-    };
+    private _userRef?: React.Ref<unknown>;
+    private _ref?: (element: I | null) => void;
 
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
@@ -186,6 +176,21 @@ export const createComponent = <I extends HTMLElement, E>(
      *
      */
     render() {
+      // Since refs only get fulfilled once, pass a new one if the user's
+      // ref changed. This allows refs to be fulfilled as expected, going from
+      // having a value to null.
+      const userRef = this.props.__forwardedRef as React.Ref<unknown>;
+      if (this._ref === undefined || this._userRef !== userRef) {
+        this._ref = (value: I | null) => {
+          if (this._element === null) {
+            this._element = value;
+          }
+          if (userRef !== null) {
+            setRef(userRef, value);
+          }
+          this._userRef = userRef;
+        };
+      }
       // Filters class properties out and passes the remaining
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
@@ -194,12 +199,11 @@ export const createComponent = <I extends HTMLElement, E>(
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
-      for (const p in this.props) {
-        const v = this.props[p as keyof ComponentProps];
-        if (elementPropsMap[p]) {
-          this._elementProps[p] = v;
+      for (const [k, v] of Object.entries(this.props)) {
+        if (elementPropsMap[k]) {
+          this._elementProps[k] = v;
         } else {
-          props[p as keyof ComponentProps] = v;
+          props[k] = v;
         }
       }
       return createElement(tagName, props, props.children);
