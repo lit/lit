@@ -472,14 +472,14 @@ export const tests: {[name: string]: SSRTest} = {
 
   'NodePart accepts nested directives': () => {
     const aDirective = directive(
-      class ADirective extends Directive {
+      class extends Directive {
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
       }
     );
     const bDirective = directive(
-      class BDirective extends Directive {
+      class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
         render(v: string) {
@@ -1026,14 +1026,14 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts nested directives': () => {
     const aDirective = directive(
-      class ADirective extends Directive {
+      class extends Directive {
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
       }
     );
     const bDirective = directive(
-      class BDirective extends Directive {
+      class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
         render(v: string) {
