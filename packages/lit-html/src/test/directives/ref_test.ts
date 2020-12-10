@@ -281,4 +281,19 @@ suite('ref', () => {
     assert.deepEqual(aCalls, ['DIV', undefined, 'DIV']);
     assert.deepEqual(bCalls, ['DIV', undefined]);
   });
+
+  test('new callback created each render', () => {
+    const calls: Array<string | undefined> = [];
+    const go = () =>
+      render(
+        html`<div ${ref((el) => calls.push(el?.tagName))}></div>`,
+        container
+      );
+    go();
+    assert.deepEqual(calls, ['DIV']);
+    go();
+    assert.deepEqual(calls, ['DIV', undefined, 'DIV']);
+    go();
+    assert.deepEqual(calls, ['DIV', undefined, 'DIV', undefined, 'DIV']);
+  });
 });
