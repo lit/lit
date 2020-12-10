@@ -62,9 +62,7 @@ suite('lit-html', () => {
     }
     const swap = directive(SwapDirective);
 
-    const go = (items: any) =>
-      // prettier-ignore
-      render(html`<ul>${swap(items)}</ul>`, container);
+    const go = (items: any) => render(html`<ul>${swap(items)}</ul>`, container);
 
     // Initial render with 4 template results:
     go([1, 2, 3, 4]);
