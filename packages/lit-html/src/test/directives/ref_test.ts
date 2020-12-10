@@ -75,11 +75,17 @@ suite('ref', () => {
     let callCount = 0;
     const elRef = createRef();
 
-    const originalSet = elRef.set;
-    elRef.set = function (v: Element | undefined) {
-      originalSet.call(elRef, v);
-      callCount++;
-    };
+    // Patch Ref to observe value changes
+    let value: Element | undefined;
+    Object.defineProperty(elRef, 'value', {
+      set(v: Element | undefined) {
+        value = v;
+        callCount++;
+      },
+      get() {
+        return value;
+      },
+    });
 
     const go = (x: boolean) =>
       render(
@@ -191,5 +197,88 @@ suite('ref', () => {
     assert.equal(queriedEl?.tagName, 'DIV');
     assert.deepEqual(divCalls, ['DIV', undefined, 'DIV']);
     assert.deepEqual(spanCalls, ['SPAN', undefined]);
+  });
+
+  test('refs are always set in tree order', () => {
+    const elRef = createRef();
+    const go = () =>
+      render(
+        html`
+        <div id="first" ${ref(elRef)}></div>
+        <div id="next" ${ref(elRef)}>
+          ${html`<span id="last" ${ref(elRef)}></span>`}
+        </div>`,
+        container
+      );
+
+    go();
+    assert.equal(elRef.value!.id, 'last');
+    go();
+    assert.equal(elRef.value!.id, 'last');
+  });
+
+  test('callbacks are always called in tree order', () => {
+    const calls: Array<string | undefined> = [];
+    const elCallback = (e: Element | undefined) => {
+      calls.push(e?.id);
+    };
+    const go = () =>
+      render(
+        html`
+        <div id="first" ${ref(elCallback)}></div>
+        <div id="next" ${ref(elCallback)}>
+          ${html`<span id="last" ${ref(elCallback)}></span>`}
+        </div>`,
+        container
+      );
+
+    go();
+    assert.deepEqual(calls, ['first', undefined, 'next', undefined, 'last']);
+    calls.length = 0;
+    go();
+    assert.deepEqual(calls, [
+      undefined,
+      'first',
+      undefined,
+      'next',
+      undefined,
+      'last',
+    ]);
+  });
+
+  test('Ref passed to ref directive changes', () => {
+    const aRef = createRef();
+    const bRef = createRef();
+    const go = (x: boolean) =>
+      render(html`<div ${ref(x ? aRef : bRef)}></div>`, container);
+
+    go(true);
+    assert.equal(aRef.value?.tagName, 'DIV');
+    assert.equal(bRef.value, undefined);
+    go(false);
+    assert.equal(aRef.value, undefined);
+    assert.equal(bRef.value?.tagName, 'DIV');
+    go(true);
+    assert.equal(aRef.value?.tagName, 'DIV');
+    assert.equal(bRef.value, undefined);
+  });
+
+  test('callback passed to ref directive changes', () => {
+    const aCalls: Array<string | undefined> = [];
+    const aCallback = (el: Element | undefined) => aCalls.push(el?.tagName);
+    const bCalls: Array<string | undefined> = [];
+    const bCallback = (el: Element | undefined) => bCalls.push(el?.tagName);
+    const go = (x: boolean) =>
+      render(html`<div ${ref(x ? aCallback : bCallback)}></div>`, container);
+
+    go(true);
+    assert.deepEqual(aCalls, ['DIV']);
+    assert.deepEqual(bCalls, []);
+    go(false);
+    assert.deepEqual(aCalls, ['DIV', undefined]);
+    assert.deepEqual(bCalls, ['DIV']);
+    go(true);
+    assert.deepEqual(aCalls, ['DIV', undefined, 'DIV']);
+    assert.deepEqual(bCalls, ['DIV', undefined]);
   });
 });

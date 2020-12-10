@@ -24,17 +24,11 @@ class Ref<T = Element> {
    * The current Element value of the ref, or else `undefined` if the ref is no
    * longer rendered.
    */
-  value?: T;
+  readonly value?: T;
+}
 
-  /**
-   * Updates the element value of this Ref. Users should generally not need to
-   * call this function; it will be called automatically when passed to the
-   * `ref()` directive.
-   * @param element
-   */
-  set(element: T | undefined): void {
-    this.value = element;
-  }
+interface RefInternal {
+  value: Element | undefined;
 }
 
 // When callbacks are used for refs, this map tracks the last value the callback
@@ -62,7 +56,7 @@ class RefDirective extends DisconnectableDirective {
       // unset the previous ref's value
       this._updateRefValue(undefined);
     }
-    if (refChanged || part.element !== this._element) {
+    if (refChanged || this._lastElementForRef !== this._element) {
       // We either got a new ref or this is the first render;
       // store the ref/element & update the ref value
       this._ref = ref;
@@ -84,8 +78,14 @@ class RefDirective extends DisconnectableDirective {
         this._ref(element);
       }
     } else {
-      this._ref!.set(element);
+      (this._ref as RefInternal)!.value = element;
     }
+  }
+
+  private get _lastElementForRef() {
+    return typeof this._ref === 'function'
+      ? lastElementForCallback.get(this._ref)
+      : this._ref?.value;
   }
 
   disconnectedCallback() {
@@ -93,11 +93,7 @@ class RefDirective extends DisconnectableDirective {
     // directive instance hasn't rendered its element to it before us); that
     // only happens in the event of the directive being cleared (not via manual
     // disconnection)
-    const lastElement =
-      typeof this._ref === 'function'
-        ? lastElementForCallback.get(this._ref)
-        : this._ref?.value;
-    if (lastElement === this._element) {
+    if (this._lastElementForRef === this._element) {
       this._updateRefValue(undefined);
     }
   }
