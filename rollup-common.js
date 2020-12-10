@@ -97,6 +97,8 @@ const stableProperties = {
   _$setDirectiveConnected: 'R',
   // lit-html: NodePart (added by disconnectable-directive)
   _$setNodePartConnected: 'S',
+  // lit-html: NodePart (used by directive-helpers)
+  _$clear: 'T',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and

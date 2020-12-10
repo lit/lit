@@ -12,26 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  AttributePart,
-  NodePart,
-  Part,
-  nothing,
-  DirectiveParent,
-} from './lit-html.js';
-
-/**
- * The state of a NodePart, which can be detached and reattached.
- */
-export type NodePartState = {};
-
-/**
- * The private interface for NodePartState, which should be kept opaque.
- */
-type NodePartStateInternal = {
-  _value: unknown;
-  _fragment: DocumentFragment;
-};
+import {AttributePart, NodePart, Part, DirectiveParent} from './lit-html.js';
 
 /**
  * Package private members of NodePart.
@@ -40,48 +21,6 @@ type NodePartInternal = {
   _$startNode: NodePart['_$startNode'];
   _$endNode: NodePart['_$endNode'];
   _commitNode: NodePart['_commitNode'];
-};
-
-/**
- * Detaches the DOM associated with a NodePart and returns an opaque
- * NodePartState object containing the previous state of the part, such that it
- * can be restored at a later time.
- *
- * @param part The NodePart to detach
- */
-export const detachNodePart = (part: NodePart): NodePartState => {
-  const fragment = document.createDocumentFragment();
-  const state: NodePartStateInternal = {
-    _value: part._$value,
-    _fragment: fragment,
-  };
-  part._$setNodePartConnected?.(false, true);
-  let start = ((part as unknown) as NodePartInternal)._$startNode.nextSibling;
-  let nextNode;
-  while (start !== ((part as unknown) as NodePartInternal)._$endNode) {
-    nextNode = start!.nextSibling;
-    fragment.append(start!);
-    start = nextNode;
-  }
-  part._$value = nothing;
-  return state;
-};
-
-/**
- * Restores the state of a previously detached NodePart, including re-attaching
- * its DOM and setting up the NodePart to efficiently update based on its
- * previously committed value.
- *
- * @param part The NodePart to restore
- * @param state The state restore, returned from a prior call to
- *     `detachNodePart`
- */
-export const restoreNodePart = (part: NodePart, state: NodePartState) => {
-  ((part as unknown) as NodePartInternal)._commitNode(
-    (state as NodePartStateInternal)._fragment
-  );
-  part._$value = (state as NodePartStateInternal)._value;
-  part._$setNodePartConnected?.(true);
 };
 
 const createMarker = () => document.createComment('');
@@ -213,6 +152,10 @@ export const removePart = (part: NodePart) => {
     ((part as unknown) as NodePartInternal)._$startNode,
     ((part as unknown) as NodePartInternal)._$endNode!.nextSibling
   );
+};
+
+export const clearPart = (part: NodePart) => {
+  part._$clear();
 };
 
 /**

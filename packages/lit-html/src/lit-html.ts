@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive} from './directive';
+import {Directive} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -921,7 +921,7 @@ export class NodePart {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
       if (value === nothing) {
-        this._clear();
+        this._$clear();
         this._$value = nothing;
       } else if (value !== this._$value && value !== noChange) {
         this._commitText(value);
@@ -944,7 +944,7 @@ export class NodePart {
 
   private _commitNode(value: Node): void {
     if (this._$value !== value) {
-      this._clear();
+      this._$clear();
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
         sanitizerFactoryInternal !== noopSanitizer
@@ -1043,7 +1043,7 @@ export class NodePart {
     // array for NodeParts.
     if (!isArray(this._$value)) {
       this._$value = [];
-      this._clear();
+      this._$clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
@@ -1076,7 +1076,7 @@ export class NodePart {
 
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
-      this._clear(itemPart?._$endNode!.nextSibling, partIndex);
+      this._$clear(itemPart?._$endNode!.nextSibling, partIndex);
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1090,8 +1090,10 @@ export class NodePart {
    * @param from  When `start` is specified, the index within the iterable from
    *     which NodeParts are being removed, used for disconnecting directives in
    *     those Parts.
+   * 
+   * @internal
    */
-  private _clear(
+  _$clear(
     start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
