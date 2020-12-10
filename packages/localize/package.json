@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.5.1",
+  "version": "0.6.1",
   "publishConfig": {
     "access": "public"
   },
@@ -39,6 +39,12 @@
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",
+    "/id-generation.d.ts",
+    "/id-generation.js",
+    "/id-generation.js.map",
+    "/fnv1a64.d.ts",
+    "/fnv1a64.js",
+    "/fnv1a64.js.map",
     "/localized-element.d.ts",
     "/localized-element.js",
     "/localized-element.js.map",

@@ -17,13 +17,7 @@ import {fnv1a64} from './fnv1a64.js';
  *
  * This is the "record separator" ASCII character.
  */
-export const HASH_DELIMITER = String.fromCharCode(30);
-
-/**
- * Id scheme version prefix to distinguish this implementation from potential
- * changes in the future.
- */
-const VERSION_PREFIX = 'a';
+export const HASH_DELIMITER = '\x1e';
 
 /**
  * Id prefix on html-tagged templates to distinguish e.g. `<b>x</b>` from
@@ -43,20 +37,18 @@ const STRING_PREFIX = 's';
  * Example:
  *   Template: html`Hello <b>${who}</b>!`
  *     Params: ["Hello <b>", "</b>!"], true
- *     Output: ah82ccc38d4d46eaa9
+ *     Output: h82ccc38d4d46eaa9
  *
  * The ID is constructed as:
  *
- *   [0]    Version indicator for this ID generation scheme ("a").
- *   [1]    Kind of template: [h]tml or [s]tring.
- *   [2,17] 64-bit FNV-1a hash hex digest of the template strings, where each
- *          string is UTF-8 encoded and delineated by an ASCII "record separator"
- *          character.
+ *   [0]    Kind of template: [h]tml or [s]tring.
+ *   [1,16] 64-bit FNV-1a hash hex digest of the template strings, as UTF-16
+ *          code points, delineated by an ASCII "record separator" character.
  *
  * We choose FNV-1a because:
  *
  *   1. It's pretty fast (e.g. much faster than SHA-1).
- *   2. It's pretty small (0.41 KiB minified + brotli).
+ *   2. It's pretty small (0.25 KiB minified + brotli).
  *   3. We don't require cryptographic security, and 64 bits should give
  *      sufficient collision resistance for any one application. Worst
  *      case, we will always detect collisions during analysis.
@@ -71,7 +63,6 @@ export function generateMsgId(
   isHtmlTagged: boolean
 ): string {
   return (
-    VERSION_PREFIX +
     (isHtmlTagged ? HTML_PREFIX : STRING_PREFIX) +
     fnv1a64(
       typeof strings === 'string' ? strings : strings.join(HASH_DELIMITER)

@@ -661,7 +661,8 @@ export abstract class UpdatingElement extends HTMLElement {
    * creates and returns an open shadowRoot. Implement to customize where the
    * element's DOM is rendered. For example, to render into the element's
    * childNodes, return `this`.
-   * @returns {Element|DocumentFragment} Returns a node into which to render.
+   *
+   * @return Returns a node into which to render.
    */
   protected createRenderRoot(): Element | ShadowRoot {
     const renderRoot =
@@ -809,10 +810,10 @@ export abstract class UpdatingElement extends HTMLElement {
    * property `name` and `oldValue` to ensure that any configured property
    * options are honored.
    *
-   * @param name {PropertyKey} (optional) name of requesting property
-   * @param oldValue {any} (optional) old value of requesting property
-   * @param options {PropertyDeclaration} (optional) property options to use
-   * instead of the previously configured options
+   * @param name name of requesting property
+   * @param oldValue old value of requesting property
+   * @param options property options to use instead of the previously
+   *     configured options
    */
   requestUpdate(
     name?: PropertyKey,
@@ -1011,8 +1012,8 @@ export abstract class UpdatingElement extends HTMLElement {
    * before fulfilling this Promise. To do this, first await
    * `super.getUpdateComplete()`, then any subsequent state.
    *
-   * @returns {Promise} The Promise returns a boolean that indicates if the
-   * update resolved without triggering another update.
+   * @return A promise of a boolean that indicates if the update resolved
+   *     without triggering another update.
    */
   get updateComplete() {
     return this.getUpdateComplete();

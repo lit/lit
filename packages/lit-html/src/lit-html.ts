@@ -33,12 +33,12 @@ if (DEV_MODE) {
  * for this technique (https://github.com/WICG/trusted-types).
  *
  * @param node The HTML node (usually either a #text node or an Element) that
- *   is being written to. Note that this is just an exemplar node, the write
- *   may take place against another instance of the same class of node.
+ *     is being written to. Note that this is just an exemplar node, the write
+ *     may take place against another instance of the same class of node.
  * @param name The name of an attribute or property (for example, 'href').
  * @param type Indicates whether the write that's about to be performed will
- *   be to a property or a node.
- * @returns A function that will sanitize this class of writes.
+ *     be to a property or a node.
+ * @return A function that will sanitize this class of writes.
  */
 export type SanitizerFactory = (
   node: Node,
@@ -53,9 +53,9 @@ export type SanitizerFactory = (
  * See SanitizerFactory.
  *
  * @param value The value to sanitize. Will be the actual value passed into
- *   the lit-html template literal, so this could be of any type.
- * @returns The value to write to the DOM. Usually the same as the input value,
- *   unless sanitization is needed.
+ *     the lit-html template literal, so this could be of any type.
+ * @return The value to write to the DOM. Usually the same as the input value,
+ *     unless sanitization is needed.
  */
 export type ValueSanitizer = (value: unknown) => unknown;
 
@@ -259,12 +259,12 @@ export const svg = tag(SVG_RESULT);
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
  */
-export const noChange = {};
+export const noChange = Symbol.for('lit-noChange');
 
 /**
  * A sentinel value that signals a NodePart to fully clear its content.
  */
-export const nothing = {};
+export const nothing = Symbol.for('lit-nothing');
 
 /**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
@@ -461,8 +461,8 @@ export abstract class Directive {
  * @param strings template strings array
  * @param type HTML or SVG
  * @return Array containing `[html, attrNames]` (array returned for terseness,
- *   to avoid object fields since this code is shared with non-minified SSR
- *   code)
+ *     to avoid object fields since this code is shared with non-minified SSR
+ *     code)
  */
 const getTemplateHtml = (
   strings: TemplateStringsArray,
@@ -647,20 +647,18 @@ class Template {
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
-          const {attributes} = node as Element;
           // We defer removing bound attributes because on IE we might not be
           // iterating attributes in their template order, and would sometimes
           // remove an attribute that we still need to create a part for.
           const attrsToRemove = [];
-          for (let i = 0; i < attributes.length; i++) {
-            // This is the name of the attribute we're iterating over, but not
+          for (const name of (node as Element).getAttributeNames()) {
+            // `name` is the name of the attribute we're iterating over, but not
             // _neccessarily_ the name of the attribute we will create a part
             // for. They can be different in browsers that don't iterate on
             // attributes in source order. In that case the attrNames array
             // contains the attribute name we'll process next. We only need the
             // attribute name here to know if we should process a bound attribute
             // on this element.
-            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
               const realName = attrNames[attrNameIndex++];
               // Lowercase for case-sensitive SVG attributes like viewBox
@@ -975,7 +973,10 @@ export class NodePart {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
-      if (value !== this._$value) {
+      if (value === nothing) {
+        this._clear();
+        this._$value = nothing;
+      } else if (value !== this._$value && value !== noChange) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -984,10 +985,7 @@ export class NodePart {
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this._commitIterable(value);
-    } else if (value === nothing) {
-      this._clear();
-      this._$value = nothing;
-    } else if (value !== noChange) {
+    } else {
       // Fallback, will render the string representation
       this._commitText(value);
     }
@@ -1141,10 +1139,10 @@ export class NodePart {
    * Removes the nodes contained within this Part from the DOM.
    *
    * @param start Start node to clear from, for clearing a subset of the part's
-   *  DOM (used when truncating iterables)
+   *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *  which NodeParts are being removed, used for disconnecting directives in
-   *  those Parts.
+   *     which NodeParts are being removed, used for disconnecting directives in
+   *     those Parts.
    */
   private _clear(
     start: ChildNode | null = this._$startNode.nextSibling,
@@ -1232,9 +1230,11 @@ export class AttributePart {
    * @param value The part value, or an array of values for multi-valued parts
    * @param valueIndex the index to start reading values from. `undefined` for
    *   single-valued parts
-   * @param commitValue An optional method to override the _commitValue call;
-   *   is used in hydration to no-op re-setting serialized attributes, and in
-   *   to no-op the DOM operation and capture the value for serialization
+   * @param noCommit causes the part to not commit its value to the DOM. Used
+   *   in hydration to prime attribute parts with their first-rendered value,
+   *   but not set the attribute, and in SSR to no-op the DOM operation and
+   *   capture the value for serialization.
+   *
    * @internal
    */
   _$setValue(
@@ -1245,62 +1245,43 @@ export class AttributePart {
   ) {
     const strings = this.strings;
 
+    // Whether any of the values has changed, for dirty-checking
+    let change = false;
+
     if (strings === undefined) {
       // Single-value binding case
       value = resolveDirective(this, value, directiveParent, 0);
-      // Only dirty-check primitives and `nothing`:
-      // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
-      // `nothing`. `v === this._$value` is the dirty-check.
-      if (
-        !(
-          (isPrimitive(value) || value === nothing) &&
-          value === this._$value
-        ) &&
-        value !== noChange
-      ) {
+      change =
+        !isPrimitive(value) || (value !== this._$value && value !== noChange);
+      if (change) {
         this._$value = value;
-        if (!noCommit) {
-          this._commitValue(value);
-        }
       }
     } else {
       // Interpolation case
-      let attributeValue = strings[0];
-
-      // Whether any of the values has changed, for dirty-checking
-      let change = false;
-
-      // Whether any of the values is the `nothing` sentinel. If any are, we
-      // remove the entire attribute.
-      let remove = false;
+      const values = value as Array<unknown>;
+      value = strings[0];
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = resolveDirective(
-          this,
-          (value as Array<unknown>)[valueIndex! + i],
-          directiveParent,
-          i
-        );
+        v = resolveDirective(this, values[valueIndex! + i], directiveParent, i);
+
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._$value as Array<unknown>)[i];
-        } else {
-          remove = remove || v === nothing;
-          change =
-            change ||
-            !(
-              (isPrimitive(v) || v === nothing) &&
-              v === (this._$value as Array<unknown>)[i]
-            );
-          (this._$value as Array<unknown>)[i] = v;
         }
-        attributeValue +=
-          (typeof v === 'string' ? v : String(v ?? '')) + strings[i + 1];
+        change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+        if (v === nothing) {
+          value = nothing;
+        } else if (value !== nothing) {
+          value += (v ?? '') + strings[i + 1];
+        }
+        // We always record each value, even if one is `nothing`, for future
+        // change detection.
+        (this._$value as Array<unknown>)[i] = v;
       }
-      if (change && !noCommit) {
-        this._commitValue(remove ? nothing : attributeValue);
-      }
+    }
+    if (change && !noCommit) {
+      this._commitValue(value);
     }
   }
 
