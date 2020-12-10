@@ -27,11 +27,15 @@ export {DirectiveClass, DirectiveParameters, DirectiveResult} from './lit-html';
 
 const resolveDirective = _$private._resolveDirective;
 
-export const ATTRIBUTE_PART = 1;
-export const NODE_PART = 2;
-export const PROPERTY_PART = 3;
-export const BOOLEAN_ATTRIBUTE_PART = 4;
-export const EVENT_PART = 5;
+export const PartType = {
+  ATTRIBUTE: 1,
+  NODE: 2,
+  PROPERTY: 3,
+  BOOLEAN_ATTRIBUTE: 4,
+  EVENT: 5,
+} as const;
+
+export type PartType = typeof PartType[keyof typeof PartType];
 
 /**
  * Creates a user-facing directive function from a Directive class. This

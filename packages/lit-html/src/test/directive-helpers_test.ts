@@ -11,17 +11,70 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {html, NodePart, render} from '../lit-html.js';
+import {html, NodePart, render, svg} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
-import {insertPart, removePart} from '../directive-helpers.js';
+import {
+  insertPart,
+  isDirectiveResult,
+  isPrimitive,
+  isTemplateResult,
+  removePart,
+  TemplateResultType,
+} from '../directive-helpers.js';
+import {classMap} from '../directives/class-map.js';
+import {UnsafeHTML, unsafeHTML} from '../directives/unsafe-html.js';
 
-suite('lit-html', () => {
+suite('directive-helpers', () => {
   let container: HTMLDivElement;
 
   setup(() => {
     container = document.createElement('div');
+  });
+
+  test('isPrimitive', () => {
+    assert.isTrue(isPrimitive(null));
+    assert.isTrue(isPrimitive(undefined));
+    assert.isTrue(isPrimitive(true));
+    assert.isTrue(isPrimitive(1));
+    assert.isTrue(isPrimitive('a'));
+    assert.isTrue(isPrimitive(Symbol()));
+
+    // Can't polyfill this syntax:
+    // assert.isTrue(isPrimitive(1n));
+
+    assert.isFalse(isPrimitive({}));
+    assert.isFalse(isPrimitive(() => {}));
+  });
+
+  test('isTemplateResult', () => {
+    assert.isTrue(isTemplateResult(html``));
+    assert.isTrue(isTemplateResult(svg``));
+    assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
+
+    assert.isFalse(isTemplateResult(null));
+    assert.isFalse(isTemplateResult(undefined));
+    assert.isFalse(isTemplateResult({}));
+    assert.isFalse(isTemplateResult(html``, TemplateResultType.SVG));
+    assert.isFalse(isTemplateResult(svg``, TemplateResultType.HTML));
+    assert.isFalse(isTemplateResult(null, TemplateResultType.HTML));
+    assert.isFalse(isTemplateResult(undefined, TemplateResultType.HTML));
+    assert.isFalse(isTemplateResult({}, TemplateResultType.HTML));
+  });
+
+  test('isDirectiveResult', () => {
+    assert.isTrue(isDirectiveResult(classMap({})));
+    assert.isTrue(isDirectiveResult(unsafeHTML(''), UnsafeHTML));
+
+    assert.isFalse(isDirectiveResult(null));
+    assert.isFalse(isDirectiveResult(undefined));
+    assert.isFalse(isDirectiveResult({}));
+    assert.isFalse(isDirectiveResult(classMap({}), UnsafeHTML));
+    assert.isFalse(isDirectiveResult(null, UnsafeHTML));
+    assert.isFalse(isDirectiveResult(undefined, UnsafeHTML));
+    assert.isFalse(isDirectiveResult({}, UnsafeHTML));
   });
 
   test('insertPart', () => {

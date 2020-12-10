@@ -12,12 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateResult, NodePart, render, nothing} from '../lit-html.js';
+import {
+  TemplateResult,
+  NodePart,
+  render,
+  nothing,
+  DirectiveParameters,
+} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 import {
   clearPart,
   getPartValue,
   insertPart,
+  isTemplateResult,
   resetPartValue,
 } from '../directive-helpers.js';
 
@@ -46,7 +53,7 @@ export const cache = directive(
       return [v];
     }
 
-    update(containerPart: NodePart, [v]: Parameters<this['render']>) {
+    update(containerPart: NodePart, [v]: DirectiveParameters<this>) {
       // If the new value is not a TemplateResult from the same Template as the
       // previous value, move the nodes from the DOM into the cache.
       if (
@@ -68,10 +75,8 @@ export const cache = directive(
         clearPart(containerPart);
       }
       // If the new value is a TemplateResult, try to restore it from cache
-      if ((v as TemplateResult)._$litType$ !== undefined) {
-        const cachedContainerPart = this.templateCache.get(
-          (v as TemplateResult).strings
-        );
+      if (isTemplateResult(v)) {
+        const cachedContainerPart = this.templateCache.get(v.strings);
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value
           const partValue = getPartValue(
@@ -82,7 +87,7 @@ export const cache = directive(
           // Move cached part back into DOM
           insertPart(containerPart, cachedPart);
         }
-        this.value = v as TemplateResult;
+        this.value = v;
       } else {
         this.value = undefined;
       }

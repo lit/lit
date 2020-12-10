@@ -13,21 +13,13 @@
  */
 
 import {AttributePart, noChange, nothing, PartInfo} from '../lit-html.js';
-import {
-  directive,
-  Directive,
-  NODE_PART,
-  EVENT_PART,
-  PROPERTY_PART,
-  BOOLEAN_ATTRIBUTE_PART,
-  ATTRIBUTE_PART,
-} from '../directive.js';
+import {directive, Directive, PartType} from '../directive.js';
 import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type === EVENT_PART || partInfo.type === NODE_PART) {
+    if (partInfo.type === PartType.EVENT || partInfo.type === PartType.NODE) {
       throw new Error(
         'The `live` directive is not allowed on text or event bindings'
       );
@@ -51,16 +43,16 @@ class LiveDirective extends Directive {
     // TODO (justinfagnani): This is essentially implementing a getLiveValue()
     // method for each part type. Should that be moved into the AttributePart
     // interface?
-    if (part.type === PROPERTY_PART) {
+    if (part.type === PartType.PROPERTY) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (value === (element as any)[name]) {
         return noChange;
       }
-    } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
+    } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
       if (!!value === element.hasAttribute(name)) {
         return noChange;
       }
-    } else if (part.type === ATTRIBUTE_PART) {
+    } else if (part.type === PartType.ATTRIBUTE) {
       if (element.getAttribute(name) === String(value)) {
         return noChange;
       }

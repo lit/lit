@@ -13,7 +13,7 @@
  */
 
 import {NodePart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, NODE_PART} from '../directive.js';
+import {directive, Directive, PartType} from '../directive.js';
 import {
   insertPart,
   getPartValue,
@@ -61,7 +61,7 @@ class RepeatDirective extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== NODE_PART) {
+    if (partInfo.type !== PartType.NODE) {
       throw new Error('repeat can only be used in text bindings');
     }
   }
