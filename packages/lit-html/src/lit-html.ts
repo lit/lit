@@ -1386,7 +1386,6 @@ export const _$private = {
   _getTemplateHtml: getTemplateHtml,
   // Used in hydrate
   _TemplateInstance: TemplateInstance,
-  _isPrimitive: isPrimitive,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
 };
