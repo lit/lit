@@ -13,6 +13,10 @@
       "development": "./development/lit-html.js",
       "default": "./lit-html.js"
     },
+    "./directive.js": {
+      "development": "./development/directive.js",
+      "default": "./directive.js"
+    },
     "./directive-helpers.js": {
       "development": "./development/directive-helpers.js",
       "default": "./directive-helpers.js"
@@ -41,7 +45,7 @@
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
+    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
@@ -57,6 +61,10 @@
     "/lit-html.d.ts.map",
     "/lit-html.js",
     "/lit-html.js.map",
+    "/directive.d.ts",
+    "/directive.d.ts.map",
+    "/directive.js",
+    "/directive.js.map",
     "/directive-helpers.d.ts",
     "/directive-helpers.d.ts.map",
     "/directive-helpers.js",

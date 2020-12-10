@@ -14,12 +14,11 @@
 
 import {
   AttributePart,
-  directive,
-  Directive,
   noChange,
   PartInfo,
   ATTRIBUTE_PART,
 } from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 
 /**
  * A key-value set of CSS properties and values.

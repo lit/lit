@@ -14,7 +14,8 @@
 
 import 'lit-element/hydrate-support.js';
 
-import {html, noChange, nothing, directive, Directive} from 'lit-html';
+import {html, noChange, nothing} from 'lit-html';
+import {directive, Directive} from 'lit-html/directive.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';

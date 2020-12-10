@@ -43,6 +43,7 @@ packages/lit-html/node_modules/
 packages/lit-html/test/
 packages/lit-html/hydrate.*
 packages/lit-html/lit-html.*
+packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
 packages/lit-html/disconnectable-directive.*
 packages/lit-html/platform-support.*

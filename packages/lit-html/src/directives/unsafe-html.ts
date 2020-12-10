@@ -13,14 +13,13 @@
  */
 
 import {
-  directive,
-  Directive,
   nothing,
   TemplateResult,
   noChange,
   PartInfo,
   NODE_PART,
 } from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 
 const HTML_RESULT = 1;
 
