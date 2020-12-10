@@ -92,24 +92,46 @@ const createMarker = () => document.createComment('');
  * `refPart`.
  *
  * @param containerPart Part within which to add the new NodePart
+ * @param part Part to insert, or undefined to create a new part
  * @param refPart Part before which to add the new NodePart; when omitted the
  *     part added to the end of the `containerPart`
  */
-export const createAndInsertPart = (
+export const insertPart = (
   containerPart: NodePart,
+  part: NodePart | undefined,
   refPart?: NodePart
 ): NodePart => {
   const container = ((containerPart as unknown) as NodePartInternal)._$startNode
-    .parentNode as Node;
+    .parentNode!;
 
   const refNode =
     refPart === undefined
       ? ((containerPart as unknown) as NodePartInternal)._$endNode
       : ((refPart as unknown) as NodePartInternal)._$startNode;
 
-  const startNode = container.insertBefore(createMarker(), refNode);
-  const endNode = container.insertBefore(createMarker(), refNode);
-  return new NodePart(startNode, endNode, containerPart, containerPart.options);
+  if (part === undefined) {
+    const startNode = container.insertBefore(createMarker(), refNode);
+    const endNode = container.insertBefore(createMarker(), refNode);
+    part = new NodePart(
+      startNode,
+      endNode,
+      containerPart,
+      containerPart.options
+    );
+  } else {
+    const endNode = ((part as unknown) as NodePartInternal)._$endNode!
+      .nextSibling;
+    if (endNode !== refNode) {
+      reparentNodes(
+        container,
+        ((part as unknown) as NodePartInternal)._$startNode,
+        endNode,
+        refNode
+      );
+    }
+  }
+
+  return part;
 };
 
 /**
@@ -179,41 +201,6 @@ export const resetPartValue = (part: Part, value: unknown = RESET_VALUE) =>
  * @param part
  */
 export const getPartValue = (part: NodePart) => part._$value;
-
-/**
- * Inserts (or moves) a NodePart in the DOM, within the given `containerPart`
- * and before the given `refPart`. If no `refPart` is provided, the part is
- * inserted at the end of the `containerPart`.
- *
- * @param containerPart Part within which to insert the NodePart
- * @param part Part to insert
- * @param refPart Part before which to add the new NodePart; when omitted the
- *     part added to the end of the `containerPart`
- */
-export const insertPartBefore = (
-  containerPart: NodePart,
-  part: NodePart,
-  refPart?: NodePart
-) => {
-  const container = ((containerPart as unknown) as NodePartInternal)._$startNode
-    .parentNode!;
-
-  const refNode = refPart
-    ? ((refPart as unknown) as NodePartInternal)._$startNode
-    : ((containerPart as unknown) as NodePartInternal)._$endNode;
-
-  const endNode = ((part as unknown) as NodePartInternal)._$endNode!
-    .nextSibling;
-
-  if (endNode !== refNode) {
-    reparentNodes(
-      container,
-      ((part as unknown) as NodePartInternal)._$startNode,
-      endNode,
-      refNode
-    );
-  }
-};
 
 /**
  * Removes a NodePart from the DOM, including any of its content.
