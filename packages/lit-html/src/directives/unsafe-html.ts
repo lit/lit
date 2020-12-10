@@ -42,7 +42,7 @@ export class UnsafeHTML extends Directive {
     }
   }
 
-  render(value: string) {
+  render(value: string | typeof nothing | typeof noChange) {
     // TODO: add tests for nothing and noChange
     if (value === nothing) {
       this.templateResult = undefined;

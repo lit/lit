@@ -40,10 +40,10 @@ const legacyMatches =
  *
  * @param slotName A string name of the slot.
  * @param flatten A boolean which when true flattens the assigned nodes,
- * meaning any assigned nodes that are slot elements are replaced with their
- * assigned nodes.
+ *     meaning any assigned nodes that are slot elements are replaced with their
+ *     assigned nodes.
  * @param selector A string which filters the results to elements that match
- * the given css selector.
+ *     the given css selector.
  *
  * * @example
  * ```ts

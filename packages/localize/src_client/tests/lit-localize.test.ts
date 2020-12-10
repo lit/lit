@@ -125,10 +125,10 @@ suite('lit-localize', () => {
   suite('auto ID', () => {
     const autoSpanishModule = {
       templates: {
-        as8c0ec8d1fb9e6e32: 'Hola Mundo!',
-        as00ad08ebae1e0f74: (name: string) => `Hola ${name}!`,
-        ah3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
-        ah82ccc38d4d46eaa9: (name: string) => html`Hola <b>${name}</b>!`,
+        s8c0ec8d1fb9e6e32: 'Hola Mundo!',
+        s00ad08ebae1e0f74: (name: string) => `Hola ${name}!`,
+        h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
+        h82ccc38d4d46eaa9: (name: string) => html`Hola <b>${name}</b>!`,
       },
     };
 

@@ -110,7 +110,7 @@ export const css = (
 
 /**
  * Applies the given styles to a `shadowRoot`. When Shadow DOM is
- * available but `adoptedStyleSheets` is not, styles are appended to the the
+ * available but `adoptedStyleSheets` is not, styles are appended to the
  * `shadowRoot` to [mimic spec behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
  * Note, when shimming is used, any styles that are subsequently placed into
  * the shadowRoot should be placed *before* any shimmed adopted styles. This

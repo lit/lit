@@ -73,7 +73,8 @@ export const detachNodePart = (part: NodePart): NodePartState => {
  * previously committed value.
  *
  * @param part The NodePart to restore
- * @param state The state restore, returned from a prior call to `detachNodePart`
+ * @param state The state restore, returned from a prior call to
+ *     `detachNodePart`
  */
 export const restoreNodePart = (part: NodePart, state: NodePartState) => {
   ((part as unknown) as NodePartInternal)._commitNode(
@@ -92,7 +93,7 @@ const createMarker = () => document.createComment('');
  *
  * @param containerPart Part within which to add the new NodePart
  * @param refPart Part before which to add the new NodePart; when omitted the
- *  part added to the end of the `containerPart`
+ *     part added to the end of the `containerPart`
  */
 export const createAndInsertPart = (
   containerPart: NodePart,
@@ -187,7 +188,7 @@ export const getPartValue = (part: NodePart) => part._$value;
  * @param containerPart Part within which to insert the NodePart
  * @param part Part to insert
  * @param refPart Part before which to add the new NodePart; when omitted the
- *  part added to the end of the `containerPart`
+ *     part added to the end of the `containerPart`
  */
 export const insertPartBefore = (
   containerPart: NodePart,

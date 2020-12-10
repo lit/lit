@@ -40,7 +40,7 @@ Run `lit-localize` to extract all localizable templates and generate an XLIFF
 file, a format which is supported by many localization tools and services:
 
 ```xml
-<trans-unit id="ah3c44aff2d5f5ef6b">
+<trans-unit id="h3c44aff2d5f5ef6b">
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
   <!-- target tag added by your localization process -->
   <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
@@ -165,7 +165,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    into `<ph>` tags.
 
    ```xml
-   <trans-unit id="ah3c44aff2d5f5ef6b">
+   <trans-unit id="h3c44aff2d5f5ef6b">
      <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
    </trans-unit>
    ```
@@ -175,7 +175,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    this tag by feeding it this XLIFF file.
 
    ```xml
-   <trans-unit id="ah3c44aff2d5f5ef6b">
+   <trans-unit id="h3c44aff2d5f5ef6b">
      <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
      <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
    </trans-unit>
@@ -390,7 +390,7 @@ msg(html`Hello <b>World</b>!`);
 Descriptions are represented in XLIFF using `<note>` elements.
 
 ```xml
-<trans-unit id="0h3c44aff2d5f5ef6b">
+<trans-unit id="h3c44aff2d5f5ef6b">
   <note>Greeting to everybody on homepage</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>
@@ -413,7 +413,7 @@ class MyHomepage extends Localized(LitElement) {
 ```
 
 ```xml
-<trans-unit id="0h3c44aff2d5f5ef6b">
+<trans-unit id="h3c44aff2d5f5ef6b">
   <note>Homepage / Greeting to everybody</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>
