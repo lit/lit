@@ -144,7 +144,7 @@ export const createComponent = <I extends HTMLElement, E>(
     private _element: I | null = null;
     private _elementProps!: typeof elementPropsMap;
     private _userRef?: React.Ref<unknown>;
-    private _ref?: (element: I | null) => void;
+    private _ref?: React.RefCallback<I>;
 
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
