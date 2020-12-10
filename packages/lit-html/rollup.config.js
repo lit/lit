@@ -29,6 +29,7 @@ export default litProdConfig({
     'directives/until',
     'directives/render-light',
     'lit-html',
+    'directive',
     'directive-helpers',
     'disconnectable-directive',
     'static',

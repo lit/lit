@@ -20,7 +20,6 @@ import {TemplateResult, NodePart} from 'lit-html';
 import {
   nothing,
   noChange,
-  Directive,
   NODE_PART,
   EVENT_PART,
   PROPERTY_PART,
@@ -64,6 +63,7 @@ import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
 import {LitElement} from 'lit-element';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+import {Directive} from 'lit-html/directive';
 
 declare module 'parse5' {
   interface DefaultTreeElement {

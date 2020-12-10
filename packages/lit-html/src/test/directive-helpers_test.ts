@@ -11,14 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {
-  Directive,
-  directive,
-  html,
-  noChange,
-  NodePart,
-  render,
-} from '../lit-html.js';
+import {html, noChange, NodePart, render} from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
 import {

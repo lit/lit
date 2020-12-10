@@ -13,8 +13,6 @@
  */
 import {
   AttributePart,
-  Directive,
-  directive,
   html,
   noChange,
   NodePart,
@@ -26,6 +24,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,

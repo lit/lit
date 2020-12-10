@@ -13,8 +13,6 @@
  */
 
 import {
-  directive,
-  Directive,
   AttributePart,
   noChange,
   nothing,
@@ -25,6 +23,7 @@ import {
   BOOLEAN_ATTRIBUTE_PART,
   ATTRIBUTE_PART,
 } from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
