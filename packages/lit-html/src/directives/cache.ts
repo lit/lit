@@ -85,7 +85,7 @@ export const cache = directive(
           const cachedPart = partValue.pop()!;
           resetPartValue(containerPart, cachedPart);
           // Move cached part back into DOM
-          insertPart(containerPart, cachedPart);
+          insertPart(containerPart, undefined, cachedPart);
         }
         this.value = v;
       } else {

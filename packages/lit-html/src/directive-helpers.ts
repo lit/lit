@@ -64,19 +64,21 @@ export const isDirectiveResult = (
 const createMarker = () => document.createComment('');
 
 /**
- * Creates a NodePart within a container NodePart, and inserts it into the DOM,
- * either at the end of the container NodePart, or before the optional
- * `refPart`.
+ * Inserts a NodePart into the given container NodePart's DOM, either at the
+ * end of the container NodePart, or before the optional `refPart`.
+ *
+ * This does not add the part to the containerPart's comitted value. That must
+ * be done by callers.
  *
  * @param containerPart Part within which to add the new NodePart
- * @param part Part to insert, or undefined to create a new part
  * @param refPart Part before which to add the new NodePart; when omitted the
  *     part added to the end of the `containerPart`
+ * @param part Part to insert, or undefined to create a new part
  */
 export const insertPart = (
   containerPart: NodePart,
-  part: NodePart | undefined,
-  refPart?: NodePart
+  refPart: NodePart | undefined,
+  part?: NodePart
 ): NodePart => {
   const container = containerPart._$startNode.parentNode!;
 
@@ -111,7 +113,7 @@ export const insertPart = (
  * Sets the value of a Part.
  *
  * Note that this should only be used to set/update the value of user-created
- * parts (i.e. those created using `createAndInsertPart`); it should not be used
+ * parts (i.e. those created using `insertPart`); it should not be used
  * by directives to set the value of the directive's container part. Directives
  * should return a value from `update`/`render` to update their part state.
  *
