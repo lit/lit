@@ -14,6 +14,16 @@
 
 import {AttributePart, NodePart, Part, DirectiveParent} from './lit-html.js';
 
+type Primitive = null | undefined | boolean | number | string | symbol | bigint;
+
+/**
+ * Test if a value is a primitive value.
+ * 
+ * See https://tc39.github.io/ecma262/#sec-typeof-operator
+ */
+export const isPrimitive = (value: unknown): value is Primitive =>
+  value === null || (typeof value != 'object' && typeof value != 'function');
+
 /**
  * Package private members of NodePart.
  */

@@ -24,11 +24,11 @@ import {
   _$private,
 } from './lit-html.js';
 import {ATTRIBUTE_PART} from './directive.js';
+import {isPrimitive} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
-  _isPrimitive: isPrimitive,
   _resolveDirective: resolveDirective,
 } = _$private;
 
