@@ -24,10 +24,10 @@ import {stripExpressionComments} from './test-utils/strip-markers.js';
 import {
   createAndInsertPart,
   detachNodePart,
+  getPartValue,
   removePart,
   restoreNodePart,
-  getPartValue,
-} from '../parts.js';
+} from '../directive-helpers.js';
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
