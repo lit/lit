@@ -368,7 +368,7 @@ class RepeatDirective extends Directive {
           oldParts[oldHead]!,
           newValues[newTail]
         );
-        insertPart(containerPart, oldParts[oldHead]!, newParts[newTail + 1]);
+        insertPart(containerPart, newParts[newTail + 1], oldParts[oldHead]!);
         oldHead++;
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
@@ -377,7 +377,7 @@ class RepeatDirective extends Directive {
           oldParts[oldTail]!,
           newValues[newHead]
         );
-        insertPart(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
+        insertPart(containerPart, oldParts[oldHead]!, oldParts[oldTail]!);
         oldTail--;
         newHead++;
       } else {
@@ -404,17 +404,13 @@ class RepeatDirective extends Directive {
           if (oldPart === null) {
             // No old part for this value; create a new one and
             // insert it
-            const newPart = insertPart(
-              containerPart,
-              undefined,
-              oldParts[oldHead]!
-            );
+            const newPart = insertPart(containerPart, oldParts[oldHead]!);
             setPartValue(newPart, newValues[newHead]);
             newParts[newHead] = newPart;
           } else {
             // Reuse old part
             newParts[newHead] = setPartValue(oldPart, newValues[newHead]);
-            insertPart(containerPart, oldPart, oldParts[oldHead]!);
+            insertPart(containerPart, oldParts[oldHead]!, oldPart);
             // This marks the old part as having been used, so that
             // it will be skipped in the first two checks above
             oldParts[oldIndex as number] = null;
@@ -427,11 +423,7 @@ class RepeatDirective extends Directive {
     while (newHead <= newTail) {
       // For all remaining additions, we insert before last new
       // tail, since old pointers are no longer valid
-      const newPart = insertPart(
-        containerPart,
-        undefined,
-        newParts[newTail + 1]
-      );
+      const newPart = insertPart(containerPart, newParts[newTail + 1]);
       setPartValue(newPart, newValues[newHead]);
       newParts[newHead++] = newPart;
     }
