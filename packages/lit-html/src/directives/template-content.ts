@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {noChange, NODE_PART, PartInfo} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {noChange, PartInfo} from '../lit-html.js';
+import {directive, Directive, NODE_PART} from '../directive.js';
 
 class TemplateContent extends Directive {
   private _previousTemplate?: HTMLTemplateElement;

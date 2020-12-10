@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NODE_PART, NodePart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {NodePart, noChange, PartInfo} from '../lit-html.js';
+import {directive, Directive, NODE_PART} from '../directive.js';
 import {
   insertPart,
   getPartValue,

@@ -27,6 +27,12 @@ export {DirectiveClass, DirectiveParameters, DirectiveResult} from './lit-html';
 
 const resolveDirective = _$private._resolveDirective;
 
+export const ATTRIBUTE_PART = 1;
+export const NODE_PART = 2;
+export const PROPERTY_PART = 3;
+export const BOOLEAN_ATTRIBUTE_PART = 4;
+export const EVENT_PART = 5;
+
 /**
  * Creates a user-facing directive function from a Directive class. This
  * function has the same parameters as the directive's render() method.
