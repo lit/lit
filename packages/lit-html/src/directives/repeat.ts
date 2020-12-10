@@ -15,9 +15,8 @@
 import {NODE_PART, NodePart, noChange, PartInfo} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 import {
-  createAndInsertPart,
+  insertPart,
   getPartValue,
-  insertPartBefore,
   removePart,
   resetPartValue,
   setPartValue,
@@ -369,11 +368,7 @@ class RepeatDirective extends Directive {
           oldParts[oldHead]!,
           newValues[newTail]
         );
-        insertPartBefore(
-          containerPart,
-          oldParts[oldHead]!,
-          newParts[newTail + 1]
-        );
+        insertPart(containerPart, oldParts[oldHead]!, newParts[newTail + 1]);
         oldHead++;
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
@@ -382,7 +377,7 @@ class RepeatDirective extends Directive {
           oldParts[oldTail]!,
           newValues[newHead]
         );
-        insertPartBefore(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
+        insertPart(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
         oldTail--;
         newHead++;
       } else {
@@ -409,8 +404,9 @@ class RepeatDirective extends Directive {
           if (oldPart === null) {
             // No old part for this value; create a new one and
             // insert it
-            const newPart = createAndInsertPart(
+            const newPart = insertPart(
               containerPart,
+              undefined,
               oldParts[oldHead]!
             );
             setPartValue(newPart, newValues[newHead]);
@@ -418,7 +414,7 @@ class RepeatDirective extends Directive {
           } else {
             // Reuse old part
             newParts[newHead] = setPartValue(oldPart, newValues[newHead]);
-            insertPartBefore(containerPart, oldPart, oldParts[oldHead]!);
+            insertPart(containerPart, oldPart, oldParts[oldHead]!);
             // This marks the old part as having been used, so that
             // it will be skipped in the first two checks above
             oldParts[oldIndex as number] = null;
@@ -431,7 +427,11 @@ class RepeatDirective extends Directive {
     while (newHead <= newTail) {
       // For all remaining additions, we insert before last new
       // tail, since old pointers are no longer valid
-      const newPart = createAndInsertPart(containerPart, newParts[newTail + 1]);
+      const newPart = insertPart(
+        containerPart,
+        undefined,
+        newParts[newTail + 1]
+      );
       setPartValue(newPart, newValues[newHead]);
       newParts[newHead++] = newPart;
     }

@@ -16,7 +16,7 @@ import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
 import {
-  createAndInsertPart,
+  insertPart,
   detachNodePart,
   getPartValue,
   removePart,
@@ -79,7 +79,7 @@ suite('lit-html', () => {
     assert.strictEqual(liElementsBefore[3], liElementsAfter[3]);
   });
 
-  test('createAndInsertPart', () => {
+  test('insertPart', () => {
     class TestDirective extends Directive {
       render(v: unknown) {
         return v;
@@ -89,8 +89,8 @@ suite('lit-html', () => {
         // Create two parts and remove the first, then the second to make sure
         // that removing the first doesn't move the second's markers. This
         // fails if the parts accidentally share a marker.
-        const childPart2 = createAndInsertPart(part);
-        const childPart1 = createAndInsertPart(part, childPart2);
+        const childPart2 = insertPart(part, undefined);
+        const childPart1 = insertPart(part, undefined, childPart2);
         removePart(childPart1);
         removePart(childPart2);
         return v;
