@@ -19,7 +19,7 @@ import {
   DirectiveParameters,
   DirectiveResult,
   Disconnectable,
-  NodePart,
+  ChildPart,
   PartInfo,
   Part,
 } from './lit-html';
@@ -29,7 +29,7 @@ const resolveDirective = _$private._resolveDirective;
 
 export const PartType = {
   ATTRIBUTE: 1,
-  NODE: 2,
+  CHILD: 2,
   PROPERTY: 3,
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
@@ -55,7 +55,7 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  _part: NodePart | AttributePart;
+  _part: ChildPart | AttributePart;
   //@internal
   _attributeIndex: number | undefined;
   //@internal

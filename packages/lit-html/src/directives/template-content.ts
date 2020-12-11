@@ -20,8 +20,8 @@ class TemplateContent extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== PartType.NODE) {
-      throw new Error('templateContent can only be used in text bindings');
+    if (partInfo.type !== PartType.CHILD) {
+      throw new Error('templateContent can only be used in child bindings');
     }
   }
 

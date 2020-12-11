@@ -70,6 +70,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [Breaking] (since 2.0.0-pre.3)) Originally in `lit-html/parts.js`, 
   `createAndInsertPart()` and `insertPartBefore()` have been combined into a single `insertPart()` function in `lit-html/directive-helpers.js`. `detachNodePart()` and `restoreNodePart()` have been removed in favor of moving parts with `insertPart()`.
 
+- [Breaking] (since 2.0.0-pre.3) `NodePart` has been renamed to `ChildPart`,
+  along with other methods and variables that use the "Node" naming, like
+  `PartType.Node` which is now `PartType.CHILD`.
+
   <!-- ### Fixed -->
   <!-- ### Removed -->
 

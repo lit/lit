@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {html, NodePart, render, svg} from '../lit-html.js';
+import {html, ChildPart, render, svg} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
@@ -83,7 +83,7 @@ suite('directive-helpers', () => {
         return v;
       }
 
-      update(part: NodePart, [v]: Parameters<this['render']>) {
+      update(part: ChildPart, [v]: Parameters<this['render']>) {
         // Create two parts and remove the first, then the second to make sure
         // that removing the first doesn't move the second's markers. This
         // fails if the parts accidentally share a marker.

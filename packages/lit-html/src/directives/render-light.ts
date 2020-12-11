@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DirectiveResult, NodePart} from '../lit-html.js';
+import {DirectiveResult, ChildPart} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 
 export interface RenderLightHost extends HTMLElement {
@@ -23,7 +23,7 @@ class RenderLight extends Directive {
   render() {
     /* SSR handled specially in render-lit-html */
   }
-  update(part: NodePart) {
+  update(part: ChildPart) {
     const instance = part.parentNode as RenderLightHost;
     if (typeof instance.renderLight === 'function') {
       return instance.renderLight();

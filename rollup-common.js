@@ -67,7 +67,7 @@ const stableProperties = {
   _$createElement: 'A',
   _$element: 'B',
   _$options: 'C',
-  // lit-html: NodePart (used by platform-support)
+  // lit-html: ChildPart (used by platform-support)
   _$startNode: 'D',
   _$endNode: 'E',
   _$getTemplate: 'F',
@@ -89,20 +89,20 @@ const stableProperties = {
   _$handlesPrepareStyles: 'N',
   // lit-element: UpdatingElement (used bby ssr-support)
   _$attributeToProperty: 'O',
-  // lit-html: NodePart, AttributePart, TemplateInstance, Directive (accessed by
+  // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)
   _$parent: 'P',
   _$disconnetableChildren: 'Q',
   // disconnectable-directive: DisconnectableDirective
   _$setDirectiveConnected: 'R',
-  // lit-html: NodePart (added by disconnectable-directive)
-  _$setNodePartConnected: 'S',
-  // lit-html: NodePart (used by directive-helpers)
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$setChildPartConnected: 'S',
+  // lit-html: ChildPart (used by directive-helpers)
   _$clear: 'T',
   // TODO (justinfagnani): not actually cross-package name, but needs to be
   // named for now to avoid a renaming collision
   _$placeholder: 'U',
-  _$nodePart: 'V',
+  _$childPart: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {noChange, Part} from '../lit-html.js';
+import {DirectiveParameters, noChange, Part} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
 
 // A sentinal that indicates guard() hasn't rendered anything yet
@@ -25,7 +25,7 @@ class Guard extends Directive {
     return f();
   }
 
-  update(_part: Part, [value, f]: Parameters<this['render']>) {
+  update(_part: Part, [value, f]: DirectiveParameters<this>) {
     if (Array.isArray(value)) {
       // Dirty-check arrays by item
       if (

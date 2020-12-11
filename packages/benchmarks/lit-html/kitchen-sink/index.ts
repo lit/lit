@@ -16,7 +16,7 @@
  * Kitchen-sink benchmark for lit-html
  *
  * Features exercised:
- * - NodePart
+ * - ChildPart
  *   - value: string
  *   - value: Node
  *   - value: Array<TemplateResult>

@@ -26,11 +26,11 @@ export class UnsafeHTML extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== PartType.NODE) {
+    if (partInfo.type !== PartType.CHILD) {
       throw new Error(
         `${
           (this.constructor as typeof UnsafeHTML).directiveName
-        }() can only be used in text bindings`
+        }() can only be used in child bindings`
       );
     }
   }
