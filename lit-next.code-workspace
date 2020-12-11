@@ -21,9 +21,9 @@
 			"path": "packages/localize"
 		},
 		{
-      "name": "labs",
-      "path": "packages/labs"
-    },
+			"name": "labs",
+			"path": "packages/labs"
+		},
 		{
 			"name": "tests",
 			"path": "packages/tests"
@@ -31,6 +31,14 @@
 		{
 			"name": "benchmarks",
 			"path": "packages/benchmarks"
+		},
+		{
+			"name": "lit-element-starter-js",
+			"path": "packages/lit-element-starter-js"
+		},
+		{
+			"name": "lit-element-starter-ts",
+			"path": "packages/lit-element-starter-ts"
 		},
 		{
 			"name": "lit-next",

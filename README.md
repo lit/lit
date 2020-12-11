@@ -12,9 +12,13 @@ following links for details on the changes being made:
 ## Packages
 
 - [`lit-html`](./packages/lit-html)
-- [`lit-element`](./packages/lit-element)
 - [`updating-element`](./packages/updating-element)
+- [`lit-element`](./packages/lit-element)
+- [`lit-element-starter-ts`](./packages/lit-element-starter-ts)
+- [`lit-element-starter-js`](./packages/lit-element-starter-js)
 - [`lit-ssr`](./packages/lit-ssr)
+- [`labs`](./packages/labs)
+- [`localize`](./packages/localize)
 - [`tests`](./packages/tests)
 - [`benchmarks`](./packages/benchmarks)
 
