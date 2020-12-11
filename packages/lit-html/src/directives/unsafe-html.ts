@@ -12,15 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  directive,
-  Directive,
-  nothing,
-  TemplateResult,
-  noChange,
-  PartInfo,
-  NODE_PART,
-} from '../lit-html.js';
+import {nothing, TemplateResult, noChange, PartInfo} from '../lit-html.js';
+import {directive, Directive, PartType} from '../directive.js';
 
 const HTML_RESULT = 1;
 
@@ -33,7 +26,7 @@ export class UnsafeHTML extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== NODE_PART) {
+    if (partInfo.type !== PartType.NODE) {
       throw new Error(
         `${
           (this.constructor as typeof UnsafeHTML).directiveName

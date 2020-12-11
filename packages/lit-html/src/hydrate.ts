@@ -21,14 +21,14 @@ import {
   NodePart,
   PropertyPart,
   RenderOptions,
-  ATTRIBUTE_PART,
   _$private,
 } from './lit-html.js';
+import {PartType} from './directive.js';
+import {isPrimitive} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
-  _isPrimitive: isPrimitive,
   _resolveDirective: resolveDirective,
 } = _$private;
 
@@ -351,7 +351,7 @@ const createAttributeParts = (
       const templatePart = instance._$template._parts[state.templatePartIndex];
       if (
         templatePart === undefined ||
-        templatePart._type !== ATTRIBUTE_PART ||
+        templatePart._type !== PartType.ATTRIBUTE ||
         templatePart._index !== nodeIndex
       ) {
         break;

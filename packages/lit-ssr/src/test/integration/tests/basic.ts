@@ -14,7 +14,8 @@
 
 import 'lit-element/hydrate-support.js';
 
-import {html, noChange, nothing, directive, Directive} from 'lit-html';
+import {html, noChange, nothing} from 'lit-html';
+import {directive, Directive} from 'lit-html/directive.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
@@ -471,14 +472,14 @@ export const tests: {[name: string]: SSRTest} = {
 
   'NodePart accepts nested directives': () => {
     const aDirective = directive(
-      class ADirective extends Directive {
+      class extends Directive {
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
       }
     );
     const bDirective = directive(
-      class BDirective extends Directive {
+      class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
         render(v: string) {
@@ -1025,14 +1026,14 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts nested directives': () => {
     const aDirective = directive(
-      class ADirective extends Directive {
+      class extends Directive {
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
       }
     );
     const bDirective = directive(
-      class BDirective extends Directive {
+      class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
         render(v: string) {

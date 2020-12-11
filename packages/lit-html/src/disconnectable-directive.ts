@@ -125,16 +125,10 @@
  * `isConnectd: true` down the tree, signaling which callback to run.
  */
 
-import {
-  Directive,
-  PartInfo,
-  NodePart,
-  NODE_PART,
-  Disconnectable,
-  noChange,
-} from './lit-html.js';
-import {setPartValue} from './parts.js';
-export {directive} from './lit-html.js';
+import {PartInfo, NodePart, Disconnectable, noChange} from './lit-html.js';
+import {setPartValue} from './directive-helpers.js';
+import {Directive, PartType} from './directive.js';
+export {directive} from './directive.js';
 
 /**
  * Recursively walks down the tree of Parts/TemplateInstances/Directives to set
@@ -244,7 +238,7 @@ function setNodePartConnected(
  * Patches disconnection API onto NodeParts.
  */
 const installDisconnectAPI = (obj: Disconnectable) => {
-  if ((obj as NodePart).type == NODE_PART) {
+  if ((obj as NodePart).type == PartType.NODE) {
     (obj as NodePart)._$setNodePartConnected ??= setNodePartConnected;
   }
 };

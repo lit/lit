@@ -13,8 +13,6 @@
  */
 import {
   AttributePart,
-  Directive,
-  directive,
   html,
   noChange,
   NodePart,
@@ -26,6 +24,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -1624,14 +1623,14 @@ suite('lit-html', () => {
 
     suite('nested directives', () => {
       const aDirective = directive(
-        class ADirective extends Directive {
+        class extends Directive {
           render(bool: boolean, v: unknown) {
             return bool ? v : nothing;
           }
         }
       );
       const bDirective = directive(
-        class BDirective extends Directive {
+        class extends Directive {
           count = 0;
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;
@@ -1660,7 +1659,7 @@ suite('lit-html', () => {
 
     suite('async directives', () => {
       const aDirective = directive(
-        class ADirective extends DisconnectableDirective {
+        class extends DisconnectableDirective {
           value: unknown;
           promise!: Promise<unknown>;
           render(_promise: Promise<unknown>) {
@@ -1676,7 +1675,7 @@ suite('lit-html', () => {
         }
       );
       const bDirective = directive(
-        class BDirective extends Directive {
+        class extends Directive {
           count = 0;
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;

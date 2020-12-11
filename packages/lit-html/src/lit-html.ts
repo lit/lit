@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Directive} from './directive.js';
+
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 
@@ -205,13 +207,11 @@ const HTML_RESULT = 1;
 const SVG_RESULT = 2;
 
 /** TemplatePart types */
-// TODO (justinfagnani): since these are exported, consider shorter names,
-// like just `ATTRIBUTE`.
-export const ATTRIBUTE_PART = 1;
-export const NODE_PART = 2;
-export const PROPERTY_PART = 3;
-export const BOOLEAN_ATTRIBUTE_PART = 4;
-export const EVENT_PART = 5;
+const ATTRIBUTE_PART = 1;
+const NODE_PART = 2;
+const PROPERTY_PART = 3;
+const BOOLEAN_ATTRIBUTE_PART = 4;
+const EVENT_PART = 5;
 const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
 
@@ -324,20 +324,6 @@ export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
   values: DirectiveParameters<InstanceType<C>>;
 };
 
-/**
- * Creates a user-facing directive function from a Directive class. This
- * function has the same parameters as the directive's render() method.
- *
- * WARNING: The directive and part API changes are in progress and subject to
- * change in future pre-releases.
- */
-export const directive = <C extends DirectiveClass>(c: C) => (
-  ...values: DirectiveParameters<InstanceType<C>>
-): DirectiveResult<C> => ({
-  _$litDirective$: c,
-  values,
-});
-
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
@@ -404,52 +390,10 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 
 // Type for classes that have a `_directive` or `_directives[]` field, used by
 // `resolveDirective`
-export type DirectiveParent = AttributePart | NodePart | Directive;
-
-/**
- * Base class for creating custom directives. Users should extend this class,
- * implement `render` and/or `update`, and then pass their subclass to
- * `directive`.
- *
- * WARNING: The directive and part API changes are in progress and subject to
- * change in future pre-releases.
- */
-export abstract class Directive {
-  //@internal
-  _part: NodePart | AttributePart;
-  //@internal
-  _attributeIndex: number | undefined;
-  //@internal
+export interface DirectiveParent {
+  _$parent?: DirectiveParent;
   _directive?: Directive;
-
-  //@internal
-  _$parent: Disconnectable;
-
-  // These will only exist on the DisconnectableDirective subclass
-  //@internal
-  _$disconnetableChildren?: Set<Disconnectable>;
-  //@internal
-  _$setDirectiveConnected?(isConnected: boolean): void;
-
-  constructor(partInfo: PartInfo) {
-    this._$parent = partInfo._$parent;
-    this._part = partInfo._$part;
-    this._attributeIndex = partInfo._$attributeIndex;
-  }
-  /** @internal */
-  _resolve(props: Array<unknown>): unknown {
-    const {_part, _attributeIndex} = this;
-    return resolveDirective(
-      _part,
-      this.update(_part, props),
-      this,
-      _attributeIndex
-    );
-  }
-  abstract render(...props: Array<unknown>): unknown;
-  update(_part: Part, props: Array<unknown>): unknown {
-    return this.render(...props);
-  }
+  _directives?: Array<Directive | undefined>;
 }
 
 /**
@@ -975,7 +919,7 @@ export class NodePart {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
       if (value === nothing) {
-        this._clear();
+        this._$clear();
         this._$value = nothing;
       } else if (value !== this._$value && value !== noChange) {
         this._commitText(value);
@@ -998,7 +942,7 @@ export class NodePart {
 
   private _commitNode(value: Node): void {
     if (this._$value !== value) {
-      this._clear();
+      this._$clear();
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
         sanitizerFactoryInternal !== noopSanitizer
@@ -1097,7 +1041,7 @@ export class NodePart {
     // array for NodeParts.
     if (!isArray(this._$value)) {
       this._$value = [];
-      this._clear();
+      this._$clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
@@ -1130,7 +1074,7 @@ export class NodePart {
 
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
-      this._clear(itemPart?._$endNode!.nextSibling, partIndex);
+      this._$clear(itemPart?._$endNode!.nextSibling, partIndex);
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1144,8 +1088,10 @@ export class NodePart {
    * @param from  When `start` is specified, the index within the iterable from
    *     which NodeParts are being removed, used for disconnecting directives in
    *     those Parts.
+   * 
+   * @internal
    */
-  private _clear(
+  _$clear(
     start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
@@ -1440,7 +1386,6 @@ export const _$private = {
   _getTemplateHtml: getTemplateHtml,
   // Used in hydrate
   _TemplateInstance: TemplateInstance,
-  _isPrimitive: isPrimitive,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
 };

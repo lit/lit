@@ -83,7 +83,7 @@ const stableProperties = {
   _$needsHydration: 'K',
   // lit-html: Part (used by hydrate, platform-support)
   _$value: 'L',
-  // lit-html: Part (used by hydrate, parts, platform-support, ssr-support)
+  // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
   _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)
   _$handlesPrepareStyles: 'N',
@@ -97,6 +97,12 @@ const stableProperties = {
   _$setDirectiveConnected: 'R',
   // lit-html: NodePart (added by disconnectable-directive)
   _$setNodePartConnected: 'S',
+  // lit-html: NodePart (used by directive-helpers)
+  _$clear: 'T',
+  // TODO (justinfagnani): not actually cross-package name, but needs to be
+  // named for now to avoid a renaming collision
+  _$placeholder: 'U',
+  _$nodePart: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -148,8 +154,8 @@ export function litProdConfig({
   // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
-  // consistently across modules, so that e.g. parts.js can safely access internal
-  // details of lit-html.js.
+  // consistently across modules, so that e.g. directive-helpers.js can safely
+  // access internal details of lit-html.js.
   //
   // However, we still have to account for the problem of mangled names getting
   // re-used for different properties across files, because Terser does not

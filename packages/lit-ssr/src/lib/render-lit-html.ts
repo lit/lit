@@ -20,17 +20,12 @@ import {TemplateResult, NodePart} from 'lit-html';
 import {
   nothing,
   noChange,
-  Directive,
-  NODE_PART,
-  EVENT_PART,
-  PROPERTY_PART,
-  BOOLEAN_ATTRIBUTE_PART,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
 } from 'lit-html';
-
+import {PartType} from 'lit-html/directive.js';
 import {_$private} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -64,6 +59,7 @@ import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
 import {LitElement} from 'lit-element';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+import {Directive} from 'lit-html/directive';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -458,7 +454,7 @@ export function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: NODE_PART} as NodePart, value);
+    value = resolveDirective({type: PartType.NODE} as NodePart, value);
   }
   if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -533,7 +529,7 @@ export function* renderTemplateResult(
           part.strings === undefined ? result.values[partIndex] : result.values;
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
-        if (!(part.type === EVENT_PART)) {
+        if (!(part.type === PartType.EVENT)) {
           committedValue = getAtributePartCommittedValue(
             part,
             value,
@@ -546,9 +542,9 @@ export function* renderTemplateResult(
           const instance = op.useCustomElementInstance
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
-          if (part.type === PROPERTY_PART) {
+          if (part.type === PartType.PROPERTY) {
             yield* renderPropertyPart(instance, op, committedValue);
-          } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
+          } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
             // Boolean attribute binding
             yield* renderBooleanAttributePart(instance, op, committedValue);
           } else {

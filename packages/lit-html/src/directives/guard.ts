@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Directive, noChange, Part} from '../lit-html.js';
+import {noChange, Part} from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 
 // A sentinal that indicates guard() hasn't rendered anything yet
 const initialValue = {};
