@@ -11,8 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {directive, nothing, ElementPart} from '../lit-html.js';
-import {DisconnectableDirective} from '../disconnectable-directive.js';
+import {nothing, ElementPart} from '../lit-html.js';
+import {
+  directive,
+  DisconnectableDirective,
+} from '../disconnectable-directive.js';
 
 /**
  * Creates a new Ref object, which is container for a reference to an element.
