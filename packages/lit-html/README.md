@@ -51,9 +51,6 @@ change improves ergonomics around making stateful directives while providing a
 clear pattern for SSR-compatible directives: only `render` will be called on the
 server, while `update` will not be.
 
-**⚠️ WARNING: The directive and part API changes are in progress and subject to
-change in future pre-releases.**
-
 <details>
 <summary>Expand here for details on migrating directives.</summary>
 
@@ -104,7 +101,8 @@ export const renderCounter = directive((initialValue) => (part) => {
 2.0 Directive API:
 
 ```js
-import {directive, Directive, NODE_PART, html} from 'lit-html';
+import {html} from 'lit-html';
+import {directive, Directive, PartType} from 'lit-html/directive.js';
 
 // Class-based directive API
 export const renderCounter = directive(
@@ -114,7 +112,7 @@ export const renderCounter = directive(
     constructor(partInfo: PartInfo, index?: number) {
       super(partInfo, index);
       // When necessary, validate part in constructor using `part.type`
-      if (partInfo.type !== NODE_PART) {
+      if (partInfo.type !== PartType.NODE) {
         throw new Error('renderCounter only supports NodePart');
       }
     }
