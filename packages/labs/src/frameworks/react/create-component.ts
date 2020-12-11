@@ -18,7 +18,6 @@ const reservedReactProperties = new Set([
   'children',
   'localName',
   'ref',
-  // TODO(sorvell): why are the properties below included?
   'style',
   'className',
 ]);
@@ -28,24 +27,30 @@ const listenedEvents: WeakMap<
   Map<string, EventListenerObject>
 > = new WeakMap();
 
-const setEvent = (
+/**
+ * Adds an event listener for the specified event to the given node. In the
+ * React setup, there should only ever be one event listener. Thus, for
+ * efficiency only one listener is added and the handler for that listener is
+ * updated to point to the given listener function.
+ */
+const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  value: (event?: Event) => void
+  listener: (event?: Event) => void
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
     listenedEvents.set(node, (events = new Map()));
   }
   let handler = events.get(event);
-  if (value !== undefined) {
+  if (listener !== undefined) {
     // If necessary, add listener and track handler
     if (handler === undefined) {
-      events.set(event, (handler = {handleEvent: value}));
+      events.set(event, (handler = {handleEvent: listener}));
       node.addEventListener(event, handler);
       // Otherwise just update the listener with new value
     } else {
-      handler.handleEvent = value;
+      handler.handleEvent = listener;
     }
     // Remove listener if one exists and value is undefined
   } else if (handler !== undefined) {
@@ -54,21 +59,25 @@ const setEvent = (
   }
 };
 
+/**
+ * Sets properties and events on custom elements. These properties and events
+ * have been pre-filtered so we know they should apply to the custom element.
+ */
 const setProperty = <E extends Element, T>(
   node: E,
   name: string,
   value: unknown,
-  _old: unknown,
+  old: unknown,
   events?: StringValued<T>
 ) => {
-  if (reservedReactProperties.has(name)) {
-    return;
-  }
-  // For events, use an explicit list.
   const event = events?.[name as keyof T];
   if (event !== undefined) {
-    setEvent(node, event, value as (e?: Event) => void);
+    // Dirty check event value.
+    if (value !== old) {
+      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    }
   } else {
+    // But don't dirty check properties; elements are assumed to do this.
     node[name as keyof E] = value as E[keyof E];
   }
 };
@@ -136,10 +145,23 @@ export const createComponent = <I extends HTMLElement, E>(
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
-  const elementPropsMap = new Set(Object.keys(events ?? {}));
+  const elementClassProps = new Set(Object.keys(events ?? {}));
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
-      elementPropsMap.add(p);
+      if (reservedReactProperties.has(p)) {
+        // Note, this effectively warns only for `ref` since the other
+        // reserved props are on HTMLElement.prototype. To address this
+        // would require crawling down the prototype, which doesn't feel worth
+        // it since implementing these properties on an element is extremely
+        // rare.
+        console.warn(
+          `${tagName} contains property ${p} which is a React ` +
+            `reserved property. It will be used by React and not set on ` +
+            `the element.`
+        );
+      } else {
+        elementClassProps.add(p);
+      }
     }
   }
 
@@ -217,10 +239,12 @@ export const createComponent = <I extends HTMLElement, E>(
       // iterate again when setting properties.
       this._elementProps = {};
       for (const [k, v] of Object.entries(this.props)) {
-        if (elementPropsMap.has(k)) {
+        if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
         } else {
-          props[k] = v;
+          // React does *not* handle `className` for custom elements so
+          // coerce it to `class` so it's handled correctly.
+          props[k === 'className' ? 'class' : k] = v;
         }
       }
       return createElement(tagName, props, props.children);

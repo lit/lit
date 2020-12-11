@@ -89,7 +89,7 @@ suite('React createComponent', () => {
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
     window.ReactDOM.render(
-      window.React.createElement(BasicElementComponent, props),
+      window.React.createElement(BasicElementComponent, props, props?.children),
       container
     );
     el = container.querySelector(elementName)! as BasicElement;
@@ -272,5 +272,43 @@ suite('React createComponent', () => {
     el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
     assert.equal(fooEvent2, undefined);
+  });
+
+  test('can set children', async () => {
+    const children = (window.React.createElement(
+      'div'
+      // Note, constructing children like this is rare and the React type expects
+      // this to be an HTMLCollection even though that's not the output of
+      // `createElement`.
+    ) as unknown) as HTMLCollection;
+    await renderReactComponent({children});
+    assert.equal(el.childNodes.length, 1);
+    assert.equal(el.firstElementChild!.localName, 'div');
+  });
+
+  test('can set reserved React properties', async () => {
+    await renderReactComponent({
+      style: {display: 'block'},
+      className: 'foo bar',
+    } as any);
+    assert.equal(el.style.display, 'block');
+    assert.equal(el.getAttribute('class'), 'foo bar');
+  });
+
+  test('warns if element contains reserved props', async () => {
+    const warn = console.warn;
+    let warning: string;
+    console.warn = (m: string) => {
+      warning = m;
+    };
+    const tag = 'x-warn';
+    @customElement(tag)
+    class Warn extends UpdatingElement {
+      @property()
+      ref = 'hi';
+    }
+    createComponent(window.React, tag, Warn);
+    assert.include(warning!, 'ref');
+    console.warn = warn;
   });
 });
