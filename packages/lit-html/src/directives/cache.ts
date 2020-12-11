@@ -14,7 +14,7 @@
 
 import {
   TemplateResult,
-  NodePart,
+  ChildPart,
   render,
   nothing,
   DirectiveParameters,
@@ -44,16 +44,16 @@ import {
  */
 export const cache = directive(
   class extends Directive {
-    templateCache = new WeakMap<TemplateStringsArray, NodePart>();
+    templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
     value?: TemplateResult;
 
     render(v: unknown) {
-      // Return an array of the value to induce lit-html to create a NodePart
+      // Return an array of the value to induce lit-html to create a ChildPart
       // for the value that we can move into the cache.
       return [v];
     }
 
-    update(containerPart: NodePart, [v]: DirectiveParameters<this>) {
+    update(containerPart: ChildPart, [v]: DirectiveParameters<this>) {
       // If the new value is not a TemplateResult from the same Template as the
       // previous value, move the nodes from the DOM into the cache.
       if (
@@ -61,7 +61,7 @@ export const cache = directive(
         this.value.strings !== (v as TemplateResult).strings
       ) {
         // This is always an array because we return [v] in render()
-        const partValue = getPartValue(containerPart) as Array<NodePart>;
+        const partValue = getPartValue(containerPart) as Array<ChildPart>;
         const childPart = partValue.pop()!;
         let cachedContainerPart = this.templateCache.get(this.value.strings);
         if (cachedContainerPart === undefined) {
@@ -81,7 +81,7 @@ export const cache = directive(
           // Move the cached part back into the container part value
           const partValue = getPartValue(
             cachedContainerPart
-          ) as Array<NodePart>;
+          ) as Array<ChildPart>;
           const cachedPart = partValue.pop()!;
           resetPartValue(containerPart, cachedPart);
           // Move cached part back into DOM

@@ -15,7 +15,7 @@
  */
 
 // Type-only imports
-import {TemplateResult, NodePart} from 'lit-html';
+import {TemplateResult, ChildPart} from 'lit-html';
 
 import {
   nothing,
@@ -93,8 +93,8 @@ type TextOp = {
 /**
  * Operation to output dynamic text from the associated template result value
  */
-type NodePartOp = {
-  type: 'node-part';
+type ChildPartOp = {
+  type: 'child-part';
   index: number;
   useCustomElementInstance?: boolean;
 };
@@ -150,7 +150,7 @@ type CustomElementClosedOp = {
 
 type Op =
   | TextOp
-  | NodePartOp
+  | ChildPartOp
   | AttributePartOp
   | CustomElementOpenOp
   | CustomElementAttributesOp
@@ -162,7 +162,7 @@ type Op =
  * for the associated Template.  Opcodes are designed to allow emitting
  * contiguous static text from the template as much as possible, with specific
  * non-`text` opcodes interleaved to perform dynamic work, such as emitting
- * values for NodeParts or AttributeParts, and handling custom elements.
+ * values for ChildParts or AttributeParts, and handling custom elements.
  *
  * For the following example template, an opcode list may look like this:
  *
@@ -176,8 +176,8 @@ type Op =
  *   - Emit an AttributePart's value, e.g. ` class="bold"`
  * - `text`
  *   - Emit run of static text: `>`
- * - `node-part`
- *   - Emit the NodePart's value, in this case a TemplateResult, thus we recurse
+ * - `child-part`
+ *   - Emit the ChildPart's value, in this case a TemplateResult, thus we recurse
  *     into that template's opcodes
  * - `text`
  *   - Emit run of static text: `/span></div>`
@@ -298,7 +298,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           flushTo(node.sourceCodeLocation!.startOffset);
           skipTo(node.sourceCodeLocation!.endOffset);
           ops.push({
-            type: 'node-part',
+            type: 'child-part',
             index: nodeIndex,
             useCustomElementInstance:
               parent && isElement(parent) && parent.isDefinedCustomElement,
@@ -454,7 +454,7 @@ export function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.NODE} as NodePart, value);
+    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
   }
   if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -508,7 +508,7 @@ export function* renderTemplateResult(
       case 'text':
         yield op.value;
         break;
-      case 'node-part': {
+      case 'child-part': {
         const value = result.values[partIndex++];
         yield* renderValue(value, renderInfo);
         break;

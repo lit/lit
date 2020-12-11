@@ -15,7 +15,7 @@ import {
   AttributePart,
   html,
   noChange,
-  NodePart,
+  ChildPart,
   nothing,
   render,
   RenderOptions,
@@ -1459,7 +1459,7 @@ suite('lit-html', () => {
     }
     const count = directive(CountDirective);
 
-    test('renders directives on NodeParts', () => {
+    test('renders directives on ChildParts', () => {
       class TestDirective extends Directive {
         render(v: string) {
           return html`TEST:${v}`;
@@ -1484,7 +1484,7 @@ suite('lit-html', () => {
     });
 
     test('directives can update', () => {
-      let receivedPart: NodePart;
+      let receivedPart: ChildPart;
       let receivedValue: unknown;
 
       class TestUpdateDirective extends Directive {
@@ -1492,7 +1492,7 @@ suite('lit-html', () => {
           return v;
         }
 
-        update(part: NodePart, [v]: Parameters<this['render']>) {
+        update(part: ChildPart, [v]: Parameters<this['render']>) {
           receivedPart = part;
           receivedValue = v;
           return this.render(v);
@@ -1504,7 +1504,7 @@ suite('lit-html', () => {
       };
       go(true);
       assertContent('<div>true</div>');
-      assert.instanceOf(receivedPart!, NodePart);
+      assert.instanceOf(receivedPart!, ChildPart);
       assert.equal(receivedValue, true);
     });
 
@@ -1638,7 +1638,7 @@ suite('lit-html', () => {
         }
       );
 
-      test('nested directives in NodePart', () => {
+      test('nested directives in ChildPart', () => {
         const template = (bool: boolean, v: unknown) =>
           html`<div>${aDirective(bool, bDirective(v))}`;
         assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
@@ -1683,7 +1683,7 @@ suite('lit-html', () => {
         }
       );
 
-      test('async directives in NodePart', async () => {
+      test('async directives in ChildPart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
         let promise = Promise.resolve('resolved1');
@@ -1696,7 +1696,7 @@ suite('lit-html', () => {
         assertContent(`<div>resolved2</div>`);
       });
 
-      test('async directives while disconnected in NodePart', async () => {
+      test('async directives while disconnected in ChildPart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
         const promise = Promise.resolve('resolved1');
@@ -1708,7 +1708,7 @@ suite('lit-html', () => {
         assertContent(`<div>resolved1</div>`);
       });
 
-      test('async directives while disconnected in NodePart clears its value', async () => {
+      test('async directives while disconnected in ChildPart clears its value', async () => {
         const log: string[] = [];
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
@@ -1736,7 +1736,7 @@ suite('lit-html', () => {
         assert.deepEqual(log, ['disconnected-dd']);
       });
 
-      test('async nested directives in NodePart', async () => {
+      test('async nested directives in ChildPart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
         let promise = Promise.resolve(bDirective('X'));
@@ -1821,7 +1821,7 @@ suite('lit-html', () => {
     }
   );
 
-  test('directives can be disconnected from NodeParts', () => {
+  test('directives can be disconnected from ChildParts', () => {
     const log: Array<string> = [];
     const go = (x: boolean) =>
       render(html`${x ? disconnectingDirective(log) : nothing}`, container);
@@ -2068,7 +2068,7 @@ suite('lit-html', () => {
     assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
   });
 
-  test('directives in NodeParts can be reconnected', () => {
+  test('directives in ChildParts can be reconnected', () => {
     const log: Array<string> = [];
     const go = (left: boolean, right: boolean) => {
       return render(

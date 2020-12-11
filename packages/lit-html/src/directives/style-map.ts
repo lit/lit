@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, noChange, PartInfo} from '../lit-html.js';
+import {AttributePart, DirectiveParameters, noChange, PartInfo} from '../lit-html.js';
 import {directive, Directive, PartType} from '../directive.js';
 
 /**
@@ -63,7 +63,7 @@ class StyleMap extends Directive {
     }, '');
   }
 
-  update(part: AttributePart, [styleInfo]: Parameters<this['render']>) {
+  update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
 
     if (this.previousStyleProperties === undefined) {

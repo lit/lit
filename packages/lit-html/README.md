@@ -112,8 +112,8 @@ export const renderCounter = directive(
     constructor(partInfo: PartInfo, index?: number) {
       super(partInfo, index);
       // When necessary, validate part in constructor using `part.type`
-      if (partInfo.type !== PartType.NODE) {
-        throw new Error('renderCounter only supports NodePart');
+      if (partInfo.type !== PartType.CHILD) {
+        throw new Error('renderCounter only supports child expressions');
       }
     }
     // Any imperative updates to DOM/parts would go here

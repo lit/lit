@@ -55,7 +55,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, UpdatingElement} from 'updating-element';
-import {render, RenderOptions, noChange, NodePart} from 'lit-html';
+import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
 export * from 'updating-element';
 export * from 'lit-html';
 
@@ -94,7 +94,7 @@ export class LitElement extends UpdatingElement {
 
   readonly _$renderOptions: RenderOptions = {host: this};
 
-  private _$nodePart: NodePart | undefined = undefined;
+  private _$childPart: ChildPart | undefined = undefined;
 
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
@@ -119,7 +119,7 @@ export class LitElement extends UpdatingElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this._$nodePart = render(value, this.renderRoot, this._$renderOptions);
+    this._$childPart = render(value, this.renderRoot, this._$renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
@@ -127,17 +127,17 @@ export class LitElement extends UpdatingElement {
   // https://github.com/Polymer/lit-html/issues/1457
   connectedCallback() {
     super.connectedCallback();
-    this._$nodePart?.setConnected(true);
+    this._$childPart?.setConnected(true);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this._$nodePart?.setConnected(false);
+    this._$childPart?.setConnected(false);
   }
 
   /**
    * Invoked on each update to perform rendering tasks. This method may return
-   * any value renderable by lit-html's `NodePart` - typically a
+   * any value renderable by lit-html's `ChildPart` - typically a
    * `TemplateResult`. Setting properties inside this method will *not* trigger
    * the element to update.
    */

@@ -12,16 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, noChange, nothing, PartInfo} from '../lit-html.js';
+import {AttributePart, DirectiveParameters, noChange, nothing, PartInfo} from '../lit-html.js';
 import {directive, Directive, PartType} from '../directive.js';
 import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type === PartType.EVENT || partInfo.type === PartType.NODE) {
+    if (partInfo.type === PartType.EVENT || partInfo.type === PartType.CHILD) {
       throw new Error(
-        'The `live` directive is not allowed on text or event bindings'
+        'The `live` directive is not allowed on child or event bindings'
       );
     }
     if (partInfo.strings !== undefined) {
@@ -33,7 +33,7 @@ class LiveDirective extends Directive {
     return value;
   }
 
-  update(part: AttributePart, [value]: Parameters<this['render']>) {
+  update(part: AttributePart, [value]: DirectiveParameters<this>) {
     if (value === noChange || value === nothing) {
       return value;
     }

@@ -14,7 +14,7 @@
 
 import {
   AttributePart,
-  NodePart,
+  ChildPart,
   Part,
   DirectiveParent,
   TemplateResult,
@@ -64,22 +64,22 @@ export const isDirectiveResult = (
 const createMarker = () => document.createComment('');
 
 /**
- * Inserts a NodePart into the given container NodePart's DOM, either at the
- * end of the container NodePart, or before the optional `refPart`.
+ * Inserts a ChildPart into the given container ChildPart's DOM, either at the
+ * end of the container ChildPart, or before the optional `refPart`.
  *
  * This does not add the part to the containerPart's comitted value. That must
  * be done by callers.
  *
- * @param containerPart Part within which to add the new NodePart
- * @param refPart Part before which to add the new NodePart; when omitted the
+ * @param containerPart Part within which to add the new ChildPart
+ * @param refPart Part before which to add the new ChildPart; when omitted the
  *     part added to the end of the `containerPart`
  * @param part Part to insert, or undefined to create a new part
  */
 export const insertPart = (
-  containerPart: NodePart,
-  refPart: NodePart | undefined,
-  part?: NodePart
-): NodePart => {
+  containerPart: ChildPart,
+  refPart: ChildPart | undefined,
+  part?: ChildPart
+): ChildPart => {
   const container = containerPart._$startNode.parentNode!;
 
   const refNode =
@@ -88,7 +88,7 @@ export const insertPart = (
   if (part === undefined) {
     const startNode = container.insertBefore(createMarker(), refNode);
     const endNode = container.insertBefore(createMarker(), refNode);
-    part = new NodePart(
+    part = new ChildPart(
       startNode,
       endNode,
       containerPart,
@@ -151,7 +151,7 @@ export const setPartValue = <T extends Part>(
 const RESET_VALUE = {};
 
 /**
- * Resets the stored state of a NodePart used for dirty-checking and
+ * Resets the stored state of a ChildPart used for dirty-checking and
  * efficiently updating the part to the given value, or when omitted, to a state
  * where any subsequent dirty-check is guaranteed to fail, causing the next
  * commit to take effect.
@@ -163,27 +163,27 @@ export const resetPartValue = (part: Part, value: unknown = RESET_VALUE) =>
   (part._$value = value);
 
 /**
- * Returns the stored state of a NodePart used for dirty-checking and
+ * Returns the stored state of a ChildPart used for dirty-checking and
  * efficiently updating the part. Note that this value can differ from the value
  * set by the user/directive, and varies by type:
  *
  * - For `TemplateResult`: returns a `TemplateInstance`
- * - For iterable, returns a `NodePart[]`
+ * - For iterable, returns a `ChildPart[]`
  * - For all other types, returns the user value or resolved directive value
  *
  * TODO: this needs a better name, to disambiguate it from values set by user.
  *
  * @param part
  */
-export const getPartValue = (part: NodePart) => part._$value;
+export const getPartValue = (part: ChildPart) => part._$value;
 
 /**
- * Removes a NodePart from the DOM, including any of its content.
+ * Removes a ChildPart from the DOM, including any of its content.
  *
  * @param part The Part to remove
  */
-export const removePart = (part: NodePart) => {
-  part._$setNodePartConnected?.(false, true);
+export const removePart = (part: ChildPart) => {
+  part._$setChildPartConnected?.(false, true);
   let start: ChildNode | null = part._$startNode;
   const end: ChildNode | null = part._$endNode!.nextSibling;
   while (start !== end) {
@@ -193,6 +193,6 @@ export const removePart = (part: NodePart) => {
   }
 };
 
-export const clearPart = (part: NodePart) => {
+export const clearPart = (part: ChildPart) => {
   part._$clear();
 };

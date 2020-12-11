@@ -208,7 +208,7 @@ const SVG_RESULT = 2;
 
 /** TemplatePart types */
 const ATTRIBUTE_PART = 1;
-const NODE_PART = 2;
+const CHILD_PART = 2;
 const PROPERTY_PART = 3;
 const BOOLEAN_ATTRIBUTE_PART = 4;
 const EVENT_PART = 5;
@@ -262,7 +262,7 @@ export const svg = tag(SVG_RESULT);
 export const noChange = Symbol.for('lit-noChange');
 
 /**
- * A sentinel value that signals a NodePart to fully clear its content.
+ * A sentinel value that signals a ChildPart to fully clear its content.
  */
 export const nothing = Symbol.for('lit-nothing');
 
@@ -275,9 +275,9 @@ export const nothing = Symbol.for('lit-nothing');
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
 
-export type NodePartInfo = {
-  readonly type: typeof NODE_PART;
-  readonly _$part: NodePart;
+export type ChildPartInfo = {
+  readonly type: typeof CHILD_PART;
+  readonly _$part: ChildPart;
   readonly _$parent: Disconnectable;
   readonly _$attributeIndex: number | undefined;
 };
@@ -302,7 +302,7 @@ export type AttributePartInfo = {
  * This is useful for checking that a directive is attached to a valid part,
  * such as with directive that can only be used on attribute bindings.
  */
-export type PartInfo = NodePartInfo | AttributePartInfo;
+export type PartInfo = ChildPartInfo | AttributePartInfo;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
@@ -346,14 +346,14 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): NodePart => {
+): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: NodePart = (partOwnerNode as any).$lit$;
+  let part: ChildPart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any).$lit$ = part = new NodePart(
+    (partOwnerNode as any).$lit$ = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -400,7 +400,7 @@ export interface DirectiveParent {
  * Returns an HTML string for the given TemplateStringsArray and result type
  * (HTML or SVG), along with the case-sensitive bound attribute names in
  * template order. The HTML contains comment comment markers denoting the
- * `NodePart`s and suffixes on bound attributes denoting the `AttributeParts`.
+ * `ChildPart`s and suffixes on bound attributes denoting the `AttributeParts`.
  *
  * @param strings template strings array
  * @param type HTML or SVG
@@ -545,7 +545,7 @@ const getTemplateHtml = (
     // We don't technically need to close the SVG tag since the parser will
     // handle it for us, but the SSR parser doesn't like that.
     // Note that the html must end with a node after the final expression to
-    // ensure the last NodePart has an end node, hence adding a comment if the
+    // ensure the last ChildPart has an end node, hence adding a comment if the
     // last string was empty.
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
@@ -655,7 +655,7 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this._parts.push({_type: NODE_PART, _index: ++nodeIndex});
+              this._parts.push({_type: CHILD_PART, _index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -665,7 +665,7 @@ class Template {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this._parts.push({_type: NODE_PART, _index: nodeIndex});
+          this._parts.push({_type: CHILD_PART, _index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -698,7 +698,7 @@ export interface Disconnectable {
 }
 
 function resolveDirective(
-  part: NodePart | AttributePart,
+  part: ChildPart | AttributePart,
   value: unknown,
   _$parent: DirectiveParent = part,
   _$attributeIndex?: number
@@ -706,7 +706,7 @@ function resolveDirective(
   let currentDirective =
     _$attributeIndex !== undefined
       ? (_$parent as AttributePart)._directives?.[_$attributeIndex]
-      : (_$parent as NodePart | Directive)._directive;
+      : (_$parent as ChildPart | Directive)._directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
@@ -726,7 +726,7 @@ function resolveDirective(
         _$attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as NodePart | Directive)._directive = currentDirective;
+      (_$parent as ChildPart | Directive)._directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -750,7 +750,7 @@ class TemplateInstance {
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
 
-  constructor(template: Template, parent: NodePart) {
+  constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
   }
@@ -773,8 +773,8 @@ class TemplateInstance {
     while (templatePart !== undefined && node !== null) {
       if (nodeIndex === templatePart._index) {
         let part: Part | undefined;
-        if (templatePart._type === NODE_PART) {
-          part = new NodePart(
+        if (templatePart._type === CHILD_PART) {
+          part = new ChildPart(
             node as HTMLElement,
             node.nextSibling,
             this,
@@ -811,7 +811,7 @@ class TemplateInstance {
         (part as AttributePart)._$setValue(values, part as AttributePart, i);
         i += (part as AttributePart).strings!.length - 1;
       } else {
-        (part as NodePart)._$setValue(values[i++]);
+        (part as ChildPart)._$setValue(values[i++]);
       }
     }
   }
@@ -830,7 +830,7 @@ type AttributeTemplatePart = {
   readonly _strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly _type: typeof NODE_PART;
+  readonly _type: typeof CHILD_PART;
   readonly _index: number;
 };
 type ElementTemplatePart = {
@@ -854,14 +854,14 @@ type TemplatePart =
   | CommentTemplatePart;
 
 export type Part =
-  | NodePart
+  | ChildPart
   | AttributePart
   | PropertyPart
   | BooleanAttributePart
   | EventPart;
 
-export class NodePart {
-  readonly type = NODE_PART;
+export class ChildPart {
+  readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$value: unknown;
   /** @internal */
@@ -874,12 +874,12 @@ export class NodePart {
   /** @internal */
   _$parent: Disconnectable | undefined;
 
-  // The following fields will be patched onto NodeParts when required by
+  // The following fields will be patched onto ChildParts when required by
   // DisconnectableDirective
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setNodePartConnected?(
+  _$setChildPartConnected?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -888,7 +888,7 @@ export class NodePart {
   constructor(
     startNode: ChildNode,
     endNode: ChildNode | null,
-    parent: TemplateInstance | NodePart | undefined,
+    parent: TemplateInstance | ChildPart | undefined,
     options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
@@ -908,7 +908,7 @@ export class NodePart {
    * @param isConnected
    */
   setConnected(isConnected: boolean) {
-    this._$setNodePartConnected?.(isConnected);
+    this._$setChildPartConnected?.(isConnected);
   }
 
   get parentNode(): Node {
@@ -1036,9 +1036,9 @@ export class NodePart {
     // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
 
     // If value is an array, then the previous render was of an
-    // iterable and value will contain the NodeParts from the previous
+    // iterable and value will contain the ChildParts from the previous
     // render. If value is not an array, clear this part and make a new
-    // array for NodeParts.
+    // array for ChildParts.
     if (!isArray(this._$value)) {
       this._$value = [];
       this._$clear();
@@ -1046,9 +1046,9 @@ export class NodePart {
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._$value as NodePart[];
+    const itemParts = this._$value as ChildPart[];
     let partIndex = 0;
-    let itemPart: NodePart | undefined;
+    let itemPart: ChildPart | undefined;
 
     for (const item of value) {
       if (partIndex === itemParts.length) {
@@ -1057,7 +1057,7 @@ export class NodePart {
         // instead of sharing parts between nodes
         // https://github.com/Polymer/lit-html/issues/1266
         itemParts.push(
-          (itemPart = new NodePart(
+          (itemPart = new ChildPart(
             this._insert(createMarker()),
             this._insert(createMarker()),
             this,
@@ -1086,7 +1086,7 @@ export class NodePart {
    * @param start Start node to clear from, for clearing a subset of the part's
    *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *     which NodeParts are being removed, used for disconnecting directives in
+   *     which ChildParts are being removed, used for disconnecting directives in
    *     those Parts.
    * 
    * @internal
@@ -1095,7 +1095,7 @@ export class NodePart {
     start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
-    this._$setNodePartConnected?.(false, true, from);
+    this._$setChildPartConnected?.(false, true, from);
     while (start && start !== this._$endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -1392,7 +1392,7 @@ export const _$private = {
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
+(globalThis as any)['litHtmlPlatformSupport']?.({ChildPart, Template});
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
