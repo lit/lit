@@ -1,7 +1,6 @@
 {
-  "extends": [
-    "eslint:recommended"
-  ],
+  "root": true,
+  "extends": ["eslint:recommended"],
   "env": {
     "browser": true,
     "mocha": true
