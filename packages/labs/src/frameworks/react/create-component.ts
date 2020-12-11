@@ -57,8 +57,7 @@ const setEvent = (
 const setProperty = <E extends Element, T>(
   node: E,
   name: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any,
+  value: unknown,
   _old: unknown,
   events?: T
 ) => {
@@ -70,7 +69,7 @@ const setProperty = <E extends Element, T>(
   if (event !== undefined) {
     setEvent(node, event, value as (e?: Event) => void);
   } else {
-    node[name as keyof E] = value;
+    node[name as keyof E] = value as E[keyof E];
   }
 };
 
@@ -86,6 +85,10 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
 
 type Events<S> = {
   [P in keyof S]?: (e: Event) => unknown;
+};
+
+type StringValued<T> = {
+  [P in keyof T]: string;
 };
 
 type Constructor<T> = {new (): T};
@@ -112,7 +115,7 @@ export const createComponent = <I extends HTMLElement, E>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: E
+  events?: StringValued<E>
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
@@ -131,18 +134,18 @@ export const createComponent = <I extends HTMLElement, E>(
     __forwardedRef?: React.Ref<unknown>;
   };
 
-  // List of properties/events which should be specially handled by the wrapper
+  // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
-  const elementPropsMap: {[index: string]: unknown} = {...(events ?? {})};
+  const elementPropsMap = new Set(Object.keys(events ?? {}));
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
-      elementPropsMap[p] = true;
+      elementPropsMap.add(p);
     }
   }
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
-    private _elementProps!: typeof elementPropsMap;
+    private _elementProps!: {[index: string]: unknown};
     private _userRef?: React.Ref<unknown>;
     private _ref?: React.RefCallback<I>;
 
@@ -214,7 +217,7 @@ export const createComponent = <I extends HTMLElement, E>(
       // iterate again when setting properties.
       this._elementProps = {};
       for (const [k, v] of Object.entries(this.props)) {
-        if (elementPropsMap[k]) {
+        if (elementPropsMap.has(k)) {
           this._elementProps[k] = v;
         } else {
           props[k] = v;
