@@ -37,6 +37,31 @@ packages/lit-element/lit.min.*
 packages/lit-element/platform-support.*
 packages/lit-element/private-ssr-support.*
 
+packages/lit-element-starter-ts/node_modules/
+packages/lit-element-starter-ts/lib/
+packages/lit-element-starter-ts/test/
+
+# top level source
+packages/lit-element-starter-ts/**/my-element.js
+packages/lit-element-starter-ts/**/my-element.js.map
+packages/lit-element-starter-ts/**/my-element.d.ts
+packages/lit-element-starter-ts/**/my-element.d.ts.map
+
+packages/lit-element-starter-ts/node_modules/*
+packages/lit-element-starter-ts/docs/*
+packages/lit-element-starter-ts/docs-src/*
+packages/lit-element-starter-ts/**/rollup-config.js
+
+packages/lit-element-starter-js/node_modules/
+
+# only generated for size check
+packages/lit-element-starter-js/**/my-element.bundled.js
+
+packages/lit-element-starter-js/node_modules/*
+packages/lit-element-starter-js/docs/*
+packages/lit-element-starter-js/docs-src/*
+packages/lit-element-starter-js/**/rollup-config.js
+
 packages/lit-html/development/
 packages/lit-html/directives/
 packages/lit-html/node_modules/

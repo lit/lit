@@ -5,6 +5,10 @@
 packages/benchmarks/.gitignore
 packages/labs/.gitignore
 packages/lit-element/.gitignore
+packages/lit-element-starter-ts/.gitignore
+packages/lit-element-starter-ts/.eslintignore
+packages/lit-element-starter-js/.gitignore
+packages/lit-element-starter-js/.eslintignore
 packages/lit-html/.gitignore
 packages/lit-ssr/.gitignore
 packages/localize/.gitignore

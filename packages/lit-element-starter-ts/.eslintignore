@@ -1,0 +1,4 @@
+node_modules/*
+docs/*
+docs-src/*
+rollup-config.js

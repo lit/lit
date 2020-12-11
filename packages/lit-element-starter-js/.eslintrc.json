@@ -14,5 +14,10 @@
   },
   "rules": {
     "no-unexpected-multiline": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["docs"]
+    }
+  ]
 }
