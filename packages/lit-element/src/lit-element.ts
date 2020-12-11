@@ -92,7 +92,7 @@ export class LitElement extends UpdatingElement {
    */
   protected static ['finalized'] = true;
 
-  readonly _$renderOptions: RenderOptions = {eventContext: this};
+  readonly _$renderOptions: RenderOptions = {host: this};
 
   private _nodePart: NodePart | undefined = undefined;
 

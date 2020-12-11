@@ -343,7 +343,7 @@ export interface RenderOptions {
    * An object to use as the `this` value for event listeners. It's often
    * useful to set this to the host component rendering a template.
    */
-  eventContext?: EventTarget;
+  host?: EventTarget;
   /**
    * A DOM node before which to render content in the container.
    */
@@ -918,6 +918,7 @@ export type Part =
 
 export class NodePart {
   readonly type = NODE_PART;
+  readonly options: RenderOptions | undefined;
   _$value: unknown;
   /** @internal */
   _directive?: Directive;
@@ -926,7 +927,6 @@ export class NodePart {
   /** @internal */
   _$endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
-
   /** @internal */
   _$parent: Disconnectable | undefined;
 
@@ -945,11 +945,12 @@ export class NodePart {
     startNode: ChildNode,
     endNode: ChildNode | null,
     parent: TemplateInstance | NodePart | undefined,
-    public options: RenderOptions | undefined
+    options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
     this._$endNode = endNode;
     this._$parent = parent;
+    this.options = options;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
@@ -1165,6 +1166,7 @@ export class AttributePart {
     | typeof EVENT_PART;
   readonly element: HTMLElement;
   readonly name: string;
+  readonly options: RenderOptions | undefined;
 
   /**
    * If this attribute part represents an interpolation, this contains the
@@ -1176,7 +1178,6 @@ export class AttributePart {
   _$value: unknown | Array<unknown> = nothing;
   /** @internal */
   _directives?: Array<Directive | undefined>;
-
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
@@ -1198,12 +1199,13 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent?: Disconnectable,
-    _options?: RenderOptions
+    parent: Disconnectable | undefined,
+    options: RenderOptions | undefined
   ) {
     this.element = element;
     this.name = name;
     this._$parent = parent;
+    this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this._$value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
@@ -1354,12 +1356,6 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
-  private _eventContext?: unknown;
-
-  constructor(...args: ConstructorParameters<typeof AttributePart>) {
-    super(...args);
-    this._eventContext = args[4]?.eventContext;
-  }
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
@@ -1413,7 +1409,7 @@ export class EventPart extends AttributePart {
     if (typeof this._$value === 'function') {
       // TODO (justinfagnani): do we need to default to this._$element?
       // It'll always be the same as `e.currentTarget`.
-      this._$value.call(this._eventContext ?? this.element, event);
+      this._$value.call(this.options?.host ?? this.element, event);
     } else {
       (this._$value as EventListenerObject).handleEvent(event);
     }
