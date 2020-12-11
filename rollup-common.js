@@ -99,6 +99,10 @@ const stableProperties = {
   _$setNodePartConnected: 'S',
   // lit-html: NodePart (used by directive-helpers)
   _$clear: 'T',
+  // TODO (justinfagnani): not actually cross-package name, but needs to be
+  // named for now to avoid a renaming collision
+  _$placeholder: 'U',
+  _$nodePart: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
