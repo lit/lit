@@ -161,7 +161,8 @@ const comment2EndRegex = />/g;
 
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
- * position. It either matches a `>` or an attribute.
+ * position. It either matches a `>`, an attribute-like sequence, or the end
+ * of the string after a space (attribute-name position ending).
  *
  * See attributes in the HTML spec:
  * https://www.w3.org/TR/html5/syntax.html#elements-attributes
@@ -184,7 +185,7 @@ const comment2EndRegex = />/g;
  *    * (') then any non-(')
  */
 const tagEndRegex = new RegExp(
-  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))`,
+  `>|${SPACE_CHAR}(?:(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))|$)`,
   'g'
 );
 const ENTIRE_MATCH = 0;
@@ -206,6 +207,8 @@ const rawTextElement = /^(?:script|style|textarea)$/i;
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
 
+type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
+
 /** TemplatePart types */
 const ATTRIBUTE_PART = 1;
 const CHILD_PART = 2;
@@ -214,8 +217,6 @@ const BOOLEAN_ATTRIBUTE_PART = 4;
 const EVENT_PART = 5;
 const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
-
-type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
 /**
  * The return type of the template tag functions.
@@ -279,7 +280,7 @@ export type ChildPartInfo = {
   readonly type: typeof CHILD_PART;
   readonly _$part: ChildPart;
   readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
+  readonly _$attributeIndex: undefined;
 };
 
 export type AttributePartInfo = {
@@ -296,13 +297,20 @@ export type AttributePartInfo = {
   readonly _$attributeIndex: number | undefined;
 };
 
+export type ElementPartInfo = {
+  readonly type: typeof ELEMENT_PART;
+  readonly _$part: ElementPart;
+  readonly _$parent: Disconnectable;
+  readonly _$attributeIndex: undefined;
+};
+
 /**
  * Information about the part a directive is bound to.
  *
  * This is useful for checking that a directive is attached to a valid part,
  * such as with directive that can only be used on attribute bindings.
  */
-export type PartInfo = ChildPartInfo | AttributePartInfo;
+export type PartInfo = ChildPartInfo | AttributePartInfo | ElementPartInfo;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
@@ -436,10 +444,12 @@ const getTemplateHtml = (
     // The index of the end of the last attribute name. When this is
     // positive at end of a string, it means we're in an attribute value
     // position and need to rewrite the attribute name.
+    // We also use a special value of -2 to indicate that we encountered
+    // the end of a string in attribute name position.
     let attrNameEndIndex = -1;
     let attrName: string | undefined;
     let lastIndex = 0;
-    let match: RegExpExecArray | null;
+    let match!: RegExpExecArray | null;
 
     // The conditions in this loop handle the current parse state, and the
     // assignments to the `regex` variable are the state transitions.
@@ -448,16 +458,6 @@ const getTemplateHtml = (
       regex.lastIndex = lastIndex;
       match = regex.exec(s);
       if (match === null) {
-        // If the current regex doesn't match we've come to a binding inside
-        // that state and must break and insert a marker
-        if (regex === tagEndRegex) {
-          // When tagEndRegex doesn't match we must have a binding in
-          // attribute-name position, since tagEndRegex does match static
-          // attribute names and end-of-tag. We need to clear
-          // attrNameEndIndex which may have been set by a previous
-          // tagEndRegex match.
-          attrNameEndIndex = -1;
-        }
         break;
       }
       lastIndex = regex.lastIndex;
@@ -470,7 +470,7 @@ const getTemplateHtml = (
         } else if (match[TAG_NAME] !== undefined) {
           if (rawTextElement.test(match[TAG_NAME])) {
             // Record if we encounter a raw-text element. We'll switch to
-            // this regex at the end of the tag
+            // this regex at the end of the tag.
             rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
           }
           regex = tagEndRegex;
@@ -486,6 +486,9 @@ const getTemplateHtml = (
           // We may be ending an unquoted attribute value, so make sure we
           // clear any pending attrNameEndIndex
           attrNameEndIndex = -1;
+        } else if (match[ATTRIBUTE_NAME] === undefined) {
+          // Attribute name position
+          attrNameEndIndex = -2;
         } else {
           attrNameEndIndex = regex.lastIndex - match[SPACES_AND_EQUALS].length;
           attrName = match[ATTRIBUTE_NAME];
@@ -524,22 +527,27 @@ const getTemplateHtml = (
       );
     }
 
-    // If we're in text position, and not in a raw text element
-    // (regex === textEndRegex), we insert a comment marker. Otherwise, we
-    // insert a plain maker. If we have a attrNameEndIndex, it means we need
-    // to rewrite the attribute name to add a bound attribute suffix.
+    // We have four cases:
+    //  1. We're in text position, and not in a raw text element
+    //     (regex === textEndRegex): insert a comment marker.
+    //  2. We have a non-negative attrNameEndIndex which means we need to
+    //     rewrite the attribute name to add a bound attribute suffix.
+    //  3. We're at the non-first binding in a multi-binding attribute, use a
+    //     plain marker.
+    //  4. We're somewhere else inside the tag. If we're in attribute name
+    //     position (attrNameEndIndex === -2), add a sequential suffix to
+    //     generate a unique attribute name.
     html +=
       regex === textEndRegex
         ? s + nodeMarker
-        : (attrNameEndIndex !== -1
-            ? (attrNames.push(attrName!),
-              s.slice(0, attrNameEndIndex) +
-                boundAttributeSuffix +
-                s.slice(attrNameEndIndex))
-            : s) + marker;
+        : attrNameEndIndex >= 0
+        ? (attrNames.push(attrName!),
+          s.slice(0, attrNameEndIndex) +
+            boundAttributeSuffix +
+            s.slice(attrNameEndIndex)) + marker
+        : s + marker + (attrNameEndIndex === -2 ? `:${i}` : '');
   }
-  // TODO (justinfagnani): if regex is not textRegex log a warning for a
-  // malformed template in dev mode.
+
   // Returned as an array for terseness
   return [
     // We don't technically need to close the SVG tag since the parser will
@@ -627,7 +635,7 @@ class Template {
                     : AttributePart,
               });
               bindingIndex += statics.length - 1;
-            } else if (name === marker) {
+            } else if (name.startsWith(marker)) {
               attrsToRemove.push(name);
               this._parts.push({
                 _type: ELEMENT_PART,
@@ -698,7 +706,7 @@ export interface Disconnectable {
 }
 
 function resolveDirective(
-  part: ChildPart | AttributePart,
+  part: ChildPart | AttributePart | ElementPart,
   value: unknown,
   _$parent: DirectiveParent = part,
   _$attributeIndex?: number
@@ -706,7 +714,7 @@ function resolveDirective(
   let currentDirective =
     _$attributeIndex !== undefined
       ? (_$parent as AttributePart)._directives?.[_$attributeIndex]
-      : (_$parent as ChildPart | Directive)._directive;
+      : (_$parent as ChildPart | ElementPart | Directive)._directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
@@ -788,6 +796,8 @@ class TemplateInstance {
             this,
             options
           );
+        } else if (templatePart._type === ELEMENT_PART) {
+          part = new ElementPart(node as HTMLElement, this, options);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -858,6 +868,7 @@ export type Part =
   | AttributePart
   | PropertyPart
   | BooleanAttributePart
+  | ElementPart
   | EventPart;
 
 export class ChildPart {
@@ -1088,7 +1099,7 @@ export class ChildPart {
    * @param from  When `start` is specified, the index within the iterable from
    *     which ChildParts are being removed, used for disconnecting directives in
    *     those Parts.
-   * 
+   *
    * @internal
    */
   _$clear(
@@ -1359,6 +1370,40 @@ export class EventPart extends AttributePart {
     } else {
       (this._$value as EventListenerObject).handleEvent(event);
     }
+  }
+}
+
+export class ElementPart {
+  readonly type = ELEMENT_PART;
+  /** @internal */
+  _directive?: Directive;
+  // This is to ensure that every Part has a _value.
+  _$value: undefined;
+
+  /** @internal */
+  _$parent: Disconnectable | undefined;
+  /** @internal */
+  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  /** @internal */
+  _setDirectiveConnected?: (
+    directive: Directive | undefined,
+    isConnected: boolean,
+    removeFromParent?: boolean
+  ) => void = undefined;
+
+  options: RenderOptions | undefined;
+
+  constructor(
+    public element: Element,
+    parent: Disconnectable,
+    options: RenderOptions | undefined
+  ) {
+    this._$parent = parent;
+    this.options = options;
+  }
+
+  _$setValue(value: unknown): void {
+    resolveDirective(this, value);
   }
 }
 

@@ -22,6 +22,7 @@ import {
   ChildPart,
   PartInfo,
   Part,
+  ElementPart,
 } from './lit-html';
 export {DirectiveClass, DirectiveParameters, DirectiveResult} from './lit-html';
 
@@ -33,6 +34,7 @@ export const PartType = {
   PROPERTY: 3,
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
+  ELEMENT: 6,
 } as const;
 
 export type PartType = typeof PartType[keyof typeof PartType];
@@ -55,7 +57,7 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  _part: ChildPart | AttributePart;
+  _part: ChildPart | AttributePart | ElementPart;
   //@internal
   _attributeIndex: number | undefined;
   //@internal

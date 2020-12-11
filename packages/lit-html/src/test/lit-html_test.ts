@@ -328,58 +328,38 @@ suite('lit-html', () => {
       );
     });
 
-    // test('inside start tag', () => {
-    //   assertRender(html`<div ${attr`a="b"`}></div>`, '<div a="b"></div>');
-    // });
+    test('inside start tag', () => {
+      assertRender(html`<div ${`a`}></div>`, '<div></div>');
+    });
 
-    // test('inside start tag x2', () => {
-    //   // We don't support multiple attribute-position bindings yet, so just
-    //   // ensure this parses ok
-    //   assertRender(
-    //     html`<div ${attr`a="b"`} ${attr`c="d"`}></div>`,
-    //     '<div a="b"></div>'
-    //   );
-    // });
+    test('inside start tag x2', () => {
+      // We don't support multiple attribute-position bindings yet, so just
+      // ensure this parses ok
+      assertRender(html`<div ${`a`} ${`a`}></div>`, '<div></div>');
+    });
 
     test('inside start tag after quoted attribute', () => {
-      assertRender(html`<div a="b" ${'c'}></div>`, '<div a="b"></div>');
+      assertRender(html`<div a="b" ${`c`}></div>`, '<div a="b"></div>');
       assertRender(
-        html`<script a="b" ${'c'}></script>`,
+        html`<script a="b" ${`c`}></script>`,
         '<script a="b"></script>'
       );
     });
 
     test('inside start tag after unquoted attribute', () => {
-      assertRender(html`<div a=b ${'c'}></div>`, '<div a="b"></div>');
-      assertRender(
-        html`<script a=b ${'c'}></script>`,
-        '<script a="b"></script>'
-      );
+      // prettier-ignore
+      assertRender(html`<div a=b ${`c`}></div>`, '<div a="b"></div>');
     });
 
-    test('inside start tag', () => {
-      assertRender(html`<div ${'a'}></div>`, '<div></div>');
+    test('inside start tag before unquoted attribute', () => {
+      // bound attributes always appear after static attributes
+      assertRender(html`<div ${`c`} a="b"></div>`, '<div a="b"></div>');
     });
 
-    // test('inside start tag after quoted attribute', () => {
-    //   assertRender(html`<div a="b" ${attr`c="d"`}></div>`, '<div a="b" c="d"></div>');
-    // });
-
-    // test('inside start tag before unquoted attribute', () => {
-    //   // bound attributes always appear after static attributes
-    //   assertRender(
-    //     html`<div ${attr`c="d"`} a="b"></div>`,
-    //     '<div a="b" c="d"></div>'
-    //   );
-    // });
-
-    // test('inside start tag before quoted attribute', () => {
-    //   // bound attributes always appear after static attributes
-    //   assertRender(
-    //     html`<div ${attr`c="d"`} a="b"></div>`,
-    //     '<div a="b" c="d"></div>'
-    //   );
-    // });
+    test('inside start tag before quoted attribute', () => {
+      // bound attributes always appear after static attributes
+      assertRender(html`<div ${`c`} a="b"></div>`, '<div a="b"></div>');
+    });
 
     test('"dynamic" tag name', () => {
       render(html`<${'A'}></${'A'}>`, container);
@@ -736,10 +716,10 @@ suite('lit-html', () => {
       );
     });
 
-    test('renders interpolation to an unquoted attribute', () => {
-      render(html`<div foo=A${'B'}C></div>`, container);
+    test('renders interpolation to a quoted attribute', () => {
+      render(html`<div foo="A${'B'}C"></div>`, container);
       assertContent('<div foo="ABC"></div>');
-      render(html`<div foo=${'A'}B${'C'}></div>`, container);
+      render(html`<div foo="${'A'}B${'C'}"></div>`, container);
       assertContent('<div foo="ABC"></div>');
     });
 
@@ -771,18 +751,12 @@ suite('lit-html', () => {
 
     test.skip('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
-      assert.include(
-        container.querySelector('div')!.getAttribute('foo'),
-        ''
-      );
+      assert.include(container.querySelector('div')!.getAttribute('foo'), '');
     });
 
     test.skip('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')] as any}></div>`, container);
-      assert.include(
-        container.querySelector('div')!.getAttribute('foo')!,
-        ''
-      );
+      assert.include(container.querySelector('div')!.getAttribute('foo')!, '');
     });
 
     test('renders a binding in a style attribute', () => {
@@ -2229,6 +2203,33 @@ suite('lit-html', () => {
     part.setConnected(true);
     assert.deepEqual(log, ['reconnected-left-0']);
   });
+
+  // suite('spread', () => {
+  //   test('renders a static attr result', () => {
+  //     render(html`<div ${attr`foo=bar`} a="b"></div>`, container);
+  //     assert.equal(
+  //       stripExpressionComments(container.innerHTML),
+  //       '<div a="b" foo="bar"></div>'
+  //     );
+  //   });
+
+  //   test('renders a dynamic attr result', () => {
+  //     render(html`<div ${attr`foo=${'bar'}`} a="b"></div>`, container);
+  //     assert.equal(
+  //       stripExpressionComments(container.innerHTML),
+  //       '<div a="b" foo="bar"></div>'
+  //     );
+  //   });
+
+  //   test.skip('renders a property', () => {
+  //     render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
+  //     assert.equal(
+  //       stripExpressionComments(container.innerHTML),'<div a="b"></div>'
+  //     );
+  //     const div = container.querySelector('div');
+  //     assert.equal((div as any).foo, 'bar');
+  //   });
+  // });
 
   let securityHooksSuiteFunction:
     | Mocha.SuiteFunction

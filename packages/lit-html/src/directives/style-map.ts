@@ -12,7 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, DirectiveParameters, noChange, PartInfo} from '../lit-html.js';
+import {
+  AttributePart,
+  DirectiveParameters,
+  noChange,
+  PartInfo,
+} from '../lit-html.js';
 import {directive, Directive, PartType} from '../directive.js';
 
 /**
