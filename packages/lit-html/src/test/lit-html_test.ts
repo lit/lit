@@ -13,11 +13,9 @@
  */
 import {
   AttributePart,
-  Directive,
-  directive,
   html,
   noChange,
-  NodePart,
+  ChildPart,
   nothing,
   render,
   RenderOptions,
@@ -26,6 +24,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -752,18 +751,12 @@ suite('lit-html', () => {
 
     test.skip('renders a Symbol to an attribute', () => {
       render(html`<div foo=${Symbol('A')}></div>`, container);
-      assert.include(
-        container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
-        'symbol'
-      );
+      assert.include(container.querySelector('div')!.getAttribute('foo'), '');
     });
 
     test.skip('renders a Symbol in an array to an attribute', () => {
       render(html`<div foo=${[Symbol('A')] as any}></div>`, container);
-      assert.include(
-        container.querySelector('div')!.getAttribute('foo')!.toLowerCase(),
-        'symbol'
-      );
+      assert.include(container.querySelector('div')!.getAttribute('foo')!, '');
     });
 
     test('renders a binding in a style attribute', () => {
@@ -1092,14 +1085,14 @@ suite('lit-html', () => {
         event = e;
         thisValue = this;
       };
-      const eventContext = {} as EventTarget;
-      render(html`<div @click=${listener}></div>`, container, {eventContext});
+      const host = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {host});
       const div = container.querySelector('div')!;
       div.click();
       if (event === undefined) {
         throw new Error(`Event listener never fired!`);
       }
-      assert.equal(thisValue, eventContext);
+      assert.equal(thisValue, host);
 
       // MouseEvent is not a function in IE, so the event cannot be an instance
       // of it
@@ -1117,8 +1110,10 @@ suite('lit-html', () => {
           thisValue = this;
         },
       };
-      const eventContext = {} as EventTarget;
-      render(html`<div @click=${listener}></div>`, container, {eventContext});
+      const host = {} as EventTarget;
+      render(html`<div @click=${listener}></div>`, container, {
+        host,
+      });
       const div = container.querySelector('div')!;
       div.click();
       assert.equal(thisValue, listener);
@@ -1438,7 +1433,7 @@ suite('lit-html', () => {
     }
     const count = directive(CountDirective);
 
-    test('renders directives on NodeParts', () => {
+    test('renders directives on ChildParts', () => {
       class TestDirective extends Directive {
         render(v: string) {
           return html`TEST:${v}`;
@@ -1463,7 +1458,7 @@ suite('lit-html', () => {
     });
 
     test('directives can update', () => {
-      let receivedPart: NodePart;
+      let receivedPart: ChildPart;
       let receivedValue: unknown;
 
       class TestUpdateDirective extends Directive {
@@ -1471,7 +1466,7 @@ suite('lit-html', () => {
           return v;
         }
 
-        update(part: NodePart, [v]: Parameters<this['render']>) {
+        update(part: ChildPart, [v]: Parameters<this['render']>) {
           receivedPart = part;
           receivedValue = v;
           return this.render(v);
@@ -1483,7 +1478,7 @@ suite('lit-html', () => {
       };
       go(true);
       assertContent('<div>true</div>');
-      assert.instanceOf(receivedPart!, NodePart);
+      assert.instanceOf(receivedPart!, ChildPart);
       assert.equal(receivedValue, true);
     });
 
@@ -1574,16 +1569,42 @@ suite('lit-html', () => {
       assert.isOk(event);
     });
 
+    test('directives have access to renderOptions', () => {
+      const hostEl = document.createElement('input');
+      hostEl.value = 'host';
+
+      class HostDirective extends Directive {
+        host?: HTMLInputElement;
+
+        render(v: string) {
+          return `${(this.host as HTMLInputElement)?.value}:${v}`;
+        }
+
+        update(part: Part, props: [v: string]) {
+          this.host ??= part.options!.host as HTMLInputElement;
+          return this.render(...props);
+        }
+      }
+      const hostDirective = directive(HostDirective);
+
+      render(
+        html`<div attr=${hostDirective('attr')}>${hostDirective('node')}</div>`,
+        container,
+        {host: hostEl}
+      );
+      assertContent('<div attr="host:attr">host:node</div>');
+    });
+
     suite('nested directives', () => {
       const aDirective = directive(
-        class ADirective extends Directive {
+        class extends Directive {
           render(bool: boolean, v: unknown) {
             return bool ? v : nothing;
           }
         }
       );
       const bDirective = directive(
-        class BDirective extends Directive {
+        class extends Directive {
           count = 0;
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;
@@ -1591,7 +1612,7 @@ suite('lit-html', () => {
         }
       );
 
-      test('nested directives in NodePart', () => {
+      test('nested directives in ChildPart', () => {
         const template = (bool: boolean, v: unknown) =>
           html`<div>${aDirective(bool, bDirective(v))}`;
         assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
@@ -1612,7 +1633,7 @@ suite('lit-html', () => {
 
     suite('async directives', () => {
       const aDirective = directive(
-        class ADirective extends DisconnectableDirective {
+        class extends DisconnectableDirective {
           value: unknown;
           promise!: Promise<unknown>;
           render(_promise: Promise<unknown>) {
@@ -1628,7 +1649,7 @@ suite('lit-html', () => {
         }
       );
       const bDirective = directive(
-        class BDirective extends Directive {
+        class extends Directive {
           count = 0;
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;
@@ -1636,7 +1657,7 @@ suite('lit-html', () => {
         }
       );
 
-      test('async directives in NodePart', async () => {
+      test('async directives in ChildPart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
         let promise = Promise.resolve('resolved1');
@@ -1649,7 +1670,7 @@ suite('lit-html', () => {
         assertContent(`<div>resolved2</div>`);
       });
 
-      test('async directives while disconnected in NodePart', async () => {
+      test('async directives while disconnected in ChildPart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
         const promise = Promise.resolve('resolved1');
@@ -1661,7 +1682,7 @@ suite('lit-html', () => {
         assertContent(`<div>resolved1</div>`);
       });
 
-      test('async directives while disconnected in NodePart clears its value', async () => {
+      test('async directives while disconnected in ChildPart clears its value', async () => {
         const log: string[] = [];
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
@@ -1689,7 +1710,7 @@ suite('lit-html', () => {
         assert.deepEqual(log, ['disconnected-dd']);
       });
 
-      test('async nested directives in NodePart', async () => {
+      test('async nested directives in ChildPart', async () => {
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
         let promise = Promise.resolve(bDirective('X'));
@@ -1774,7 +1795,7 @@ suite('lit-html', () => {
     }
   );
 
-  test('directives can be disconnected from NodeParts', () => {
+  test('directives can be disconnected from ChildParts', () => {
     const log: Array<string> = [];
     const go = (x: boolean) =>
       render(html`${x ? disconnectingDirective(log) : nothing}`, container);
@@ -2021,7 +2042,7 @@ suite('lit-html', () => {
     assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
   });
 
-  test('directives in NodeParts can be reconnected', () => {
+  test('directives in ChildParts can be reconnected', () => {
     const log: Array<string> = [];
     const go = (left: boolean, right: boolean) => {
       return render(

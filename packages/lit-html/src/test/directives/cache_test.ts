@@ -96,4 +96,30 @@ suite('cache directive', () => {
     renderCached(false, 'D');
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
   });
+
+  test.only('cache can be dynamic', () => {
+    const renderMaybeCached = (condition: any, v: string) =>
+      render(
+        html`${condition ? cache(html`<div v=${v}></div>`) : v}`,
+        container
+      );
+
+    renderMaybeCached(true, 'A');
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div v="A"></div>'
+    );
+
+    renderMaybeCached(false, 'B');
+    assert.equal(stripExpressionComments(container.innerHTML), 'B');
+
+    renderMaybeCached(true, 'C');
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div v="C"></div>'
+    );
+
+    renderMaybeCached(false, 'D');
+    assert.equal(stripExpressionComments(container.innerHTML), 'D');
+  });
 });

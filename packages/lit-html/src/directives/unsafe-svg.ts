@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive} from '../lit-html.js';
+import {directive} from '../directive.js';
 import {UnsafeHTML} from './unsafe-html.js';
 
 const SVG_RESULT = 2;

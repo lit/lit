@@ -47,9 +47,9 @@ interface ShadyTemplateResult {
   _$litType$?: string;
 }
 
-interface PatchableNodePart {
+interface PatchableChildPart {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  new (...args: any[]): PatchableNodePart;
+  new (...args: any[]): PatchableChildPart;
   _$value: unknown;
   _$startNode: ChildNode;
   _$endNode: ChildNode | null;
@@ -82,15 +82,15 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
 /**
  * lit-html patches. These properties cannot be renamed.
- * * NodePart.prototype._$getTemplate
- * * NodePart.prototype._$setValue
+ * * ChildPart.prototype._$getTemplate
+ * * ChildPart.prototype._$setValue
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= ({
-  NodePart,
+  ChildPart,
   Template,
 }: {
-  NodePart: PatchableNodePart;
+  ChildPart: PatchableChildPart;
   Template: PatchableTemplate;
 }) => {
   if (!needsPlatformSupport) {
@@ -137,7 +137,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
     Map<TemplateStringsArray, PatchableTemplate>
   >();
 
-  // Note, it's ok to subclass Template since it's only used via NodePart.
+  // Note, it's ok to subclass Template since it's only used via ChildPart.
   class ShadyTemplate extends Template {
     /**
      * Override to extract style elements from the template
@@ -171,13 +171,13 @@ const scopeCssStore: Map<string, string[]> = new Map();
   const renderContainer = document.createDocumentFragment();
   const renderContainerMarker = document.createComment('');
 
-  const nodePartProto = NodePart.prototype;
+  const childPartProto = ChildPart.prototype;
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
-  const setValue = nodePartProto._$setValue;
-  nodePartProto._$setValue = function (
-    this: PatchableNodePart,
+  const setValue = childPartProto._$setValue;
+  childPartProto._$setValue = function (
+    this: PatchableChildPart,
     value: unknown
   ) {
     const container = this._$startNode.parentNode!;
@@ -229,10 +229,10 @@ const scopeCssStore: Map<string, string[]> = new Map();
   };
 
   /**
-   * Patch NodePart._$getTemplate to look up templates in a cache bucketed
+   * Patch ChildPart._$getTemplate to look up templates in a cache bucketed
    * by element name.
    */
-  nodePartProto._$getTemplate = function (
+  childPartProto._$getTemplate = function (
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {

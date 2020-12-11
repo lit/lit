@@ -12,21 +12,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  Directive,
-  directive,
-  noChange,
-  NODE_PART,
-  PartInfo,
-} from '../lit-html.js';
+import {noChange, PartInfo} from '../lit-html.js';
+import {directive, Directive, PartType} from '../directive.js';
 
 class TemplateContent extends Directive {
   private _previousTemplate?: HTMLTemplateElement;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== NODE_PART) {
-      throw new Error('templateContent can only be used in text bindings');
+    if (partInfo.type !== PartType.CHILD) {
+      throw new Error('templateContent can only be used in child bindings');
     }
   }
 

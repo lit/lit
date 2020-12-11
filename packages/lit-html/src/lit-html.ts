@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Directive} from './directive.js';
+
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 
@@ -33,12 +35,12 @@ if (DEV_MODE) {
  * for this technique (https://github.com/WICG/trusted-types).
  *
  * @param node The HTML node (usually either a #text node or an Element) that
- *   is being written to. Note that this is just an exemplar node, the write
- *   may take place against another instance of the same class of node.
+ *     is being written to. Note that this is just an exemplar node, the write
+ *     may take place against another instance of the same class of node.
  * @param name The name of an attribute or property (for example, 'href').
  * @param type Indicates whether the write that's about to be performed will
- *   be to a property or a node.
- * @returns A function that will sanitize this class of writes.
+ *     be to a property or a node.
+ * @return A function that will sanitize this class of writes.
  */
 export type SanitizerFactory = (
   node: Node,
@@ -53,9 +55,9 @@ export type SanitizerFactory = (
  * See SanitizerFactory.
  *
  * @param value The value to sanitize. Will be the actual value passed into
- *   the lit-html template literal, so this could be of any type.
- * @returns The value to write to the DOM. Usually the same as the input value,
- *   unless sanitization is needed.
+ *     the lit-html template literal, so this could be of any type.
+ * @return The value to write to the DOM. Usually the same as the input value,
+ *     unless sanitization is needed.
  */
 export type ValueSanitizer = (value: unknown) => unknown;
 
@@ -208,14 +210,12 @@ const SVG_RESULT = 2;
 type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
 /** TemplatePart types */
-// TODO (justinfagnani): since these are exported, consider shorter names,
-// like just `ATTRIBUTE`.
-export const ATTRIBUTE_PART = 1;
-export const NODE_PART = 2;
-export const PROPERTY_PART = 3;
-export const BOOLEAN_ATTRIBUTE_PART = 4;
-export const EVENT_PART = 5;
-export const ELEMENT_PART = 6;
+const ATTRIBUTE_PART = 1;
+const CHILD_PART = 2;
+const PROPERTY_PART = 3;
+const BOOLEAN_ATTRIBUTE_PART = 4;
+const EVENT_PART = 5;
+const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
 
 /**
@@ -260,12 +260,12 @@ export const svg = tag(SVG_RESULT);
  * A sentinel value that signals that a value was handled by a directive and
  * should not be written to the DOM.
  */
-export const noChange = {};
+export const noChange = Symbol.for('lit-noChange');
 
 /**
- * A sentinel value that signals a NodePart to fully clear its content.
+ * A sentinel value that signals a ChildPart to fully clear its content.
  */
-export const nothing = {};
+export const nothing = Symbol.for('lit-nothing');
 
 /**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
@@ -276,9 +276,9 @@ export const nothing = {};
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
 
-export type NodePartInfo = {
-  readonly type: typeof NODE_PART;
-  readonly _$part: NodePart;
+export type ChildPartInfo = {
+  readonly type: typeof CHILD_PART;
+  readonly _$part: ChildPart;
   readonly _$parent: Disconnectable;
   readonly _$attributeIndex: undefined;
 };
@@ -310,7 +310,7 @@ export type ElementPartInfo = {
  * This is useful for checking that a directive is attached to a valid part,
  * such as with directive that can only be used on attribute bindings.
  */
-export type PartInfo = NodePartInfo | AttributePartInfo | ElementPartInfo;
+export type PartInfo = ChildPartInfo | AttributePartInfo | ElementPartInfo;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
@@ -332,26 +332,12 @@ export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
   values: DirectiveParameters<InstanceType<C>>;
 };
 
-/**
- * Creates a user-facing directive function from a Directive class. This
- * function has the same parameters as the directive's render() method.
- *
- * WARNING: The directive and part API changes are in progress and subject to
- * change in future pre-releases.
- */
-export const directive = <C extends DirectiveClass>(c: C) => (
-  ...values: DirectiveParameters<InstanceType<C>>
-): DirectiveResult<C> => ({
-  _$litDirective$: c,
-  values,
-});
-
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
    * useful to set this to the host component rendering a template.
    */
-  eventContext?: EventTarget;
+  host?: EventTarget;
   /**
    * A DOM node before which to render content in the container.
    */
@@ -368,14 +354,14 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): NodePart => {
+): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: NodePart = (partOwnerNode as any).$lit$;
+  let part: ChildPart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any).$lit$ = part = new NodePart(
+    (partOwnerNode as any).$lit$ = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -412,69 +398,23 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 
 // Type for classes that have a `_directive` or `_directives[]` field, used by
 // `resolveDirective`
-export type DirectiveParent =
-  | AttributePart
-  | NodePart
-  | ElementPart
-  | Directive;
-
-/**
- * Base class for creating custom directives. Users should extend this class,
- * implement `render` and/or `update`, and then pass their subclass to
- * `directive`.
- *
- * WARNING: The directive and part API changes are in progress and subject to
- * change in future pre-releases.
- */
-export abstract class Directive {
-  //@internal
-  _part: NodePart | AttributePart | ElementPart;
-  //@internal
-  _attributeIndex: number | undefined;
-  //@internal
+export interface DirectiveParent {
+  _$parent?: DirectiveParent;
   _directive?: Directive;
-
-  //@internal
-  _$parent: Disconnectable;
-
-  // These will only exist on the DisconnectableDirective subclass
-  //@internal
-  _$disconnetableChildren?: Set<Disconnectable>;
-  //@internal
-  _$setDirectiveConnected?(isConnected: boolean): void;
-
-  constructor(partInfo: PartInfo) {
-    this._$parent = partInfo._$parent;
-    this._part = partInfo._$part;
-    this._attributeIndex = partInfo._$attributeIndex;
-  }
-  /** @internal */
-  _resolve(props: Array<unknown>): unknown {
-    const {_part, _attributeIndex} = this;
-    return resolveDirective(
-      _part,
-      this.update(_part, props),
-      this,
-      _attributeIndex
-    );
-  }
-  abstract render(...props: Array<unknown>): unknown;
-  update(_part: Part, props: Array<unknown>): unknown {
-    return this.render(...props);
-  }
+  _directives?: Array<Directive | undefined>;
 }
 
 /**
  * Returns an HTML string for the given TemplateStringsArray and result type
  * (HTML or SVG), along with the case-sensitive bound attribute names in
  * template order. The HTML contains comment comment markers denoting the
- * `NodePart`s and suffixes on bound attributes denoting the `AttributeParts`.
+ * `ChildPart`s and suffixes on bound attributes denoting the `AttributeParts`.
  *
  * @param strings template strings array
  * @param type HTML or SVG
  * @return Array containing `[html, attrNames]` (array returned for terseness,
- *   to avoid object fields since this code is shared with non-minified SSR
- *   code)
+ *     to avoid object fields since this code is shared with non-minified SSR
+ *     code)
  */
 const getTemplateHtml = (
   strings: TemplateStringsArray,
@@ -613,7 +553,7 @@ const getTemplateHtml = (
     // We don't technically need to close the SVG tag since the parser will
     // handle it for us, but the SSR parser doesn't like that.
     // Note that the html must end with a node after the final expression to
-    // ensure the last NodePart has an end node, hence adding a comment if the
+    // ensure the last ChildPart has an end node, hence adding a comment if the
     // last string was empty.
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
@@ -659,20 +599,18 @@ class Template {
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
-          const {attributes} = node as Element;
           // We defer removing bound attributes because on IE we might not be
           // iterating attributes in their template order, and would sometimes
           // remove an attribute that we still need to create a part for.
           const attrsToRemove = [];
-          for (let i = 0; i < attributes.length; i++) {
-            // This is the name of the attribute we're iterating over, but not
+          for (const name of (node as Element).getAttributeNames()) {
+            // `name` is the name of the attribute we're iterating over, but not
             // _neccessarily_ the name of the attribute we will create a part
             // for. They can be different in browsers that don't iterate on
             // attributes in source order. In that case the attrNames array
             // contains the attribute name we'll process next. We only need the
             // attribute name here to know if we should process a bound attribute
             // on this element.
-            const {name} = attributes[i];
             if (name.endsWith(boundAttributeSuffix)) {
               const realName = attrNames[attrNameIndex++];
               // Lowercase for case-sensitive SVG attributes like viewBox
@@ -725,7 +663,7 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this._parts.push({_type: NODE_PART, _index: ++nodeIndex});
+              this._parts.push({_type: CHILD_PART, _index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -735,7 +673,7 @@ class Template {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this._parts.push({_type: NODE_PART, _index: nodeIndex});
+          this._parts.push({_type: CHILD_PART, _index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -768,7 +706,7 @@ export interface Disconnectable {
 }
 
 function resolveDirective(
-  part: NodePart | AttributePart | ElementPart,
+  part: ChildPart | AttributePart | ElementPart,
   value: unknown,
   _$parent: DirectiveParent = part,
   _$attributeIndex?: number
@@ -776,7 +714,7 @@ function resolveDirective(
   let currentDirective =
     _$attributeIndex !== undefined
       ? (_$parent as AttributePart)._directives?.[_$attributeIndex]
-      : (_$parent as NodePart | ElementPart | Directive)._directive;
+      : (_$parent as ChildPart | ElementPart | Directive)._directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
@@ -796,7 +734,7 @@ function resolveDirective(
         _$attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as NodePart | Directive)._directive = currentDirective;
+      (_$parent as ChildPart | Directive)._directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -820,7 +758,7 @@ class TemplateInstance {
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
 
-  constructor(template: Template, parent: NodePart) {
+  constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
   }
@@ -843,8 +781,8 @@ class TemplateInstance {
     while (templatePart !== undefined && node !== null) {
       if (nodeIndex === templatePart._index) {
         let part: Part | undefined;
-        if (templatePart._type === NODE_PART) {
-          part = new NodePart(
+        if (templatePart._type === CHILD_PART) {
+          part = new ChildPart(
             node as HTMLElement,
             node.nextSibling,
             this,
@@ -859,7 +797,7 @@ class TemplateInstance {
             options
           );
         } else if (templatePart._type === ELEMENT_PART) {
-          part = new ElementPart(node as HTMLElement, this);
+          part = new ElementPart(node as HTMLElement, this, options);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -883,7 +821,7 @@ class TemplateInstance {
         (part as AttributePart)._$setValue(values, part as AttributePart, i);
         i += (part as AttributePart).strings!.length - 1;
       } else {
-        (part as NodePart)._$setValue(values[i++]);
+        (part as ChildPart)._$setValue(values[i++]);
       }
     }
   }
@@ -902,7 +840,7 @@ type AttributeTemplatePart = {
   readonly _strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly _type: typeof NODE_PART;
+  readonly _type: typeof CHILD_PART;
   readonly _index: number;
 };
 type ElementTemplatePart = {
@@ -926,15 +864,16 @@ type TemplatePart =
   | CommentTemplatePart;
 
 export type Part =
-  | NodePart
+  | ChildPart
   | AttributePart
   | PropertyPart
   | BooleanAttributePart
   | ElementPart
   | EventPart;
 
-export class NodePart {
-  readonly type = NODE_PART;
+export class ChildPart {
+  readonly type = CHILD_PART;
+  readonly options: RenderOptions | undefined;
   _$value: unknown;
   /** @internal */
   _directive?: Directive;
@@ -943,16 +882,15 @@ export class NodePart {
   /** @internal */
   _$endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
-
   /** @internal */
   _$parent: Disconnectable | undefined;
 
-  // The following fields will be patched onto NodeParts when required by
+  // The following fields will be patched onto ChildParts when required by
   // DisconnectableDirective
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setNodePartConnected?(
+  _$setChildPartConnected?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -961,12 +899,13 @@ export class NodePart {
   constructor(
     startNode: ChildNode,
     endNode: ChildNode | null,
-    parent: TemplateInstance | NodePart | undefined,
-    public options: RenderOptions | undefined
+    parent: TemplateInstance | ChildPart | undefined,
+    options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
     this._$endNode = endNode;
     this._$parent = parent;
+    this.options = options;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
@@ -980,7 +919,7 @@ export class NodePart {
    * @param isConnected
    */
   setConnected(isConnected: boolean) {
-    this._$setNodePartConnected?.(isConnected);
+    this._$setChildPartConnected?.(isConnected);
   }
 
   get parentNode(): Node {
@@ -990,7 +929,10 @@ export class NodePart {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
-      if (value !== this._$value) {
+      if (value === nothing) {
+        this._$clear();
+        this._$value = nothing;
+      } else if (value !== this._$value && value !== noChange) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -999,10 +941,7 @@ export class NodePart {
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this._commitIterable(value);
-    } else if (value === nothing) {
-      this._clear();
-      this._$value = nothing;
-    } else if (value !== noChange) {
+    } else {
       // Fallback, will render the string representation
       this._commitText(value);
     }
@@ -1014,7 +953,7 @@ export class NodePart {
 
   private _commitNode(value: Node): void {
     if (this._$value !== value) {
-      this._clear();
+      this._$clear();
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
         sanitizerFactoryInternal !== noopSanitizer
@@ -1108,19 +1047,19 @@ export class NodePart {
     // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
 
     // If value is an array, then the previous render was of an
-    // iterable and value will contain the NodeParts from the previous
+    // iterable and value will contain the ChildParts from the previous
     // render. If value is not an array, clear this part and make a new
-    // array for NodeParts.
+    // array for ChildParts.
     if (!isArray(this._$value)) {
       this._$value = [];
-      this._clear();
+      this._$clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._$value as NodePart[];
+    const itemParts = this._$value as ChildPart[];
     let partIndex = 0;
-    let itemPart: NodePart | undefined;
+    let itemPart: ChildPart | undefined;
 
     for (const item of value) {
       if (partIndex === itemParts.length) {
@@ -1129,7 +1068,7 @@ export class NodePart {
         // instead of sharing parts between nodes
         // https://github.com/Polymer/lit-html/issues/1266
         itemParts.push(
-          (itemPart = new NodePart(
+          (itemPart = new ChildPart(
             this._insert(createMarker()),
             this._insert(createMarker()),
             this,
@@ -1146,7 +1085,7 @@ export class NodePart {
 
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
-      this._clear(itemPart?._$endNode!.nextSibling, partIndex);
+      this._$clear(itemPart?._$endNode!.nextSibling, partIndex);
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1156,16 +1095,18 @@ export class NodePart {
    * Removes the nodes contained within this Part from the DOM.
    *
    * @param start Start node to clear from, for clearing a subset of the part's
-   *  DOM (used when truncating iterables)
+   *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *  which NodeParts are being removed, used for disconnecting directives in
-   *  those Parts.
+   *     which ChildParts are being removed, used for disconnecting directives in
+   *     those Parts.
+   *
+   * @internal
    */
-  private _clear(
+  _$clear(
     start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
-    this._$setNodePartConnected?.(false, true, from);
+    this._$setChildPartConnected?.(false, true, from);
     while (start && start !== this._$endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -1182,6 +1123,7 @@ export class AttributePart {
     | typeof EVENT_PART;
   readonly element: HTMLElement;
   readonly name: string;
+  readonly options: RenderOptions | undefined;
 
   /**
    * If this attribute part represents an interpolation, this contains the
@@ -1193,7 +1135,6 @@ export class AttributePart {
   _$value: unknown | Array<unknown> = nothing;
   /** @internal */
   _directives?: Array<Directive | undefined>;
-
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
@@ -1215,12 +1156,13 @@ export class AttributePart {
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent?: Disconnectable,
-    _options?: RenderOptions
+    parent: Disconnectable | undefined,
+    options: RenderOptions | undefined
   ) {
     this.element = element;
     this.name = name;
     this._$parent = parent;
+    this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this._$value = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
@@ -1247,9 +1189,11 @@ export class AttributePart {
    * @param value The part value, or an array of values for multi-valued parts
    * @param valueIndex the index to start reading values from. `undefined` for
    *   single-valued parts
-   * @param commitValue An optional method to override the _commitValue call;
-   *   is used in hydration to no-op re-setting serialized attributes, and in
-   *   to no-op the DOM operation and capture the value for serialization
+   * @param noCommit causes the part to not commit its value to the DOM. Used
+   *   in hydration to prime attribute parts with their first-rendered value,
+   *   but not set the attribute, and in SSR to no-op the DOM operation and
+   *   capture the value for serialization.
+   *
    * @internal
    */
   _$setValue(
@@ -1260,62 +1204,43 @@ export class AttributePart {
   ) {
     const strings = this.strings;
 
+    // Whether any of the values has changed, for dirty-checking
+    let change = false;
+
     if (strings === undefined) {
       // Single-value binding case
       value = resolveDirective(this, value, directiveParent, 0);
-      // Only dirty-check primitives and `nothing`:
-      // `(isPrimitive(v) || v === nothing)` limits the clause to primitives and
-      // `nothing`. `v === this._$value` is the dirty-check.
-      if (
-        !(
-          (isPrimitive(value) || value === nothing) &&
-          value === this._$value
-        ) &&
-        value !== noChange
-      ) {
+      change =
+        !isPrimitive(value) || (value !== this._$value && value !== noChange);
+      if (change) {
         this._$value = value;
-        if (!noCommit) {
-          this._commitValue(value);
-        }
       }
     } else {
       // Interpolation case
-      let attributeValue = strings[0];
-
-      // Whether any of the values has changed, for dirty-checking
-      let change = false;
-
-      // Whether any of the values is the `nothing` sentinel. If any are, we
-      // remove the entire attribute.
-      let remove = false;
+      const values = value as Array<unknown>;
+      value = strings[0];
 
       let i, v;
       for (i = 0; i < strings.length - 1; i++) {
-        v = resolveDirective(
-          this,
-          (value as Array<unknown>)[valueIndex! + i],
-          directiveParent,
-          i
-        );
+        v = resolveDirective(this, values[valueIndex! + i], directiveParent, i);
+
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
           v = (this._$value as Array<unknown>)[i];
-        } else {
-          remove = remove || v === nothing;
-          change =
-            change ||
-            !(
-              (isPrimitive(v) || v === nothing) &&
-              v === (this._$value as Array<unknown>)[i]
-            );
-          (this._$value as Array<unknown>)[i] = v;
         }
-        attributeValue +=
-          (typeof v === 'string' ? v : String(v ?? '')) + strings[i + 1];
+        change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+        if (v === nothing) {
+          value = nothing;
+        } else if (value !== nothing) {
+          value += (v ?? '') + strings[i + 1];
+        }
+        // We always record each value, even if one is `nothing`, for future
+        // change detection.
+        (this._$value as Array<unknown>)[i] = v;
       }
-      if (change && !noCommit) {
-        this._commitValue(remove ? nothing : attributeValue);
-      }
+    }
+    if (change && !noCommit) {
+      this._commitValue(value);
     }
   }
 
@@ -1388,12 +1313,6 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
-  private _eventContext?: unknown;
-
-  constructor(...args: ConstructorParameters<typeof AttributePart>) {
-    super(...args);
-    this._eventContext = args[4]?.eventContext;
-  }
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
@@ -1447,7 +1366,7 @@ export class EventPart extends AttributePart {
     if (typeof this._$value === 'function') {
       // TODO (justinfagnani): do we need to default to this._$element?
       // It'll always be the same as `e.currentTarget`.
-      this._$value.call(this._eventContext ?? this.element, event);
+      this._$value.call(this.options?.host ?? this.element, event);
     } else {
       (this._$value as EventListenerObject).handleEvent(event);
     }
@@ -1472,8 +1391,15 @@ export class ElementPart {
     removeFromParent?: boolean
   ) => void = undefined;
 
-  constructor(public element: Element, parent: Disconnectable) {
+  options: RenderOptions | undefined;
+
+  constructor(
+    public element: Element,
+    parent: Disconnectable,
+    options: RenderOptions | undefined
+  ) {
     this._$parent = parent;
+    this.options = options;
   }
 
   _$setValue(value: unknown): void {
@@ -1505,14 +1431,13 @@ export const _$private = {
   _getTemplateHtml: getTemplateHtml,
   // Used in hydrate
   _TemplateInstance: TemplateInstance,
-  _isPrimitive: isPrimitive,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
 };
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
+(globalThis as any)['litHtmlPlatformSupport']?.({ChildPart, Template});
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

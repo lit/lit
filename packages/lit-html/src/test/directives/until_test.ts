@@ -365,7 +365,7 @@ suite('until directive', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
-  test('renders a literal in a NodePart', () => {
+  test('renders a literal in a ChildPart', () => {
     render(html`${until('a')}`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), 'a');
   });
@@ -413,7 +413,7 @@ suite('until directive', () => {
     assert.equal((container.querySelector('div')! as any).someProp, 'a');
   });
 
-  test('renders a Promise in a NodePart', async () => {
+  test('renders a Promise in a ChildPart', async () => {
     render(html`${until(Promise.resolve('a'))}`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '');
 
@@ -493,7 +493,7 @@ suite('until directive', () => {
     assert.equal(callCount, 1);
   });
 
-  test('renders a promise-like in a NodePart', async () => {
+  test('renders a promise-like in a ChildPart', async () => {
     const thenable = {
       then(resolve: (arg: unknown) => void) {
         resolve('a');

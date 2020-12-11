@@ -67,7 +67,7 @@ const stableProperties = {
   _$createElement: 'A',
   _$element: 'B',
   _$options: 'C',
-  // lit-html: NodePart (used by platform-support)
+  // lit-html: ChildPart (used by platform-support)
   _$startNode: 'D',
   _$endNode: 'E',
   _$getTemplate: 'F',
@@ -83,20 +83,26 @@ const stableProperties = {
   _$needsHydration: 'K',
   // lit-html: Part (used by hydrate, platform-support)
   _$value: 'L',
-  // lit-html: Part (used by hydrate, parts, platform-support, ssr-support)
+  // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
   _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)
   _$handlesPrepareStyles: 'N',
   // lit-element: UpdatingElement (used bby ssr-support)
   _$attributeToProperty: 'O',
-  // lit-html: NodePart, AttributePart, TemplateInstance, Directive (accessed by
+  // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)
   _$parent: 'P',
   _$disconnetableChildren: 'Q',
   // disconnectable-directive: DisconnectableDirective
   _$setDirectiveConnected: 'R',
-  // lit-html: NodePart (added by disconnectable-directive)
-  _$setNodePartConnected: 'S',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$setChildPartConnected: 'S',
+  // lit-html: ChildPart (used by directive-helpers)
+  _$clear: 'T',
+  // TODO (justinfagnani): not actually cross-package name, but needs to be
+  // named for now to avoid a renaming collision
+  _$placeholder: 'U',
+  _$childPart: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -148,8 +154,8 @@ export function litProdConfig({
   // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
-  // consistently across modules, so that e.g. parts.js can safely access internal
-  // details of lit-html.js.
+  // consistently across modules, so that e.g. directive-helpers.js can safely
+  // access internal details of lit-html.js.
   //
   // However, we still have to account for the problem of mangled names getting
   // re-used for different properties across files, because Terser does not

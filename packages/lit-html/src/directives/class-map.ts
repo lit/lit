@@ -14,12 +14,11 @@
 
 import {
   AttributePart,
-  directive,
-  Directive,
+  DirectiveParameters,
   noChange,
   PartInfo,
-  ATTRIBUTE_PART,
 } from '../lit-html.js';
+import {directive, Directive, PartType} from '../directive.js';
 
 /**
  * A key-value set of class names to truthy values.
@@ -38,7 +37,7 @@ class ClassMap extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
-      partInfo.type !== ATTRIBUTE_PART ||
+      partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'class' ||
       (partInfo.strings !== undefined && partInfo.strings.length > 2)
     ) {
@@ -55,7 +54,7 @@ class ClassMap extends Directive {
       .join(' ');
   }
 
-  update(part: AttributePart, [classInfo]: [ClassInfo]) {
+  update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
     // Remember dynamic classes on the first render
     if (this.previousClasses === undefined) {
       this.previousClasses = new Set();
@@ -110,6 +109,6 @@ class ClassMap extends Directive {
  * For example `{foo: bar}` applies the class `foo` if the value of `bar` is
  * truthy.
  *
- * @param classInfo {ClassInfo}
+ * @param classInfo
  */
 export const classMap = directive(ClassMap);

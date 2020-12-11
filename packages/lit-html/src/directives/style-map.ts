@@ -14,12 +14,11 @@
 
 import {
   AttributePart,
-  directive,
-  Directive,
+  DirectiveParameters,
   noChange,
   PartInfo,
-  ATTRIBUTE_PART,
 } from '../lit-html.js';
+import {directive, Directive, PartType} from '../directive.js';
 
 /**
  * A key-value set of CSS properties and values.
@@ -38,7 +37,7 @@ class StyleMap extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
-      partInfo.type !== ATTRIBUTE_PART ||
+      partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'style' ||
       (partInfo.strings !== undefined && partInfo.strings.length > 2)
     ) {
@@ -69,7 +68,7 @@ class StyleMap extends Directive {
     }, '');
   }
 
-  update(part: AttributePart, [styleInfo]: Parameters<this['render']>) {
+  update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
 
     if (this.previousStyleProperties === undefined) {
@@ -124,6 +123,6 @@ class StyleMap extends Directive {
  * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
  * '0'})` sets the `background-color`, `border-top` and `--size` properties.
  *
- * @param styleInfo {StyleInfo}
+ * @param styleInfo
  */
 export const styleMap = directive(StyleMap);

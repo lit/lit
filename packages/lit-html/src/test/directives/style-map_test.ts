@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, directive, html, render} from '../../lit-html.js';
+import {AttributePart, html, render} from '../../lit-html.js';
+import {directive} from '../../directive.js';
 import {StyleInfo, styleMap} from '../../directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -145,7 +146,7 @@ suite('styleMap', () => {
     });
   });
 
-  test('throws when used in NodePart', () => {
+  test('throws when used in ChildPart', () => {
     assert.throws(() => {
       render(html`<div>${styleMap({})}</div>`, container);
     });

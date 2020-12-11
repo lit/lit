@@ -1,4 +1,19 @@
-import {Directive, DirectiveResult, directive, NodePart} from '../lit-html.js';
+/**
+ * @license
+ * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+import {DirectiveResult, ChildPart} from '../lit-html.js';
+import {directive, Directive} from '../directive.js';
 
 export interface RenderLightHost extends HTMLElement {
   renderLight(): unknown;
@@ -8,7 +23,7 @@ class RenderLight extends Directive {
   render() {
     /* SSR handled specially in render-lit-html */
   }
-  update(part: NodePart) {
+  update(part: ChildPart) {
     const instance = part.parentNode as RenderLightHost;
     if (typeof instance.renderLight === 'function') {
       return instance.renderLight();

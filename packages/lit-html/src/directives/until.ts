@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {directive, Part, noChange, _$private} from '../lit-html.js';
+import {Part, noChange} from '../lit-html.js';
+import {directive} from '../directive.js';
+import {isPrimitive} from '../directive-helpers.js';
 import {DisconnectableDirective} from '../disconnectable-directive.js';
 
 const DEV_MODE = true;
@@ -23,8 +25,6 @@ if (DEV_MODE) {
       'the next major version.'
   );
 }
-
-const isPrimitive = _$private._isPrimitive;
 
 interface AsyncState {
   /**

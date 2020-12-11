@@ -14,7 +14,8 @@
 
 import 'lit-element/hydrate-support.js';
 
-import {html, noChange, nothing, directive, Directive} from 'lit-html';
+import {html, noChange, nothing} from 'lit-html';
+import {directive, Directive} from 'lit-html/directive.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
@@ -56,10 +57,10 @@ export const tests: {[name: string]: SSRTest} = {
   // TODO: add suites (for now, delineating with comments)
 
   /******************************************************
-   * NodePart tests
+   * ChildPart tests
    ******************************************************/
 
-  'NodePart accepts a string': {
+  'ChildPart accepts a string': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -76,7 +77,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts a number': {
+  'ChildPart accepts a number': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -93,7 +94,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts undefined': {
+  'ChildPart accepts undefined': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -110,7 +111,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts null': {
+  'ChildPart accepts null': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -127,7 +128,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts noChange': {
+  'ChildPart accepts noChange': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -144,7 +145,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts nothing': {
+  'ChildPart accepts nothing': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -161,7 +162,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts an object': {
+  'ChildPart accepts an object': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -180,7 +181,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts an object with a toString method': {
+  'ChildPart accepts an object with a toString method': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -211,7 +212,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts a function': {
+  'ChildPart accepts a function': {
     render(x: unknown) {
       return html`<div>${x}</div>`;
     },
@@ -232,7 +233,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts TemplateResult': {
+  'ChildPart accepts TemplateResult': {
     render(x: unknown) {
       return html`<div>${html`<span>${x}</span>`}</div>`;
     },
@@ -249,7 +250,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div', 'span'],
   },
 
-  'multiple NodeParts, adjacent primitive values': {
+  'multiple ChildParts, adjacent primitive values': {
     render(x: unknown, y: unknown) {
       return html`<div>${x}${y}</div>`;
     },
@@ -266,7 +267,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'multiple NodeParts, adjacent primitive & TemplateResult': {
+  'multiple ChildParts, adjacent primitive & TemplateResult': {
     render(x: unknown, y: unknown) {
       return html`<div>${x}${html`<span>${y}</span>`}</div>`;
     },
@@ -283,7 +284,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div', 'span'],
   },
 
-  'multiple NodeParts, adjacent TemplateResults': {
+  'multiple ChildParts, adjacent TemplateResults': {
     render(x: unknown, y: unknown) {
       return html`<div>
         ${html`<span>${x}</span>`}${html`<span>${y}</span>`}
@@ -302,7 +303,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div', 'span'],
   },
 
-  'multiple NodeParts with whitespace': {
+  'multiple ChildParts with whitespace': {
     render(x: unknown, y: unknown) {
       return html`<div>${x} ${y}</div>`;
     },
@@ -333,7 +334,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart with trailing whitespace': {
+  'ChildPart with trailing whitespace': {
     render(x: unknown) {
       // prettier-ignore
       return html`<div>${x} </div>`;
@@ -365,7 +366,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts array with strings': {
+  'ChildPart accepts array with strings': {
     render(words: string[]) {
       return html`<div>${words}</div>`;
     },
@@ -382,7 +383,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts array with strings, updated with fewer items': {
+  'ChildPart accepts array with strings, updated with fewer items': {
     render(words: string[]) {
       return html`<div>${words}</div>`;
     },
@@ -400,7 +401,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts array with strings, updated with more items': {
+  'ChildPart accepts array with strings, updated with more items': {
     render(words: string[]) {
       return html`<div>${words}</div>`;
     },
@@ -418,7 +419,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts array with templates': {
+  'ChildPart accepts array with templates': {
     render(words: string[]) {
       return html`<ol>
         ${words.map((w) => html`<li>${w}</li>`)}
@@ -437,7 +438,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['ol', 'li'],
   },
 
-  'NodePart accepts simple directive': () => {
+  'ChildPart accepts simple directive': () => {
     const basic = directive(
       class extends Directive {
         count = 0;
@@ -469,16 +470,16 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'NodePart accepts nested directives': () => {
+  'ChildPart accepts nested directives': () => {
     const aDirective = directive(
-      class ADirective extends Directive {
+      class extends Directive {
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
       }
     );
     const bDirective = directive(
-      class BDirective extends Directive {
+      class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
         render(v: string) {
@@ -516,7 +517,7 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'NodePart accepts directive: repeat (with strings)': {
+  'ChildPart accepts directive: repeat (with strings)': {
     render(words: string[]) {
       return html`${repeat(words, (word, i) => `(${i} ${word})`)}`;
     },
@@ -533,7 +534,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: [],
   },
 
-  'NodePart accepts directive: repeat (with templates)': {
+  'ChildPart accepts directive: repeat (with templates)': {
     render(words: string[]) {
       return html`${repeat(words, (word, i) => html`<p>${i}) ${word}</p>`)}`;
     },
@@ -550,7 +551,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['p'],
   },
 
-  'NodePart accepts directive: cache': {
+  'ChildPart accepts directive: cache': {
     render(bool: boolean) {
       return html`${cache(bool ? html`<p>true</p>` : html`<b>false</b>`)}`;
     },
@@ -571,7 +572,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: [],
   },
 
-  'NodePart accepts directive: guard': () => {
+  'ChildPart accepts directive: guard': () => {
     let guardedCallCount = 0;
     const guardedTemplate = (bool: boolean) => {
       guardedCallCount++;
@@ -608,7 +609,7 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'NodePart accepts directive: until (primitive)': {
+  'ChildPart accepts directive: until (primitive)': {
     render(...args) {
       return html`<div>${until(...args)}</div>`;
     },
@@ -625,7 +626,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts directive: until (promise, primitive)': () => {
+  'ChildPart accepts directive: until (promise, primitive)': () => {
     let resolve: (v: string) => void;
     const promise = new Promise((r) => (resolve = r));
     return {
@@ -650,7 +651,7 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'NodePart accepts directive: until (promise, promise)': () => {
+  'ChildPart accepts directive: until (promise, promise)': () => {
     let resolve1: (v: string) => void;
     let resolve2: (v: string) => void;
     const promise1 = new Promise((r) => (resolve1 = r));
@@ -687,7 +688,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   // TODO(kschaaf): Enable once async directives are implemented
 
-  // 'NodePart accepts directive: asyncAppend': () => {
+  // 'ChildPart accepts directive: asyncAppend': () => {
   //   const iterable = new TestAsyncIterable();
   //   return {
   //     render(iterable) {
@@ -717,7 +718,7 @@ export const tests: {[name: string]: SSRTest} = {
   //   };
   // },
 
-  // 'NodePart accepts directive: asyncReplace': () => {
+  // 'ChildPart accepts directive: asyncReplace': () => {
   //   const iterable = new TestAsyncIterable();
   //   return {
   //     render(iterable) {
@@ -747,7 +748,7 @@ export const tests: {[name: string]: SSRTest} = {
   //   };
   // },
 
-  'NodePart accepts directive: ifDefined (undefined)': {
+  'ChildPart accepts directive: ifDefined (undefined)': {
     render(v) {
       return html`<div>${ifDefined(v)}</div>`;
     },
@@ -764,7 +765,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts directive: ifDefined (defined)': {
+  'ChildPart accepts directive: ifDefined (defined)': {
     render(v) {
       return html`<div>${ifDefined(v)}</div>`;
     },
@@ -781,7 +782,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts directive: unsafeHTML': {
+  'ChildPart accepts directive: unsafeHTML': {
     render(v) {
       return html`<div>${unsafeHTML(v)}</div>`;
     },
@@ -798,7 +799,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodePart accepts directive: unsafeSVG': {
+  'ChildPart accepts directive: unsafeSVG': {
     render(v) {
       return html`<svg>${unsafeSVG(v)}</svg>`;
     },
@@ -1025,14 +1026,14 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts nested directives': () => {
     const aDirective = directive(
-      class ADirective extends Directive {
+      class extends Directive {
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
       }
     );
     const bDirective = directive(
-      class BDirective extends Directive {
+      class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
         render(v: string) {
@@ -3283,7 +3284,7 @@ export const tests: {[name: string]: SSRTest} = {
    * Mixed part tests
    ******************************************************/
 
-  'NodeParts & AttributeParts on adjacent nodes': {
+  'ChildParts & AttributeParts on adjacent nodes': {
     render(x, y) {
       return html`<div attr="${x}">${x}</div>
         <div attr="${y}">${y}</div>`;
@@ -3301,7 +3302,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodeParts & AttributeParts on nested nodes': {
+  'ChildParts & AttributeParts on nested nodes': {
     render(x, y) {
       return html`<div attr="${x}">
         ${x}
@@ -3321,7 +3322,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'NodeParts & AttributeParts soup': {
+  'ChildParts & AttributeParts soup': {
     render(x, y, z) {
       return html`text:${x}
         <div>${x}</div>

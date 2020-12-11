@@ -13,31 +13,25 @@
  */
 
 import {
-  directive,
-  Directive,
   AttributePart,
+  DirectiveParameters,
   noChange,
   nothing,
   PartInfo,
-  NODE_PART,
-  EVENT_PART,
-  PROPERTY_PART,
-  BOOLEAN_ATTRIBUTE_PART,
-  ATTRIBUTE_PART,
-  ELEMENT_PART,
 } from '../lit-html.js';
-import {resetPartValue} from '../parts.js';
+import {directive, Directive, PartType} from '../directive.js';
+import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
-      partInfo.type === EVENT_PART ||
-      partInfo.type === NODE_PART ||
-      partInfo.type === ELEMENT_PART
+      partInfo.type === PartType.EVENT ||
+      partInfo.type === PartType.CHILD ||
+      partInfo.type === PartType.ELEMENT
     ) {
       throw new Error(
-        'The `live` directive is not allowed on text or event bindings'
+        'The `live` directive is not allowed on child or event bindings'
       );
     }
     if (partInfo.strings !== undefined) {
@@ -49,8 +43,8 @@ class LiveDirective extends Directive {
     return value;
   }
 
-  update(part: AttributePart, [value]: Parameters<this['render']>) {
-    if (value === noChange) {
+  update(part: AttributePart, [value]: DirectiveParameters<this>) {
+    if (value === noChange || value === nothing) {
       return value;
     }
     const element = part.element;
@@ -59,18 +53,16 @@ class LiveDirective extends Directive {
     // TODO (justinfagnani): This is essentially implementing a getLiveValue()
     // method for each part type. Should that be moved into the AttributePart
     // interface?
-    if (part.type === PROPERTY_PART) {
+    if (part.type === PartType.PROPERTY) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (value === (element as any)[name]) {
         return noChange;
       }
-    } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
-      if (
-        (value === nothing ? false : !!value) === element.hasAttribute(name)
-      ) {
+    } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
+      if (!!value === element.hasAttribute(name)) {
         return noChange;
       }
-    } else if (part.type === ATTRIBUTE_PART) {
+    } else if (part.type === PartType.ATTRIBUTE) {
       if (element.getAttribute(name) === String(value)) {
         return noChange;
       }
