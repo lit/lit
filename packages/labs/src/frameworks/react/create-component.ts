@@ -59,13 +59,13 @@ const setProperty = <E extends Element, T>(
   name: string,
   value: unknown,
   _old: unknown,
-  events?: T
+  events?: StringValued<T>
 ) => {
   if (reservedReactProperties.has(name)) {
     return;
   }
   // For events, use an explicit list.
-  const event = (events?.[name as keyof T] as unknown) as string;
+  const event = events?.[name as keyof T];
   if (event !== undefined) {
     setEvent(node, event, value as (e?: Event) => void);
   } else {
