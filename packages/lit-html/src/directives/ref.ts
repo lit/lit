@@ -70,8 +70,12 @@ class RefDirective extends DisconnectableDirective {
 
   private _updateRefValue(element: Element | undefined) {
     if (typeof this._ref === 'function') {
-      // If the current ref was called with a previous value,
-      // call with `undefined`
+      // If the current ref was called with a previous value, call with
+      // `undefined`; We do this to ensure callbacks are called in a consistent
+      // way regardless of whether a ref might be moving up in the tree (in
+      // which case it would otherwise be called with the new value before the
+      // previous one unsets it) and down in the tree (where it would be unset
+      // before being set)
       if (lastElementForCallback.get(this._ref) !== undefined) {
         this._ref(undefined);
       }
