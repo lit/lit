@@ -12,8 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, DirectiveParameters, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {AttributePart, noChange, PartInfo} from '../lit-html.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  PartType,
+} from '../directive.js';
 
 /**
  * A key-value set of class names to truthy values.

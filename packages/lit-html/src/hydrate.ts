@@ -24,7 +24,7 @@ import {
   _$private,
 } from './lit-html.js';
 import {PartType} from './directive.js';
-import {isPrimitive} from './directive-helpers.js';
+import {isPrimitive, isTemplateResult} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
@@ -253,7 +253,7 @@ const openChildPart = (
     // if (marker.data !== 'lit-part') {
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
-  } else if ((value as TemplateResult)._$litType$ !== undefined) {
+  } else if (isTemplateResult(value)) {
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(
       value as TemplateResult

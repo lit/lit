@@ -12,14 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  TemplateResult,
-  ChildPart,
-  render,
-  nothing,
-  DirectiveParameters,
-} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {TemplateResult, ChildPart, render, nothing} from '../lit-html.js';
+import {directive, Directive, DirectiveParameters} from '../directive.js';
 import {
   clearPart,
   getPartValue,

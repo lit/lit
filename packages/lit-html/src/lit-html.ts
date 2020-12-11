@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive} from './directive.js';
+// IMPORTANT: these imports must be type-only
+import {Directive, DirectiveResult} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -303,26 +304,6 @@ export type AttributePartInfo = {
  * such as with directive that can only be used on attribute bindings.
  */
 export type PartInfo = ChildPartInfo | AttributePartInfo;
-
-export type DirectiveClass = {
-  new (part: PartInfo): Directive;
-};
-
-/**
- * This utility type extracts the signature of a directive class's render()
- * method so we can use it for the type of the generated directive function.
- */
-export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
-
-/**
- * A generated directive function doesn't evaluate the directive, but just
- * returns a DirectiveResult object that captures the arguments.
- */
-/** @internal */
-export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
-  _$litDirective$: C;
-  values: DirectiveParameters<InstanceType<C>>;
-};
 
 export interface RenderOptions {
   /**
@@ -1088,7 +1069,7 @@ export class ChildPart {
    * @param from  When `start` is specified, the index within the iterable from
    *     which ChildParts are being removed, used for disconnecting directives in
    *     those Parts.
-   * 
+   *
    * @internal
    */
   _$clear(

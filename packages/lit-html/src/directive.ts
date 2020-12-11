@@ -15,17 +15,33 @@
 import {
   _$private,
   AttributePart,
-  DirectiveClass,
-  DirectiveParameters,
-  DirectiveResult,
   Disconnectable,
   ChildPart,
   PartInfo,
   Part,
 } from './lit-html';
-export {DirectiveClass, DirectiveParameters, DirectiveResult} from './lit-html';
 
 const resolveDirective = _$private._resolveDirective;
+
+export type DirectiveClass = {
+  new (part: PartInfo): Directive;
+};
+
+/**
+ * This utility type extracts the signature of a directive class's render()
+ * method so we can use it for the type of the generated directive function.
+ */
+export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
+
+/**
+ * A generated directive function doesn't evaluate the directive, but just
+ * returns a DirectiveResult object that captures the arguments.
+ * @internal
+ */
+export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
+  _$litDirective$: C;
+  values: DirectiveParameters<InstanceType<C>>;
+};
 
 export const PartType = {
   ATTRIBUTE: 1,
