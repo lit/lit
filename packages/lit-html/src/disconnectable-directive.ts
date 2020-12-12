@@ -125,9 +125,9 @@
  * `isConnectd: true` down the tree, signaling which callback to run.
  */
 
-import {PartInfo, ChildPart, Disconnectable, noChange} from './lit-html.js';
+import {ChildPart, Disconnectable, noChange} from './lit-html.js';
 import {setPartValue} from './directive-helpers.js';
-import {Directive, PartType} from './directive.js';
+import {Directive, PartInfo, PartType} from './directive.js';
 export {directive} from './directive.js';
 
 /**

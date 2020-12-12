@@ -13,7 +13,7 @@
  */
 
 // IMPORTANT: these imports must be type-only
-import {Directive, DirectiveResult} from './directive.js';
+import {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -275,35 +275,6 @@ export const nothing = Symbol.for('lit-nothing');
  * path for rendering.
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
-
-export type ChildPartInfo = {
-  readonly type: typeof CHILD_PART;
-  readonly _$part: ChildPart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
-};
-
-export type AttributePartInfo = {
-  readonly type:
-    | typeof ATTRIBUTE_PART
-    | typeof PROPERTY_PART
-    | typeof BOOLEAN_ATTRIBUTE_PART
-    | typeof EVENT_PART;
-  readonly strings?: ReadonlyArray<string>;
-  readonly name: string;
-  readonly tagName: string;
-  readonly _$part: AttributePart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
-};
-
-/**
- * Information about the part a directive is bound to.
- *
- * This is useful for checking that a directive is attached to a valid part,
- * such as with directive that can only be used on attribute bindings.
- */
-export type PartInfo = ChildPartInfo | AttributePartInfo;
 
 export interface RenderOptions {
   /**
