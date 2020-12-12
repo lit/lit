@@ -18,6 +18,7 @@ import {
   Disconnectable,
   ChildPart,
   Part,
+  ElementPart,
 } from './lit-html';
 
 const resolveDirective = _$private._resolveDirective;
@@ -48,6 +49,7 @@ export const PartType = {
   PROPERTY: 3,
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
+  ELEMENT: 6,
 } as const;
 
 export type PartType = typeof PartType[keyof typeof PartType];
@@ -73,13 +75,20 @@ export type AttributePartInfo = {
   readonly _$attributeIndex: number | undefined;
 };
 
+export type ElementPartInfo = {
+  readonly type: typeof PartType.ELEMENT;
+  readonly _$part: ElementPart;
+  readonly _$parent: Disconnectable;
+  readonly _$attributeIndex: undefined;
+};
+
 /**
  * Information about the part a directive is bound to.
  *
  * This is useful for checking that a directive is attached to a valid part,
  * such as with directive that can only be used on attribute bindings.
  */
-export type PartInfo = ChildPartInfo | AttributePartInfo;
+export type PartInfo = ChildPartInfo | AttributePartInfo | ElementPartInfo;
 
 /**
  * Creates a user-facing directive function from a Directive class. This
@@ -99,7 +108,7 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  _part: ChildPart | AttributePart;
+  _part: ChildPart | AttributePart | ElementPart;
   //@internal
   _attributeIndex: number | undefined;
   //@internal

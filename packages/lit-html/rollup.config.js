@@ -21,6 +21,7 @@ export default litProdConfig({
     'directives/guard',
     'directives/if-defined',
     'directives/live',
+    'directives/ref',
     'directives/repeat',
     'directives/style-map',
     'directives/template-content',
