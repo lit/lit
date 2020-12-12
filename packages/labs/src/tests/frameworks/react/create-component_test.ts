@@ -89,7 +89,7 @@ suite('React createComponent', () => {
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
     window.ReactDOM.render(
-      window.React.createElement(BasicElementComponent, props, props?.children),
+      window.React.createElement(BasicElementComponent, props),
       container
     );
     el = container.querySelector(elementName)! as BasicElement;

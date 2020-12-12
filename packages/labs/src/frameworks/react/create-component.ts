@@ -247,7 +247,7 @@ export const createComponent = <I extends HTMLElement, E>(
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement(tagName, props, props.children);
+      return createElement(tagName, props);
     }
   }
 
