@@ -21,6 +21,7 @@ packages/benchmarks/**/*.js.map
 packages/labs/development/
 packages/labs/node_modules/
 packages/labs/index.*
+packages/labs/frameworks/
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
