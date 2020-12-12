@@ -1,0 +1,43 @@
+{
+  "name": "@lit/compiler",
+  "version": "0.0.0",
+  "description": "A Lit compiler",
+  "author": "Justin Fagnani <justinfagnani@google.com>",
+  "homepage": "https://github.com/Polymer/lit-html#readme",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "main": "lib/compiler.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/lit-html.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "node ./test/all-tests.js | tap-spec"
+  },
+  "bugs": {
+    "url": "https://github.com/Polymer/lit-html/issues"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.14",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.12",
+    "@types/tape": "^4.13.0",
+    "@types/tape-promise": "^4.0.1",
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1",
+    "prettier": "^2.2.1",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.0.1",
+    "tape-promise": "^4.0.0",
+    "typescript": "^4.1.3"
+  }
+}
