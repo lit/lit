@@ -12,13 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {AttributePart, noChange} from '../lit-html.js';
 import {
-  AttributePart,
+  directive,
+  Directive,
   DirectiveParameters,
-  noChange,
   PartInfo,
-} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+  PartType,
+} from '../directive.js';
 
 /**
  * A key-value set of CSS properties and values.

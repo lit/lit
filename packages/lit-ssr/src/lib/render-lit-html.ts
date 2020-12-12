@@ -26,6 +26,7 @@ import {
   EventPart,
 } from 'lit-html';
 import {PartType} from 'lit-html/directive.js';
+import {isTemplateResult} from 'lit-html/directive-helpers.js';
 import {_$private} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -456,7 +457,7 @@ export function* renderValue(
   } else {
     value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
   }
-  if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
+  if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
     yield* renderTemplateResult(value as TemplateResult, renderInfo);
   } else {

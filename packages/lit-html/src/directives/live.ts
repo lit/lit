@@ -12,23 +12,25 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {AttributePart, noChange, nothing} from '../lit-html.js';
 import {
-  AttributePart,
+  directive,
+  Directive,
   DirectiveParameters,
-  noChange,
-  nothing,
   PartInfo,
-} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+  PartType,
+} from '../directive.js';
 import {resetPartValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
-      partInfo.type === PartType.EVENT ||
-      partInfo.type === PartType.CHILD ||
-      partInfo.type === PartType.ELEMENT
+      !(
+        partInfo.type === PartType.PROPERTY ||
+        partInfo.type === PartType.ATTRIBUTE ||
+        partInfo.type === PartType.BOOLEAN_ATTRIBUTE
+      )
     ) {
       throw new Error(
         'The `live` directive is not allowed on child or event bindings'

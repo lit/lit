@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ChildPart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {ChildPart, noChange} from '../lit-html.js';
+import {directive, Directive, PartInfo, PartType} from '../directive.js';
 import {
   insertPart,
   getPartValue,

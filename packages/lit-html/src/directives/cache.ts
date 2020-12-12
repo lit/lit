@@ -12,14 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {TemplateResult, ChildPart, render, nothing} from '../lit-html.js';
 import {
-  TemplateResult,
-  ChildPart,
-  render,
-  nothing,
+  directive,
+  Directive,
   DirectiveParameters,
-} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+  PartInfo,
+} from '../directive.js';
 import {
   clearPart,
   getPartValue,
@@ -46,6 +45,10 @@ export const cache = directive(
   class extends Directive {
     templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
     value?: TemplateResult;
+
+    constructor(partInfo: PartInfo) {
+      super(partInfo);
+    }
 
     render(v: unknown) {
       // Return an array of the value to induce lit-html to create a ChildPart

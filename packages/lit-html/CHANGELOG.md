@@ -74,6 +74,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   along with other methods and variables that use the "Node" naming, like
   `PartType.Node` which is now `PartType.CHILD`.
 
+- [Breaking] (since 2.0.0-pre.3) The `DirectiveClass`, `DirectiveParameters`
+  and `PartInfo` types have been moved from `lit-html` to
+  `lit-html/directive.ts`.
+
   <!-- ### Fixed -->
   <!-- ### Removed -->
 

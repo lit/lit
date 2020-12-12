@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive} from './directive.js';
+// IMPORTANT: these imports must be type-only
+import {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -209,7 +210,8 @@ const SVG_RESULT = 2;
 
 type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
-/** TemplatePart types */
+// TemplatePart types
+// IMPORTANT: these must match the values in PartType
 const ATTRIBUTE_PART = 1;
 const CHILD_PART = 2;
 const PROPERTY_PART = 3;
@@ -275,62 +277,6 @@ export const nothing = Symbol.for('lit-nothing');
  * path for rendering.
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
-
-export type ChildPartInfo = {
-  readonly type: typeof CHILD_PART;
-  readonly _$part: ChildPart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: undefined;
-};
-
-export type AttributePartInfo = {
-  readonly type:
-    | typeof ATTRIBUTE_PART
-    | typeof PROPERTY_PART
-    | typeof BOOLEAN_ATTRIBUTE_PART
-    | typeof EVENT_PART;
-  readonly strings?: ReadonlyArray<string>;
-  readonly name: string;
-  readonly tagName: string;
-  readonly _$part: AttributePart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
-};
-
-export type ElementPartInfo = {
-  readonly type: typeof ELEMENT_PART;
-  readonly _$part: ElementPart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: undefined;
-};
-
-/**
- * Information about the part a directive is bound to.
- *
- * This is useful for checking that a directive is attached to a valid part,
- * such as with directive that can only be used on attribute bindings.
- */
-export type PartInfo = ChildPartInfo | AttributePartInfo | ElementPartInfo;
-
-export type DirectiveClass = {
-  new (part: PartInfo): Directive;
-};
-
-/**
- * This utility type extracts the signature of a directive class's render()
- * method so we can use it for the type of the generated directive function.
- */
-export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
-
-/**
- * A generated directive function doesn't evaluate the directive, but just
- * returns a DirectiveResult object that captures the arguments.
- */
-/** @internal */
-export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
-  _$litDirective$: C;
-  values: DirectiveParameters<InstanceType<C>>;
-};
 
 export interface RenderOptions {
   /**

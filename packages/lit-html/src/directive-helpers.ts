@@ -18,10 +18,8 @@ import {
   Part,
   DirectiveParent,
   TemplateResult,
-  DirectiveResult,
-  DirectiveClass,
 } from './lit-html.js';
-
+import {DirectiveResult, DirectiveClass} from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
 /**
