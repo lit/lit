@@ -4,7 +4,8 @@
 /test/
 /hydrate.*
 /lit-html.*
-/parts.*
+/directive.*
+/directive-helpers.*
 /disconnectable-directive.*
 /platform-support.*
 /private-ssr-support.*

@@ -32,7 +32,7 @@ import {
  *
  * @param selector A DOMString containing one or more selectors to match.
  * @param cache An optional boolean which when true performs the DOM query only
- * once and caches the result.
+ *     once and caches the result.
  *
  * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *

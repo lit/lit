@@ -19,6 +19,7 @@ export default litProdConfig({
     'index',
     'controllers/updating-controller',
     'controllers/async-task',
+    'frameworks/react/create-component',
   ],
   external: ['updating-element', 'lit-html', 'lit-element'],
 });

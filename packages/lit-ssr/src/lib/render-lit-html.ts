@@ -15,22 +15,18 @@
  */
 
 // Type-only imports
-import {TemplateResult, NodePart} from 'lit-html';
+import {TemplateResult, ChildPart} from 'lit-html';
 
 import {
   nothing,
   noChange,
-  Directive,
-  NODE_PART,
-  EVENT_PART,
-  PROPERTY_PART,
-  BOOLEAN_ATTRIBUTE_PART,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
 } from 'lit-html';
-
+import {PartType} from 'lit-html/directive.js';
+import {isTemplateResult} from 'lit-html/directive-helpers.js';
 import {_$private} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -64,6 +60,7 @@ import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
 import {LitElement} from 'lit-element';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+import {Directive} from 'lit-html/directive';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -97,8 +94,8 @@ type TextOp = {
 /**
  * Operation to output dynamic text from the associated template result value
  */
-type NodePartOp = {
-  type: 'node-part';
+type ChildPartOp = {
+  type: 'child-part';
   index: number;
   useCustomElementInstance?: boolean;
 };
@@ -154,7 +151,7 @@ type CustomElementClosedOp = {
 
 type Op =
   | TextOp
-  | NodePartOp
+  | ChildPartOp
   | AttributePartOp
   | CustomElementOpenOp
   | CustomElementAttributesOp
@@ -166,7 +163,7 @@ type Op =
  * for the associated Template.  Opcodes are designed to allow emitting
  * contiguous static text from the template as much as possible, with specific
  * non-`text` opcodes interleaved to perform dynamic work, such as emitting
- * values for NodeParts or AttributeParts, and handling custom elements.
+ * values for ChildParts or AttributeParts, and handling custom elements.
  *
  * For the following example template, an opcode list may look like this:
  *
@@ -180,8 +177,8 @@ type Op =
  *   - Emit an AttributePart's value, e.g. ` class="bold"`
  * - `text`
  *   - Emit run of static text: `>`
- * - `node-part`
- *   - Emit the NodePart's value, in this case a TemplateResult, thus we recurse
+ * - `child-part`
+ *   - Emit the ChildPart's value, in this case a TemplateResult, thus we recurse
  *     into that template's opcodes
  * - `text`
  *   - Emit run of static text: `/span></div>`
@@ -302,7 +299,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           flushTo(node.sourceCodeLocation!.startOffset);
           skipTo(node.sourceCodeLocation!.endOffset);
           ops.push({
-            type: 'node-part',
+            type: 'child-part',
             index: nodeIndex,
             useCustomElementInstance:
               parent && isElement(parent) && parent.isDefinedCustomElement,
@@ -458,9 +455,9 @@ export function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: NODE_PART} as NodePart, value);
+    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
   }
-  if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
+  if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
     yield* renderTemplateResult(value as TemplateResult, renderInfo);
   } else {
@@ -512,7 +509,7 @@ export function* renderTemplateResult(
       case 'text':
         yield op.value;
         break;
-      case 'node-part': {
+      case 'child-part': {
         const value = result.values[partIndex++];
         yield* renderValue(value, renderInfo);
         break;
@@ -525,13 +522,15 @@ export function* renderTemplateResult(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (null as any) as HTMLElement,
           op.name,
-          statics
+          statics,
+          undefined,
+          {}
         );
         const value =
           part.strings === undefined ? result.values[partIndex] : result.values;
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
-        if (!(part.type === EVENT_PART)) {
+        if (!(part.type === PartType.EVENT)) {
           committedValue = getAtributePartCommittedValue(
             part,
             value,
@@ -544,9 +543,9 @@ export function* renderTemplateResult(
           const instance = op.useCustomElementInstance
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
-          if (part.type === PROPERTY_PART) {
+          if (part.type === PartType.PROPERTY) {
             yield* renderPropertyPart(instance, op, committedValue);
-          } else if (part.type === BOOLEAN_ATTRIBUTE_PART) {
+          } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
             // Boolean attribute binding
             yield* renderBooleanAttributePart(instance, op, committedValue);
           } else {

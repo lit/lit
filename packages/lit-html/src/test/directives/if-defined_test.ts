@@ -59,12 +59,12 @@ suite('ifDefined directive', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
 
-  test('passes a defined value to a NodePart', () => {
+  test('passes a defined value to a ChildPart', () => {
     render(html`<div>${ifDefined('a')}</div>`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>a</div>');
   });
 
-  test('passes an undefined value to a NodePart', () => {
+  test('passes an undefined value to a ChildPart', () => {
     render(html`<div>${ifDefined(undefined)}</div>`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });

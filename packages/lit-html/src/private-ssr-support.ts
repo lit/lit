@@ -12,12 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  _$private as p,
-  AttributePart,
-  Directive,
-  noChange,
-} from './lit-html.js';
+import {Directive} from './directive.js';
+import {_$private as p, AttributePart, noChange} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.

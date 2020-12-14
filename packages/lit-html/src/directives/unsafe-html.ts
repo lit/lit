@@ -12,15 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  directive,
-  Directive,
-  nothing,
-  TemplateResult,
-  noChange,
-  PartInfo,
-  NODE_PART,
-} from '../lit-html.js';
+import {nothing, TemplateResult, noChange} from '../lit-html.js';
+import {directive, Directive, PartInfo, PartType} from '../directive.js';
 
 const HTML_RESULT = 1;
 
@@ -33,16 +26,16 @@ export class UnsafeHTML extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== NODE_PART) {
+    if (partInfo.type !== PartType.CHILD) {
       throw new Error(
         `${
           (this.constructor as typeof UnsafeHTML).directiveName
-        }() can only be used in text bindings`
+        }() can only be used in child bindings`
       );
     }
   }
 
-  render(value: string) {
+  render(value: string | typeof nothing | typeof noChange) {
     // TODO: add tests for nothing and noChange
     if (value === nothing) {
       this.templateResult = undefined;

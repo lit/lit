@@ -12,22 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {ChildPart, noChange} from '../lit-html.js';
+import {directive, Directive, PartInfo, PartType} from '../directive.js';
 import {
-  directive,
-  NODE_PART,
-  NodePart,
-  Directive,
-  noChange,
-  PartInfo,
-} from '../lit-html.js';
-import {
-  createAndInsertPart,
+  insertPart,
   getPartValue,
-  insertPartBefore,
   removePart,
   resetPartValue,
   setPartValue,
-} from '../parts.js';
+} from '../directive-helpers.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
 export type ItemTemplate<T> = (item: T, index: number) => unknown;
@@ -68,7 +61,7 @@ class RepeatDirective extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== NODE_PART) {
+    if (partInfo.type !== PartType.CHILD) {
       throw new Error('repeat can only be used in text bindings');
     }
   }
@@ -107,7 +100,7 @@ class RepeatDirective extends Directive {
   }
 
   update<T>(
-    containerPart: NodePart,
+    containerPart: ChildPart,
     [items, keyFnOrTemplate, template]: [
       Iterable<T>,
       KeyFn<T> | ItemTemplate<T>,
@@ -116,7 +109,7 @@ class RepeatDirective extends Directive {
   ) {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    const oldParts = getPartValue(containerPart) as Array<NodePart | null>;
+    const oldParts = getPartValue(containerPart) as Array<ChildPart | null>;
     const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
       items,
       keyFnOrTemplate,
@@ -133,7 +126,7 @@ class RepeatDirective extends Directive {
     // New part list will be built up as we go (either reused from
     // old parts or created for new keys in this update). This is
     // saved in the above cache at the end of the update.
-    const newParts: NodePart[] = [];
+    const newParts: ChildPart[] = [];
 
     // Maps from key to index for current and previous update; these
     // are generated lazily only when needed as a performance
@@ -375,11 +368,7 @@ class RepeatDirective extends Directive {
           oldParts[oldHead]!,
           newValues[newTail]
         );
-        insertPartBefore(
-          containerPart,
-          oldParts[oldHead]!,
-          newParts[newTail + 1]
-        );
+        insertPart(containerPart, newParts[newTail + 1], oldParts[oldHead]!);
         oldHead++;
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
@@ -388,7 +377,7 @@ class RepeatDirective extends Directive {
           oldParts[oldTail]!,
           newValues[newHead]
         );
-        insertPartBefore(containerPart, oldParts[oldTail]!, oldParts[oldHead]!);
+        insertPart(containerPart, oldParts[oldHead]!, oldParts[oldTail]!);
         oldTail--;
         newHead++;
       } else {
@@ -415,16 +404,13 @@ class RepeatDirective extends Directive {
           if (oldPart === null) {
             // No old part for this value; create a new one and
             // insert it
-            const newPart = createAndInsertPart(
-              containerPart,
-              oldParts[oldHead]!
-            );
+            const newPart = insertPart(containerPart, oldParts[oldHead]!);
             setPartValue(newPart, newValues[newHead]);
             newParts[newHead] = newPart;
           } else {
             // Reuse old part
             newParts[newHead] = setPartValue(oldPart, newValues[newHead]);
-            insertPartBefore(containerPart, oldPart, oldParts[oldHead]!);
+            insertPart(containerPart, oldParts[oldHead]!, oldPart);
             // This marks the old part as having been used, so that
             // it will be skipped in the first two checks above
             oldParts[oldIndex as number] = null;
@@ -437,7 +423,7 @@ class RepeatDirective extends Directive {
     while (newHead <= newTail) {
       // For all remaining additions, we insert before last new
       // tail, since old pointers are no longer valid
-      const newPart = createAndInsertPart(containerPart, newParts[newTail + 1]);
+      const newPart = insertPart(containerPart, newParts[newTail + 1]);
       setPartValue(newPart, newValues[newHead]);
       newParts[newHead++] = newPart;
     }

@@ -22,6 +22,7 @@ packages/labs/development/
 packages/labs/controllers/
 packages/labs/node_modules/
 packages/labs/index.*
+packages/labs/frameworks/
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
@@ -44,7 +45,8 @@ packages/lit-html/node_modules/
 packages/lit-html/test/
 packages/lit-html/hydrate.*
 packages/lit-html/lit-html.*
-packages/lit-html/parts.*
+packages/lit-html/directive.*
+packages/lit-html/directive-helpers.*
 packages/lit-html/disconnectable-directive.*
 packages/lit-html/platform-support.*
 packages/lit-html/private-ssr-support.*
