@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- [Breaking] The `@internalProperty` decorator has been renamed to `@state`.
 - [Breaking] `UpdatingElement` has been renamed to `ReactiveElement` and the `updating-element` package has been renamed to `reactive-element`.
 - [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 - [Breaking] When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).

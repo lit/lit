@@ -13,19 +13,19 @@
  */
 
 import {ReactiveElement, PropertyValues} from '../../reactive-element.js';
-import {internalProperty} from '../../decorators/internalProperty.js';
+import {state} from '../../decorators/state.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('@internalProperty', () => {
+suite('@state', () => {
   let container: HTMLElement;
   let el: E;
 
   const hasChanged = (value: any, old: any) => old === undefined || value > old;
 
   class E extends ReactiveElement {
-    @internalProperty() prop = 'prop';
-    @internalProperty({hasChanged}) hasChangedProp = 10;
+    @state() prop = 'prop';
+    @state({hasChanged}) hasChangedProp = 10;
 
     updateCount = 0;
 

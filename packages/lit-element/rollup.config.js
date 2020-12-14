@@ -22,7 +22,7 @@ export default litProdConfig({
     'decorators',
     'decorators/customElement',
     'decorators/eventOptions',
-    'decorators/internalProperty',
+    'decorators/state',
     'decorators/property',
     'decorators/query',
     'decorators/queryAll',

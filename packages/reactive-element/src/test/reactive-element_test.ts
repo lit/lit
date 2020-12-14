@@ -144,6 +144,7 @@ suite('ReactiveElement', () => {
           hasChanged: {hasChanged},
           fromAttribute: {converter: fromAttribute},
           toAttribute: {reflect: true, converter: {toAttribute}},
+          _state: {state: true},
           all: {
             attribute: 'all-attr',
             hasChanged,
@@ -160,6 +161,7 @@ suite('ReactiveElement', () => {
       fromAttribute = 1;
       toAttribute = 1;
       all = 10;
+      _state = 'internal';
 
       updateCount = 0;
 
@@ -182,10 +184,12 @@ suite('ReactiveElement', () => {
     assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
     assert.equal(el.getAttribute('all-attr'), '10-attr');
+    assert.equal(el._state, 'internal');
     el.setAttribute('noattr', 'noAttr2');
     el.setAttribute('attr', 'attr2');
     el.setAttribute('custom', 'customAttr2');
     el.setAttribute('fromattribute', '2attr');
+    el.setAttribute('_state', 'external');
     el.toAttribute = 2;
     el.all = 5;
     await el.updateComplete;
@@ -197,6 +201,7 @@ suite('ReactiveElement', () => {
     assert.equal(el.toAttribute, 2);
     assert.equal(el.getAttribute('toattribute'), '2-attr');
     assert.equal(el.all, 5);
+    assert.equal(el._state, 'internal');
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.updateCount, 3);

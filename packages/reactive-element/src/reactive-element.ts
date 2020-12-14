@@ -119,6 +119,15 @@ type AttributeConverter<Type = unknown, TypeHint = unknown> =
  */
 export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
   /**
+   * When set to `true`, indicates the property is internal private state. The
+   * property should not be set by users. When using TypeScript, this property
+   * should be marked as `private` or `protected`, and it is also a common
+   * practice to use a leading `_` in the name. The property is not added to
+   * `observedAttributes`.
+   */
+  readonly state?: boolean;
+
+  /**
    * Indicates how and whether the property becomes an observed attribute.
    * If the value is `false`, the property is not added to `observedAttributes`.
    * If true or absent, the lowercased property name is observed (e.g. `fooBar`
@@ -378,6 +387,12 @@ export abstract class ReactiveElement extends HTMLElement {
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
+    // if this is a state property, force the attribute to false.
+    if (options.state) {
+      // Cast as any since this is readonly.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (options as any).attribute = false;
+    }
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
     this.finalize();

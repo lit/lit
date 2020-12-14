@@ -39,6 +39,10 @@ export interface InternalPropertyDeclaration<Type = unknown> {
  * properties may be renamed by optimization tools like closure compiler.
  * @category Decorator
  */
-export function internalProperty(options?: InternalPropertyDeclaration) {
-  return property({attribute: false, hasChanged: options?.hasChanged});
+export function state(options?: InternalPropertyDeclaration) {
+  return property({
+    state: true,
+    attribute: false,
+    hasChanged: options?.hasChanged,
+  });
 }

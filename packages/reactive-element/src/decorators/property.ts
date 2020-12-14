@@ -83,7 +83,7 @@ const legacyProperty = (
  * supplied to configure property features.
  *
  * This decorator should only be used for public fields. Private or protected
- * fields should use the [[`internalProperty`]] decorator.
+ * fields should use the [[`state`]] decorator.
  *
  * @example
  * ```ts
