@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'updating-element/decorators/internalProperty.js';
+export * from 'reactive-element/decorators/internalProperty.js';

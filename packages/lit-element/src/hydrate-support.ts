@@ -18,7 +18,7 @@
  * @packageDocumentation
  */
 
-import {PropertyValues, UpdatingElement} from 'updating-element';
+import {PropertyValues, ReactiveElement} from 'reactive-element';
 import {render} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
 
@@ -51,7 +51,7 @@ interface PatchableLitElement extends HTMLElement {
     const value = this.render();
     // Since this is a patch, we can't call super.update()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (UpdatingElement.prototype as any).update.call(this, changedProperties);
+    (ReactiveElement.prototype as any).update.call(this, changedProperties);
     if (this._$needsHydration) {
       this._$needsHydration = false;
       hydrate(value, this.renderRoot, this._$renderOptions);

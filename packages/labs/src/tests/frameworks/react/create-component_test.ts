@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {UpdatingElement} from 'updating-element';
-import {property} from 'updating-element/decorators/property.js';
-import {customElement} from 'updating-element/decorators/customElement.js';
+import {ReactiveElement} from 'reactive-element';
+import {property} from 'reactive-element/decorators/property.js';
+import {customElement} from 'reactive-element/decorators/customElement.js';
 import * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
@@ -23,7 +23,7 @@ import {assert} from '@esm-bundle/chai';
 
 const elementName = 'basic-element';
 @customElement(elementName)
-class BasicElement extends UpdatingElement {
+class BasicElement extends ReactiveElement {
   @property({type: Boolean})
   bool = false;
   @property({type: String})
@@ -303,7 +303,7 @@ suite('React createComponent', () => {
     };
     const tag = 'x-warn';
     @customElement(tag)
-    class Warn extends UpdatingElement {
+    class Warn extends ReactiveElement {
       @property()
       ref = 'hi';
     }

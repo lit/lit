@@ -13,7 +13,7 @@
  */
 
 import {ElementRenderer} from './element-renderer.js';
-import {LitElement, CSSResult, UpdatingElement} from 'lit-element';
+import {LitElement, CSSResult, ReactiveElement} from 'lit-element';
 import {_$private} from 'lit-element/private-ssr-support.js';
 import {render, renderValue, RenderInfo} from './render-lit-html.js';
 
@@ -30,10 +30,10 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
-    // Reflect properties to attributes by calling into UpdatingElement's
+    // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (UpdatingElement.prototype as any).update.call(this.element);
+    (ReactiveElement.prototype as any).update.call(this.element);
   }
 
   attributeChangedCallback(

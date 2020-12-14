@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'updating-element/decorators/customElement.js';
+export * from 'reactive-element/decorators/customElement.js';
