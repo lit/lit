@@ -40,7 +40,7 @@ class ClassMap extends Directive {
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'class' ||
-      (partInfo.strings !== undefined && partInfo.strings.length > 2)
+      (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
         'The `classMap` directive must be used in the `class` attribute ' +
