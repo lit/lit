@@ -2197,13 +2197,13 @@ suite('ReactiveElement', () => {
       promiseFulfilled = false;
 
       get updateComplete() {
-        return (async (): Promise<boolean> => {
+        return (async (): Promise<boolean | void> => {
           return (
             (await super.updateComplete) &&
             (await new Promise((resolve) => {
               setTimeout(() => {
                 this.promiseFulfilled = true;
-                resolve(true);
+                resolve();
               }, 1);
             }))
           );

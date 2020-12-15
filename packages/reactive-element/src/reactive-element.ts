@@ -622,7 +622,7 @@ export abstract class ReactiveElement extends HTMLElement {
   private _instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
-  private _updatePromise!: Promise<boolean>;
+  private _updatePromise!: Promise<boolean | void>;
 
   private _pendingConnectionPromise: Promise<void> | undefined = undefined;
   private _enableConnection: (() => void) | undefined = undefined;
@@ -653,7 +653,9 @@ export abstract class ReactiveElement extends HTMLElement {
 
   constructor() {
     super();
-    this._updatePromise = new Promise((res) => (this.enableUpdating = res));
+    this._updatePromise = new Promise<void>(
+      (res) => (this.enableUpdating = res)
+    );
     this._changedProperties = new Map();
     this._saveInstanceProperties();
     // ensures first update will be caught by an early access of
@@ -722,7 +724,7 @@ export abstract class ReactiveElement extends HTMLElement {
         renderRoot: Element | DocumentFragment;
       }).renderRoot = this.createRenderRoot();
     }
-    this.enableUpdating(true);
+    this.enableUpdating();
     this._controllers?.forEach((c) => c.connectedCallback?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
@@ -737,7 +739,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * overridden on the element instance with a function that triggers the first
    * update.
    */
-  protected enableUpdating(_value: boolean) {}
+  protected enableUpdating() {}
 
   /**
    * Allows for `super.disconnectedCallback()` in extensions while
