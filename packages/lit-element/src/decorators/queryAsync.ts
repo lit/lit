@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'updating-element/decorators/queryAsync.js';
+export * from 'reactive-element/decorators/queryAsync.js';

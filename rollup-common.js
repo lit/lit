@@ -73,7 +73,7 @@ const stableProperties = {
   _$getTemplate: 'F',
   // lit-html: TemplateInstance (used by platform-support)
   _$template: 'G',
-  // updating-element: UpdatingElement (used by platform-support)
+  // reactive-element: ReactiveElement (used by platform-support)
   _$didUpdate: 'H',
   // lit-element: LitElement
   _$renderOptions: 'I',
@@ -82,12 +82,12 @@ const stableProperties = {
   // hydrate-support: LitElement (added by hydrate-support)
   _$needsHydration: 'K',
   // lit-html: Part (used by hydrate, platform-support)
-  _$value: 'L',
+  _$committedValue: 'L',
   // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
   _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)
   _$handlesPrepareStyles: 'N',
-  // lit-element: UpdatingElement (used bby ssr-support)
+  // lit-element: ReactiveElement (used bby ssr-support)
   _$attributeToProperty: 'O',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)

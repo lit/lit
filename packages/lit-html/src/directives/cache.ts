@@ -21,10 +21,10 @@ import {
 } from '../directive.js';
 import {
   clearPart,
-  getPartValue,
+  getComittedValue,
   insertPart,
   isTemplateResult,
-  resetPartValue,
+  setComittedValue,
 } from '../directive-helpers.js';
 
 /**
@@ -64,13 +64,13 @@ export const cache = directive(
         this.value.strings !== (v as TemplateResult).strings
       ) {
         // This is always an array because we return [v] in render()
-        const partValue = getPartValue(containerPart) as Array<ChildPart>;
+        const partValue = getComittedValue(containerPart) as Array<ChildPart>;
         const childPart = partValue.pop()!;
         let cachedContainerPart = this.templateCache.get(this.value.strings);
         if (cachedContainerPart === undefined) {
           const fragment = new DocumentFragment();
           cachedContainerPart = render(nothing, fragment);
-          resetPartValue(cachedContainerPart, [childPart]);
+          setComittedValue(cachedContainerPart, [childPart]);
           this.templateCache.set(this.value.strings, cachedContainerPart);
         }
         // Move into cache
@@ -82,11 +82,11 @@ export const cache = directive(
         const cachedContainerPart = this.templateCache.get(v.strings);
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value
-          const partValue = getPartValue(
+          const partValue = getComittedValue(
             cachedContainerPart
           ) as Array<ChildPart>;
           const cachedPart = partValue.pop()!;
-          resetPartValue(containerPart, cachedPart);
+          setComittedValue(containerPart, cachedPart);
           // Move cached part back into DOM
           insertPart(containerPart, undefined, cachedPart);
         }

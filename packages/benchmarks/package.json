@@ -21,11 +21,11 @@
     "benchmark:lit-html:repeat-vs-map-delay-full": "tach --config lit-html/repeat/tachometer-vs-map-delay-full.json",
     "benchmark:lit-html:repeat-vs-map-full": "tach --config lit-html/repeat/tachometer-vs-map-full.json",
     "benchmark:lit-html:template-heavy": "tach --config lit-html/template-heavy/tachometer.json",
-    "benchmark:updating-element:list": "tach --config updating-element/list/tachometer.json",
-    "benchmark:updating-element:list-render": "tach --config updating-element/list/tachometer-render.json",
-    "benchmark:updating-element:list-update": "tach --config updating-element/list/tachometer-update.json",
-    "benchmark:updating-element:list-update-reflect": "tach --config updating-element/list/tachometer-update-reflect.json",
-    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config updating-element/list/tachometer.json",
+    "benchmark:reactive-element:list": "tach --config reactive-element/list/tachometer.json",
+    "benchmark:reactive-element:list-render": "tach --config reactive-element/list/tachometer-render.json",
+    "benchmark:reactive-element:list-update": "tach --config reactive-element/list/tachometer-update.json",
+    "benchmark:reactive-element:list-update-reflect": "tach --config reactive-element/list/tachometer-update-reflect.json",
+    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config reactive-element/list/tachometer.json",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
@@ -38,7 +38,7 @@
     "lit-element": "^3.0.0-pre.1",
     "lit-html": "^2.0.0-pre.1",
     "tachometer": "^0.5.3",
-    "updating-element": "^1.0.0-pre.1"
+    "reactive-element": "^1.0.0-pre.1"
   },
   "devDependencies": {
     "chromedriver": "^87.0.1",

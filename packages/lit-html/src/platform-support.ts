@@ -25,7 +25,7 @@
  * template DOM. Instead, each template is scoped only once.
  *
  * Creating scoped css is not covered by this module. It is, however, integrated
- * into the LitElement and UpdatingElement packages. See the ShadyCSS docs
+ * into the LitElement and ReactiveElement packages. See the ShadyCSS docs
  * for how to apply scoping to css:
  * https://github.com/webcomponents/polyfills/tree/master/packages/shadycss#usage.
  *
@@ -50,7 +50,7 @@ interface ShadyTemplateResult {
 interface PatchableChildPart {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableChildPart;
-  _$value: unknown;
+  _$committedValue: unknown;
   _$startNode: ChildNode;
   _$endNode: ChildNode | null;
   options: RenderOptions;
@@ -206,7 +206,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
       const template = (value as ShadyTemplateResult)?._$litType$
-        ? (this._$value as PatchableTemplateInstance)._$template._$element
+        ? (this._$committedValue as PatchableTemplateInstance)._$template
+            ._$element
         : document.createElement('template');
       prepareStyles(scope!, template);
 

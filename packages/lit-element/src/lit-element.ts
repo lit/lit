@@ -48,16 +48,20 @@
  * customElements.define('my-element', MyElement);
  * ```
  *
- * `LitElement` extends [[`UpdatingElement`]] and adds lit-html templating.
- * The `UpdatingElement` class is provided for users that want to build
+ * `LitElement` extends [[`ReactiveElement`]] and adds lit-html templating.
+ * The `ReactiveElement` class is provided for users that want to build
  * their own custom element base classes that don't use lit-html.
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from 'updating-element';
+import {PropertyValues, ReactiveElement} from 'reactive-element';
 import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
-export * from 'updating-element';
+export * from 'reactive-element';
 export * from 'lit-html';
+
+// For backwards compatibility export ReactiveElement as UpdatingElement. Note,
+// IE transpilation requires exporting like this.
+export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
@@ -82,13 +86,13 @@ declare global {
  * `render` method to provide the component's template. Define properties
  * using the [[`properties`]] property or the [[`property`]] decorator.
  */
-export class LitElement extends UpdatingElement {
+export class LitElement extends ReactiveElement {
   /**
    * Ensure this class is marked as `finalized` as an optimization ensuring
    * it will not needlessly try to `finalize`.
    *
    * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See updating-element for more information.
+   * optimizations. See reactive-element for more information.
    */
   protected static ['finalized'] = true;
 
@@ -159,7 +163,7 @@ if (DEV_MODE) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (LitElement as any).finalize = function () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const finalized = (UpdatingElement as any).finalize.call(this);
+    const finalized = (ReactiveElement as any).finalize.call(this);
     if (!finalized) {
       return false;
     }
