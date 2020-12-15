@@ -15,6 +15,7 @@
 import {litProdConfig} from '../../rollup-common.js';
 
 export default litProdConfig({
+  classPropertyPrefix: 'Φ',
   entryPoints: [
     'lit-element',
     'hydrate-support',

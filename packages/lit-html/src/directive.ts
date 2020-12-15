@@ -108,11 +108,11 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  _part: ChildPart | AttributePart | ElementPart;
+  __part: ChildPart | AttributePart | ElementPart;
   //@internal
-  _attributeIndex: number | undefined;
+  __attributeIndex: number | undefined;
   //@internal
-  _directive?: Directive;
+  __directive?: Directive;
 
   //@internal
   _$parent: Disconnectable;
@@ -125,17 +125,17 @@ export abstract class Directive {
 
   constructor(partInfo: PartInfo) {
     this._$parent = partInfo._$parent;
-    this._part = partInfo._$part;
-    this._attributeIndex = partInfo._$attributeIndex;
+    this.__part = partInfo._$part;
+    this.__attributeIndex = partInfo._$attributeIndex;
   }
   /** @internal */
   _resolve(props: Array<unknown>): unknown {
-    const {_part, _attributeIndex} = this;
+    const {__part, __attributeIndex} = this;
     return resolveDirective(
-      _part,
-      this.update(_part, props),
+      __part,
+      this.update(__part, props),
       this,
-      _attributeIndex
+      __attributeIndex
     );
   }
   abstract render(...props: Array<unknown>): unknown;

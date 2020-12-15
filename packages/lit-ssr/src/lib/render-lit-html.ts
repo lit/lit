@@ -71,12 +71,12 @@ declare module 'parse5' {
 patchDirectiveResolve(
   Directive.prototype,
   function (this: Directive, values: unknown[]) {
-    const {_part, _attributeIndex} = this;
+    const {__part, __attributeIndex} = this;
     return resolveDirective(
-      _part,
+      __part,
       this.render(...values),
       this,
-      _attributeIndex
+      __attributeIndex
     );
   }
 );
