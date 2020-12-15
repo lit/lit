@@ -31,8 +31,8 @@ export interface InternalPropertyDeclaration<Type = unknown> {
 }
 
 /**
- * Declares a private or protected property that still triggers updates to the
- * element when it changes.
+ * Declares a private or protected reactive property that still triggers
+ * updates to the element when it changes.
  *
  * Properties declared this way must not be used from HTML or HTML templating
  * systems, they're solely for properties internal to the element. These
