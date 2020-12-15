@@ -27,7 +27,7 @@ if (DEV_MODE) {
 
     const missingPlatformSupport =
       window.ShadyDOM?.inUse &&
-      !(globalThis as any)['updatingElementPlatformSupport'];
+      !(globalThis as any)['reactiveElementPlatformSupport'];
 
     const consoleWarn = console.warn;
 
