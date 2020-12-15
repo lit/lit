@@ -20,7 +20,7 @@ import {
   PartInfo,
   PartType,
 } from '../directive.js';
-import {setComittedValue} from '../directive-helpers.js';
+import {isSingleExpression, setComittedValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
@@ -36,7 +36,7 @@ class LiveDirective extends Directive {
         'The `live` directive is not allowed on child or event bindings'
       );
     }
-    if (partInfo.strings !== undefined) {
+    if (!isSingleExpression(partInfo)) {
       throw new Error('`live` bindings can only contain a single expression');
     }
   }

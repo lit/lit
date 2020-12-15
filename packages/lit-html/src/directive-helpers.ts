@@ -19,7 +19,12 @@ import {
   DirectiveParent,
   TemplateResult,
 } from './lit-html.js';
-import {DirectiveResult, DirectiveClass} from './directive.js';
+import {
+  DirectiveResult,
+  DirectiveClass,
+  PartInfo,
+  AttributePartInfo,
+} from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
 /**
@@ -58,6 +63,17 @@ export const isDirectiveResult = (
   klass === undefined
     ? (value as DirectiveResult)?._$litDirective$ !== undefined
     : (value as DirectiveResult)?._$litDirective$ === klass;
+
+/**
+ * Tests whether a part has only a single-expression with no strings to
+ * interpolate between.
+ *
+ * Only AttributePart and PropertyPart can have multiple expressions.
+ * Multi-expression parts have a `strings` property and single-expression
+ * parts do not.
+ */
+export const isSingleExpression = (part: PartInfo) =>
+  (part as AttributePartInfo).strings === undefined;
 
 const createMarker = () => document.createComment('');
 

@@ -40,7 +40,7 @@ class StyleMap extends Directive {
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'style' ||
-      (partInfo.strings !== undefined && partInfo.strings.length > 2)
+      (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
         'The `styleMap` directive must be used in the `style` attribute ' +
