@@ -41,8 +41,8 @@ export interface InternalPropertyDeclaration<Type = unknown> {
  */
 export function state(options?: InternalPropertyDeclaration) {
   return property({
+    ...options,
     state: true,
     attribute: false,
-    hasChanged: options?.hasChanged,
   });
 }

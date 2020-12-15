@@ -27,7 +27,7 @@ interface Window {
   ShadyDOM?: ShadyDOM;
   ShadowRoot: typeof ShadowRoot;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updatingElementPlatformSupport: (options: {[index: string]: any}) => void;
+  reactiveElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   litElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
