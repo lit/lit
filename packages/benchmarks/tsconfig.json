@@ -20,7 +20,7 @@
   },
   "include": [
     "lit-element/**/*.ts",
-    "updating-element/**/*.ts",
+    "reactive-element/**/*.ts",
     "lit-html/**/*.ts"
   ],
   "exclude": []

@@ -25,7 +25,7 @@
  * template DOM. Instead, each template is scoped only once.
  *
  * Creating scoped css is not covered by this module. It is, however, integrated
- * into the LitElement and UpdatingElement packages. See the ShadyCSS docs
+ * into the LitElement and ReactiveElement packages. See the ShadyCSS docs
  * for how to apply scoping to css:
  * https://github.com/webcomponents/polyfills/tree/master/packages/shadycss#usage.
  *

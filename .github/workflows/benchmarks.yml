@@ -3,7 +3,6 @@ name: Benchmarks
 on: [pull_request]
 
 jobs:
-
   benchmarks:
     name: benchmarks
 
@@ -113,18 +112,18 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
-      # updating-element:list
-      - name: Benchmark updating-element/list
+      # reactive-element:list
+      - name: Benchmark reactive-element/list
         run: |
           cd packages/benchmarks
           npx tachometer \
-            --config updating-element/list/tachometer.json \
-            --json-file updating-element/list/results.json
+            --config reactive-element/list/tachometer.json \
+            --json-file reactive-element/list/results.json
 
-      - name: Report updating-element-list
+      - name: Report reactive-element-list
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: updating-element-list
-          path: packages/benchmarks/updating-element/list/results.json
+          report-id: reactive-element-list
+          path: packages/benchmarks/reactive-element/list/results.json
           pr-bench-name: this-change
           base-bench-name: tip-of-tree

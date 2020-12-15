@@ -32,11 +32,11 @@ export const prodResolveRemapConfig = {
     // versions of these.
     {from: 'lit-html/development/test/', to: null},
     {from: 'lit-element/development/test/', to: null},
-    {from: 'updating-element/development/test/', to: null},
+    {from: 'reactive-element/development/test/', to: null},
     // Remap any other development/ modules up one level to the production
     // version.
     {from: 'lit-html/development/', to: 'lit-html/'},
-    {from: 'updating-element/development/', to: 'updating-element/'},
+    {from: 'reactive-element/development/', to: 'reactive-element/'},
     {from: 'lit-element/development/', to: 'lit-element/'},
   ],
 };
@@ -51,15 +51,15 @@ export const devResolveRemapConfig = {
     // Don't remap external dependencies.
     {from: 'lit-html/node_modules/', to: null},
     {from: 'lit-element/node_modules/', to: null},
-    {from: 'updating-element/node_modules/', to: null},
+    {from: 'reactive-element/node_modules/', to: null},
     // If we're already reaching into development/, nothing to change.
     {from: 'lit-html/development/', to: null},
     {from: 'lit-element/development/', to: null},
-    {from: 'updating-element/development/', to: null},
+    {from: 'reactive-element/development/', to: null},
     // Everything else is a production version; remap to the development
     // version.
     {from: 'lit-html/', to: 'lit-html/development/'},
     {from: 'lit-element/', to: 'lit-element/development/'},
-    {from: 'updating-element/', to: 'updating-element/development/'},
+    {from: 'reactive-element/', to: 'reactive-element/development/'},
   ],
 };

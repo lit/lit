@@ -22,7 +22,7 @@ export default litProdConfig({
     'decorators',
     'decorators/customElement',
     'decorators/eventOptions',
-    'decorators/internalProperty',
+    'decorators/state',
     'decorators/property',
     'decorators/query',
     'decorators/queryAll',
@@ -30,7 +30,7 @@ export default litProdConfig({
     'decorators/queryAsync',
     'demo/my-element',
   ],
-  external: ['lit-html', 'updating-element'],
+  external: ['lit-html', 'reactive-element'],
   bundled: [
     {
       file: 'platform-support',

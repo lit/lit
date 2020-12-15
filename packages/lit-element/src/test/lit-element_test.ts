@@ -12,7 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../lit-element.js';
+import {
+  html,
+  LitElement,
+  UpdatingElement,
+  ReactiveElement,
+} from '../lit-element.js';
 import {
   directive,
   DisconnectableDirective,
@@ -306,6 +311,24 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       a,
       'testDom should be a child of the component'
     );
+  });
+
+  test('can use ReactiveElement', async () => {
+    class A extends ReactiveElement {}
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    await a.updateComplete;
+    assert.ok(a.hasUpdated);
+  });
+
+  test('can use UpdatingElement', async () => {
+    class A extends UpdatingElement {}
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    await a.updateComplete;
+    assert.ok(a.hasUpdated);
   });
 
   (window.ShadyDOM && window.ShadyDOM.inUse ? test.skip : test)(
