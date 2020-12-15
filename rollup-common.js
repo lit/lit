@@ -82,7 +82,7 @@ const stableProperties = {
   // hydrate-support: LitElement (added by hydrate-support)
   _$needsHydration: 'K',
   // lit-html: Part (used by hydrate, platform-support)
-  _$value: 'L',
+  _$committedValue: 'L',
   // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
   _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)

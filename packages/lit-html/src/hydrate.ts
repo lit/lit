@@ -212,7 +212,7 @@ const openChildPart = (
       } else {
         value = result.value;
       }
-      (state.part._$value as Array<ChildPart>).push(part);
+      (state.part._$committedValue as Array<ChildPart>).push(part);
     } else {
       // state.type === 'leaf'
       // TODO(kschaaf): This is unexpected, and likely a result of a primitive
@@ -245,7 +245,7 @@ const openChildPart = (
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
-    part._$value = value;
+    part._$committedValue = value;
     // TODO(kschaaf): We can detect when a primitive is being hydrated on the
     // client where a TemplateResult was rendered on the server, but we need to
     // decide on a strategy for what to do next.
@@ -274,7 +274,7 @@ const openChildPart = (
       });
       // For TemplateResult values, we set the part value to the
       // generated TemplateInstance
-      part._$value = instance;
+      part._$committedValue = instance;
     } else {
       // TODO: if this isn't the server-rendered template, do we
       // need to stop hydrating this subtree? Clear it? Add tests.
@@ -291,14 +291,14 @@ const openChildPart = (
       iterator: value[Symbol.iterator](),
       done: false,
     });
-    part._$value = [];
+    part._$committedValue = [];
   } else {
     // Fallback for everything else (nothing, Objects, Functions,
     // etc.): we just initialize the part's value
     // Note that `Node` value types are not currently supported during
     // SSR, so that part of the cascade is missing.
     stack.push({part: part, type: 'leaf'});
-    part._$value = value == null ? '' : value;
+    part._$committedValue = value == null ? '' : value;
   }
   return part;
 };
@@ -373,7 +373,7 @@ const createAttributeParts = (
           ? state.result.values[state.instancePartIndex]
           : state.result.values;
 
-      // Setting the attribute value primes _$value with the resolved
+      // Setting the attribute value primes committed value with the resolved
       // directive value; we only then commit that value for event/property
       // parts since those were not serialized, and pass `noCommit` for the
       // others to avoid perf impact of touching the DOM unnecessarily

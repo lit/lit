@@ -135,7 +135,7 @@ export const setPartValue = <T extends Part>(
         "An index must be provided to set an AttributePart's value."
       );
     }
-    const newValues = [...(part._$value as Array<unknown>)];
+    const newValues = [...(part._$committedValue as Array<unknown>)];
     newValues[index] = value;
     (part as AttributePart)._$setValue(newValues, directiveParent, 0);
   } else {
@@ -149,31 +149,33 @@ export const setPartValue = <T extends Part>(
 const RESET_VALUE = {};
 
 /**
- * Resets the stored state of a ChildPart used for dirty-checking and
- * efficiently updating the part to the given value, or when omitted, to a state
- * where any subsequent dirty-check is guaranteed to fail, causing the next
- * commit to take effect.
+ * Resets the committed value a ChildPart directly without triggering the
+ * commit stage of the part.
+ *
+ * This is useful in cases where a directive needs to update the part such
+ * that the next update detects a value change or not.
  *
  * @param part
  * @param value
  */
-export const resetPartValue = (part: Part, value: unknown = RESET_VALUE) =>
-  (part._$value = value);
+export const setComittedValue = (part: Part, value: unknown = RESET_VALUE) =>
+  (part._$committedValue = value);
 
 /**
- * Returns the stored state of a ChildPart used for dirty-checking and
- * efficiently updating the part. Note that this value can differ from the value
- * set by the user/directive, and varies by type:
+ * Returns the committed value of a ChildPart.
  *
- * - For `TemplateResult`: returns a `TemplateInstance`
- * - For iterable, returns a `ChildPart[]`
- * - For all other types, returns the user value or resolved directive value
+ * The committed value is used for change detection and efficient updates of
+ * the part. It can differ from the value set by the template or directive in
+ * cases where the template value is transformed before being commited.
  *
- * TODO: this needs a better name, to disambiguate it from values set by user.
+ * - `TemplateResult`s are committed as a `TemplateInstance`
+ * - Iterables are committed as `Array<ChildPart>`
+ * - All other types are committed as the template value or value returned or
+ *   set by a directive.
  *
  * @param part
  */
-export const getPartValue = (part: ChildPart) => part._$value;
+export const getComittedValue = (part: ChildPart) => part._$committedValue;
 
 /**
  * Removes a ChildPart from the DOM, including any of its content.
