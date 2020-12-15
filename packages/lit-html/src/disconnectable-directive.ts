@@ -208,7 +208,7 @@ function setChildPartConnected(
   isClearingValue = false,
   fromPartIndex = 0
 ) {
-  const value = this._$value;
+  const value = this._$committedValue;
   const children = this._$disconnetableChildren;
   if (children === undefined || children.size === 0) {
     return;

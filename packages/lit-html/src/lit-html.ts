@@ -759,16 +759,18 @@ class TemplateInstance {
   _update(values: Array<unknown>) {
     let i = 0;
     for (const part of this._parts) {
-      if (part === undefined) {
-        i++;
-        continue;
+      if (part !== undefined) {
+        if ((part as AttributePart).strings !== undefined) {
+          (part as AttributePart)._$setValue(values, part as AttributePart, i);
+          // The number of values the part consumes is part.strings.length - 1
+          // since values are in between template spans. We increment i by 1
+          // later in the loop, so increment it by part.strings.length - 2 here
+          i += (part as AttributePart).strings!.length - 2;
+        } else {
+          part._$setValue(values[i]);
+        }
       }
-      if ((part as AttributePart).strings !== undefined) {
-        (part as AttributePart)._$setValue(values, part as AttributePart, i);
-        i += (part as AttributePart).strings!.length - 1;
-      } else {
-        (part as ChildPart)._$setValue(values[i++]);
-      }
+      i++;
     }
   }
 }
@@ -820,7 +822,7 @@ export type Part =
 export class ChildPart {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
-  _$value: unknown;
+  _$committedValue: unknown;
   /** @internal */
   _directive?: Directive;
   /** @internal */
@@ -877,8 +879,8 @@ export class ChildPart {
     if (isPrimitive(value)) {
       if (value === nothing) {
         this._$clear();
-        this._$value = nothing;
-      } else if (value !== this._$value && value !== noChange) {
+        this._$committedValue = nothing;
+      } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -898,7 +900,7 @@ export class ChildPart {
   }
 
   private _commitNode(value: Node): void {
-    if (this._$value !== value) {
+    if (this._$committedValue !== value) {
       this._$clear();
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
@@ -915,7 +917,7 @@ export class ChildPart {
           return;
         }
       }
-      this._$value = this._insert(value);
+      this._$committedValue = this._insert(value);
     }
   }
 
@@ -924,7 +926,7 @@ export class ChildPart {
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
-    // TODO(justinfagnani): Can we just check if this._$value is primitive?
+    // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
@@ -958,20 +960,20 @@ export class ChildPart {
         this._commitNode(d.createTextNode(value as string));
       }
     }
-    this._$value = value;
+    this._$committedValue = value;
   }
 
   private _commitTemplateResult(result: TemplateResult): void {
     const {values, strings} = result;
     const template = this._$getTemplate(strings, result);
-    if ((this._$value as TemplateInstance)?._$template === template) {
-      (this._$value as TemplateInstance)._update(values);
+    if ((this._$committedValue as TemplateInstance)?._$template === template) {
+      (this._$committedValue as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template!, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
-      this._$value = instance;
+      this._$committedValue = instance;
     }
   }
 
@@ -996,14 +998,14 @@ export class ChildPart {
     // iterable and value will contain the ChildParts from the previous
     // render. If value is not an array, clear this part and make a new
     // array for ChildParts.
-    if (!isArray(this._$value)) {
-      this._$value = [];
+    if (!isArray(this._$committedValue)) {
+      this._$committedValue = [];
       this._$clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._$value as ChildPart[];
+    const itemParts = this._$committedValue as ChildPart[];
     let partIndex = 0;
     let itemPart: ChildPart | undefined;
 
@@ -1078,7 +1080,7 @@ export class AttributePart {
    */
   readonly strings?: ReadonlyArray<string>;
   /** @internal */
-  _$value: unknown | Array<unknown> = nothing;
+  _$committedValue: unknown | Array<unknown> = nothing;
   /** @internal */
   _directives?: Array<Directive | undefined>;
   /** @internal */
@@ -1110,10 +1112,10 @@ export class AttributePart {
     this._$parent = parent;
     this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this._$value = new Array(strings.length - 1).fill(nothing);
+      this._$committedValue = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
     } else {
-      this._$value = nothing;
+      this._$committedValue = nothing;
     }
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       this._sanitizer = undefined;
@@ -1157,9 +1159,10 @@ export class AttributePart {
       // Single-value binding case
       value = resolveDirective(this, value, directiveParent, 0);
       change =
-        !isPrimitive(value) || (value !== this._$value && value !== noChange);
+        !isPrimitive(value) ||
+        (value !== this._$committedValue && value !== noChange);
       if (change) {
-        this._$value = value;
+        this._$committedValue = value;
       }
     } else {
       // Interpolation case
@@ -1172,9 +1175,10 @@ export class AttributePart {
 
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
-          v = (this._$value as Array<unknown>)[i];
+          v = (this._$committedValue as Array<unknown>)[i];
         }
-        change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+        change ||=
+          !isPrimitive(v) || v !== (this._$committedValue as Array<unknown>)[i];
         if (v === nothing) {
           value = nothing;
         } else if (value !== nothing) {
@@ -1182,7 +1186,7 @@ export class AttributePart {
         }
         // We always record each value, even if one is `nothing`, for future
         // change detection.
-        (this._$value as Array<unknown>)[i] = v;
+        (this._$committedValue as Array<unknown>)[i] = v;
       }
     }
     if (change && !noCommit) {
@@ -1269,7 +1273,7 @@ export class EventPart extends AttributePart {
     if (newListener === noChange) {
       return;
     }
-    const oldListener = this._$value;
+    const oldListener = this._$committedValue;
 
     // If the new value is nothing or any options change we have to remove the
     // part as a listener.
@@ -1305,31 +1309,35 @@ export class EventPart extends AttributePart {
         newListener as EventListenerWithOptions
       );
     }
-    this._$value = newListener;
+    this._$committedValue = newListener;
   }
 
   handleEvent(event: Event) {
-    if (typeof this._$value === 'function') {
+    if (typeof this._$committedValue === 'function') {
       // TODO (justinfagnani): do we need to default to this._$element?
       // It'll always be the same as `e.currentTarget`.
-      this._$value.call(this.options?.host ?? this.element, event);
+      this._$committedValue.call(this.options?.host ?? this.element, event);
     } else {
-      (this._$value as EventListenerObject).handleEvent(event);
+      (this._$committedValue as EventListenerObject).handleEvent(event);
     }
   }
 }
 
 export class ElementPart {
   readonly type = ELEMENT_PART;
+
   /** @internal */
   _directive?: Directive;
-  // This is to ensure that every Part has a _value.
-  _$value: undefined;
+
+  // This is to ensure that every Part has a _$committedValue
+  _$committedValue: undefined;
 
   /** @internal */
   _$parent: Disconnectable | undefined;
+
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
+
   /** @internal */
   _setDirectiveConnected?: (
     directive: Directive | undefined,

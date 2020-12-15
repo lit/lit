@@ -16,9 +16,9 @@ import {ChildPart, noChange} from '../lit-html.js';
 import {directive, Directive, PartInfo, PartType} from '../directive.js';
 import {
   insertPart,
-  getPartValue,
+  getComittedValue,
   removePart,
-  resetPartValue,
+  setComittedValue,
   setPartValue,
 } from '../directive-helpers.js';
 
@@ -109,7 +109,7 @@ class RepeatDirective extends Directive {
   ) {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    const oldParts = getPartValue(containerPart) as Array<ChildPart | null>;
+    const oldParts = getComittedValue(containerPart) as Array<ChildPart | null>;
     const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
       items,
       keyFnOrTemplate,
@@ -438,7 +438,7 @@ class RepeatDirective extends Directive {
     // Save order of new parts for next round
     this.itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
-    resetPartValue(containerPart, newParts);
+    setComittedValue(containerPart, newParts);
     return noChange;
   }
 }
