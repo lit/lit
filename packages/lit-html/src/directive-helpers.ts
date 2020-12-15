@@ -65,11 +65,12 @@ export const isDirectiveResult = (
     : (value as DirectiveResult)?._$litDirective$ === klass;
 
 /**
- * Tests is a part is a single-expression part.
+ * Tests whether a part has only a single-expression with no strings to
+ * interpolate between.
  *
- * Only AttributePart and PropertyPart can by multi-valued, when the expression
- * that created them is an interpolation. Multi-expression parts have a
- * `strings` property and single-expression parts do not.
+ * Only AttributePart and PropertyPart can have multiple expressions.
+ * Multi-expression parts have a `strings` property and single-expression
+ * parts do not.
  */
 export const isSingleExpression = (part: PartInfo) =>
   (part as AttributePartInfo).strings === undefined;
