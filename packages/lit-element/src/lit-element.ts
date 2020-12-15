@@ -57,6 +57,7 @@
 import {PropertyValues, ReactiveElement} from 'reactive-element';
 import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
 export * from 'reactive-element';
+export {ReactiveElement as UpdatingElement} from 'reactive-element';
 export * from 'lit-html';
 
 const DEV_MODE = true;
