@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {UpdatingElement} from 'updating-element';
-import {property} from 'updating-element/decorators/property.js';
+import {ReactiveElement} from 'reactive-element';
+import {property} from 'reactive-element/decorators/property.js';
 import {AsyncTask} from '../../controllers/async-task.js';
 import {generateElementName} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';
@@ -24,10 +24,10 @@ suite('AsyncTask', () => {
   class ControllerUsingTask {
     updateCount = 0;
 
-    host: UpdatingElement;
+    host: ReactiveElement;
     task: AsyncTask;
 
-    constructor(host: UpdatingElement) {
+    constructor(host: ReactiveElement) {
       this.host = host;
       this.host.addController(this);
       this.task = new AsyncTask(
@@ -67,7 +67,7 @@ suite('AsyncTask', () => {
     }
   }
 
-  class A extends UpdatingElement {
+  class A extends ReactiveElement {
     static properties = {foo: {}};
     foo = 'foo';
     bar = 'bar';

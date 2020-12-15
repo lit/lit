@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {UpdatingElement, notEqual} from 'updating-element';
+import {ReactiveElement, notEqual} from 'reactive-element';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TaskFunction = (...args: Array<any>) => any;
@@ -28,7 +28,7 @@ export type DepsFunction = () => Deps;
  * read to determine the task's state, and the `completeTask()` promise
  * resolves when the task completes. Here's an example:
  *
- * class MyElement extends UpdatingElement {
+ * class MyElement extends ReactiveElement {
  *   url = 'example.com/api';
  *   id = 0;
  *   task = new AsyncTask(
@@ -55,11 +55,11 @@ export class AsyncTask {
   private _dependencies: DepsFunction;
   private _callId = 0;
   isPending = false;
-  host: UpdatingElement;
+  host: ReactiveElement;
   value: unknown;
 
   constructor(
-    host: UpdatingElement,
+    host: ReactiveElement,
     task: TaskFunction,
     dependencies: DepsFunction,
     value: unknown
