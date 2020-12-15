@@ -328,22 +328,23 @@ export abstract class ReactiveElement extends HTMLElement {
    * objects containing options for configuring reactive properties. When
    * a reactive property is set the element will update and render.
    *
-   * Properties are public fields. Private or protected fields should use the
-   * `state: true` option. Properties marked as `state` are not observed
-   * attributes and are for use only within the element code itself. Setting
-   * a state property does trigger an element update and render.
+   * By default properties are public fields, and as such, they should be
+   * considered as primarily settable by element users, either via attribute or
+   * the property itself.
    *
-   * As public fields, properties should be considered as primarily settable by
-   * element users, either via attribute or the property itself. However,
-   * sometimes element code does need to set a public property. This should
-   * typically only be done in response to user interaction, and an event should
-   * be fired informing the user; for example, a checkbox sets its `checked`
-   * property when clicked and fires a `changed` event. Mutating public
-   * properties should typically not be done for non-primitive (object or array)
-   * properties. In other cases when an element needs to manage state, a private
-   * property marked with the `state: true` option should be used. When needed,
-   * state properties can be initialized via public properties to facilitate
-   * complex interactions.
+   * Generally, properties that are changed by the element should be private or
+   * protected fields and should use the `state: true` option. Properties
+   * marked as `state` do not reflect from the corresponding attribute
+   *
+   * However, sometimes element code does need to set a public property. This
+   * should typically only be done in response to user interaction, and an event
+   * should be fired informing the user; for example, a checkbox sets its
+   * `checked` property when clicked and fires a `changed` event. Mutating
+   * public properties should typically not be done for non-primitive (object or
+   * array) properties. In other cases when an element needs to manage state, a
+   * private property set with the `state: true` option should be used. When
+   * needed, state properties can be initialized via public properties to
+   * facilitate complex interactions.
    */
   static properties: PropertyDeclarations;
 
