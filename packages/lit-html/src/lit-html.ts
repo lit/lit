@@ -762,6 +762,9 @@ class TemplateInstance {
       if (part !== undefined) {
         if ((part as AttributePart).strings !== undefined) {
           (part as AttributePart)._$setValue(values, part as AttributePart, i);
+          // The number of values the part consumes is part.strings.length - 1
+          // since values are in between template spans. We increment i by 1
+          // later in the loop, so increment it by part.strings.length - 2 here
           i += (part as AttributePart).strings!.length - 2;
         } else {
           part._$setValue(values[i]);

@@ -149,11 +149,12 @@ export const setPartValue = <T extends Part>(
 const RESET_VALUE = {};
 
 /**
- * Resets the committed value a ChildPart directly without triggering the
+ * Sets the committed value of a ChildPart directly without triggering the
  * commit stage of the part.
  *
  * This is useful in cases where a directive needs to update the part such
- * that the next update detects a value change or not.
+ * that the next update detects a value change or not. When value is omitted,
+ * the next update will be guaranteed to be detected as a change.
  *
  * @param part
  * @param value
