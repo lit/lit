@@ -832,7 +832,7 @@ export type Part =
 type Interface<T> = {[P in keyof T]: T[P]};
 
 export type ChildPart = Interface<ChildPartImpl>;
-class ChildPartImpl implements ChildPart {
+class ChildPartImpl {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
