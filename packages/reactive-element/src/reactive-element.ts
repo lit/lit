@@ -310,7 +310,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * `fooBar` property. Created lazily on user subclasses when finalizing the
    * class.
    */
-  private static _attributeToPropertyMap: AttributeMap;
+  private static __attributeToPropertyMap: AttributeMap;
 
   /**
    * Marks class as having finished creating properties.
@@ -371,9 +371,9 @@ export abstract class ReactiveElement extends HTMLElement {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
     this.elementProperties!.forEach((v, p) => {
-      const attr = this._attributeNameForProperty(p, v);
+      const attr = this.__attributeNameForProperty(p, v);
       if (attr !== undefined) {
-        this._attributeToPropertyMap.set(attr, p);
+        this.__attributeToPropertyMap.set(attr, p);
         attributes.push(attr);
       }
     });
@@ -512,7 +512,7 @@ export abstract class ReactiveElement extends HTMLElement {
     superCtor.finalize();
     this.elementProperties = new Map(superCtor.elementProperties!);
     // initialize Map populated in observedAttributes
-    this._attributeToPropertyMap = new Map();
+    this.__attributeToPropertyMap = new Map();
     // make any properties
     // Note, only process "own" properties since this element will inherit
     // any properties defined on the superClass, and finalization ensures
@@ -605,7 +605,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * Returns the property name for the given attribute `name`.
    * @nocollapse
    */
-  private static _attributeNameForProperty(
+  private static __attributeNameForProperty(
     name: PropertyKey,
     options: PropertyDeclaration
   ) {
@@ -619,13 +619,13 @@ export abstract class ReactiveElement extends HTMLElement {
       : undefined;
   }
 
-  private _instanceProperties?: PropertyValues = new Map();
+  private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
-  private _updatePromise!: Promise<unknown>;
+  private __updatePromise!: Promise<unknown>;
 
-  private _pendingConnectionPromise: Promise<unknown> | undefined = undefined;
-  private _enableConnection: (() => void) | undefined = undefined;
+  private __pendingConnectionPromise: Promise<unknown> | undefined = undefined;
+  private __enableConnection: (() => void) | undefined = undefined;
 
   isUpdatePending = false;
   hasUpdated = false;
@@ -634,35 +634,35 @@ export abstract class ReactiveElement extends HTMLElement {
    * Map with keys for any properties that have changed since the last
    * update cycle with previous values.
    */
-  private _changedProperties!: PropertyValues;
+  private __changedProperties!: PropertyValues;
 
   /**
    * Map with keys of properties that should be reflected when updated.
    */
-  private _reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
+  private __reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
 
   /**
    * Name of currently reflecting property
    */
-  private _reflectingProperty: PropertyKey | null = null;
+  private __reflectingProperty: PropertyKey | null = null;
 
   /**
    * Set of controllers.
    */
-  _controllers?: Controller[];
+  private __controllers?: Controller[];
 
   constructor() {
     super();
-    this._updatePromise = new Promise((res) => (this.enableUpdating = res));
-    this._changedProperties = new Map();
-    this._saveInstanceProperties();
+    this.__updatePromise = new Promise((res) => (this.enableUpdating = res));
+    this.__changedProperties = new Map();
+    this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
   }
 
   addController(controller: Controller) {
-    (this._controllers ??= []).push(controller);
+    (this.__controllers ??= []).push(controller);
   }
 
   /**
@@ -677,13 +677,13 @@ export abstract class ReactiveElement extends HTMLElement {
    * this.id = 'id' in the constructor, the 'id' will become '' since this is
    * the native platform default).
    */
-  private _saveInstanceProperties() {
+  private __saveInstanceProperties() {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
     (this.constructor as typeof ReactiveElement).elementProperties!.forEach(
       (_v, p) => {
         if (this.hasOwnProperty(p)) {
-          this._instanceProperties!.set(p, this[p as keyof this]);
+          this.__instanceProperties!.set(p, this[p as keyof this]);
           delete this[p as keyof this];
         }
       }
@@ -723,12 +723,12 @@ export abstract class ReactiveElement extends HTMLElement {
       }).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating();
-    this._controllers?.forEach((c) => c.connectedCallback?.());
+    this.__controllers?.forEach((c) => c.connectedCallback?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
-    if (this._enableConnection) {
-      this._enableConnection();
-      this._pendingConnectionPromise = this._enableConnection = undefined;
+    if (this.__enableConnection) {
+      this.__enableConnection();
+      this.__pendingConnectionPromise = this.__enableConnection = undefined;
     }
   }
 
@@ -745,9 +745,9 @@ export abstract class ReactiveElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this._controllers?.forEach((c) => c.disconnectedCallback?.());
-    this._pendingConnectionPromise = new Promise(
-      (r) => (this._enableConnection = r)
+    this.__controllers?.forEach((c) => c.disconnectedCallback?.());
+    this.__pendingConnectionPromise = new Promise(
+      (r) => (this.__enableConnection = r)
     );
   }
 
@@ -762,13 +762,13 @@ export abstract class ReactiveElement extends HTMLElement {
     this._$attributeToProperty(name, value);
   }
 
-  private _propertyToAttribute(
+  private __propertyToAttribute(
     name: PropertyKey,
     value: unknown,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
     const attr = (this
-      .constructor as typeof ReactiveElement)._attributeNameForProperty(
+      .constructor as typeof ReactiveElement).__attributeNameForProperty(
       name,
       options
     );
@@ -799,14 +799,14 @@ export abstract class ReactiveElement extends HTMLElement {
       // in `update` this should not be possible (or an extreme corner case
       // that we'd like to discover).
       // mark state reflecting
-      this._reflectingProperty = name;
+      this.__reflectingProperty = name;
       if (attrValue == null) {
         this.removeAttribute(attr);
       } else {
         this.setAttribute(attr, attrValue as string);
       }
       // mark state not reflecting
-      this._reflectingProperty = null;
+      this.__reflectingProperty = null;
     }
   }
 
@@ -815,10 +815,10 @@ export abstract class ReactiveElement extends HTMLElement {
     const ctor = this.constructor as typeof ReactiveElement;
     // Note, hint this as an `AttributeMap` so closure clearly understands
     // the type; it has issues with tracking types through statics
-    const propName = (ctor._attributeToPropertyMap as AttributeMap).get(name);
+    const propName = (ctor.__attributeToPropertyMap as AttributeMap).get(name);
     // Use tracking info to avoid reflecting a property value to an attribute
     // if it was just set because the attribute changed.
-    if (propName !== undefined && this._reflectingProperty !== propName) {
+    if (propName !== undefined && this.__reflectingProperty !== propName) {
       const options = ctor.getPropertyOptions(propName);
       const converter = options.converter;
       const fromAttribute =
@@ -828,11 +828,11 @@ export abstract class ReactiveElement extends HTMLElement {
           : null) ??
         defaultConverter.fromAttribute;
       // mark state reflecting
-      this._reflectingProperty = propName;
+      this.__reflectingProperty = propName;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this[propName as keyof this] = fromAttribute!(value, options.type) as any;
       // mark state not reflecting
-      this._reflectingProperty = null;
+      this.__reflectingProperty = null;
     }
   }
 
@@ -862,18 +862,18 @@ export abstract class ReactiveElement extends HTMLElement {
         (this.constructor as typeof ReactiveElement).getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
-        if (!this._changedProperties.has(name)) {
-          this._changedProperties.set(name, oldValue);
+        if (!this.__changedProperties.has(name)) {
+          this.__changedProperties.set(name, oldValue);
         }
         // Add to reflecting properties set.
         // Note, it's important that every change has a chance to add the
         // property to `_reflectingProperties`. This ensures setting
         // attribute + property reflects correctly.
-        if (options.reflect === true && this._reflectingProperty !== name) {
-          if (this._reflectingProperties === undefined) {
-            this._reflectingProperties = new Map();
+        if (options.reflect === true && this.__reflectingProperty !== name) {
+          if (this.__reflectingProperties === undefined) {
+            this.__reflectingProperties = new Map();
           }
-          this._reflectingProperties.set(name, options);
+          this.__reflectingProperties.set(name, options);
         }
       } else {
         // Abort the request if the property should not be considered changed.
@@ -881,7 +881,7 @@ export abstract class ReactiveElement extends HTMLElement {
       }
     }
     if (!this.isUpdatePending && shouldRequestUpdate) {
-      this._updatePromise = this._enqueueUpdate();
+      this.__updatePromise = this.__enqueueUpdate();
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
@@ -891,15 +891,15 @@ export abstract class ReactiveElement extends HTMLElement {
   /**
    * Sets up the element to asynchronously update.
    */
-  private async _enqueueUpdate() {
+  private async __enqueueUpdate() {
     this.isUpdatePending = true;
     try {
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
-      await this._updatePromise;
+      await this.__updatePromise;
       // If we were disconnected, wait until re-connected to flush an update
-      while (this._pendingConnectionPromise) {
-        await this._pendingConnectionPromise;
+      while (this.__pendingConnectionPromise) {
+        await this.__pendingConnectionPromise;
       }
     } catch (e) {
       // Refire any previous errors async so they do not disrupt the update
@@ -948,7 +948,7 @@ export abstract class ReactiveElement extends HTMLElement {
         const shadowedProperties: string[] = [];
         (this.constructor as typeof ReactiveElement).elementProperties!.forEach(
           (_v, p) => {
-            if (this.hasOwnProperty(p) && !this._instanceProperties?.has(p)) {
+            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
               shadowedProperties.push(p as string);
             }
           }
@@ -969,31 +969,31 @@ export abstract class ReactiveElement extends HTMLElement {
       }
     }
     // Mixin instance properties once, if they exist.
-    if (this._instanceProperties) {
+    if (this.__instanceProperties) {
       // Use forEach so this works even if for/of loops are compiled to for loops
       // expecting arrays
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this._instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
-      this._instanceProperties = undefined;
+      this.__instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
+      this.__instanceProperties = undefined;
     }
     let shouldUpdate = false;
-    const changedProperties = this._changedProperties;
+    const changedProperties = this.__changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this._controllers?.forEach((c) => c.willUpdate?.());
+        this.__controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this._controllers?.forEach((c) => c.update?.());
+        this.__controllers?.forEach((c) => c.update?.());
         this.update(changedProperties);
       } else {
-        this._markUpdated();
+        this.__markUpdated();
       }
     } catch (e) {
       // Prevent `firstUpdated` and `updated` from running when there's an
       // update exception.
       shouldUpdate = false;
       // Ensure element can accept additional updates after an exception.
-      this._markUpdated();
+      this.__markUpdated();
       throw e;
     }
     // The update is no longer considered pending and further updates are now allowed.
@@ -1011,7 +1011,7 @@ export abstract class ReactiveElement extends HTMLElement {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this._controllers?.forEach((c) => c.updated?.());
+    this.__controllers?.forEach((c) => c.updated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1029,8 +1029,8 @@ export abstract class ReactiveElement extends HTMLElement {
     }
   }
 
-  private _markUpdated() {
-    this._changedProperties = new Map();
+  private __markUpdated() {
+    this.__changedProperties = new Map();
     this.isUpdatePending = false;
   }
 
@@ -1070,7 +1070,7 @@ export abstract class ReactiveElement extends HTMLElement {
    *   }
    */
   protected getUpdateComplete() {
-    return this._updatePromise;
+    return this.__updatePromise;
   }
 
   /**
@@ -1093,15 +1093,15 @@ export abstract class ReactiveElement extends HTMLElement {
    * @param _changedProperties Map of changed properties with old values
    */
   protected update(_changedProperties: PropertyValues) {
-    if (this._reflectingProperties !== undefined) {
+    if (this.__reflectingProperties !== undefined) {
       // Use forEach so this works even if for/of loops are compiled to for
       // loops expecting arrays
-      this._reflectingProperties.forEach((v, k) =>
-        this._propertyToAttribute(k, this[k as keyof this], v)
+      this.__reflectingProperties.forEach((v, k) =>
+        this.__propertyToAttribute(k, this[k as keyof this], v)
       );
-      this._reflectingProperties = undefined;
+      this.__reflectingProperties = undefined;
     }
-    this._markUpdated();
+    this.__markUpdated();
   }
 
   /**

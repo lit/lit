@@ -359,7 +359,7 @@ export abstract class DisconnectableDirective extends Directive {
    */
   setValue(value: unknown) {
     if (this.isConnected) {
-      setPartValue(this._part, value, this._attributeIndex, this);
+      setPartValue(this.__part, value, this.__attributeIndex, this);
     } else {
       this._pendingValue = value;
     }

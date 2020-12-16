@@ -346,8 +346,8 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 // `resolveDirective`
 export interface DirectiveParent {
   _$parent?: DirectiveParent;
-  _directive?: Directive;
-  _directives?: Array<Directive | undefined>;
+  __directive?: Directive;
+  __directives?: Array<Directive | undefined>;
 }
 
 /**
@@ -659,8 +659,8 @@ function resolveDirective(
 ): unknown {
   let currentDirective =
     _$attributeIndex !== undefined
-      ? (_$parent as AttributePart)._directives?.[_$attributeIndex]
-      : (_$parent as ChildPart | ElementPart | Directive)._directive;
+      ? (_$parent as AttributePart).__directives?.[_$attributeIndex]
+      : (_$parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
@@ -676,11 +676,11 @@ function resolveDirective(
             _$attributeIndex,
           } as PartInfo);
     if (_$attributeIndex !== undefined) {
-      ((_$parent as AttributePart)._directives ??= [])[
+      ((_$parent as AttributePart).__directives ??= [])[
         _$attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as ChildPart | Directive)._directive = currentDirective;
+      (_$parent as ChildPart | Directive).__directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -824,7 +824,7 @@ export class ChildPart {
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
   /** @internal */
-  _directive?: Directive;
+  __directive?: Directive;
   /** @internal */
   _$startNode: ChildNode;
   /** @internal */
@@ -1082,7 +1082,7 @@ export class AttributePart {
   /** @internal */
   _$committedValue: unknown | Array<unknown> = nothing;
   /** @internal */
-  _directives?: Array<Directive | undefined>;
+  __directives?: Array<Directive | undefined>;
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
@@ -1327,7 +1327,7 @@ export class ElementPart {
   readonly type = ELEMENT_PART;
 
   /** @internal */
-  _directive?: Directive;
+  __directive?: Directive;
 
   // This is to ensure that every Part has a _$committedValue
   _$committedValue: undefined;
