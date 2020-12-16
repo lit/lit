@@ -622,7 +622,7 @@ export abstract class ReactiveElement extends HTMLElement {
   private _instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
-  private _updatePromise!: Promise<boolean | void>;
+  private _updatePromise!: Promise<unknown>;
 
   private _pendingConnectionPromise: Promise<void> | undefined = undefined;
   private _enableConnection: (() => void) | undefined = undefined;
