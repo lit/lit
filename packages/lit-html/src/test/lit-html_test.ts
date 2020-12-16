@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {
-  _$private,
   AttributePart,
   ChildPart,
   html,

@@ -1415,10 +1415,7 @@ export const _$private = {
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.({
-  _$ChildPart: ChildPartImpl,
-  _$Template: TemplateImpl,
-});
+(globalThis as any)['litHtmlPlatformSupport']?.(TemplateImpl, ChildPartImpl);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `lit-html/directive.ts`.
 
 - [Breaking] (since 2.0.0-pre.3) The part exports (`ChildPart`,
-  `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported.
+  `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
 
   <!-- ### Fixed -->
   <!-- ### Removed -->
