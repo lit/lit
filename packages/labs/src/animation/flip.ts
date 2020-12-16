@@ -1,5 +1,6 @@
 import {ReactiveElement} from 'reactive-element';
-import {directive, nothing, PartInfo, AttributePart, NODE_PART} from 'lit-html';
+import {nothing, AttributePart} from 'lit-html';
+import {directive, PartInfo, PartType} from 'lit-html/directive.js';
 import {DisconnectableDirective} from 'lit-html/disconnectable-directive.js';
 
 // TODO(sorvell): Type better
@@ -19,12 +20,7 @@ export type FlipOptions = {
   toElement?: Element;
 };
 
-export const flyInUp = [
-  {transform: 'translateY(-250%) scale(0.25)', opacity: 0},
-  {},
-];
-
-export const flyOutDown = [
+export const flyBelow = [
   {transform: 'translateY(250%) scale(0.25)', opacity: 0},
 ];
 
@@ -48,11 +44,11 @@ const transformProps = {
   },
   width: (a: number, b: number) => {
     const v = quotientOp(a, b);
-    return v && `scaleX(${v}px)`;
+    return v && `scaleX(${v})`;
   },
   height: (a: number, b: number) => {
     const v = quotientOp(a, b);
-    return v && `scaleY(${v}px)`;
+    return v && `scaleY(${v})`;
   },
 };
 
@@ -85,20 +81,20 @@ export class Flip extends DisconnectableDirective {
 
   constructor(part: PartInfo) {
     super(part);
-    if (part.type === NODE_PART) {
+    if (part.type === PartType.CHILD) {
       throw new Error(
         'The `flip` directive must be used in attribute position.'
       );
     }
   }
 
-  render(_host: ReactiveElement, _options?: FlipOptions) {
+  render(_options?: FlipOptions) {
     return nothing;
   }
 
-  update(part: AttributePart, [host, options]: Parameters<this['render']>) {
+  update(part: AttributePart, [options]: Parameters<this['render']>) {
     if (this.host === undefined) {
-      this.host = host;
+      this.host = part.options?.host as ReactiveElement;
       this.host.addController({
         willUpdate: () => this._beforeUpdate(),
         updated: () => this._afterUpdate(),
@@ -113,7 +109,7 @@ export class Flip extends DisconnectableDirective {
     this._toElement = options?.toElement ?? this._animatingElement;
     this._inFrames = options?.in;
     this._outFrames = options?.out;
-    return this.render(host, options);
+    return this.render(options);
   }
 
   private _record(element: Element, props: CSSProperties) {
@@ -152,7 +148,9 @@ export class Flip extends DisconnectableDirective {
     const frames =
       this._from !== undefined
         ? this._calculateFrames(this._from, this._to)
-        : this._inFrames;
+        : this._inFrames
+        ? [...this._inFrames, {}]
+        : undefined;
     if (frames !== undefined) {
       this._animate(frames);
     }
@@ -180,9 +178,12 @@ export class Flip extends DisconnectableDirective {
           shifted.top as number
         );
         const initialTransform = this._animatingElement.style.transform;
+        const initialPosition = this._animatingElement.style.position;
         this._animatingElement.style.transform += ` ${left || ''} ${top || ''}`;
+        this._animatingElement.style.position = 'absolute';
         await this._animate(this._outFrames);
         this._animatingElement.remove();
+        this._animatingElement.style.position = initialPosition;
         this._animatingElement.style.transform = initialTransform;
       }
     });
@@ -220,7 +221,7 @@ export class Flip extends DisconnectableDirective {
     if (this._isAnimating()) {
       return;
     }
-    console.log('animate', frames);
+    //console.log('animate', frames);
     this._animation = this._animatingElement.animate(
       frames,
       this._animationOptions
