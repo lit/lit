@@ -87,11 +87,11 @@ const scopeCssStore: Map<string, string[]> = new Map();
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= ({
-  ChildPart,
-  Template,
+  _$ChildPart: ChildPart,
+  _$Template: Template,
 }: {
-  ChildPart: PatchableChildPart;
-  Template: PatchableTemplate;
+  _$ChildPart: PatchableChildPart;
+  _$Template: PatchableTemplate;
 }) => {
   if (!needsPlatformSupport) {
     return;

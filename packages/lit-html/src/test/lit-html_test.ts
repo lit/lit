@@ -12,10 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {
+  _$private,
   AttributePart,
+  ChildPart,
   html,
   noChange,
-  ChildPart,
   nothing,
   render,
   RenderOptions,
@@ -24,7 +25,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {directive, Directive, PartType} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -1457,7 +1458,7 @@ suite('lit-html', () => {
       assertContent('<div>B:3</div>');
     });
 
-    test('directives can update', () => {
+    test.only('directives can update', () => {
       let receivedPart: ChildPart;
       let receivedValue: unknown;
 
@@ -1478,7 +1479,7 @@ suite('lit-html', () => {
       };
       go(true);
       assertContent('<div>true</div>');
-      assert.instanceOf(receivedPart!, ChildPart);
+      assert.equal(receivedPart!.type, PartType.CHILD);
       assert.equal(receivedValue, true);
     });
 

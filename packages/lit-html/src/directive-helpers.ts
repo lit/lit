@@ -13,6 +13,7 @@
  */
 
 import {
+  _$private,
   AttributePart,
   ChildPart,
   Part,
@@ -26,6 +27,8 @@ import {
   AttributePartInfo,
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
+
+const {_ChildPart: ChildPartImpl} = _$private;
 
 /**
  * Tests if a value is a primitive value.
@@ -102,7 +105,7 @@ export const insertPart = (
   if (part === undefined) {
     const startNode = container.insertBefore(createMarker(), refNode);
     const endNode = container.insertBefore(createMarker(), refNode);
-    part = new ChildPart(
+    part = new ChildPartImpl(
       startNode,
       endNode,
       containerPart,

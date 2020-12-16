@@ -52,4 +52,10 @@ export const _$private = {
     return committedValue;
   },
   resolveDirective: p._resolveDirective,
+  // ChildPart: p._ChildPart,
+  // AttributePart: p._AttributePart,
+  // PropertyPart: p._PropertyPart,
+  // BooleanAttributePart: p._BooleanAttributePart,
+  // EventPart: p._EventPart,
 };
+// export {AttributePart} from './lit-html.js';
