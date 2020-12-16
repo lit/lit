@@ -145,6 +145,10 @@ const prefixClassProperties = (context, nameCache, prefix) => {
       props: {props},
     } = nameCache;
     for (const p in props) {
+      // Note all properties in the terser name cache are prefixed with '$'
+      // (presumably to avoid collisions with built-ins). Checking for the
+      // prefix is just to ensure we don't double-prefix properties if
+      // `prefixClassProperties` is called twice on the same `nameCache`.
       if (p.startsWith('$__') && !props[p].startsWith(prefix)) {
         props[p] = prefix + props[p];
       }
