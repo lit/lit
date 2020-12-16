@@ -61,14 +61,15 @@ export const cache = directive(
       // or is a different Template as the previous value, move the child part
       // into the cache.
       if (
-        isTemplateResult(this.value) && 
-        (!isTemplateResult(v) || this.value.strings !== v.strings)) {
+        isTemplateResult(this.value) &&
+        (!isTemplateResult(v) || this.value.strings !== v.strings)
+      ) {
         // This is always an array because we return [v] in render()
         const partValue = getComittedValue(containerPart) as Array<ChildPart>;
         const childPart = partValue.pop()!;
         let cachedContainerPart = this.templateCache.get(this.value.strings);
         if (cachedContainerPart === undefined) {
-          const fragment = new DocumentFragment();
+          const fragment = document.createDocumentFragment();
           cachedContainerPart = render(nothing, fragment);
           this.templateCache.set(this.value.strings, cachedContainerPart);
         }
@@ -79,8 +80,10 @@ export const cache = directive(
       // If the new value is a TemplateResult and the previous value is not,
       // or is a different Template as the previous value, restore the child
       // part from the cache.
-      if (isTemplateResult(v) && 
-          (!isTemplateResult(this.value) || this.value.strings !== v.strings)) {
+      if (
+        isTemplateResult(v) &&
+        (!isTemplateResult(this.value) || this.value.strings !== v.strings)
+      ) {
         const cachedContainerPart = this.templateCache.get(v.strings);
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value

@@ -52,4 +52,8 @@ export const _$private = {
     return committedValue;
   },
   resolveDirective: p._resolveDirective,
+  AttributePart: p._AttributePart,
+  PropertyPart: p._PropertyPart,
+  BooleanAttributePart: p._BooleanAttributePart,
+  EventPart: p._EventPart,
 };
