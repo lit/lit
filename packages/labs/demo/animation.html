@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Animation</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        font-family: sans-serif;
+      }
+      main {
+        padding: 0 16px;
+      }
+    </style>
+    <h2>Animation</h2>
+    <main>
+      <my-element></my-element>
+    </main>
+    <script type="module">
+      import {LitElement, html, css} from 'lit-element/lit-element.js';
+      import {classMap} from 'lit-html/directives/class-map.js';
+      import {
+        flip,
+        flyInUp,
+        flyOutDown,
+      } from '../development/animation/flip.js';
+
+      class MyElement extends LitElement {
+        static properties = {
+          layout: {},
+          animating: {},
+        };
+
+        constructor() {
+          super();
+          this.animating = false;
+          this.layout = 0;
+        }
+
+        static styles = [
+          css`
+            .positioned-box.layout1 {
+              left: 50vw;
+              top: 50vh;
+              opacity: 0.25;
+            }
+
+            .positioned-box.layout2 {
+              left: 10vw;
+              top: 60vh;
+              opacity: 0.5;
+            }
+
+            .animation-container {
+              min-height: 50px;
+            }
+
+            .box {
+              display: inline-block;
+              position: relative;
+              border: 2px solid black;
+              background: #03dac6;
+              font-weight: 800;
+              padding: 8px;
+              margin: 4px;
+            }
+
+            .positioned-box {
+              position: absolute;
+            }
+
+            .animation-container2 {
+              min-height: 200px;
+            }
+
+            .animation-list {
+              display: inline-flex;
+              flex-direction: column;
+            }
+
+            .animation-list.layout1 {
+              flex-direction: row;
+            }
+
+            .animation-list.layout2 {
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+            }
+
+            .animation-list.layout1 > :nth-of-type(1) {
+              order: 4;
+            }
+
+            .animation-list.layout1 > :nth-of-type(2) {
+              order: 3;
+            }
+
+            .animation-list.layout1 > :nth-of-type(3) {
+              order: 2;
+            }
+
+            .animation-list.layout1 > :nth-of-type(4) {
+              order: 1;
+            }
+
+            .from-top-left {
+              transform-origin: 0 0;
+            }
+
+            .hibox.layout1 {
+              height: 176px;
+              width: 176px;
+              top: -132px;
+            }
+
+            .hibox.layout2 {
+              height: 142px;
+              width: 142px;
+              left: 200px;
+              top: -82px;
+            }
+          `,
+        ];
+
+        render() {
+          const options = {
+            animationOptions: {
+              duration: 1000,
+              easing: 'ease-in-out',
+            },
+          };
+          let layoutClass = '';
+          if (this.layout === 1) {
+            layoutClass = 'layout1';
+          } else if (this.layout === 2) {
+            layoutClass = 'layout2';
+          }
+          // const classes = {
+          //   layout1: this.layout === 1,
+          //   layout2: this.layout === 2,
+          // }
+
+          return html`
+            <button @click=${this.animate}>${
+            this.animating ? 'Stop' : 'Go'
+          }</button>
+            <section class="animation-container">
+              <div ...=${flip(
+                this,
+                options
+              )} class="box positioned-box ${layoutClass}"">Hello!</div>
+            </section>
+            <section class="animation-container2">
+              <section class="animation-list ${layoutClass}">
+                <div class="box" ...=${flip(this, options)}>Item 1</div>
+                <div class="box" ...=${flip(this, options)}>Item 2</div>
+                <div class="box" ...=${flip(this, options)}>Item 3</div>
+                <div class="box"  ...=${flip(this, options)}>Item 4</div>
+              </section>
+            </section>
+            <section>
+              <div class="hibox box from-top-left ${layoutClass}"  ...=${flip(
+            this,
+            {...options, onComplete: () => this.animationDone()}
+          )}>Hi</div>
+            </section>
+            <section>X
+              ${
+                layoutClass
+                  ? html`<div
+                      class="box"
+                      ...=${flip(this, {
+                        ...options,
+                        in: flyInUp,
+                        out: flyOutDown /*, onComplete: () => this.animationDone()*/,
+                      })}
+                    >
+                      In / Out
+                    </div>`
+                  : ''
+              }
+            </section>
+          `;
+        }
+
+        animate() {
+          this.animating = !this.animating;
+          this.changeLayoutIfAnimating();
+        }
+
+        changeLayoutIfAnimating() {
+          if (this.animating) {
+            this.layout = ++this.layout % 3;
+          }
+        }
+        animationDone() {
+          // this.animating = false;
+          setTimeout(() => {
+            this.changeLayoutIfAnimating();
+          }, 1000);
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

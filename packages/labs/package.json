@@ -20,6 +20,10 @@
     "./frameworks/": {
       "development": "./development/frameworks/",
       "default": "./frameworks/"
+    },
+    "./animation/": {
+      "development": "./development/animation/",
+      "default": "./animation/"
     }
   },
   "files": [
@@ -32,11 +36,15 @@
     "/frameworks/react/create-component.d.ts",
     "/frameworks/react/create-component.d.ts.map",
     "/frameworks/react/create-component.js",
-    "/frameworks/react/create-component.js.map"
+    "/frameworks/react/create-component.js.map",
+    "/animation/flip.d.ts",
+    "/animation/flip.d.ts.map",
+    "/animation/flip.js",
+    "/animation/flip.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/ frameworks/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/ frameworks/ animation/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",

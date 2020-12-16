@@ -15,6 +15,6 @@
 import {litProdConfig} from '../../rollup-common.js';
 
 export default litProdConfig({
-  entryPoints: ['index', 'frameworks/react/create-component'],
+  entryPoints: ['index', 'frameworks/react/create-component', 'animation/flip'],
   external: ['reactive-element', 'lit-html', 'lit-element'],
 });
