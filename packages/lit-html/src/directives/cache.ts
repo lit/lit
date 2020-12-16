@@ -59,7 +59,7 @@ export const cache = directive(
     update(containerPart: ChildPart, [v]: DirectiveParameters<this>) {
       // If the previous value is a TemplateResult and the new value is not,
       // or is a different Template as the previous value, move the child part
-      // from into the cache.
+      // into the cache.
       if (
         isTemplateResult(this.value) && 
         (!isTemplateResult(v) || this.value.strings !== v.strings)) {
@@ -75,7 +75,6 @@ export const cache = directive(
         // Move into cache
         setComittedValue(cachedContainerPart, [childPart]);
         insertPart(cachedContainerPart, undefined, childPart);
-        clearPart(containerPart);
       }
       // If the new value is a TemplateResult and the previous value is not,
       // or is a different Template as the previous value, restore the child
