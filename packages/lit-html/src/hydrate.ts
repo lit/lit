@@ -23,13 +23,20 @@ import {
   RenderOptions,
   _$private,
 } from './lit-html.js';
-import {PartType} from './directive.js';
-import {isPrimitive, isTemplateResult} from './directive-helpers.js';
+import {AttributePartInfo, PartType} from './directive.js';
+import {
+  isPrimitive,
+  isSingleExpression,
+  isTemplateResult,
+} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
+  _ChildPart: ChildPart,
+  _EventPart: EventPart,
+  _PropertyPart: PropertyPart,
 } = _$private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -368,10 +375,11 @@ const createAttributeParts = (
         options
       );
 
-      const value =
-        instancePart.strings === undefined
-          ? state.result.values[state.instancePartIndex]
-          : state.result.values;
+      const value = isSingleExpression(
+        (instancePart as unknown) as AttributePartInfo
+      )
+        ? state.result.values[state.instancePartIndex]
+        : state.result.values;
 
       // Setting the attribute value primes committed value with the resolved
       // directive value; we only then commit that value for event/property

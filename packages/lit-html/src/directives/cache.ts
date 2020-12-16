@@ -68,7 +68,7 @@ export const cache = directive(
         const childPart = partValue.pop()!;
         let cachedContainerPart = this.templateCache.get(this.value.strings);
         if (cachedContainerPart === undefined) {
-          const fragment = new DocumentFragment();
+          const fragment = document.createDocumentFragment();
           cachedContainerPart = render(nothing, fragment);
           this.templateCache.set(this.value.strings, cachedContainerPart);
         }
