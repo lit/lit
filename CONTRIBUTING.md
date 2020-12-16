@@ -56,7 +56,31 @@ We stick to subset of TypeScript that is more strict and closer to standard Java
        1. `namespace`
        2. `enum`
        3. Parameter properties (initialize class fields in the constructor parameter list)
-7.  Prefix private members with `_`. (don't assume clients are using TypeScript)
+
+## Private Property Prefixing
+
+This codebase follows some specific conventions regarding prefixing for private
+properties/fields, which serve several purposes: hiding and/or communicating
+"private" status to non-TypeScript users, allowing code-size optimization via
+object/class property minification, and ensuring compatibility between objects
+shared between different versions of the libraries on the same page.
+
+When submitting code, please take care to follow the conventions below:
+
+1. **`_` prefix for private properties** - Most`private`-annotated fields should
+   be prefixed prefixed with a single underscore, and will be minified
+   ("mangled" by Terser) to a randomly-assigned short property name. See the
+   following two cases for exceptions.
+2. **`_$` prefix for private properties on objects shared between versions** - Any
+   private property that is considered "private" to the library but could be
+   accessed by a different version of the library running on the same page
+   should be prefixed with `_$`**and** added to the list of`stableProperties` in [`rollup-common.js`](./rollup-common.js). These properties are assigned a stable minified symbol that will not change between releases. These properties are often marked with the `// @internal`annotation when it is not possible to mark them as`private` for type reasons.
+3. **`__` prefix for private fields on exported classes** - Any private fields on a class
+   intended to be subclassed outside of the package it is defined in should be
+   prefixed with a double-underscore. We use the double-underscore convention to
+   automatically assign a unicode character prefix to the randomly-assigned
+   short property name chosen by Terser to namespace private class fields by
+   package, to avoid collisions.
 
 ## Contributor License Agreement
 

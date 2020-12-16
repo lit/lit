@@ -98,7 +98,7 @@ export class LitElement extends ReactiveElement {
 
   readonly _$renderOptions: RenderOptions = {host: this};
 
-  private _$childPart: ChildPart | undefined = undefined;
+  private __childPart: ChildPart | undefined = undefined;
 
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
@@ -123,7 +123,7 @@ export class LitElement extends ReactiveElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this._$childPart = render(value, this.renderRoot, this._$renderOptions);
+    this.__childPart = render(value, this.renderRoot, this._$renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
@@ -131,12 +131,12 @@ export class LitElement extends ReactiveElement {
   // https://github.com/Polymer/lit-html/issues/1457
   connectedCallback() {
     super.connectedCallback();
-    this._$childPart?.setConnected(true);
+    this.__childPart?.setConnected(true);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this._$childPart?.setConnected(false);
+    this.__childPart?.setConnected(false);
   }
 
   /**

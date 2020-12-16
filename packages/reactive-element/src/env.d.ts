@@ -31,7 +31,7 @@ interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   litElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  litHtmlPlatformSupport: (options: {[index: string]: any}) => void;
+  litHtmlPlatformSupport: (template: unknown, childPart: unknown) => void;
 }
 
 // Augment existing types with styling API

@@ -13,9 +13,9 @@
  */
 import {
   AttributePart,
+  ChildPart,
   html,
   noChange,
-  ChildPart,
   nothing,
   render,
   RenderOptions,
@@ -24,7 +24,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {directive, Directive, PartType} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -1478,7 +1478,7 @@ suite('lit-html', () => {
       };
       go(true);
       assertContent('<div>true</div>');
-      assert.instanceOf(receivedPart!, ChildPart);
+      assert.equal(receivedPart!.type, PartType.CHILD);
       assert.equal(receivedValue, true);
     });
 
