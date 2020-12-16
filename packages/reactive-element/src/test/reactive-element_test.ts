@@ -2204,7 +2204,7 @@ suite('ReactiveElement', () => {
               setTimeout(() => {
                 this.promiseFulfilled = true;
                 resolve(true);
-              }, 1);
+              }, 0);
             }))
           );
         })();
@@ -2234,7 +2234,7 @@ suite('ReactiveElement', () => {
               setTimeout(() => {
                 this.promiseFulfilled = true;
                 resolve(true);
-              }, 1)
+              }, 0)
             )
         );
       }
@@ -2324,7 +2324,7 @@ suite('ReactiveElement', () => {
     assert.isFalse(a.updateCalled);
 
     // update is not called after a small amount of time
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 0));
     assert.isFalse(a.updateCalled);
 
     // update is called after performUpdate allowed to complete
@@ -2384,7 +2384,7 @@ suite('ReactiveElement', () => {
     }
     customElements.define(generateElementName(), A);
     const a = new A();
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 0));
     assert.equal(a.updatedCalledCount, 0);
     container.appendChild(a);
     await a.updateComplete;
@@ -2406,7 +2406,7 @@ suite('ReactiveElement', () => {
       updated = true;
       assert.isTrue(a.didUpdate);
     });
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 0));
     assert.isFalse(updated);
     container.appendChild(a);
     await a.updateComplete;
