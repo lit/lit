@@ -81,6 +81,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [Breaking] (since 2.0.0-pre.3) The part exports (`ChildPart`,
   `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
 
+- [Breaking] (since 2.0.0-pre.3) The `setPartValue` function in
+  `directove-helpers.js` has been renamed to `setChildPartValue` and now only
+  supports ChildParts. Directives that require updating their container
+  part outside the `render`/`update` lifecycle should extend
+  `DisconnectableDirective` and use `this.setValue()`.
+
   <!-- ### Fixed -->
   <!-- ### Removed -->
 

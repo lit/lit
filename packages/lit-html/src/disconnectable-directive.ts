@@ -125,10 +125,17 @@
  * `isConnectd: true` down the tree, signaling which callback to run.
  */
 
-import {ChildPart, Disconnectable, noChange} from './lit-html.js';
-import {setPartValue} from './directive-helpers.js';
+import {
+  AttributePart,
+  ChildPart,
+  Disconnectable,
+  noChange,
+} from './lit-html.js';
+import {isSingleExpression} from './directive-helpers.js';
 import {Directive, PartInfo, PartType} from './directive.js';
 export {directive} from './directive.js';
+
+const DEV_MODE = true;
 
 /**
  * Recursively walks down the tree of Parts/TemplateInstances/Directives to set
@@ -359,7 +366,18 @@ export abstract class DisconnectableDirective extends Directive {
    */
   setValue(value: unknown) {
     if (this.isConnected) {
-      setPartValue(this.__part, value, this.__attributeIndex, this);
+      if (isSingleExpression((this.__part as unknown) as PartInfo)) {
+        this.__part._$setValue(value, this);
+      } else {
+        // this.__attributeIndex will be defined in this case, but
+        // assert it in dev mode
+        if (DEV_MODE && this.__attributeIndex === undefined) {
+          throw new Error(`Expected this.__attributeIndex to be a number`);
+        }
+        const newValues = [...(this.__part._$committedValue as Array<unknown>)];
+        newValues[this.__attributeIndex!] = value;
+        (this.__part as AttributePart)._$setValue(newValues, this, 0);
+      }
     } else {
       this._pendingValue = value;
     }
