@@ -2230,7 +2230,7 @@ suite('ReactiveElement', () => {
       get updateComplete() {
         return super.updateComplete.then(
           () =>
-            new Promise((resolve) =>
+            new Promise<boolean>((resolve) =>
               setTimeout(() => {
                 this.promiseFulfilled = true;
                 resolve(true);
@@ -2294,7 +2294,7 @@ suite('ReactiveElement', () => {
   });
 
   test('can override performUpdate()', async () => {
-    let resolve: (() => void) | undefined;
+    let resolve: ((value?: unknown) => void) | undefined;
 
     class A extends ReactiveElement {
       performUpdateCalled = false;
@@ -2680,7 +2680,7 @@ suite('ReactiveElement', () => {
         }
 
         performUpdate() {
-          return new Promise((resolve, reject) => {
+          return new Promise<void>((resolve, reject) => {
             super.performUpdate();
             if (shouldThrow) {
               reject();

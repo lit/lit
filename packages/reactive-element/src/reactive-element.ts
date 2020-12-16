@@ -624,7 +624,7 @@ export abstract class ReactiveElement extends HTMLElement {
   // connected before first update.
   private __updatePromise!: Promise<unknown>;
 
-  private __pendingConnectionPromise: Promise<unknown> | undefined = undefined;
+  private __pendingConnectionPromise: Promise<void> | undefined = undefined;
   private __enableConnection: (() => void) | undefined = undefined;
 
   isUpdatePending = false;
@@ -653,7 +653,9 @@ export abstract class ReactiveElement extends HTMLElement {
 
   constructor() {
     super();
-    this.__updatePromise = new Promise((res) => (this.enableUpdating = res));
+    this.__updatePromise = new Promise<void>(
+      (res) => (this.enableUpdating = res)
+    );
     this.__changedProperties = new Map();
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
