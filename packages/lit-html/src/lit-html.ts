@@ -124,7 +124,7 @@ const isArray = Array.isArray;
 const isIterable = (value: unknown): value is Iterable<unknown> =>
   isArray(value) ||
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (value && typeof (value as any)[Symbol.iterator] === 'function');
+  typeof (value as any)?.[Symbol.iterator] === 'function';
 
 // TODO (justinfagnani): can we get away with `\s`?
 const SPACE_CHAR = `[ \t\n\f\r]`;
