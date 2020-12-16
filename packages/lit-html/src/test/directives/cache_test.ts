@@ -97,7 +97,7 @@ suite('cache directive', () => {
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
   });
 
-  test.only('cache can be dynamic', () => {
+  test('cache can be dynamic', () => {
     const renderMaybeCached = (condition: any, v: string) =>
       render(
         html`${condition ? cache(html`<div v=${v}></div>`) : v}`,
