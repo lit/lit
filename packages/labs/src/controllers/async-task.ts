@@ -20,6 +20,41 @@ export type Deps = Array<any>;
 export type DepsFunction = () => Deps;
 
 /**
+ * States for task status
+ */
+export const TaskStatus = {
+  INITIAL: 0,
+  PENDING: 1,
+  COMPLETE: 2,
+  ERROR: 3,
+} as const;
+
+export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
+
+export type StatusRenderer = {
+  initial?: () => unknown;
+  pending?: () => unknown;
+  complete?: (value: unknown) => unknown;
+  error?: (error: unknown) => unknown;
+};
+
+// TODO(sorvell): Some issues:
+// 1. When task is triggered in `updated`, this generates a ReactiveElement
+// warning that the update was triggered in response to an update.
+// 2. And as a result of triggering in `updated`, if the user waits for the
+// `updateComplete` promise they will not see a `pending` state since this
+// will be triggered in another update; they would need to
+// `while (!(await el.updateComplete));`.
+// 3. If this is instead or additionally triggered in `willUpdate`, the
+// warning goes away in the common case that the update itself does not change
+// the deps; however, the `requestUpdate` to render pending state  will not
+// trigger another update since the element is updating. This `requestUpdate`
+// could be triggered in updated, but that results in the same issue as #2.
+// 4. There is no good signal for when the task has resolved and rendered other
+// than requestAnimationFrame. The user would need to store a promise for the
+// task and then wait for that and the element to update.
+
+/**
  * A controller that performs an asynchronous task like a fetch when its host
  * element updates. The controller then performs an update on the host element
  * when the task completes. The task function must be supplied and can take a
@@ -52,42 +87,74 @@ export type DepsFunction = () => Deps;
 export class AsyncTask {
   private _previousDeps: Deps = [];
   private _task: TaskFunction;
-  private _dependencies: DepsFunction;
+  private _getDependencies: DepsFunction;
   private _callId = 0;
-  isPending = false;
-  host: ReactiveElement;
-  value: unknown;
+  private _host: ReactiveElement;
+  private _value?: unknown;
+  private _error?: unknown;
+  status: TaskStatus = TaskStatus.INITIAL;
 
   constructor(
     host: ReactiveElement,
     task: TaskFunction,
-    dependencies: DepsFunction,
-    value: unknown
+    getDependencies: DepsFunction
   ) {
-    this.host = host;
-    this.host.addController(this);
+    this._host = host;
+    this._host.addController(this);
     this._task = task;
-    this._dependencies = dependencies;
-    this.value = value;
+    this._getDependencies = getDependencies;
   }
 
   updated() {
-    this.completeTask();
+    this._completeTask();
   }
 
-  async completeTask() {
-    const deps = this._dependencies();
+  private async _completeTask() {
+    const deps = this._getDependencies();
     if (this._isDirty(deps)) {
-      this.isPending = true;
+      this.status = TaskStatus.PENDING;
+      this._error = undefined;
+      this._value = undefined;
+      let value: unknown;
+      let error: unknown;
+      // Request an update to report pending state.
+      this._host.requestUpdate();
       const key = ++this._callId;
-      const value = await this._task(...deps);
+      try {
+        value = await this._task(deps);
+      } catch (e) {
+        error = e;
+      }
       // If this is the most recent task call, process this value.
       if (this._callId === key) {
-        this.value = value;
-        this.isPending = false;
+        this.status =
+          error === undefined ? TaskStatus.COMPLETE : TaskStatus.ERROR;
+        this._value = value;
+        this._error = error;
         // Request an update with the final value.
-        this.host.requestUpdate();
+        this._host.requestUpdate();
       }
+    }
+  }
+
+  get value() {
+    return this._value;
+  }
+
+  get error() {
+    return this._error;
+  }
+
+  render(renderer: StatusRenderer) {
+    switch (this.status) {
+      case TaskStatus.INITIAL:
+        return renderer.initial?.();
+      case TaskStatus.PENDING:
+        return renderer.pending?.();
+      case TaskStatus.COMPLETE:
+        return renderer.complete?.(this.value);
+      case TaskStatus.ERROR:
+        return renderer.error?.(this.error);
     }
   }
 
