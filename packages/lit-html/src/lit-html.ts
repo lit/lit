@@ -1405,12 +1405,12 @@ export const _$private = {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
-  // Used in tests
-  _AttributePart: AttributePartImpl,
-  _BooleanAttributePart: BooleanAttributePartImpl,
+  // Used in tests and private-ssr-support
   _ChildPart: ChildPartImpl,
-  _EventPart: EventPartImpl,
-  _PropertyPart: PropertyPartImpl,
+  _AttributePart: AttributePartImpl as AttributePartConstructor,
+  _BooleanAttributePart: BooleanAttributePartImpl as AttributePartConstructor,
+  _EventPart: EventPartImpl as AttributePartConstructor,
+  _PropertyPart: PropertyPartImpl as AttributePartConstructor,
 };
 
 // Apply polyfills if available

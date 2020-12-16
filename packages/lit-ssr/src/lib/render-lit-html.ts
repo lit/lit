@@ -17,7 +17,7 @@
 // Type-only imports
 import {TemplateResult, ChildPart} from 'lit-html';
 
-import {nothing, noChange, _$private as litPrivate} from 'lit-html';
+import {nothing, noChange} from 'lit-html';
 import {PartType} from 'lit-html/directive.js';
 import {isTemplateResult} from 'lit-html/directive-helpers.js';
 import {_$private} from 'lit-html/private-ssr-support.js';
@@ -30,14 +30,11 @@ const {
   patchDirectiveResolve,
   getAtributePartCommittedValue,
   resolveDirective,
+  AttributePart,
+  PropertyPart,
+  BooleanAttributePart,
+  EventPart,
 } = _$private;
-
-const {
-  _AttributePart: AttributePart,
-  _PropertyPart: PropertyPart,
-  _BooleanAttributePart: BooleanAttributePart,
-  _EventPart: EventPart,
-} = litPrivate;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
 
