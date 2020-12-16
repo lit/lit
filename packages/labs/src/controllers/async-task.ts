@@ -13,10 +13,8 @@
  */
 import {ReactiveElement, notEqual} from 'reactive-element';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TaskFunction = (...args: Array<any>) => any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Deps = Array<any>;
+export type TaskFunction = (args: Array<unknown>) => unknown;
+export type Deps = Array<unknown>;
 export type DepsFunction = () => Deps;
 
 /**
