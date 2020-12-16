@@ -1458,7 +1458,7 @@ suite('lit-html', () => {
       assertContent('<div>B:3</div>');
     });
 
-    test.only('directives can update', () => {
+    test('directives can update', () => {
       let receivedPart: ChildPart;
       let receivedValue: unknown;
 
