@@ -2203,7 +2203,7 @@ suite('ReactiveElement', () => {
             (await new Promise((resolve) => {
               setTimeout(() => {
                 this.promiseFulfilled = true;
-                resolve();
+                resolve(true);
               }, 1);
             }))
           );
