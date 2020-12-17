@@ -23,13 +23,20 @@ import {
   RenderOptions,
   _$private,
 } from './lit-html.js';
-import {PartType} from './directive.js';
-import {isPrimitive, isTemplateResult} from './directive-helpers.js';
+import {AttributePartInfo, PartType} from './directive.js';
+import {
+  isPrimitive,
+  isSingleExpression,
+  isTemplateResult,
+} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
+  _ChildPart: ChildPart,
+  _EventPart: EventPart,
+  _PropertyPart: PropertyPart,
 } = _$private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -123,9 +130,9 @@ export const hydrate = (
   container: Element | DocumentFragment,
   options: Partial<RenderOptions> = {}
 ) => {
-  // TODO(kschaaf): Do we need a helper for $lit$ ("part for node")?
+  // TODO(kschaaf): Do we need a helper for _$litPart ("part for node")?
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((container as any).$lit$ !== undefined) {
+  if ((container as any)._$litPart !== undefined) {
     throw new Error('container already contains a live render');
   }
 
@@ -178,7 +185,7 @@ export const hydrate = (
     'there should be exactly one root part in a render container'
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (container as any).$lit$ = rootPart;
+  (container as any)._$litPart = rootPart;
 };
 
 const openChildPart = (
@@ -368,10 +375,11 @@ const createAttributeParts = (
         options
       );
 
-      const value =
-        instancePart.strings === undefined
-          ? state.result.values[state.instancePartIndex]
-          : state.result.values;
+      const value = isSingleExpression(
+        (instancePart as unknown) as AttributePartInfo
+      )
+        ? state.result.values[state.instancePartIndex]
+        : state.result.values;
 
       // Setting the attribute value primes committed value with the resolved
       // directive value; we only then commit that value for event/property

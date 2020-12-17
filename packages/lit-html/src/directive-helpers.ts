@@ -13,7 +13,7 @@
  */
 
 import {
-  AttributePart,
+  _$private,
   ChildPart,
   Part,
   DirectiveParent,
@@ -26,6 +26,8 @@ import {
   AttributePartInfo,
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
+
+const {_ChildPart: ChildPartImpl} = _$private;
 
 /**
  * Tests if a value is a primitive value.
@@ -102,7 +104,7 @@ export const insertPart = (
   if (part === undefined) {
     const startNode = container.insertBefore(createMarker(), refNode);
     const endNode = container.insertBefore(createMarker(), refNode);
-    part = new ChildPart(
+    part = new ChildPartImpl(
       startNode,
       endNode,
       containerPart,
@@ -139,24 +141,12 @@ export const insertPart = (
  * @param index For `AttributePart`s, the index to set
  * @param directiveParent Used internally; should not be set by user
  */
-export const setPartValue = <T extends Part>(
+export const setChildPartValue = <T extends ChildPart>(
   part: T,
   value: unknown,
-  index?: number,
   directiveParent: DirectiveParent = part
 ): T => {
-  if ((part as AttributePart).strings !== undefined) {
-    if (index === undefined) {
-      throw new Error(
-        "An index must be provided to set an AttributePart's value."
-      );
-    }
-    const newValues = [...(part._$committedValue as Array<unknown>)];
-    newValues[index] = value;
-    (part as AttributePart)._$setValue(newValues, directiveParent, 0);
-  } else {
-    part._$setValue(value, directiveParent);
-  }
+  part._$setValue(value, directiveParent);
   return part;
 };
 

@@ -59,7 +59,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     );
     const el = document.createElement(name);
     container.appendChild(el);
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         assert.ok(el.shadowRoot);
         assert.equal(

@@ -25,7 +25,7 @@ import {queryParams} from '../../utils/query-params.js';
   // wait until after page loads
   if (document.readyState !== 'complete') {
     let resolve: () => void;
-    const p = new Promise((r) => (resolve = r));
+    const p = new Promise<void>((r) => (resolve = r));
     document.addEventListener('readystatechange', async () => {
       if (document.readyState === 'complete') {
         resolve();
