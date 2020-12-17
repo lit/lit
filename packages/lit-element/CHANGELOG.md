@@ -37,7 +37,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - [Breaking] `UpdatingElement` has been renamed to `ReactiveElement`.
-- [Breaking] The `updating-element` package has been renamed to `reactive-element`.
+- [Breaking] The `updating-element` package has been renamed to
+  `@lit/reactive-element`.
 - [Breaking] The `@internalProperty` decorator has been renamed to `@state`.
 - [Breaking] Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledrejection` event handler on window.
 - [Breaking] `UpdatingElement` has been moved to its own package. The `updating-element`, `css-tag`, and all `decorators` have moved to the `updating-element` package. For convenience, all decorators are re-exported in `LitElement` at `lit-element/decorators` and `lit-element/decorators/*`.

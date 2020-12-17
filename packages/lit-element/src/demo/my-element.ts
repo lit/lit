@@ -1,9 +1,9 @@
 // TODO(sorvell): rollup problem: it's trying to import all of this from
-// reactive-element, but importing separately works.
+// @lit/reactive-element, but importing separately works.
 // import { LitElement, html, css, PropertyValues } from '../lit-element.js';
 import {LitElement} from '../lit-element.js';
 import {html} from 'lit-html';
-import {css, PropertyValues} from 'reactive-element';
+import {css, PropertyValues} from '@lit/reactive-element';
 import {property} from '../decorators/property.js';
 
 class AnotherElement extends LitElement {

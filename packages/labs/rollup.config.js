@@ -21,5 +21,5 @@ export default litProdConfig({
     'frameworks/react/create-component',
     'controllers/async-task',
   ],
-  external: ['reactive-element', 'lit-html', 'lit-element'],
+  external: ['@lit/reactive-element', 'lit-html', 'lit-element'],
 });

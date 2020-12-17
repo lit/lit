@@ -38,7 +38,7 @@
     "lit-element": "^3.0.0-pre.2",
     "lit-html": "^2.0.0-pre.4",
     "tachometer": "^0.5.3",
-    "reactive-element": "^1.0.0-pre.1"
+    "@lit/reactive-element": "^1.0.0-pre.1"
   },
   "devDependencies": {
     "chromedriver": "^87.0.1",

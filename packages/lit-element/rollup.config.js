@@ -31,7 +31,7 @@ export default litProdConfig({
     'decorators/queryAsync',
     'demo/my-element',
   ],
-  external: ['lit-html', 'reactive-element'],
+  external: ['lit-html', '@lit/reactive-element'],
   bundled: [
     {
       file: 'platform-support',
