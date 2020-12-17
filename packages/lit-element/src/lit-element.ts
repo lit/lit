@@ -75,7 +75,7 @@ declare global {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 (window['litElementVersions'] || (window['litElementVersions'] = [])).push(
-  '3.0.0-pre.1'
+  '3.0.0-pre.2'
 );
 
 /**
