@@ -48,7 +48,6 @@
     "deepmerge": "^4.2.2",
     "koa-cors": "^0.0.16",
     "mocha": "^7.1.1",
-    "prettier": "^1.19.1",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",
     "tape-promise": "^4.0.0",
