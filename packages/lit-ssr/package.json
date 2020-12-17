@@ -11,9 +11,9 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:integration": "node --experimental-vm-modules test/integration/test.js",
     "test:unit": "node --experimental-vm-modules ./test/all-tests.js | tap-spec",
-    "link:dev": "rm -f node_modules/{lit-html,reactive-element,lit-element} && ln -s ../../lit-html/development node_modules/lit-html && ln -sf ../package.json ../lit-html/development/package.json && ln -s ../../reactive-element/development node_modules/reactive-element && ln -sf ../package.json ../reactive-element/development/package.json && ln -s ../../lit-element/development node_modules/lit-element && ln -sf ../package.json ../lit-element/development/package.json",
-    "link:prod": "rm -f node_modules/{lit-html,reactive-element,lit-element} && ln -s ../../lit-html node_modules/lit-html && ln -s ../../reactive-element node_modules/reactive-element && ln -s ../../lit-element node_modules/lit-element",
-    "link:check": "ls -l node_modules/{lit-html,reactive-element,lit-element}"
+    "link:dev": "rm -f node_modules/{lit-html,@lit/reactive-element,lit-element} && ln -s ../../lit-html/development node_modules/lit-html && ln -sf ../package.json ../lit-html/development/package.json && ln -s ../../reactive-element/development node_modules/@lit/reactive-element && ln -sf ../package.json ../reactive-element/development/package.json && ln -s ../../lit-element/development node_modules/lit-element && ln -sf ../package.json ../lit-element/development/package.json",
+    "link:prod": "rm -f node_modules/{lit-html,@lit/reactive-element,lit-element} && ln -s ../../lit-html node_modules/lit-html && ln -s ../../reactive-element node_modules/@lit/reactive-element && ln -s ../../lit-element node_modules/lit-element",
+    "link:check": "ls -l node_modules/{lit-html,@lit/reactive-element,lit-element}"
   },
   "files": [
     "/lib/",

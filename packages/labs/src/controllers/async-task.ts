@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {ReactiveElement, notEqual} from 'reactive-element';
+import {ReactiveElement, notEqual} from '@lit/reactive-element';
 
 export type TaskFunction = (args: Array<unknown>) => unknown;
 export type Deps = Array<unknown>;

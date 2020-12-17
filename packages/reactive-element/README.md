@@ -39,7 +39,7 @@ import {
   customElement,
   property,
   PropertyValues,
-} from 'reactive-element';
+} from '@lit/reactive-element';
 
 // This decorator defines the element.
 @customElement('my-element')
@@ -94,7 +94,7 @@ standard currently available in [TypeScript](https://www.typescriptlang.org/) or
 From inside your project folder, run:
 
 ```bash
-$ npm install reactive-element
+$ npm install @lit/reactive-element
 ```
 
 To install the web components polyfills needed for older browsers:
@@ -105,7 +105,7 @@ $ npm i -D @webcomponents/webcomponentsjs
 
 ## Development mode
 
-reactive-element includes a development mode which adds additional checks that are
+@lit/reactive-element includes a development mode which adds additional checks that are
 reported in the console.
 
 To enable development mode, add the `development` exports condition to your node

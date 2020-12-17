@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ReactiveElement, PropertyValues} from 'reactive-element';
-import {property} from 'reactive-element/decorators/property.js';
+import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
+import {property} from '@lit/reactive-element/decorators/property.js';
 import {AsyncTask, TaskStatus} from '../../controllers/async-task.js';
 import {generateElementName, nextFrame} from '../test-helpers';
 import {assert} from '@esm-bundle/chai';

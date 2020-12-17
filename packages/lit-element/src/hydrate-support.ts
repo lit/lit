@@ -18,7 +18,7 @@
  * @packageDocumentation
  */
 
-import {PropertyValues, ReactiveElement} from 'reactive-element';
+import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
 import {render} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
 

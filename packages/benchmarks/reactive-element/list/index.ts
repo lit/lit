@@ -17,8 +17,8 @@ import {
   PropertyValues,
   css,
   Controller,
-} from 'reactive-element';
-import {property} from 'reactive-element/decorators.js';
+} from '@lit/reactive-element';
+import {property} from '@lit/reactive-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
 
 (async () => {
