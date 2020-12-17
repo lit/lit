@@ -20,7 +20,7 @@ From inside your project folder, run:
 <!-- TODO(sorvell): This is likely not the correct package name. Update it when decided. -->
 
 ```bash
-$ npm install lit-labs
+$ npm install @lit/labs
 ```
 
 ## Contributing
