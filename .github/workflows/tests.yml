@@ -129,5 +129,6 @@ jobs:
           # causes flakiness where the second test job (dev vs prod) fails to
           # set up the Sauce tunnel (maybe something to do with browsers still
           # shutting down on the Sauce VM from the previous run?).
-          CONCURRENT_BROWSERS: 2
+          # Set to 1 to try to reduce flakiness
+          CONCURRENT_BROWSERS: 1
         run: npm run test
