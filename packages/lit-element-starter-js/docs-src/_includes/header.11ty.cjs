@@ -1,4 +1,4 @@
-module.exports = function(data) {
+module.exports = function (data) {
   return `
 <header>
   <h1>&lt;my-element></h1>

@@ -1,6 +1,6 @@
 const relative = require('./relative-path.cjs');
 
-module.exports = function({page}) {
+module.exports = function ({page}) {
   return `
 <nav>
   <a href="${relative(page.url, '/')}">Home</a>

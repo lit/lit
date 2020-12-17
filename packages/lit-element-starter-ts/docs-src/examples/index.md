@@ -19,10 +19,10 @@ description: A basic example
 <h3>CSS</h3>
 
 ```css
-  p {
-    border: solid 1px blue;
-    padding: 8px;
-  }
+p {
+  border: solid 1px blue;
+  padding: 8px;
+}
 ```
 
 <h3>HTML</h3>
