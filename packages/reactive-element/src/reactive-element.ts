@@ -540,9 +540,8 @@ export abstract class ReactiveElement extends HTMLElement {
         if (obj[name] !== undefined) {
           console.warn(
             `\`${name}\` is implemented. It ` +
-              `has been removed from this version of ReactiveElement. `
-            // TODO(sorvell): add link to changelog when location has stabilized.
-            // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
+              `has been removed from this version of ReactiveElement.` +
+              ` See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
           );
         }
       };
@@ -624,7 +623,7 @@ export abstract class ReactiveElement extends HTMLElement {
   // connected before first update.
   private __updatePromise!: Promise<unknown>;
 
-  private __pendingConnectionPromise: Promise<unknown> | undefined = undefined;
+  private __pendingConnectionPromise: Promise<void> | undefined = undefined;
   private __enableConnection: (() => void) | undefined = undefined;
 
   isUpdatePending = false;
@@ -653,7 +652,9 @@ export abstract class ReactiveElement extends HTMLElement {
 
   constructor() {
     super();
-    this.__updatePromise = new Promise((res) => (this.enableUpdating = res));
+    this.__updatePromise = new Promise<void>(
+      (res) => (this.enableUpdating = res)
+    );
     this.__changedProperties = new Map();
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
@@ -1154,3 +1155,16 @@ if (DEV_MODE) {
     }
   };
 }
+
+declare global {
+  interface Window {
+    reactiveElementVersions: string[];
+  }
+}
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for ReactiveElement usage.
+// TODO(justinfagnani): inject version number at build time
+(
+  window['reactiveElementVersions'] || (window['reactiveElementVersions'] = [])
+).push('1.0.0-pre.1');

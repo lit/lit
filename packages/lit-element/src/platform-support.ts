@@ -29,7 +29,7 @@
  * @packageDocumentation
  */
 
-import 'reactive-element/platform-support.js';
+import '@lit/reactive-element/platform-support.js';
 import 'lit-html/platform-support.js';
 
 const needsPlatformSupport = !!(

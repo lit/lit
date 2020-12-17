@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ReactiveElement} from 'reactive-element';
-import {property} from 'reactive-element/decorators/property.js';
-import {customElement} from 'reactive-element/decorators/customElement.js';
+import {ReactiveElement} from '@lit/reactive-element';
+import {property} from '@lit/reactive-element/decorators/property.js';
+import {customElement} from '@lit/reactive-element/decorators/customElement.js';
 import * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';

@@ -11,7 +11,7 @@
   "devDependencies": {
     "@web/dev-server-legacy": "^0.1.4",
     "@web/dev-server-rollup": "^0.2.7",
-    "@web/test-runner": "^0.7.39",
+    "@web/test-runner": "^0.10.2",
     "@web/test-runner-playwright": "^0.5.7",
     "@web/test-runner-saucelabs": "0.0.9",
     "@webcomponents/webcomponentsjs": "^2.5.0"

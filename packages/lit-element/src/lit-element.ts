@@ -54,9 +54,9 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, ReactiveElement} from 'reactive-element';
+import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
 import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
-export * from 'reactive-element';
+export * from '@lit/reactive-element';
 export * from 'lit-html';
 
 // For backwards compatibility export ReactiveElement as UpdatingElement. Note,
@@ -75,7 +75,7 @@ declare global {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 (window['litElementVersions'] || (window['litElementVersions'] = [])).push(
-  '3.0.0-pre.1'
+  '3.0.0-pre.2'
 );
 
 /**
@@ -92,7 +92,7 @@ export class LitElement extends ReactiveElement {
    * it will not needlessly try to `finalize`.
    *
    * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See reactive-element for more information.
+   * optimizations. See @lit/reactive-element for more information.
    */
   protected static ['finalized'] = true;
 

@@ -14,7 +14,6 @@
 
 import {
   _$private,
-  AttributePart,
   ChildPart,
   Part,
   DirectiveParent,
@@ -142,24 +141,12 @@ export const insertPart = (
  * @param index For `AttributePart`s, the index to set
  * @param directiveParent Used internally; should not be set by user
  */
-export const setPartValue = <T extends Part>(
+export const setChildPartValue = <T extends ChildPart>(
   part: T,
   value: unknown,
-  index?: number,
   directiveParent: DirectiveParent = part
 ): T => {
-  if ((part as AttributePart).strings !== undefined) {
-    if (index === undefined) {
-      throw new Error(
-        "An index must be provided to set an AttributePart's value."
-      );
-    }
-    const newValues = [...(part._$committedValue as Array<unknown>)];
-    newValues[index] = value;
-    (part as AttributePart)._$setValue(newValues, directiveParent, 0);
-  } else {
-    part._$setValue(value, directiveParent);
-  }
+  part._$setValue(value, directiveParent);
   return part;
 };
 

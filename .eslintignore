@@ -22,6 +22,7 @@ packages/labs/development/
 packages/labs/node_modules/
 packages/labs/index.*
 packages/labs/frameworks/
+packages/labs/controllers/
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts

@@ -17,15 +17,15 @@ import {
   PropertyValues,
   css,
   Controller,
-} from 'reactive-element';
-import {property} from 'reactive-element/decorators.js';
+} from '@lit/reactive-element';
+import {property} from '@lit/reactive-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
 
 (async () => {
   // wait until after page loads
   if (document.readyState !== 'complete') {
     let resolve: () => void;
-    const p = new Promise((r) => (resolve = r));
+    const p = new Promise<void>((r) => (resolve = r));
     document.addEventListener('readystatechange', async () => {
       if (document.readyState === 'complete') {
         resolve();

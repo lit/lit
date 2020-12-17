@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-pre.1",
+  "version": "3.0.0-pre.2",
   "publishConfig": {
     "access": "public"
   },
@@ -76,8 +76,8 @@
     "!/src/test/"
   ],
   "dependencies": {
-    "lit-html": "^2.0.0-pre.3",
-    "reactive-element": "^1.0.0-pre.1"
+    "lit-html": "^2.0.0-pre.4",
+    "@lit/reactive-element": "^1.0.0-pre.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -94,7 +94,7 @@
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",
     "tslib": "^2.0.3",
-    "typescript": "^4.0.2"
+    "typescript": "^4.1.3"
   },
   "typings": "lit-element.d.ts",
   "directories": {

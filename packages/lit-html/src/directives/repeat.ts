@@ -19,7 +19,7 @@ import {
   getComittedValue,
   removePart,
   setComittedValue,
-  setPartValue,
+  setChildPartValue,
 } from '../directive-helpers.js';
 
 export type KeyFn<T> = (item: T, index: number) => unknown;
@@ -348,7 +348,7 @@ class RepeatDirective extends Directive {
         oldTail--;
       } else if (oldKeys[oldHead] === newKeys[newHead]) {
         // Old head matches new head; update in place
-        newParts[newHead] = setPartValue(
+        newParts[newHead] = setChildPartValue(
           oldParts[oldHead]!,
           newValues[newHead]
         );
@@ -356,7 +356,7 @@ class RepeatDirective extends Directive {
         newHead++;
       } else if (oldKeys[oldTail] === newKeys[newTail]) {
         // Old tail matches new tail; update in place
-        newParts[newTail] = setPartValue(
+        newParts[newTail] = setChildPartValue(
           oldParts[oldTail]!,
           newValues[newTail]
         );
@@ -364,7 +364,7 @@ class RepeatDirective extends Directive {
         newTail--;
       } else if (oldKeys[oldHead] === newKeys[newTail]) {
         // Old head matches new tail; update and move to new tail
-        newParts[newTail] = setPartValue(
+        newParts[newTail] = setChildPartValue(
           oldParts[oldHead]!,
           newValues[newTail]
         );
@@ -373,7 +373,7 @@ class RepeatDirective extends Directive {
         newTail--;
       } else if (oldKeys[oldTail] === newKeys[newHead]) {
         // Old tail matches new head; update and move to new head
-        newParts[newHead] = setPartValue(
+        newParts[newHead] = setChildPartValue(
           oldParts[oldTail]!,
           newValues[newHead]
         );
@@ -405,11 +405,11 @@ class RepeatDirective extends Directive {
             // No old part for this value; create a new one and
             // insert it
             const newPart = insertPart(containerPart, oldParts[oldHead]!);
-            setPartValue(newPart, newValues[newHead]);
+            setChildPartValue(newPart, newValues[newHead]);
             newParts[newHead] = newPart;
           } else {
             // Reuse old part
-            newParts[newHead] = setPartValue(oldPart, newValues[newHead]);
+            newParts[newHead] = setChildPartValue(oldPart, newValues[newHead]);
             insertPart(containerPart, oldParts[oldHead]!, oldPart);
             // This marks the old part as having been used, so that
             // it will be skipped in the first two checks above
@@ -424,7 +424,7 @@ class RepeatDirective extends Directive {
       // For all remaining additions, we insert before last new
       // tail, since old pointers are no longer valid
       const newPart = insertPart(containerPart, newParts[newTail + 1]);
-      setPartValue(newPart, newValues[newHead]);
+      setChildPartValue(newPart, newValues[newHead]);
       newParts[newHead++] = newPart;
     }
     // Remove any remaining unused old parts

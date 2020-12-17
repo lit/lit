@@ -124,7 +124,7 @@ const isArray = Array.isArray;
 const isIterable = (value: unknown): value is Iterable<unknown> =>
   isArray(value) ||
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (value && typeof (value as any)[Symbol.iterator] === 'function');
+  typeof (value as any)?.[Symbol.iterator] === 'function';
 
 // TODO (justinfagnani): can we get away with `\s`?
 const SPACE_CHAR = `[ \t\n\f\r]`;
@@ -303,11 +303,11 @@ export const render = (
 ): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any).$lit$;
+  let part: ChildPart = (partOwnerNode as any)._$litPart;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any).$lit$ = part = new ChildPartImpl(
+    (partOwnerNode as any)._$litPart = part = new ChildPartImpl(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -1421,4 +1421,4 @@ export const _$private = {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.3');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.4');
