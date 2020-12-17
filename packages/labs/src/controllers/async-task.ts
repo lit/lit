@@ -54,31 +54,32 @@ export type StatusRenderer = {
 
 /**
  * A controller that performs an asynchronous task like a fetch when its host
- * element updates. The controller then performs an update on the host element
- * when the task completes. The task function must be supplied and can take a
- * list of dependencies. The `value` can be initially set and is updated with
- * the result of the task when it's complete. The `isPending` property can be
- * read to determine the task's state, and the `completeTask()` promise
- * resolves when the task completes. Here's an example:
+ * element updates. The controller performs an update on the host element
+ * when the task becomes pending and when it completes. The task function must
+ * be supplied and can take a list of dependencies specified as a function that
+ * returns a list of values. The `value` property reports the completed value,
+ * and the `error` property an error state if one occurs. The `status` property
+ * can be checked for status and is of type `TaskStatus` which has states for
+ * initial, pending, complete, and error. The `render` method accepts an
+ * object with optional corresponding state method to easily render values
+ * corresponding to the task state.
  *
  * class MyElement extends ReactiveElement {
  *   url = 'example.com/api';
  *   id = 0;
  *   task = new AsyncTask(
  *     this,
- *     (url, id) =>
+ *     ([url, id]) =>
  *       fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
- *     () => [this.id, this.url],
- *     'initial value'
+ *     () => [this.id, this.url]
  *   );
  *
  *   update(changedProperties) {
  *     super.update(changedProperties);
- *     if (this.task.isPending) {
- *       console.log('task pending');
- *     } else {
- *       console.log('task value', this.task.value);
- *     }
+ *     this.task.render({
+ *       pending: () => console.log('task pending'),
+ *       complete: (value) => console.log('task value', value);
+ *     });
  *   }
  * }
  */
