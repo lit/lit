@@ -20,6 +20,10 @@
     "./frameworks/": {
       "development": "./development/frameworks/",
       "default": "./frameworks/"
+    },
+    "./controllers/": {
+      "development": "./development/controllers/",
+      "default": "./controllers/"
     }
   },
   "files": [
@@ -32,11 +36,15 @@
     "/frameworks/react/create-component.d.ts",
     "/frameworks/react/create-component.d.ts.map",
     "/frameworks/react/create-component.js",
-    "/frameworks/react/create-component.js.map"
+    "/frameworks/react/create-component.js.map",
+    "/controllers/async-task.d.ts",
+    "/controllers/async-task.d.ts.map",
+    "/controllers/async-task.js",
+    "/controllers/async-task.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/ frameworks/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/ controllers/ frameworks/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",

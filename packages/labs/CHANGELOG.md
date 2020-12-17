@@ -21,6 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Adds `AsyncTask` controller which can be used to perform tasks when a host element updates. When the task completes, an update is requested on the host element and it should use the task value as desired.
 - Adds react component wrapper for custom elements. Use by calling `createComponent` via the `frameworks/react/create-component` module.
-
 - Adds `labs` package. The `labs` package is an experimental playground for Lit helpers and tools.
