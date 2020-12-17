@@ -13,16 +13,22 @@
  */
 
 import {
+  _$private,
   AttributePart,
-  NodePart,
+  ChildPart,
   Part,
   DirectiveParent,
   TemplateResult,
+} from './lit-html.js';
+import {
   DirectiveResult,
   DirectiveClass,
-} from './lit-html.js';
-
+  PartInfo,
+  AttributePartInfo,
+} from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
+
+const {_ChildPart: ChildPartImpl} = _$private;
 
 /**
  * Tests if a value is a primitive value.
@@ -61,25 +67,36 @@ export const isDirectiveResult = (
     ? (value as DirectiveResult)?._$litDirective$ !== undefined
     : (value as DirectiveResult)?._$litDirective$ === klass;
 
+/**
+ * Tests whether a part has only a single-expression with no strings to
+ * interpolate between.
+ *
+ * Only AttributePart and PropertyPart can have multiple expressions.
+ * Multi-expression parts have a `strings` property and single-expression
+ * parts do not.
+ */
+export const isSingleExpression = (part: PartInfo) =>
+  (part as AttributePartInfo).strings === undefined;
+
 const createMarker = () => document.createComment('');
 
 /**
- * Inserts a NodePart into the given container NodePart's DOM, either at the
- * end of the container NodePart, or before the optional `refPart`.
+ * Inserts a ChildPart into the given container ChildPart's DOM, either at the
+ * end of the container ChildPart, or before the optional `refPart`.
  *
  * This does not add the part to the containerPart's comitted value. That must
  * be done by callers.
  *
- * @param containerPart Part within which to add the new NodePart
- * @param refPart Part before which to add the new NodePart; when omitted the
+ * @param containerPart Part within which to add the new ChildPart
+ * @param refPart Part before which to add the new ChildPart; when omitted the
  *     part added to the end of the `containerPart`
  * @param part Part to insert, or undefined to create a new part
  */
 export const insertPart = (
-  containerPart: NodePart,
-  refPart: NodePart | undefined,
-  part?: NodePart
-): NodePart => {
+  containerPart: ChildPart,
+  refPart: ChildPart | undefined,
+  part?: ChildPart
+): ChildPart => {
   const container = containerPart._$startNode.parentNode!;
 
   const refNode =
@@ -88,7 +105,7 @@ export const insertPart = (
   if (part === undefined) {
     const startNode = container.insertBefore(createMarker(), refNode);
     const endNode = container.insertBefore(createMarker(), refNode);
-    part = new NodePart(
+    part = new ChildPartImpl(
       startNode,
       endNode,
       containerPart,
@@ -137,7 +154,7 @@ export const setPartValue = <T extends Part>(
         "An index must be provided to set an AttributePart's value."
       );
     }
-    const newValues = [...(part._$value as Array<unknown>)];
+    const newValues = [...(part._$committedValue as Array<unknown>)];
     newValues[index] = value;
     (part as AttributePart)._$setValue(newValues, directiveParent, 0);
   } else {
@@ -151,39 +168,42 @@ export const setPartValue = <T extends Part>(
 const RESET_VALUE = {};
 
 /**
- * Resets the stored state of a NodePart used for dirty-checking and
- * efficiently updating the part to the given value, or when omitted, to a state
- * where any subsequent dirty-check is guaranteed to fail, causing the next
- * commit to take effect.
+ * Sets the committed value of a ChildPart directly without triggering the
+ * commit stage of the part.
+ *
+ * This is useful in cases where a directive needs to update the part such
+ * that the next update detects a value change or not. When value is omitted,
+ * the next update will be guaranteed to be detected as a change.
  *
  * @param part
  * @param value
  */
-export const resetPartValue = (part: Part, value: unknown = RESET_VALUE) =>
-  (part._$value = value);
+export const setComittedValue = (part: Part, value: unknown = RESET_VALUE) =>
+  (part._$committedValue = value);
 
 /**
- * Returns the stored state of a NodePart used for dirty-checking and
- * efficiently updating the part. Note that this value can differ from the value
- * set by the user/directive, and varies by type:
+ * Returns the committed value of a ChildPart.
  *
- * - For `TemplateResult`: returns a `TemplateInstance`
- * - For iterable, returns a `NodePart[]`
- * - For all other types, returns the user value or resolved directive value
+ * The committed value is used for change detection and efficient updates of
+ * the part. It can differ from the value set by the template or directive in
+ * cases where the template value is transformed before being commited.
  *
- * TODO: this needs a better name, to disambiguate it from values set by user.
+ * - `TemplateResult`s are committed as a `TemplateInstance`
+ * - Iterables are committed as `Array<ChildPart>`
+ * - All other types are committed as the template value or value returned or
+ *   set by a directive.
  *
  * @param part
  */
-export const getPartValue = (part: NodePart) => part._$value;
+export const getComittedValue = (part: ChildPart) => part._$committedValue;
 
 /**
- * Removes a NodePart from the DOM, including any of its content.
+ * Removes a ChildPart from the DOM, including any of its content.
  *
  * @param part The Part to remove
  */
-export const removePart = (part: NodePart) => {
-  part._$setNodePartConnected?.(false, true);
+export const removePart = (part: ChildPart) => {
+  part._$setChildPartConnected?.(false, true);
   let start: ChildNode | null = part._$startNode;
   const end: ChildNode | null = part._$endNode!.nextSibling;
   while (start !== end) {
@@ -193,6 +213,6 @@ export const removePart = (part: NodePart) => {
   }
 };
 
-export const clearPart = (part: NodePart) => {
+export const clearPart = (part: ChildPart) => {
   part._$clear();
 };

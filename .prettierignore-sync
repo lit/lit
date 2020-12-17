@@ -9,7 +9,7 @@ packages/lit-html/.gitignore
 packages/lit-ssr/.gitignore
 packages/localize/.gitignore
 packages/tests/.gitignore
-packages/updating-element/.gitignore
+packages/reactive-element/.gitignore
 
 [inline]
 packages/localize/examples/

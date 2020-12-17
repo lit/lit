@@ -15,17 +15,11 @@
  */
 
 // Type-only imports
-import {TemplateResult, NodePart} from 'lit-html';
+import {TemplateResult, ChildPart} from 'lit-html';
 
-import {
-  nothing,
-  noChange,
-  AttributePart,
-  PropertyPart,
-  BooleanAttributePart,
-  EventPart,
-} from 'lit-html';
+import {nothing, noChange} from 'lit-html';
 import {PartType} from 'lit-html/directive.js';
+import {isTemplateResult} from 'lit-html/directive-helpers.js';
 import {_$private} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -36,6 +30,10 @@ const {
   patchDirectiveResolve,
   getAtributePartCommittedValue,
   resolveDirective,
+  AttributePart,
+  PropertyPart,
+  BooleanAttributePart,
+  EventPart,
 } = _$private;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
@@ -70,12 +68,12 @@ declare module 'parse5' {
 patchDirectiveResolve(
   Directive.prototype,
   function (this: Directive, values: unknown[]) {
-    const {_part, _attributeIndex} = this;
+    const {__part, __attributeIndex} = this;
     return resolveDirective(
-      _part,
+      __part,
       this.render(...values),
       this,
-      _attributeIndex
+      __attributeIndex
     );
   }
 );
@@ -93,8 +91,8 @@ type TextOp = {
 /**
  * Operation to output dynamic text from the associated template result value
  */
-type NodePartOp = {
-  type: 'node-part';
+type ChildPartOp = {
+  type: 'child-part';
   index: number;
   useCustomElementInstance?: boolean;
 };
@@ -150,7 +148,7 @@ type CustomElementClosedOp = {
 
 type Op =
   | TextOp
-  | NodePartOp
+  | ChildPartOp
   | AttributePartOp
   | CustomElementOpenOp
   | CustomElementAttributesOp
@@ -162,7 +160,7 @@ type Op =
  * for the associated Template.  Opcodes are designed to allow emitting
  * contiguous static text from the template as much as possible, with specific
  * non-`text` opcodes interleaved to perform dynamic work, such as emitting
- * values for NodeParts or AttributeParts, and handling custom elements.
+ * values for ChildParts or AttributeParts, and handling custom elements.
  *
  * For the following example template, an opcode list may look like this:
  *
@@ -176,8 +174,8 @@ type Op =
  *   - Emit an AttributePart's value, e.g. ` class="bold"`
  * - `text`
  *   - Emit run of static text: `>`
- * - `node-part`
- *   - Emit the NodePart's value, in this case a TemplateResult, thus we recurse
+ * - `child-part`
+ *   - Emit the ChildPart's value, in this case a TemplateResult, thus we recurse
  *     into that template's opcodes
  * - `text`
  *   - Emit run of static text: `/span></div>`
@@ -298,7 +296,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           flushTo(node.sourceCodeLocation!.startOffset);
           skipTo(node.sourceCodeLocation!.endOffset);
           ops.push({
-            type: 'node-part',
+            type: 'child-part',
             index: nodeIndex,
             useCustomElementInstance:
               parent && isElement(parent) && parent.isDefinedCustomElement,
@@ -454,9 +452,9 @@ export function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.NODE} as NodePart, value);
+    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
   }
-  if (value != null && (value as TemplateResult)._$litType$ !== undefined) {
+  if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
     yield* renderTemplateResult(value as TemplateResult, renderInfo);
   } else {
@@ -508,7 +506,7 @@ export function* renderTemplateResult(
       case 'text':
         yield op.value;
         break;
-      case 'node-part': {
+      case 'child-part': {
         const value = result.values[partIndex++];
         yield* renderValue(value, renderInfo);
         break;

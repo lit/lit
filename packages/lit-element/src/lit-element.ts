@@ -48,16 +48,20 @@
  * customElements.define('my-element', MyElement);
  * ```
  *
- * `LitElement` extends [[`UpdatingElement`]] and adds lit-html templating.
- * The `UpdatingElement` class is provided for users that want to build
+ * `LitElement` extends [[`ReactiveElement`]] and adds lit-html templating.
+ * The `ReactiveElement` class is provided for users that want to build
  * their own custom element base classes that don't use lit-html.
  *
  * @packageDocumentation
  */
-import {PropertyValues, UpdatingElement} from 'updating-element';
-import {render, RenderOptions, noChange, NodePart} from 'lit-html';
-export * from 'updating-element';
+import {PropertyValues, ReactiveElement} from 'reactive-element';
+import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
+export * from 'reactive-element';
 export * from 'lit-html';
+
+// For backwards compatibility export ReactiveElement as UpdatingElement. Note,
+// IE transpilation requires exporting like this.
+export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
@@ -82,19 +86,19 @@ declare global {
  * `render` method to provide the component's template. Define properties
  * using the [[`properties`]] property or the [[`property`]] decorator.
  */
-export class LitElement extends UpdatingElement {
+export class LitElement extends ReactiveElement {
   /**
    * Ensure this class is marked as `finalized` as an optimization ensuring
    * it will not needlessly try to `finalize`.
    *
    * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See updating-element for more information.
+   * optimizations. See reactive-element for more information.
    */
   protected static ['finalized'] = true;
 
   readonly _$renderOptions: RenderOptions = {host: this};
 
-  private _$nodePart: NodePart | undefined = undefined;
+  private __childPart: ChildPart | undefined = undefined;
 
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
@@ -119,7 +123,7 @@ export class LitElement extends UpdatingElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this._$nodePart = render(value, this.renderRoot, this._$renderOptions);
+    this.__childPart = render(value, this.renderRoot, this._$renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
@@ -127,17 +131,17 @@ export class LitElement extends UpdatingElement {
   // https://github.com/Polymer/lit-html/issues/1457
   connectedCallback() {
     super.connectedCallback();
-    this._$nodePart?.setConnected(true);
+    this.__childPart?.setConnected(true);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this._$nodePart?.setConnected(false);
+    this.__childPart?.setConnected(false);
   }
 
   /**
    * Invoked on each update to perform rendering tasks. This method may return
-   * any value renderable by lit-html's `NodePart` - typically a
+   * any value renderable by lit-html's `ChildPart` - typically a
    * `TemplateResult`. Setting properties inside this method will *not* trigger
    * the element to update.
    */
@@ -159,7 +163,7 @@ if (DEV_MODE) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (LitElement as any).finalize = function () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const finalized = (UpdatingElement as any).finalize.call(this);
+    const finalized = (ReactiveElement as any).finalize.call(this);
     if (!finalized) {
       return false;
     }

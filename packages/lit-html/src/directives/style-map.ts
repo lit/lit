@@ -12,8 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {AttributePart, noChange} from '../lit-html.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  PartInfo,
+  PartType,
+} from '../directive.js';
 
 /**
  * A key-value set of CSS properties and values.
@@ -34,7 +40,7 @@ class StyleMap extends Directive {
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'style' ||
-      (partInfo.strings !== undefined && partInfo.strings.length > 2)
+      (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
         'The `styleMap` directive must be used in the `style` attribute ' +
@@ -63,7 +69,7 @@ class StyleMap extends Directive {
     }, '');
   }
 
-  update(part: AttributePart, [styleInfo]: Parameters<this['render']>) {
+  update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
 
     if (this.previousStyleProperties === undefined) {

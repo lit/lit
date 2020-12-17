@@ -15,27 +15,80 @@
 import {
   _$private,
   AttributePart,
-  DirectiveClass,
-  DirectiveParameters,
-  DirectiveResult,
   Disconnectable,
-  NodePart,
-  PartInfo,
+  ChildPart,
   Part,
+  ElementPart,
 } from './lit-html';
-export {DirectiveClass, DirectiveParameters, DirectiveResult} from './lit-html';
 
 const resolveDirective = _$private._resolveDirective;
 
+export type DirectiveClass = {
+  new (part: PartInfo): Directive;
+};
+
+/**
+ * This utility type extracts the signature of a directive class's render()
+ * method so we can use it for the type of the generated directive function.
+ */
+export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
+
+/**
+ * A generated directive function doesn't evaluate the directive, but just
+ * returns a DirectiveResult object that captures the arguments.
+ * @internal
+ */
+export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
+  _$litDirective$: C;
+  values: DirectiveParameters<InstanceType<C>>;
+};
+
 export const PartType = {
   ATTRIBUTE: 1,
-  NODE: 2,
+  CHILD: 2,
   PROPERTY: 3,
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
+  ELEMENT: 6,
 } as const;
 
 export type PartType = typeof PartType[keyof typeof PartType];
+
+export type ChildPartInfo = {
+  readonly type: typeof PartType.CHILD;
+  readonly _$part: ChildPart;
+  readonly _$parent: Disconnectable;
+  readonly _$attributeIndex: number | undefined;
+};
+
+export type AttributePartInfo = {
+  readonly type:
+    | typeof PartType.ATTRIBUTE
+    | typeof PartType.PROPERTY
+    | typeof PartType.BOOLEAN_ATTRIBUTE
+    | typeof PartType.EVENT;
+  readonly strings?: ReadonlyArray<string>;
+  readonly name: string;
+  readonly tagName: string;
+  readonly _$part: AttributePart;
+  readonly _$parent: Disconnectable;
+  readonly _$attributeIndex: number | undefined;
+};
+
+export type ElementPartInfo = {
+  readonly type: typeof PartType.ELEMENT;
+  readonly _$part: ElementPart;
+  readonly _$parent: Disconnectable;
+  readonly _$attributeIndex: undefined;
+};
+
+/**
+ * Information about the part a directive is bound to.
+ *
+ * This is useful for checking that a directive is attached to a valid part,
+ * such as with directive that can only be used on attribute bindings.
+ */
+export type PartInfo = ChildPartInfo | AttributePartInfo | ElementPartInfo;
 
 /**
  * Creates a user-facing directive function from a Directive class. This
@@ -55,11 +108,11 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  _part: NodePart | AttributePart;
+  __part: ChildPart | AttributePart | ElementPart;
   //@internal
-  _attributeIndex: number | undefined;
+  __attributeIndex: number | undefined;
   //@internal
-  _directive?: Directive;
+  __directive?: Directive;
 
   //@internal
   _$parent: Disconnectable;
@@ -72,17 +125,17 @@ export abstract class Directive {
 
   constructor(partInfo: PartInfo) {
     this._$parent = partInfo._$parent;
-    this._part = partInfo._$part;
-    this._attributeIndex = partInfo._$attributeIndex;
+    this.__part = partInfo._$part;
+    this.__attributeIndex = partInfo._$attributeIndex;
   }
   /** @internal */
   _resolve(props: Array<unknown>): unknown {
-    const {_part, _attributeIndex} = this;
+    const {__part, __attributeIndex} = this;
     return resolveDirective(
-      _part,
-      this.update(_part, props),
+      __part,
+      this.update(__part, props),
       this,
-      _attributeIndex
+      __attributeIndex
     );
   }
   abstract render(...props: Array<unknown>): unknown;

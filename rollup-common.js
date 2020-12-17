@@ -67,13 +67,13 @@ const stableProperties = {
   _$createElement: 'A',
   _$element: 'B',
   _$options: 'C',
-  // lit-html: NodePart (used by platform-support)
+  // lit-html: ChildPart (used by platform-support)
   _$startNode: 'D',
   _$endNode: 'E',
   _$getTemplate: 'F',
   // lit-html: TemplateInstance (used by platform-support)
   _$template: 'G',
-  // updating-element: UpdatingElement (used by platform-support)
+  // reactive-element: ReactiveElement (used by platform-support)
   _$didUpdate: 'H',
   // lit-element: LitElement
   _$renderOptions: 'I',
@@ -82,27 +82,23 @@ const stableProperties = {
   // hydrate-support: LitElement (added by hydrate-support)
   _$needsHydration: 'K',
   // lit-html: Part (used by hydrate, platform-support)
-  _$value: 'L',
+  _$committedValue: 'L',
   // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
   _$setValue: 'M',
   // platform-support: LitElement (added by platform-support)
   _$handlesPrepareStyles: 'N',
-  // lit-element: UpdatingElement (used bby ssr-support)
+  // lit-element: ReactiveElement (used bby ssr-support)
   _$attributeToProperty: 'O',
-  // lit-html: NodePart, AttributePart, TemplateInstance, Directive (accessed by
+  // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)
   _$parent: 'P',
   _$disconnetableChildren: 'Q',
   // disconnectable-directive: DisconnectableDirective
   _$setDirectiveConnected: 'R',
-  // lit-html: NodePart (added by disconnectable-directive)
-  _$setNodePartConnected: 'S',
-  // lit-html: NodePart (used by directive-helpers)
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$setChildPartConnected: 'S',
+  // lit-html: ChildPart (used by directive-helpers)
   _$clear: 'T',
-  // TODO (justinfagnani): not actually cross-package name, but needs to be
-  // named for now to avoid a renaming collision
-  _$placeholder: 'U',
-  _$nodePart: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -123,7 +119,46 @@ Object.entries(stableProperties).forEach(([prop, mangle], i) => {
   }
 });
 
-const generateTerserOptions = (nameCache = null) => ({
+/**
+ * Prefixes all class properties with the given prefix character. This is to
+ * effectively namespace private properties on subclassable objects to avoid
+ * accidental collisions when users (or our own packages) subclass them. We
+ * choose a different prefix character per compilation unit (package), which
+ * guarantees that automatically chosen mangled names don't collide between our
+ * own packages.
+ *
+ * Note that Terser has no understanding of classes; class properties getting
+ * prefix treatment are identified via convention, where class properties are
+ * authored with double `__` whereas normal object properties that can be
+ * mangled un-prefixed use single `_`.
+ *
+ * Prefix characters chosen in the "Other Letter (Lo)" unicode category
+ * (https://codepoints.net/search?gc=Lo) are valid in JS identifiers, should be
+ * sufficiently collision-proof to hand-authored code, and are unlikely to be
+ * chosen (at least default) by minifiers.
+ */
+const addedClassPrefix = new WeakSet();
+const prefixClassProperties = (context, nameCache, prefix) => {
+  // Only prefix class properties once per options context, as a perf optimization
+  if (nameCache && !addedClassPrefix.has(context)) {
+    const {
+      props: {props},
+    } = nameCache;
+    for (const p in props) {
+      // Note all properties in the terser name cache are prefixed with '$'
+      // (presumably to avoid collisions with built-ins). Checking for the
+      // prefix is just to ensure we don't double-prefix properties if
+      // `prefixClassProperties` is called twice on the same `nameCache`.
+      if (p.startsWith('$__') && !props[p].startsWith(prefix)) {
+        props[p] = prefix + props[p];
+      }
+    }
+    addedClassPrefix.add(context);
+  }
+  return nameCache;
+};
+
+const generateTerserOptions = (nameCache = null, classPropertyPrefix = '') => ({
   warnings: true,
   ecma: 2017,
   compress: {
@@ -136,7 +171,11 @@ const generateTerserOptions = (nameCache = null) => ({
     comments: CHECKSIZE ? false : 'some',
     inline_script: false,
   },
-  nameCache,
+  // This is implemented as a getter, so that we apply the class property prefix
+  // after the `nameCacheSeeder` build runs
+  get nameCache() {
+    return prefixClassProperties(this, nameCache, classPropertyPrefix);
+  },
   mangle: {
     properties: {
       regex: /^_/,
@@ -151,6 +190,7 @@ export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
+  classPropertyPrefix,
   // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
@@ -202,8 +242,9 @@ export function litProdConfig({
       (name) => `console.log(window.${name});`
     ),
   ].join('\n');
+  const nameCacheSeederTerserOptions = generateTerserOptions(nameCache);
 
-  const terserOptions = generateTerserOptions(nameCache);
+  const terserOptions = generateTerserOptions(nameCache, classPropertyPrefix);
 
   return [
     {
@@ -221,7 +262,7 @@ export function litProdConfig({
         virtual({
           [nameCacheSeederInfile]: nameCacheSeederContents,
         }),
-        terser(terserOptions),
+        terser(nameCacheSeederTerserOptions),
         skipBundleOutput,
       ],
     },
@@ -297,7 +338,7 @@ export function litProdConfig({
         file,
         output,
         name,
-        terserOptions: terserOptions,
+        terserOptions,
       })
     ),
   ];

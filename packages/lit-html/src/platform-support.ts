@@ -25,7 +25,7 @@
  * template DOM. Instead, each template is scoped only once.
  *
  * Creating scoped css is not covered by this module. It is, however, integrated
- * into the LitElement and UpdatingElement packages. See the ShadyCSS docs
+ * into the LitElement and ReactiveElement packages. See the ShadyCSS docs
  * for how to apply scoping to css:
  * https://github.com/webcomponents/polyfills/tree/master/packages/shadycss#usage.
  *
@@ -47,10 +47,10 @@ interface ShadyTemplateResult {
   _$litType$?: string;
 }
 
-interface PatchableNodePart {
+interface PatchableChildPart {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  new (...args: any[]): PatchableNodePart;
-  _$value: unknown;
+  new (...args: any[]): PatchableChildPart;
+  _$committedValue: unknown;
   _$startNode: ChildNode;
   _$endNode: ChildNode | null;
   options: RenderOptions;
@@ -82,17 +82,14 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
 /**
  * lit-html patches. These properties cannot be renamed.
- * * NodePart.prototype._$getTemplate
- * * NodePart.prototype._$setValue
+ * * ChildPart.prototype._$getTemplate
+ * * ChildPart.prototype._$setValue
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport'] ??= ({
-  NodePart,
-  Template,
-}: {
-  NodePart: PatchableNodePart;
-  Template: PatchableTemplate;
-}) => {
+(globalThis as any)['litHtmlPlatformSupport'] ??= (
+  Template: PatchableTemplate,
+  ChildPart: PatchableChildPart
+) => {
   if (!needsPlatformSupport) {
     return;
   }
@@ -137,7 +134,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
     Map<TemplateStringsArray, PatchableTemplate>
   >();
 
-  // Note, it's ok to subclass Template since it's only used via NodePart.
+  // Note, it's ok to subclass Template since it's only used via ChildPart.
   class ShadyTemplate extends Template {
     /**
      * Override to extract style elements from the template
@@ -171,13 +168,13 @@ const scopeCssStore: Map<string, string[]> = new Map();
   const renderContainer = document.createDocumentFragment();
   const renderContainerMarker = document.createComment('');
 
-  const nodePartProto = NodePart.prototype;
+  const childPartProto = ChildPart.prototype;
   /**
    * Patch to apply gathered css via ShadyCSS. This is done only once per scope.
    */
-  const setValue = nodePartProto._$setValue;
-  nodePartProto._$setValue = function (
-    this: PatchableNodePart,
+  const setValue = childPartProto._$setValue;
+  childPartProto._$setValue = function (
+    this: PatchableChildPart,
     value: unknown
   ) {
     const container = this._$startNode.parentNode!;
@@ -206,7 +203,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
       const template = (value as ShadyTemplateResult)?._$litType$
-        ? (this._$value as PatchableTemplateInstance)._$template._$element
+        ? (this._$committedValue as PatchableTemplateInstance)._$template
+            ._$element
         : document.createElement('template');
       prepareStyles(scope!, template);
 
@@ -229,10 +227,10 @@ const scopeCssStore: Map<string, string[]> = new Map();
   };
 
   /**
-   * Patch NodePart._$getTemplate to look up templates in a cache bucketed
+   * Patch ChildPart._$getTemplate to look up templates in a cache bucketed
    * by element name.
    */
-  nodePartProto._$getTemplate = function (
+  childPartProto._$getTemplate = function (
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {

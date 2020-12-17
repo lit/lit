@@ -12,7 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, LitElement} from '../lit-element.js';
+import {
+  html,
+  LitElement,
+  UpdatingElement,
+  ReactiveElement,
+} from '../lit-element.js';
 import {
   directive,
   DisconnectableDirective,
@@ -24,6 +29,8 @@ import {
   stripExpressionComments,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
+
+import {createRef, ref} from 'lit-html/directives/ref.js';
 
 (canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
@@ -306,6 +313,24 @@ import {assert} from '@esm-bundle/chai';
     );
   });
 
+  test('can use ReactiveElement', async () => {
+    class A extends ReactiveElement {}
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    await a.updateComplete;
+    assert.ok(a.hasUpdated);
+  });
+
+  test('can use UpdatingElement', async () => {
+    class A extends UpdatingElement {}
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    await a.updateComplete;
+    assert.ok(a.hasUpdated);
+  });
+
   (window.ShadyDOM && window.ShadyDOM.inUse ? test.skip : test)(
     'can customize shadowRootOptions',
     async () => {
@@ -495,5 +520,83 @@ import {assert} from '@esm-bundle/chai';
         'render-child-node',
       ]);
     });
+  });
+
+  test('bind refs between elements', async () => {
+    class RefChild extends LitElement {
+      static properties = {
+        bool: {},
+        ref: {},
+      };
+      bool = false;
+      // default ref, should be unused
+      ref = createRef();
+      cb = (_el: Element | undefined) => {};
+      render() {
+        return html` <span>
+          ${this.bool
+            ? html`<div id="true" ${ref(this.ref)} ${ref(this.cb)}></div>`
+            : html`<div id="false" ${ref(this.ref)} ${ref(this.cb)}></div>`}
+        </span>`;
+      }
+      get trueDiv() {
+        return this.shadowRoot!.querySelector('#true');
+      }
+      get falseDiv() {
+        return this.shadowRoot!.querySelector('#false');
+      }
+    }
+    customElements.define('ref-child', RefChild);
+
+    class RefHost extends LitElement {
+      static properties = {
+        bool: {type: Boolean},
+      };
+      bool = false;
+      elRef = createRef();
+      el: Element | undefined;
+      count = 0;
+      elCallback = (el: Element | undefined) => {
+        this.count++;
+        this.el = el;
+      };
+      render() {
+        return html`<ref-child
+          .bool=${this.bool}
+          .ref=${this.elRef}
+          .cb=${this.elCallback}
+        ></ref-child>`;
+      }
+      get child() {
+        return this.shadowRoot!.querySelector('ref-child') as RefChild;
+      }
+    }
+    customElements.define('x-host', RefHost);
+
+    const host = container.appendChild(new RefHost());
+    await host.updateComplete;
+    await host.child.updateComplete;
+    assert.equal(host.el, host.child.falseDiv);
+    assert.equal(host.elRef.value, host.child.falseDiv);
+    assert.equal(host.count, 1);
+
+    host.requestUpdate();
+    await host.updateComplete;
+    assert.equal(host.el, host.child.falseDiv);
+    assert.equal(host.elRef.value, host.child.falseDiv);
+    assert.equal(host.count, 1);
+
+    host.child.requestUpdate();
+    await host.child.updateComplete;
+    assert.equal(host.el, host.child.falseDiv);
+    assert.equal(host.elRef.value, host.child.falseDiv);
+    assert.equal(host.count, 1);
+
+    host.bool = true;
+    await host.updateComplete;
+    await host.child.updateComplete;
+    assert.equal(host.el, host.child.trueDiv);
+    assert.equal(host.elRef.value, host.child.trueDiv);
+    assert.equal(host.count, 3);
   });
 });

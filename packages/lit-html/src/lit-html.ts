@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive} from './directive.js';
+// IMPORTANT: these imports must be type-only
+import {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -161,7 +162,8 @@ const comment2EndRegex = />/g;
 
 /**
  * The tagEnd regex matches the end of the "inside an opening" tag syntax
- * position. It either matches a `>` or an attribute.
+ * position. It either matches a `>`, an attribute-like sequence, or the end
+ * of the string after a space (attribute-name position ending).
  *
  * See attributes in the HTML spec:
  * https://www.w3.org/TR/html5/syntax.html#elements-attributes
@@ -184,7 +186,7 @@ const comment2EndRegex = />/g;
  *    * (') then any non-(')
  */
 const tagEndRegex = new RegExp(
-  `>|${SPACE_CHAR}(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))`,
+  `>|${SPACE_CHAR}(?:(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))|$)`,
   'g'
 );
 const ENTIRE_MATCH = 0;
@@ -206,16 +208,17 @@ const rawTextElement = /^(?:script|style|textarea)$/i;
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
 
-/** TemplatePart types */
+type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
+
+// TemplatePart types
+// IMPORTANT: these must match the values in PartType
 const ATTRIBUTE_PART = 1;
-const NODE_PART = 2;
+const CHILD_PART = 2;
 const PROPERTY_PART = 3;
 const BOOLEAN_ATTRIBUTE_PART = 4;
 const EVENT_PART = 5;
 const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
-
-type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
 
 /**
  * The return type of the template tag functions.
@@ -262,7 +265,7 @@ export const svg = tag(SVG_RESULT);
 export const noChange = Symbol.for('lit-noChange');
 
 /**
- * A sentinel value that signals a NodePart to fully clear its content.
+ * A sentinel value that signals a ChildPart to fully clear its content.
  */
 export const nothing = Symbol.for('lit-nothing');
 
@@ -274,55 +277,6 @@ export const nothing = Symbol.for('lit-nothing');
  * path for rendering.
  */
 const templateCache = new Map<TemplateStringsArray, Template>();
-
-export type NodePartInfo = {
-  readonly type: typeof NODE_PART;
-  readonly _$part: NodePart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
-};
-
-export type AttributePartInfo = {
-  readonly type:
-    | typeof ATTRIBUTE_PART
-    | typeof PROPERTY_PART
-    | typeof BOOLEAN_ATTRIBUTE_PART
-    | typeof EVENT_PART;
-  readonly strings?: ReadonlyArray<string>;
-  readonly name: string;
-  readonly tagName: string;
-  readonly _$part: AttributePart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
-};
-
-/**
- * Information about the part a directive is bound to.
- *
- * This is useful for checking that a directive is attached to a valid part,
- * such as with directive that can only be used on attribute bindings.
- */
-export type PartInfo = NodePartInfo | AttributePartInfo;
-
-export type DirectiveClass = {
-  new (part: PartInfo): Directive;
-};
-
-/**
- * This utility type extracts the signature of a directive class's render()
- * method so we can use it for the type of the generated directive function.
- */
-export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
-
-/**
- * A generated directive function doesn't evaluate the directive, but just
- * returns a DirectiveResult object that captures the arguments.
- */
-/** @internal */
-export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
-  _$litDirective$: C;
-  values: DirectiveParameters<InstanceType<C>>;
-};
 
 export interface RenderOptions {
   /**
@@ -346,14 +300,14 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): NodePart => {
+): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: NodePart = (partOwnerNode as any).$lit$;
+  let part: ChildPart = (partOwnerNode as any).$lit$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any).$lit$ = part = new NodePart(
+    (partOwnerNode as any).$lit$ = part = new ChildPartImpl(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -392,15 +346,15 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 // `resolveDirective`
 export interface DirectiveParent {
   _$parent?: DirectiveParent;
-  _directive?: Directive;
-  _directives?: Array<Directive | undefined>;
+  __directive?: Directive;
+  __directives?: Array<Directive | undefined>;
 }
 
 /**
  * Returns an HTML string for the given TemplateStringsArray and result type
  * (HTML or SVG), along with the case-sensitive bound attribute names in
  * template order. The HTML contains comment comment markers denoting the
- * `NodePart`s and suffixes on bound attributes denoting the `AttributeParts`.
+ * `ChildPart`s and suffixes on bound attributes denoting the `AttributeParts`.
  *
  * @param strings template strings array
  * @param type HTML or SVG
@@ -436,10 +390,12 @@ const getTemplateHtml = (
     // The index of the end of the last attribute name. When this is
     // positive at end of a string, it means we're in an attribute value
     // position and need to rewrite the attribute name.
+    // We also use a special value of -2 to indicate that we encountered
+    // the end of a string in attribute name position.
     let attrNameEndIndex = -1;
     let attrName: string | undefined;
     let lastIndex = 0;
-    let match: RegExpExecArray | null;
+    let match!: RegExpExecArray | null;
 
     // The conditions in this loop handle the current parse state, and the
     // assignments to the `regex` variable are the state transitions.
@@ -448,16 +404,6 @@ const getTemplateHtml = (
       regex.lastIndex = lastIndex;
       match = regex.exec(s);
       if (match === null) {
-        // If the current regex doesn't match we've come to a binding inside
-        // that state and must break and insert a marker
-        if (regex === tagEndRegex) {
-          // When tagEndRegex doesn't match we must have a binding in
-          // attribute-name position, since tagEndRegex does match static
-          // attribute names and end-of-tag. We need to clear
-          // attrNameEndIndex which may have been set by a previous
-          // tagEndRegex match.
-          attrNameEndIndex = -1;
-        }
         break;
       }
       lastIndex = regex.lastIndex;
@@ -470,7 +416,7 @@ const getTemplateHtml = (
         } else if (match[TAG_NAME] !== undefined) {
           if (rawTextElement.test(match[TAG_NAME])) {
             // Record if we encounter a raw-text element. We'll switch to
-            // this regex at the end of the tag
+            // this regex at the end of the tag.
             rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
           }
           regex = tagEndRegex;
@@ -486,6 +432,9 @@ const getTemplateHtml = (
           // We may be ending an unquoted attribute value, so make sure we
           // clear any pending attrNameEndIndex
           attrNameEndIndex = -1;
+        } else if (match[ATTRIBUTE_NAME] === undefined) {
+          // Attribute name position
+          attrNameEndIndex = -2;
         } else {
           attrNameEndIndex = regex.lastIndex - match[SPACES_AND_EQUALS].length;
           attrName = match[ATTRIBUTE_NAME];
@@ -524,35 +473,41 @@ const getTemplateHtml = (
       );
     }
 
-    // If we're in text position, and not in a raw text element
-    // (regex === textEndRegex), we insert a comment marker. Otherwise, we
-    // insert a plain maker. If we have a attrNameEndIndex, it means we need
-    // to rewrite the attribute name to add a bound attribute suffix.
+    // We have four cases:
+    //  1. We're in text position, and not in a raw text element
+    //     (regex === textEndRegex): insert a comment marker.
+    //  2. We have a non-negative attrNameEndIndex which means we need to
+    //     rewrite the attribute name to add a bound attribute suffix.
+    //  3. We're at the non-first binding in a multi-binding attribute, use a
+    //     plain marker.
+    //  4. We're somewhere else inside the tag. If we're in attribute name
+    //     position (attrNameEndIndex === -2), add a sequential suffix to
+    //     generate a unique attribute name.
     html +=
       regex === textEndRegex
         ? s + nodeMarker
-        : (attrNameEndIndex !== -1
-            ? (attrNames.push(attrName!),
-              s.slice(0, attrNameEndIndex) +
-                boundAttributeSuffix +
-                s.slice(attrNameEndIndex))
-            : s) + marker;
+        : attrNameEndIndex >= 0
+        ? (attrNames.push(attrName!),
+          s.slice(0, attrNameEndIndex) +
+            boundAttributeSuffix +
+            s.slice(attrNameEndIndex)) + marker
+        : s + marker + (attrNameEndIndex === -2 ? `:${i}` : '');
   }
-  // TODO (justinfagnani): if regex is not textRegex log a warning for a
-  // malformed template in dev mode.
+
   // Returned as an array for terseness
   return [
     // We don't technically need to close the SVG tag since the parser will
     // handle it for us, but the SSR parser doesn't like that.
     // Note that the html must end with a node after the final expression to
-    // ensure the last NodePart has an end node, hence adding a comment if the
+    // ensure the last ChildPart has an end node, hence adding a comment if the
     // last string was empty.
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
     attrNames,
   ];
 };
 
-class Template {
+export type Template = Interface<TemplateImpl>;
+class TemplateImpl {
   /** @internal */
   _$element!: HTMLTemplateElement;
   /** @internal */
@@ -619,15 +574,15 @@ class Template {
                 _strings: statics,
                 _constructor:
                   m[1] === '.'
-                    ? PropertyPart
+                    ? PropertyPartImpl
                     : m[1] === '?'
-                    ? BooleanAttributePart
+                    ? BooleanAttributePartImpl
                     : m[1] === '@'
-                    ? EventPart
-                    : AttributePart,
+                    ? EventPartImpl
+                    : AttributePartImpl,
               });
               bindingIndex += statics.length - 1;
-            } else if (name === marker) {
+            } else if (name.startsWith(marker)) {
               attrsToRemove.push(name);
               this._parts.push({
                 _type: ELEMENT_PART,
@@ -655,7 +610,7 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this._parts.push({_type: NODE_PART, _index: ++nodeIndex});
+              this._parts.push({_type: CHILD_PART, _index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -665,7 +620,7 @@ class Template {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this._parts.push({_type: NODE_PART, _index: nodeIndex});
+          this._parts.push({_type: CHILD_PART, _index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -693,20 +648,20 @@ class Template {
 }
 
 export interface Disconnectable {
-  _$parent: Disconnectable | undefined;
+  _$parent?: Disconnectable;
   _$disconnetableChildren?: Set<Disconnectable>;
 }
 
 function resolveDirective(
-  part: NodePart | AttributePart,
+  part: ChildPart | AttributePart | ElementPart,
   value: unknown,
   _$parent: DirectiveParent = part,
   _$attributeIndex?: number
 ): unknown {
   let currentDirective =
     _$attributeIndex !== undefined
-      ? (_$parent as AttributePart)._directives?.[_$attributeIndex]
-      : (_$parent as NodePart | Directive)._directive;
+      ? (_$parent as AttributePart).__directives?.[_$attributeIndex]
+      : (_$parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
@@ -722,11 +677,11 @@ function resolveDirective(
             _$attributeIndex,
           } as PartInfo);
     if (_$attributeIndex !== undefined) {
-      ((_$parent as AttributePart)._directives ??= [])[
+      ((_$parent as AttributePart).__directives ??= [])[
         _$attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as NodePart | Directive)._directive = currentDirective;
+      (_$parent as ChildPart | Directive).__directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -750,7 +705,7 @@ class TemplateInstance {
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
 
-  constructor(template: Template, parent: NodePart) {
+  constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
   }
@@ -773,8 +728,8 @@ class TemplateInstance {
     while (templatePart !== undefined && node !== null) {
       if (nodeIndex === templatePart._index) {
         let part: Part | undefined;
-        if (templatePart._type === NODE_PART) {
-          part = new NodePart(
+        if (templatePart._type === CHILD_PART) {
+          part = new ChildPartImpl(
             node as HTMLElement,
             node.nextSibling,
             this,
@@ -788,6 +743,8 @@ class TemplateInstance {
             this,
             options
           );
+        } else if (templatePart._type === ELEMENT_PART) {
+          part = new ElementPartImpl(node as HTMLElement, this, options);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -803,16 +760,18 @@ class TemplateInstance {
   _update(values: Array<unknown>) {
     let i = 0;
     for (const part of this._parts) {
-      if (part === undefined) {
-        i++;
-        continue;
+      if (part !== undefined) {
+        if ((part as AttributePart).strings !== undefined) {
+          (part as AttributePart)._$setValue(values, part as AttributePart, i);
+          // The number of values the part consumes is part.strings.length - 1
+          // since values are in between template spans. We increment i by 1
+          // later in the loop, so increment it by part.strings.length - 2 here
+          i += (part as AttributePart).strings!.length - 2;
+        } else {
+          part._$setValue(values[i]);
+        }
       }
-      if ((part as AttributePart).strings !== undefined) {
-        (part as AttributePart)._$setValue(values, part as AttributePart, i);
-        i += (part as AttributePart).strings!.length - 1;
-      } else {
-        (part as NodePart)._$setValue(values[i++]);
-      }
+      i++;
     }
   }
 }
@@ -820,17 +779,26 @@ class TemplateInstance {
 /*
  * Parts
  */
+type AttributePartConstructor = {
+  new (
+    element: HTMLElement,
+    name: string,
+    strings: ReadonlyArray<string>,
+    parent: Disconnectable | undefined,
+    options: RenderOptions | undefined
+  ): AttributePart;
+};
 type AttributeTemplatePart = {
   readonly _type: typeof ATTRIBUTE_PART;
   readonly _index: number;
   readonly _name: string;
   /** @internal */
-  readonly _constructor: typeof AttributePart;
+  readonly _constructor: AttributePartConstructor;
   /** @internal */
   readonly _strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly _type: typeof NODE_PART;
+  readonly _type: typeof CHILD_PART;
   readonly _index: number;
 };
 type ElementTemplatePart = {
@@ -854,18 +822,22 @@ type TemplatePart =
   | CommentTemplatePart;
 
 export type Part =
-  | NodePart
+  | ChildPart
   | AttributePart
   | PropertyPart
   | BooleanAttributePart
+  | ElementPart
   | EventPart;
 
-export class NodePart {
-  readonly type = NODE_PART;
+type Interface<T> = {[P in keyof T]: T[P]};
+
+export type ChildPart = Interface<ChildPartImpl>;
+class ChildPartImpl {
+  readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
-  _$value: unknown;
+  _$committedValue: unknown;
   /** @internal */
-  _directive?: Directive;
+  __directive?: Directive;
   /** @internal */
   _$startNode: ChildNode;
   /** @internal */
@@ -874,12 +846,12 @@ export class NodePart {
   /** @internal */
   _$parent: Disconnectable | undefined;
 
-  // The following fields will be patched onto NodeParts when required by
+  // The following fields will be patched onto ChildParts when required by
   // DisconnectableDirective
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setNodePartConnected?(
+  _$setChildPartConnected?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -888,7 +860,7 @@ export class NodePart {
   constructor(
     startNode: ChildNode,
     endNode: ChildNode | null,
-    parent: TemplateInstance | NodePart | undefined,
+    parent: TemplateInstance | ChildPart | undefined,
     options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
@@ -908,7 +880,7 @@ export class NodePart {
    * @param isConnected
    */
   setConnected(isConnected: boolean) {
-    this._$setNodePartConnected?.(isConnected);
+    this._$setChildPartConnected?.(isConnected);
   }
 
   get parentNode(): Node {
@@ -920,8 +892,8 @@ export class NodePart {
     if (isPrimitive(value)) {
       if (value === nothing) {
         this._$clear();
-        this._$value = nothing;
-      } else if (value !== this._$value && value !== noChange) {
+        this._$committedValue = nothing;
+      } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
     } else if ((value as TemplateResult)._$litType$ !== undefined) {
@@ -941,7 +913,7 @@ export class NodePart {
   }
 
   private _commitNode(value: Node): void {
-    if (this._$value !== value) {
+    if (this._$committedValue !== value) {
       this._$clear();
       if (
         ENABLE_EXTRA_SECURITY_HOOKS &&
@@ -958,7 +930,7 @@ export class NodePart {
           return;
         }
       }
-      this._$value = this._insert(value);
+      this._$committedValue = this._insert(value);
     }
   }
 
@@ -967,7 +939,7 @@ export class NodePart {
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
-    // TODO(justinfagnani): Can we just check if this._$value is primitive?
+    // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
     if (
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
@@ -1001,20 +973,20 @@ export class NodePart {
         this._commitNode(d.createTextNode(value as string));
       }
     }
-    this._$value = value;
+    this._$committedValue = value;
   }
 
   private _commitTemplateResult(result: TemplateResult): void {
     const {values, strings} = result;
     const template = this._$getTemplate(strings, result);
-    if ((this._$value as TemplateInstance)?._$template === template) {
-      (this._$value as TemplateInstance)._update(values);
+    if ((this._$committedValue as TemplateInstance)?._$template === template) {
+      (this._$committedValue as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template!, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
-      this._$value = instance;
+      this._$committedValue = instance;
     }
   }
 
@@ -1023,7 +995,7 @@ export class NodePart {
   _$getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
     let template = templateCache.get(strings);
     if (template === undefined) {
-      templateCache.set(strings, (template = new Template(result)));
+      templateCache.set(strings, (template = new TemplateImpl(result)));
     }
     return template;
   }
@@ -1036,19 +1008,19 @@ export class NodePart {
     // array.map((i) => html`${i}`), by reusing existing TemplateInstances.
 
     // If value is an array, then the previous render was of an
-    // iterable and value will contain the NodeParts from the previous
+    // iterable and value will contain the ChildParts from the previous
     // render. If value is not an array, clear this part and make a new
-    // array for NodeParts.
-    if (!isArray(this._$value)) {
-      this._$value = [];
+    // array for ChildParts.
+    if (!isArray(this._$committedValue)) {
+      this._$committedValue = [];
       this._$clear();
     }
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._$value as NodePart[];
+    const itemParts = this._$committedValue as ChildPartImpl[];
     let partIndex = 0;
-    let itemPart: NodePart | undefined;
+    let itemPart: ChildPartImpl | undefined;
 
     for (const item of value) {
       if (partIndex === itemParts.length) {
@@ -1057,7 +1029,7 @@ export class NodePart {
         // instead of sharing parts between nodes
         // https://github.com/Polymer/lit-html/issues/1266
         itemParts.push(
-          (itemPart = new NodePart(
+          (itemPart = new ChildPartImpl(
             this._insert(createMarker()),
             this._insert(createMarker()),
             this,
@@ -1086,16 +1058,16 @@ export class NodePart {
    * @param start Start node to clear from, for clearing a subset of the part's
    *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *     which NodeParts are being removed, used for disconnecting directives in
+   *     which ChildParts are being removed, used for disconnecting directives in
    *     those Parts.
-   * 
+   *
    * @internal
    */
   _$clear(
     start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
-    this._$setNodePartConnected?.(false, true, from);
+    this._$setChildPartConnected?.(false, true, from);
     while (start && start !== this._$endNode) {
       const n = start!.nextSibling;
       start!.remove();
@@ -1104,7 +1076,8 @@ export class NodePart {
   }
 }
 
-export class AttributePart {
+export type AttributePart = Interface<AttributePartImpl>;
+class AttributePartImpl {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
@@ -1121,9 +1094,9 @@ export class AttributePart {
    */
   readonly strings?: ReadonlyArray<string>;
   /** @internal */
-  _$value: unknown | Array<unknown> = nothing;
+  _$committedValue: unknown | Array<unknown> = nothing;
   /** @internal */
-  _directives?: Array<Directive | undefined>;
+  __directives?: Array<Directive | undefined>;
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
@@ -1153,10 +1126,10 @@ export class AttributePart {
     this._$parent = parent;
     this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this._$value = new Array(strings.length - 1).fill(nothing);
+      this._$committedValue = new Array(strings.length - 1).fill(nothing);
       this.strings = strings;
     } else {
-      this._$value = nothing;
+      this._$committedValue = nothing;
     }
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       this._sanitizer = undefined;
@@ -1200,9 +1173,10 @@ export class AttributePart {
       // Single-value binding case
       value = resolveDirective(this, value, directiveParent, 0);
       change =
-        !isPrimitive(value) || (value !== this._$value && value !== noChange);
+        !isPrimitive(value) ||
+        (value !== this._$committedValue && value !== noChange);
       if (change) {
-        this._$value = value;
+        this._$committedValue = value;
       }
     } else {
       // Interpolation case
@@ -1215,9 +1189,10 @@ export class AttributePart {
 
         if (v === noChange) {
           // If the user-provided value is `noChange`, use the previous value
-          v = (this._$value as Array<unknown>)[i];
+          v = (this._$committedValue as Array<unknown>)[i];
         }
-        change ||= !isPrimitive(v) || v !== (this._$value as Array<unknown>)[i];
+        change ||=
+          !isPrimitive(v) || v !== (this._$committedValue as Array<unknown>)[i];
         if (v === nothing) {
           value = nothing;
         } else if (value !== nothing) {
@@ -1225,7 +1200,7 @@ export class AttributePart {
         }
         // We always record each value, even if one is `nothing`, for future
         // change detection.
-        (this._$value as Array<unknown>)[i] = v;
+        (this._$committedValue as Array<unknown>)[i] = v;
       }
     }
     if (change && !noCommit) {
@@ -1253,7 +1228,8 @@ export class AttributePart {
   }
 }
 
-export class PropertyPart extends AttributePart {
+export type PropertyPart = Interface<PropertyPartImpl>;
+class PropertyPartImpl extends AttributePartImpl {
   readonly type = PROPERTY_PART;
 
   /** @internal */
@@ -1273,7 +1249,8 @@ export class PropertyPart extends AttributePart {
   }
 }
 
-export class BooleanAttributePart extends AttributePart {
+export type BooleanAttributePart = Interface<BooleanAttributePartImpl>;
+class BooleanAttributePartImpl extends AttributePartImpl {
   readonly type = BOOLEAN_ATTRIBUTE_PART;
 
   /** @internal */
@@ -1300,7 +1277,8 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  * Because event options are passed when adding listeners, we must take case
  * to add and remove the part as a listener when the event options change.
  */
-export class EventPart extends AttributePart {
+export type EventPart = Interface<EventPartImpl>;
+class EventPartImpl extends AttributePartImpl {
   readonly type = EVENT_PART;
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
@@ -1312,7 +1290,7 @@ export class EventPart extends AttributePart {
     if (newListener === noChange) {
       return;
     }
-    const oldListener = this._$value;
+    const oldListener = this._$committedValue;
 
     // If the new value is nothing or any options change we have to remove the
     // part as a listener.
@@ -1348,17 +1326,56 @@ export class EventPart extends AttributePart {
         newListener as EventListenerWithOptions
       );
     }
-    this._$value = newListener;
+    this._$committedValue = newListener;
   }
 
   handleEvent(event: Event) {
-    if (typeof this._$value === 'function') {
+    if (typeof this._$committedValue === 'function') {
       // TODO (justinfagnani): do we need to default to this._$element?
       // It'll always be the same as `e.currentTarget`.
-      this._$value.call(this.options?.host ?? this.element, event);
+      this._$committedValue.call(this.options?.host ?? this.element, event);
     } else {
-      (this._$value as EventListenerObject).handleEvent(event);
+      (this._$committedValue as EventListenerObject).handleEvent(event);
     }
+  }
+}
+
+export type ElementPart = Interface<ElementPartImpl>;
+class ElementPartImpl {
+  readonly type = ELEMENT_PART;
+
+  /** @internal */
+  __directive?: Directive;
+
+  // This is to ensure that every Part has a _$committedValue
+  _$committedValue: undefined;
+
+  /** @internal */
+  _$parent: Disconnectable | undefined;
+
+  /** @internal */
+  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+
+  /** @internal */
+  _setDirectiveConnected?: (
+    directive: Directive | undefined,
+    isConnected: boolean,
+    removeFromParent?: boolean
+  ) => void = undefined;
+
+  options: RenderOptions | undefined;
+
+  constructor(
+    public element: Element,
+    parent: Disconnectable,
+    options: RenderOptions | undefined
+  ) {
+    this._$parent = parent;
+    this.options = options;
+  }
+
+  _$setValue(value: unknown): void {
+    resolveDirective(this, value);
   }
 }
 
@@ -1388,11 +1405,17 @@ export const _$private = {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
+  // Used in tests and private-ssr-support
+  _ChildPart: ChildPartImpl,
+  _AttributePart: AttributePartImpl as AttributePartConstructor,
+  _BooleanAttributePart: BooleanAttributePartImpl as AttributePartConstructor,
+  _EventPart: EventPartImpl as AttributePartConstructor,
+  _PropertyPart: PropertyPartImpl as AttributePartConstructor,
 };
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.({NodePart, Template});
+(globalThis as any)['litHtmlPlatformSupport']?.(TemplateImpl, ChildPartImpl);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

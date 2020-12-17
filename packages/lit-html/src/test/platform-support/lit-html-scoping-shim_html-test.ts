@@ -73,7 +73,7 @@ suite('ShadyCSS scoping shim', () => {
 
   // TODO(sorvell): No longer supported. Only styles in TemplateResults are
   // identified.
-  test.skip('Styles inserted in the initial render through NodeParts are scoped.', function () {
+  test.skip('Styles inserted in the initial render through ChildParts are scoped.', function () {
     const style = document.createElement('style');
     style.innerHTML =
       ':host { border-top: 2px solid black; } button { font-size: 7px; }';

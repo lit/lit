@@ -21,6 +21,7 @@ packages/benchmarks/**/*.js.map
 packages/labs/development/
 packages/labs/node_modules/
 packages/labs/index.*
+packages/labs/frameworks/
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
@@ -95,12 +96,12 @@ packages/localize/id-generation.*
 
 packages/tests/node_modules/
 
-packages/updating-element/decorators/
-packages/updating-element/development/
-packages/updating-element/test/
-packages/updating-element/css-tag.*
-packages/updating-element/decorators.*
-packages/updating-element/platform-support.*
-packages/updating-element/updating-element.*
+packages/reactive-element/decorators/
+packages/reactive-element/development/
+packages/reactive-element/test/
+packages/reactive-element/css-tag.*
+packages/reactive-element/decorators.*
+packages/reactive-element/platform-support.*
+packages/reactive-element/reactive-element.*
 
 packages/localize/testdata/

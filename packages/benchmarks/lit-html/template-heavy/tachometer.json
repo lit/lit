@@ -52,11 +52,11 @@
                   "npm run build"
                 ]
               },
-              "updating-element": {
+              "reactive-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
                 "ref": "lit-next",
-                "subdir": "packages/updating-element",
+                "subdir": "packages/reactive-element",
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",
@@ -74,11 +74,11 @@
             "dependencies": {
               "lit-html": "^1.0.0",
               "lit-element": "^2.0.0",
-              "updating-element": {
+              "reactive-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
                 "ref": "lit-next",
-                "subdir": "packages/updating-element",
+                "subdir": "packages/reactive-element",
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",

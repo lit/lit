@@ -145,7 +145,7 @@ suite('classMap directive', () => {
     });
   });
 
-  test('throws when used in NodePart', () => {
+  test('throws when used in ChildPart', () => {
     assert.throws(() => {
       render(html`<div>${classMap({})}</div>`, container);
     });

@@ -12,19 +12,31 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, noChange, nothing, PartInfo} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
-import {resetPartValue} from '../directive-helpers.js';
+import {AttributePart, noChange, nothing} from '../lit-html.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  PartInfo,
+  PartType,
+} from '../directive.js';
+import {isSingleExpression, setComittedValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type === PartType.EVENT || partInfo.type === PartType.NODE) {
+    if (
+      !(
+        partInfo.type === PartType.PROPERTY ||
+        partInfo.type === PartType.ATTRIBUTE ||
+        partInfo.type === PartType.BOOLEAN_ATTRIBUTE
+      )
+    ) {
       throw new Error(
-        'The `live` directive is not allowed on text or event bindings'
+        'The `live` directive is not allowed on child or event bindings'
       );
     }
-    if (partInfo.strings !== undefined) {
+    if (!isSingleExpression(partInfo)) {
       throw new Error('`live` bindings can only contain a single expression');
     }
   }
@@ -33,7 +45,7 @@ class LiveDirective extends Directive {
     return value;
   }
 
-  update(part: AttributePart, [value]: Parameters<this['render']>) {
+  update(part: AttributePart, [value]: DirectiveParameters<this>) {
     if (value === noChange || value === nothing) {
       return value;
     }
@@ -59,7 +71,7 @@ class LiveDirective extends Directive {
     }
     // Resets the part's value, causing its dirty-check to fail so that it
     // always sets the value.
-    resetPartValue(part);
+    setComittedValue(part);
     return value;
   }
 }

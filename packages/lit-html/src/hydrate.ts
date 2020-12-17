@@ -18,18 +18,25 @@ import {TemplateResult} from './lit-html.js';
 import {
   noChange,
   EventPart,
-  NodePart,
+  ChildPart,
   PropertyPart,
   RenderOptions,
   _$private,
 } from './lit-html.js';
-import {PartType} from './directive.js';
-import {isPrimitive} from './directive-helpers.js';
+import {AttributePartInfo, PartType} from './directive.js';
+import {
+  isPrimitive,
+  isSingleExpression,
+  isTemplateResult,
+} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
+  _ChildPart: ChildPart,
+  _EventPart: EventPart,
+  _PropertyPart: PropertyPart,
 } = _$private;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -37,24 +44,24 @@ type TemplateInstance = InstanceType<typeof TemplateInstance>;
 /**
  * Information needed to rehydrate a single TemplateResult.
  */
-type NodePartState =
+type ChildPartState =
   | {
       type: 'leaf';
-      /** The NodePart that the result is rendered to */
-      part: NodePart;
+      /** The ChildPart that the result is rendered to */
+      part: ChildPart;
     }
   | {
       type: 'iterable';
-      /** The NodePart that the result is rendered to */
-      part: NodePart;
+      /** The ChildPart that the result is rendered to */
+      part: ChildPart;
       value: Iterable<unknown>;
       iterator: Iterator<unknown>;
       done: boolean;
     }
   | {
       type: 'template-instance';
-      /** The NodePart that the result is rendered to */
-      part: NodePart;
+      /** The ChildPart that the result is rendered to */
+      part: ChildPart;
 
       result: TemplateResult;
 
@@ -85,12 +92,12 @@ type NodePartState =
  * efficiently, the same as if lit-html had rendered the DOM on the client.
  *
  * hydrate() must be called on DOM that adheres the to lit-ssr structure for
- * parts. NodeParts must be represented with both a start and end comment
- * marker, and NodeParts that contain a TemplateInstance must have the template
+ * parts. ChildParts must be represented with both a start and end comment
+ * marker, and ChildParts that contain a TemplateInstance must have the template
  * digest written into the comment data.
  *
- * Since render() encloses its output in a NodePart, there must always be a root
- * NodePart.
+ * Since render() encloses its output in a ChildPart, there must always be a root
+ * ChildPart.
  *
  * Example (using for # ... for annotations in HTML)
  *
@@ -100,7 +107,7 @@ type NodePartState =
  *
  * The SSR DOM is:
  *
- *   <!--lit-part AEmR7W+R0Ak=-->  # Start marker for the root Node Part created
+ *   <!--lit-part AEmR7W+R0Ak=-->  # Start marker for the root ChildPart created
  *                                 # by render(). Includes the digest of the
  *                                 # template
  *   <div class="TEST_X">
@@ -112,7 +119,7 @@ type NodePartState =
  *     <!--/lit-part-->  # End marker for the ${x} expression
  *   </div>
  *
- *   <!--/lit-part-->  # End marker for the root NodePart
+ *   <!--/lit-part-->  # End marker for the root ChildPart
  *
  * @param rootValue
  * @param container
@@ -129,19 +136,19 @@ export const hydrate = (
     throw new Error('container already contains a live render');
   }
 
-  // Since render() creates a NodePart to render into, we'll always have
+  // Since render() creates a ChildPart to render into, we'll always have
   // exactly one root part. We need to hold a reference to it so we can set
   // it in the parts cache.
-  let rootPart: NodePart | undefined = undefined;
+  let rootPart: ChildPart | undefined = undefined;
 
-  // When we are in-between node part markers, this is the current NodePart.
-  // It's needed to be able to set the NodePart's endNode when we see a
+  // When we are in-between ChildPart markers, this is the current ChildPart.
+  // It's needed to be able to set the ChildPart's endNode when we see a
   // close marker
-  let currentNodePart: NodePart | undefined = undefined;
+  let currentChildPart: ChildPart | undefined = undefined;
 
   // Used to remember parent template state as we recurse into nested
   // templates
-  const stack: Array<NodePartState> = [];
+  const stack: Array<ChildPartState> = [];
 
   const walker = document.createTreeWalker(
     container,
@@ -158,19 +165,19 @@ export const hydrate = (
       if (stack.length === 0 && rootPart !== undefined) {
         throw new Error('there must be only one root part per container');
       }
-      // Create a new NodePart and push it onto the stack
-      currentNodePart = openNodePart(rootValue, marker, stack, options);
-      rootPart ??= currentNodePart;
+      // Create a new ChildPart and push it onto the stack
+      currentChildPart = openChildPart(rootValue, marker, stack, options);
+      rootPart ??= currentChildPart;
     } else if (markerText.startsWith('lit-bindings')) {
-      // Create and hydrate attribute parts into the current NodePart on the
+      // Create and hydrate attribute parts into the current ChildPart on the
       // stack
       createAttributeParts(marker, stack, options);
     } else if (markerText.startsWith('/lit-part')) {
-      // Close the current NodePart, and pop the previous one off the stack
-      if (stack.length === 1 && currentNodePart !== rootPart) {
+      // Close the current ChildPart, and pop the previous one off the stack
+      if (stack.length === 1 && currentChildPart !== rootPart) {
         throw new Error('internal error');
       }
-      currentNodePart = closeNodePart(marker, currentNodePart, stack);
+      currentChildPart = closeChildPart(marker, currentChildPart, stack);
     }
   }
   console.assert(
@@ -181,29 +188,29 @@ export const hydrate = (
   (container as any).$lit$ = rootPart;
 };
 
-const openNodePart = (
+const openChildPart = (
   rootValue: unknown,
   marker: Comment,
-  stack: Array<NodePartState>,
+  stack: Array<ChildPartState>,
   options: RenderOptions
 ) => {
   let value: unknown;
   // We know the startNode now. We'll know the endNode when we get to
-  // the matching marker and set it in closeNodePart()
+  // the matching marker and set it in closeChildPart()
   // TODO(kschaaf): Current constructor takes both nodes
   let part;
   if (stack.length === 0) {
-    part = new NodePart(marker, null, undefined, options);
+    part = new ChildPart(marker, null, undefined, options);
     value = rootValue;
   } else {
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
-      part = new NodePart(marker, null, state.instance, options);
+      part = new ChildPart(marker, null, state.instance, options);
       state.instance._parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
-      part = new NodePart(marker, null, state.part, options);
+      part = new ChildPart(marker, null, state.part, options);
       const result = state.iterator.next();
       if (result.done) {
         value = undefined;
@@ -212,7 +219,7 @@ const openNodePart = (
       } else {
         value = result.value;
       }
-      (state.part._$value as Array<NodePart>).push(part);
+      (state.part._$committedValue as Array<ChildPart>).push(part);
     } else {
       // state.type === 'leaf'
       // TODO(kschaaf): This is unexpected, and likely a result of a primitive
@@ -224,12 +231,12 @@ const openNodePart = (
       // https://github.com/Polymer/lit-html/issues/1434
       // throw new Error('Hydration value mismatch: Found a TemplateInstance' +
       //  'where a leaf value was expected');
-      part = new NodePart(marker, null, state.part, options);
+      part = new ChildPart(marker, null, state.part, options);
     }
   }
 
-  // Initialize the NodePart state depending on the type of value and push
-  // it onto the stack. This logic closely follows the NodePart commit()
+  // Initialize the ChildPart state depending on the type of value and push
+  // it onto the stack. This logic closely follows the ChildPart commit()
   // cascade order:
   // 1. directive
   // 2. noChange
@@ -245,7 +252,7 @@ const openNodePart = (
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
-    part._$value = value;
+    part._$committedValue = value;
     // TODO(kschaaf): We can detect when a primitive is being hydrated on the
     // client where a TemplateResult was rendered on the server, but we need to
     // decide on a strategy for what to do next.
@@ -253,13 +260,13 @@ const openNodePart = (
     // if (marker.data !== 'lit-part') {
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
-  } else if ((value as TemplateResult)._$litType$ !== undefined) {
+  } else if (isTemplateResult(value)) {
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(
       value as TemplateResult
     )}`;
     if (marker.data === markerWithDigest) {
-      const template = NodePart.prototype._$getTemplate(
+      const template = ChildPart.prototype._$getTemplate(
         (value as TemplateResult).strings,
         value as TemplateResult
       );
@@ -274,7 +281,7 @@ const openNodePart = (
       });
       // For TemplateResult values, we set the part value to the
       // generated TemplateInstance
-      part._$value = instance;
+      part._$committedValue = instance;
     } else {
       // TODO: if this isn't the server-rendered template, do we
       // need to stop hydrating this subtree? Clear it? Add tests.
@@ -283,7 +290,7 @@ const openNodePart = (
       );
     }
   } else if (isIterable(value)) {
-    // currentNodePart.value will contain an array of NodeParts
+    // currentChildPart.value will contain an array of ChildParts
     stack.push({
       part: part,
       type: 'iterable',
@@ -291,23 +298,23 @@ const openNodePart = (
       iterator: value[Symbol.iterator](),
       done: false,
     });
-    part._$value = [];
+    part._$committedValue = [];
   } else {
     // Fallback for everything else (nothing, Objects, Functions,
     // etc.): we just initialize the part's value
     // Note that `Node` value types are not currently supported during
     // SSR, so that part of the cascade is missing.
     stack.push({part: part, type: 'leaf'});
-    part._$value = value == null ? '' : value;
+    part._$committedValue = value == null ? '' : value;
   }
   return part;
 };
 
-const closeNodePart = (
+const closeChildPart = (
   marker: Comment,
-  part: NodePart | undefined,
-  stack: Array<NodePartState>
-): NodePart | undefined => {
+  part: ChildPart | undefined,
+  stack: Array<ChildPartState>
+): ChildPart | undefined => {
   if (part === undefined) {
     throw new Error('unbalanced part marker');
   }
@@ -332,7 +339,7 @@ const closeNodePart = (
 
 const createAttributeParts = (
   node: Comment,
-  stack: Array<NodePartState>,
+  stack: Array<ChildPartState>,
   options: RenderOptions
 ) => {
   // Get the nodeIndex from DOM. We're only using this for an integrity
@@ -368,12 +375,13 @@ const createAttributeParts = (
         options
       );
 
-      const value =
-        instancePart.strings === undefined
-          ? state.result.values[state.instancePartIndex]
-          : state.result.values;
+      const value = isSingleExpression(
+        (instancePart as unknown) as AttributePartInfo
+      )
+        ? state.result.values[state.instancePartIndex]
+        : state.result.values;
 
-      // Setting the attribute value primes _$value with the resolved
+      // Setting the attribute value primes committed value with the resolved
       // directive value; we only then commit that value for event/property
       // parts since those were not serialized, and pass `noCommit` for the
       // others to avoid perf impact of touching the DOM unnecessarily

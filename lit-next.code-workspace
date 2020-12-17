@@ -9,8 +9,8 @@
 			"path": "packages/lit-element"
 		},
 		{
-			"name": "updating-element",
-			"path": "packages/updating-element"
+			"name": "reactive-element",
+			"path": "packages/reactive-element"
 		},
 		{
 			"name": "lit-ssr",

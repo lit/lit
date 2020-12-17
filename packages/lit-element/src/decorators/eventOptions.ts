@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'updating-element/decorators/eventOptions.js';
+export * from 'reactive-element/decorators/eventOptions.js';

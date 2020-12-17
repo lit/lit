@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {ChildPart, noChange} from '../lit-html.js';
+import {directive, Directive, PartInfo, PartType} from '../directive.js';
 import {
   insertPart,
-  getPartValue,
+  getComittedValue,
   removePart,
-  resetPartValue,
+  setComittedValue,
   setPartValue,
 } from '../directive-helpers.js';
 
@@ -61,7 +61,7 @@ class RepeatDirective extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    if (partInfo.type !== PartType.NODE) {
+    if (partInfo.type !== PartType.CHILD) {
       throw new Error('repeat can only be used in text bindings');
     }
   }
@@ -100,7 +100,7 @@ class RepeatDirective extends Directive {
   }
 
   update<T>(
-    containerPart: NodePart,
+    containerPart: ChildPart,
     [items, keyFnOrTemplate, template]: [
       Iterable<T>,
       KeyFn<T> | ItemTemplate<T>,
@@ -109,7 +109,7 @@ class RepeatDirective extends Directive {
   ) {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    const oldParts = getPartValue(containerPart) as Array<NodePart | null>;
+    const oldParts = getComittedValue(containerPart) as Array<ChildPart | null>;
     const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
       items,
       keyFnOrTemplate,
@@ -126,7 +126,7 @@ class RepeatDirective extends Directive {
     // New part list will be built up as we go (either reused from
     // old parts or created for new keys in this update). This is
     // saved in the above cache at the end of the update.
-    const newParts: NodePart[] = [];
+    const newParts: ChildPart[] = [];
 
     // Maps from key to index for current and previous update; these
     // are generated lazily only when needed as a performance
@@ -438,7 +438,7 @@ class RepeatDirective extends Directive {
     // Save order of new parts for next round
     this.itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
-    resetPartValue(containerPart, newParts);
+    setComittedValue(containerPart, newParts);
     return noChange;
   }
 }

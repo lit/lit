@@ -12,8 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {AttributePart, noChange, PartInfo} from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {AttributePart, noChange} from '../lit-html.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  PartInfo,
+  PartType,
+} from '../directive.js';
 
 /**
  * A key-value set of class names to truthy values.
@@ -34,7 +40,7 @@ class ClassMap extends Directive {
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'class' ||
-      (partInfo.strings !== undefined && partInfo.strings.length > 2)
+      (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
         'The `classMap` directive must be used in the `class` attribute ' +
@@ -49,7 +55,7 @@ class ClassMap extends Directive {
       .join(' ');
   }
 
-  update(part: AttributePart, [classInfo]: [ClassInfo]) {
+  update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
     // Remember dynamic classes on the first render
     if (this.previousClasses === undefined) {
       this.previousClasses = new Set();

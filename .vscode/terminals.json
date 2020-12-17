@@ -8,9 +8,9 @@
       "command": "npm run build:ts:watch"
     },
     {
-      "name": "TS: updating-element",
+      "name": "TS: reactive-element",
       "icon": "checklist",
-      "cwd": "[workspaceFolder]/packages/updating-element",
+      "cwd": "[workspaceFolder]/packages/reactive-element",
       "command": "npm run build:ts:watch"
     },
     {
@@ -33,9 +33,9 @@
       "command": "npm run build:watch"
     },
     {
-      "name": "Rollup: updating-element",
+      "name": "Rollup: reactive-element",
       "icon": "checklist",
-      "cwd": "[workspaceFolder]/packages/updating-element",
+      "cwd": "[workspaceFolder]/packages/reactive-element",
       "command": "npm run build:watch"
     },
     {
