@@ -104,5 +104,5 @@ export interface Layout {
    *       width: number,
    *     }
    */
-  reflowIfNeeded: () => void;
+  reflowIfNeeded: (force: boolean) => void;
 }

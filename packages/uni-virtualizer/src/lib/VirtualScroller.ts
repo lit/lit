@@ -123,6 +123,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
   private _rangeChanged: boolean = true;
 
+  private _itemsChanged: boolean = true;
+
   private _visibilityChanged: boolean = true;
 
   /**
@@ -229,6 +231,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
   set items(items) {
     if (items !== this._items) {
+      this._itemsChanged = true;
       this._items = items;
       this._schedule(this._updateLayout);
     }
@@ -433,9 +436,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      if (this._toBeMeasured.has(child)) {
+      // if (this._toBeMeasured.has(child)) {
         mm[idx] = fn.call(this, child, this._items[idx]);
-      }
+      // }
     }
     this._childMeasurements = mm;
     this._schedule(this._updateLayout);
@@ -507,14 +510,15 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   async _updateDOM() {
-    const {_rangeChanged} = this;
+    const {_rangeChanged, _itemsChanged} = this;
     if (this._visibilityChanged) {
       this._notifyVisibility();
       this._visibilityChanged = false;
     }
-    if (_rangeChanged) {
+    if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
+      this._itemsChanged = false;
       await this._mutationPromise;
     }
     if (this._layout.measureChildren) {
@@ -545,7 +549,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       }
       this._childMeasurements = null;
     }
-    this._layout.reflowIfNeeded();
+    this._layout.reflowIfNeeded(this._itemsChanged);
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
     }

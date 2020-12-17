@@ -255,8 +255,8 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Perform a reflow if one has been scheduled.
    */
-  reflowIfNeeded() {
-    if (this._pendingReflow) {
+  reflowIfNeeded(force) {
+    if (force || this._pendingReflow) {
       this._pendingReflow = false;
       this._reflow();
     }
