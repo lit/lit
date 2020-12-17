@@ -43,7 +43,7 @@
     "checksize": "rollup -c --environment=CHECKSIZE",
     "clean": "rm -rf reactive-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
-    "prepublishOnly": "npm run check-version && npm run lint && npm test",
+    "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "test": "npm run test:dev && npm run test:prod",
