@@ -22,7 +22,6 @@
       html,
       body {
         margin: 0;
-        height: 100%;
         font-family: sans-serif;
       }
       main {
@@ -159,25 +158,25 @@
             this.animating ? 'Stop' : 'Go'
           }</button>
             <section class="animation-container">
-                <div ${flip(
-                  options
-                )} class="box positioned-box ${layoutClass}"">Hello!</div>
+              <div ${flip(
+                options
+              )} class="box positioned-box ${layoutClass}"">Hello!</div>
+            </section>
+            <section class="animation-container2">
+              <section class="animation-list ${layoutClass}">
+                <div class="box" ${flip(options)}>Item 1</div>
+                <div class="box" ${flip(options)}>Item 2</div>
+                <div class="box" ${flip(options)}>Item 3</div>
+                <div class="box" ${flip(options)}>Item 4</div>
               </section>
-              <section class="animation-container2">
-                <section class="animation-list ${layoutClass}">
-                  <div class="box" ${flip(options)}>Item 1</div>
-                  <div class="box" ${flip(options)}>Item 2</div>
-                  <div class="box" ${flip(options)}>Item 3</div>
-                  <div class="box" ${flip(options)}>Item 4</div>
-                </section>
-              </section>
-              <section>
-                <div class="hibox box from-top-left ${layoutClass}"  ${flip({
+            </section>
+            <section>
+              <div class="hibox box from-top-left ${layoutClass}"  ${flip({
             ...options,
             onComplete: () => this.animationDone(),
           })}>Hi</div>
             </section>
-            <section>X
+            <section>
               ${
                 layoutClass
                   ? html`<div
@@ -185,9 +184,7 @@
                       ${flip({
                         ...options,
                         in: flyBelow,
-                        out: [
-                          {transform: 'translateY(500%) scale(0)', opacity: 0},
-                        ] /*, onComplete: () => this.animationDone()*/,
+                        out: flyBelow /*, onComplete: () => this.animationDone()*/,
                       })}
                     >
                       In / Out

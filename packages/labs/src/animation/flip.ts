@@ -169,22 +169,21 @@ export class Flip extends DisconnectableDirective {
         // Move to position before removal before animating
         const shifted: CSSProperties = {};
         this._record(this._animatingElement, shifted);
-        const left = transformProps.left(
-          this._from.left as number,
-          shifted.left as number
-        );
-        const top = transformProps.top(
-          this._from.top as number,
-          shifted.top as number
-        );
-        const initialTransform = this._animatingElement.style.transform;
-        const initialPosition = this._animatingElement.style.position;
-        this._animatingElement.style.transform += ` ${left || ''} ${top || ''}`;
-        this._animatingElement.style.position = 'absolute';
+        const left = diffOp(this._from.left as number, shifted.left as number);
+        // TODO(sorvell): these nudges could conflict with existing styling
+        // or animation but setting left/top should be rare, especially via
+        // animation.
+        if (left !== 0) {
+          this._animatingElement.style.position = 'relative';
+          this._animatingElement.style.left = left + 'px';
+        }
+        const top = diffOp(this._from.top as number, shifted.top as number);
+        if (top !== 0) {
+          this._animatingElement.style.position = 'relative';
+          this._animatingElement.style.top = top + 'px';
+        }
         await this._animate(this._outFrames);
         this._animatingElement.remove();
-        this._animatingElement.style.position = initialPosition;
-        this._animatingElement.style.transform = initialTransform;
       }
     });
   }
