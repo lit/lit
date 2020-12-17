@@ -540,9 +540,8 @@ export abstract class ReactiveElement extends HTMLElement {
         if (obj[name] !== undefined) {
           console.warn(
             `\`${name}\` is implemented. It ` +
-              `has been removed from this version of ReactiveElement. `
-            // TODO(sorvell): add link to changelog when location has stabilized.
-            // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
+              `has been removed from this version of ReactiveElement.` +
+              ` See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
           );
         }
       };
