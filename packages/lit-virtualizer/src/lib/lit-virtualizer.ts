@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit-element';
-import { customElement } from 'lit-element/lib/decorators/customElement';
-import { property } from 'lit-element/lib/decorators/property';
+import { customElement } from 'lit-element/decorators/customElement';
+import { property } from 'lit-element/decorators/property';
 import { TemplateResult } from 'lit-html';
 import { scroll } from './scroll.js';
 import { scrollerRef } from './uni-virtualizer/lib/VirtualScroller.js';

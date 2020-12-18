@@ -1,5 +1,6 @@
-import { directive, NodePart, TemplateResult, Directive, PartInfo, html, NODE_PART, nothing } from 'lit-html';
-import { setPartValue } from 'lit-html/parts.js';
+import { TemplateResult, html, nothing, ChildPart } from 'lit-html';
+import { directive, Directive, PartInfo, PartType } from 'lit-html/directive.js';
+import { setChildPartValue } from 'lit-html/directive-helpers.js';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
 import { VirtualScroller, RangeChangeEvent } from './uni-virtualizer/lib/VirtualScroller.js';
@@ -53,8 +54,8 @@ class ScrollDirective extends Directive {
     items: Array<any>
 
     constructor(part: PartInfo) {
-        super();
-        if (part.type !== NODE_PART) {
+        super(part);
+        if (part.type !== PartType.ELEMENT) {
             throw new Error('The scroll directive can only be used in text bindings');
         }
     }
@@ -73,7 +74,7 @@ class ScrollDirective extends Directive {
         return html`${repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem)}`;
     }
 
-    update<T>(part: NodePart, [config]: [ScrollConfig<T>]) {
+    update<T>(part: ChildPart, [config]: [ScrollConfig<T>]) {
         if (this.scroller || this._initialize(part, config)) {
             const { scroller } = this;
             this.items = scroller.items = config.items;
@@ -88,16 +89,16 @@ class ScrollDirective extends Directive {
         return nothing;
     }
 
-    private _initialize<T>(part: NodePart, config: ScrollConfig<T>) {
+    private _initialize<T>(part: ChildPart, config: ScrollConfig<T>) {
         // TODO (GN): Replace reference to part._startNode when a public alternative
         // is available (https://github.com/Polymer/lit-html/issues/1346)
-        const container = this.container = part._startNode.parentElement;
+        const container = this.container = part._$startNode.parentElement;
         if (container) {
             this.scroller = new VirtualScroller({ container });
             container.addEventListener('rangeChanged', (e: CustomEvent<RangeChangeEvent>) => {
                 this.first = e.detail.first;
                 this.last = e.detail.last;
-                setPartValue(part, this.render());
+                setChildPartValue(part, this.render());
             });
             return true;
         }
