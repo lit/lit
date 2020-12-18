@@ -13,7 +13,7 @@
  */
 
 import {
-  _$lhPrivate,
+  _Σ,
   ChildPart,
   Part,
   DirectiveParent,
@@ -27,7 +27,7 @@ import {
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
-const {_ChildPart: ChildPartImpl} = _$lhPrivate;
+const {_ChildPart: ChildPartImpl} = _Σ;
 
 /**
  * Tests if a value is a primitive value.
