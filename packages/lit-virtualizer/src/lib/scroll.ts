@@ -55,7 +55,7 @@ class ScrollDirective extends Directive {
 
     constructor(part: PartInfo) {
         super(part);
-        if (part.type !== PartType.ELEMENT) {
+        if (part.type !== PartType.CHILD) {
             throw new Error('The scroll directive can only be used in text bindings');
         }
     }
@@ -92,7 +92,7 @@ class ScrollDirective extends Directive {
     private _initialize<T>(part: ChildPart, config: ScrollConfig<T>) {
         // TODO (GN): Replace reference to part._startNode when a public alternative
         // is available (https://github.com/Polymer/lit-html/issues/1346)
-        const container = this.container = part._$startNode.parentElement;
+        const container = this.container = part.parentNode as HTMLElement;
         if (container) {
             this.scroller = new VirtualScroller({ container });
             container.addEventListener('rangeChanged', (e: CustomEvent<RangeChangeEvent>) => {
