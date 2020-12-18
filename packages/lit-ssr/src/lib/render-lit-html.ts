@@ -20,7 +20,7 @@ import {TemplateResult, ChildPart} from 'lit-html';
 import {nothing, noChange} from 'lit-html';
 import {PartType} from 'lit-html/directive.js';
 import {isTemplateResult} from 'lit-html/directive-helpers.js';
-import {_$private} from 'lit-html/private-ssr-support.js';
+import {_$lhPrivate} from 'lit-html/private-ssr-support.js';
 
 const {
   getTemplateHtml,
@@ -34,7 +34,7 @@ const {
   PropertyPart,
   BooleanAttributePart,
   EventPart,
-} = _$private;
+} = _$lhPrivate;
 
 import {digestForTemplateResult} from 'lit-html/hydrate.js';
 

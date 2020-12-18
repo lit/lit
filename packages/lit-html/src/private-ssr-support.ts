@@ -13,21 +13,21 @@
  */
 
 import {Directive} from './directive.js';
-import {_$private as p, AttributePart, noChange} from './lit-html.js';
+import {_$lhPrivate as p, AttributePart, noChange} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _$private object containing those members (or
+ * client side code, we export a _$lhPrivate object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
  *
  * @private
  */
-export const _$private = {
+export const _$lhPrivate = {
   boundAttributeSuffix: p._boundAttributeSuffix,
   marker: p._marker,
   markerMatch: p._markerMatch,

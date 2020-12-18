@@ -13,7 +13,7 @@
  */
 
 import {
-  _$private,
+  _$lhPrivate,
   AttributePart,
   Disconnectable,
   ChildPart,
@@ -21,7 +21,7 @@ import {
   ElementPart,
 } from './lit-html';
 
-const resolveDirective = _$private._resolveDirective;
+const resolveDirective = _$lhPrivate._resolveDirective;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
