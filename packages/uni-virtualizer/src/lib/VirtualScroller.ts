@@ -436,9 +436,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      // if (this._toBeMeasured.has(child)) {
+      if (this._itemsChanged || this._toBeMeasured.has(child)) {
         mm[idx] = fn.call(this, child, this._items[idx]);
-      // }
+      }
     }
     this._childMeasurements = mm;
     this._schedule(this._updateLayout);
