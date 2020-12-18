@@ -65,6 +65,32 @@
           <td>count</td><td>count</td><td>The number of times the button has been clicked.</td><td>number</td><td>0</td>
         </tr>
       
+        <tr>
+          <td>renderRoot</td><td>undefined</td><td>Node or ShadowRoot into which element DOM should be rendered. Defaults
+to an open shadowRoot.</td><td>HTMLElement | ShadowRoot</td><td>undefined</td>
+        </tr>
+      
+        <tr>
+          <td>isUpdatePending</td><td>undefined</td><td>undefined</td><td>boolean</td><td>undefined</td>
+        </tr>
+      
+        <tr>
+          <td>hasUpdated</td><td>undefined</td><td>undefined</td><td>boolean</td><td>undefined</td>
+        </tr>
+      
+        <tr>
+          <td>updateComplete</td><td>undefined</td><td>Returns a Promise that resolves when the element has completed updating.
+The Promise value is a boolean that is `true` if the element completed the
+update without triggering another update. The Promise result is `false` if
+a property was set inside `updated()`. If the Promise is rejected, an
+exception was thrown during the update.
+
+To await additional asynchronous work, override the `getUpdateComplete`
+method. For example, it is sometimes useful to await a rendered element
+before fulfilling this Promise. To do this, first await
+`super.getUpdateComplete()`, then any subsequent state.</td><td>Promise<unknown></td><td>undefined</td>
+        </tr>
+      
     </table>
     
         

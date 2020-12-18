@@ -12,7 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {LitElement, html, customElement, property, css} from 'lit-element';
+import {LitElement, html, css} from 'lit-element';
+import {customElement, property} from 'lit-element/decorators';
 
 /**
  * An example element.
