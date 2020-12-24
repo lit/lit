@@ -55,11 +55,11 @@ const myTemplate = () => {
 };
 ```
 
-More information: see See [styleMap](template-reference#stylemap) in the Template syntax reference.
+More information: see [styleMap](template-reference#stylemap) in the Template syntax reference.
 
 ## Rendering in shadow DOM
 
-When rendering into a shadow root, you usually want to add a style sheet inside the shadow root to the template, to you can style the contents of the shadow root. 
+When rendering into a shadow root, you usually want to add a style sheet inside the shadow root to the template, so you can style the contents of the shadow root. 
 
 ```js
 html`
@@ -71,7 +71,7 @@ html`
 `;
 ```
 
-This pattern may seem inefficient, since the same style sheet is reproduced in a each instance of an element. However, the browser can deduplicate multiple instances of the same style sheet, so the cost of parsing the style sheet is only paid once. 
+This pattern may seem inefficient, since the same style sheet is reproduced in each instance of an element. However, the browser can deduplicate multiple instances of the same style sheet, so the cost of parsing the style sheet is only paid once. 
 
 A new feature available in some browsers is [Constructable Stylesheets Objects](https://wicg.github.io/construct-stylesheets/). This proposed standard allows multiple shadow roots to explicitly share style sheets. LitElement uses this feature in its [static `styles` property](https://lit-element.polymer-project.org/guide/styles#define-styles-in-a-static-styles-property). 
 
