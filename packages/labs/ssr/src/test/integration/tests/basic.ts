@@ -20,7 +20,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {guard} from 'lit/directives/guard.js';
 import {cache} from 'lit/directives/cache.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {styleMap} from 'lit/directives/style-map.js';
+import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {until} from 'lit/directives/until.js';
 // TODO(kschaaf): Enable once async directives are implemented
 // import {asyncAppend} from 'lit/directives/async-append.js';
@@ -1202,7 +1202,7 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   'AttributePart accepts directive: classMap': {
-    render(map: {}) {
+    render(map: Record<string, boolean>) {
       return html` <div class=${classMap(map)}></div> `;
     },
     expectations: [
@@ -1219,7 +1219,7 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   'AttributePart accepts directive: classMap (with statics)': {
-    render(map: {}) {
+    render(map: Record<string, boolean>) {
       return html` <div class="static1 ${classMap(map)} static2"></div> `;
     },
     expectations: [
@@ -1236,7 +1236,7 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   'AttributePart accepts directive: styleMap': {
-    render(map: {}) {
+    render(map: StyleInfo) {
       return html` <div style=${styleMap(map)}></div> `;
     },
     expectations: [
@@ -1277,7 +1277,7 @@ export const tests: {[name: string]: SSRTest} = {
       skip: Boolean(
         globalThis.navigator && !navigator.userAgent.match(/Chrome/)
       ),
-      render(map: {}) {
+      render(map: StyleInfo) {
         return html` <div style=${styleMap(map)}></div> `;
       },
       expectations: [
@@ -1310,7 +1310,7 @@ export const tests: {[name: string]: SSRTest} = {
     },
 
   'AttributePart accepts directive: styleMap (with statics)': {
-    render(map: {}) {
+    render(map: StyleInfo) {
       return html`
         <div style="color: red; ${styleMap(map)} height: 3px;"></div>
       `;
