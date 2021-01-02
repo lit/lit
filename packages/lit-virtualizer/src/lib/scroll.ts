@@ -1,6 +1,6 @@
-import { TemplateResult, html, nothing, ChildPart } from 'lit-html';
-import { directive, Directive, PartInfo, PartType } from 'lit-html/directive.js';
-import { setChildPartValue } from 'lit-html/directive-helpers.js';
+import { TemplateResult, nothing, ChildPart } from 'lit-html';
+import { directive, PartInfo, PartType } from 'lit-html/directive.js';
+import { DisconnectableDirective } from 'lit-html/disconnectable-directive.js';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
 import { VirtualScroller, RangeChangeEvent } from './uni-virtualizer/lib/VirtualScroller.js';
@@ -44,7 +44,7 @@ interface ScrollConfig<Item> {
   
 const defaultKeyFunction = item => item;
 
-class ScrollDirective extends Directive {
+class ScrollDirective extends DisconnectableDirective {
     container: HTMLElement
     scroller: VirtualScroller<unknown, HTMLElement>
     first: number = 0
@@ -56,7 +56,7 @@ class ScrollDirective extends Directive {
     constructor(part: PartInfo) {
         super(part);
         if (part.type !== PartType.CHILD) {
-            throw new Error('The scroll directive can only be used in text bindings');
+            throw new Error('The scroll directive can only be used in child expressions');
         }
     }
     
@@ -71,7 +71,7 @@ class ScrollDirective extends Directive {
                 itemsToRender.push(this.items[i]);
             }    
         }
-        return html`${repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem)}`;
+        return repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem);
     }
 
     update<T>(part: ChildPart, [config]: [ScrollConfig<T>]) {
@@ -90,15 +90,13 @@ class ScrollDirective extends Directive {
     }
 
     private _initialize<T>(part: ChildPart, config: ScrollConfig<T>) {
-        // TODO (GN): Replace reference to part._startNode when a public alternative
-        // is available (https://github.com/Polymer/lit-html/issues/1346)
         const container = this.container = part.parentNode as HTMLElement;
-        if (container) {
+        if (container && container.nodeType === 1) {
             this.scroller = new VirtualScroller({ container });
             container.addEventListener('rangeChanged', (e: CustomEvent<RangeChangeEvent>) => {
                 this.first = e.detail.first;
                 this.last = e.detail.last;
-                setChildPartValue(part, this.render());
+                this.setValue(this.render());
             });
             return true;
         }
