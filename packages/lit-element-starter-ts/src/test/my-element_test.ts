@@ -1,5 +1,20 @@
 import {MyElement} from '../my-element.js';
-import {fixture, html} from '@open-wc/testing';
+
+// import {fixture, html} from '@open-wc/testing';
+// =========================================================
+// TODO(kschaaf): Switch back to @open-wc/testing:fixture once it is upgraded to
+// work with lit-next (https://github.com/open-wc/open-wc/pull/1851)
+import '@open-wc/testing/import-wrappers/chai.js';
+import '@open-wc/testing/register-chai-plugins.js';
+import '@open-wc/semantic-dom-diff';
+const html = (s: TemplateStringsArray) => s.join('');
+const fixture = async (html: string) => {
+  document.body.innerHTML = html;
+  const el = document.body.firstElementChild;
+  await (el as MyElement)?.updateComplete;
+  return el;
+};
+// =========================================================
 
 const assert = chai.assert;
 
