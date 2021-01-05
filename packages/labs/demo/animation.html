@@ -184,7 +184,8 @@
                       ${flip({
                         ...options,
                         in: flyBelow,
-                        out: flyBelow /*, onComplete: () => this.animationDone()*/,
+                        out: flyBelow,
+                        stabilizeOut: true,
                       })}
                     >
                       In / Out

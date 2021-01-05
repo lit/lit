@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Lit</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      my-element {
+        flex: 1;
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit-element/lit-element.js';
+      import {classMap} from 'lit-html/directives/class-map.js';
+      import {guard} from 'lit-html/directives/guard.js';
+      import {
+        flip,
+        flyAbove,
+        flyBelow,
+        fade,
+      } from '../development/animation/flip.js';
+
+      const lit = ['L', 'I', 'T'];
+
+      class MyElement extends LitElement {
+        static properties = {
+          lit: {},
+          shouldAnimate: {},
+        };
+
+        constructor() {
+          super();
+          this.lit = lit;
+          this.shouldAnimate = true;
+          this.addEventListener('click', () => this.toggleAnimate());
+        }
+
+        static styles = [
+          css`
+            :host {
+              display: flex;
+              height: 100%;
+              width: 100%;
+              align-items: center;
+              position: relative;
+              overflow: hidden;
+              color: #040424;
+              cursor: pointer;
+            }
+
+            .l {
+              flex: 1;
+              font-size: 30rem;
+              text-align: center;
+              will-change: transform;
+              background: linear-gradient(
+                0deg,
+                rgba(2, 0, 36, 1) 0%,
+                rgba(9, 33, 121, 1) 35%,
+                rgba(0, 212, 255, 1) 100%
+              );
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+            }
+
+            .info {
+              position: absolute;
+              right: 2px;
+              bottom: 2px;
+            }
+          `,
+        ];
+
+        render() {
+          const animationOptions = {
+            duration: 1000,
+            easing: 'ease-in-out',
+          };
+          return html`
+            <div class="info">${this.shouldAnimate ? 'animating' : ''}</div>
+            ${this.lit?.map(
+              (l, i) =>
+                html`<span
+                  class="l"
+                  ${flip({
+                    animationOptions: {
+                      ...animationOptions,
+                      fill: 'backwards',
+                      delay: i * 200,
+                    },
+                    in: fade,
+                    out: flyBelow,
+                    onComplete: (e, f) => this._onComplete(e, f),
+                  })}
+                  >${l}</span
+                >`
+            )}
+          `;
+        }
+
+        _onComplete(el, flip) {
+          flip.options.animationOptions.delay = 0;
+          if (!this._t) {
+            this._t = setTimeout(() => {
+              this._t = undefined;
+              if (this.shouldAnimate) {
+                this.lit = this.lit.length ? [] : lit;
+              }
+            }, 1000);
+          }
+        }
+
+        toggleAnimate() {
+          this.shouldAnimate = !this.shouldAnimate;
+          if (this.shouldAnimate) {
+            this.lit = this.lit.length ? [] : lit;
+          }
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

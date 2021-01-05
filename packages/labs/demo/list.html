@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Lit</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      my-element {
+        flex: 1;
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit-element/lit-element.js';
+      import {repeat} from 'lit-html/directives/repeat.js';
+      import {flip, fadeIn, flyBelow} from '../development/animation/flip.js';
+
+      const shuffle = (a) => {
+        a = a.slice();
+        let j, x, i;
+        for (i = a.length - 1; i > 0; i--) {
+          j = Math.floor(Math.random() * (i + 1));
+          x = a[i];
+          a[i] = a[j];
+          a[j] = x;
+        }
+        return a;
+      };
+
+      const data = [
+        {value: 'One'},
+        {value: 'Two'},
+        {value: 'Three'},
+        {value: 'Four'},
+        {value: 'Five'},
+        {value: 'Six'},
+        {value: 'Seven'},
+        {value: 'Eight'},
+      ];
+
+      class MyElement extends LitElement {
+        static styles = [
+          css`
+            :host {
+              display: flex;
+              height: 100%;
+              width: 100%;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              overflow: hidden;
+              color: #040424;
+            }
+
+            ul {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+              display: flex;
+              flex-direction: column;
+            }
+
+            .row {
+              flex-direction: row;
+            }
+
+            li {
+              text-align: center;
+              flex: 1;
+              background: #ef5350;
+              padding: 16px;
+              border: 4px solid #b61827;
+              border-radius: 8px;
+              margin: 8px;
+              min-width: 100px;
+            }
+          `,
+        ];
+
+        static properties = {
+          data: {},
+          row: {},
+          count: {},
+          shouldAnimate: {},
+        };
+
+        constructor() {
+          super();
+          this.addEventListener('click', (e) => this.onClick(e));
+          this.row = false;
+          this.count = 0;
+          this.data = data;
+          this.shouldAnimate = true;
+        }
+
+        render() {
+          const animationOptions = {
+            duration: 500,
+            easing: 'ease-in-out',
+            fill: 'both',
+          };
+          const d = animationOptions.duration / this.data.length;
+          return html`
+            <ul class="tabs ${this.row ? 'row' : ''}">
+              ${repeat(
+                this.data,
+                (i) => i,
+                (i, x) =>
+                  html`<li
+                    ${flip({
+                      in: fadeIn,
+                      out: flyBelow,
+                      onComplete:
+                        x === this.data.length - 1
+                          ? () => this.advance()
+                          : undefined,
+                      animationOptions: {...animationOptions, delay: x * d},
+                    })}
+                  >
+                    ${i.value}
+                  </li>`
+              )}
+            </ul>
+          `;
+        }
+
+        advance() {
+          if (this.shouldAnimate) {
+            this.count++;
+            const out = this.count % 4 === 0;
+            if (out) {
+              this.data = [];
+            } else {
+              this.row = !this.row;
+              this.data = shuffle(data);
+            }
+          }
+        }
+
+        onClick(e) {
+          this.shouldAnimate = !this.shouldAnimate;
+          this.advance();
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>
