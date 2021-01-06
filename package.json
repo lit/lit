@@ -13,6 +13,7 @@
     "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test) && (cd packages/lit-element-starter-ts && npm test) && (cd packages/lit-element-starter-js && npm test)"
   },
   "dependencies": {
+    "babel-eslint": "^10.1.0",
     "lerna": "^3.22.1"
   },
   "devDependencies": {
