@@ -24,7 +24,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -1596,16 +1596,22 @@ suite('lit-html', () => {
     });
 
     suite('nested directives', () => {
-      const aDirective = directive(
+      const aNothingDirective = directive(
         class extends Directive {
           render(bool: boolean, v: unknown) {
             return bool ? v : nothing;
           }
         }
       );
+
+      let bDirectiveCount = 0;
       const bDirective = directive(
         class extends Directive {
           count = 0;
+          constructor(part: PartInfo) {
+            super(part);
+            bDirectiveCount++;
+          }
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;
           }
@@ -1613,21 +1619,59 @@ suite('lit-html', () => {
       );
 
       test('nested directives in ChildPart', () => {
+        bDirectiveCount = 0;
         const template = (bool: boolean, v: unknown) =>
-          html`<div>${aDirective(bool, bDirective(v))}`;
+          html`<div>${aNothingDirective(bool, bDirective(v))}`;
         assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
         assertRender(template(true, 'Y'), `<div>[B:1:Y]</div>`);
         assertRender(template(false, 'X'), `<div></div>`);
         assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
+        assert.equal(bDirectiveCount, 2);
       });
 
       test('nested directives in AttributePart', () => {
+        bDirectiveCount = 0;
         const template = (bool: boolean, v: unknown) =>
-          html`<div a=${aDirective(bool, bDirective(v))}></div>`;
+          html`<div a=${aNothingDirective(bool, bDirective(v))}></div>`;
         assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
         assertRender(template(true, 'Y'), `<div a="[B:1:Y]"></div>`);
         assertRender(template(false, 'X'), `<div></div>`);
         assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
+        assert.equal(bDirectiveCount, 2);
+      });
+
+      suite('nested directives whose parent returns `noChange`', () => {
+        const aNoChangeDirective = directive(
+          class extends Directive {
+            render(bool: boolean, v: unknown) {
+              return bool ? v : noChange;
+            }
+          }
+        );
+
+        test('nested directives in ChildPart', () => {
+          bDirectiveCount = 0;
+          const template = (bool: boolean, v: unknown) =>
+            html`<div>${aNoChangeDirective(bool, bDirective(v))}`;
+          assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
+          assertRender(template(true, 'Y'), `<div>[B:1:Y]</div>`);
+          assertRender(template(false, 'X'), `<div>[B:1:Y]</div>`);
+          assertRender(template(true, 'X'), `<div>[B:2:X]</div>`);
+          assertRender(template(false, 'Y'), `<div>[B:2:X]</div>`);
+          assert.equal(bDirectiveCount, 1);
+        });
+
+        test('nested directives in AttributePart', () => {
+          bDirectiveCount = 0;
+          const template = (bool: boolean, v: unknown) =>
+            html`<div a=${aNoChangeDirective(bool, bDirective(v))}></div>`;
+          assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
+          assertRender(template(true, 'Y'), `<div a="[B:1:Y]"></div>`);
+          assertRender(template(false, 'X'), `<div a="[B:1:Y]"></div>`);
+          assertRender(template(true, 'X'), `<div a="[B:2:X]"></div>`);
+          assertRender(template(false, 'Y'), `<div a="[B:2:X]"></div>`);
+          assert.equal(bDirectiveCount, 1);
+        });
       });
     });
 
