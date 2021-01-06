@@ -9,11 +9,11 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "devDependencies": {
-    "@web/dev-server-legacy": "^0.1.4",
-    "@web/dev-server-rollup": "^0.2.7",
+    "@web/dev-server-legacy": "^0.1.6",
+    "@web/dev-server-rollup": "^0.2.13",
     "@web/test-runner": "^0.10.2",
-    "@web/test-runner-playwright": "^0.5.7",
-    "@web/test-runner-saucelabs": "0.0.9",
+    "@web/test-runner-playwright": "^0.6.6",
+    "@web/test-runner-saucelabs": "^0.2.0",
     "@webcomponents/webcomponentsjs": "^2.5.0"
   }
 }

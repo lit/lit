@@ -46,7 +46,7 @@
     "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
     "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
     "dev": "scripts/dev.sh",
-    "prepublishOnly": "npm run check-version && npm run lint && npm test",
+    "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "release": "np --any-branch --yolo",
