@@ -1,23 +1,26 @@
 {
   "root": true,
   "extends": ["eslint:recommended"],
-  "env": {
-    "browser": true,
-    "mocha": true
-  },
+  "parser": "babel-eslint",
   "globals": {
     "chai": "readonly"
   },
-  "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module"
+  },
+  "env": {
+    "browser": true,
+    "mocha": true
   },
   "rules": {
     "no-unexpected-multiline": "off"
   },
   "overrides": [
     {
-      "files": ["docs"]
+      "files": ["rollup.config.js", "web-test-runner.config.js"],
+      "env": {
+        "node": true
+      }
     }
   ]
 }

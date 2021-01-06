@@ -10,7 +10,7 @@
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
     "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
-    "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test)"
+    "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test) && (cd packages/lit-element-starter-ts && npm test) && (cd packages/lit-element-starter-js && npm test)"
   },
   "dependencies": {
     "lerna": "^3.22.1"

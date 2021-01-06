@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import filesize from 'rollup-plugin-filesize';
+import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 
 export default {
@@ -32,6 +32,7 @@ export default {
     replace({'Reflect.decorate': 'undefined'}),
     resolve(),
     terser({
+      ecma: 2017,
       module: true,
       warnings: true,
       mangle: {
@@ -40,8 +41,6 @@ export default {
         },
       },
     }),
-    filesize({
-      showBrotliSize: true,
-    }),
+    summary(),
   ],
 };

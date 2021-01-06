@@ -53,6 +53,7 @@ packages/lit-element-starter-ts/node_modules/*
 packages/lit-element-starter-ts/docs/*
 packages/lit-element-starter-ts/docs-src/*
 packages/lit-element-starter-ts/**/rollup-config.js
+packages/lit-element-starter-ts/**/custom-elements.json
 
 packages/lit-element-starter-js/node_modules/
 
@@ -63,6 +64,7 @@ packages/lit-element-starter-js/node_modules/*
 packages/lit-element-starter-js/docs/*
 packages/lit-element-starter-js/docs-src/*
 packages/lit-element-starter-js/**/rollup-config.js
+packages/lit-element-starter-js/**/custom-elements.json
 
 packages/lit-html/development/
 packages/lit-html/directives/
