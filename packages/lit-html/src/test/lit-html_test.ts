@@ -1778,10 +1778,10 @@ suite('lit-html', () => {
         return bool ? value : nothing;
       }
 
-      disconnectedCallback() {
+      disconnected() {
         this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
       }
-      reconnectedCallback() {
+      reconnected() {
         this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
       }
     }

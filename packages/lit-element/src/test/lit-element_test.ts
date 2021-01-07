@@ -356,10 +356,10 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
           log.push(`render-${id}`);
           return (this.id = id);
         }
-        disconnectedCallback() {
+        disconnected() {
           log.push(`disconnect-${this.id}`);
         }
-        reconnectedCallback() {
+        reconnected() {
           log.push(`reconnect-${this.id}`);
         }
       }
