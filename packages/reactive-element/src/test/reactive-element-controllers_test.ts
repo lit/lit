@@ -15,13 +15,13 @@
 import {
   PropertyValues,
   ReactiveElement,
-  Controller,
+  ReactiveController,
 } from '../reactive-element.js';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('ReactiveElement controllers', () => {
-  class MyController implements Controller {
+  class MyController implements ReactiveController {
     host: ReactiveElement;
     willUpdateCount = 0;
     updateCount = 0;
