@@ -25,7 +25,16 @@ import {
   CSSResultOrNative,
   CSSResultFlatArray,
 } from './css-tag.js';
+import type {
+  Controller,
+  ControllerHost,
+} from './controller.js';
+
 export * from './css-tag.js';
+export type {
+  Controller,
+  ControllerHost,
+} from './controller.js';
 
 const DEV_MODE = true;
 
@@ -269,15 +278,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export interface Controller {
-  connectedCallback?(): void;
-  disconnectedCallback?(): void;
-  willUpdate?(): void;
-  update?(): void;
-  updated?(): void;
-  requestUpdate?(): void;
-}
-
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -294,7 +294,9 @@ export type Warnings = 'change-in-update' | 'migration';
  * should be supplied by subclassers to render updates as desired.
  * @noInheritDoc
  */
-export abstract class ReactiveElement extends HTMLElement {
+export abstract class ReactiveElement
+  extends HTMLElement
+  implements ControllerHost {
   // Note, these are patched in only in DEV_MODE.
   static enabledWarnings?: Warnings[];
   static enableWarning?: (type: Warnings) => void;
@@ -621,7 +623,7 @@ export abstract class ReactiveElement extends HTMLElement {
   private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
-  private __updatePromise!: Promise<unknown>;
+  private __updatePromise!: Promise<boolean>;
 
   private __pendingConnectionPromise: Promise<void> | undefined = undefined;
   private __enableConnection: (() => void) | undefined = undefined;
@@ -652,7 +654,7 @@ export abstract class ReactiveElement extends HTMLElement {
 
   constructor() {
     super();
-    this.__updatePromise = new Promise<void>(
+    this.__updatePromise = new Promise<boolean>(
       (res) => (this.enableUpdating = res)
     );
     this.__changedProperties = new Map();
@@ -723,8 +725,8 @@ export abstract class ReactiveElement extends HTMLElement {
         renderRoot: Element | DocumentFragment;
       }).renderRoot = this.createRenderRoot();
     }
-    this.enableUpdating();
-    this.__controllers?.forEach((c) => c.connectedCallback?.());
+    this.enableUpdating(true);
+    this.__controllers?.forEach((c) => c.connected?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
     if (this.__enableConnection) {
@@ -738,7 +740,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * overridden on the element instance with a function that triggers the first
    * update.
    */
-  protected enableUpdating() {}
+  protected enableUpdating(_requestedUpdate: boolean) {}
 
   /**
    * Allows for `super.disconnectedCallback()` in extensions while
@@ -746,7 +748,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.disconnectedCallback?.());
+    this.__controllers?.forEach((c) => c.disconnected?.());
     this.__pendingConnectionPromise = new Promise(
       (r) => (this.__enableConnection = r)
     );
@@ -1050,7 +1052,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * @return A promise of a boolean that indicates if the update resolved
    *     without triggering another update.
    */
-  get updateComplete() {
+  get updateComplete(): Promise<boolean> {
     return this.getUpdateComplete();
   }
 
@@ -1070,7 +1072,7 @@ export abstract class ReactiveElement extends HTMLElement {
    *     }
    *   }
    */
-  protected getUpdateComplete() {
+  protected getUpdateComplete(): Promise<boolean> {
     return this.__updatePromise;
   }
 

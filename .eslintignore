@@ -79,5 +79,6 @@ packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
 packages/reactive-element/platform-support.*
 packages/reactive-element/reactive-element.*
+packages/reactive-element/controller.*
 
 packages/localize/testdata/
