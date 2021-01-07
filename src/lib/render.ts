@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {removeNodes} from './dom.js';
+import {removeNodes, wrap} from './dom.js';
 import {NodePart} from './parts.js';
 import {RenderOptions} from './render-options.js';
 import {templateFactory} from './template-factory.js';
@@ -40,7 +40,7 @@ export const render =
      options?: Partial<RenderOptions>) => {
       let part = parts.get(container);
       if (part === undefined) {
-        removeNodes(container, container.firstChild);
+        removeNodes(container, wrap(container).firstChild);
         parts.set(container, part = new NodePart({
                                templateFactory,
                                ...options,

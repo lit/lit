@@ -23,7 +23,7 @@
  * Do not remove this comment; it keeps typedoc from misplacing the module
  * docs.
  */
-import {removeNodes} from './dom.js';
+import {removeNodes, wrap} from './dom.js';
 import {insertNodeIntoTemplate, removeNodesFromTemplate} from './modify-template.js';
 import {RenderOptions} from './render-options.js';
 import {parts, render as litRender} from './render.js';
@@ -132,7 +132,7 @@ const prepareTemplateStyles =
       const templateElement =
           !!template ? template.element : document.createElement('template');
       // Move styles out of rendered DOM and store.
-      const styles = renderedDOM.querySelectorAll('style');
+      const styles = wrap(renderedDOM).querySelectorAll('style');
       const {length} = styles;
       // If there are no styles, skip unnecessary work
       if (length === 0) {
@@ -157,7 +157,7 @@ const prepareTemplateStyles =
       // currently does this anyway. When it does not, this should be changed.
       for (let i = 0; i < length; i++) {
         const style = styles[i];
-        style.parentNode!.removeChild(style);
+        wrap(wrap(style).parentNode!).removeChild(style);
         condensedStyle.textContent! += style.textContent;
       }
       // Remove styles from nested templates in this scope.
@@ -178,7 +178,7 @@ const prepareTemplateStyles =
       if (window.ShadyCSS!.nativeShadow && style !== null) {
         // When in native Shadow DOM, ensure the style created by ShadyCSS is
         // included in initially rendered output (`renderedDOM`).
-        renderedDOM.insertBefore(style.cloneNode(true), renderedDOM.firstChild);
+        wrap(renderedDOM).insertBefore(style.cloneNode(true), renderedDOM.firstChild);
       } else if (!!template) {
         // When no style is left in the template, parts will be broken as a
         // result. To fix this, we put back the style node ShadyCSS removed
@@ -300,8 +300,8 @@ export const render =
             undefined;
         prepareTemplateStyles(
             scopeName, renderContainer as DocumentFragment, template);
-        removeNodes(container, container.firstChild);
-        container.appendChild(renderContainer);
+        removeNodes(container, wrap(container).firstChild);
+        wrap(container).appendChild(renderContainer);
         parts.set(container, part);
       }
       // After elements have hit the DOM, update styling if this is the

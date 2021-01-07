@@ -35,8 +35,8 @@ export const reparentNodes =
      end: Node|null = null,
      before: Node|null = null): void => {
       while (start !== end) {
-        const n = start!.nextSibling;
-        container.insertBefore(start!, before);
+        const n = wrap(start!).nextSibling;
+        wrap(container).insertBefore(start!, before);
         start = n;
       }
     };
@@ -48,8 +48,14 @@ export const reparentNodes =
 export const removeNodes =
     (container: Node, start: Node|null, end: Node|null = null): void => {
       while (start !== end) {
-        const n = start!.nextSibling;
-        container.removeChild(start!);
+        const n = wrap(start!).nextSibling;
+        wrap(container).removeChild(start!);
         start = n;
       }
     };
+
+const needsWrap = window.ShadyDOM && window.ShadyDOM!.inUse &&
+  window.ShadyDOM!.noPatch === true;
+
+export const wrap = (element: Node) => needsWrap ?
+  window.ShadyDOM!.wrap(element) : element;

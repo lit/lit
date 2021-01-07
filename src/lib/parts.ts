@@ -13,7 +13,7 @@
  */
 
 import {isDirective} from './directive.js';
-import {removeNodes} from './dom.js';
+import {removeNodes, wrap} from './dom.js';
 import {noChange, nothing, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
@@ -179,8 +179,8 @@ export class NodePart implements Part {
    * This part must be empty, as its contents are not automatically moved.
    */
   appendInto(container: Node) {
-    this.startNode = container.appendChild(createMarker());
-    this.endNode = container.appendChild(createMarker());
+    this.startNode = wrap(container).appendChild(createMarker());
+    this.endNode = wrap(container).appendChild(createMarker());
   }
 
   /**
@@ -192,7 +192,7 @@ export class NodePart implements Part {
    */
   insertAfterNode(ref: Node) {
     this.startNode = ref;
-    this.endNode = ref.nextSibling!;
+    this.endNode = wrap(ref).nextSibling!;
   }
 
   /**
@@ -221,7 +221,7 @@ export class NodePart implements Part {
   }
 
   commit() {
-    if (this.startNode.parentNode === null) {
+    if (wrap(this.startNode).parentNode === null) {
       return;
     }
     while (isDirective(this.__pendingValue)) {
@@ -253,7 +253,7 @@ export class NodePart implements Part {
   }
 
   private __insert(node: Node) {
-    this.endNode.parentNode!.insertBefore(node, this.endNode);
+    wrap(wrap(this.endNode).parentNode!).insertBefore(node, this.endNode);
   }
 
   private __commitNode(value: Node): void {
@@ -266,7 +266,7 @@ export class NodePart implements Part {
   }
 
   private __commitText(value: unknown): void {
-    const node = this.startNode.nextSibling!;
+    const node = wrap(this.startNode).nextSibling!;
     value = value == null ? '' : value;
     // If `value` isn't already a string, we explicitly convert it here in case
     // it can't be implicitly converted - i.e. it's a symbol.
@@ -353,7 +353,7 @@ export class NodePart implements Part {
 
   clear(startNode: Node = this.startNode) {
     removeNodes(
-        this.startNode.parentNode!, startNode.nextSibling!, this.endNode);
+        wrap(this.startNode).parentNode!, wrap(startNode).nextSibling!, this.endNode);
   }
 }
 
