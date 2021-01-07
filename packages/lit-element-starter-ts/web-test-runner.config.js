@@ -1,9 +1,14 @@
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {legacyPlugin} from '@web/dev-server-legacy';
 
-const commandLineBrowsers = process.env.BROWSERS?.split(',').map((b) =>
-  playwrightLauncher({product: b})
-);
+let commandLineBrowsers;
+try {
+  commandLineBrowsers = process.env.BROWSERS?.split(',').map((b) =>
+    playwrightLauncher({product: b})
+  );
+} catch {
+  console.warn(`BROWSER ${process.env.BROWSERS} unknown; using defaults`);
+}
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
