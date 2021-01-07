@@ -1,17 +1,31 @@
 /**
+ * @license
+ * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+/**
  * An object that can host Reactive Controllers and call their lifecycle
  * callbacks.
  */
-export interface ControllerHost {
+export interface ReactiveControllerHost {
   /**
    * Adds a controller to the host, which sets up the controller's lifecycle
    * methods to be called with the host's lifecycle.
    */
-  addController(controller: Controller): void;
+  addController(controller: ReactiveController): void;
 
   /**
    * Requests a host update which is processed asynchronously. The update can
-   * waited on via the `updateComplete` property.
+   * be waited on via the `updateComplete` property.
    */
   requestUpdate(): void;
 
@@ -34,12 +48,12 @@ export interface ControllerHost {
  * hooks related to a single feature.
  *
  * Controllers are added to a host component, or other object that implements
- * the `ControllerHost` interface, via the `addController()` method. They can
- * hook their host components's lifecycle by implementing one or more of the
- * lifecycle callbacks, or initiate an update of the host component by calling
- * `requestUpdate()` on the host.
+ * the `ReactiveControllerHost` interface, via the `addController()` method.
+ * They can hook their host components's lifecycle by implementing one or more
+ * of the lifecycle callbacks, or initiate an update of the host component by
+ * calling `requestUpdate()` on the host.
  */
-export interface Controller {
+export interface ReactiveController {
   /**
    * Called when the host is connected to the component tree. For custom
    * element hosts, this corresponds to the `connectedCallback()` lifecycle,
@@ -75,7 +89,7 @@ export interface Controller {
   update?(): void;
 
   /**
-   * Called after a host update.
+   * Called after a host update. It is not called in server-side rendering.
    */
   updated?(): void;
 }

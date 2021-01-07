@@ -16,7 +16,7 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
-  Controller,
+  ReactiveController,
 } from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
@@ -65,7 +65,7 @@ import {queryParams} from '../../utils/query-params.js';
 
   const useController = queryParams.controller;
 
-  class MyController implements Controller {
+  class MyController implements ReactiveController {
     host: ReactiveElement;
     isConnected = false;
     value = '';

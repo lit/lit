@@ -26,15 +26,15 @@ import {
   CSSResultFlatArray,
 } from './css-tag.js';
 import type {
-  Controller,
-  ControllerHost,
-} from './controller.js';
+  ReactiveController,
+  ReactiveControllerHost,
+} from './reactive-controller.js';
 
 export * from './css-tag.js';
 export type {
-  Controller,
-  ControllerHost,
-} from './controller.js';
+  ReactiveController,
+  ReactiveControllerHost,
+} from './reactive-controller.js';
 
 const DEV_MODE = true;
 
@@ -296,7 +296,7 @@ export type Warnings = 'change-in-update' | 'migration';
  */
 export abstract class ReactiveElement
   extends HTMLElement
-  implements ControllerHost {
+  implements ReactiveControllerHost {
   // Note, these are patched in only in DEV_MODE.
   static enabledWarnings?: Warnings[];
   static enableWarning?: (type: Warnings) => void;
@@ -650,7 +650,7 @@ export abstract class ReactiveElement
   /**
    * Set of controllers.
    */
-  private __controllers?: Controller[];
+  private __controllers?: ReactiveController[];
 
   constructor() {
     super();
@@ -664,7 +664,7 @@ export abstract class ReactiveElement
     this.requestUpdate();
   }
 
-  addController(controller: Controller) {
+  addController(controller: ReactiveController) {
     (this.__controllers ??= []).push(controller);
   }
 

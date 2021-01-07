@@ -18,7 +18,7 @@ export default litProdConfig({
   classPropertyPrefix: 'Π',
   entryPoints: [
     'reactive-element',
-    'controller',
+    'reactive-controller',
     'css-tag',
     'decorators',
     'decorators/base',
