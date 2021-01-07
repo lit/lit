@@ -230,7 +230,8 @@ suite('basic', () => {
     const testFn = testSetup.skip
       ? test.skip
       : testSetup.only
-      ? test.only
+      ? // eslint-disable-next-line no-only-tests/no-only-tests
+        test.only
       : test;
 
     testFn(testName, async () => {
