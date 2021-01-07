@@ -165,7 +165,7 @@ suite('guard', () => {
     assert.equal(callCount, 2);
   });
 
-  test.only('guards directive from running', () => {
+  test('guards directive from running', () => {
     let directiveRenderCount = 0;
     let directiveConstructedCount = 0;
     let renderCount = 0;
