@@ -35,12 +35,12 @@ suite('ReactiveElement controllers', () => {
       this.host.addController(this);
     }
 
-    connectedCallback() {
+    connected() {
       this.connectedCount++;
       this.callbackOrder.push('connectedCallback');
     }
 
-    disconnectedCallback() {
+    disconnected() {
       this.disconnectedCount++;
       this.callbackOrder.push('disconnectedCallback');
     }
