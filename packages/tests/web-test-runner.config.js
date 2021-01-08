@@ -162,10 +162,23 @@ export default {
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
-      // Polyfills are loaded manually, so we can set polyfill flags and control
-      // the timing of when they are loaded relative to inline scripts
       polyfills: {
+        // Web Components polyfills are loaded manually, so we can set polyfill
+        // flags and control the timing of when they are loaded relative to
+        // inline scripts
         webcomponents: false,
+        custom: [
+          // Since lit-html uses newer DOM API's, we always need these, so we go
+          // ahead and load them unconditionally (flags don't affect these)
+          {
+            name: 'webcomponents-pf_dom',
+            path: require.resolve(
+              '@webcomponents/webcomponentsjs/bundles/webcomponents-pf_dom.js'
+            ),
+            test: true,
+            module: false,
+          },
+        ],
       },
     }),
   ],
