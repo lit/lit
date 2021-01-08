@@ -1,0 +1,91 @@
+{
+  "name": "lit",
+  "version": "2.0.0-pre.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A library for building fast, lightweight web components",
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/lit-html",
+  "author": "The Polymer Authors",
+  "homepage": "https://github.com/Polymer/lit-html/tree/lit-next",
+  "main": "index.js",
+  "module": "index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./decorators.js": {
+      "default": "./decorators.js"
+    },
+    "./decorators/": {
+      "default": "./decorators/"
+    },
+    "./directive-helpers.js": {
+      "default": "./directive-helpers.js"
+    },
+    "./directive.js": {
+      "default": "./directive.js"
+    },
+    "./directives/": {
+      "default": "./directives/"
+    },
+    "./disconnectable-directive.js": {
+      "default": "./disconnectable-directive.js"
+    },
+    "./html.js": {
+      "default": "./html.js"
+    },
+    "./hydrate-support.js": {
+      "default": "./hydrate-support.js"
+    },
+    "./hydrate.js": {
+      "default": "./hydrate.js"
+    },
+    "./platform-support.js": {
+      "default": "./platform-support.js"
+    },
+    "./static-html.js": {
+      "default": "./static-html.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run clean && tsc && rollup -c",
+    "build:watch": "rollup -c --watch",
+    "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
+    "build:ts": "tsc",
+    "build:ts:watch": "tsc --watch",
+    "clean": "rm -rf decorators.{d.ts.map,d.ts,js.map,js} decorators/ directive-helpers.{d.ts.map,d.ts,js.map,js} directive.{d.ts.map,d.ts,js.map,js} directives/ disconnectable-directive.{d.ts.map,d.ts,js.map,js} html.{d.ts.map,d.ts,js.map,js} hydrate-support.{d.ts.map,d.ts,js.map,js} hydrate.{d.ts.map,d.ts,js.map,js} index.{d.ts.map,d.ts,js.map,js} platform-support.{d.ts.map,d.ts,js.map,js} static-html.{d.ts.map,d.ts,js.map,js}",
+    "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
+    "publish-dev": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
+    "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
+  },
+  "files": [
+    "/decorators.{d.ts.map,d.ts,js.map,js}",
+    "/decorators/",
+    "/directive-helpers.{d.ts.map,d.ts,js.map,js}",
+    "/directive.{d.ts.map,d.ts,js.map,js}",
+    "/directives/",
+    "/disconnectable-directive.{d.ts.map,d.ts,js.map,js}",
+    "/html.{d.ts.map,d.ts,js.map,js}",
+    "/hydrate-support.{d.ts.map,d.ts,js.map,js}",
+    "/hydrate.{d.ts.map,d.ts,js.map,js}",
+    "/index.{d.ts.map,d.ts,js.map,js}",
+    "/platform-support.{d.ts.map,d.ts,js.map,js}",
+    "/src/",
+    "/static-html.{d.ts.map,d.ts,js.map,js}",
+    "!/src/demo/",
+    "!/src/test/"
+  ],
+  "dependencies": {
+    "@lit/reactive-element": "^1.0.0-pre.1",
+    "lit-element": "^3.0.0-pre.2",
+    "lit-html": "^2.0.0-pre.4"
+  },
+  "devDependencies": {
+    "rollup": "^2.26.4",
+    "typescript": "^4.1.3"
+  },
+  "typings": "index.d.ts"
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -12,10 +12,5 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {litMonoBundleConfig} from '../../rollup-common.js';
-
-export default litMonoBundleConfig({
-  file: 'lit-element',
-  output: 'lit.min',
-  name: 'Lit',
-});
+ export * from 'lit-html/directive.js'
+ 
