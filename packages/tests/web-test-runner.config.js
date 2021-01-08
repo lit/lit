@@ -162,19 +162,10 @@ export default {
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
+      // Polyfills are loaded manually, so we can set polyfill flags and control
+      // the timing of when they are loaded relative to inline scripts
       polyfills: {
         webcomponents: false,
-        custom: [
-          {
-            name: 'webcomponents-2.5.0',
-            path: require.resolve(
-              '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
-            ),
-            // Always load.
-            test: 'true',
-            module: false,
-          },
-        ],
       },
     }),
   ],
