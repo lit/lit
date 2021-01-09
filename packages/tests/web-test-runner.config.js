@@ -163,19 +163,25 @@ export default {
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
       polyfills: {
-        // Web Components polyfills are loaded manually, so we can set polyfill
-        // flags and control the timing of when they are loaded relative to
-        // inline scripts
+        // Rather than use the webcomponents polyfill version bundled with the
+        // legacyPlugin, we inject a custom version of the polyfill; this both
+        // gives us more control over the version, but also allows a mechanism
+        // for tests to opt out of automatic injection, so that they can control
+        // the timing when the polyfill loads (i.e. for setting polyfill flags
+        // in an inline script before polyfills are manually loaded). Note that
+        // .html-based tests can add a `<meta name="manual-polyfills">` tag in
+        // the head to opt out of automatic polyfill injection and load them
+        // manually using a `<script>` tag in the page.
         webcomponents: false,
         custom: [
-          // Since lit-html uses newer DOM API's, we always need these, so we go
-          // ahead and load them unconditionally (flags don't affect these)
           {
-            name: 'webcomponents-pf_dom',
+            name: 'webcomponents-2.5.0',
             path: require.resolve(
-              '@webcomponents/webcomponentsjs/bundles/webcomponents-pf_dom.js'
+              '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
             ),
-            test: true,
+            // Don't load if the page is tagged with a special meta indicating
+            // the polyfills will be loaded manually
+            test: '!document.querySelector("meta[name=manual-polyfills")',
             module: false,
           },
         ],
