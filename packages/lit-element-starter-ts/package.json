@@ -34,7 +34,7 @@
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "lit-element": "^3.0.0-pre.1"
+    "lit-element": "next-major"
   },
   "devDependencies": {
     "@11ty/eleventy": "^0.10.0",
@@ -57,7 +57,6 @@
     "deepmerge": "^4.2.2",
     "eslint": "^6.8.0",
     "lit-analyzer": "^1.1.10",
-    "lit-html": "^2.0.0-pre.4",
     "mocha": "^7.1.1",
     "prettier": "^2.0.4",
     "rimraf": "^3.0.2",
