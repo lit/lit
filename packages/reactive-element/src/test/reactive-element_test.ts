@@ -2200,7 +2200,7 @@ suite('ReactiveElement', () => {
         return (async () => {
           return (
             (await super.updateComplete) &&
-            (await new Promise((resolve) => {
+            (await new Promise<boolean>((resolve) => {
               setTimeout(() => {
                 this.promiseFulfilled = true;
                 resolve(true);

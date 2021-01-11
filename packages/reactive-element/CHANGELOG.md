@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Changed
+
+- (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.
+- (Since 1.0.0-pre.1) Renamed `Controller` to `ReactiveController`.
+
 ## [1.0.0-pre.1] - 2020-12-16
 
 ### Changed
