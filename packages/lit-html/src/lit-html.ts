@@ -658,6 +658,11 @@ function resolveDirective(
   _$parent: DirectiveParent = part,
   _$attributeIndex?: number
 ): unknown {
+  // Bail early if the value is explicitly noChange. Note, this means any
+  // nested directive is still attached and is not run.
+  if (value === noChange) {
+    return value;
+  }
   let currentDirective =
     _$attributeIndex !== undefined
       ? (_$parent as AttributePart).__directives?.[_$attributeIndex]
