@@ -89,7 +89,8 @@ const scopeCssStore: Map<string, string[]> = new Map();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= (
   Template: PatchableTemplate,
-  ChildPart: PatchableChildPart
+  ChildPart: PatchableChildPart,
+  dom: {wrap: (n: Node) => Node}
 ) => {
   if (!needsPlatformSupport) {
     return;
@@ -178,7 +179,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
     this: PatchableChildPart,
     value: unknown
   ) {
-    const container = this._$startNode.parentNode!;
+    const container = dom.wrap(this._$startNode).parentNode!;
     const scope = this.options.scope;
     if (container instanceof ShadowRoot && needsPrepareStyles(scope)) {
       // Note, @apply requires outer => inner scope rendering on initial
@@ -249,4 +250,9 @@ const scopeCssStore: Map<string, string[]> = new Map();
     }
     return template;
   };
+
+  dom.wrap =
+    window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
+      ? window.ShadyDOM!.wrap
+      : (node: Node) => node;
 };

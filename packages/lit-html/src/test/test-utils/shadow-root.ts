@@ -18,14 +18,22 @@ export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;
 }
 
+export const wrap =
+  window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
+    ? window.ShadyDOM!.wrap
+    : (node: Node) => node;
+
+export const shadowRoot = (element: Node) =>
+  (wrap(element) as Element).shadowRoot;
+
 /**
  * A helper for creating a shadowRoot on an element.
  */
 export const renderShadowRoot = (result: unknown, element: Element) => {
-  if (!element.shadowRoot) {
-    element.attachShadow({mode: 'open'});
+  if (!(wrap(element) as Element).shadowRoot) {
+    (wrap(element) as Element).attachShadow({mode: 'open'});
   }
-  render(result, element.shadowRoot!, {
+  render(result, (wrap(element) as Element).shadowRoot!, {
     scope: element.localName,
   } as ShadyRenderOptions);
 };

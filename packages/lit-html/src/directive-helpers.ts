@@ -18,6 +18,7 @@ import {
   Part,
   DirectiveParent,
   TemplateResult,
+  dom,
 } from './lit-html.js';
 import {
   DirectiveResult,
@@ -96,14 +97,14 @@ export const insertPart = (
   refPart: ChildPart | undefined,
   part?: ChildPart
 ): ChildPart => {
-  const container = containerPart._$startNode.parentNode!;
+  const container = dom.wrap(containerPart._$startNode).parentNode!;
 
   const refNode =
     refPart === undefined ? containerPart._$endNode : refPart._$startNode;
 
   if (part === undefined) {
-    const startNode = container.insertBefore(createMarker(), refNode);
-    const endNode = container.insertBefore(createMarker(), refNode);
+    const startNode = dom.wrap(container).insertBefore(createMarker(), refNode);
+    const endNode = dom.wrap(container).insertBefore(createMarker(), refNode);
     part = new ChildPartImpl(
       startNode,
       endNode,
@@ -111,12 +112,12 @@ export const insertPart = (
       containerPart.options
     );
   } else {
-    const endNode = part._$endNode!.nextSibling;
+    const endNode = dom.wrap(part._$endNode!).nextSibling;
     if (endNode !== refNode) {
       let start: Node | null = part._$startNode;
       while (start !== endNode) {
-        const n: Node | null = start!.nextSibling;
-        container.insertBefore(start!, refNode);
+        const n: Node | null = dom.wrap(start!).nextSibling;
+        dom.wrap(container).insertBefore(start!, refNode);
         start = n;
       }
     }
@@ -192,10 +193,10 @@ export const getComittedValue = (part: ChildPart) => part._$committedValue;
 export const removePart = (part: ChildPart) => {
   part._$setChildPartConnected?.(false, true);
   let start: ChildNode | null = part._$startNode;
-  const end: ChildNode | null = part._$endNode!.nextSibling;
+  const end: ChildNode | null = dom.wrap(part._$endNode!).nextSibling;
   while (start !== end) {
-    const n: ChildNode | null = start!.nextSibling;
-    start!.remove();
+    const n: ChildNode | null = dom.wrap(start!).nextSibling;
+    (dom.wrap(start!) as ChildNode).remove();
     start = n;
   }
 };
