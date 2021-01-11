@@ -18,8 +18,6 @@ import {
   generateElementName,
   getComputedStyleValue,
   nextFrame,
-  wrap,
-  shadowRoot,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -29,12 +27,12 @@ import {assert} from '@esm-bundle/chai';
 
     setup(() => {
       container = document.createElement('div');
-      wrap(document.body).appendChild(container);
+      document.body.appendChild(container);
     });
 
     teardown(() => {
-      if (container && wrap(container).parentNode) {
-        wrap(wrap(container).parentNode as Element).removeChild(container);
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
       }
     });
 
@@ -55,9 +53,9 @@ import {assert} from '@esm-bundle/chai';
         }
       );
       const el = document.createElement(name);
-      wrap(container).appendChild(el);
+      container.appendChild(el);
       await (el as LitElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
@@ -87,9 +85,9 @@ import {assert} from '@esm-bundle/chai';
         }
       );
       const el = document.createElement(name);
-      wrap(container).appendChild(el);
+      container.appendChild(el);
       await (el as LitElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '4px'
@@ -116,9 +114,9 @@ import {assert} from '@esm-bundle/chai';
         }
       );
       const el = document.createElement(name);
-      wrap(container).appendChild(el);
+      container.appendChild(el);
       await (el as LitElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '8px'
@@ -155,18 +153,18 @@ import {assert} from '@esm-bundle/chai';
         }
 
         firstUpdated() {
-          this.inner = shadowRoot(this).querySelector('x-inner')! as LitElement;
+          this.inner = this.shadowRoot!.querySelector('x-inner')! as LitElement;
         }
       }
       customElements.define(name, E);
       const el = document.createElement(name) as E;
-      wrap(container).appendChild(el);
+      container.appendChild(el);
 
       // Workaround for Safari 9 Promise timing bugs.
       (await el.updateComplete) && (await el.inner!.updateComplete);
 
       await nextFrame();
-      const div = shadowRoot(el.inner!).querySelector('div');
+      const div = el.inner!.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '8px'
@@ -205,7 +203,7 @@ import {assert} from '@esm-bundle/chai';
           }
 
           firstUpdated() {
-            this.inner = shadowRoot(this).querySelector('x-inner1');
+            this.inner = this.shadowRoot!.querySelector('x-inner1');
           }
         }
       );
@@ -225,20 +223,20 @@ import {assert} from '@esm-bundle/chai';
       );
       const el = document.createElement(name1) as LitElement;
       const el2 = document.createElement(name2);
-      wrap(container).appendChild(el);
-      wrap(container).appendChild(el2);
+      container.appendChild(el);
+      container.appendChild(el2);
 
       // Workaround for Safari 9 Promise timing bugs.
       await el.updateComplete;
 
       await nextFrame();
-      const inner = shadowRoot(el).querySelector('x-inner1');
-      const div = shadowRoot(inner!).querySelector('div');
+      const inner = el.shadowRoot!.querySelector('x-inner1');
+      const div = inner!.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
       );
-      shadowRoot(el2).appendChild(inner!);
+      el2.shadowRoot!.appendChild(inner!);
 
       // Workaround for Safari 9 Promise timing bugs.
       await el.updateComplete;
@@ -256,12 +254,12 @@ import {assert} from '@esm-bundle/chai';
 
     setup(() => {
       container = document.createElement('div');
-      wrap(document.body).appendChild(container);
+      document.body.appendChild(container);
     });
 
     teardown(() => {
-      if (container && wrap(container).parentNode) {
-        wrap(wrap(container).parentNode as Element).removeChild(container);
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
       }
     });
 
@@ -303,15 +301,15 @@ import {assert} from '@esm-bundle/chai';
         }
       );
       const el = document.createElement(name);
-      wrap(container).appendChild(el);
+      container.appendChild(el);
       await (el as LitElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
       );
       assert.equal(getComputedStyleValue(div!, 'padding-top').trim(), '4px');
-      const span = shadowRoot(el).querySelector('span');
+      const span = el.shadowRoot!.querySelector('span');
       assert.equal(
         getComputedStyleValue(span!, 'border-top-width').trim(),
         '3px'
@@ -334,13 +332,13 @@ import {assert} from '@esm-bundle/chai';
         this.skip();
       } else {
         container = document.createElement('div');
-        wrap(document.body).appendChild(container);
+        document.body.appendChild(container);
       }
     });
 
     teardown(() => {
-      if (container && wrap(container).parentNode) {
-        wrap(wrap(container).parentNode as Element).removeChild(container);
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
       }
     });
 
@@ -364,9 +362,9 @@ import {assert} from '@esm-bundle/chai';
         }
       );
       const el = document.createElement(name) as LitElement;
-      wrap(container).appendChild(el);
+      container.appendChild(el);
       await el.updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '6px'

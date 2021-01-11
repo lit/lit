@@ -24,8 +24,6 @@ import {
   getComputedStyleValue,
   RenderingElement,
   html,
-  wrap,
-  shadowRoot,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -35,20 +33,14 @@ import {assert} from '@esm-bundle/chai';
 
     setup(() => {
       container = document.createElement('div');
-      wrap(document.body).appendChild(container);
+      document.body.appendChild(container);
     });
 
     teardown(() => {
-      if (container && wrap(container).parentNode) {
-        wrap(wrap(container).parentNode as Element).removeChild(container);
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
       }
     });
-
-    const enableElement = (name: string) => {
-      const el = document.createElement(name);
-      wrap(container).appendChild(el);
-      return el;
-    };
 
     test('content shadowRoot is styled via static get styles in multiple instances', async () => {
       const name = generateElementName();
@@ -78,14 +70,15 @@ import {assert} from '@esm-bundle/chai';
         }
       );
       const testInstance = async () => {
-        const el = enableElement(name);
+        const el = document.createElement(name);
+        container.appendChild(el);
         await (el as ReactiveElement).updateComplete;
-        const div = shadowRoot(el).querySelector('div');
+        const div = el.shadowRoot!.querySelector('div');
         assert.equal(
           getComputedStyleValue(div!, 'border-top-width').trim(),
           '2px'
         );
-        const span = shadowRoot(el).querySelector('span');
+        const span = el.shadowRoot!.querySelector('span');
         assert.equal(
           getComputedStyleValue(span!, 'border-top-width').trim(),
           '3px'
@@ -131,9 +124,10 @@ import {assert} from '@esm-bundle/chai';
             }
           }
         );
-        const el = enableElement(name);
+        const el = document.createElement(name);
+        container.appendChild(el);
         await (el as ReactiveElement).updateComplete;
-        assert.equal(shadowRoot(el).querySelectorAll('style').length, 2);
+        assert.equal(el.shadowRoot!.querySelectorAll('style').length, 2);
       }
     );
 
@@ -155,9 +149,10 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = enableElement(name);
+      const el = document.createElement(name);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
@@ -193,14 +188,15 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = enableElement(name);
+      const el = document.createElement(name);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
       );
-      const span = shadowRoot(el).querySelector('span');
+      const span = el.shadowRoot!.querySelector('span');
       assert.equal(
         getComputedStyleValue(span!, 'border-top-width').trim(),
         '3px'
@@ -226,9 +222,10 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = enableElement(name);
+      const el = document.createElement(name);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
@@ -259,9 +256,10 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = enableElement(name);
+      const el = document.createElement(name);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
@@ -313,12 +311,13 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = enableElement(name);
+      const el = document.createElement(name);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const level1 = shadowRoot(el).querySelector('.level1');
-      const level2 = shadowRoot(el).querySelector('.level2');
-      const level3 = shadowRoot(el).querySelector('.level3');
-      const level4 = shadowRoot(el).querySelector('.level4');
+      const level1 = el.shadowRoot!.querySelector('.level1');
+      const level2 = el.shadowRoot!.querySelector('.level2');
+      const level3 = el.shadowRoot!.querySelector('.level3');
+      const level4 = el.shadowRoot!.querySelector('.level4');
       assert.equal(
         getComputedStyleValue(level1!, 'border-top-width').trim(),
         '1px'
@@ -362,14 +361,15 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      const el = enableElement(name);
+      const el = document.createElement(name);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
       );
-      const span = shadowRoot(el).querySelector('span');
+      const span = el.shadowRoot!.querySelector('span');
       assert.equal(
         getComputedStyleValue(span!, 'border-top-width').trim(),
         '3px'
@@ -437,23 +437,26 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      let el = enableElement(base);
+      let el = document.createElement(base);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
       );
-      el = enableElement(sub);
+      el = document.createElement(sub);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const span = shadowRoot(el).querySelector('span');
+      const span = el.shadowRoot!.querySelector('span');
       assert.equal(
         getComputedStyleValue(span!, 'border-top-width').trim(),
         '3px'
       );
-      el = enableElement(subsub);
+      el = document.createElement(subsub);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const p = shadowRoot(el).querySelector('p');
+      const p = el.shadowRoot!.querySelector('p');
       assert.equal(getComputedStyleValue(p!, 'border-top-width').trim(), '4px');
     });
 
@@ -501,23 +504,26 @@ import {assert} from '@esm-bundle/chai';
           }
         }
       );
-      let el = enableElement(base);
+      let el = document.createElement(base);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      let div = shadowRoot(el).querySelector('div');
+      let div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '2px'
       );
-      el = enableElement(sub);
+      el = document.createElement(sub);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      div = shadowRoot(el).querySelector('div');
+      div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '3px'
       );
-      el = enableElement(subsub);
+      el = document.createElement(subsub);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      div = shadowRoot(el).querySelector('div');
+      div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '4px'
@@ -545,9 +551,10 @@ import {assert} from '@esm-bundle/chai';
         }
       );
 
-      const el = enableElement(sub);
+      const el = document.createElement(sub);
+      container.appendChild(el);
       await (el as ReactiveElement).updateComplete;
-      const div = shadowRoot(el).querySelector('div');
+      const div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
         '4px'
@@ -581,8 +588,8 @@ import {assert} from '@esm-bundle/chai';
       );
       const el1 = document.createElement(base);
       const el2 = document.createElement(base);
-      wrap(container).appendChild(el1);
-      wrap(container).appendChild(el2);
+      container.appendChild(el1);
+      container.appendChild(el2);
       await Promise.all([
         (el1 as ReactiveElement).updateComplete,
         (el2 as ReactiveElement).updateComplete,
@@ -641,7 +648,8 @@ import {assert} from '@esm-bundle/chai';
       }
       customElements.define(localName, SomeCustomElement);
 
-      const element = enableElement(localName) as SomeCustomElement;
+      const element = document.createElement(localName) as SomeCustomElement;
+      document.body.appendChild(element);
 
       await (element as ReactiveElement).updateComplete;
       assert.equal(
@@ -656,6 +664,8 @@ import {assert} from '@esm-bundle/chai';
         getComputedStyle(element).getPropertyValue('border-top-width').trim(),
         '4px'
       );
+
+      document.body.removeChild(element);
     });
 
     const testAdoptedStyleSheets =
@@ -684,15 +694,16 @@ import {assert} from '@esm-bundle/chai';
           }
         );
 
-        const el = enableElement(base);
+        const el = document.createElement(base);
+        container.appendChild(el);
         await (el as ReactiveElement).updateComplete;
-        const div = shadowRoot(el).querySelector('div')!;
+        const div = el.shadowRoot!.querySelector('div')!;
         assert.equal(
           getComputedStyle(div).getPropertyValue('border-top-width').trim(),
           '4px'
         );
 
-        const span = shadowRoot(el).querySelector('span')!;
+        const span = el.shadowRoot!.querySelector('span')!;
         assert.equal(
           getComputedStyle(span).getPropertyValue('border-top-width').trim(),
           '4px'
@@ -739,10 +750,11 @@ import {assert} from '@esm-bundle/chai';
           }
         );
 
-        const el = enableElement(base);
+        const el = document.createElement(base);
+        container.appendChild(el);
         await (el as ReactiveElement).updateComplete;
 
-        const div = shadowRoot(el).querySelector('div')!;
+        const div = el.shadowRoot!.querySelector('div')!;
         assert.equal(
           getComputedStyle(div).getPropertyValue('border-top-width').trim(),
           '4px'

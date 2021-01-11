@@ -22,6 +22,7 @@ interface ShadyDOM {
   flush: () => void;
   noPatch: boolean | string;
   wrap: (node: Node) => Node;
+  patchElementProto: (node: Object) => void;
 }
 
 interface Window {

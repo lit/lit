@@ -38,17 +38,11 @@ export class RenderingElement extends ReactiveElement {
   render(): string | undefined {
     return '';
   }
-  createRenderRoot() {
-    const renderRoot = super.createRenderRoot();
-    const span = document.createElement('span');
-    wrap(renderRoot).appendChild(span);
-    return span;
-  }
   update(changedProperties: PropertyValues) {
     const result = this.render();
     super.update(changedProperties);
     if (result !== undefined) {
-      (wrap(this.renderRoot) as Element).innerHTML = result;
+      this.renderRoot.innerHTML = result;
     }
   }
 }
@@ -58,13 +52,4 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]) => {
     (a: string, v: unknown, i: number) => a + v + strings[i + 1],
     strings[0]
   );
-};
-
-export const wrap =
-  window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
-    ? window.ShadyDOM!.wrap
-    : (node: Node) => node;
-
-export const shadowRoot = (el: Element) => {
-  return (wrap(el) as Element).shadowRoot!;
 };
