@@ -17,10 +17,18 @@ import {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
+const ENABLE_SHADYDOM_NOPATCH = true;
 
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
+
+const wrap =
+  ENABLE_SHADYDOM_NOPATCH &&
+  window.ShadyDOM?.inUse &&
+  window.ShadyDOM?.noPatch === true
+    ? window.ShadyDOM!.wrap
+    : (node: Node) => node;
 
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
@@ -884,7 +892,7 @@ class ChildPartImpl {
   }
 
   get parentNode(): Node {
-    return dom.wrap(this._$startNode).parentNode!;
+    return wrap(this._$startNode).parentNode!;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
@@ -909,9 +917,7 @@ class ChildPartImpl {
   }
 
   private _insert<T extends Node>(node: T, ref = this._$endNode) {
-    return dom
-      .wrap(dom.wrap(this._$startNode).parentNode!)
-      .insertBefore(node, ref);
+    return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
   }
 
   private _commitNode(value: Node): void {
@@ -937,7 +943,7 @@ class ChildPartImpl {
   }
 
   private _commitText(value: unknown): void {
-    const node = dom.wrap(this._$startNode).nextSibling;
+    const node = wrap(this._$startNode).nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
@@ -946,8 +952,8 @@ class ChildPartImpl {
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
       (this._$endNode === null
-        ? dom.wrap(node).nextSibling === null
-        : node === dom.wrap(this._$endNode).previousSibling)
+        ? wrap(node).nextSibling === null
+        : node === wrap(this._$endNode).previousSibling)
     ) {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
@@ -1049,7 +1055,7 @@ class ChildPartImpl {
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
       this._$clear(
-        itemPart && dom.wrap(itemPart._$endNode!).nextSibling,
+        itemPart && wrap(itemPart._$endNode!).nextSibling,
         partIndex
       );
       // Truncate the parts array so _value reflects the current state
@@ -1069,13 +1075,13 @@ class ChildPartImpl {
    * @internal
    */
   _$clear(
-    start: ChildNode | null = dom.wrap(this._$startNode).nextSibling,
+    start: ChildNode | null = wrap(this._$startNode).nextSibling,
     from?: number
   ) {
     this._$setChildPartConnected?.(false, true, from);
     while (start && start !== this._$endNode) {
-      const n = dom.wrap(start!).nextSibling;
-      (dom.wrap(start!) as Element).remove();
+      const n = wrap(start!).nextSibling;
+      (wrap(start!) as Element).remove();
       start = n;
     }
   }
@@ -1216,7 +1222,7 @@ class AttributePartImpl {
   /** @internal */
   _commitValue(value: unknown) {
     if (value === nothing) {
-      (dom.wrap(this.element) as Element).removeAttribute(this.name);
+      (wrap(this.element) as Element).removeAttribute(this.name);
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._sanitizer === undefined) {
@@ -1228,7 +1234,7 @@ class AttributePartImpl {
         }
         value = this._sanitizer(value ?? '');
       }
-      (dom.wrap(this.element) as Element).setAttribute(
+      (wrap(this.element) as Element).setAttribute(
         this.name,
         (value ?? '') as string
       );
@@ -1264,9 +1270,9 @@ class BooleanAttributePartImpl extends AttributePartImpl {
   /** @internal */
   _commitValue(value: unknown) {
     if (value && value !== nothing) {
-      (dom.wrap(this.element) as Element).setAttribute(this.name, '');
+      (wrap(this.element) as Element).setAttribute(this.name, '');
     } else {
-      (dom.wrap(this.element) as Element).removeAttribute(this.name);
+      (wrap(this.element) as Element).removeAttribute(this.name);
     }
   }
 }
@@ -1421,17 +1427,9 @@ export const _$private = {
   _PropertyPart: PropertyPartImpl as AttributePartConstructor,
 };
 
-export const dom = {
-  wrap: (node: Node) => node,
-};
-
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.(
-  TemplateImpl,
-  ChildPartImpl,
-  dom
-);
+(globalThis as any)['litHtmlPlatformSupport']?.(TemplateImpl, ChildPartImpl);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
