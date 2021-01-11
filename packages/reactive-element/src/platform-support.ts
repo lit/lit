@@ -70,6 +70,11 @@ interface PatchableReactiveElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
+  const wrap =
+    window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
+      ? window.ShadyDOM!.wrap
+      : (node: Node) => node;
+
   const elementProto = ReactiveElement.prototype;
 
   /**
@@ -108,9 +113,10 @@ interface PatchableReactiveElement extends HTMLElement {
           );
         }
       }
+      const n = wrap(this) as Element;
       return (
-        this.shadowRoot ??
-        this.attachShadow(
+        n.shadowRoot ??
+        n.attachShadow(
           (this.constructor as PatchableReactiveElementConstructor)
             .shadowRootOptions
         )
