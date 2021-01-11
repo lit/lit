@@ -883,9 +883,8 @@ class ChildPartImpl {
 
   /**
    * Sets the connection state for any `DisconnectableDirectives` contained
-   * within this part and runs their `disconnectedCallback` or
-   * `reconnectedCallback`, according to the `isConnected` argument.
-   * @param isConnected
+   * within this part and runs their `disconnected` or `reconnected`, according
+   * to the `isConnected` argument.
    */
   setConnected(isConnected: boolean) {
     this._$setChildPartConnected?.(isConnected);

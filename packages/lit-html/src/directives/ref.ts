@@ -95,7 +95,7 @@ class RefDirective extends DisconnectableDirective {
       : this._ref?.value;
   }
 
-  disconnectedCallback() {
+  disconnected() {
     // Only clear the box if our element is still the one in it (i.e. another
     // directive instance hasn't rendered its element to it before us); that
     // only happens in the event of the directive being cleared (not via manual
@@ -105,7 +105,7 @@ class RefDirective extends DisconnectableDirective {
     }
   }
 
-  reconnectedCallback() {
+  reconnected() {
     // If we were manually disconnected, we can safely put our element back in
     // the box, since no rendering could have occurred to change its state
     this._updateRefValue(this._element);
