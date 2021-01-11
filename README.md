@@ -71,7 +71,7 @@ branch on the template repos (`lit-next` branch shown in example):
 git remote add lit-element-starter-ts git@github.com:PolymerLabs/lit-element-starter-ts.git
 git subtree push --prefix=packages/lit-element-starter-ts/ lit-element-starter-ts lit-next
 # Export JS template
-git remote add lit-element-starter-ts git@github.com:PolymerLabs/lit-element-starter-ts.git
+git remote add lit-element-starter-js git@github.com:PolymerLabs/lit-element-starter-js.git
 git subtree push --prefix=packages/lit-element-starter-js/ lit-element-starter-js lit-next
 ```
 
