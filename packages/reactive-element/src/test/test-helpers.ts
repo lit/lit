@@ -42,7 +42,11 @@ export class RenderingElement extends ReactiveElement {
     const result = this.render();
     super.update(changedProperties);
     if (result !== undefined) {
+      // Save and replace any existing styles in root to simulate
+      // adoptedStylesheets.
+      const styles = this.renderRoot.querySelectorAll('style');
       this.renderRoot.innerHTML = result;
+      this.renderRoot.append(...styles);
     }
   }
 }
