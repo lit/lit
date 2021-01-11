@@ -42,10 +42,20 @@ export interface ShadyRenderOptions extends RenderOptions {
  * A helper for creating a shadowRoot on an element.
  */
 export const renderShadowRoot = (result: unknown, element: Element) => {
-  if (!element.shadowRoot) {
+  element = wrap(element) as Element;
+  if (element!.shadowRoot) {
     element.attachShadow({mode: 'open'});
   }
   render(result, element.shadowRoot!, {
     scope: element.localName,
   } as ShadyRenderOptions);
+};
+
+export const wrap =
+  window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
+    ? window.ShadyDOM!.wrap
+    : (node: Node) => node;
+
+export const shadowRoot = (el: Element) => {
+  return (wrap(el) as Element).shadowRoot!;
 };

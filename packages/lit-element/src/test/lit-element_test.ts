@@ -27,6 +27,8 @@ import {
   generateElementName,
   nextFrame,
   stripExpressionComments,
+  wrap,
+  shadowRoot,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -37,14 +39,20 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
 
   setup(() => {
     container = document.createElement('div');
-    document.body.appendChild(container);
+    wrap(document.body).appendChild(container);
   });
 
   teardown(() => {
-    if (container && container.parentNode) {
-      container.parentNode.removeChild(container);
+    if (container && wrap(container).parentNode) {
+      wrap(wrap(container).parentNode as Element).removeChild(container);
     }
   });
+
+  const enableElement = (e: string | HTMLElement) => {
+    const el = typeof e === 'string' ? document.createElement(e) : e;
+    wrap(container).appendChild(el);
+    return el;
+  };
 
   test('renders initial content into shadowRoot', async () => {
     const rendered = `hello world`;
@@ -57,13 +65,12 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         }
       }
     );
-    const el = document.createElement(name);
-    container.appendChild(el);
+    const el = enableElement(name);
     await new Promise<void>((resolve) => {
       setTimeout(() => {
-        assert.ok(el.shadowRoot);
+        assert.ok(shadowRoot(el));
         assert.equal(
-          stripExpressionComments(el.shadowRoot!.innerHTML),
+          stripExpressionComments(shadowRoot(el)!.innerHTML),
           rendered
         );
         resolve();
@@ -86,10 +93,9 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         }
       }
     );
-    const el = document.createElement(name);
-    container.appendChild(el);
+    const el = enableElement(name);
     await (el as LitElement).updateComplete;
-    assert.notOk(el.shadowRoot);
+    assert.notOk(shadowRoot(el));
     assert.equal(stripExpressionComments(el.innerHTML), rendered);
   });
 
@@ -101,11 +107,10 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
     }
     customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
+    const el = enableElement(new E()) as E;
     await el.updateComplete;
-    assert.ok(el.shadowRoot);
-    assert.equal(stripExpressionComments(el.shadowRoot!.innerHTML), rendered);
+    assert.ok(shadowRoot(el));
+    assert.equal(stripExpressionComments(shadowRoot(el)!.innerHTML), rendered);
   });
 
   test('updates/renders attributes, properties, and event listeners via `lit-html`', async () => {
@@ -122,10 +127,9 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
     }
     customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
+    const el = enableElement(new E()) as E;
     await el.updateComplete;
-    const d = el.shadowRoot!.querySelector('div')!;
+    const d = shadowRoot(el)!.querySelector('div')!;
     assert.equal(d.getAttribute('attr'), 'attr');
     assert.equal((d as any).prop, 'prop');
     const e = new Event('zug');
@@ -146,10 +150,9 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
     }
     customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
+    const el = enableElement(new E()) as E;
     await el.updateComplete;
-    const div = el.shadowRoot!.querySelector('div')!;
+    const div = shadowRoot(el)!.querySelector('div')!;
     const event = new Event('test');
     div.dispatchEvent(event);
     assert.equal(el.event, event);
@@ -187,7 +190,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
 
       firstUpdated() {
-        this.inner = this.shadowRoot!.querySelector('x-2448');
+        this.inner = shadowRoot(this)!.querySelector('x-2448');
       }
 
       get updateComplete() {
@@ -195,17 +198,16 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
     }
     customElements.define(generateElementName(), F);
-    const el = new F();
-    container.appendChild(el);
+    const el = enableElement(new F()) as F;
     await el.updateComplete;
-    assert.equal(el.inner!.shadowRoot!.textContent, 'outer');
+    assert.equal(shadowRoot(el.inner!).textContent, 'outer');
     assert.equal((el.inner! as any).attr, 'outer');
     assert.equal(el.inner!.getAttribute('attr'), 'outer');
     assert.equal(el.inner!.bool, false);
     el.bar = 'test';
     el.bool = true;
     await el.updateComplete;
-    assert.equal(el.inner!.shadowRoot!.textContent, 'test');
+    assert.equal(shadowRoot(el.inner!).textContent, 'test');
     assert.equal((el.inner! as any).attr, 'test');
     assert.equal(el.inner!.getAttribute('attr'), 'test');
     assert.equal(el.inner!.bool, true);
@@ -244,11 +246,10 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     }
 
     customElements.define(generateElementName(), F);
-    const el = new F();
-    container.appendChild(el);
+    const el = enableElement(new F()) as F;
     // eslint-disable-next-line no-empty
     while (!(await el.updateComplete)) {}
-    assert.equal(el.shadowRoot!.textContent, 'foo');
+    assert.equal(shadowRoot(el)!.textContent, 'foo');
   });
 
   test('exceptions in `render` throw but do not prevent further updates', async () => {
@@ -269,10 +270,9 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
     }
     customElements.define(generateElementName(), A);
-    const a = new A();
-    container.appendChild(a);
+    const a = enableElement(new A()) as A;
     await a.updateComplete;
-    assert.equal(a.shadowRoot!.textContent, '5');
+    assert.equal(shadowRoot(a).textContent, '5');
     shouldThrow = true;
     a.foo = 10;
     let threw = false;
@@ -283,13 +283,13 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     }
     assert.isTrue(threw);
     assert.equal(a.foo, 10);
-    assert.equal(a.shadowRoot!.textContent, '5');
+    assert.equal(shadowRoot(a).textContent, '5');
     shouldThrow = false;
     a.foo = 20;
     // TODO(sorvell): Make sure to wait beyond error timing or wtr is sad.
     await new Promise((r) => setTimeout(r));
     assert.equal(a.foo, 20);
-    assert.equal(a.shadowRoot!.textContent, '20');
+    assert.equal(shadowRoot(a).textContent, '20');
     console.error = consoleError;
   });
 
@@ -303,8 +303,8 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     customElements.define(generateElementName(), A);
     const a = new A();
     const testDom = document.createElement('div');
-    a.appendChild(testDom);
-    container.appendChild(a);
+    wrap(a).appendChild(testDom);
+    wrap(container).appendChild(a);
     await a.updateComplete;
     assert.equal(
       testDom.parentNode,
@@ -316,8 +316,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
   test('can use ReactiveElement', async () => {
     class A extends ReactiveElement {}
     customElements.define(generateElementName(), A);
-    const a = new A();
-    container.appendChild(a);
+    const a = enableElement(new A()) as A;
     await a.updateComplete;
     assert.ok(a.hasUpdated);
   });
@@ -325,8 +324,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
   test('can use UpdatingElement', async () => {
     class A extends UpdatingElement {}
     customElements.define(generateElementName(), A);
-    const a = new A();
-    container.appendChild(a);
+    const a = enableElement(new A()) as A;
     await a.updateComplete;
     assert.ok(a.hasUpdated);
   });
@@ -338,10 +336,9 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         static shadowRootOptions: ShadowRootInit = {mode: 'closed'};
       }
       customElements.define(generateElementName(), A);
-      const a = new A();
-      container.appendChild(a);
+      const a = enableElement(new A()) as A;
       await a.updateComplete;
-      assert.equal(a.shadowRoot, undefined);
+      assert.equal(shadowRoot(a), undefined);
     }
   );
 
@@ -379,7 +376,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
       get child() {
         // Cast to child so we can access .prop off of the div
-        return this.shadowRoot!.firstElementChild as Child;
+        return shadowRoot(this)!.firstElementChild as Child;
       }
     }
     customElements.define('disc-child', Child);
@@ -392,20 +389,22 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       }
       get child() {
         // Cast to child so we can access .prop off of the div
-        return this.shadowRoot!.firstElementChild as Child;
+        return shadowRoot(this)!.firstElementChild as Child;
       }
     }
     customElements.define('disc-host', Host);
 
     const assertRendering = (host: Host) => {
       let child = host.child;
-      assert.equal(child.getAttribute('attr'), 'host-attr');
+      let wrappedChild = wrap(child) as Element;
+      assert.equal(wrappedChild.getAttribute('attr'), 'host-attr');
       assert.equal(child.prop, 'host-prop');
-      assert.equal(child.textContent?.trim(), 'host-node');
+      assert.equal(wrappedChild.textContent?.trim(), 'host-node');
       child = child.child;
-      assert.equal(child.getAttribute('attr'), 'child-attr');
+      wrappedChild = wrap(child) as Element;
+      assert.equal(wrappedChild.getAttribute('attr'), 'child-attr');
       assert.equal(child.prop, 'child-prop');
-      assert.equal(child.textContent?.trim(), 'child-node');
+      assert.equal(wrappedChild.textContent?.trim(), 'child-node');
     };
 
     setup(() => {
@@ -415,12 +414,12 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
 
     teardown(() => {
       if (host.isConnected) {
-        container.removeChild(host);
+        wrap(container).removeChild(host);
       }
     });
 
     test('directives render on connection', async () => {
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       await nextFrame();
       assertRendering(host);
       assert.deepEqual(log, [
@@ -434,11 +433,11 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     });
 
     test('directives disconnect on disconnection', async () => {
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       await nextFrame();
       assertRendering(host);
       log.length = 0;
-      container.removeChild(host);
+      wrap(container).removeChild(host);
       assertRendering(host);
       // Note: directive disconnection/reconnection is synchronous to
       // connected/disconnectedCallback
@@ -453,12 +452,12 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     });
 
     test('directives reconnect on reconnection', async () => {
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       await nextFrame();
       assertRendering(host);
-      container.removeChild(host);
+      wrap(container).removeChild(host);
       log.length = 0;
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       assertRendering(host);
       assert.deepEqual(log, [
         'reconnect-host-attr',
@@ -471,13 +470,13 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     });
 
     test('directives reconnect on reconnection', async () => {
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       await nextFrame();
       assertRendering(host);
-      container.removeChild(host);
+      wrap(container).removeChild(host);
       await nextFrame();
       log.length = 0;
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       await nextFrame();
       assertRendering(host);
       assert.deepEqual(log, [
@@ -491,14 +490,14 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     });
 
     test('directives reconnect and render on reconnection with pending render', async () => {
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       await nextFrame();
       assertRendering(host);
-      container.removeChild(host);
+      wrap(container).removeChild(host);
       log.length = 0;
       host.requestUpdate();
       host.child.requestUpdate();
-      container.appendChild(host);
+      wrap(container).appendChild(host);
       assertRendering(host);
       assert.deepEqual(log, [
         'reconnect-host-attr',
@@ -540,10 +539,10 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         </span>`;
       }
       get trueDiv() {
-        return this.shadowRoot!.querySelector('#true');
+        return shadowRoot(this)!.querySelector('#true');
       }
       get falseDiv() {
-        return this.shadowRoot!.querySelector('#false');
+        return shadowRoot(this)!.querySelector('#false');
       }
     }
     customElements.define('ref-child', RefChild);
@@ -568,12 +567,12 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         ></ref-child>`;
       }
       get child() {
-        return this.shadowRoot!.querySelector('ref-child') as RefChild;
+        return shadowRoot(this)!.querySelector('ref-child') as RefChild;
       }
     }
     customElements.define('x-host', RefHost);
 
-    const host = container.appendChild(new RefHost());
+    const host = wrap(container).appendChild(new RefHost());
     await host.updateComplete;
     await host.child.updateComplete;
     assert.equal(host.el, host.child.falseDiv);
