@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## [x.y.z] - YYYY-MM-DD -->
 
+## Unreleased
+
+### Changed
+
+- (Since 3.0.0-pre.2) Changed a new `index.js` file as the package entrypoint to export the main export plus the decorators again. This undoes a breaking change in 3.0.0-pre.1 which moved the decorators to `decorators.js`.
+
+  This new file is an upgrade helper: it's more backwards compatible, but immediately deprecated. It's reccomended to import from `'lit-element/lit-element.js'` or the new `lit` package with `import {LitElement} from 'lit';`.
+
 ## [3.0.0-pre.2] - 2020-12-16
 
 ### Changed

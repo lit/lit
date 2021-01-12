@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'lit-element';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
+export * from 'lit-element/lit-element.js';
+export {_$private} from 'lit-element/lit-element.js';

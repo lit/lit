@@ -15,7 +15,7 @@
 import {litProdConfig} from '../../rollup-common.js';
 
 export default litProdConfig({
-  classPropertyPrefix: 'Φ',
+  classPropertyPrefix: 'ϖ',
   entryPoints: [
     'decorators',
     'decorators/customElement',
