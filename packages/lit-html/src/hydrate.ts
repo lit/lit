@@ -21,7 +21,7 @@ import {
   ChildPart,
   PropertyPart,
   RenderOptions,
-  _$private,
+  _Σ,
 } from './lit-html.js';
 import {AttributePartInfo, PartType} from './directive.js';
 import {
@@ -37,7 +37,7 @@ const {
   _ChildPart: ChildPart,
   _EventPart: EventPart,
   _PropertyPart: PropertyPart,
-} = _$private;
+} = _Σ;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 

@@ -14,6 +14,7 @@
 
 import {html, nothing, render} from '../../lit-html.js';
 import {guard} from '../../directives/guard.js';
+import {Directive, directive, PartInfo} from '../../directive.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -162,5 +163,40 @@ suite('guard', () => {
     );
 
     assert.equal(callCount, 2);
+  });
+
+  test('guards directive from running', () => {
+    let directiveRenderCount = 0;
+    let directiveConstructedCount = 0;
+    let renderCount = 0;
+
+    class MyDirective extends Directive {
+      constructor(partInfo: PartInfo) {
+        super(partInfo);
+        directiveConstructedCount++;
+      }
+      render() {
+        directiveRenderCount++;
+        return directiveRenderCount;
+      }
+    }
+    const testDirective = directive(MyDirective);
+
+    const guardedTemplate = () => {
+      renderCount += 1;
+      return testDirective();
+    };
+
+    renderGuarded('foo', guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+    renderGuarded('foo', guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+    renderGuarded('bar', guardedTemplate);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div>2</div>');
+
+    assert.equal(renderCount, 2);
+    assert.equal(directiveConstructedCount, 1);
   });
 });
