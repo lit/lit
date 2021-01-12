@@ -29,7 +29,6 @@ export default litProdConfig({
     'decorators/queryAll',
     'decorators/queryAssignedNodes',
     'decorators/queryAsync',
-    'demo/my-element',
   ],
   external: ['lit-html', '@lit/reactive-element'],
   bundled: [
