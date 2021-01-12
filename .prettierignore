@@ -24,6 +24,25 @@ packages/labs/index.*
 packages/labs/frameworks/
 packages/labs/controllers/
 
+packages/lit/decorators/
+packages/lit/development/
+packages/lit/directives/
+packages/lit/node_modules/
+packages/lit/test/
+
+packages/lit/decorators.*
+packages/lit/directive-helpers.*
+packages/lit/directive.*
+packages/lit/disconnectable-directive.*
+packages/lit/html.*
+packages/lit/hydrate-support.*
+packages/lit/hydrate.*
+packages/lit/index.*
+packages/lit/static-html.*
+
+packages/lit/lit.min.*
+packages/lit/platform-support.*
+
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map

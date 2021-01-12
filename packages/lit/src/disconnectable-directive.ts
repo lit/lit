@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'lit-html/disconnectable-directive.js'
+export * from 'lit-html/disconnectable-directive.js';

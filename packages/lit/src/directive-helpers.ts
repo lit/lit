@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from 'lit-html/directive-helpers.js'
+export * from 'lit-html/directive-helpers.js';
