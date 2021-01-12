@@ -101,20 +101,6 @@ const stableProperties = {
   _$clear: 'T',
 };
 
-const nameCache = {
-  props: {
-    // Note all properties in the terser name cache are prefixed with '$'
-    // (presumably to avoid collisions with built-ins).
-    props: Object.entries(stableProperties).reduce(
-      (obj, [name, val]) => ({
-        ...obj,
-        ['$' + name]: val,
-      }),
-      {}
-    ),
-  },
-};
-
 // Validate stableProperties list, just to be safe; catches dupes and
 // out-of-order mangled names
 Object.entries(stableProperties).forEach(([prop, mangle], i) => {
@@ -231,6 +217,19 @@ export function litProdConfig({
   // of all our code in a single file, tell Terser to minify that, and then throw
   // it away. This seeds the name cache in a way that guarantees every property
   // gets a unique mangled name.
+  const nameCache = {
+    props: {
+      // Note all properties in the terser name cache are prefixed with '$'
+      // (presumably to avoid collisions with built-ins).
+      props: Object.entries(stableProperties).reduce(
+        (obj, [name, val]) => ({
+          ...obj,
+          ['$' + name]: val,
+        }),
+        {}
+      ),
+    },
+  };
 
   const nameCacheSeederInfile = 'name-cache-seeder-virtual-input.js';
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
@@ -346,11 +345,11 @@ export function litProdConfig({
   ];
 }
 
-export const litMonoBundleConfig = ({
+const litMonoBundleConfig = ({
   file,
   output,
   name,
-  terserOptions = generateTerserOptions(nameCache),
+  terserOptions,
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
