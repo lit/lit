@@ -129,7 +129,12 @@
             );
             const name = generateElementName();
             class E extends LitElement {
-              inner = null;
+              constructor() {
+                super();
+                // NOTE, don't use a class field here to be compatible with
+                // apparent rules for transpilation for Safari 13.
+                this.inner = null;
+              }
 
               render() {
                 return html` <style>
