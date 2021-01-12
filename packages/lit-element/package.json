@@ -35,7 +35,7 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
+    "build": "npm run clean && tsc && rollup -c && npm run build:bundle",
     "build:watch": "rollup -c --watch",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
     "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
