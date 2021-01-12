@@ -35,16 +35,14 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc && rollup -c && npm run build:bundle",
+    "build": "npm run clean && tsc && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
-    "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
-    "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
+    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} lit.min.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",

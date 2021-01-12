@@ -22,13 +22,12 @@
         generateElementName,
         nextFrame,
       } from '../test-helpers.js';
-      // import { mocha, sessionFinished, sessionFailed } from '@web/test-runner-mocha';
 
       try {
         // setup mocha
         mocha.setup({ui: 'tdd'});
 
-        const {LitElement, html, css} = Lit;
+        const {LitElement, html} = window.Lit;
 
         suite('LitElement Bundle', () => {
           let container;
