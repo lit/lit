@@ -1,7 +1,6 @@
 export * from '@lit/reactive-element';
 export * from 'lit-html';
 export * from './lit-element.js';
-export {_$private} from './lit-element.js';
 
 // TODO: link to docs on the new site
 console.warn(
