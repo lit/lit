@@ -22,11 +22,12 @@
     "/src/",
     "!/src/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/create-component.{d.ts,d.ts.map,js,js.map}"
+    "/create-component.{d.ts,d.ts.map,js,js.map}",
+    "/use-controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && tsc --build && rollup -c",
-    "clean": "rm -rf {index,create-component}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
+    "clean": "rm -rf {index,create-component,use-controller}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",

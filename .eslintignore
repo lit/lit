@@ -131,6 +131,8 @@ packages/labs/react/development/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
+packages/labs/react/use-controller.*
+
 packages/labs/task/development/
 packages/labs/task/node_modules/
 packages/labs/task/index.*

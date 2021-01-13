@@ -26,7 +26,7 @@ following links for details on the changes being made:
   - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next))
   - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/PolymerLabs/lit-element-starter-js/tree/lit-next))
 - Internal packages (not published to npm)
-  - [`tests`](./packages/tests) 
+  - [`tests`](./packages/tests)
   - [`benchmarks`](./packages/benchmarks)
 
 ## Development guide
