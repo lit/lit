@@ -12,9 +12,22 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import '../../platform-support.js';
-import {html} from '../../lit-html.js';
+import {html, render as litRender} from '../../lit-html.js';
+import {ref, createRef} from '../../directives/ref.js';
+import {repeat} from '../../directives/repeat.js';
+import {cache} from '../../directives/cache.js';
 import {assert} from '@esm-bundle/chai';
 import {renderShadowRoot, wrap, shadowRoot} from '../test-utils/shadow-root.js';
+
+import '../lit-html_test.js';
+// selected directive tests
+import '../directives/class-map_test.js';
+import '../directives/style-map_test.js';
+import '../directives/live_test.js';
+import '../directives/ref_test.js';
+import '../directives/repeat_test.js';
+import '../directives/template-content_test.js';
+import '../directives/unsafe-html_test.js';
 
 suite('platform-support rendering', () => {
   test('style elements apply in shadowRoots', () => {
@@ -400,6 +413,198 @@ suite('platform-support rendering', () => {
     assert.equal(shadowRoot(el)?.textContent, ' c1c2');
     wrap(el).textContent = '';
     assert.equal(shadowRoot(el)?.textContent, ' c1c2');
+    wrap(document.body).removeChild(el);
+  });
+
+  test('`repeat` in shadowRoot', () => {
+    const el = document.createElement('div');
+    const listRefs: Array<{value?: Element | undefined}> = [];
+    wrap(document.body).appendChild(el);
+    const render = (data: number[]) => {
+      listRefs.length = 0;
+      data.forEach((_i: number) => listRefs.push(createRef()));
+      const list = repeat(
+        data,
+        (i) => i,
+        // prettier-ignore
+        (i: number) => html`<span ${ref(listRefs[i])}>${i}</span>`
+      );
+      renderShadowRoot(html`<span>[</span>${list}<span>]</span>`, el);
+    };
+    render([0, 1, 2]);
+    assert.equal(shadowRoot(el)?.textContent, '[012]');
+    render([]);
+    assert.equal(shadowRoot(el)?.textContent, '[]');
+    render([4, 5, 6, 7]);
+    assert.equal(shadowRoot(el)?.textContent, '[4567]');
+    wrap(document.body).removeChild(el);
+  });
+
+  test('`repeat` in slots', () => {
+    const el = document.createElement('div');
+    const beforeSlotRef = createRef();
+    const afterSlotRef = createRef();
+    const shadowHostRef = createRef();
+    const listRefs: Array<{value?: Element | undefined}> = [];
+    wrap(document.body).appendChild(el);
+    const render = (title: string, data: string[]) => {
+      listRefs.length = 0;
+      data.forEach((_i: string) => listRefs.push(createRef()));
+      const list = repeat(
+        data,
+        (i) => i,
+        // prettier-ignore
+        (s: string, i: number) => html`<span slot="${s}" ${ref(listRefs[i])}>item: ${i}</span>`
+      );
+      litRender(html`<div ${ref(shadowHostRef)}>${list}</div>`, el);
+      renderShadowRoot(
+        html`<slot name="before" ${ref(
+          beforeSlotRef
+        )}></slot> ${title}<slot name="after" ${ref(afterSlotRef)}></slot>`,
+        shadowHostRef.value!
+      );
+    };
+    render('foo', ['before', 'after', 'nope']);
+    assert.equal(shadowRoot(shadowHostRef.value!)?.textContent, ' foo');
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [listRefs[0].value!]
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [listRefs[1].value!]
+    );
+    render('bar', ['after', 'after', 'nope', 'before', 'nope']);
+    assert.equal(shadowRoot(shadowHostRef.value!)?.textContent, ' bar');
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [listRefs[3].value!]
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [listRefs[0].value!, listRefs[1].value!]
+    );
+    render('zot', []);
+    assert.equal(shadowRoot(shadowHostRef.value!)?.textContent, ' zot');
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    wrap(document.body).removeChild(el);
+  });
+
+  test('`cache` in shadowRoot', () => {
+    const el = document.createElement('div');
+    const aRef = createRef();
+    const aTemplate = html`<span ${ref(aRef)}>A</span>`;
+    const bRef = createRef();
+    const bTemplate = html`<span ${ref(bRef)}>B</span>`;
+    wrap(document.body).appendChild(el);
+    const render = (value?: unknown) => {
+      renderShadowRoot(html`<span>[</span>${cache(value)}<span>]</span>`, el);
+    };
+    //
+    render(aTemplate);
+    assert.equal(shadowRoot(el)?.textContent, '[A]');
+    const aNode = aRef.value;
+    render();
+    assert.equal(shadowRoot(el)?.textContent, '[]');
+    render(aTemplate);
+    assert.equal(shadowRoot(el)?.textContent, '[A]');
+    assert.equal(aNode, aRef.value);
+    render(bTemplate);
+    assert.equal(shadowRoot(el)?.textContent, '[B]');
+    const bNode = bRef.value;
+    render(aTemplate);
+    assert.equal(shadowRoot(el)?.textContent, '[A]');
+    assert.equal(aNode, aRef.value);
+    render(bTemplate);
+    assert.equal(shadowRoot(el)?.textContent, '[B]');
+    assert.equal(bNode, bRef.value);
+    wrap(document.body).removeChild(el);
+  });
+
+  test('`cache` in slots', () => {
+    const el = document.createElement('div');
+    const beforeSlotRef = createRef();
+    const afterSlotRef = createRef();
+    const shadowHostRef = createRef();
+    const aRef = createRef();
+    const aTemplate = (slot: string) =>
+      html`<span slot=${slot} ${ref(aRef)}>A</span>`;
+    const bRef = createRef();
+    const bTemplate = (slot: string) =>
+      html`<span slot=${slot} ${ref(bRef)}>B</span>`;
+    wrap(document.body).appendChild(el);
+    const render = (value?: unknown) => {
+      litRender(html`<div ${ref(shadowHostRef)}>${cache(value)}</div>`, el);
+      renderShadowRoot(
+        html`<slot name="before" ${ref(
+          beforeSlotRef
+        )}></slot>|<slot name="after" ${ref(afterSlotRef)}></slot>`,
+        shadowHostRef.value!
+      );
+    };
+    //
+    render(aTemplate('before'));
+    assert.equal(wrap(shadowHostRef.value!).textContent, 'A');
+    const aNode = aRef.value!;
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [aNode]
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+
+    render();
+    assert.equal(wrap(shadowHostRef.value!).textContent, '');
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    render(aTemplate('after'));
+    assert.equal(wrap(shadowHostRef.value!).textContent, 'A');
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [aNode]
+    );
+    assert.equal(aNode, aRef.value);
+    render(bTemplate('before'));
+    assert.equal(wrap(shadowHostRef.value!).textContent, 'B');
+    const bNode = bRef.value!;
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      [bNode]
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    render(aTemplate(''));
+    assert.equal(wrap(shadowHostRef.value!).textContent, 'A');
+    assert.equal(aNode, aRef.value);
+    assert.deepEqual(
+      (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
+    assert.deepEqual(
+      (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
+      []
+    );
     wrap(document.body).removeChild(el);
   });
 });

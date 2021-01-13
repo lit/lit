@@ -97,6 +97,20 @@ suite('cache directive', () => {
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
   });
 
+  test('caches templates when switching against TemplateResult and undefined values', () => {
+    const renderCached = (v: unknown) =>
+      render(html`<div>${cache(v)}</div>`, container);
+
+    renderCached(html`A`);
+    assert.equal(stripExpressionComments(container.innerHTML), '<div>A</div>');
+
+    renderCached(undefined);
+    assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
+    renderCached(html`B`);
+    assert.equal(stripExpressionComments(container.innerHTML), '<div>B</div>');
+  });
+
   test('cache can be dynamic', () => {
     const renderMaybeCached = (condition: any, v: string) =>
       render(
