@@ -203,9 +203,9 @@ export default {
     }
     return true;
   },
-  browserStartTimeout: 60000, // default 30000
-  testsStartTimeout: 60000, // default 10000
-  testsFinishTimeout: 120000, // default 20000
+  browserStartTimeout: 120000, // default 30000
+  testsStartTimeout: 120000, // default 10000
+  testsFinishTimeout: 240000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
