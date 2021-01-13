@@ -6,6 +6,9 @@
       // Simulate no Shadow DOM.
       Object.defineProperty(Element.prototype, 'attachShadow', {
         value: undefined,
+        configurable: true,
+        enumerable: true,
+        writable: true,
       });
 
       window.ShadyDOM = {
@@ -16,6 +19,8 @@
       window.customElements.forcePolyfill = true;
     </script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_js.js"></script>
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_dom.js"></script>
+    <script src="../../../node_modules/@webcomponents/template/template.js"></script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-ce.js"></script>
     <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-sd.js"></script>
   </head>
