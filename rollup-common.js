@@ -230,6 +230,7 @@ export function litProdConfig({
       ),
     },
   };
+
   const nameCacheSeederInfile = 'name-cache-seeder-virtual-input.js';
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
@@ -346,11 +347,11 @@ export function litProdConfig({
   ];
 }
 
-export const litMonoBundleConfig = ({
+const litMonoBundleConfig = ({
   file,
   output,
   name,
-  terserOptions = generateTerserOptions(),
+  terserOptions,
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
