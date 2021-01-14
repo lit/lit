@@ -440,7 +440,8 @@ suite('platform-support rendering', () => {
     wrap(document.body).removeChild(el);
   });
 
-  test('`repeat` in slots', () => {
+  // TODO(justinfagnani): enable when #1537 is fixed
+  test.skip('`repeat` in slots', () => {
     const el = document.createElement('div');
     const beforeSlotRef = createRef();
     const afterSlotRef = createRef();
@@ -529,6 +530,7 @@ suite('platform-support rendering', () => {
   });
 
   // TODO(kschaaf): enable when #1535 is fixed
+  // TODO(justinfagnani): enable when #1537 is fixed
   test.skip('`cache` in slots', () => {
     const el = document.createElement('div');
     const beforeSlotRef = createRef();
