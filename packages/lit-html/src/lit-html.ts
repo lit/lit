@@ -869,6 +869,10 @@ class ChildPartImpl {
     removeFromParent?: boolean,
     from?: number
   ): void;
+  /** @internal */
+  _$reparentDisconnectables?(
+    parent: Disconnectable
+  ): void;
 
   constructor(
     startNode: ChildNode,

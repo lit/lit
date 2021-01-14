@@ -121,7 +121,12 @@ export const insertPart = (
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
-    if (endNode !== refNode) {
+    const parentChanged = part._$parent !== containerPart;
+    if (parentChanged) {
+      part._$reparentDisconnectables?.(containerPart);
+      part._$parent = containerPart;
+    }
+    if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
       while (start !== endNode) {
         const n: Node | null = wrap(start!).nextSibling;
