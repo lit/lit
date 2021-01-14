@@ -97,7 +97,8 @@ suite('cache directive', () => {
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
   });
 
-  test('caches templates when switching against TemplateResult and undefined values', () => {
+  // TODO(kschaaf): enable when #1535 is fixed
+  test.skip('caches templates when switching against TemplateResult and undefined values', () => {
     const renderCached = (v: unknown) =>
       render(html`<div>${cache(v)}</div>`, container);
 

@@ -528,7 +528,8 @@ suite('platform-support rendering', () => {
     wrap(document.body).removeChild(el);
   });
 
-  test('`cache` in slots', () => {
+  // TODO(kschaaf): enable when #1535 is fixed
+  test.skip('`cache` in slots', () => {
     const el = document.createElement('div');
     const beforeSlotRef = createRef();
     const afterSlotRef = createRef();
