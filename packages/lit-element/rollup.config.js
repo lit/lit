@@ -35,11 +35,6 @@ export default litProdConfig({
   bundled: [
     {
       file: 'platform-support',
-    },
-    {
-      file: 'lit-element',
-      output: 'lit.min',
-      name: 'Lit',
-    },
+    }
   ],
 });

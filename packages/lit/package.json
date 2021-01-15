@@ -53,11 +53,9 @@
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
     "build:watch": "rollup -c --watch",
-    "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
-    "clean": "rm -rf decorators.{d.ts.map,d.ts,js.map,js} decorators/ directive-helpers.{d.ts.map,d.ts,js.map,js} directive.{d.ts.map,d.ts,js.map,js} directives/ disconnectable-directive.{d.ts.map,d.ts,js.map,js} html.{d.ts.map,d.ts,js.map,js} hydrate-support.{d.ts.map,d.ts,js.map,js} hydrate.{d.ts.map,d.ts,js.map,js} index.{d.ts.map,d.ts,js.map,js} platform-support.{d.ts.map,d.ts,js.map,js} static-html.{d.ts.map,d.ts,js.map,js}",
-    "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
+    "clean": "rm -rf decorators.{d.ts.map,d.ts,js.map,js} decorators/ directive-helpers.{d.ts.map,d.ts,js.map,js} directive.{d.ts.map,d.ts,js.map,js} directives/ disconnectable-directive.{d.ts.map,d.ts,js.map,js} html.{d.ts.map,d.ts,js.map,js} hydrate-support.{d.ts.map,d.ts,js.map,js} hydrate.{d.ts.map,d.ts,js.map,js} index.{d.ts.map,d.ts,js.map,js} lit.min.{js,js.map,d.ts} platform-support.{d.ts.map,d.ts,js.map,js} static-html.{d.ts.map,d.ts,js.map,js}",
     "publish-dev": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },

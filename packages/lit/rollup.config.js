@@ -53,5 +53,10 @@ export default litProdConfig({
     {
       file: 'platform-support',
     },
+    {
+      file: 'index',
+      output: 'lit.min',
+      name: 'Lit',
+    },
   ],
 });
