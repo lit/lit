@@ -33,7 +33,7 @@ export default litProdConfig({
   external: ['lit-html', '@lit/reactive-element'],
   bundled: [
     {
-      file: 'platform-support',
+      file: 'polyfill-support',
     },
     {
       file: 'lit-element',

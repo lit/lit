@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../platform-support.js';
+import '../../polyfill-support.js';
 import '../reactive-element_test.js';
 import '../reactive-element_styling_test.js';
 import '../css-tag_test.js';

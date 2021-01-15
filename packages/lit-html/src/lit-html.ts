@@ -512,7 +512,7 @@ class TemplateImpl {
   _$element!: HTMLTemplateElement;
   /** @internal */
   _parts: Array<TemplatePart> = [];
-  // Note, this is used by the `platform-support` module.
+  // Note, this is used by the `polyfill-support` module.
   _$options?: RenderOptions;
 
   constructor(

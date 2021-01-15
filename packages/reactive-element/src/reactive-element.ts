@@ -57,7 +57,7 @@ if (DEV_MODE) {
   ) {
     console.warn(
       `Shadow DOM is being polyfilled via ShadyDOM but ` +
-        `the \`platform-support\` module has not been loaded.`
+        `the \`polyfill-support\` module has not been loaded.`
     );
   }
 
@@ -1007,7 +1007,7 @@ export abstract class ReactiveElement
 
   willUpdate(_changedProperties: PropertyValues) {}
 
-  // Note, this is an override point for platform-support.
+  // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {

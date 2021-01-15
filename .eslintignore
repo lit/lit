@@ -36,7 +36,7 @@ packages/lit-element/decorators.*
 packages/lit-element/hydrate-support.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
-packages/lit-element/platform-support.*
+packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
@@ -48,7 +48,7 @@ packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
 packages/lit-html/disconnectable-directive.*
-packages/lit-html/platform-support.*
+packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
@@ -77,7 +77,7 @@ packages/reactive-element/development/
 packages/reactive-element/test/
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
-packages/reactive-element/platform-support.*
+packages/reactive-element/polyfill-support.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 

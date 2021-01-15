@@ -11,12 +11,12 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../platform-support.js';
+import '../../polyfill-support.js';
 import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
-suite('platform-support rendering', () => {
+suite('polyfill-support rendering', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
     document.body.appendChild(container);

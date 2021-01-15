@@ -17,9 +17,9 @@
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
-    "./platform-support.js": {
-      "development": "./development/platform-support.js",
-      "default": "./platform-support.js"
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
     },
     "./hydrate-support.js": {
       "development": "./development/hydrate-support.js",
@@ -42,7 +42,7 @@
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} lit.min.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
+    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} lit.min.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -65,10 +65,10 @@
     "/lit-element.d.ts.map",
     "/lit-element.js",
     "/lit-element.js.map",
-    "/platform-support.d.ts",
-    "/platform-support.d.ts.map",
-    "/platform-support.js",
-    "/platform-support.js.map",
+    "/polyfill-support.d.ts",
+    "/polyfill-support.d.ts.map",
+    "/polyfill-support.js",
+    "/polyfill-support.js.map",
     "/src/",
     "!/src/demo/",
     "!/src/test/"
