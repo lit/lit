@@ -99,7 +99,7 @@ type ChildPartOp = {
 
 /**
  * Operation to output an attribute with bindings. Includes all bindings for an
- * attribute, like an attribute template part or AttributeComitter.
+ * attribute.
  */
 type AttributePartOp = {
   type: 'attribute-part';
@@ -109,6 +109,16 @@ type AttributePartOp = {
   strings: Array<string>;
   tagName: string;
   useCustomElementInstance?: boolean;
+};
+
+/**
+ * Operation for an element binding. Although we only support directives in
+ * element position which cannot emit anything, the opcode needs to index past
+ * the part value
+ */
+type ElementPartOp = {
+  type: 'element-part';
+  index: number;
 };
 
 /**
@@ -150,6 +160,7 @@ type Op =
   | TextOp
   | ChildPartOp
   | AttributePartOp
+  | ElementPartOp
   | CustomElementOpenOp
   | CustomElementAttributesOp
   | CustomElementShadowOp
@@ -335,7 +346,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         }
         if (node.attrs.length > 0) {
           for (const attr of node.attrs) {
-            if (attr.name.endsWith(boundAttributeSuffix)) {
+            const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
+            const isElementBinding = attr.name.startsWith(marker);
+            if (isAttrBinding || isElementBinding) {
               writeTag = true;
               boundAttrsCount += 1;
               // Note that although we emit a lit-bindings comment marker for any
@@ -345,31 +358,37 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // We store the case-sensitive name from `attrNames` (generated
               // while parsing the template strings); note that this assumes
               // parse5 attribute ordering matches string ordering
-              const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
-                attrNames[attrIndex++]
-              )!;
+              const name = attrNames[attrIndex++];
               const attrSourceLocation = node.sourceCodeLocation!.attrs[
                 attr.name
               ];
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
-              ops.push({
-                type: 'attribute-part',
-                index: nodeIndex,
-                name: caseSensitiveName,
-                ctor:
-                  prefix === '.'
-                    ? PropertyPart
-                    : prefix === '?'
-                    ? BooleanAttributePart
-                    : prefix === '@'
-                    ? EventPart
-                    : AttributePart,
-                strings,
-                tagName,
-                useCustomElementInstance: ctor !== undefined,
-              });
+              if (isAttrBinding) {
+                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(name as string)!;
+                ops.push({
+                  type: 'attribute-part',
+                  index: nodeIndex,
+                  name: caseSensitiveName,
+                  ctor:
+                    prefix === '.'
+                      ? PropertyPart
+                      : prefix === '?'
+                      ? BooleanAttributePart
+                      : prefix === '@'
+                      ? EventPart
+                      : AttributePart,
+                  strings,
+                  tagName,
+                  useCustomElementInstance: ctor !== undefined,
+                });
+              } else {
+                ops.push({
+                  type: 'element-part',
+                  index: nodeIndex,
+                });
+              }
               skipTo(attrEndOffset);
             } else if (node.isDefinedCustomElement) {
               // For custom elements, all static attributes are stored along
@@ -550,6 +569,13 @@ export function* renderTemplateResult(
           }
         }
         partIndex += statics.length - 1;
+        break;
+      }
+      case 'element-part': {
+        // We don't emit anything for element parts (since we only support
+        // directives for now; since they can't render, we don't even bother
+        // running them), but we still need to advance the part index
+        partIndex++;
         break;
       }
       case 'custom-element-open': {
