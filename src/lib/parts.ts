@@ -13,7 +13,7 @@
  */
 
 import {isDirective} from './directive.js';
-import {removeNodes} from './dom.js';
+import {removeNodes, scopedRegistriesSupported} from './dom.js';
 import {noChange, nothing, Part} from './part.js';
 import {RenderOptions} from './render-options.js';
 import {TemplateInstance} from './template-instance.js';
@@ -252,6 +252,20 @@ export class NodePart implements Part {
     }
   }
 
+  private __getRootNode(): Node {
+    if (scopedRegistriesSupported) {
+      const rootNode = this.endNode.getRootNode();
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      // @ts-ignore
+      if (rootNode.importNode !== undefined) {
+        return rootNode;
+      }
+    }
+
+    return document;
+  }
+
   private __insert(node: Node) {
     this.endNode.parentNode!.insertBefore(node, this.endNode);
   }
@@ -296,7 +310,7 @@ export class NodePart implements Part {
       // caching and preprocessing.
       const instance =
           new TemplateInstance(template, value.processor, this.options);
-      const fragment = instance._clone();
+      const fragment = instance._clone(this.__getRootNode());
       instance.update(value.values);
       this.__commitNode(fragment);
       this.value = instance;

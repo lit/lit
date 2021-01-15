@@ -25,6 +25,14 @@ export const isCEPolyfill = typeof window !== 'undefined' &&
         undefined;
 
 /**
+ * True if scoped registries are supported
+ */
+export const scopedRegistriesSupported = typeof ShadowRoot !== 'undefined' &&
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    ShadowRoot.prototype.importNode !== undefined;
+
+/**
  * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
  * into another container (could be the same container), before `before`. If
  * `before` is null, it appends the nodes to the container.

@@ -51,7 +51,7 @@ export class TemplateInstance {
     }
   }
 
-  _clone(): DocumentFragment {
+  _clone(rootNode: Node = document): DocumentFragment {
     // There are a number of steps in the lifecycle of a template instance's
     // DOM fragment:
     //  1. Clone - create the instance fragment
@@ -92,7 +92,9 @@ export class TemplateInstance {
 
     const fragment = isCEPolyfill ?
         this.template.element.content.cloneNode(true) as DocumentFragment :
-        document.importNode(this.template.element.content, true);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        rootNode.importNode(this.template.element.content, true);
 
     const stack: Node[] = [];
     const parts = this.template.parts;
