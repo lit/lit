@@ -374,7 +374,7 @@ const getTemplateHtml = (
   // we insert the sentinel string.
   const l = strings.length - 1;
   // Stores the case-sensitive bound attribute names in the order of their
-  // parts. Element-position are also reflected in this array as undefined
+  // parts. ElementParts are also reflected in this array as undefined
   // rather than a string, to disambiguate from attribute bindings.
   const attrNames: Array<string|undefined> = [];
   let html = type === SVG_RESULT ? '<svg>' : '';

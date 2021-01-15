@@ -112,7 +112,7 @@ type AttributePartOp = {
 };
 
 /**
- * Operation for and element binding. Although we only support directives in
+ * Operation for an element binding. Although we only support directives in
  * element position which cannot emit anything, the opcode needs to index past
  * the part value
  */
@@ -572,6 +572,9 @@ export function* renderTemplateResult(
         break;
       }
       case 'element-part': {
+        // We don't emit anything for element parts (since we only support
+        // directives for now; since they can't render, we don't even bother
+        // running them), but we still need to advance the part index
         partIndex++;
         break;
       }
