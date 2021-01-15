@@ -17,10 +17,18 @@ import {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
+const ENABLE_SHADYDOM_NOPATCH = true;
 
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
+
+const wrap =
+  ENABLE_SHADYDOM_NOPATCH &&
+  window.ShadyDOM?.inUse &&
+  window.ShadyDOM?.noPatch === true
+    ? window.ShadyDOM!.wrap
+    : (node: Node) => node;
 
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
@@ -365,7 +373,7 @@ export interface DirectiveParent {
 const getTemplateHtml = (
   strings: TemplateStringsArray,
   type: ResultType
-): [string, string[]] => {
+): [string, Array<string | undefined>] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -373,7 +381,10 @@ const getTemplateHtml = (
   // sentinel string and re-write the attribute name, or inside a tag where
   // we insert the sentinel string.
   const l = strings.length - 1;
-  const attrNames: Array<string> = [];
+  // Stores the case-sensitive bound attribute names in the order of their
+  // parts. ElementParts are also reflected in this array as undefined
+  // rather than a string, to disambiguate from attribute bindings.
+  const attrNames: Array<string | undefined> = [];
   let html = type === SVG_RESULT ? '<svg>' : '';
 
   // When we're inside a raw text tag (not it's text content), the regex
@@ -491,7 +502,9 @@ const getTemplateHtml = (
           s.slice(0, attrNameEndIndex) +
             boundAttributeSuffix +
             s.slice(attrNameEndIndex)) + marker
-        : s + marker + (attrNameEndIndex === -2 ? `:${i}` : '');
+        : s +
+          marker +
+          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : '');
   }
 
   // Returned as an array for terseness
@@ -558,36 +571,40 @@ class TemplateImpl {
             // contains the attribute name we'll process next. We only need the
             // attribute name here to know if we should process a bound attribute
             // on this element.
-            if (name.endsWith(boundAttributeSuffix)) {
+            if (
+              name.endsWith(boundAttributeSuffix) ||
+              name.startsWith(marker)
+            ) {
               const realName = attrNames[attrNameIndex++];
-              // Lowercase for case-sensitive SVG attributes like viewBox
-              const value = (node as Element).getAttribute(
-                realName.toLowerCase() + boundAttributeSuffix
-              )!;
               attrsToRemove.push(name);
-              const statics = value.split(marker);
-              const m = /([.?@])?(.*)/.exec(realName)!;
-              this._parts.push({
-                _type: ATTRIBUTE_PART,
-                _index: nodeIndex,
-                _name: m[2],
-                _strings: statics,
-                _constructor:
-                  m[1] === '.'
-                    ? PropertyPartImpl
-                    : m[1] === '?'
-                    ? BooleanAttributePartImpl
-                    : m[1] === '@'
-                    ? EventPartImpl
-                    : AttributePartImpl,
-              });
-              bindingIndex += statics.length - 1;
-            } else if (name.startsWith(marker)) {
-              attrsToRemove.push(name);
-              this._parts.push({
-                _type: ELEMENT_PART,
-                _index: nodeIndex,
-              });
+              if (realName !== undefined) {
+                // Lowercase for case-sensitive SVG attributes like viewBox
+                const value = (node as Element).getAttribute(
+                  realName.toLowerCase() + boundAttributeSuffix
+                )!;
+                const statics = value.split(marker);
+                const m = /([.?@])?(.*)/.exec(realName)!;
+                this._parts.push({
+                  _type: ATTRIBUTE_PART,
+                  _index: nodeIndex,
+                  _name: m[2],
+                  _strings: statics,
+                  _constructor:
+                    m[1] === '.'
+                      ? PropertyPartImpl
+                      : m[1] === '?'
+                      ? BooleanAttributePartImpl
+                      : m[1] === '@'
+                      ? EventPartImpl
+                      : AttributePartImpl,
+                });
+                bindingIndex += statics.length - 1;
+              } else {
+                this._parts.push({
+                  _type: ELEMENT_PART,
+                  _index: nodeIndex,
+                });
+              }
             }
           }
           for (const name of attrsToRemove) {
@@ -806,6 +823,13 @@ type NodeTemplatePart = {
   readonly _type: typeof CHILD_PART;
   readonly _index: number;
 };
+type ElementPartConstructor = {
+  new (
+    element: HTMLElement,
+    parent: Disconnectable | undefined,
+    options: RenderOptions | undefined
+  ): ElementPart;
+};
 type ElementTemplatePart = {
   readonly _type: typeof ELEMENT_PART;
   readonly _index: number;
@@ -888,7 +912,7 @@ class ChildPartImpl {
   }
 
   get parentNode(): Node {
-    return this._$startNode.parentNode!;
+    return wrap(this._$startNode).parentNode!;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
@@ -913,7 +937,7 @@ class ChildPartImpl {
   }
 
   private _insert<T extends Node>(node: T, ref = this._$endNode) {
-    return this._$startNode.parentNode!.insertBefore(node, ref);
+    return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
   }
 
   private _commitNode(value: Node): void {
@@ -939,7 +963,7 @@ class ChildPartImpl {
   }
 
   private _commitText(value: unknown): void {
-    const node = this._$startNode.nextSibling;
+    const node = wrap(this._$startNode).nextSibling;
     // Make sure undefined and null render as an empty string
     // TODO: use `nothing` to clear the node?
     value ??= '';
@@ -948,8 +972,8 @@ class ChildPartImpl {
       node !== null &&
       node.nodeType === 3 /* Node.TEXT_NODE */ &&
       (this._$endNode === null
-        ? node.nextSibling === null
-        : node === this._$endNode.previousSibling)
+        ? wrap(node).nextSibling === null
+        : node === wrap(this._$endNode).previousSibling)
     ) {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
@@ -1050,7 +1074,10 @@ class ChildPartImpl {
 
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
-      this._$clear(itemPart?._$endNode!.nextSibling, partIndex);
+      this._$clear(
+        itemPart && wrap(itemPart._$endNode!).nextSibling,
+        partIndex
+      );
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1068,13 +1095,13 @@ class ChildPartImpl {
    * @internal
    */
   _$clear(
-    start: ChildNode | null = this._$startNode.nextSibling,
+    start: ChildNode | null = wrap(this._$startNode).nextSibling,
     from?: number
   ) {
     this._$setChildPartConnected?.(false, true, from);
     while (start && start !== this._$endNode) {
-      const n = start!.nextSibling;
-      start!.remove();
+      const n = wrap(start!).nextSibling;
+      (wrap(start!) as Element).remove();
       start = n;
     }
   }
@@ -1215,7 +1242,7 @@ class AttributePartImpl {
   /** @internal */
   _commitValue(value: unknown) {
     if (value === nothing) {
-      this.element.removeAttribute(this.name);
+      (wrap(this.element) as Element).removeAttribute(this.name);
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._sanitizer === undefined) {
@@ -1227,7 +1254,10 @@ class AttributePartImpl {
         }
         value = this._sanitizer(value ?? '');
       }
-      this.element.setAttribute(this.name, (value ?? '') as string);
+      (wrap(this.element) as Element).setAttribute(
+        this.name,
+        (value ?? '') as string
+      );
     }
   }
 }
@@ -1260,9 +1290,9 @@ class BooleanAttributePartImpl extends AttributePartImpl {
   /** @internal */
   _commitValue(value: unknown) {
     if (value && value !== nothing) {
-      this.element.setAttribute(this.name, '');
+      (wrap(this.element) as Element).setAttribute(this.name, '');
     } else {
-      this.element.removeAttribute(this.name);
+      (wrap(this.element) as Element).removeAttribute(this.name);
     }
   }
 }
@@ -1418,6 +1448,7 @@ export const _Σ = {
   _BooleanAttributePart: BooleanAttributePartImpl as AttributePartConstructor,
   _EventPart: EventPartImpl as AttributePartConstructor,
   _PropertyPart: PropertyPartImpl as AttributePartConstructor,
+  _ElementPart: ElementPartImpl as ElementPartConstructor,
 };
 
 // Apply polyfills if available
