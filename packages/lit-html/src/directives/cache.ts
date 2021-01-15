@@ -95,8 +95,8 @@ export const cache = directive(
           // Move cached part back into DOM
           clearPart(containerPart);
           insertPart(containerPart, undefined, cachedPart);
-          cachedPart.setConnected(true);
           setComittedValue(containerPart, [cachedPart]);
+          cachedPart.setConnected(true);
         }
         this.value = v;
       } else {
