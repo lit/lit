@@ -126,7 +126,7 @@ export const insertPart = (
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
       // `_$parent` reference after unlinking from its current parent, that
-      // method only exists if Disconnecctables are present, so we need to
+      // method only exists if Disconnectables are present, so we need to
       // unconditionally set it here
       part._$parent = containerPart;
     }
