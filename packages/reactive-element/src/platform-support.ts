@@ -72,6 +72,16 @@ interface PatchableReactiveElement extends HTMLElement {
 
   const elementProto = ReactiveElement.prototype;
 
+  // In noPatch mode, patch the ReactiveElement prototype so that no
+  // ReactiveElements must be wrapped.
+  if (
+    window.ShadyDOM &&
+    window.ShadyDOM.inUse &&
+    window.ShadyDOM.noPatch === true
+  ) {
+    window.ShadyDOM.patchElementProto(elementProto);
+  }
+
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */

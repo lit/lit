@@ -20,6 +20,8 @@ interface ShadyCSS {
 interface ShadyDOM {
   inUse: boolean;
   flush: () => void;
+  noPatch: boolean | string;
+  wrap: (node: Node) => Node;
 }
 
 interface Window {

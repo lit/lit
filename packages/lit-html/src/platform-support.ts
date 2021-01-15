@@ -48,14 +48,26 @@ interface ShadyTemplateResult {
   _$litType$?: string;
 }
 
+// Note, this is a dummy type as the full type here is big.
+interface Directive {
+  __directive?: Directive;
+}
+
+interface DirectiveParent {
+  _$parent?: DirectiveParent;
+  __directive?: Directive;
+  __directives?: Array<Directive | undefined>;
+}
+
 interface PatchableChildPart {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableChildPart;
+  __directive?: Directive;
   _$committedValue: unknown;
   _$startNode: ChildNode;
   _$endNode: ChildNode | null;
   options: RenderOptions;
-  _$setValue(value: unknown): void;
+  _$setValue(value: unknown, directiveParent: DirectiveParent): void;
   _$getTemplate(
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
@@ -81,6 +93,8 @@ const styledScopes: Set<string> = new Set();
 // styling is prepared, and then discarded.
 const scopeCssStore: Map<string, string[]> = new Map();
 
+const ENABLE_SHADYDOM_NOPATCH = true;
+
 /**
  * lit-html patches. These properties cannot be renamed.
  * * ChildPart.prototype._$getTemplate
@@ -99,6 +113,13 @@ const scopeCssStore: Map<string, string[]> = new Map();
   //   '%c Making lit-html compatible with ShadyDOM/CSS.',
   //   'color: lightgreen; font-style: italic'
   // );
+
+  const wrap =
+    ENABLE_SHADYDOM_NOPATCH &&
+    window.ShadyDOM?.inUse &&
+    window.ShadyDOM?.noPatch === true
+      ? window.ShadyDOM!.wrap
+      : (node: Node) => node;
 
   const needsPrepareStyles = (name: string | undefined) =>
     name !== undefined && !styledScopes.has(name);
@@ -176,10 +197,11 @@ const scopeCssStore: Map<string, string[]> = new Map();
   const setValue = childPartProto._$setValue;
   childPartProto._$setValue = function (
     this: PatchableChildPart,
-    value: unknown
+    value: unknown,
+    directiveParent: DirectiveParent = this
   ) {
-    const container = this._$startNode.parentNode!;
-    const scope = this.options.scope;
+    const container = wrap(this._$startNode).parentNode!;
+    const scope = this.options?.scope;
     if (container instanceof ShadowRoot && needsPrepareStyles(scope)) {
       // Note, @apply requires outer => inner scope rendering on initial
       // scope renders to apply property values correctly. Style preparation
@@ -199,7 +221,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
       // Note, any nested template results render here and their styles will
       // be extracted and collected.
-      setValue.call(this, value);
+      setValue.call(this, value, directiveParent);
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
@@ -223,7 +245,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
       this._$startNode = startNode;
       this._$endNode = endNode;
     } else {
-      setValue.call(this, value);
+      setValue.call(this, value, directiveParent);
     }
   };
 
@@ -235,7 +257,7 @@ const scopeCssStore: Map<string, string[]> = new Map();
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {
-    const scope = this.options.scope!;
+    const scope = this.options?.scope;
     let templateCache = scopedTemplateCache.get(scope);
     if (templateCache === undefined) {
       scopedTemplateCache.set(scope, (templateCache = new Map()));
@@ -250,3 +272,10 @@ const scopeCssStore: Map<string, string[]> = new Map();
     return template;
   };
 };
+
+if (ENABLE_SHADYDOM_NOPATCH) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
+  (globalThis as any)[
+    'litHtmlPlatformSupport'
+  ].noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+}

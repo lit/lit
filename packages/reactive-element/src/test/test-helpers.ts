@@ -38,17 +38,15 @@ export class RenderingElement extends ReactiveElement {
   render(): string | undefined {
     return '';
   }
-  createRenderRoot() {
-    const renderRoot = super.createRenderRoot();
-    const span = document.createElement('span');
-    renderRoot.appendChild(span);
-    return span;
-  }
   update(changedProperties: PropertyValues) {
     const result = this.render();
     super.update(changedProperties);
     if (result !== undefined) {
+      // Save and replace any existing styles in root to simulate
+      // adoptedStylesheets.
+      const styles = this.renderRoot.querySelectorAll('style');
       this.renderRoot.innerHTML = result;
+      this.renderRoot.append(...styles);
     }
   }
 }
