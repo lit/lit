@@ -35,6 +35,6 @@ export default litProdConfig({
   bundled: [
     {
       file: 'platform-support',
-    }
+    },
   ],
 });
