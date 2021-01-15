@@ -53,6 +53,7 @@ packages/lit-element/node_modules/
 packages/lit-element/test/
 packages/lit-element/decorators.*
 packages/lit-element/hydrate-support.*
+packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/platform-support.*
