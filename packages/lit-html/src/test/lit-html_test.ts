@@ -1427,8 +1427,12 @@ suite('lit-html', () => {
     // A stateful directive
     class CountDirective extends Directive {
       count = 0;
-      render(v: unknown) {
-        return `${v}:${++this.count}`;
+      render(id: string, log?: string[]) {
+        const v = `${id}:${++this.count}`;
+        if (log !== undefined) {
+          log.push(v);
+        }
+        return v;
       }
     }
     const count = directive(CountDirective);
@@ -1567,6 +1571,51 @@ suite('lit-html', () => {
         container
       );
       assert.isOk(event);
+    });
+
+    test('renders directives on ElementParts', () => {
+      const log: string[] = [];
+      assertRender(html`<div ${count('x', log)}}></div>`, `<div></div>`);
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(
+        html`<div a=${'a'} ${count('x', log)}}></div>`,
+        `<div a="a"></div>`
+      );
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(
+        html`<div ${count('x', log)}} a=${'a'}></div>`,
+        `<div a="a"></div>`
+      );
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(
+        html`<div a=${'a'} ${count('x', log)}} b=${'b'}></div>`,
+        `<div a="a" b="b"></div>`
+      );
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(
+        html`<div ${count('x', log)} ${count('y', log)}}></div>`,
+        `<div></div>`
+      );
+      assert.deepEqual(log, ['x:1', 'y:1']);
+
+      log.length = 0;
+      const template = html`<div ${count('x', log)} a=${'a'} ${count(
+        'y',
+        log
+      )}}></div>`;
+      assertRender(template, `<div a="a"></div>`);
+      assert.deepEqual(log, ['x:1', 'y:1']);
+      log.length = 0;
+      assertRender(template, `<div a="a"></div>`);
+      assert.deepEqual(log, ['x:2', 'y:2']);
     });
 
     test('directives have access to renderOptions', () => {

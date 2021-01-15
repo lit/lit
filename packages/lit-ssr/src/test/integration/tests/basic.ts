@@ -14,8 +14,13 @@
 
 import 'lit-element/hydrate-support.js';
 
-import {html, noChange, nothing} from 'lit-html';
-import {directive, Directive} from 'lit-html/directive.js';
+import {html, noChange, nothing, Part} from 'lit-html';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  DirectiveResult,
+} from 'lit-html/directive.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
@@ -30,6 +35,7 @@ import {ifDefined} from 'lit-html/directives/if-defined.js';
 import {live} from 'lit-html/directives/live.js';
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
+import {createRef, ref} from 'lit-html/directives/ref.js';
 
 import {LitElement} from 'lit-element';
 import {property} from 'lit-element/decorators/property.js';
@@ -39,6 +45,7 @@ import {
 } from 'lit-html/directives/render-light.js';
 
 import {SSRTest} from './ssr-test';
+import {DisconnectableDirective} from 'lit-html/disconnectable-directive';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -3281,6 +3288,85 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
+   * ElementPart tests
+   ******************************************************/
+
+  'ElementPart accepts directive: generic': () => {
+    const log: string[] = [];
+    const dir = directive(
+      class extends Directive {
+        render(_v: string) {
+          log.push('render should not be called');
+        }
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          log.push(v);
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html`<div attr=${v} ${dir(v)}></div>`;
+      },
+      expectations: [
+        {
+          args: ['a'],
+          html: '<div attr="a"></div>',
+          check(assert: Chai.Assert) {
+            // Note, update is called once during hydration and again
+            // during initial render
+            assert.deepEqual(log, ['a', 'a']);
+          },
+        },
+        {
+          args: ['b'],
+          html: '<div attr="b"></div>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, ['a', 'a', 'b']);
+          },
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  'ElementPart accepts directive: ref': () => {
+    const ref1 = createRef();
+    const ref2 = createRef();
+    const ref3 = createRef();
+    return {
+      render(v: boolean) {
+        return html`<div id="div1" ${ref(ref1)}>
+          <div id="div2" ${ref(ref2)}>
+            ${v ? html`<div id="div3" ${ref(ref3)}></div>` : nothing}
+          </div>
+        </div>`;
+      },
+      expectations: [
+        {
+          args: [true],
+          html:
+            '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
+          check(assert: Chai.Assert) {
+            assert.equal(ref1.value?.id, 'div1');
+            assert.equal(ref2.value?.id, 'div2');
+            assert.equal(ref3.value?.id, 'div3');
+          },
+        },
+        {
+          args: [false],
+          html: '<div id="div1"><div id="div2"></div></div>',
+          check(assert: Chai.Assert) {
+            assert.equal(ref1.value?.id, 'div1');
+            assert.equal(ref2.value?.id, 'div2');
+            assert.notOk(ref3.value);
+          },
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  /******************************************************
    * Mixed part tests
    ******************************************************/
 
@@ -3322,7 +3408,7 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'ChildParts & AttributeParts soup': {
+  'ChildPart, AttributePart, and ElementPart soup': {
     render(x, y, z) {
       return html`text:${x}
         <div>${x}</div>
@@ -3334,14 +3420,14 @@ export const tests: {[name: string]: SSRTest} = {
     },
     expectations: [
       {
-        args: [html`<a></a>`, 'b', 'c'],
+        args: [html`<a attr=${'a'} ${'ignored'}></a>`, 'b', 'c'],
         html:
-          'text:\n<a></a><div><a></a></div><span a1="b" a2="b"><a></a><p a="b">b</p>c</span>',
+          'text:\n<a attr="a"></a><div><a attr="a"></a></div><span a1="b" a2="b"><a attr="a"></a><p a="b">b</p>c</span>',
       },
       {
-        args: ['x', 'y', html`<i></i>`],
+        args: ['x', 'y', html`<i ${'ignored'} attr=${'i'}></i>`],
         html:
-          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i></i></span>',
+          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i attr="i"></i></span>',
       },
     ],
     stableSelectors: ['div', 'span', 'p'],
@@ -3747,6 +3833,138 @@ export const tests: {[name: string]: SSRTest} = {
         },
       ],
       stableSelectors: ['div', 'span'],
+    };
+  },
+
+  /******************************************************
+   * DisconnectableDirective tests
+   ******************************************************/
+
+  DisconnectableDirective: () => {
+    const log: string[] = [];
+    const dir = directive(
+      class extends DisconnectableDirective {
+        id!: string;
+        render(id: string) {
+          this.id = id;
+          log.push(`render-${this.id}`);
+          return id;
+        }
+        disconnected() {
+          log.push(`disconnected-${this.id}`);
+        }
+      }
+    );
+    return {
+      render(bool: boolean, id: string) {
+        return html`<span
+          >${dir('x')}${bool
+            ? html`<div attr=${dir(`attr-${id}`)}>${dir(`node-${id}`)}</div>`
+            : nothing}</span
+        >`;
+      },
+      expectations: [
+        {
+          args: [true, 'a'],
+          html: '<span>x<div attr="attr-a">node-a</div></span>',
+          check(assert: Chai.Assert) {
+            // Note, update is called once during hydration and again
+            // during initial render
+            assert.deepEqual(log, [
+              'render-x',
+              'render-attr-a',
+              'render-node-a',
+              'render-x',
+              'render-attr-a',
+              'render-node-a',
+            ]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [false, 'a'],
+          html: '<span>x</span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [
+              'render-x',
+              'disconnected-attr-a',
+              'disconnected-node-a',
+            ]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [true, 'b'],
+          html: '<span>x<div attr="attr-b">node-b</div></span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [
+              'render-x',
+              'render-attr-b',
+              'render-node-b',
+            ]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [false, 'b'],
+          html: '<span>x</span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [
+              'render-x',
+              'disconnected-attr-b',
+              'disconnected-node-b',
+            ]);
+            log.length = 0;
+          },
+        },
+      ],
+      stableSelectors: ['span'],
+    };
+  },
+
+  /******************************************************
+   * Nested directive tests
+   ******************************************************/
+
+  'Nested directives': () => {
+    const log: number[] = [];
+    const nest = directive(
+      class extends Directive {
+        render(n: number): string | DirectiveResult {
+          log.push(n);
+          if (n > 1) {
+            return nest(n - 1);
+          } else {
+            return 'nested!';
+          }
+        }
+      }
+    );
+    return {
+      render() {
+        return html`<span>${nest(3)}</span>`;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<span>nested!</span>',
+          check(assert: Chai.Assert) {
+            // Note, update is called once during hydration and again
+            // during initial render
+            assert.deepEqual(log, [3, 2, 1, 3, 2, 1]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [],
+          html: '<span>nested!</span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [3, 2, 1]);
+            log.length = 0;
+          },
+        },
+      ],
+      stableSelectors: ['span'],
     };
   },
 
