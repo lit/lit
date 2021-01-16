@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
+
 ### Changed
 
 - (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.

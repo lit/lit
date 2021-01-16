@@ -668,6 +668,12 @@ export abstract class ReactiveElement
     (this.__controllers ??= []).push(controller);
   }
 
+  removeController(controller: ReactiveController) {
+    if (this.__controllers !== undefined) {
+      this.__controllers = this.__controllers?.filter((c) => c !== controller);
+    }
+  }
+
   /**
    * Fixes any properties set on the instance before upgrade time.
    * Otherwise these would shadow the accessor and break these properties.
