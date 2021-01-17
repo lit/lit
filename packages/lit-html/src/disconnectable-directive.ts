@@ -15,15 +15,15 @@
 /**
  * Overview:
  *
- * This module is designed to add `disconnectedCallback` support to directives
- * with the least impact on the core runtime or payload when that feature is not
- * used.
+ * This module is designed to add support for a `disconnected` callback to
+ * directives with the least impact on the core runtime or payload when that
+ * feature is not used.
  *
  * The strategy is to introduce a `DisconnectableDirective` subclass of
  * `Directive` that climbs the "parent" tree in its constructor to note which
  * branches of lit-html's "logical tree" of data structures contain such
  * directives and thus need to be crawled when a subtree is being cleared (or
- * manually disconnected) in order to run the `disconnectedCallback`.
+ * manually disconnected) in order to run the `disconnected` callback.
  *
  * The "nodes" of the logical tree include Parts, TemplateInstances (for when a
  * TemplateResult is committed to a value of a ChildPart), and Directives; these
@@ -139,8 +139,8 @@ const DEV_MODE = true;
 
 /**
  * Recursively walks down the tree of Parts/TemplateInstances/Directives to set
- * the connected state of directives and run `disconnectedCallback`/
- * `reconnectedCallback`s.
+ * the connected state of directives and run `disconnected`/ `reconnected`
+ * callbacks.
  *
  * @return True if there were children to disconnect; false otherwise
  */
@@ -190,9 +190,9 @@ const removeDisconnectableFromParent = (obj: Disconnectable) => {
 
 /**
  * Sets the connected state on any directives contained within the committed
- * value of this part (i.e. within a TemplateInstance or iterable of ChildParts)
- * and runs their `disconnectedCallback`/`reconnectedCallback`s, as well as
- * within any directives stored on the ChildPart (when `valueOnly` is false).
+ * value of this part (i.e. within a TemplateInstance or iterable of
+ * ChildParts) and runs their `disconnected`/`reconnected`s, as well as within
+ * any directives stored on the ChildPart (when `valueOnly` is false).
  *
  * `isClearingValue` should be passed as `true` on a top-level part that is
  * clearing itself, and not as a result of recursively disconnecting directives
@@ -251,16 +251,15 @@ const installDisconnectAPI = (obj: Disconnectable) => {
 };
 
 /**
- * An abstract `Directive` base class whose `disconnectedCallback` will be
+ * An abstract `Directive` base class whose `disconnected` method will be
  * called when the part containing the directive is cleared as a result of
  * re-rendering, or when the user calls `part.setDirectiveConnection(false)` on
  * a part that was previously rendered containing the directive.
  *
- * If `part.setDirectiveConnection(true)` is subsequently called on a containing
- * part, the directive's `reconnectedCallback` will be called prior to its next
- * `update`/`render` callbacks. When implementing `disconnectedCallback`,
- * `reconnectedCallback` should also be implemented to be compatible with
- * reconnection.
+ * If `part.setDirectiveConnection(true)` is subsequently called on a
+ * containing part, the directive's `reconnected` method will be called prior
+ * to its next `update`/`render` callbacks. When implementing `disconnected`,
+ * `reconnected` should also be implemented to be compatible with reconnection.
  */
 export abstract class DisconnectableDirective extends Directive {
   isConnected = true;
@@ -308,10 +307,10 @@ export abstract class DisconnectableDirective extends Directive {
     }
   }
   /**
-   * Private method used to set the connection state of the directive and
-   * call the respective `disconnectedCallback` or `reconnectedCallback`
-   * callback. Note that since `isConnected` defaults to true, we do not run
-   * `reconnectedCallback` on first render.
+   * Private method used to set the connection state of the directive and call
+   * the respective `disconnected` or `reconnected` callback. Note thatsince
+   * `isConnected` defaults to true, we do not run `reconnected` on first
+   * render.
    *
    * If a call to `setValue` was made while disconnected, flush it to the part
    * before reconnecting.
@@ -327,16 +326,17 @@ export abstract class DisconnectableDirective extends Directive {
           this.setValue(this._pendingValue);
           this._pendingValue = noChange;
         }
-        this.reconnectedCallback?.();
+        this.reconnected?.();
       } else {
         this.isConnected = false;
-        this.disconnectedCallback?.();
+        this.disconnected?.();
       }
     }
   }
+
   /**
-   * Override of the base `_resolve` method to ensure `reconnectedCallback` is
-   * run prior to the next render.
+   * Override of the base `_resolve` method to ensure `reconnected` is run
+   * prior to the next render.
    *
    * @override
    * @internal
@@ -386,9 +386,9 @@ export abstract class DisconnectableDirective extends Directive {
   /**
    * User callbacks for implementing logic to release any resources/subscriptions
    * that may have been retained by this directive. Since directives may also be
-   * re-connected, `reconnectedCallback` should also be implemented to restore
+   * re-connected, `reconnected` should also be implemented to restore the
    * working state of the directive prior to the next render.
    */
-  protected disconnectedCallback() {}
-  protected reconnectedCallback() {}
+  protected disconnected() {}
+  protected reconnected() {}
 }

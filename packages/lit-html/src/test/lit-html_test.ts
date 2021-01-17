@@ -24,7 +24,7 @@ import {
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
-import {directive, Directive, PartType} from '../directive.js';
+import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -1427,8 +1427,12 @@ suite('lit-html', () => {
     // A stateful directive
     class CountDirective extends Directive {
       count = 0;
-      render(v: unknown) {
-        return `${v}:${++this.count}`;
+      render(id: string, log?: string[]) {
+        const v = `${id}:${++this.count}`;
+        if (log !== undefined) {
+          log.push(v);
+        }
+        return v;
       }
     }
     const count = directive(CountDirective);
@@ -1569,6 +1573,36 @@ suite('lit-html', () => {
       assert.isOk(event);
     });
 
+    test('renders directives on ElementParts', () => {
+      const log: string[] = [];
+      assertRender(html`<div ${count('x', log)}}></div>`, `<div></div>`);
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(html`<div a=${'a'} ${count('x', log)}}></div>`, `<div a="a"></div>`);
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(html`<div ${count('x', log)}} a=${'a'}></div>`, `<div a="a"></div>`);
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(html`<div a=${'a'} ${count('x', log)}} b=${'b'}></div>`, `<div a="a" b="b"></div>`);
+      assert.deepEqual(log, ['x:1']);
+
+      log.length = 0;
+      assertRender(html`<div ${count('x', log)} ${count('y', log)}}></div>`, `<div></div>`);
+      assert.deepEqual(log, ['x:1', 'y:1']);
+
+      log.length = 0;
+      const template = html`<div ${count('x', log)} a=${'a'} ${count('y', log)}}></div>`;
+      assertRender(template, `<div a="a"></div>`);
+      assert.deepEqual(log, ['x:1', 'y:1']);
+      log.length = 0;
+      assertRender(template, `<div a="a"></div>`);
+      assert.deepEqual(log, ['x:2', 'y:2']);
+    });
+
     test('directives have access to renderOptions', () => {
       const hostEl = document.createElement('input');
       hostEl.value = 'host';
@@ -1596,16 +1630,22 @@ suite('lit-html', () => {
     });
 
     suite('nested directives', () => {
-      const aDirective = directive(
+      const aNothingDirective = directive(
         class extends Directive {
           render(bool: boolean, v: unknown) {
             return bool ? v : nothing;
           }
         }
       );
+
+      let bDirectiveCount = 0;
       const bDirective = directive(
         class extends Directive {
           count = 0;
+          constructor(part: PartInfo) {
+            super(part);
+            bDirectiveCount++;
+          }
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;
           }
@@ -1613,21 +1653,59 @@ suite('lit-html', () => {
       );
 
       test('nested directives in ChildPart', () => {
+        bDirectiveCount = 0;
         const template = (bool: boolean, v: unknown) =>
-          html`<div>${aDirective(bool, bDirective(v))}`;
+          html`<div>${aNothingDirective(bool, bDirective(v))}`;
         assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
         assertRender(template(true, 'Y'), `<div>[B:1:Y]</div>`);
         assertRender(template(false, 'X'), `<div></div>`);
         assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
+        assert.equal(bDirectiveCount, 2);
       });
 
       test('nested directives in AttributePart', () => {
+        bDirectiveCount = 0;
         const template = (bool: boolean, v: unknown) =>
-          html`<div a=${aDirective(bool, bDirective(v))}></div>`;
+          html`<div a=${aNothingDirective(bool, bDirective(v))}></div>`;
         assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
         assertRender(template(true, 'Y'), `<div a="[B:1:Y]"></div>`);
         assertRender(template(false, 'X'), `<div></div>`);
         assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
+        assert.equal(bDirectiveCount, 2);
+      });
+
+      suite('nested directives whose parent returns `noChange`', () => {
+        const aNoChangeDirective = directive(
+          class extends Directive {
+            render(bool: boolean, v: unknown) {
+              return bool ? v : noChange;
+            }
+          }
+        );
+
+        test('nested directives in ChildPart', () => {
+          bDirectiveCount = 0;
+          const template = (bool: boolean, v: unknown) =>
+            html`<div>${aNoChangeDirective(bool, bDirective(v))}`;
+          assertRender(template(true, 'X'), `<div>[B:0:X]</div>`);
+          assertRender(template(true, 'Y'), `<div>[B:1:Y]</div>`);
+          assertRender(template(false, 'X'), `<div>[B:1:Y]</div>`);
+          assertRender(template(true, 'X'), `<div>[B:2:X]</div>`);
+          assertRender(template(false, 'Y'), `<div>[B:2:X]</div>`);
+          assert.equal(bDirectiveCount, 1);
+        });
+
+        test('nested directives in AttributePart', () => {
+          bDirectiveCount = 0;
+          const template = (bool: boolean, v: unknown) =>
+            html`<div a=${aNoChangeDirective(bool, bDirective(v))}></div>`;
+          assertRender(template(true, 'X'), `<div a="[B:0:X]"></div>`);
+          assertRender(template(true, 'Y'), `<div a="[B:1:Y]"></div>`);
+          assertRender(template(false, 'X'), `<div a="[B:1:Y]"></div>`);
+          assertRender(template(true, 'X'), `<div a="[B:2:X]"></div>`);
+          assertRender(template(false, 'Y'), `<div a="[B:2:X]"></div>`);
+          assert.equal(bDirectiveCount, 1);
+        });
       });
     });
 
@@ -1778,10 +1856,10 @@ suite('lit-html', () => {
         return bool ? value : nothing;
       }
 
-      disconnectedCallback() {
+      disconnected() {
         this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
       }
-      reconnectedCallback() {
+      reconnected() {
         this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
       }
     }

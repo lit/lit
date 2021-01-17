@@ -20,8 +20,9 @@ import {
   EventPart,
   ChildPart,
   PropertyPart,
+  ElementPart,
   RenderOptions,
-  _$private,
+  _Σ,
 } from './lit-html.js';
 import {AttributePartInfo, PartType} from './directive.js';
 import {
@@ -37,7 +38,8 @@ const {
   _ChildPart: ChildPart,
   _EventPart: EventPart,
   _PropertyPart: PropertyPart,
-} = _$private;
+  _ElementPart: ElementPart,
+} = _Σ;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
@@ -358,46 +360,57 @@ const createAttributeParts = (
       const templatePart = instance._$template._parts[state.templatePartIndex];
       if (
         templatePart === undefined ||
-        templatePart._type !== PartType.ATTRIBUTE ||
+        (templatePart._type !== PartType.ATTRIBUTE &&
+         templatePart._type !== PartType.ELEMENT) ||
         templatePart._index !== nodeIndex
       ) {
         break;
       }
       foundOnePart = true;
 
-      // The instance part is created based on the constructor saved in the
-      // template part
-      const instancePart = new templatePart._constructor(
-        node.parentElement as HTMLElement,
-        templatePart._name,
-        templatePart._strings,
-        state.instance,
-        options
-      );
+      if (templatePart._type === PartType.ATTRIBUTE) {
+        // The instance part is created based on the constructor saved in the
+        // template part
+        const instancePart = new templatePart._constructor(
+          node.parentElement as HTMLElement,
+          templatePart._name,
+          templatePart._strings,
+          state.instance,
+          options
+        );
 
-      const value = isSingleExpression(
-        (instancePart as unknown) as AttributePartInfo
-      )
-        ? state.result.values[state.instancePartIndex]
-        : state.result.values;
+        const value = isSingleExpression(
+          (instancePart as unknown) as AttributePartInfo
+        )
+          ? state.result.values[state.instancePartIndex]
+          : state.result.values;
 
-      // Setting the attribute value primes committed value with the resolved
-      // directive value; we only then commit that value for event/property
-      // parts since those were not serialized, and pass `noCommit` for the
-      // others to avoid perf impact of touching the DOM unnecessarily
-      const noCommit = !(
-        instancePart instanceof EventPart ||
-        instancePart instanceof PropertyPart
-      );
-      instancePart._$setValue(
-        value,
-        instancePart,
-        state.instancePartIndex,
-        noCommit
-      );
+        // Setting the attribute value primes committed value with the resolved
+        // directive value; we only then commit that value for event/property
+        // parts since those were not serialized, and pass `noCommit` for the
+        // others to avoid perf impact of touching the DOM unnecessarily
+        const noCommit = !(
+          instancePart instanceof EventPart ||
+          instancePart instanceof PropertyPart
+        );
+        instancePart._$setValue(
+          value,
+          instancePart,
+          state.instancePartIndex,
+          noCommit
+        );
+        state.instancePartIndex += templatePart._strings.length - 1;
+        instance._parts.push(instancePart);
+      } else { // templatePart._type === PartType.ELEMENT
+        const instancePart = new ElementPart(
+          node.parentElement as HTMLElement,
+          state.instance,
+          options
+        );
+        resolveDirective(instancePart, state.result.values[state.instancePartIndex++]);
+        instance._parts.push(instancePart);
+      }
       state.templatePartIndex++;
-      state.instancePartIndex += templatePart._strings.length - 1;
-      instance._parts.push(instancePart);
     }
     if (!foundOnePart) {
       // For a <!--lit-bindings--> marker there should be at least

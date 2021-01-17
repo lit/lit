@@ -1,10 +1,28 @@
 <html>
   <head>
     <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
-    <!-- Loads polyfills but does not force settings... -->
     <meta name="manual-polyfills" />
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-    <script src="../../../node_modules/@webcomponents/shadycss/apply-shim.min.js"></script>
+    <script>
+      // Simulate no Shadow DOM.
+      Object.defineProperty(Element.prototype, 'attachShadow', {
+        value: undefined,
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+
+      window.ShadyDOM = {
+        force: true,
+        noPatch: true,
+      };
+      window.customElements = window.customElements || {};
+      window.customElements.forcePolyfill = true;
+    </script>
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_js.js"></script>
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_dom.js"></script>
+    <script src="../../../node_modules/@webcomponents/template/template.js"></script>
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-ce.js"></script>
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-sd.js"></script>
   </head>
 
   <body>

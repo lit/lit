@@ -163,6 +163,15 @@ export default {
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
       polyfills: {
+        // Rather than use the webcomponents polyfill version bundled with the
+        // legacyPlugin, we inject a custom version of the polyfill; this both
+        // gives us more control over the version, but also allows a mechanism
+        // for tests to opt out of automatic injection, so that they can control
+        // the timing when the polyfill loads (i.e. for setting polyfill flags
+        // in an inline script before polyfills are manually loaded). Note that
+        // .html-based tests can add a `<meta name="manual-polyfills">` tag in
+        // the head to opt out of automatic polyfill injection and load them
+        // manually using a `<script>` tag in the page.
         webcomponents: false,
         custom: [
           {
@@ -170,8 +179,9 @@ export default {
             path: require.resolve(
               '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
             ),
-            // Always load.
-            test: 'true',
+            // Don't load if the page is tagged with a special meta indicating
+            // the polyfills will be loaded manually
+            test: '!document.querySelector("meta[name=manual-polyfills")',
             module: false,
           },
         ],
@@ -193,9 +203,9 @@ export default {
     }
     return true;
   },
-  browserStartTimeout: 60000, // default 30000
-  testsStartTimeout: 60000, // default 10000
-  testsFinishTimeout: 120000, // default 20000
+  browserStartTimeout: 120000, // default 30000
+  testsStartTimeout: 120000, // default 10000
+  testsFinishTimeout: 240000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {

@@ -230,6 +230,7 @@ export function litProdConfig({
       ),
     },
   };
+
   const nameCacheSeederInfile = 'name-cache-seeder-virtual-input.js';
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
@@ -302,6 +303,8 @@ export function litProdConfig({
           'const DEV_MODE = true': 'const DEV_MODE = false',
           'const ENABLE_EXTRA_SECURITY_HOOKS = true':
             'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+          'const ENABLE_SHADYDOM_NOPATCH = true':
+            'const ENABLE_SHADYDOM_NOPATCH = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -344,11 +347,11 @@ export function litProdConfig({
   ];
 }
 
-export const litMonoBundleConfig = ({
+const litMonoBundleConfig = ({
   file,
   output,
   name,
-  terserOptions = generateTerserOptions(),
+  terserOptions,
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
@@ -364,6 +367,8 @@ export const litMonoBundleConfig = ({
       'const DEV_MODE = true': 'const DEV_MODE = false',
       'const ENABLE_EXTRA_SECURITY_HOOKS = true':
         'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+      'const ENABLE_SHADYDOM_NOPATCH = true':
+        'const ENABLE_SHADYDOM_NOPATCH = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.
