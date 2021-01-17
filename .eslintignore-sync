@@ -3,8 +3,8 @@
 
 [relative]
 packages/benchmarks/.gitignore
-packages/labs/async-task/.gitignore
-packages/labs/create-react-component/.gitignore
+packages/labs/task/.gitignore
+packages/labs/react/.gitignore
 packages/lit-element/.gitignore
 packages/lit-html/.gitignore
 packages/lit-ssr/.gitignore
