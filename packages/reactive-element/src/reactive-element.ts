@@ -669,9 +669,9 @@ export abstract class ReactiveElement
   }
 
   removeController(controller: ReactiveController) {
-    if (this.__controllers !== undefined) {
-      this.__controllers = this.__controllers?.filter((c) => c !== controller);
-    }
+    // Note, if the indexOf is -1, the >>> will flip the sign which makes the
+    // splice do nothing.
+    this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
   }
 
   /**
