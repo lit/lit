@@ -75,34 +75,32 @@ const stableProperties = {
   _$template: 'G',
   // reactive-element: ReactiveElement (used by polyfill-support)
   _$didUpdate: 'H',
-  // lit-element: LitElement
-  _$renderOptions: 'I',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'J',
+  _$renderImpl: 'I',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'K',
+  _$needsHydration: 'J',
   // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'L',
+  _$committedValue: 'K',
   // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'M',
+  _$setValue: 'L',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'N',
+  _$handlesPrepareStyles: 'M',
   // lit-element: ReactiveElement (used bby ssr-support)
-  _$attributeToProperty: 'O',
+  _$attributeToProperty: 'N',
   // lit-element: ReactiveElement (used bby ssr-support)
-  _$changedProperties: 'P',
+  _$changedProperties: 'O',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)
-  _$parent: 'Q',
-  _$disconnetableChildren: 'R',
+  _$parent: 'P',
+  _$disconnetableChildren: 'Q',
   // disconnectable-directive: DisconnectableDirective
-  _$setDirectiveConnected: 'S',
+  _$setDirectiveConnected: 'R',
   // lit-html: ChildPart (added by disconnectable-directive)
-  _$setChildPartConnected: 'T',
+  _$setChildPartConnected: 'S',
   // lit-html: ChildPart (added by disconnectable-directive)
-  _$reparentDisconnectables: 'U',
+  _$reparentDisconnectables: 'T',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'V',
+  _$clear: 'U',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and

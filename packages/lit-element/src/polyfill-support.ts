@@ -51,7 +51,7 @@ interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
   createRenderRoot(): Element | ShadowRoot;
-  _$renderOptions: RenderOptions;
+  renderOptions: RenderOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,7 +80,7 @@ interface PatchableLitElement extends HTMLElement {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
     // due to @apply.
-    this._$renderOptions.scope = this.localName;
+    this.renderOptions.scope = this.localName;
     return createRenderRoot.call(this);
   };
 };

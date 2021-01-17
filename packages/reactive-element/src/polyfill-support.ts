@@ -52,7 +52,7 @@ interface PatchableReactiveElement extends HTMLElement {
   hasUpdated: boolean;
   _$didUpdate(changedProperties: unknown): void;
   createRenderRoot(): Element | ShadowRoot;
-  _$renderOptions: RenderOptions;
+  renderOptions: RenderOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -24,6 +24,10 @@
     "./controllers/": {
       "development": "./development/controllers/",
       "default": "./controllers/"
+    },
+    "./scoped-registry/": {
+      "development": "./development/scoped-registry/",
+      "default": "./scoped-registry/"
     }
   },
   "files": [
@@ -40,16 +44,20 @@
     "/controllers/async-task.d.ts",
     "/controllers/async-task.d.ts.map",
     "/controllers/async-task.js",
-    "/controllers/async-task.js.map"
+    "/controllers/async-task.js.map",
+    "/scoped-registry/scoped-registry-mixin.d.ts",
+    "/scoped-registry/scoped-registry-mixin.d.ts.map",
+    "/scoped-registry/scoped-registry-mixin.js",
+    "/scoped-registry/scoped-registry-mixin.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc --build && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/ controllers/ frameworks/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/ controllers/ frameworks/ scoped-registry/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../labs/development/**/*_test.js'",
+    "test:dev": "cd ../tests && npx wtr '../labs/development/**/*_test.(js|html)'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
@@ -63,6 +71,7 @@
     "@types/trusted-types": "^1.0.1",
     "@web/test-runner-mocha": "^0.3.5",
     "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/scoped-custom-element-registry": "git+https://github.com/webcomponents/polyfills#master",
     "chokidar-cli": "^2.1.0",
     "concurrently": "^5.3.0",
     "mocha": "^8.1.3",

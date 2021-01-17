@@ -296,6 +296,11 @@ export interface RenderOptions {
    * A DOM node before which to render content in the container.
    */
   renderBefore?: ChildNode | null;
+  /**
+   * Node which is going to clone and import the TemplateInstance in case Scoped Registries
+   * are available.
+   */
+  ownerRoot?: Document | ShadowRoot;
 }
 
 /**
@@ -739,7 +744,8 @@ class TemplateInstance {
       _$element: {content},
       _parts: parts,
     } = this._$template;
-    const fragment = d.importNode(content, true);
+    // @ts-expect-error: importNode not yet in ShadowRoot
+    const fragment = (options?.ownerRoot ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
     let node = walker.nextNode();

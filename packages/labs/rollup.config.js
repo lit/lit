@@ -20,6 +20,7 @@ export default litProdConfig({
     'index',
     'frameworks/react/create-component',
     'controllers/async-task',
+    'scoped-registry/scoped-registry-mixin'
   ],
   external: ['@lit/reactive-element', 'lit-html', 'lit-element'],
 });

@@ -96,7 +96,7 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
-  readonly _$renderOptions: RenderOptions = {host: this};
+  readonly renderOptions: RenderOptions = {host: this};
 
   private __childPart: ChildPart | undefined = undefined;
 
@@ -107,7 +107,7 @@ export class LitElement extends ReactiveElement {
     // any styles in Lit content render before adoptedStyleSheets. This is
     // important so that adoptedStyleSheets have precedence over styles in
     // the shadowRoot.
-    this._$renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    this.renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
     return renderRoot;
   }
 
@@ -123,7 +123,7 @@ export class LitElement extends ReactiveElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this.__childPart = render(value, this.renderRoot, this._$renderOptions);
+    this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
