@@ -18,14 +18,14 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-packages/labs/async-task/development/
-packages/labs/async-task/node_modules/
-packages/labs/async-task/index.*
-packages/labs/async-task/async-task.*
-packages/labs/create-react-component/development/
-packages/labs/create-react-component/node_modules/
-packages/labs/create-react-component/index.*
-packages/labs/create-react-component/create-react-component.*
+packages/labs/task/development/
+packages/labs/task/node_modules/
+packages/labs/task/index.*
+packages/labs/task/async-task.*
+packages/labs/react/development/
+packages/labs/react/node_modules/
+packages/labs/react/index.*
+packages/labs/react/create-component.*
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map
