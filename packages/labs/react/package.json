@@ -1,5 +1,5 @@
 {
-  "name": "@lit-labs/create-react-component",
+  "name": "@lit-labs/react",
   "version": "1.0.0-pre.1",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
@@ -25,10 +25,10 @@
     "/index.d.ts.map",
     "/index.js",
     "/index.js.map",
-    "/create-react-component.d.ts",
-    "/create-react-component.d.ts.map",
-    "/create-react-component.js",
-    "/create-react-component.js.map"
+    "/create-component.d.ts",
+    "/create-component.d.ts.map",
+    "/create-component.js",
+    "/create-component.js.map"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
@@ -37,7 +37,7 @@
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../../tests && npx wtr '../labs/create-react-component/development/**/*_test.js'",
+    "test:dev": "cd ../../tests && npx wtr '../labs/react/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",

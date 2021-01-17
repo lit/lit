@@ -21,4 +21,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Adds react component wrapper for custom elements. Use by calling `createReactComponent`.
+- Adds react component wrapper for custom elements. Use by calling `createComponent`.

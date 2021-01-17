@@ -1,4 +1,4 @@
-# @lit-labs/create-react-component
+# @lit-labs/react
 
 A React component wrapper for web components.
 
@@ -7,7 +7,7 @@ A React component wrapper for web components.
 While React can render Web Components, it [cannot](https://custom-elements-everywhere.com/libraries/react/results/results.html)
 easily pass React props to custom element properties or event listeners.
 
-This package provides a utility wrapper `createReactComponent` which makes a
+This package provides a utility wrapper `createComponent` which makes a
 React component wrapper for a custom element class. The wrapper correctly
 passes React `props` to properties accepted by the custom element and listens
 for events dispatched by the custom element.
@@ -18,7 +18,7 @@ For properties, the wrapper interrogates the web component class to discover
 its available properties. Then any React `props` passed with property names are
 set on the custom element as properties and not attributes.
 
-For events, `createReactComponent` accepts a mapping of React event prop names
+For events, `createComponent` accepts a mapping of React event prop names
 to events fired by the custom element. For example passing `{onfoo: 'foo'}`
 means a function passed via a `prop` named `onfoo` will be called when the
 custom element fires the foo event with the event as an argument.
@@ -28,19 +28,19 @@ custom element fires the foo event with the event as an argument.
 From inside your project folder, run:
 
 ```bash
-$ npm install @lit-labs/create-react-component
+$ npm install @lit-labs/react
 ```
 
 ## Usage
 
-Import `React`, a custom element class, and `createReactComponent`.
+Import `React`, a custom element class, and `createComponent`.
 
 ```js
 import * as React from 'react';
-import {createReactComponent} from '@lit-labs/create-react-component.js';
+import {createComponent} from '@lit-labs/react';
 import {MyElement} from './my-element.js';
 
-export const MyElementComponent = createReactComponent(
+export const MyElementComponent = createComponent(
   React,
   'my-element',
   MyElement,

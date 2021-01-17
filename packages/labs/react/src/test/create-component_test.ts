@@ -18,7 +18,7 @@ import {customElement} from '@lit/reactive-element/decorators/customElement.js';
 import * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
-import {createReactComponent} from '../create-react-component.js';
+import {createComponent} from '../create-component.js';
 import {assert} from '@esm-bundle/chai';
 
 const elementName = 'basic-element';
@@ -57,7 +57,7 @@ declare global {
   }
 }
 
-suite('createReactComponent', () => {
+suite('createComponent', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -76,7 +76,7 @@ suite('createReactComponent', () => {
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createReactComponent(
+  const BasicElementComponent = createComponent(
     window.React,
     elementName,
     BasicElement,
@@ -307,7 +307,7 @@ suite('createReactComponent', () => {
       @property()
       ref = 'hi';
     }
-    createReactComponent(window.React, tag, Warn);
+    createComponent(window.React, tag, Warn);
     assert.include(warning!, 'ref');
     console.warn = warn;
   });

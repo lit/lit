@@ -1,5 +1,5 @@
 {
-  "name": "@lit-labs/async-task",
+  "name": "@lit-labs/task",
   "version": "1.0.0-pre.1",
   "description": "A controller for Lit that renders asynchronous tasks.",
   "license": "BSD-3-Clause",
@@ -37,7 +37,7 @@
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../../tests && npx wtr '../labs/async-task/development/**/*_test.js'",
+    "test:dev": "cd ../../tests && npx wtr '../labs/task/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",

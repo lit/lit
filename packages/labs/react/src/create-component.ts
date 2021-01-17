@@ -120,7 +120,7 @@ type Constructor<T> = {new (): T};
  * function may be passed via the component's `onactivate` prop and will be
  * called when the custom element fires its `activate` event.
  */
-export const createReactComponent = <I extends HTMLElement, E>(
+export const createComponent = <I extends HTMLElement, E>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,

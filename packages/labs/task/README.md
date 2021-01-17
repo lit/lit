@@ -1,4 +1,4 @@
-# @lit-labs/async-task
+# @lit-labs/task
 
 A controller for Lit that renders asynchronous tasks.
 
@@ -24,7 +24,7 @@ typically return a Lit `TemplateResult` to render
 From inside your project folder, run:
 
 ```bash
-$ npm install @lit-labs/async-task
+$ npm install @lit-labs/task
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ $ npm install @lit-labs/async-task
 Here's an example:
 
 ```ts
-import {AsyncTask, TaskStatus} from '../async-task.js';
+import {AsyncTask, TaskStatus} from '@lit-labs/task';
 // ...
 
 class MyElement extends LitElement {
