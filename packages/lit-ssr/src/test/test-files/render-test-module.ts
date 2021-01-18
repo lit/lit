@@ -22,21 +22,23 @@ export {digestForTemplateResult} from 'lit-html/hydrate.js';
 export {render} from '../../lib/render-lit-html.js';
 
 /* Real Tests */
-
+// prettier-ignore
 export const simpleTemplateResult = html`<div></div>`;
 
 /* Text Expressions */
-
+// prettier-ignore
 export const templateWithTextExpression = (x: string) => html`<div>${x}</div>`;
 
 /* Attribute Expressions */
-
+// prettier-ignore
 export const templateWithAttributeExpression = (x: string) =>
   html`<div class=${x}></div>`;
+// prettier-ignore
 export const templateWithMultipleAttributeExpressions = (
   x: string,
   y: string
 ) => html`<div x=${x} y=${y} z="not-dynamic"></div>`;
+// prettier-ignore
 export const templateWithMultiBindingAttributeExpression = (
   x: string,
   y: string
@@ -47,15 +49,18 @@ export const templateWithMultiBindingAttributeExpression = (
 // prettier-ignore
 export const inputTemplateWithValueProperty = (x: string) =>
   html`<input .value=${x}>`;
+// prettier-ignore
 export const elementTemplateWithClassNameProperty = (x: string) =>
   html`<div .className=${x}></div>`;
+// prettier-ignore
 export const elementTemplateWithClassnameProperty = (x: string) =>
   html`<div .classname=${x}></div>`;
+// prettier-ignore
 export const elementTemplateWithIDProperty = (x: string) =>
   html`<div .id=${x}></div>`;
 
 /* Nested Templates */
-
+// prettier-ignore
 export const nestedTemplate = html`<div>${html`<p>Hi</p>`}</div>`;
 
 /* Custom Elements */
@@ -63,10 +68,12 @@ export const nestedTemplate = html`<div>${html`<p>Hi</p>`}</div>`;
 @customElement('test-simple')
 export class TestSimple extends LitElement {
   render() {
+    // prettier-ignore
     return html`<main></main>`;
   }
 }
 
+// prettier-ignore
 export const simpleTemplateWithElement = html`<test-simple></test-simple>`;
 
 @customElement('test-property')
@@ -74,6 +81,7 @@ export class TestProperty extends LitElement {
   @property() foo?: string;
 
   render() {
+    // prettier-ignore
     return html`<main>${this.foo}</main>`;
   }
 }
@@ -81,13 +89,35 @@ export class TestProperty extends LitElement {
 // prettier-ignore
 export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
 
-/* Slots and Distribution */
+@customElement('test-will-update')
+export class TestWillUpdate extends LitElement {
+  @property()
+  first?: string;
+  @property()
+  last?: string;
+  fullName = '';
 
+  willUpdate() {
+    this.fullName = `${this.first} ${this.last}`;
+  }
+
+  render() {
+    // prettier-ignore
+    return html`<main>${this.fullName}</main>`;
+  }
+}
+
+// prettier-ignore
+export const elementWithWillUpdate = html`<test-will-update .first=${'Foo'} .last=${'Bar'}></test-will-update>`;
+
+/* Slots and Distribution */
+// prettier-ignore
 export const noSlot = html`<test-simple><p>Hi</p></test-simple>`;
 
 @customElement('test-simple-slot')
 export class TestSlot extends LitElement {
   render() {
+    // prettier-ignore
     return html`<main><slot></slot></main>`;
   }
 }
@@ -97,7 +127,7 @@ export const slotWithStaticChild = html`<test-simple-slot><p>Hi</p></test-simple
 
 // prettier-ignore
 export const slotWithStaticChildren = html`<test-simple-slot><h1>Yo</h1><p>Hi</p></test-simple-slot>`;
-
+// prettier-ignore
 const dynamicChild = html`<p>Hi</p>`;
 
 // prettier-ignore
@@ -112,6 +142,7 @@ export const slotWithReusedDynamicChild = html`<test-simple-slot>${dynamicChild}
 @customElement('test-two-slots')
 export class TestTwoSlots extends LitElement {
   render() {
+    // prettier-ignore
     return html`<main><slot></slot></main>
       <slot name="a"></slot>`;
   }
@@ -133,6 +164,7 @@ export const twoSlotsWithDynamicChildrenOutOfOrder = html`<test-two-slots>${html
 export class TestDynamicSlot extends LitElement {
   @property({type: Boolean}) renderSlot = true;
   render() {
+    // prettier-ignore
     return html`${this.renderSlot ? html`<slot></slot>` : nothing}`;
   }
 }
@@ -180,7 +212,9 @@ export const classMapDirectiveMultiBinding = html`<div class="z ${'hi'} ${classM
 //  - that we render and slot children from deeply nested templates
 //  - that we keep distributed node state per TemplateResult _value_, not per
 //    TemplateResult, because of the reuse of the inner result.
+// prettier-ignore
 export const nestedTemplateResult = html`<div></div>`;
+// prettier-ignore
 export const trickyNestedDynamicChildren = html`<test-simple-slot
   >${html`${nestedTemplateResult}${nestedTemplateResult}`}</test-simple-slot
 >`;

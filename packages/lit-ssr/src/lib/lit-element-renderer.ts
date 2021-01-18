@@ -55,6 +55,11 @@ export class LitElementRenderer extends ElementRenderer {
       }
       yield '</style>';
     }
+    // Call LitElement's `willUpdate` method.
+    // Note, this method is required not to use DOM APIs.
+    const changedProperties = new Map();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.element as any)?.willUpdate(changedProperties);
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yield* render((this.element as any).render());
