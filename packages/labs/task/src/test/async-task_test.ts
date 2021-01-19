@@ -13,6 +13,7 @@
  */
 
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
+import {ReactiveController} from '@lit/reactive-element/reactive-controller.js';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {AsyncTask, TaskStatus} from '../async-task.js';
 import {generateElementName, nextFrame} from './test-helpers';
@@ -29,7 +30,7 @@ if (DEV_MODE) {
 suite('AsyncTask', () => {
   let container: HTMLElement;
 
-  class ControllerUsingTask {
+  class ControllerUsingTask implements ReactiveController {
     updateCount = 0;
 
     host: ReactiveElement;
@@ -48,7 +49,7 @@ suite('AsyncTask', () => {
       );
     }
 
-    updated() {
+    hostUpdated() {
       this.updateCount++;
     }
 

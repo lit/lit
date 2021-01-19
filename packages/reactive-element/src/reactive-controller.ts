@@ -64,7 +64,7 @@ export interface ReactiveController {
    * element hosts, this corresponds to the `connectedCallback()` lifecycle,
    * which is only called when the component is connected to the document.
    */
-  connected?(): void;
+  hostConnected?(): void;
 
   /**
    * Called when the host is disconnected from the component tree. For custom
@@ -72,18 +72,7 @@ export interface ReactiveController {
    * which is called the host or an ancestor component is disconnected from the
    * document.
    */
-  disconnected?(): void;
-
-  /**
-   * Called before a client-side host update, or a server-side host render.
-   * This is a good point to compute state that the host may use in it's own
-   * update/render.
-   *
-   * The difference from the `update` callback is that code in `willUpdate`
-   * should not depend on the DOM, as it may be called in server-side rendering
-   * contexts.
-   */
-  willUpdate?(): void;
+  hostDisconnected?(): void;
 
   /**
    * Called during the client-side host update.
@@ -91,10 +80,10 @@ export interface ReactiveController {
    * Code in `update()` can depend on the DOM as it is not called in
    * server-side rendering.
    */
-  update?(): void;
+  hostUpdate?(): void;
 
   /**
    * Called after a host update. It is not called in server-side rendering.
    */
-  updated?(): void;
+  hostUpdated?(): void;
 }

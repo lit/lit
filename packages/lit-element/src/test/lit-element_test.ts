@@ -611,7 +611,6 @@ import {ReactiveController} from '@lit/reactive-element';
       class extends DisconnectableDirective {
         part?: Part;
         host?: Host;
-        private _controller?: ReactiveController;
 
         render() {
           log.push(`render-${this.host!.x}`);
@@ -620,19 +619,14 @@ import {ReactiveController} from '@lit/reactive-element';
         ensureHost() {
           if (this.host === undefined) {
             this.host = this.part!.options!.host as Host;
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const self = this;
-            this.host.addController(
-              (this._controller = {
-                willUpdate() {
-                  log.push(`willUpdate-${self.host?.x}`);
-                },
-                updated() {
-                  log.push(`updated-${self.host!.x}`);
-                },
-              })
-            );
+            this.host.addController(this);
           }
+        }
+        hostUpdate() {
+          log.push(`hostUpdate-${this.host?.x}`);
+        }
+        hostUpdated() {
+          log.push(`hostUpdated-${this.host!.x}`);
         }
         update(part: Part) {
           if (this.part === undefined) {
@@ -642,7 +636,7 @@ import {ReactiveController} from '@lit/reactive-element';
           this.render();
         }
         disconnected() {
-          this.host?.removeController(this._controller!);
+          this.host?.removeController(this);
           this.host = undefined;
         }
         reconnected() {
@@ -674,30 +668,30 @@ import {ReactiveController} from '@lit/reactive-element';
 
     const host = container.appendChild(new Host());
     await host.updateComplete;
-    assert.deepEqual(log, [`render-${host.x}`, `updated-${host.x}`]);
+    assert.deepEqual(log, [`render-${host.x}`, `hostUpdated-${host.x}`]);
     log.length = 0;
     host.x = 1;
     await host.updateComplete;
     assert.deepEqual(log, [
-      `willUpdate-${host.x}`,
+      `hostUpdate-${host.x}`,
       `render-${host.x}`,
-      `updated-${host.x}`,
+      `hostUpdated-${host.x}`,
     ]);
     log.length = 0;
     // disconnects directive
     host.bool = false;
     await host.updateComplete;
-    assert.deepEqual(log, [`willUpdate-${host.x}`]);
+    assert.deepEqual(log, [`hostUpdate-${host.x}`]);
     log.length = 0;
     // reconnects directive
     host.bool = true;
     await host.updateComplete;
-    assert.deepEqual(log, [`render-${host.x}`, `updated-${host.x}`]);
+    assert.deepEqual(log, [`render-${host.x}`, `hostUpdated-${host.x}`]);
     // disconnects directive
     log.length = 0;
     host.bool = false;
     await host.updateComplete;
-    assert.deepEqual(log, [`willUpdate-${host.x}`]);
+    assert.deepEqual(log, [`hostUpdate-${host.x}`]);
     log.length = 0;
     // render while directive is disconnected
     host.x = 2;
@@ -706,6 +700,6 @@ import {ReactiveController} from '@lit/reactive-element';
     // reconnects directive
     host.bool = true;
     await host.updateComplete;
-    assert.deepEqual(log, [`render-${host.x}`, `updated-${host.x}`]);
+    assert.deepEqual(log, [`render-${host.x}`, `hostUpdated-${host.x}`]);
   });
 });
