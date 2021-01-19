@@ -21,10 +21,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
+- (Since 1.0.0-pre.1) Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
 
 ### Changed
 
+- (Since 1.0.0-pre.1) `ReactiveController` callbacks all now begin with `host`, for example `hostConnected`, `hostDisconnected`, `hostUpdate`, `hostUpdated`.
+- (Since 1.0.0-pre.1) If a `Controller` is added after a host element is connected, its `connected` will be called.
+- (Since 1.0.0-pre.1) Removed `willUpdate` from `ReactiveController`.
 - (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.
 - (Since 1.0.0-pre.1) Renamed `Controller` to `ReactiveController`.
 
