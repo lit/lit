@@ -12,14 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {litProdConfig} from '../../rollup-common.js';
+import {litProdConfig} from '../../../rollup-common.js';
 
 export default litProdConfig({
   classPropertyPrefix: 'Ω',
-  entryPoints: [
-    'index',
-    'frameworks/react/create-component',
-    'controllers/async-task',
-  ],
-  external: ['@lit/reactive-element', 'lit-html', 'lit-element'],
+  entryPoints: ['index', 'create-component'],
+  external: ['@lit/reactive-element'],
 });

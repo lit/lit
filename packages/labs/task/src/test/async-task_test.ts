@@ -14,8 +14,8 @@
 
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
-import {AsyncTask, TaskStatus} from '../../controllers/async-task.js';
-import {generateElementName, nextFrame} from '../test-helpers';
+import {AsyncTask, TaskStatus} from '../async-task.js';
+import {generateElementName, nextFrame} from './test-helpers';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
