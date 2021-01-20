@@ -148,7 +148,7 @@ The last 2 versions of all modern browsers are supported, including
 Chrome, Safari, Opera, Firefox, Edge. In addition, Internet Explorer 11 is also supported.
 
 Edge and Internet Explorer 11 require the web components polyfills and the
-`polyfill-support` module included in the package.
+`polyfill-support` module included in this package.
 
 ```html
 <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
