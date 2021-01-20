@@ -57,7 +57,7 @@ if (DEV_MODE) {
   ) {
     console.warn(
       `Shadow DOM is being polyfilled via ShadyDOM but ` +
-        `the \`platform-support\` module has not been loaded.`
+        `the \`polyfill-support\` module has not been loaded.`
     );
   }
 
@@ -677,6 +677,12 @@ export abstract class ReactiveElement
     this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
   }
 
+  removeController(controller: ReactiveController) {
+    // Note, if the indexOf is -1, the >>> will flip the sign which makes the
+    // splice do nothing.
+    this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
+  }
+
   /**
    * Fixes any properties set on the instance before upgrade time.
    * Otherwise these would shadow the accessor and break these properties.
@@ -1015,7 +1021,7 @@ export abstract class ReactiveElement
 
   willUpdate(_changedProperties: PropertyValues) {}
 
-  // Note, this is an override point for platform-support.
+  // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {

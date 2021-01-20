@@ -366,7 +366,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
               if (isAttrBinding) {
-                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(name as string)!;
+                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                  name as string
+                )!;
                 ops.push({
                   type: 'attribute-part',
                   index: nodeIndex,

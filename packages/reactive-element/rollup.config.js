@@ -34,7 +34,7 @@ export default litProdConfig({
   external: [],
   bundled: [
     {
-      file: 'platform-support',
+      file: 'polyfill-support',
     },
   ],
 });

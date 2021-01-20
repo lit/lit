@@ -18,14 +18,31 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-packages/labs/task/development/
-packages/labs/task/node_modules/
-packages/labs/task/index.*
-packages/labs/task/async-task.*
-packages/labs/react/development/
-packages/labs/react/node_modules/
-packages/labs/react/index.*
-packages/labs/react/create-component.*
+packages/labs/development/
+packages/labs/node_modules/
+packages/labs/index.*
+packages/labs/frameworks/
+packages/labs/controllers/
+
+packages/lit/decorators/
+packages/lit/development/
+packages/lit/directives/
+packages/lit/node_modules/
+packages/lit/test/
+
+packages/lit/decorators.*
+packages/lit/directive-helpers.*
+packages/lit/directive.*
+packages/lit/disconnectable-directive.*
+packages/lit/html.*
+packages/lit/hydrate-support.*
+packages/lit/hydrate.*
+packages/lit/index.*
+packages/lit/static-html.*
+
+packages/lit/lit.min.*
+packages/lit/polyfill-support.*
+
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map
@@ -36,9 +53,10 @@ packages/lit-element/node_modules/
 packages/lit-element/test/
 packages/lit-element/decorators.*
 packages/lit-element/hydrate-support.*
+packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
-packages/lit-element/platform-support.*
+packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
@@ -50,7 +68,7 @@ packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
 packages/lit-html/disconnectable-directive.*
-packages/lit-html/platform-support.*
+packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
@@ -79,7 +97,7 @@ packages/reactive-element/development/
 packages/reactive-element/test/
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
-packages/reactive-element/platform-support.*
+packages/reactive-element/polyfill-support.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 

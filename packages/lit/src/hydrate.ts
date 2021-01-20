@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -11,7 +11,5 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../platform-support.js';
-import '../reactive-element_test.js';
-import '../reactive-element_styling_test.js';
-import '../css-tag_test.js';
+
+export * from 'lit-html/hydrate.js';

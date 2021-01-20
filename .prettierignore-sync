@@ -5,6 +5,7 @@
 packages/benchmarks/.gitignore
 packages/labs/task/.gitignore
 packages/labs/react/.gitignore
+packages/lit/.gitignore
 packages/lit-element/.gitignore
 packages/lit-html/.gitignore
 packages/lit-ssr/.gitignore
