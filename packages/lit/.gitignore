@@ -15,4 +15,4 @@
 /static-html.*
 
 /lit.min.*
-/platform-support.*
+/polyfill-support.*

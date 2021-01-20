@@ -21,4 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-Initial release
+#### Changed
+
+- Renamed `platform-support` to `polyfill-support`.

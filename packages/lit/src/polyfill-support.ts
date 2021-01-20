@@ -12,4 +12,4 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import 'lit-element/platform-support.js';
+import 'lit-element/polyfill-support.js';

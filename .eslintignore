@@ -41,7 +41,7 @@ packages/lit/index.*
 packages/lit/static-html.*
 
 packages/lit/lit.min.*
-packages/lit/platform-support.*
+packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
