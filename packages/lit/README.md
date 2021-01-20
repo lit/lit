@@ -13,9 +13,9 @@ Modules:
 - `lit/decorators/...`: The `decorators/` folder contains a module for each decorator (`@customElement()`, `@property()`, etc.) for optimal pay-as-you-go module loading.
 - `lit/html.js`: Just the exports needed for standalone `lit-html` usage: `render()`, `html`, `svg`, etc.
 - `lit/static-html.js`: The lit-html `static.js` module
-- `lit/directives.ts`: Contains the `Directive` base class for implementing directives.
-- `lit/directive-helpers.ts`: Optional helper utilities for impementing directives.
-- `lit/disconnectable-directive.ts`: A directive base class that supports disconnection and reconnection.
+- `lit/directives.js`: Contains the `Directive` base class for implementing directives.
+- `lit/directive-helpers.js`: Optional helper utilities for impementing directives.
+- `lit/disconnectable-directive.js`: A directive base class that supports disconnection and reconnection.
 - `lit/directives/...`: The `directives/` folder contains all of the first-party lit-html directives, like `repeat`, `classMap`, etc.
 - `lit/platform-support.js`: A module that connects Lit to the web components polyfills where neccessary to support older browsers.
 - `lit/hydrate-support.js`: A module that add hydration support to LitElement.
