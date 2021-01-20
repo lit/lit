@@ -9,11 +9,15 @@
   "repository": "Polymer/lit-html",
   "author": "The Polymer Authors",
   "homepage": "https://lit-element.polymer-project.org/",
-  "main": "lit-element.js",
-  "module": "lit-element.js",
+  "main": "index.js",
+  "module": "index.js",
   "type": "module",
   "exports": {
     ".": {
+      "development": "./development/index.js",
+      "default": "./index.js"
+    },
+    "./lit-element.js": {
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
@@ -42,7 +46,7 @@
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} lit.min.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
+    "clean": "rm -rf index.{js,js.map,d.ts} lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -55,20 +59,12 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/decorators.d.ts",
-    "/decorators.d.ts.map",
-    "/decorators.js",
-    "/decorators.js.map",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/decorators.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
     "/development/",
-    "/lit-element.d.ts",
-    "/lit-element.d.ts.map",
-    "/lit-element.js",
-    "/lit-element.js.map",
-    "/polyfill-support.d.ts",
-    "/polyfill-support.d.ts.map",
-    "/polyfill-support.js",
-    "/polyfill-support.js.map",
+    "/lit-element.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/src/",
     "!/src/demo/",
     "!/src/test/"

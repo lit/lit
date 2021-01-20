@@ -12,13 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/*
- * IMPORTANT: For compatibility with tsickle and the Closure JS compiler, all
- * property decorators (but not class decorators) in this file that have
- * an @ExportDecoratedItems annotation must be defined as a regular function,
- * not an arrow function.
- */
-
 export * from '@lit/reactive-element/decorators/customElement.js';
 export * from '@lit/reactive-element/decorators/property.js';
 export * from '@lit/reactive-element/decorators/state.js';

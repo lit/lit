@@ -321,10 +321,16 @@ export function litProdConfig({
                   dest: pathLib.dirname(name),
                 })),
               }),
-              // Copy platform support tests.
+              // Copy polyfill support tests.
               copy({
                 targets: [
                   {
+                    src: `src/test/*_test.html`,
+                    dest: ['development/test/', 'test/'],
+                  },
+                  {
+                    // TODO: use flatten: false when this is fixed
+                    // https://github.com/vladshcherbin/rollup-plugin-copy/issues/37
                     src: `src/test/polyfill-support/*_test.html`,
                     dest: [
                       'development/test/polyfill-support',
