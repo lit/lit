@@ -15,7 +15,12 @@
 import 'lit-element/hydrate-support.js';
 
 import {html, noChange, nothing, Part} from 'lit-html';
-import {directive, Directive, DirectiveParameters, DirectiveResult} from 'lit-html/directive.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  DirectiveResult,
+} from 'lit-html/directive.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
@@ -40,7 +45,7 @@ import {
 } from 'lit-html/directives/render-light.js';
 
 import {SSRTest} from './ssr-test';
-import { DisconnectableDirective } from 'lit-html/disconnectable-directive';
+import {DisconnectableDirective} from 'lit-html/disconnectable-directive';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -3288,14 +3293,16 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ElementPart accepts directive: generic': () => {
     const log: string[] = [];
-    const dir = directive(class extends Directive {
-      render(_v: string) {
-        log.push('render should not be called');
+    const dir = directive(
+      class extends Directive {
+        render(_v: string) {
+          log.push('render should not be called');
+        }
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          log.push(v);
+        }
       }
-      update(_part: Part, [v]: DirectiveParameters<this>) {
-        log.push(v);
-      }
-    });
+    );
     return {
       render(v: string) {
         return html`<div attr=${v} ${dir(v)}></div>`;
@@ -3308,14 +3315,14 @@ export const tests: {[name: string]: SSRTest} = {
             // Note, update is called once during hydration and again
             // during initial render
             assert.deepEqual(log, ['a', 'a']);
-          }
+          },
         },
         {
           args: ['b'],
           html: '<div attr="b"></div>',
           check(assert: Chai.Assert) {
             assert.deepEqual(log, ['a', 'a', 'b']);
-          }
+          },
         },
       ],
       stableSelectors: ['div'],
@@ -3328,19 +3335,22 @@ export const tests: {[name: string]: SSRTest} = {
     const ref3 = createRef();
     return {
       render(v: boolean) {
-        return html`<div id="div1" ${ref(ref1)}><div id="div2" ${ref(ref2)}>${v ? 
-          html`<div id="div3" ${ref(ref3)}></div>` : nothing}
-        </div></div>`;
+        return html`<div id="div1" ${ref(ref1)}>
+          <div id="div2" ${ref(ref2)}>
+            ${v ? html`<div id="div3" ${ref(ref3)}></div>` : nothing}
+          </div>
+        </div>`;
       },
       expectations: [
         {
           args: [true],
-          html: '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
+          html:
+            '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
           check(assert: Chai.Assert) {
             assert.equal(ref1.value?.id, 'div1');
             assert.equal(ref2.value?.id, 'div2');
             assert.equal(ref3.value?.id, 'div3');
-          }
+          },
         },
         {
           args: [false],
@@ -3349,7 +3359,7 @@ export const tests: {[name: string]: SSRTest} = {
             assert.equal(ref1.value?.id, 'div1');
             assert.equal(ref2.value?.id, 'div2');
             assert.notOk(ref3.value);
-          }
+          },
         },
       ],
       stableSelectors: ['div'],
@@ -3830,22 +3840,28 @@ export const tests: {[name: string]: SSRTest} = {
    * DisconnectableDirective tests
    ******************************************************/
 
-  'DisconnectableDirective': () => {
+  DisconnectableDirective: () => {
     const log: string[] = [];
-    const dir = directive(class extends DisconnectableDirective {
-      id!: string;
-      render(id: string) {
-        this.id = id;
-        log.push(`render-${this.id}`);
-        return id;
+    const dir = directive(
+      class extends DisconnectableDirective {
+        id!: string;
+        render(id: string) {
+          this.id = id;
+          log.push(`render-${this.id}`);
+          return id;
+        }
+        disconnected() {
+          log.push(`disconnected-${this.id}`);
+        }
       }
-      disconnected() {
-        log.push(`disconnected-${this.id}`);
-      }
-    });
+    );
     return {
       render(bool: boolean, id: string) {
-        return html`<span>${dir('x')}${bool ? html`<div attr=${dir(`attr-${id}`)}>${dir(`node-${id}`)}</div>` : nothing}</span>`;
+        return html`<span
+          >${dir('x')}${bool
+            ? html`<div attr=${dir(`attr-${id}`)}>${dir(`node-${id}`)}</div>`
+            : nothing}</span
+        >`;
       },
       expectations: [
         {
@@ -3854,33 +3870,52 @@ export const tests: {[name: string]: SSRTest} = {
           check(assert: Chai.Assert) {
             // Note, update is called once during hydration and again
             // during initial render
-            assert.deepEqual(log, ['render-x', 'render-attr-a', 'render-node-a', 'render-x', 'render-attr-a', 'render-node-a']);
+            assert.deepEqual(log, [
+              'render-x',
+              'render-attr-a',
+              'render-node-a',
+              'render-x',
+              'render-attr-a',
+              'render-node-a',
+            ]);
             log.length = 0;
-          }
+          },
         },
         {
           args: [false, 'a'],
           html: '<span>x</span>',
           check(assert: Chai.Assert) {
-            assert.deepEqual(log, ['render-x', 'disconnected-attr-a', 'disconnected-node-a']);
+            assert.deepEqual(log, [
+              'render-x',
+              'disconnected-attr-a',
+              'disconnected-node-a',
+            ]);
             log.length = 0;
-          }
+          },
         },
         {
           args: [true, 'b'],
           html: '<span>x<div attr="attr-b">node-b</div></span>',
           check(assert: Chai.Assert) {
-            assert.deepEqual(log, ['render-x', 'render-attr-b', 'render-node-b']);
+            assert.deepEqual(log, [
+              'render-x',
+              'render-attr-b',
+              'render-node-b',
+            ]);
             log.length = 0;
-          }
+          },
         },
         {
           args: [false, 'b'],
           html: '<span>x</span>',
           check(assert: Chai.Assert) {
-            assert.deepEqual(log, ['render-x', 'disconnected-attr-b', 'disconnected-node-b']);
+            assert.deepEqual(log, [
+              'render-x',
+              'disconnected-attr-b',
+              'disconnected-node-b',
+            ]);
             log.length = 0;
-          }
+          },
         },
       ],
       stableSelectors: ['span'],
@@ -3893,16 +3928,18 @@ export const tests: {[name: string]: SSRTest} = {
 
   'Nested directives': () => {
     const log: number[] = [];
-    const nest = directive(class extends Directive {
-      render(n: number): string | DirectiveResult {
-        log.push(n);
-        if (n > 1) {
-          return nest(n-1);
-        } else {
-          return 'nested!'
+    const nest = directive(
+      class extends Directive {
+        render(n: number): string | DirectiveResult {
+          log.push(n);
+          if (n > 1) {
+            return nest(n - 1);
+          } else {
+            return 'nested!';
+          }
         }
       }
-    });
+    );
     return {
       render() {
         return html`<span>${nest(3)}</span>`;
@@ -3916,7 +3953,7 @@ export const tests: {[name: string]: SSRTest} = {
             // during initial render
             assert.deepEqual(log, [3, 2, 1, 3, 2, 1]);
             log.length = 0;
-          }
+          },
         },
         {
           args: [],
@@ -3924,7 +3961,7 @@ export const tests: {[name: string]: SSRTest} = {
           check(assert: Chai.Assert) {
             assert.deepEqual(log, [3, 2, 1]);
             log.length = 0;
-          }
+          },
         },
       ],
       stableSelectors: ['span'],

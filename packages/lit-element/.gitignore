@@ -8,7 +8,7 @@
 /test/
 /decorators.*
 /hydrate-support.*
+/index.*
 /lit-element.*
-/lit.min.*
 /platform-support.*
 /private-ssr-support.*
