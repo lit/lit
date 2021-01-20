@@ -21,14 +21,8 @@
   "files": [
     "/src/",
     "!/src/test/",
-    "/index.d.ts",
-    "/index.d.ts.map",
-    "/index.js",
-    "/index.js.map",
-    "/create-component.d.ts",
-    "/create-component.d.ts.map",
-    "/create-component.js",
-    "/create-component.js.map"
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/create-component.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
