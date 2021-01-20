@@ -46,6 +46,8 @@ Full documentation is available at [lit-element.polymer-project.org](https://lit
 
 ## Overview
 
+Note, the `LitElement` package has been replaced by the `lit` package. `LitElement` is provided only for backwards compatibility; when possible, users should upgrade to the `lit` package.
+
 LitElement uses [lit-html](https://lit-html.polymer-project.org/) to render into the
 element's [Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM)
 and adds API to help manage element properties and attributes. LitElement reacts to changes in properties
@@ -117,8 +119,6 @@ resolve configuration.
 
 #### @web/dev-server
 
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
-
 ```js
 {
   nodeResolve: {
@@ -128,8 +128,6 @@ resolve configuration.
 ```
 
 #### Rollup
-
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
 
 ```js
 {
@@ -164,7 +162,7 @@ and the `polyfill-support` module included in this package.
 
 ```html
 <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-<script src="node_modules/lit/polyfill-support.js"></script>
+<script src="node_modules/lit-element/polyfill-support.js"></script>
 <!-- load application code -->
 ```
 

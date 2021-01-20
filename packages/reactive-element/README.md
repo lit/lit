@@ -25,11 +25,9 @@ Full documentation is available at [lit-element.polymer-project.org](https://lit
 
 ## Overview
 
-ReactiveElement is a low level base class for creating custom elements that
-render content to [Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM)
-via a user implemented method. It adds API to help manage element properties and
-attributes. ReactiveElement reacts to changes in properties and calls the update
-method which should be implemented to update the rendered state of the element.
+`ReactiveElement` is a base class for writing web components that react to changes in properties and attributes. `ReactiveElement` adds reactive properties and a batching, asynchronous update lifecycle to the standard web component APIs. Subclasses can respond to changes and update the DOM to reflect the element state.
+
+`ReactiveElement` doesn't include a DOM template system, but can easily be extended to add one by overriding the `update()` method to call the template library. `LitElement` is such an extension that adds `lit-html` templating.
 
 ## Example
 
@@ -106,8 +104,6 @@ resolve configuration.
 
 #### @web/dev-server
 
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
-
 ```js
 {
   nodeResolve: {
@@ -117,8 +113,6 @@ resolve configuration.
 ```
 
 #### Rollup
-
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
 
 ```js
 {
