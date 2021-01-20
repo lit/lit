@@ -361,7 +361,7 @@ const createAttributeParts = (
       if (
         templatePart === undefined ||
         (templatePart._type !== PartType.ATTRIBUTE &&
-         templatePart._type !== PartType.ELEMENT) ||
+          templatePart._type !== PartType.ELEMENT) ||
         templatePart._index !== nodeIndex
       ) {
         break;
@@ -401,13 +401,17 @@ const createAttributeParts = (
         );
         state.instancePartIndex += templatePart._strings.length - 1;
         instance._parts.push(instancePart);
-      } else { // templatePart._type === PartType.ELEMENT
+      } else {
+        // templatePart._type === PartType.ELEMENT
         const instancePart = new ElementPart(
           node.parentElement as HTMLElement,
           state.instance,
           options
         );
-        resolveDirective(instancePart, state.result.values[state.instancePartIndex++]);
+        resolveDirective(
+          instancePart,
+          state.result.values[state.instancePartIndex++]
+        );
         instance._parts.push(instancePart);
       }
       state.templatePartIndex++;

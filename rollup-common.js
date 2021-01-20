@@ -325,6 +325,12 @@ export function litProdConfig({
               copy({
                 targets: [
                   {
+                    src: `src/test/*_test.html`,
+                    dest: ['development/test/', 'test/'],
+                  },
+                  {
+                    // TODO: use flatten: false when this is fixed
+                    // https://github.com/vladshcherbin/rollup-plugin-copy/issues/37
                     src: `src/test/platform-support/*_test.html`,
                     dest: [
                       'development/test/platform-support',

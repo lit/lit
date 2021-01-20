@@ -1579,23 +1579,38 @@ suite('lit-html', () => {
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
-      assertRender(html`<div a=${'a'} ${count('x', log)}}></div>`, `<div a="a"></div>`);
+      assertRender(
+        html`<div a=${'a'} ${count('x', log)}}></div>`,
+        `<div a="a"></div>`
+      );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
-      assertRender(html`<div ${count('x', log)}} a=${'a'}></div>`, `<div a="a"></div>`);
+      assertRender(
+        html`<div ${count('x', log)}} a=${'a'}></div>`,
+        `<div a="a"></div>`
+      );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
-      assertRender(html`<div a=${'a'} ${count('x', log)}} b=${'b'}></div>`, `<div a="a" b="b"></div>`);
+      assertRender(
+        html`<div a=${'a'} ${count('x', log)}} b=${'b'}></div>`,
+        `<div a="a" b="b"></div>`
+      );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
-      assertRender(html`<div ${count('x', log)} ${count('y', log)}}></div>`, `<div></div>`);
+      assertRender(
+        html`<div ${count('x', log)} ${count('y', log)}}></div>`,
+        `<div></div>`
+      );
       assert.deepEqual(log, ['x:1', 'y:1']);
 
       log.length = 0;
-      const template = html`<div ${count('x', log)} a=${'a'} ${count('y', log)}}></div>`;
+      const template = html`<div ${count('x', log)} a=${'a'} ${count(
+        'y',
+        log
+      )}}></div>`;
       assertRender(template, `<div a="a"></div>`);
       assert.deepEqual(log, ['x:1', 'y:1']);
       log.length = 0;

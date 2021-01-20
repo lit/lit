@@ -4,6 +4,7 @@
 [relative]
 packages/benchmarks/.gitignore
 packages/labs/.gitignore
+packages/lit/.gitignore
 packages/lit-element/.gitignore
 packages/lit-html/.gitignore
 packages/lit-ssr/.gitignore
