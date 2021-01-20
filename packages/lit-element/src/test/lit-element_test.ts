@@ -639,7 +639,7 @@ import {ReactiveController} from '@lit/reactive-element';
             this.part = part;
           }
           this.ensureHost();
-          this.render();
+          return this.render();
         }
         disconnected() {
           this.host?.removeController(this._controller!);
