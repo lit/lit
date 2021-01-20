@@ -8,7 +8,7 @@
         value: undefined,
         configurable: true,
         enumerable: true,
-        writable: true,
+        writable: true
       });
 
       window.ShadyDOM = {
@@ -42,10 +42,10 @@
 
           // Note, only test noPatch if it's explicitly enabled. This is set
           // on the `litHtmlPlatformSupport` object for this purpose.
-          await import('../../platform-support.js');
+          await import('../../polyfill-support.js');
           if (window['litHtmlPlatformSupport']?.noPatchSupported) {
             console.log('Testing `ShadyDOM.noPatch`');
-            await import('./lit-element_html-test.js');
+            await import('./lit-html_html-test.js');
           }
 
           // run the tests, and notify the test runner after finishing

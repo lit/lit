@@ -7,6 +7,6 @@
 /directive.*
 /directive-helpers.*
 /disconnectable-directive.*
-/platform-support.*
+/polyfill-support.*
 /private-ssr-support.*
 /static.*
