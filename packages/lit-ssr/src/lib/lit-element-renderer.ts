@@ -19,7 +19,7 @@ import {render, renderValue, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty} = _Φ;
+const {attributeToProperty, changedProperties} = _Φ;
 
 /**
  * ElementRenderer implementation for LitElements
@@ -30,6 +30,10 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
+    // Call LitElement's `willUpdate` method.
+    // Note, this method is required not to use DOM APIs.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.element as any)?.willUpdate(changedProperties(this.element as any));
     // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,11 +59,6 @@ export class LitElementRenderer extends ElementRenderer {
       }
       yield '</style>';
     }
-    // Call LitElement's `willUpdate` method.
-    // Note, this method is required not to use DOM APIs.
-    const changedProperties = new Map();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)?.willUpdate(changedProperties);
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yield* render((this.element as any).render());

@@ -15,7 +15,7 @@
 import {html, nothing} from 'lit-html';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {classMap} from 'lit-html/directives/class-map.js';
-import {LitElement, css} from 'lit-element';
+import {LitElement, css, PropertyValues} from 'lit-element';
 import {property, customElement} from 'lit-element/decorators.js';
 export {digestForTemplateResult} from 'lit-html/hydrate.js';
 
@@ -97,8 +97,10 @@ export class TestWillUpdate extends LitElement {
   last?: string;
   fullName = '';
 
-  willUpdate() {
-    this.fullName = `${this.first} ${this.last}`;
+  willUpdate(changedProperties: PropertyValues) {
+    if (changedProperties.has('first') || changedProperties.has('last')) {
+      this.fullName = `${this.first} ${this.last}`;
+    }
   }
 
   render() {
