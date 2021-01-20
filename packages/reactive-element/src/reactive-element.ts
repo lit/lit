@@ -677,12 +677,6 @@ export abstract class ReactiveElement
     this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
   }
 
-  removeController(controller: ReactiveController) {
-    // Note, if the indexOf is -1, the >>> will flip the sign which makes the
-    // splice do nothing.
-    this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
-  }
-
   /**
    * Fixes any properties set on the instance before upgrade time.
    * Otherwise these would shadow the accessor and break these properties.
