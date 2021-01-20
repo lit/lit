@@ -21,14 +21,8 @@
   "files": [
     "/src/",
     "!/src/test/",
-    "/index.d.ts",
-    "/index.d.ts.map",
-    "/index.js",
-    "/index.js.map",
-    "/async-task.d.ts",
-    "/async-task.d.ts.map",
-    "/async-task.js",
-    "/async-task.js.map"
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/async-task.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
