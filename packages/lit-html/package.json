@@ -25,9 +25,9 @@
       "development": "./development/disconnectable-directive.js",
       "default": "./disconnectable-directive.js"
     },
-    "./platform-support.js": {
-      "development": "./development/platform-support.js",
-      "default": "./platform-support.js"
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
     },
     "./directives/": {
       "development": "./development/directives/",
@@ -49,7 +49,7 @@
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} disconnectable-directive.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
+    "clean": "rm -rf lit-html.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} disconnectable-directive.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
@@ -81,10 +81,10 @@
     "/lit-html.d.ts.map",
     "/lit-html.js",
     "/lit-html.js.map",
-    "/platform-support.d.ts",
-    "/platform-support.d.ts.map",
-    "/platform-support.js",
-    "/platform-support.js.map",
+    "/polyfill-support.d.ts",
+    "/polyfill-support.d.ts.map",
+    "/polyfill-support.js",
+    "/polyfill-support.js.map",
     "/private-ssr-support.js",
     "/private-ssr-support.js.map",
     "/private-ssr-support.d.ts",

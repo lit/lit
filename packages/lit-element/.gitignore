@@ -10,5 +10,6 @@
 /hydrate-support.*
 /index.*
 /lit-element.*
-/platform-support.*
+/lit.min.*
+/polyfill-support.*
 /private-ssr-support.*

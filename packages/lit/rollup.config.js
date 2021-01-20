@@ -51,7 +51,7 @@ export default litProdConfig({
   external: ['lit-element', 'lit-html', '@lit/reactive-element'],
   bundled: [
     {
-      file: 'platform-support',
+      file: 'polyfill-support',
     },
     {
       file: 'index',

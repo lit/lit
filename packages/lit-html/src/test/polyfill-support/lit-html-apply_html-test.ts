@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../platform-support.js';
+import '../../polyfill-support.js';
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
 import {html as htmlWithApply} from '../../lit-html.js';

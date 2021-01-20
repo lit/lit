@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -11,5 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
-import 'lit-element/platform-support.js';
+import '../../polyfill-support.js';
+import '../lit-element_styling_test.js';
+import '../lit-element_styling_apply_test.js';
+import '../lit-element_test.js';

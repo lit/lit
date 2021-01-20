@@ -24,6 +24,11 @@ export interface ReactiveControllerHost {
   addController(controller: ReactiveController): void;
 
   /**
+   * Removes a controller from the host.
+   */
+  removeController(controller: ReactiveController): void;
+
+  /**
    * Requests a host update which is processed asynchronously. The update can
    * be waited on via the `updateComplete` property.
    */
