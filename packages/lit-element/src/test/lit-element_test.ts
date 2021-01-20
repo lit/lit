@@ -33,7 +33,6 @@ import {
 import {assert} from '@esm-bundle/chai';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
-import {ReactiveController} from '@lit/reactive-element';
 
 (canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
