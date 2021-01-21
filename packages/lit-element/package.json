@@ -9,17 +9,21 @@
   "repository": "Polymer/lit-html",
   "author": "The Polymer Authors",
   "homepage": "https://lit-element.polymer-project.org/",
-  "main": "lit-element.js",
-  "module": "lit-element.js",
+  "main": "index.js",
+  "module": "index.js",
   "type": "module",
   "exports": {
     ".": {
+      "development": "./development/index.js",
+      "default": "./index.js"
+    },
+    "./lit-element.js": {
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
-    "./platform-support.js": {
-      "development": "./development/platform-support.js",
-      "default": "./platform-support.js"
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
     },
     "./hydrate-support.js": {
       "development": "./development/hydrate-support.js",
@@ -38,13 +42,11 @@
     "build": "npm run clean && tsc && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
-    "build:bundle": "npm run clean:bundle && tsc && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
-    "clean:bundle": "rm -rf lit.min.{js,js.map,d.ts}",
+    "clean": "rm -rf index.{js,js.map,d.ts} lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -57,20 +59,12 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/decorators.d.ts",
-    "/decorators.d.ts.map",
-    "/decorators.js",
-    "/decorators.js.map",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/decorators.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
     "/development/",
-    "/lit-element.d.ts",
-    "/lit-element.d.ts.map",
-    "/lit-element.js",
-    "/lit-element.js.map",
-    "/platform-support.d.ts",
-    "/platform-support.d.ts.map",
-    "/platform-support.js",
-    "/platform-support.js.map",
+    "/lit-element.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/src/",
     "!/src/demo/",
     "!/src/test/"
@@ -89,6 +83,7 @@
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/template": "^1.4.4",
     "chokidar-cli": "^2.1.0",
     "downlevel-dts": "^0.6.0",
     "mocha": "^8.1.1",

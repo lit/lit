@@ -21,9 +21,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed
+
+- Nested directives whose parent returns `noChange` are now unchanged. This
+  allows the `guard` directive to guard directive values ([#1519](https://github.com/Polymer/lit-html/issues/1519)).
+
 #### Changed
 
 - (Since 2.0.0-pre.4) `DisconnectableDirective`'s `disconnectedCallback` and `reconnectedCallback` were renamed to `disconnected` and `reconnected`.
+- (Since 2.0.0-pre.4) Renamed `platform-support` to `polyfill-support`.
 
 ## [2.0.0-pre.4] - 2020-12-16
 

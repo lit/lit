@@ -14,8 +14,13 @@
 
 import 'lit-element/hydrate-support.js';
 
-import {html, noChange, nothing} from 'lit-html';
-import {directive, Directive} from 'lit-html/directive.js';
+import {html, noChange, nothing, Part} from 'lit-html';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  DirectiveResult,
+} from 'lit-html/directive.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {cache} from 'lit-html/directives/cache.js';
@@ -30,8 +35,9 @@ import {ifDefined} from 'lit-html/directives/if-defined.js';
 import {live} from 'lit-html/directives/live.js';
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
+import {createRef, ref} from 'lit-html/directives/ref.js';
 
-import {LitElement} from 'lit-element';
+import {LitElement, PropertyValues} from 'lit-element';
 import {property} from 'lit-element/decorators/property.js';
 import {
   renderLight,
@@ -39,6 +45,7 @@ import {
 } from 'lit-html/directives/render-light.js';
 
 import {SSRTest} from './ssr-test';
+import {DisconnectableDirective} from 'lit-html/disconnectable-directive';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -62,7 +69,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts a string': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -79,7 +86,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts a number': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -96,7 +103,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts undefined': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -113,7 +120,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts null': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -130,7 +137,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts noChange': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -147,7 +154,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts nothing': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -164,7 +171,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts an object': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -183,7 +190,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts an object with a toString method': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -214,7 +221,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts a function': {
     render(x: unknown) {
-      return html`<div>${x}</div>`;
+      return html` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -235,7 +242,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts TemplateResult': {
     render(x: unknown) {
-      return html`<div>${html`<span>${x}</span>`}</div>`;
+      return html` <div>${html` <span>${x}</span> `}</div> `;
     },
     expectations: [
       {
@@ -252,7 +259,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple ChildParts, adjacent primitive values': {
     render(x: unknown, y: unknown) {
-      return html`<div>${x}${y}</div>`;
+      return html` <div>${x}${y}</div> `;
     },
     expectations: [
       {
@@ -269,7 +276,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple ChildParts, adjacent primitive & TemplateResult': {
     render(x: unknown, y: unknown) {
-      return html`<div>${x}${html`<span>${y}</span>`}</div>`;
+      return html` <div>${x}${html` <span>${y}</span> `}</div> `;
     },
     expectations: [
       {
@@ -286,9 +293,9 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple ChildParts, adjacent TemplateResults': {
     render(x: unknown, y: unknown) {
-      return html`<div>
-        ${html`<span>${x}</span>`}${html`<span>${y}</span>`}
-      </div>`;
+      return html`
+        <div>${html` <span>${x}</span> `}${html` <span>${y}</span> `}</div>
+      `;
     },
     expectations: [
       {
@@ -305,7 +312,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple ChildParts with whitespace': {
     render(x: unknown, y: unknown) {
-      return html`<div>${x} ${y}</div>`;
+      return html` <div>${x} ${y}</div> `;
     },
     expectations: [
       {
@@ -368,7 +375,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts array with strings': {
     render(words: string[]) {
-      return html`<div>${words}</div>`;
+      return html` <div>${words}</div> `;
     },
     expectations: [
       {
@@ -385,7 +392,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts array with strings, updated with fewer items': {
     render(words: string[]) {
-      return html`<div>${words}</div>`;
+      return html` <div>${words}</div> `;
     },
     expectations: [
       {
@@ -403,7 +410,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts array with strings, updated with more items': {
     render(words: string[]) {
-      return html`<div>${words}</div>`;
+      return html` <div>${words}</div> `;
     },
     expectations: [
       {
@@ -421,9 +428,11 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts array with templates': {
     render(words: string[]) {
-      return html`<ol>
-        ${words.map((w) => html`<li>${w}</li>`)}
-      </ol>`;
+      return html`
+        <ol>
+          ${words.map((w) => html` <li>${w}</li> `)}
+        </ol>
+      `;
     },
     expectations: [
       {
@@ -454,7 +463,7 @@ export const tests: {[name: string]: SSRTest} = {
     );
     return {
       render(v: string) {
-        return html`<div>${basic(v)}</div>`;
+        return html` <div>${basic(v)}</div> `;
       },
       expectations: [
         {
@@ -493,7 +502,7 @@ export const tests: {[name: string]: SSRTest} = {
     );
     return {
       render(bool: boolean, v: string) {
-        return html`<div>${aDirective(bool, bDirective(v))}</div>`;
+        return html` <div>${aDirective(bool, bDirective(v))}</div> `;
       },
       expectations: [
         {
@@ -519,7 +528,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: repeat (with strings)': {
     render(words: string[]) {
-      return html`${repeat(words, (word, i) => `(${i} ${word})`)}`;
+      return html` ${repeat(words, (word, i) => `(${i} ${word})`)} `;
     },
     expectations: [
       {
@@ -536,7 +545,9 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: repeat (with templates)': {
     render(words: string[]) {
-      return html`${repeat(words, (word, i) => html`<p>${i}) ${word}</p>`)}`;
+      return html`
+        ${repeat(words, (word, i) => html` <p>${i}) ${word}</p> `)}
+      `;
     },
     expectations: [
       {
@@ -553,7 +564,9 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: cache': {
     render(bool: boolean) {
-      return html`${cache(bool ? html`<p>true</p>` : html`<b>false</b>`)}`;
+      return html`
+        ${cache(bool ? html` <p>true</p> ` : html` <b>false</b> `)}
+      `;
     },
     expectations: [
       {
@@ -576,11 +589,11 @@ export const tests: {[name: string]: SSRTest} = {
     let guardedCallCount = 0;
     const guardedTemplate = (bool: boolean) => {
       guardedCallCount++;
-      return html`value is ${bool ? true : false}`;
+      return html` value is ${bool ? true : false} `;
     };
     return {
       render(bool: boolean) {
-        return html`<div>${guard([bool], () => guardedTemplate(bool))}</div>`;
+        return html` <div>${guard([bool], () => guardedTemplate(bool))}</div> `;
       },
       expectations: [
         {
@@ -611,7 +624,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: until (primitive)': {
     render(...args) {
-      return html`<div>${until(...args)}</div>`;
+      return html` <div>${until(...args)}</div> `;
     },
     expectations: [
       {
@@ -631,7 +644,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise = new Promise((r) => (resolve = r));
     return {
       render(...args) {
-        return html`<div>${until(...args)}</div>`;
+        return html` <div>${until(...args)}</div> `;
       },
       expectations: [
         {
@@ -658,7 +671,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise2 = new Promise((r) => (resolve2 = r));
     return {
       render(...args) {
-        return html`<div>${until(...args)}</div>`;
+        return html` <div>${until(...args)}</div> `;
       },
       expectations: [
         {
@@ -750,7 +763,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div>${ifDefined(v)}</div>`;
+      return html` <div>${ifDefined(v)}</div> `;
     },
     expectations: [
       {
@@ -767,7 +780,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div>${ifDefined(v)}</div>`;
+      return html` <div>${ifDefined(v)}</div> `;
     },
     expectations: [
       {
@@ -784,7 +797,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: unsafeHTML': {
     render(v) {
-      return html`<div>${unsafeHTML(v)}</div>`;
+      return html` <div>${unsafeHTML(v)}</div> `;
     },
     expectations: [
       {
@@ -801,7 +814,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: unsafeSVG': {
     render(v) {
-      return html`<svg>${unsafeSVG(v)}</svg>`;
+      return html` <svg>${unsafeSVG(v)}</svg> `;
     },
     expectations: [
       {
@@ -823,7 +836,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts a string': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -840,7 +853,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts a number': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -857,7 +870,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts undefined': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -874,7 +887,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts null': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -891,7 +904,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts noChange': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -908,7 +921,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts nothing': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -925,7 +938,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts an array': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -944,7 +957,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts an object': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -963,7 +976,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts an object with a toString method': {
     render(x: unknown) {
-      return html`<div class=${x}></div>`;
+      return html` <div class=${x}></div> `;
     },
     expectations: [
       {
@@ -1008,7 +1021,7 @@ export const tests: {[name: string]: SSRTest} = {
     );
     return {
       render(v: string) {
-        return html`<div a="${basic(v)}"></div>`;
+        return html` <div a="${basic(v)}"></div> `;
       },
       expectations: [
         {
@@ -1047,7 +1060,7 @@ export const tests: {[name: string]: SSRTest} = {
     );
     return {
       render(bool: boolean, v: string) {
-        return html`<div a="${aDirective(bool, bDirective(v))}"></div>`;
+        return html` <div a="${aDirective(bool, bDirective(v))}"></div> `;
       },
       expectations: [
         {
@@ -1073,7 +1086,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: classMap': {
     render(map: {}) {
-      return html`<div class=${classMap(map)}></div>`;
+      return html` <div class=${classMap(map)}></div> `;
     },
     expectations: [
       {
@@ -1090,7 +1103,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: classMap (with statics)': {
     render(map: {}) {
-      return html`<div class="static1 ${classMap(map)} static2"></div>`;
+      return html` <div class="static1 ${classMap(map)} static2"></div> `;
     },
     expectations: [
       {
@@ -1107,7 +1120,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: styleMap': {
     render(map: {}) {
-      return html`<div style=${styleMap(map)}></div>`;
+      return html` <div style=${styleMap(map)}></div> `;
     },
     expectations: [
       {
@@ -1146,9 +1159,9 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: styleMap (with statics)': {
     render(map: {}) {
-      return html`<div
-        style="color: red; ${styleMap(map)} height: 3px;"
-      ></div>`;
+      return html`
+        <div style="color: red; ${styleMap(map)} height: 3px;"></div>
+      `;
     },
     expectations: [
       {
@@ -1174,9 +1187,9 @@ export const tests: {[name: string]: SSRTest} = {
     };
     return {
       render(bool: boolean) {
-        return html`<div
-          attr="${guard([bool], () => guardedValue(bool))}"
-        ></div>`;
+        return html`
+          <div attr="${guard([bool], () => guardedValue(bool))}"></div>
+        `;
       },
       expectations: [
         {
@@ -1207,7 +1220,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: until (primitive)': {
     render(...args) {
-      return html`<div attr="${until(...args)}"></div>`;
+      return html` <div attr="${until(...args)}"></div> `;
     },
     expectations: [
       {
@@ -1230,7 +1243,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise = new Promise((r) => (resolve = r));
     return {
       render(...args) {
-        return html`<div attr="${until(...args)}"></div>`;
+        return html` <div attr="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -1260,7 +1273,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise2 = new Promise((r) => (resolve2 = r));
     return {
       render(...args) {
-        return html`<div attr="${until(...args)}"></div>`;
+        return html` <div attr="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -1290,7 +1303,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div attr="${ifDefined(v)}"></div>`;
+      return html` <div attr="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -1307,7 +1320,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div attr="${ifDefined(v)}"></div>`;
+      return html` <div attr="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -1324,7 +1337,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart accepts directive: live': {
     render(v: string) {
-      return html`<div attr="${live(v)}"></div>`;
+      return html` <div attr="${live(v)}"></div> `;
     },
     expectations: [
       {
@@ -1341,7 +1354,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple AttributeParts on same node': {
     render(x: unknown, y: unknown) {
-      return html`<div class=${x} foo=${y}></div>`;
+      return html` <div class=${x} foo=${y}></div> `;
     },
     expectations: [
       {
@@ -1358,7 +1371,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple AttributeParts in same attribute': {
     render(x: unknown, y: unknown) {
-      return html`<div class="${x} ${y}"></div>`;
+      return html` <div class="${x} ${y}"></div> `;
     },
     expectations: [
       {
@@ -1382,15 +1395,9 @@ export const tests: {[name: string]: SSRTest} = {
       e: unknown,
       f: unknown
     ) {
-      return html`<div
-        ab="${a} ${b}"
-        x
-        c="${c}"
-        y
-        de="${d} ${e}"
-        f="${f}"
-        z
-      ></div>`;
+      return html`
+        <div ab="${a} ${b}" x c="${c}" y de="${d} ${e}" f="${f}" z></div>
+      `;
     },
     expectations: [
       {
@@ -1411,7 +1418,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts a string': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1440,7 +1447,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts a string (reflected + camelCase)': {
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1467,7 +1474,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts a number': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1490,7 +1497,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts a number (reflected)': {
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1519,7 +1526,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts a boolean': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1548,7 +1555,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts a boolean (reflected)': {
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1577,7 +1584,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts undefined': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1603,7 +1610,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts undefined (reflected)': {
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1632,7 +1639,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts null': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1658,7 +1665,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts null (reflected)': {
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1687,7 +1694,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts noChange': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1716,7 +1723,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts noChange (reflected)': {
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1741,7 +1748,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts nothing': {
     render(x: unknown) {
-      return html`<div .prop=${x}></div>`;
+      return html` <div .prop=${x}></div> `;
     },
     expectations: [
       {
@@ -1769,7 +1776,7 @@ export const tests: {[name: string]: SSRTest} = {
     // TODO: the current client-side does nothing special with `nothing`, just
     // passes it on to the property; is that what we want?
     render(x: unknown) {
-      return html`<div .className=${x}></div>`;
+      return html` <div .className=${x}></div> `;
     },
     expectations: [
       {
@@ -1802,7 +1809,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testSymbol = Symbol();
     return {
       render(x: unknown) {
-        return html`<div .prop=${x}></div>`;
+        return html` <div .prop=${x}></div> `;
       },
       expectations: [
         {
@@ -1834,7 +1841,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testObject = {};
     return {
       render(x: unknown) {
-        return html`<div .prop=${x}></div>`;
+        return html` <div .prop=${x}></div> `;
       },
       expectations: [
         {
@@ -1866,7 +1873,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testObject = {};
     return {
       render(x: unknown) {
-        return html`<div .className=${x}></div>`;
+        return html` <div .className=${x}></div> `;
       },
       expectations: [
         {
@@ -1903,7 +1910,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testArray = [1, 2, 3];
     return {
       render(x: unknown) {
-        return html`<div .prop=${x}></div>`;
+        return html` <div .prop=${x}></div> `;
       },
       expectations: [
         {
@@ -1935,7 +1942,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testArray = [1, 2, 3];
     return {
       render(x: unknown) {
-        return html`<div .className=${x}></div>`;
+        return html` <div .className=${x}></div> `;
       },
       expectations: [
         {
@@ -1969,7 +1976,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testFunction = () => 'test function';
     return {
       render(x: unknown) {
-        return html`<div .prop=${x}></div>`;
+        return html` <div .prop=${x}></div> `;
       },
       expectations: [
         {
@@ -2001,7 +2008,7 @@ export const tests: {[name: string]: SSRTest} = {
     const testFunction = () => 'test function';
     return {
       render(x: unknown) {
-        return html`<div .className=${x}></div>`;
+        return html` <div .className=${x}></div> `;
       },
       expectations: [
         {
@@ -2042,9 +2049,9 @@ export const tests: {[name: string]: SSRTest} = {
     };
     return {
       render(bool: boolean) {
-        return html`<div
-          .prop="${guard([bool], () => guardedValue(bool))}"
-        ></div>`;
+        return html`
+          <div .prop="${guard([bool], () => guardedValue(bool))}"></div>
+        `;
       },
       expectations: [
         {
@@ -2093,9 +2100,9 @@ export const tests: {[name: string]: SSRTest} = {
     };
     return {
       render(v: string) {
-        return html`<div
-          .className="${guard([v], () => guardedValue(v))}"
-        ></div>`;
+        return html`
+          <div .className="${guard([v], () => guardedValue(v))}"></div>
+        `;
       },
       expectations: [
         {
@@ -2136,7 +2143,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: until (primitive)': {
     render(...args) {
-      return html`<div .prop="${until(...args)}"></div>`;
+      return html` <div .prop="${until(...args)}"></div> `;
     },
     expectations: [
       {
@@ -2168,7 +2175,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: until (primitive) (reflected)': {
     render(...args) {
-      return html`<div .className="${until(...args)}"></div>`;
+      return html` <div .className="${until(...args)}"></div> `;
     },
     expectations: [
       {
@@ -2203,7 +2210,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise = new Promise((r) => (resolve = r));
     return {
       render(...args) {
-        return html`<div .prop="${until(...args)}"></div>`;
+        return html` <div .prop="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -2243,7 +2250,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise = new Promise((r) => (resolve = r));
     return {
       render(...args) {
-        return html`<div .className="${until(...args)}"></div>`;
+        return html` <div .className="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -2285,7 +2292,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise2 = new Promise((r) => (resolve2 = r));
     return {
       render(...args) {
-        return html`<div .prop="${until(...args)}"></div>`;
+        return html` <div .prop="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -2335,7 +2342,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise2 = new Promise((r) => (resolve2 = r));
     return {
       render(...args) {
-        return html`<div .className="${until(...args)}"></div>`;
+        return html` <div .className="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -2377,7 +2384,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div .prop="${ifDefined(v)}"></div>`;
+      return html` <div .prop="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -2403,7 +2410,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (undefined) (reflected)': {
     render(v) {
-      return html`<div .className="${ifDefined(v)}"></div>`;
+      return html` <div .className="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -2428,7 +2435,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div .prop="${ifDefined(v)}"></div>`;
+      return html` <div .prop="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -2457,7 +2464,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: ifDefined (defined) (reflected)': {
     render(v) {
-      return html`<div .className="${ifDefined(v)}"></div>`;
+      return html` <div .className="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -2489,7 +2496,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: live': {
     render(v: string) {
-      return html`<div .prop="${live(v)}"></div>`;
+      return html` <div .prop="${live(v)}"></div> `;
     },
     expectations: [
       {
@@ -2518,7 +2525,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'PropertyPart accepts directive: live (reflected)': {
     render(v: string) {
-      return html`<div .className="${live(v)}"></div>`;
+      return html` <div .className="${live(v)}"></div> `;
     },
     expectations: [
       {
@@ -2543,7 +2550,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple PropertyParts on same node': {
     render(x: unknown, y: unknown) {
-      return html`<div .prop=${x} .prop2=${y}></div>`;
+      return html` <div .prop=${x} .prop2=${y}></div> `;
     },
     expectations: [
       {
@@ -2574,7 +2581,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'multiple PropertyParts in one property': {
     render(x: unknown, y: unknown) {
-      return html`<div .prop="${x},${y}"></div>`;
+      return html` <div .prop="${x},${y}"></div> `;
     },
     expectations: [
       {
@@ -2607,7 +2614,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   EventPart: {
     render(listener: (e: Event) => void) {
-      return html`<button @click=${listener}>X</button>`;
+      return html` <button @click=${listener}>X</button> `;
     },
     expectations: [
       {
@@ -2656,9 +2663,9 @@ export const tests: {[name: string]: SSRTest} = {
     };
     return {
       render(fn: (e: Event) => unknown) {
-        return html`<button @click="${guard([fn], () => guardedValue(fn))}">
-          X
-        </button>`;
+        return html`
+          <button @click="${guard([fn], () => guardedValue(fn))}">X</button>
+        `;
       },
       expectations: [
         {
@@ -2715,7 +2722,7 @@ export const tests: {[name: string]: SSRTest} = {
       ((e.target as ClickableButton).__wasClicked2 = true);
     return {
       render(...args) {
-        return html`<button @click="${until(...args)}">X</button>`;
+        return html` <button @click="${until(...args)}">X</button> `;
       },
       expectations: [
         {
@@ -2758,7 +2765,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise = new Promise((r) => (resolve = r));
     return {
       render(...args) {
-        return html`<button @click="${until(...args)}">X</button>`;
+        return html` <button @click="${until(...args)}">X</button> `;
       },
       expectations: [
         {
@@ -2807,7 +2814,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise2 = new Promise((r) => (resolve2 = r));
     return {
       render(...args) {
-        return html`<button @click="${until(...args)}">X</button>`;
+        return html` <button @click="${until(...args)}">X</button> `;
       },
       expectations: [
         {
@@ -2868,7 +2875,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'EventPart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<button @click="${ifDefined(v)}">X</button>`;
+      return html` <button @click="${ifDefined(v)}">X</button> `;
     },
     expectations: [
       {
@@ -2909,7 +2916,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'EventPart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<button @click="${ifDefined(v)}">X</button>`;
+      return html` <button @click="${ifDefined(v)}">X</button> `;
     },
     expectations: [
       {
@@ -2954,7 +2961,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially true': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -2971,7 +2978,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially truthy (number)': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -2988,7 +2995,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially truthy (object)': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3007,7 +3014,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially false': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3024,7 +3031,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially falsey (number)': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3041,7 +3048,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially falsey (null)': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3058,7 +3065,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially falsey (undefined)': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3075,7 +3082,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially nothing': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3092,7 +3099,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart, initially noChange': {
     render(hide: boolean) {
-      return html`<div ?hidden=${hide}></div>`;
+      return html` <div ?hidden=${hide}></div> `;
     },
     expectations: [
       {
@@ -3115,9 +3122,9 @@ export const tests: {[name: string]: SSRTest} = {
     };
     return {
       render(bool: boolean) {
-        return html`<div
-          ?hidden="${guard([bool], () => guardedValue(bool))}"
-        ></div>`;
+        return html`
+          <div ?hidden="${guard([bool], () => guardedValue(bool))}"></div>
+        `;
       },
       expectations: [
         {
@@ -3148,7 +3155,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart accepts directive: until (primitive)': {
     render(...args) {
-      return html`<div ?hidden="${until(...args)}"></div>`;
+      return html` <div ?hidden="${until(...args)}"></div> `;
     },
     expectations: [
       {
@@ -3171,7 +3178,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise = new Promise((r) => (resolve = r));
     return {
       render(...args) {
-        return html`<div ?hidden="${until(...args)}"></div>`;
+        return html` <div ?hidden="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -3201,7 +3208,7 @@ export const tests: {[name: string]: SSRTest} = {
     const promise2 = new Promise((r) => (resolve2 = r));
     return {
       render(...args) {
-        return html`<div ?hidden="${until(...args)}"></div>`;
+        return html` <div ?hidden="${until(...args)}"></div> `;
       },
       expectations: [
         {
@@ -3231,7 +3238,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart accepts directive: ifDefined (undefined)': {
     render(v) {
-      return html`<div ?hidden="${ifDefined(v)}"></div>`;
+      return html` <div ?hidden="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -3248,7 +3255,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart accepts directive: ifDefined (defined)': {
     render(v) {
-      return html`<div ?hidden="${ifDefined(v)}"></div>`;
+      return html` <div ?hidden="${ifDefined(v)}"></div> `;
     },
     expectations: [
       {
@@ -3265,7 +3272,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'BooleanAttributePart accepts directive: live': {
     render(v: boolean) {
-      return html`<div ?hidden="${live(v)}"></div>`;
+      return html` <div ?hidden="${live(v)}"></div> `;
     },
     expectations: [
       {
@@ -3281,13 +3288,96 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
+   * ElementPart tests
+   ******************************************************/
+
+  'ElementPart accepts directive: generic': () => {
+    const log: string[] = [];
+    const dir = directive(
+      class extends Directive {
+        render(_v: string) {
+          log.push('render should not be called');
+        }
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          log.push(v);
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html` <div attr=${v} ${dir(v)}></div> `;
+      },
+      expectations: [
+        {
+          args: ['a'],
+          html: '<div attr="a"></div>',
+          check(assert: Chai.Assert) {
+            // Note, update is called once during hydration and again
+            // during initial render
+            assert.deepEqual(log, ['a', 'a']);
+          },
+        },
+        {
+          args: ['b'],
+          html: '<div attr="b"></div>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, ['a', 'a', 'b']);
+          },
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  'ElementPart accepts directive: ref': () => {
+    const ref1 = createRef();
+    const ref2 = createRef();
+    const ref3 = createRef();
+    return {
+      render(v: boolean) {
+        return html`
+          <div id="div1" ${ref(ref1)}>
+            <div id="div2" ${ref(ref2)}>
+              ${v ? html` <div id="div3" ${ref(ref3)}></div> ` : nothing}
+            </div>
+          </div>
+        `;
+      },
+      expectations: [
+        {
+          args: [true],
+          html:
+            '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
+          check(assert: Chai.Assert) {
+            assert.equal(ref1.value?.id, 'div1');
+            assert.equal(ref2.value?.id, 'div2');
+            assert.equal(ref3.value?.id, 'div3');
+          },
+        },
+        {
+          args: [false],
+          html: '<div id="div1"><div id="div2"></div></div>',
+          check(assert: Chai.Assert) {
+            assert.equal(ref1.value?.id, 'div1');
+            assert.equal(ref2.value?.id, 'div2');
+            assert.notOk(ref3.value);
+          },
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  /******************************************************
    * Mixed part tests
    ******************************************************/
 
   'ChildParts & AttributeParts on adjacent nodes': {
     render(x, y) {
-      return html`<div attr="${x}">${x}</div>
-        <div attr="${y}">${y}</div>`;
+      return html`
+        <div attr="${x}">${x}</div>
+        <div attr="${y}">${y}</div>
+      `;
     },
     expectations: [
       {
@@ -3304,10 +3394,12 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildParts & AttributeParts on nested nodes': {
     render(x, y) {
-      return html`<div attr="${x}">
-        ${x}
-        <div attr="${y}">${y}</div>
-      </div>`;
+      return html`
+        <div attr="${x}">
+          ${x}
+          <div attr="${y}">${y}</div>
+        </div>
+      `;
     },
     expectations: [
       {
@@ -3322,26 +3414,28 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'ChildParts & AttributeParts soup': {
+  'ChildPart, AttributePart, and ElementPart soup': {
     render(x, y, z) {
-      return html`text:${x}
+      return html`
+        text:${x}
         <div>${x}</div>
         <span a1="${y}" a2="${y}"
           >${x}
           <p a="${y}">${y}</p>
           ${z}</span
-        >`;
+        >
+      `;
     },
     expectations: [
       {
-        args: [html`<a></a>`, 'b', 'c'],
+        args: [html` <a attr=${'a'} ${'ignored'}></a> `, 'b', 'c'],
         html:
-          'text:\n<a></a><div><a></a></div><span a1="b" a2="b"><a></a><p a="b">b</p>c</span>',
+          'text:\n<a attr="a"></a><div><a attr="a"></a></div><span a1="b" a2="b"><a attr="a"></a><p a="b">b</p>c</span>',
       },
       {
-        args: ['x', 'y', html`<i></i>`],
+        args: ['x', 'y', html` <i ${'ignored'} attr=${'i'}></i> `],
         html:
-          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i></i></span>',
+          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i attr="i"></i></span>',
       },
     ],
     stableSelectors: ['div', 'span', 'p'],
@@ -3608,7 +3702,7 @@ export const tests: {[name: string]: SSRTest} = {
       },
       expectations: [
         {
-          args: ['x', 'y', html`<a>z</a>`, handler1],
+          args: ['x', 'y', html` <a>z</a> `, handler1],
           html: `
           <div id="div0" a1="x" a2="[x-y]" a3="([x])" b>
             x
@@ -3677,7 +3771,7 @@ export const tests: {[name: string]: SSRTest} = {
           },
         },
         {
-          args: [0, 1, html`<b>2</b>`, handler2],
+          args: [0, 1, html` <b>2</b> `, handler2],
           html: `
           <div id="div0" a1="0" a2="[0-1]" a3="(0)">
             0
@@ -3751,6 +3845,142 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
+   * DisconnectableDirective tests
+   ******************************************************/
+
+  DisconnectableDirective: () => {
+    const log: string[] = [];
+    const dir = directive(
+      class extends DisconnectableDirective {
+        id!: string;
+        render(id: string) {
+          this.id = id;
+          log.push(`render-${this.id}`);
+          return id;
+        }
+        disconnected() {
+          log.push(`disconnected-${this.id}`);
+        }
+      }
+    );
+    return {
+      render(bool: boolean, id: string) {
+        return html`
+          <span
+            >${dir('x')}${bool
+              ? html`
+                  <div attr=${dir(`attr-${id}`)}>${dir(`node-${id}`)}</div>
+                `
+              : nothing}</span
+          >
+        `;
+      },
+      expectations: [
+        {
+          args: [true, 'a'],
+          html: '<span>x<div attr="attr-a">node-a</div></span>',
+          check(assert: Chai.Assert) {
+            // Note, update is called once during hydration and again
+            // during initial render
+            assert.deepEqual(log, [
+              'render-x',
+              'render-attr-a',
+              'render-node-a',
+              'render-x',
+              'render-attr-a',
+              'render-node-a',
+            ]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [false, 'a'],
+          html: '<span>x</span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [
+              'render-x',
+              'disconnected-attr-a',
+              'disconnected-node-a',
+            ]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [true, 'b'],
+          html: '<span>x<div attr="attr-b">node-b</div></span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [
+              'render-x',
+              'render-attr-b',
+              'render-node-b',
+            ]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [false, 'b'],
+          html: '<span>x</span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [
+              'render-x',
+              'disconnected-attr-b',
+              'disconnected-node-b',
+            ]);
+            log.length = 0;
+          },
+        },
+      ],
+      stableSelectors: ['span'],
+    };
+  },
+
+  /******************************************************
+   * Nested directive tests
+   ******************************************************/
+
+  'Nested directives': () => {
+    const log: number[] = [];
+    const nest = directive(
+      class extends Directive {
+        render(n: number): string | DirectiveResult {
+          log.push(n);
+          if (n > 1) {
+            return nest(n - 1);
+          } else {
+            return 'nested!';
+          }
+        }
+      }
+    );
+    return {
+      render() {
+        return html` <span>${nest(3)}</span> `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<span>nested!</span>',
+          check(assert: Chai.Assert) {
+            // Note, update is called once during hydration and again
+            // during initial render
+            assert.deepEqual(log, [3, 2, 1, 3, 2, 1]);
+            log.length = 0;
+          },
+        },
+        {
+          args: [],
+          html: '<span>nested!</span>',
+          check(assert: Chai.Assert) {
+            assert.deepEqual(log, [3, 2, 1]);
+            log.length = 0;
+          },
+        },
+      ],
+      stableSelectors: ['span'],
+    };
+  },
+
+  /******************************************************
    * LitElement tests
    ******************************************************/
 
@@ -3761,13 +3991,13 @@ export const tests: {[name: string]: SSRTest} = {
           'le-basic',
           class extends LitElement {
             render() {
-              return html` <div>[le-basic: <slot></slot>]</div>`;
+              return html` <div>[le-basic: <slot></slot>]</div> `;
             }
           }
         );
       },
       render(x: string) {
-        return html`<le-basic>${x}</le-basic>`;
+        return html` <le-basic>${x}</le-basic> `;
       },
       expectations: [
         {
@@ -3789,9 +4019,11 @@ export const tests: {[name: string]: SSRTest} = {
           'le-nested1',
           class extends LitElement {
             render() {
-              return html` <div>
-                [le-nested1: <le-nested2><slot></slot></le-nested2>]
-              </div>`;
+              return html`
+                <div>
+                  [le-nested1: <le-nested2><slot></slot></le-nested2>]
+                </div>
+              `;
             }
           }
         );
@@ -3799,13 +4031,13 @@ export const tests: {[name: string]: SSRTest} = {
           'le-nested2',
           class extends LitElement {
             render() {
-              return html` <div>[le-nested2: <slot></slot>]</div>`;
+              return html` <div>[le-nested2: <slot></slot>]</div> `;
             }
           }
         );
       },
       render(x: string) {
-        return html`<le-nested1>${x}</le-nested1>`;
+        return html` <le-nested1>${x}</le-nested1> `;
       },
       expectations: [
         {
@@ -3830,13 +4062,13 @@ export const tests: {[name: string]: SSRTest} = {
           @property()
           prop = 'default';
           render() {
-            return html` <div>[${this.prop}]</div>`;
+            return html` <div>[${this.prop}]</div> `;
           }
         }
         customElements.define('le-prop-binding', LEPropBinding);
       },
       render(prop: unknown) {
-        return html`<le-prop-binding .prop=${prop}></le-prop-binding>`;
+        return html` <le-prop-binding .prop=${prop}></le-prop-binding> `;
       },
       expectations: [
         {
@@ -3868,6 +4100,67 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  'LitElement: willUpdate': () => {
+    return {
+      registerElements() {
+        class LEWillUpdate extends LitElement {
+          @property()
+          first?: string;
+          @property()
+          last?: string;
+          fullName = '';
+
+          willUpdate(changedProperties: PropertyValues) {
+            if (
+              changedProperties.has('first') ||
+              changedProperties.has('last')
+            ) {
+              this.fullName = `${this.first} ${this.last}`;
+            }
+          }
+
+          render() {
+            // prettier-ignore
+            return html`<main>${this.fullName}</main>`;
+          }
+        }
+        customElements.define('le-will-update', LEWillUpdate);
+      },
+      render(first?: string, last?: string) {
+        return html`
+          <le-will-update .first=${first} .last=${last}></le-will-update>
+        `;
+      },
+      expectations: [
+        {
+          args: ['foo', 'bar'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-will-update')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).fullName, 'foo bar');
+          },
+          html: {
+            root: `<le-will-update></le-will-update>`,
+            'le-will-update': `<main>\n  foo bar\n</main>`,
+          },
+        },
+        {
+          args: ['zot', ''],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-will-update')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).fullName, 'zot ');
+          },
+          html: {
+            root: `<le-will-update></le-will-update>`,
+            'le-will-update': `<main>\n  zot\n</main>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-will-update'],
+    };
+  },
+
   'LitElement: Reflected property binding': () => {
     return {
       registerElements() {
@@ -3875,15 +4168,15 @@ export const tests: {[name: string]: SSRTest} = {
           @property({reflect: true})
           prop = 'default';
           render() {
-            return html` <div>[${this.prop}]</div>`;
+            return html` <div>[${this.prop}]</div> `;
           }
         }
         customElements.define('le-reflected-binding', LEReflectedBinding);
       },
       render(prop: unknown) {
-        return html`<le-reflected-binding
-          .prop=${prop}
-        ></le-reflected-binding>`;
+        return html`
+          <le-reflected-binding .prop=${prop}></le-reflected-binding>
+        `;
       },
       expectations: [
         {
@@ -3926,13 +4219,13 @@ export const tests: {[name: string]: SSRTest} = {
           @property()
           prop = 'default';
           render() {
-            return html` <div>[${this.prop}]</div>`;
+            return html` <div>[${this.prop}]</div> `;
           }
         }
         customElements.define('le-attr-binding', LEAttrBinding);
       },
       render(prop: unknown) {
-        return html`<le-attr-binding prop=${prop} static></le-attr-binding>`;
+        return html` <le-attr-binding prop=${prop} static></le-attr-binding> `;
       },
       expectations: [
         {
@@ -3971,13 +4264,13 @@ export const tests: {[name: string]: SSRTest} = {
           @property()
           prop = 'default';
           render() {
-            return html` <div>[${this.prop}]</div>`;
+            return html` <div>[${this.prop}]</div> `;
           }
         }
         customElements.define('le-static-attr', LEStaticAttr);
       },
       render() {
-        return html`<le-static-attr prop="static" static></le-static-attr>`;
+        return html` <le-static-attr prop="static" static></le-static-attr> `;
       },
       expectations: [
         {
@@ -4004,19 +4297,21 @@ export const tests: {[name: string]: SSRTest} = {
           @property()
           template: unknown = 'default';
           render() {
-            return html` <div>${this.template}</div>`;
+            return html` <div>${this.template}</div> `;
           }
         }
         customElements.define('le-node-binding', LENodeBinding);
       },
       render(template: (s: string) => any) {
-        return html`<le-node-binding .template=${template('shadow')}
-          >${template('light')}</le-node-binding
-        >`;
+        return html`
+          <le-node-binding .template=${template('shadow')}
+            >${template('light')}</le-node-binding
+          >
+        `;
       },
       expectations: [
         {
-          args: [(s: string) => html`[template1: ${s}]`],
+          args: [(s: string) => html` [template1: ${s}] `],
           async check(_assert: Chai.Assert, dom: HTMLElement) {
             const el = dom.querySelector('le-node-binding')! as LitElement;
             await el.updateComplete;
@@ -4027,7 +4322,7 @@ export const tests: {[name: string]: SSRTest} = {
           },
         },
         {
-          args: [(s: string) => html`[template2: ${s}]`],
+          args: [(s: string) => html` [template2: ${s}] `],
           async check(_assert: Chai.Assert, dom: HTMLElement) {
             const el = dom.querySelector('le-node-binding')! as LitElement;
             await el.updateComplete;
@@ -4049,18 +4344,18 @@ export const tests: {[name: string]: SSRTest} = {
           @property()
           prop = 'default';
           render() {
-            return html` <div>[shadow:${this.prop}<slot></slot>]</div>`;
+            return html` <div>[shadow:${this.prop}<slot></slot>]</div> `;
           }
           renderLight() {
-            return html` <div>[light:${this.prop}]</div>`;
+            return html` <div>[light:${this.prop}]</div> `;
           }
         }
         customElements.define('le-render-light', LERenderLight);
       },
       render(prop: unknown) {
-        return html`<le-render-light .prop=${prop}
-          >${renderLight()}</le-render-light
-        >`;
+        return html`
+          <le-render-light .prop=${prop}>${renderLight()}</le-render-light>
+        `;
       },
       expectations: [
         {

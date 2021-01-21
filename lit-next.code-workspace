@@ -1,6 +1,10 @@
 {
 	"folders": [
 		{
+			"name": "lit",
+			"path": "packages/lit"
+		},
+		{
 			"name": "lit-html",
 			"path": "packages/lit-html"
 		},

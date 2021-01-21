@@ -17,9 +17,9 @@
       "development": "./development/reactive-element.js",
       "default": "./reactive-element.js"
     },
-    "./platform-support.js": {
-      "development": "./development/platform-support.js",
-      "default": "./platform-support.js"
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
     },
     "./css-tag.js": {
       "development": "./development/css-tag.js",
@@ -41,7 +41,7 @@
     "build:ts:watch": "tsc --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf reactive-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} decorators/ development/",
+    "clean": "rm -rf reactive-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} decorators/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -63,10 +63,10 @@
     "/decorators.js.map",
     "/decorators/",
     "/development/",
-    "/platform-support.d.ts",
-    "/platform-support.d.ts.map",
-    "/platform-support.js",
-    "/platform-support.js.map",
+    "/polyfill-support.d.ts",
+    "/polyfill-support.d.ts.map",
+    "/polyfill-support.js",
+    "/polyfill-support.js.map",
     "/src/",
     "!/src/demo/",
     "!/src/test/",
@@ -86,6 +86,7 @@
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/template": "^1.4.4",
     "chokidar-cli": "^2.1.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",

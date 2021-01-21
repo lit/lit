@@ -150,6 +150,23 @@ suite('ReactiveElement controllers', () => {
     assert.equal(el.controller.updatedCount, 2);
   });
 
+  test('controllers can be removed', async () => {
+    assert.equal(el.controller.connectedCount, 1);
+    assert.equal(el.controller.disconnectedCount, 0);
+    assert.equal(el.controller.willUpdateCount, 1);
+    assert.equal(el.controller.updateCount, 1);
+    assert.equal(el.controller.updatedCount, 1);
+    el.removeController(el.controller);
+    el.foo = 'new';
+    await el.updateComplete;
+    el.remove();
+    assert.equal(el.controller.connectedCount, 1);
+    assert.equal(el.controller.disconnectedCount, 0);
+    assert.equal(el.controller.willUpdateCount, 1);
+    assert.equal(el.controller.updateCount, 1);
+    assert.equal(el.controller.updatedCount, 1);
+  });
+
   test('controllers callback order', async () => {
     assert.deepEqual(el.controller.callbackOrder, [
       'connectedCallback',

@@ -63,17 +63,17 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
 // FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
 const stableProperties = {
-  // lit-html: Template (used by platform-support)
+  // lit-html: Template (used by polyfill-support)
   _$createElement: 'A',
   _$element: 'B',
   _$options: 'C',
-  // lit-html: ChildPart (used by platform-support)
+  // lit-html: ChildPart (used by polyfill-support)
   _$startNode: 'D',
   _$endNode: 'E',
   _$getTemplate: 'F',
-  // lit-html: TemplateInstance (used by platform-support)
+  // lit-html: TemplateInstance (used by polyfill-support)
   _$template: 'G',
-  // reactive-element: ReactiveElement (used by platform-support)
+  // reactive-element: ReactiveElement (used by polyfill-support)
   _$didUpdate: 'H',
   // lit-element: LitElement
   _$renderOptions: 'I',
@@ -81,24 +81,26 @@ const stableProperties = {
   _$renderImpl: 'J',
   // hydrate-support: LitElement (added by hydrate-support)
   _$needsHydration: 'K',
-  // lit-html: Part (used by hydrate, platform-support)
+  // lit-html: Part (used by hydrate, polyfill-support)
   _$committedValue: 'L',
-  // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
+  // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
   _$setValue: 'M',
-  // platform-support: LitElement (added by platform-support)
+  // polyfill-support: LitElement (added by polyfill-support)
   _$handlesPrepareStyles: 'N',
   // lit-element: ReactiveElement (used bby ssr-support)
   _$attributeToProperty: 'O',
+  // lit-element: ReactiveElement (used bby ssr-support)
+  _$changedProperties: 'P',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)
-  _$parent: 'P',
-  _$disconnetableChildren: 'Q',
+  _$parent: 'Q',
+  _$disconnetableChildren: 'R',
   // disconnectable-directive: DisconnectableDirective
-  _$setDirectiveConnected: 'R',
+  _$setDirectiveConnected: 'S',
   // lit-html: ChildPart (added by disconnectable-directive)
-  _$setChildPartConnected: 'S',
+  _$setChildPartConnected: 'T',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'T',
+  _$clear: 'U',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -230,6 +232,7 @@ export function litProdConfig({
       ),
     },
   };
+
   const nameCacheSeederInfile = 'name-cache-seeder-virtual-input.js';
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
@@ -302,6 +305,8 @@ export function litProdConfig({
           'const DEV_MODE = true': 'const DEV_MODE = false',
           'const ENABLE_EXTRA_SECURITY_HOOKS = true':
             'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+          'const ENABLE_SHADYDOM_NOPATCH = true':
+            'const ENABLE_SHADYDOM_NOPATCH = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -318,14 +323,20 @@ export function litProdConfig({
                   dest: pathLib.dirname(name),
                 })),
               }),
-              // Copy platform support tests.
+              // Copy polyfill support tests.
               copy({
                 targets: [
                   {
-                    src: `src/test/platform-support/*_test.html`,
+                    src: `src/test/*_test.html`,
+                    dest: ['development/test/', 'test/'],
+                  },
+                  {
+                    // TODO: use flatten: false when this is fixed
+                    // https://github.com/vladshcherbin/rollup-plugin-copy/issues/37
+                    src: `src/test/polyfill-support/*_test.html`,
                     dest: [
-                      'development/test/platform-support',
-                      'test/platform-support',
+                      'development/test/polyfill-support',
+                      'test/polyfill-support',
                     ],
                   },
                 ],
@@ -344,11 +355,11 @@ export function litProdConfig({
   ];
 }
 
-export const litMonoBundleConfig = ({
+const litMonoBundleConfig = ({
   file,
   output,
   name,
-  terserOptions = generateTerserOptions(),
+  terserOptions,
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
@@ -364,6 +375,8 @@ export const litMonoBundleConfig = ({
       'const DEV_MODE = true': 'const DEV_MODE = false',
       'const ENABLE_EXTRA_SECURITY_HOOKS = true':
         'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+      'const ENABLE_SHADYDOM_NOPATCH = true':
+        'const ENABLE_SHADYDOM_NOPATCH = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.
