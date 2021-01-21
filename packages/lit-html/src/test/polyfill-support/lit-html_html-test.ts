@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import '../../platform-support.js';
+import '../../polyfill-support.js';
 import {html, render as litRender} from '../../lit-html.js';
 import {ref, createRef} from '../../directives/ref.js';
 import {repeat} from '../../directives/repeat.js';
@@ -29,7 +29,7 @@ import '../directives/repeat_test.js';
 import '../directives/template-content_test.js';
 import '../directives/unsafe-html_test.js';
 
-suite('platform-support rendering', () => {
+suite('polyfill-support rendering', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
     wrap(document.body).appendChild(container);

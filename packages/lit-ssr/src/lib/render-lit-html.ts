@@ -28,7 +28,7 @@ const {
   markerMatch,
   boundAttributeSuffix,
   patchDirectiveResolve,
-  getAtributePartCommittedValue,
+  getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
   PropertyPart,
@@ -366,7 +366,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
               if (isAttrBinding) {
-                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(name as string)!;
+                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                  name as string
+                )!;
                 ops.push({
                   type: 'attribute-part',
                   index: nodeIndex,
@@ -547,7 +549,7 @@ export function* renderTemplateResult(
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
         if (!(part.type === PartType.EVENT)) {
-          committedValue = getAtributePartCommittedValue(
+          committedValue = getAttributePartCommittedValue(
             part,
             value,
             partIndex
