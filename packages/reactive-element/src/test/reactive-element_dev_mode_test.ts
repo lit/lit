@@ -61,9 +61,9 @@ if (DEV_MODE) {
       });
 
       (missingPlatformSupport ? test : test.skip)(
-        'warns for missing platform-support',
+        'warns for missing polyfill-support',
         async () => {
-          assert.include(warnings[1], 'platform-support');
+          assert.include(warnings[1], 'polyfill-support');
         }
       );
     });

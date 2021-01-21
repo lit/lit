@@ -17,6 +17,7 @@ import {litProdConfig} from '../../rollup-common.js';
 export default litProdConfig({
   classPropertyPrefix: 'Φ',
   entryPoints: [
+    'index',
     'lit-element',
     'hydrate-support',
     'private-ssr-support',
@@ -33,12 +34,7 @@ export default litProdConfig({
   external: ['lit-html', '@lit/reactive-element'],
   bundled: [
     {
-      file: 'platform-support',
-    },
-    {
-      file: 'lit-element',
-      output: 'lit.min',
-      name: 'Lit',
+      file: 'polyfill-support',
     },
   ],
 });

@@ -1,6 +1,10 @@
 {
 	"folders": [
 		{
+			"name": "lit",
+			"path": "packages/lit"
+		},
+		{
 			"name": "lit-html",
 			"path": "packages/lit-html"
 		},
@@ -21,9 +25,9 @@
 			"path": "packages/localize"
 		},
 		{
-      "name": "labs",
-      "path": "packages/labs"
-    },
+			"name": "labs",
+			"path": "packages/labs"
+		},
 		{
 			"name": "tests",
 			"path": "packages/tests"

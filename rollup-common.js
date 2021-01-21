@@ -63,17 +63,17 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
 // FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
 const stableProperties = {
-  // lit-html: Template (used by platform-support)
+  // lit-html: Template (used by polyfill-support)
   _$createElement: 'A',
   _$element: 'B',
   _$options: 'C',
-  // lit-html: ChildPart (used by platform-support)
+  // lit-html: ChildPart (used by polyfill-support)
   _$startNode: 'D',
   _$endNode: 'E',
   _$getTemplate: 'F',
-  // lit-html: TemplateInstance (used by platform-support)
+  // lit-html: TemplateInstance (used by polyfill-support)
   _$template: 'G',
-  // reactive-element: ReactiveElement (used by platform-support)
+  // reactive-element: ReactiveElement (used by polyfill-support)
   _$didUpdate: 'H',
   // lit-element: LitElement
   _$renderOptions: 'I',
@@ -81,11 +81,11 @@ const stableProperties = {
   _$renderImpl: 'J',
   // hydrate-support: LitElement (added by hydrate-support)
   _$needsHydration: 'K',
-  // lit-html: Part (used by hydrate, platform-support)
+  // lit-html: Part (used by hydrate, polyfill-support)
   _$committedValue: 'L',
-  // lit-html: Part (used by hydrate, directive-helpers, platform-support, ssr-support)
+  // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
   _$setValue: 'M',
-  // platform-support: LitElement (added by platform-support)
+  // polyfill-support: LitElement (added by polyfill-support)
   _$handlesPrepareStyles: 'N',
   // lit-element: ReactiveElement (used bby ssr-support)
   _$attributeToProperty: 'O',
@@ -323,14 +323,20 @@ export function litProdConfig({
                   dest: pathLib.dirname(name),
                 })),
               }),
-              // Copy platform support tests.
+              // Copy polyfill support tests.
               copy({
                 targets: [
                   {
-                    src: `src/test/platform-support/*_test.html`,
+                    src: `src/test/*_test.html`,
+                    dest: ['development/test/', 'test/'],
+                  },
+                  {
+                    // TODO: use flatten: false when this is fixed
+                    // https://github.com/vladshcherbin/rollup-plugin-copy/issues/37
+                    src: `src/test/polyfill-support/*_test.html`,
                     dest: [
-                      'development/test/platform-support',
-                      'test/platform-support',
+                      'development/test/polyfill-support',
+                      'test/polyfill-support',
                     ],
                   },
                 ],

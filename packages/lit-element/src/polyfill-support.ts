@@ -29,8 +29,8 @@
  * @packageDocumentation
  */
 
-import '@lit/reactive-element/platform-support.js';
-import 'lit-html/platform-support.js';
+import '@lit/reactive-element/polyfill-support.js';
+import 'lit-html/polyfill-support.js';
 
 const needsPlatformSupport = !!(
   window.ShadyCSS !== undefined &&
