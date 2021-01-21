@@ -188,6 +188,47 @@ const removeDisconnectableFromParent = (obj: Disconnectable) => {
   } while (children?.size === 0);
 };
 
+const addDisconnectableToParent = (obj: Disconnectable) => {
+  // Climb the parent tree, creating a sparse tree of children needing
+  // disconnection
+  for (
+    let parent;
+    (parent = obj._$parent);
+    obj = parent
+  ) {
+    let children = parent._$disconnetableChildren;
+    if (children === undefined) {
+      parent._$disconnetableChildren = children = new Set();
+    } else if (children.has(obj)) {
+      // Once we've reached a parent that already contains this child, we
+      // can short-circuit
+      break;
+    }
+    children.add(obj);
+    installDisconnectAPI(parent);
+  }
+}
+
+/**
+ * Changes the parent reference of the ChildPart, and updates the sparse tree of
+ * Disconnectable children accordingly.
+ * 
+ * Note, this method will be patched onto ChildPart instances and called from
+ * the core code when parts are moved between different parents.
+ */
+function reparentDisconnectables(
+  this: ChildPart,
+  newParent: Disconnectable
+) {
+  if (this._$disconnetableChildren !== undefined) {
+    removeDisconnectableFromParent(this);
+    this._$parent = newParent;
+    addDisconnectableToParent(this);
+  } else {
+    this._$parent = newParent;
+  }
+}
+
 /**
  * Sets the connected state on any directives contained within the committed
  * value of this part (i.e. within a TemplateInstance or iterable of
@@ -247,6 +288,7 @@ function setChildPartConnected(
 const installDisconnectAPI = (obj: Disconnectable) => {
   if ((obj as ChildPart).type == PartType.CHILD) {
     (obj as ChildPart)._$setChildPartConnected ??= setChildPartConnected;
+    (obj as ChildPart)._$reparentDisconnectables ??= reparentDisconnectables;
   }
 };
 
@@ -268,24 +310,7 @@ export abstract class DisconnectableDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     this._$parent = partInfo._$parent;
-    // Climb the parent tree, creating a sparse tree of children needing
-    // disconnection
-    for (
-      let current = this as Disconnectable, parent;
-      (parent = current._$parent);
-      current = parent
-    ) {
-      let children = parent._$disconnetableChildren;
-      if (children === undefined) {
-        parent._$disconnetableChildren = children = new Set();
-      } else if (children.has(current)) {
-        // Once we've reached a parent that already contains this child, we
-        // can short-circuit
-        break;
-      }
-      children.add(current);
-      installDisconnectAPI(parent);
-    }
+    addDisconnectableToParent(this);
   }
   /**
    * Called from the core code when a directive is going away from a part (in

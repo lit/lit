@@ -99,8 +99,10 @@ const stableProperties = {
   _$setDirectiveConnected: 'S',
   // lit-html: ChildPart (added by disconnectable-directive)
   _$setChildPartConnected: 'T',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$reparentDisconnectables: 'U',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'U',
+  _$clear: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
