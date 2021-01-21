@@ -34,16 +34,6 @@ changes:
 See the full [changelog](CHANGELOG.md#300-pre1---2020-09-21) for more details on
 these and other minor breaking changes.
 
-## 🚨 Known issues/limitations
-
-- **Browser support**: This pre-release should run on modern browsers, however a
-  change to factor legacy browser support (IE11, etc.) into an opt-in package is
-  ongoing. As such, this release will not run on some older browsers. This is a
-  temporary state.
-- **lit-html limitations**: Some features of `lit-html` are still in progress.
-  Please refer to the pre-release [README](../lit-html/README.md) for a list of
-  known `lit-html` issues.
-
 <hr>
 
 # LitElement
@@ -55,6 +45,8 @@ A simple base class for creating fast, lightweight web components with [lit-html
 Full documentation is available at [lit-element.polymer-project.org](https://lit-element.polymer-project.org).
 
 ## Overview
+
+Note, the `LitElement` package has been replaced by the `lit` package. `LitElement` is provided only for backwards compatibility; when possible, users should upgrade to the `lit` package.
 
 LitElement uses [lit-html](https://lit-html.polymer-project.org/) to render into the
 element's [Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM)
@@ -127,8 +119,6 @@ resolve configuration.
 
 #### @web/dev-server
 
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
-
 ```js
 {
   nodeResolve: {
@@ -138,8 +128,6 @@ resolve configuration.
 ```
 
 #### Rollup
-
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
 
 ```js
 {
@@ -168,7 +156,15 @@ resolve configuration.
 The last 2 versions of all modern browsers are supported, including
 Chrome, Safari, Opera, Firefox, Edge. In addition, Internet Explorer 11 is also supported.
 
-Edge and Internet Explorer 11 require the web components polyfills.
+Edge and Internet Explorer 11 require the
+[web components polyfills](https://www.npmjs.com/package/@webcomponents/webcomponentsjs)
+and the `polyfill-support` module included in this package.
+
+```html
+<script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+<script src="node_modules/lit-element/polyfill-support.js"></script>
+<!-- load application code -->
+```
 
 ## Contributing
 
