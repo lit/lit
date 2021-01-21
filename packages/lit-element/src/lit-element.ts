@@ -216,4 +216,5 @@ export const _Φ = {
   ) => {
     el._$attributeToProperty(name, value);
   },
+  _$changedProperties: (el: LitElement) => el._$changedProperties,
 };
