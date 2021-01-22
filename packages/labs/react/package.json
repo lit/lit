@@ -52,11 +52,10 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "@types/react": "^16.9.50",
-    "@types/react-dom": "^16.9.8"
-  },
-  "dependencies": {
+    "@types/react-dom": "^16.9.8",
     "@lit/reactive-element": "^1.0.0-pre.1"
   },
+  "dependencies": {},
   "publishConfig": {
     "access": "public"
   }
