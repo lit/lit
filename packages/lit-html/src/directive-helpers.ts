@@ -121,7 +121,16 @@ export const insertPart = (
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
-    if (endNode !== refNode) {
+    const parentChanged = part._$parent !== containerPart;
+    if (parentChanged) {
+      part._$reparentDisconnectables?.(containerPart);
+      // Note that although `_$reparentDisconnectables` updates the part's
+      // `_$parent` reference after unlinking from its current parent, that
+      // method only exists if Disconnectables are present, so we need to
+      // unconditionally set it here
+      part._$parent = containerPart;
+    }
+    if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
       while (start !== endNode) {
         const n: Node | null = wrap(start!).nextSibling;

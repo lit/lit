@@ -180,8 +180,6 @@ resolve configuration.
 
 #### @web/dev-server
 
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
-
 ```js
 {
   nodeResolve: {
@@ -191,8 +189,6 @@ resolve configuration.
 ```
 
 #### Rollup
-
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
 
 ```js
 {

@@ -634,8 +634,10 @@ export abstract class ReactiveElement
   /**
    * Map with keys for any properties that have changed since the last
    * update cycle with previous values.
+   *
+   * @internal
    */
-  private __changedProperties!: PropertyValues;
+  _$changedProperties!: PropertyValues;
 
   /**
    * Map with keys of properties that should be reflected when updated.
@@ -657,7 +659,7 @@ export abstract class ReactiveElement
     this.__updatePromise = new Promise<boolean>(
       (res) => (this.enableUpdating = res)
     );
-    this.__changedProperties = new Map();
+    this._$changedProperties = new Map();
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
@@ -871,8 +873,8 @@ export abstract class ReactiveElement
         (this.constructor as typeof ReactiveElement).getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
-        if (!this.__changedProperties.has(name)) {
-          this.__changedProperties.set(name, oldValue);
+        if (!this._$changedProperties.has(name)) {
+          this._$changedProperties.set(name, oldValue);
         }
         // Add to reflecting properties set.
         // Note, it's important that every change has a chance to add the
@@ -986,7 +988,7 @@ export abstract class ReactiveElement
       this.__instanceProperties = undefined;
     }
     let shouldUpdate = false;
-    const changedProperties = this.__changedProperties;
+    const changedProperties = this._$changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
@@ -1039,7 +1041,7 @@ export abstract class ReactiveElement
   }
 
   private __markUpdated() {
-    this.__changedProperties = new Map();
+    this._$changedProperties = new Map();
     this.isUpdatePending = false;
   }
 
