@@ -11,7 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {ReactiveElement, notEqual} from '@lit/reactive-element';
+import {notEqual} from '@lit/reactive-element';
+import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
 export type TaskFunction = (args: Array<unknown>) => unknown;
 export type Deps = Array<unknown>;
@@ -88,13 +89,13 @@ export class AsyncTask {
   private _task: TaskFunction;
   private _getDependencies: DepsFunction;
   private _callId = 0;
-  private _host: ReactiveElement;
+  private _host: ReactiveControllerHost;
   private _value?: unknown;
   private _error?: unknown;
   status: TaskStatus = TaskStatus.INITIAL;
 
   constructor(
-    host: ReactiveElement,
+    host: ReactiveControllerHost,
     task: TaskFunction,
     getDependencies: DepsFunction
   ) {
