@@ -50,7 +50,7 @@
 		}
 	],
 	"settings": {
-		"typescript.tsdk": "node_modules/typescript/lib",
+		"typescript.tsdk": "lit-next/node_modules/typescript/lib",
 		"debug.javascript.warnOnLongPrediction": false
 	},
 	"extensions": {
