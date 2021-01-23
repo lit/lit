@@ -188,24 +188,11 @@ export default {
       },
     }),
   ],
-  filterBrowserLogs: ({args}) => {
-    if (
-      mode === 'dev' &&
-      typeof args[0] === 'string' &&
-      args[0].includes('in dev mode')
-    ) {
-      if (!seenDevModeLogs.has(args[0])) {
-        seenDevModeLogs.add(args[0]);
-        // Log it one time.
-        return true;
-      }
-      return false;
-    }
-    return true;
-  },
-  browserStartTimeout: 120000, // default 30000
-  testsStartTimeout: 120000, // default 10000
-  testsFinishTimeout: 240000, // default 20000
+  // Only actually log errors and warnings. This helps make test output less spammy.
+  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  browserStartTimeout: 60000, // default 30000
+  testsStartTimeout: 60000, // default 10000
+  testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {

@@ -2442,8 +2442,9 @@ suite('ReactiveElement', () => {
   suite('exceptions', () => {
     let threwError = false;
     // Custom error listener.
-    const errorListener = (_e: Event) => {
+    const errorListener = (e: Event) => {
       threwError = true;
+      e.preventDefault();
     };
     // Squelch console errors as it seems to mess up the test runner.
     const consoleError = console.error;
