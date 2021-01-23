@@ -1,0 +1,5 @@
+/development/
+/node_modules/
+/demos/resize.*
+/index.*
+/resize.*
