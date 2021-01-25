@@ -920,9 +920,17 @@ class ChildPartImpl {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
-      if (value === nothing) {
+      // Non-rendering child values. It's important that these do not render
+      // empty text nodes to avoid issues with preventing default <slot>
+      // fallback content.
+      if (
+        value === nothing ||
+        value === null ||
+        value === undefined ||
+        value === ''
+      ) {
         this._$clear();
-        this._$committedValue = nothing;
+        this._$committedValue = value;
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
@@ -966,9 +974,6 @@ class ChildPartImpl {
 
   private _commitText(value: unknown): void {
     const node = wrap(this._$startNode).nextSibling;
-    // Make sure undefined and null render as an empty string
-    // TODO: use `nothing` to clear the node?
-    value ??= '';
     // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
     if (
       node !== null &&
