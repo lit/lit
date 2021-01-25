@@ -561,7 +561,6 @@ const template = html`
 `;
 ```
 
-:
 ### unsafeSVG
 
 `unsafeSVG(svg)`
