@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "es2020",
     "module": "es2015",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
@@ -8,6 +9,7 @@
     "sourceMap": true,
     "inlineSources": true,
     "outDir": "./development/",
+    "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -20,5 +22,10 @@
     "experimentalDecorators": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": []
+  "exclude": [],
+  "references": [
+    {"path": "../lit-html"},
+    {"path": "../lit-element"},
+    {"path": "../reactive-element"}
+  ]
 }
