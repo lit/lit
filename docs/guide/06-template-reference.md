@@ -341,7 +341,7 @@ html`${cache(data.showDetails
 
 When lit-html re-renders a template, it only updates the modified portions: it doesn't create or remove any more DOM than it needs to. But when you switch from one template to another, lit-html needs to remove the old DOM and render a new DOM tree. 
 
-The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and and update it with the latest data.
+The `cache` directive caches the generated DOM for a given binding and input template. In the example above, it would cache the DOM for both the `summaryView` and `detailView` templates. When you switch from one view to another, lit-html just needs to swap in the cached version of the new view, and update it with the latest data.
 
 ### classMap
 
@@ -444,7 +444,7 @@ Example:
 html`<input .value=${live(x)}>`
 ```
 
-`live()` performs a strict equality check agains the live DOM value, and if
+`live()` performs a strict equality check against the live DOM value, and if
 the new value is equal to the live value, does nothing. This means that
 `live()` should not be used when the binding will cause a type conversion. If
 you use `live()` with an attribute binding, make sure that only strings are
@@ -498,7 +498,7 @@ let styles = { backgroundColor: 'blue', color: 'white' };
 html`<p style=${styleMap(styles)}>Hello style!</p>`;
 ```
 
-For CSS properties that contain dashes, you can either use the camel-case equivalent, or put the property name in quotes. For example, you can write the the CSS property `font-family` as either `fontFamily` or `'font-family'`:
+For CSS properties that contain dashes, you can either use the camel-case equivalent, or put the property name in quotes. For example, you can write the CSS property `font-family` as either `fontFamily` or `'font-family'`:
 
 ```js
 { fontFamily: 'roboto' }
