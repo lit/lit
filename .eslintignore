@@ -6,6 +6,7 @@
 node_modules/
 lerna-debug.log
 *.tgz
+*.tsbuildinfo
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/

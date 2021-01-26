@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "es2020",
     "module": "esnext",
     "lib": ["es2019", "ES2020.String"],
@@ -19,5 +20,6 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
-  "exclude": []
+  "exclude": [],
+  "references": [{"path": "../lit-html"}, {"path": "../lit-element"}]
 }
