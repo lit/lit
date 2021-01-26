@@ -21,7 +21,7 @@
     "docs:assets": "cp node_modules/prismjs/themes/prism-okaidia.css docs/",
     "docs:serve": "wds --root-dir=docs --node-resolve --watch",
     "analyze": "wca analyze \"src/**/*.ts\" --outFile custom-elements.json",
-    "serve": "wds --node-resolve --watch",
+    "serve": "wds --watch",
     "test": "wtr",
     "test:watch": "npm run test -- --watch",
     "checksize": "rollup -c ; cat my-element.bundled.js | gzip -9 | wc -c ; rm my-element.bundled.js"
@@ -29,12 +29,13 @@
   "keywords": [
     "web-components",
     "lit-element",
-    "typescript"
+    "typescript",
+    "lit"
   ],
   "author": "The Polymer Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "lit-element": "next-major"
+    "lit": "^2.0.0-pre.1"
   },
   "devDependencies": {
     "@11ty/eleventy": "^0.10.0",

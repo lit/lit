@@ -12,10 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// TODO(kschaaf): upgrade to `lit` package once
-// https://github.com/Polymer/lit-html/pull/1523 is merged
-import {LitElement, html, css} from 'lit-element';
-import {customElement, property} from 'lit-element/decorators';
+import {LitElement, html, css} from 'lit';
+import {customElement, property} from 'lit/decorators';
 
 /**
  * An example element.
