@@ -43,11 +43,11 @@
     "/controllers/async-task.js.map"
   ],
   "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
+    "build": "npm run clean && tsc --build && rollup -c",
     "clean": "rm -rf index.{js,js.map,d.ts} development/ controllers/ frameworks/",
     "dev": "scripts/dev.sh",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
+    "build:ts": "tsc --build",
+    "build:ts:watch": "tsc --build --watch",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../tests && npx wtr '../labs/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
