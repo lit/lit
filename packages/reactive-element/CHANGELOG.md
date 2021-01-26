@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- (Since 1.0.0-pre.1) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
 - (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.
 - (Since 1.0.0-pre.1) Renamed `Controller` to `ReactiveController`.
 
