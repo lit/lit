@@ -5,7 +5,7 @@ A controller for Lit that renders asynchronous tasks.
 ## Overview
 
 Often a Lit element needs to request, process, and render remote data, for
-example when querying a REST API for data to be displayed. The `AsyncTask`
+example when querying a REST API for data to be displayed. The `Task`
 controller provides a simple pattern for encapsulating this behavior in an
 easily reusable way. The controller integrates with a host Lit element. The
 user provides a task function and a dependencies function. Whenever the element
@@ -32,7 +32,7 @@ $ npm install @lit-labs/task
 Here's an example:
 
 ```ts
-import {AsyncTask, TaskStatus} from '@lit-labs/task';
+import {Task, TaskStatus} from '@lit-labs/task';
 // ...
 
 class MyElement extends LitElement {
@@ -40,7 +40,7 @@ class MyElement extends LitElement {
   @state()
   private _userId: number;
 
-  private _apiTask = new AsyncTask(
+  private _apiTask = new Task(
       this,
       ([userId]) =>
         fetch(`//example.com/api/userInfo?${userId}`)

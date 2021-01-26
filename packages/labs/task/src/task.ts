@@ -68,7 +68,7 @@ export type StatusRenderer = {
  * class MyElement extends ReactiveElement {
  *   url = 'example.com/api';
  *   id = 0;
- *   task = new AsyncTask(
+ *   task = new Task(
  *     this,
  *     ([url, id]) =>
  *       fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
@@ -84,7 +84,7 @@ export type StatusRenderer = {
  *   }
  * }
  */
-export class AsyncTask {
+export class Task {
   private _previousDeps: Deps = [];
   private _task: TaskFunction;
   private _getDependencies: DepsFunction;
