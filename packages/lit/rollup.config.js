@@ -41,7 +41,7 @@ export default litProdConfig({
     'directives/unsafe-html',
     'directives/unsafe-svg',
     'directives/until',
-    'disconnectable-directive',
+    'async-directive',
     'html',
     'hydrate-support',
     'hydrate',

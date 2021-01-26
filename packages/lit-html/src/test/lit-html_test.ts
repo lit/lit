@@ -31,7 +31,7 @@ import {
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
 import {repeat} from '../directives/repeat.js';
-import {DisconnectableDirective} from '../disconnectable-directive.js';
+import {AsyncDirective} from '../async-directive.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1726,7 +1726,7 @@ suite('lit-html', () => {
 
     suite('async directives', () => {
       const aDirective = directive(
-        class extends DisconnectableDirective {
+        class extends AsyncDirective {
           value: unknown;
           promise!: Promise<unknown>;
           render(_promise: Promise<unknown>) {
@@ -1779,14 +1779,14 @@ suite('lit-html', () => {
         const log: string[] = [];
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
-        // Async render a TemplateResult containing a DisconnectableDirective
+        // Async render a TemplateResult containing a AsyncDirective
         let promise: Promise<unknown> = Promise.resolve(
           html`${disconnectingDirective(log, 'dd', 'dd')}`
         );
         const part = assertRender(template(promise), `<div>initial</div>`);
         await promise;
         assertContent(`<div>dd</div>`);
-        // Eneuque an async clear of the TemplateResult+DisconnectableDirective
+        // Eneuque an async clear of the TemplateResult+AsyncDirective
         promise = Promise.resolve(nothing);
         assertRender(template(promise), `<div>dd</div>`);
         assert.deepEqual(log, []);
@@ -1797,7 +1797,7 @@ suite('lit-html', () => {
         assert.deepEqual(log, ['disconnected-dd']);
         assertContent(`<div>dd</div>`);
         // Re-connect the tree, which should clear the part but not reconnect
-        // the DisconnectableDirective that was cleared
+        // the AsyncDirective that was cleared
         part.setConnected(true);
         assertRender(template(promise), `<div></div>`);
         assert.deepEqual(log, ['disconnected-dd']);
@@ -1861,7 +1861,7 @@ suite('lit-html', () => {
   });
 
   const disconnectingDirective = directive(
-    class extends DisconnectableDirective {
+    class extends AsyncDirective {
       log!: Array<string>;
       id!: string;
 
@@ -1992,7 +1992,7 @@ suite('lit-html', () => {
     assert.deepEqual(log, ['disconnected-right']);
   });
 
-  test('directives returned from other DisconnectableDirectives can be disconnected', () => {
+  test('directives returned from other AsyncDirectives can be disconnected', () => {
     const log: Array<string> = [];
     const go = (
       clearAll: boolean,

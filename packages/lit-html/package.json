@@ -21,9 +21,9 @@
       "development": "./development/directive-helpers.js",
       "default": "./directive-helpers.js"
     },
-    "./disconnectable-directive.js": {
-      "development": "./development/disconnectable-directive.js",
-      "default": "./disconnectable-directive.js"
+    "./async-directive.js": {
+      "development": "./development/async-directive.js",
+      "default": "./async-directive.js"
     },
     "./polyfill-support.js": {
       "development": "./development/polyfill-support.js",
@@ -49,7 +49,7 @@
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} disconnectable-directive.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
+    "clean": "rm -rf lit-html.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} async-directive.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
@@ -69,10 +69,10 @@
     "/directive-helpers.d.ts.map",
     "/directive-helpers.js",
     "/directive-helpers.js.map",
-    "/disconnectable-directive.d.ts",
-    "/disconnectable-directive.d.ts.map",
-    "/disconnectable-directive.js",
-    "/disconnectable-directive.js.map",
+    "/async-directive.d.ts",
+    "/async-directive.d.ts.map",
+    "/async-directive.js",
+    "/async-directive.js.map",
     "/hydrate.js",
     "/hydrate.js.map",
     "/hydrate.d.ts",

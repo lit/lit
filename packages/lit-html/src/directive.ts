@@ -117,7 +117,7 @@ export abstract class Directive {
   //@internal
   _$parent: Disconnectable;
 
-  // These will only exist on the DisconnectableDirective subclass
+  // These will only exist on the AsyncDirective subclass
   //@internal
   _$disconnetableChildren?: Set<Disconnectable>;
   //@internal

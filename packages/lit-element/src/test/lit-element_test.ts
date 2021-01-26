@@ -20,10 +20,7 @@ import {
   Part,
   nothing,
 } from '../lit-element.js';
-import {
-  directive,
-  DisconnectableDirective,
-} from 'lit-html/disconnectable-directive.js';
+import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 import {
   canTestLitElement,
   generateElementName,
@@ -354,7 +351,7 @@ import {ReactiveController} from '@lit/reactive-element';
       const log: string[] = [];
 
       const d = directive(
-        class extends DisconnectableDirective {
+        class extends AsyncDirective {
           id!: unknown;
           render(id: unknown) {
             log.push(`render-${id}`);
@@ -608,7 +605,7 @@ import {ReactiveController} from '@lit/reactive-element';
   test('directive as controller can be added/removed via connect/disconnect', async () => {
     const log: string[] = [];
     const controllerDirective = directive(
-      class extends DisconnectableDirective {
+      class extends AsyncDirective {
         part?: Part;
         host?: Host;
         private _controller?: ReactiveController;

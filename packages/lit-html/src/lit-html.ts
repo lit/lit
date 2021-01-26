@@ -876,7 +876,7 @@ class ChildPartImpl {
   _$parent: Disconnectable | undefined;
 
   // The following fields will be patched onto ChildParts when required by
-  // DisconnectableDirective
+  // AsyncDirective
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
@@ -905,7 +905,7 @@ class ChildPartImpl {
   }
 
   /**
-   * Sets the connection state for any `DisconnectableDirectives` contained
+   * Sets the connection state for any `AsyncDirectives` contained
    * within this part and runs their `disconnected` or `reconnected`, according
    * to the `isConnected` argument.
    */

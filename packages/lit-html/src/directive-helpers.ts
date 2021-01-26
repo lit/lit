@@ -152,7 +152,7 @@ export const insertPart = (
  * should return a value from `update`/`render` to update their part state.
  *
  * For directives that require setting their part value asynchronously, they
- * should extend `DisconnectableDirective` and call `this.setValue()`.
+ * should extend `AsyncDirective` and call `this.setValue()`.
  *
  * @param part Part to set
  * @param value Value to set

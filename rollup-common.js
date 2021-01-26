@@ -92,14 +92,14 @@ const stableProperties = {
   // lit-element: ReactiveElement (used bby ssr-support)
   _$changedProperties: 'P',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
-  // disconnectable-directive)
+  // async-directive)
   _$parent: 'Q',
   _$disconnetableChildren: 'R',
-  // disconnectable-directive: DisconnectableDirective
+  // async-directive: AsyncDirective
   _$setDirectiveConnected: 'S',
-  // lit-html: ChildPart (added by disconnectable-directive)
+  // lit-html: ChildPart (added by async-directive)
   _$setChildPartConnected: 'T',
-  // lit-html: ChildPart (added by disconnectable-directive)
+  // lit-html: ChildPart (added by async-directive)
   _$reparentDisconnectables: 'U',
   // lit-html: ChildPart (used by directive-helpers)
   _$clear: 'V',
