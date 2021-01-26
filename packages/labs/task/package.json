@@ -25,7 +25,7 @@
     "/async-task.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
+    "build": "npm run clean && tsc --build && rollup -c",
     "clean": "rm -rf index.{js,js.map,d.ts} development/",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
