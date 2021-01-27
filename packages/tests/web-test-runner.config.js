@@ -142,7 +142,6 @@ const browsers = (process.env.BROWSERS || 'preset:local')
   .flat();
 
 const require = createRequire(import.meta.url);
-const seenDevModeLogs = new Set();
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
