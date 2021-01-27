@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "build": "npm run clean && tsc --build && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/ tsconfig.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
