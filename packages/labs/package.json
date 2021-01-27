@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "build": "npm run clean && tsc --build && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/ controllers/ frameworks/",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/ controllers/ frameworks/ tsconfig.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
