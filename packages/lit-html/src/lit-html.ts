@@ -923,11 +923,10 @@ class ChildPartImpl {
       // Non-rendering child values. It's important that these do not render
       // empty text nodes to avoid issues with preventing default <slot>
       // fallback content.
-      if (
-        (value === nothing || value == null || value === '') &&
-        this._$committedValue !== nothing
-      ) {
-        this._$clear();
+      if (value === nothing || value == null || value === '') {
+        if (this._$committedValue !== nothing) {
+          this._$clear();
+        }
         this._$committedValue = nothing;
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
