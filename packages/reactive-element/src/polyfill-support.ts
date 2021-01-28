@@ -11,6 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 /**
  * ReactiveElement patch to support browsers without native web components.
  *
