@@ -506,6 +506,13 @@ suite('lit-html', () => {
   });
 
   suite('text', () => {
+    const assertNoRenderedNodes = () => {
+      const children = Array.from(container.querySelector('div')!.childNodes);
+      assert.isEmpty(
+        children.filter((node) => node.nodeType !== Node.COMMENT_NODE)
+      );
+    };
+
     test('renders plain text expression', () => {
       render(html`test`, container);
       assertContent('test');
@@ -521,14 +528,17 @@ suite('lit-html', () => {
       assertContent('<div>123</div>');
     });
 
-    test('renders undefined as empty string', () => {
-      render(html`<div>${undefined}</div>`, container);
-      assertContent('<div></div>');
-    });
-
-    test('renders null as empty string', () => {
-      render(html`<div>${null}</div>`, container);
-      assertContent('<div></div>');
+    [nothing, undefined, null, ''].forEach((value: unknown) => {
+      test(`renders '${
+        value === '' ? 'empty string' : value === nothing ? 'nothing' : value
+      }' as nothing`, () => {
+        const template = (i: any) => html`<div>${i}</div>`;
+        render(template(value), container);
+        assertNoRenderedNodes();
+        render(template('foo'), container);
+        render(template(value), container);
+        assertNoRenderedNodes();
+      });
     });
 
     test('renders noChange', () => {
@@ -536,16 +546,6 @@ suite('lit-html', () => {
       render(template('foo'), container);
       render(template(noChange), container);
       assertContent('<div>foo</div>');
-    });
-
-    test('renders nothing', () => {
-      const template = (i: any) => html`<div>${i}</div>`;
-      render(template('foo'), container);
-      render(template(nothing), container);
-      const children = Array.from(container.querySelector('div')!.childNodes);
-      assert.isEmpty(
-        children.filter((node) => node.nodeType !== Node.COMMENT_NODE)
-      );
     });
 
     test.skip('renders a Symbol', () => {
@@ -907,6 +907,11 @@ suite('lit-html', () => {
 
     test('renders undefined in attributes', () => {
       render(html`<div attribute="${undefined as any}"></div>`, container);
+      assertContent('<div attribute=""></div>');
+    });
+
+    test('renders null in attributes', () => {
+      render(html`<div attribute="${null as any}"></div>`, container);
       assertContent('<div attribute=""></div>');
     });
 
