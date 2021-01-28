@@ -924,13 +924,11 @@ class ChildPartImpl {
       // empty text nodes to avoid issues with preventing default <slot>
       // fallback content.
       if (
-        value === nothing ||
-        value === null ||
-        value === undefined ||
-        value === ''
+        (value === nothing || value == null || value === '') &&
+        this._$committedValue !== nothing
       ) {
         this._$clear();
-        this._$committedValue = value;
+        this._$committedValue = nothing;
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
