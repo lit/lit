@@ -677,6 +677,9 @@ export abstract class ReactiveElement
 
   addController(controller: ReactiveController) {
     (this.__controllers ??= []).push(controller);
+    if (this.isConnected) {
+      controller.hostConnected?.();
+    }
   }
 
   removeController(controller: ReactiveController) {
@@ -743,7 +746,7 @@ export abstract class ReactiveElement
       }).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating(true);
-    this.__controllers?.forEach((c) => c.connected?.());
+    this.__controllers?.forEach((c) => c.hostConnected?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
     if (this.__enableConnection) {
@@ -765,7 +768,7 @@ export abstract class ReactiveElement
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.disconnected?.());
+    this.__controllers?.forEach((c) => c.hostDisconnected?.());
     this.__pendingConnectionPromise = new Promise(
       (r) => (this.__enableConnection = r)
     );
@@ -905,7 +908,7 @@ export abstract class ReactiveElement
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? requestUpdateThenable as unknown as void : undefined;
+    return DEV_MODE ? ((requestUpdateThenable as unknown) as void) : undefined;
   }
 
   /**
@@ -1001,9 +1004,8 @@ export abstract class ReactiveElement
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.__controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this.__controllers?.forEach((c) => c.update?.());
+        this.__controllers?.forEach((c) => c.hostUpdate?.());
         this.update(changedProperties);
       } else {
         this.__markUpdated();
@@ -1031,7 +1033,7 @@ export abstract class ReactiveElement
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this.__controllers?.forEach((c) => c.updated?.());
+    this.__controllers?.forEach((c) => c.hostUpdated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1160,13 +1162,19 @@ if (DEV_MODE) {
       ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };
-  ReactiveElement.enableWarning = function (this: typeof ReactiveElement, warning: Warnings) {
+  ReactiveElement.enableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     if (this.enabledWarnings!.indexOf(warning) < 0) {
       this.enabledWarnings!.push(warning);
     }
   };
-  ReactiveElement.disableWarning = function (this: typeof ReactiveElement, warning: Warnings) {
+  ReactiveElement.disableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     const i = this.enabledWarnings!.indexOf(warning);
     if (i >= 0) {

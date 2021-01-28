@@ -105,7 +105,7 @@ export class Task {
     this._getDependencies = getDependencies;
   }
 
-  updated() {
+  hostUpdated() {
     this._completeTask();
   }
 

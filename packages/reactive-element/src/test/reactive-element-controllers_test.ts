@@ -23,7 +23,6 @@ import {assert} from '@esm-bundle/chai';
 suite('ReactiveElement controllers', () => {
   class MyController implements ReactiveController {
     host: ReactiveElement;
-    willUpdateCount = 0;
     updateCount = 0;
     updatedCount = 0;
     connectedCount = 0;
@@ -35,36 +34,30 @@ suite('ReactiveElement controllers', () => {
       this.host.addController(this);
     }
 
-    connected() {
+    hostConnected() {
       this.connectedCount++;
-      this.callbackOrder.push('connectedCallback');
+      this.callbackOrder.push('hostConnected');
     }
 
-    disconnected() {
+    hostDisconnected() {
       this.disconnectedCount++;
-      this.callbackOrder.push('disconnectedCallback');
+      this.callbackOrder.push('hostDisconnected');
     }
 
-    willUpdate() {
-      this.willUpdateCount++;
-      this.callbackOrder.push('willUpdate');
-    }
-
-    update() {
+    hostUpdate() {
       this.updateCount++;
-      this.callbackOrder.push('update');
+      this.callbackOrder.push('hostUpdate');
     }
 
-    updated() {
+    hostUpdated() {
       this.updatedCount++;
-      this.callbackOrder.push('updated');
+      this.callbackOrder.push('hostUpdated');
     }
   }
 
   class A extends ReactiveElement {
     static properties = {foo: {}};
     foo = 'foo';
-    willUpdateCount = 0;
     updateCount = 0;
     updatedCount = 0;
     connectedCount = 0;
@@ -80,11 +73,6 @@ suite('ReactiveElement controllers', () => {
     disconnectedCallback() {
       this.disconnectedCount++;
       super.disconnectedCallback();
-    }
-
-    willUpdate(changedProperties: PropertyValues) {
-      this.willUpdateCount++;
-      super.willUpdate(changedProperties);
     }
 
     update(changedProperties: PropertyValues) {
@@ -116,7 +104,7 @@ suite('ReactiveElement controllers', () => {
     }
   });
 
-  test('controllers can implement connectedCallback/disconnectedCallback', () => {
+  test('controllers can implement hostConnected/hostDisconnected', () => {
     assert.equal(el.connectedCount, 1);
     assert.equal(el.disconnectedCount, 0);
     assert.equal(el.controller.connectedCount, 1);
@@ -133,19 +121,27 @@ suite('ReactiveElement controllers', () => {
     assert.equal(el.controller.disconnectedCount, 1);
   });
 
-  test('controllers can implement willUpdate/update/updated', async () => {
-    assert.equal(el.willUpdateCount, 1);
+  test('controllers added after an element is connected call `hostConnected`', () => {
+    const controller = new MyController(el);
+    el.addController(controller);
+    assert.equal(el.controller.connectedCount, 1);
+    assert.equal(el.controller.disconnectedCount, 0);
+    container.removeChild(el);
+    assert.equal(el.controller.disconnectedCount, 1);
+    container.appendChild(el);
+    assert.equal(el.controller.connectedCount, 2);
+    assert.equal(el.controller.disconnectedCount, 1);
+  });
+
+  test('controllers can implement hostUpdate/hostUpdated', async () => {
     assert.equal(el.updateCount, 1);
     assert.equal(el.updatedCount, 1);
-    assert.equal(el.controller.willUpdateCount, 1);
     assert.equal(el.controller.updateCount, 1);
     assert.equal(el.controller.updatedCount, 1);
     el.foo = 'new';
     await el.updateComplete;
-    assert.equal(el.willUpdateCount, 2);
     assert.equal(el.updateCount, 2);
     assert.equal(el.updatedCount, 2);
-    assert.equal(el.controller.willUpdateCount, 2);
     assert.equal(el.controller.updateCount, 2);
     assert.equal(el.controller.updatedCount, 2);
   });
@@ -153,7 +149,6 @@ suite('ReactiveElement controllers', () => {
   test('controllers can be removed', async () => {
     assert.equal(el.controller.connectedCount, 1);
     assert.equal(el.controller.disconnectedCount, 0);
-    assert.equal(el.controller.willUpdateCount, 1);
     assert.equal(el.controller.updateCount, 1);
     assert.equal(el.controller.updatedCount, 1);
     el.removeController(el.controller);
@@ -162,28 +157,25 @@ suite('ReactiveElement controllers', () => {
     el.remove();
     assert.equal(el.controller.connectedCount, 1);
     assert.equal(el.controller.disconnectedCount, 0);
-    assert.equal(el.controller.willUpdateCount, 1);
     assert.equal(el.controller.updateCount, 1);
     assert.equal(el.controller.updatedCount, 1);
   });
 
   test('controllers callback order', async () => {
     assert.deepEqual(el.controller.callbackOrder, [
-      'connectedCallback',
-      'willUpdate',
-      'update',
-      'updated',
+      'hostConnected',
+      'hostUpdate',
+      'hostUpdated',
     ]);
     el.controller.callbackOrder = [];
     el.foo = 'new';
     await el.updateComplete;
     assert.deepEqual(el.controller.callbackOrder, [
-      'willUpdate',
-      'update',
-      'updated',
+      'hostUpdate',
+      'hostUpdated',
     ]);
     el.controller.callbackOrder = [];
     container.removeChild(el);
-    assert.deepEqual(el.controller.callbackOrder, ['disconnectedCallback']);
+    assert.deepEqual(el.controller.callbackOrder, ['hostDisconnected']);
   });
 });

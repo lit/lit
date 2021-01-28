@@ -16,7 +16,10 @@ import {html, render} from '../../lit-html.js';
 import {cache} from '../../directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import { directive, DisconnectableDirective } from '../../disconnectable-directive.js';
+import {
+  directive,
+  DisconnectableDirective,
+} from '../../disconnectable-directive.js';
 
 suite('cache directive', () => {
   let container: HTMLDivElement;
@@ -139,27 +142,31 @@ suite('cache directive', () => {
   });
 
   test('async directives disconnet/reconnect when moved in/out of cache', () => {
-    const disconnectable = directive(class extends DisconnectableDirective {
-      log: string[] | undefined;
-      id: string | undefined;
-      render(log: string[], id: string) {
-        this.log = log;
-        this.id = id;
-        this.log.push(`render-${this.id}`);
-        return id;
+    const disconnectable = directive(
+      class extends DisconnectableDirective {
+        log: string[] | undefined;
+        id: string | undefined;
+        render(log: string[], id: string) {
+          this.log = log;
+          this.id = id;
+          this.log.push(`render-${this.id}`);
+          return id;
+        }
+        disconnected() {
+          this.log!.push(`disconnected-${this.id}`);
+        }
+        reconnected() {
+          this.log!.push(`reconnected-${this.id}`);
+        }
       }
-      disconnected() {
-        this.log!.push(`disconnected-${this.id}`);
-      }
-      reconnected() {
-        this.log!.push(`reconnected-${this.id}`);
-      }
-    });
+    );
     const renderCached = (log: string[], condition: boolean) =>
       render(
-        html`<div>${cache(condition ? 
-          html`<div>${disconnectable(log, 'a')}</div>` :
-          html`<span>${disconnectable(log, 'b')}</span>`)}</div>`,
+        html`<div>${cache(
+          condition
+            ? html`<div>${disconnectable(log, 'a')}</div>`
+            : html`<span>${disconnectable(log, 'b')}</span>`
+        )}</div>`,
         container
       );
     const log: string[] = [];
