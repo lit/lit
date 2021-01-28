@@ -34,7 +34,8 @@ const browserPresets = {
   sauce: [
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
-    'sauce:macOS 10.15/Safari@latest',
+    // TODO(kshaaf): re-enable Safari when #1550 is addressed.
+    //'sauce:macOS 10.15/Safari@latest',
     // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
     'sauce:Windows 7/Internet Explorer@11', // Browser start timeout
   ],
