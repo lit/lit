@@ -16,6 +16,6 @@ import {litProdConfig} from '../../../rollup-common.js';
 
 export default litProdConfig({
   classPropertyPrefix: '⍶',
-  entryPoints: ['index', 'async-task'],
+  entryPoints: ['index', 'task'],
   external: ['@lit/reactive-element'],
 });

@@ -22,7 +22,7 @@
     "/src/",
     "!/src/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/async-task.{d.ts,d.ts.map,js,js.map}"
+    "/task.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && tsc --build && rollup -c",
