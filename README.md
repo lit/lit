@@ -13,8 +13,8 @@ following links for details on the changes being made:
 
 - [`lit-html`](./packages/lit-html)
 - [`lit-element`](./packages/lit-element)
-- [`lit-element-starter-ts`](./packages/lit-element-starter-ts)
-- [`lit-element-starter-js`](./packages/lit-element-starter-js)
+- [`lit-starter-ts`](./packages/lit-starter-ts)
+- [`lit-starter-js`](./packages/lit-starter-js)
 - [`@lit/reactive-element`](./packages/reactive-element)
 - [`lit-ssr`](./packages/lit-ssr)
 - [`labs`](./packages/labs)
@@ -55,7 +55,7 @@ See individual package READMEs for details on developing for a specific package.
 
 ### Exporting starter templates
 
-Although we maintain `lit-element-starter-ts` and `lit-element-starter-js` in
+Although we maintain `lit-starter-ts` and `lit-starter-js` in
 the monorepo for ease of integration testing, the source is exported back out to
 individual repos ([ts](https://github.com/PolymerLabs/lit-element-starter-ts),
 [js](https://github.com/PolymerLabs/lit-element-starter-js)) as these are
@@ -69,10 +69,10 @@ branch on the template repos (`lit-next` branch shown in example):
 ```bash
 # Export TS template
 git remote add lit-element-starter-ts git@github.com:PolymerLabs/lit-element-starter-ts.git
-git subtree push --prefix=packages/lit-element-starter-ts/ lit-element-starter-ts lit-next
+git subtree push --prefix=packages/lit-starter-ts/ lit-starter-element-ts lit-next
 # Export JS template
-git remote add lit-element-starter-js git@github.com:PolymerLabs/lit-element-starter-js.git
-git subtree push --prefix=packages/lit-element-starter-js/ lit-element-starter-js lit-next
+git remote add lit-element-starter-js git@github.com:PolymerLabs/lit-starter-js.git
+git subtree push --prefix=packages/lit-starter-js/ lit-starter-element-js lit-next
 ```
 
 Notes:

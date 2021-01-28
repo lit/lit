@@ -37,12 +37,12 @@
 			"path": "packages/benchmarks"
 		},
 		{
-			"name": "lit-element-starter-js",
-			"path": "packages/lit-element-starter-js"
+			"name": "lit-starter-js",
+			"path": "packages/lit-starter-js"
 		},
 		{
-			"name": "lit-element-starter-ts",
-			"path": "packages/lit-element-starter-ts"
+			"name": "lit-starter-ts",
+			"path": "packages/lit-starter-ts"
 		},
 		{
 			"name": "lit-next",

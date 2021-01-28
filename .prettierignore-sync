@@ -6,10 +6,10 @@ packages/benchmarks/.gitignore
 packages/labs/.gitignore
 packages/lit/.gitignore
 packages/lit-element/.gitignore
-packages/lit-element-starter-ts/.gitignore
-packages/lit-element-starter-ts/.eslintignore
-packages/lit-element-starter-js/.gitignore
-packages/lit-element-starter-js/.eslintignore
+packages/lit-starter-ts/.gitignore
+packages/lit-starter-ts/.eslintignore
+packages/lit-starter-js/.gitignore
+packages/lit-starter-js/.eslintignore
 packages/lit-html/.gitignore
 packages/lit-ssr/.gitignore
 packages/localize/.gitignore
