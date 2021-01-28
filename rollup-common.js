@@ -89,16 +89,20 @@ const stableProperties = {
   _$handlesPrepareStyles: 'N',
   // lit-element: ReactiveElement (used bby ssr-support)
   _$attributeToProperty: 'O',
+  // lit-element: ReactiveElement (used bby ssr-support)
+  _$changedProperties: 'P',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // disconnectable-directive)
-  _$parent: 'P',
-  _$disconnetableChildren: 'Q',
+  _$parent: 'Q',
+  _$disconnetableChildren: 'R',
   // disconnectable-directive: DisconnectableDirective
-  _$setDirectiveConnected: 'R',
+  _$setDirectiveConnected: 'S',
   // lit-html: ChildPart (added by disconnectable-directive)
-  _$setChildPartConnected: 'S',
+  _$setChildPartConnected: 'T',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$reparentDisconnectables: 'U',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'T',
+  _$clear: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and

@@ -25,11 +25,11 @@
     "/create-component.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
-    "clean": "rm -rf index.{js,js.map,d.ts} development/",
+    "build": "npm run clean && tsc --build && rollup -c",
+    "clean": "rm -rf index.{js,js.map,d.ts} development/ tsconfig.tsbuildinfo",
     "dev": "scripts/dev.sh",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
+    "build:ts": "tsc --build",
+    "build:ts:watch": "tsc --build --watch",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/react/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
@@ -52,11 +52,10 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "@types/react": "^16.9.50",
-    "@types/react-dom": "^16.9.8"
-  },
-  "dependencies": {
+    "@types/react-dom": "^16.9.8",
     "@lit/reactive-element": "^1.0.0-pre.1"
   },
+  "dependencies": {},
   "publishConfig": {
     "access": "public"
   }

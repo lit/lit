@@ -21,4 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+<<<<<<< HEAD:packages/labs/task/CHANGELOG.md
+
+- # Adds `AsyncTask` controller which can be used to perform tasks when a host element updates. When the task completes, an update is requested on the host element and the task value can be used as desired.
 - Adds react component wrapper for custom elements. Use by calling `createComponent`.
+  > > > > > > > lit-next:packages/labs/react/CHANGELOG.md

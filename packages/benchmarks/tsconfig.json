@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "es2020",
     "module": "esnext",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
@@ -21,7 +22,13 @@
   "include": [
     "lit-element/**/*.ts",
     "reactive-element/**/*.ts",
-    "lit-html/**/*.ts"
+    "lit-html/**/*.ts",
+    "utils/**/*.ts"
   ],
-  "exclude": []
+  "exclude": [],
+  "references": [
+    {"path": "../lit-html"},
+    {"path": "../lit-element"},
+    {"path": "../reactive-element"}
+  ]
 }

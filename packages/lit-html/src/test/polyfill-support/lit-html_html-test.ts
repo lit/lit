@@ -440,8 +440,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).removeChild(el);
   });
 
-  // TODO(justinfagnani): enable when #1537 is fixed
-  test.skip('`repeat` in slots', () => {
+  test('`repeat` in slots', () => {
     const el = document.createElement('div');
     const beforeSlotRef = createRef();
     const afterSlotRef = createRef();
@@ -529,9 +528,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).removeChild(el);
   });
 
-  // TODO(kschaaf): enable when #1535 is fixed
-  // TODO(justinfagnani): enable when #1537 is fixed
-  test.skip('`cache` in slots', () => {
+  test('`cache` in slots', () => {
     const el = document.createElement('div');
     const beforeSlotRef = createRef();
     const afterSlotRef = createRef();

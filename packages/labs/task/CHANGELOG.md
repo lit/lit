@@ -21,4 +21,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Adds `AsyncTask` controller which can be used to perform tasks when a host element updates. When the task completes, an update is requested on the host element and the task value can be used as desired.
+- Adds `Task` controller which can be used to perform tasks when a host element updates. When the task completes, an update is requested on the host element and the task value can be used as desired.

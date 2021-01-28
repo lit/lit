@@ -98,6 +98,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   supports ChildParts. Directives that require updating their container
   part outside the `render`/`update` lifecycle should extend
   `DisconnectableDirective` and use `this.setValue()`.
+- [Breaking] (since 2.0.0-pre.3) [Breaking] The `eventContext` render option has been changed to `host`.
 
   <!-- ### Fixed -->
   <!-- ### Removed -->
@@ -257,8 +258,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.13.0] - 2018-11-08
 
 ### Changed
-
-= [Breaking] The `eventContext` render option has been changed to `host`.
 
 - [Breaking] Directives are now defined by passing the entire directive factory function to `directive()`. ([#562](https://github.com/Polymer/lit-html/pull/562))
 

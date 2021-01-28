@@ -152,7 +152,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
   };
 
   const scopedTemplateCache = new Map<
-    string,
+    string | undefined,
     Map<TemplateStringsArray, PatchableTemplate>
   >();
 
@@ -254,6 +254,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    * by element name.
    */
   childPartProto._$getTemplate = function (
+    this: PatchableChildPart,
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {

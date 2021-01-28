@@ -6,6 +6,7 @@
 node_modules/
 lerna-debug.log
 *.tgz
+*.tsbuildinfo
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -21,7 +22,7 @@ packages/benchmarks/**/*.js.map
 packages/labs/task/development/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
-packages/labs/task/async-task.*
+packages/labs/task/task.*
 packages/labs/react/development/
 packages/labs/react/node_modules/
 packages/labs/react/index.*

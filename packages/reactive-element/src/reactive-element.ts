@@ -298,8 +298,11 @@ export abstract class ReactiveElement
   extends HTMLElement
   implements ReactiveControllerHost {
   // Note, these are patched in only in DEV_MODE.
+  /** @nocollapse */
   static enabledWarnings?: Warnings[];
+  /** @nocollapse */
   static enableWarning?: (type: Warnings) => void;
+  /** @nocollapse */
   static disableWarning?: (type: Warnings) => void;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
@@ -311,6 +314,7 @@ export abstract class ReactiveElement
    * Maps attribute names to properties; for example `foobar` attribute to
    * `fooBar` property. Created lazily on user subclasses when finalizing the
    * class.
+   * @nocollapse
    */
   private static __attributeToPropertyMap: AttributeMap;
 
@@ -322,6 +326,7 @@ export abstract class ReactiveElement
   /**
    * Memoized list of all element properties, including any superclass properties.
    * Created lazily on user subclasses when finalizing the class.
+   * @nocollapse
    */
   static elementProperties?: PropertyDeclarationMap;
 
@@ -347,18 +352,21 @@ export abstract class ReactiveElement
    * private property set with the `state: true` option should be used. When
    * needed, state properties can be initialized via public properties to
    * facilitate complex interactions.
+   * @nocollapse
    */
   static properties: PropertyDeclarations;
 
   /**
    * Memoized list of all element styles.
    * Created lazily on user subclasses when finalizing the class.
+   * @nocollapse
    */
   static elementStyles?: CSSResultFlatArray;
 
   /**
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
+   * @nocollapse
    */
   static styles?: CSSResultGroup;
 
@@ -563,6 +571,7 @@ export abstract class ReactiveElement
    *
    * Note, these options are used in `createRenderRoot`. If this method
    * is customized, options should be respected if possible.
+   * @nocollapse
    */
   static shadowRootOptions: ShadowRootInit = {mode: 'open'};
 
@@ -634,8 +643,10 @@ export abstract class ReactiveElement
   /**
    * Map with keys for any properties that have changed since the last
    * update cycle with previous values.
+   *
+   * @internal
    */
-  private __changedProperties!: PropertyValues;
+  _$changedProperties!: PropertyValues;
 
   /**
    * Map with keys of properties that should be reflected when updated.
@@ -657,7 +668,7 @@ export abstract class ReactiveElement
     this.__updatePromise = new Promise<boolean>(
       (res) => (this.enableUpdating = res)
     );
-    this.__changedProperties = new Map();
+    this._$changedProperties = new Map();
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
@@ -865,7 +876,7 @@ export abstract class ReactiveElement
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
-  ) {
+  ): void {
     let shouldRequestUpdate = true;
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -874,8 +885,8 @@ export abstract class ReactiveElement
         (this.constructor as typeof ReactiveElement).getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
-        if (!this.__changedProperties.has(name)) {
-          this.__changedProperties.set(name, oldValue);
+        if (!this._$changedProperties.has(name)) {
+          this._$changedProperties.set(name, oldValue);
         }
         // Add to reflecting properties set.
         // Note, it's important that every change has a chance to add the
@@ -897,7 +908,7 @@ export abstract class ReactiveElement
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? requestUpdateThenable : undefined;
+    return DEV_MODE ? ((requestUpdateThenable as unknown) as void) : undefined;
   }
 
   /**
@@ -989,7 +1000,7 @@ export abstract class ReactiveElement
       this.__instanceProperties = undefined;
     }
     let shouldUpdate = false;
-    const changedProperties = this.__changedProperties;
+    const changedProperties = this._$changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
@@ -1041,7 +1052,7 @@ export abstract class ReactiveElement
   }
 
   private __markUpdated() {
-    this.__changedProperties = new Map();
+    this._$changedProperties = new Map();
     this.isUpdatePending = false;
   }
 
@@ -1151,13 +1162,19 @@ if (DEV_MODE) {
       ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };
-  ReactiveElement.enableWarning = function (warning: Warnings) {
+  ReactiveElement.enableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     if (this.enabledWarnings!.indexOf(warning) < 0) {
       this.enabledWarnings!.push(warning);
     }
   };
-  ReactiveElement.disableWarning = function (warning: Warnings) {
+  ReactiveElement.disableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     const i = this.enabledWarnings!.indexOf(warning);
     if (i >= 0) {

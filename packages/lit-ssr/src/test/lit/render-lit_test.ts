@@ -204,6 +204,16 @@ test('element with property', async (t: Test) => {
   );
 });
 
+test('element with `willUpdate`', async (t: Test) => {
+  const {render, elementWithWillUpdate} = await setup();
+  const result = await render(elementWithWillUpdate);
+  // TODO: we'd like to remove the extra space in the start tag
+  t.equal(
+    result,
+    `<!--lit-part Q0bbGrx71ic=--><test-will-update  ><!--lit-bindings 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
+  );
+});
+
 /* Slots and Distribution */
 
 /* Declarative Shadow Root */

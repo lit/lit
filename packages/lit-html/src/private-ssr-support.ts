@@ -39,7 +39,7 @@ export const _Σ = {
   ) => {
     directive._resolve = fn;
   },
-  getAtributePartCommittedValue: (
+  getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
     index: number | undefined
