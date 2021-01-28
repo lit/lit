@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -11,15 +11,4 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
-import {litProdConfig} from '../../rollup-common.js';
-
-export default litProdConfig({
-  classPropertyPrefix: 'Ω',
-  entryPoints: [
-    'index',
-    'frameworks/react/create-component',
-    'controllers/async-task',
-  ],
-  external: ['@lit/reactive-element', 'lit-html', 'lit-element'],
-});
+export * from './create-component.js';

@@ -50,7 +50,10 @@ interface PatchableLitElement extends HTMLElement {
   };
 
   // Hydrate on first update when needed
-  LitElement.prototype.update = function (this: PatchableLitElement, changedProperties: PropertyValues) {
+  LitElement.prototype.update = function (
+    this: PatchableLitElement,
+    changedProperties: PropertyValues
+  ) {
     const value = this.render();
     // Since this is a patch, we can't call super.update()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

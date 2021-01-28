@@ -191,11 +191,7 @@ const removeDisconnectableFromParent = (obj: Disconnectable) => {
 const addDisconnectableToParent = (obj: Disconnectable) => {
   // Climb the parent tree, creating a sparse tree of children needing
   // disconnection
-  for (
-    let parent;
-    (parent = obj._$parent);
-    obj = parent
-  ) {
+  for (let parent; (parent = obj._$parent); obj = parent) {
     let children = parent._$disconnetableChildren;
     if (children === undefined) {
       parent._$disconnetableChildren = children = new Set();
@@ -207,19 +203,16 @@ const addDisconnectableToParent = (obj: Disconnectable) => {
     children.add(obj);
     installDisconnectAPI(parent);
   }
-}
+};
 
 /**
  * Changes the parent reference of the ChildPart, and updates the sparse tree of
  * Disconnectable children accordingly.
- * 
+ *
  * Note, this method will be patched onto ChildPart instances and called from
  * the core code when parts are moved between different parents.
  */
-function reparentDisconnectables(
-  this: ChildPart,
-  newParent: Disconnectable
-) {
+function reparentDisconnectables(this: ChildPart, newParent: Disconnectable) {
   if (this._$disconnetableChildren !== undefined) {
     removeDisconnectableFromParent(this);
     this._$parent = newParent;

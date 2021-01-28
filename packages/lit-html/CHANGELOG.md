@@ -99,7 +99,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   supports ChildParts. Directives that require updating their container
   part outside the `render`/`update` lifecycle should extend
   `DisconnectableDirective` and use `this.setValue()`.
-  
 - [Breaking] (since 2.0.0-pre.3) [Breaking] The `eventContext` render option has been changed to `host`.
 
   <!-- ### Fixed -->

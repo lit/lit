@@ -73,17 +73,17 @@ import {queryParams} from '../../utils/query-params.js';
       this.host = host;
       this.host.addController(this);
     }
-    connectedCallback() {
+    hostConnected() {
       this.isConnected = true;
     }
-    disconnectedCallback() {
+    hostDisconnected() {
       this.isConnected = false;
     }
-    willUpdate() {
+    hostUpdate() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.value = (this.host as any).time;
     }
-    updated() {}
+    hostUpdated() {}
   }
 
   class XThing extends ReactiveElement {

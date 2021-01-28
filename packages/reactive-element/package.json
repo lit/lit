@@ -53,27 +53,15 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/css-tag.d.ts",
-    "/css-tag.d.ts.map",
-    "/css-tag.js",
-    "/css-tag.js.map",
-    "/decorators.d.ts",
-    "/decorators.d.ts.map",
-    "/decorators.js",
-    "/decorators.js.map",
+    "/css-tag.{d.ts,d.ts.map,js,js.map}",
+    "/decorators.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
     "/development/",
-    "/polyfill-support.d.ts",
-    "/polyfill-support.d.ts.map",
-    "/polyfill-support.js",
-    "/polyfill-support.js.map",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/src/",
     "!/src/demo/",
     "!/src/test/",
-    "/reactive-element.d.ts",
-    "/reactive-element.d.ts.map",
-    "/reactive-element.js",
-    "/reactive-element.js.map"
+    "/reactive-element.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {},
   "devDependencies": {
