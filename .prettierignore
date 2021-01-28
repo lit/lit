@@ -19,12 +19,14 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-packages/labs/development/
-packages/labs/node_modules/
-packages/labs/index.*
-packages/labs/frameworks/
-packages/labs/controllers/
-
+packages/labs/task/development/
+packages/labs/task/node_modules/
+packages/labs/task/index.*
+packages/labs/task/task.*
+packages/labs/react/development/
+packages/labs/react/node_modules/
+packages/labs/react/index.*
+packages/labs/react/create-component.*
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/

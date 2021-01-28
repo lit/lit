@@ -14,8 +14,8 @@
 
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
-import {AsyncTask, TaskStatus} from '../../controllers/async-task.js';
-import {generateElementName, nextFrame} from '../test-helpers';
+import {Task, TaskStatus} from '../task.js';
+import {generateElementName, nextFrame} from './test-helpers';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -26,19 +26,19 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
-suite('AsyncTask', () => {
+suite('Task', () => {
   let container: HTMLElement;
 
   class ControllerUsingTask {
     updateCount = 0;
 
     host: ReactiveElement;
-    task: AsyncTask;
+    task: Task;
 
     constructor(host: ReactiveElement) {
       this.host = host;
       this.host.addController(this);
-      this.task = new AsyncTask(
+      this.task = new Task(
         this.host,
         ([id]) =>
           new Promise((resolve) => {
@@ -93,7 +93,7 @@ suite('AsyncTask', () => {
     rejectRenderedStatusTask!: () => void;
     taskValue?: unknown;
     taskControllerValue?: unknown;
-    task = new AsyncTask(
+    task = new Task(
       this,
       ([foo, bar]) =>
         new Promise((resolve, reject) => {
@@ -102,7 +102,7 @@ suite('AsyncTask', () => {
         }),
       () => [this.foo, this.bar]
     );
-    renderedStatusTask = new AsyncTask(
+    renderedStatusTask = new Task(
       this,
       ([zot]) =>
         new Promise((resolve, reject) => {
