@@ -298,8 +298,11 @@ export abstract class ReactiveElement
   extends HTMLElement
   implements ReactiveControllerHost {
   // Note, these are patched in only in DEV_MODE.
+  /** @nocollapse */
   static enabledWarnings?: Warnings[];
+  /** @nocollapse */
   static enableWarning?: (type: Warnings) => void;
+  /** @nocollapse */
   static disableWarning?: (type: Warnings) => void;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
@@ -311,6 +314,7 @@ export abstract class ReactiveElement
    * Maps attribute names to properties; for example `foobar` attribute to
    * `fooBar` property. Created lazily on user subclasses when finalizing the
    * class.
+   * @nocollapse
    */
   private static __attributeToPropertyMap: AttributeMap;
 
@@ -322,6 +326,7 @@ export abstract class ReactiveElement
   /**
    * Memoized list of all element properties, including any superclass properties.
    * Created lazily on user subclasses when finalizing the class.
+   * @nocollapse
    */
   static elementProperties?: PropertyDeclarationMap;
 
@@ -347,18 +352,21 @@ export abstract class ReactiveElement
    * private property set with the `state: true` option should be used. When
    * needed, state properties can be initialized via public properties to
    * facilitate complex interactions.
+   * @nocollapse
    */
   static properties: PropertyDeclarations;
 
   /**
    * Memoized list of all element styles.
    * Created lazily on user subclasses when finalizing the class.
+   * @nocollapse
    */
   static elementStyles?: CSSResultFlatArray;
 
   /**
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
+   * @nocollapse
    */
   static styles?: CSSResultGroup;
 
@@ -563,6 +571,7 @@ export abstract class ReactiveElement
    *
    * Note, these options are used in `createRenderRoot`. If this method
    * is customized, options should be respected if possible.
+   * @nocollapse
    */
   static shadowRootOptions: ShadowRootInit = {mode: 'open'};
 
@@ -656,6 +665,16 @@ export abstract class ReactiveElement
 
   constructor() {
     super();
+    this._initialize();
+  }
+
+  /**
+   * Internal only override point for customizing work done when elements
+   * are constructed.
+   *
+   * @internal
+   */
+  _initialize() {
     this.__updatePromise = new Promise<boolean>(
       (res) => (this.enableUpdating = res)
     );
@@ -668,6 +687,9 @@ export abstract class ReactiveElement
 
   addController(controller: ReactiveController) {
     (this.__controllers ??= []).push(controller);
+    if (this.isConnected) {
+      controller.hostConnected?.();
+    }
   }
 
   removeController(controller: ReactiveController) {
@@ -734,7 +756,7 @@ export abstract class ReactiveElement
       }).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating(true);
-    this.__controllers?.forEach((c) => c.connected?.());
+    this.__controllers?.forEach((c) => c.hostConnected?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
     if (this.__enableConnection) {
@@ -756,7 +778,7 @@ export abstract class ReactiveElement
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.disconnected?.());
+    this.__controllers?.forEach((c) => c.hostDisconnected?.());
     this.__pendingConnectionPromise = new Promise(
       (r) => (this.__enableConnection = r)
     );
@@ -864,7 +886,7 @@ export abstract class ReactiveElement
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
-  ) {
+  ): void {
     let shouldRequestUpdate = true;
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -896,7 +918,7 @@ export abstract class ReactiveElement
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? requestUpdateThenable : undefined;
+    return DEV_MODE ? ((requestUpdateThenable as unknown) as void) : undefined;
   }
 
   /**
@@ -992,9 +1014,8 @@ export abstract class ReactiveElement
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.__controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this.__controllers?.forEach((c) => c.update?.());
+        this.__controllers?.forEach((c) => c.hostUpdate?.());
         this.update(changedProperties);
       } else {
         this.__markUpdated();
@@ -1022,7 +1043,7 @@ export abstract class ReactiveElement
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this.__controllers?.forEach((c) => c.updated?.());
+    this.__controllers?.forEach((c) => c.hostUpdated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1151,13 +1172,19 @@ if (DEV_MODE) {
       ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };
-  ReactiveElement.enableWarning = function (warning: Warnings) {
+  ReactiveElement.enableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     if (this.enabledWarnings!.indexOf(warning) < 0) {
       this.enabledWarnings!.push(warning);
     }
   };
-  ReactiveElement.disableWarning = function (warning: Warnings) {
+  ReactiveElement.disableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     const i = this.enabledWarnings!.indexOf(warning);
     if (i >= 0) {

@@ -11,5 +11,4 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-export {};
-console.log("there's nothing here");
+export * from './task.js';

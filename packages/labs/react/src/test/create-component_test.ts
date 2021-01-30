@@ -18,7 +18,7 @@ import {customElement} from '@lit/reactive-element/decorators/customElement.js';
 import * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
-import {createComponent} from '../../../frameworks/react/create-component.js';
+import {createComponent} from '../create-component.js';
 import {assert} from '@esm-bundle/chai';
 
 const elementName = 'basic-element';
@@ -57,7 +57,7 @@ declare global {
   }
 }
 
-suite('React createComponent', () => {
+suite('createComponent', () => {
   let container: HTMLElement;
 
   setup(() => {
