@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="docs.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
     <link href="prism-okaidia.css" rel="stylesheet" />
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/lit/polyfill-support.js"></script>
     <script type="module" src="my-element.bundled.js"></script>
   </head>
   <body>
@@ -52,7 +54,7 @@
 <section class="columns">
   <div>
 <p><code>&lt;my-element&gt;</code> can be used with declarative rendering libraries like Angular, React, Vue, and lit-html</p>
-<pre class="language-js"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token keyword">const</span> name<span class="token operator">=</span><span class="token string">"lit-html"</span><span class="token punctuation">;</span><br><br><span class="token function">render</span><span class="token punctuation">(</span>html<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string"><br>  &lt;h2>This is a &amp;lt;my-element&amp;gt;&lt;/h2><br>  &lt;my-element .name=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>&lt;/my-element><br></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span> document<span class="token punctuation">.</span>body<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<pre class="language-js"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token keyword">const</span> name <span class="token operator">=</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token function">render</span><span class="token punctuation">(</span><br>  html<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string"><br>    &lt;h2>This is a &amp;lt;my-element&amp;gt;&lt;/h2><br>    &lt;my-element .name=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>&lt;/my-element><br>  </span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span><br>  document<span class="token punctuation">.</span>body<br><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
   </div>
   <div>
 <h2>This is a &lt;my-element&gt;</h2>
@@ -66,7 +68,7 @@
 <footer>
   <p>
     Made with
-    <a href="https://github.com/PolymerLabs/lit-element-starter-ts">lit-element-starter-ts</a>
+    <a href="https://github.com/PolymerLabs/lit-starter-ts">lit-starter-ts</a>
   </p>
 </footer>
   </body>

@@ -1,9 +1,9 @@
-module.exports = function(data) {
+module.exports = function (data) {
   return `
 <footer>
   <p>
     Made with
-    <a href="https://github.com/PolymerLabs/lit-element-starter-ts">lit-element-starter-ts</a>
+    <a href="https://github.com/PolymerLabs/lit-starter-ts">lit-starter-ts</a>
   </p>
 </footer>`;
 };

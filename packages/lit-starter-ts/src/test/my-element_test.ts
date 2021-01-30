@@ -1,4 +1,5 @@
 import {MyElement} from '../my-element.js';
+
 import {fixture, html} from '@open-wc/testing';
 
 const assert = chai.assert;

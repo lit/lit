@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="../docs.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
     <link href="../prism-okaidia.css" rel="stylesheet" />
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/lit/polyfill-support.js"></script>
     <script type="module" src="../my-element.bundled.js"></script>
   </head>
   <body>
@@ -53,7 +55,7 @@
   <p>This is child content</p>
 </my-element>
 <h3>CSS</h3>
-<pre class="language-css"><code class="language-css">  <span class="token selector">p</span> <span class="token punctuation">{</span><br>    <span class="token property">border</span><span class="token punctuation">:</span> solid 1px blue<span class="token punctuation">;</span><br>    <span class="token property">padding</span><span class="token punctuation">:</span> 8px<span class="token punctuation">;</span><br>  <span class="token punctuation">}</span></code></pre>
+<pre class="language-css"><code class="language-css"><span class="token selector">p</span> <span class="token punctuation">{</span><br>  <span class="token property">border</span><span class="token punctuation">:</span> solid 1px blue<span class="token punctuation">;</span><br>  <span class="token property">padding</span><span class="token punctuation">:</span> 8px<span class="token punctuation">;</span><br><span class="token punctuation">}</span></code></pre>
 <h3>HTML</h3>
 <pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>This is child content<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">></span></span></code></pre>
 
@@ -66,7 +68,7 @@
 <footer>
   <p>
     Made with
-    <a href="https://github.com/PolymerLabs/lit-element-starter-ts">lit-element-starter-ts</a>
+    <a href="https://github.com/PolymerLabs/lit-starter-ts">lit-starter-ts</a>
   </p>
 </footer>
   </body>

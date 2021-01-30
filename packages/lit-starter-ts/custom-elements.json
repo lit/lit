@@ -33,6 +33,24 @@
           "description": "The number of times the button has been clicked.",
           "type": "number",
           "default": "0"
+        },
+        {
+          "name": "renderRoot",
+          "description": "Node or ShadowRoot into which element DOM should be rendered. Defaults\nto an open shadowRoot.",
+          "type": "HTMLElement | ShadowRoot"
+        },
+        {
+          "name": "isUpdatePending",
+          "type": "boolean"
+        },
+        {
+          "name": "hasUpdated",
+          "type": "boolean"
+        },
+        {
+          "name": "updateComplete",
+          "description": "Returns a Promise that resolves when the element has completed updating.\nThe Promise value is a boolean that is `true` if the element completed the\nupdate without triggering another update. The Promise result is `false` if\na property was set inside `updated()`. If the Promise is rejected, an\nexception was thrown during the update.\n\nTo await additional asynchronous work, override the `getUpdateComplete`\nmethod. For example, it is sometimes useful to await a rendered element\nbefore fulfilling this Promise. To do this, first await\n`super.getUpdateComplete()`, then any subsequent state.",
+          "type": "Promise<boolean>"
         }
       ],
       "slots": [
