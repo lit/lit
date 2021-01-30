@@ -24,8 +24,8 @@
   "include": ["src/**/*.ts"],
   "exclude": [],
   "references": [
-    {"path": "../lit-html"},
-    {"path": "../lit-element"},
-    {"path": "../reactive-element"}
+    {"path": "../../lit-html"},
+    {"path": "../../lit-element"},
+    {"path": "../../reactive-element"}
   ]
 }

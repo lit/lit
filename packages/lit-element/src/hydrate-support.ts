@@ -19,13 +19,16 @@
  */
 
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
-import {render} from 'lit-html';
+import {render, RenderOptions} from 'lit-html';
 import {hydrate} from 'lit-html/hydrate.js';
 
 interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableLitElement;
   createRenderRoot(): Element | ShadowRoot;
+  renderRoot: Element | ShadowRoot;
+  render(): unknown;
+  _$renderOptions: RenderOptions;
   _$needsHydration: boolean;
 }
 
@@ -37,7 +40,7 @@ interface PatchableLitElement extends HTMLElement {
 }) => {
   // Capture whether we need hydration or not
   const createRenderRoot = LitElement.prototype.createRenderRoot;
-  LitElement.prototype.createRenderRoot = function () {
+  LitElement.prototype.createRenderRoot = function (this: PatchableLitElement) {
     if (this.shadowRoot) {
       this._$needsHydration = true;
       return this.shadowRoot;
@@ -47,7 +50,10 @@ interface PatchableLitElement extends HTMLElement {
   };
 
   // Hydrate on first update when needed
-  LitElement.prototype.update = function (changedProperties: PropertyValues) {
+  LitElement.prototype.update = function (
+    this: PatchableLitElement,
+    changedProperties: PropertyValues
+  ) {
     const value = this.render();
     // Since this is a patch, we can't call super.update()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,7 +62,7 @@ interface PatchableLitElement extends HTMLElement {
       this._$needsHydration = false;
       hydrate(value, this.renderRoot, this._$renderOptions);
     } else {
-      render(value, this.renderRoot, this._$renderOptions);
+      render(value, this.renderRoot as HTMLElement, this._$renderOptions);
     }
   };
 };
