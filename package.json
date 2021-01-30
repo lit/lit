@@ -9,7 +9,7 @@
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
-    "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
+    "nuke": "rm -rf node_modules packages/*/{node_modules} && npm install && npm run bootstrap",
     "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test)"
   },
   "dependencies": {
