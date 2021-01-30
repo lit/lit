@@ -55,12 +55,15 @@ title: <my-element> ⌲ Home
 ```js
 import {html, render} from 'lit-html';
 
-const name="lit-html";
+const name = 'lit-html';
 
-render(html`
-  <h2>This is a &lt;my-element&gt;</h2>
-  <my-element .name=${name}></my-element>
-`, document.body);
+render(
+  html`
+    <h2>This is a &lt;my-element&gt;</h2>
+    <my-element .name=${name}></my-element>
+  `,
+  document.body
+);
 ```
 
   </div>

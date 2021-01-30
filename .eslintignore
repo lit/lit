@@ -98,6 +98,16 @@ packages/lit-starter-ts/docs-src/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
+packages/lit-starter-js/node_modules/
+packages/lit-starter-js/**/custom-elements.json
+# only generated for size check
+packages/lit-starter-js/**/my-element.bundled.js
+packages/lit-starter-js/node_modules/*
+packages/lit-starter-js/docs/*
+packages/lit-starter-js/docs-src/*
+packages/lit-starter-js/**/rollup-config.js
+packages/lit-starter-js/**/custom-elements.json
+
 packages/localize/lib/
 packages/localize/lib_client/
 packages/localize/node_modules/

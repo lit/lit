@@ -1,4 +1,4 @@
-# LitElement JavaScript starter 
+# LitElement JavaScript starter
 
 This project includes a sample component using LitElement with JavaScript.
 
@@ -12,7 +12,11 @@ npm i
 
 ## Testing
 
-This sample uses Karma, Chai, Mocha, and the open-wc test helpers for testing. See the [open-wc testing documentation](https://open-wc.org/testing/testing.html) for more information.
+This sample modern-web.dev's
+[@web/test-runner](https://www.npmjs.com/package/@web/test-runner) along with
+Mocha, Chai, and some related helpers for testing. See the
+[modern-web.dev testing documentation](https://modern-web.dev/docs/test-runner/overview) for
+more information.
 
 Tests can be run with the `test` script:
 
@@ -22,7 +26,7 @@ npm test
 
 ## Dev Server
 
-This sample uses open-wc's [es-dev-server](https://github.com/open-wc/open-wc/tree/master/packages/es-dev-server) for previewing the project without additional build steps. ES dev server handles resolving Node-style "bare" import specifiers, which aren't supported in browsers. It also automatically transpiles JavaScript and adds polyfills to support older browsers.
+This sample uses modern-web.dev's [@web/dev-server](https://www.npmjs.com/package/@web/dev-server) for previewing the project without additional build steps. Web Dev Server handles resolving Node-style "bare" import specifiers, which aren't supported in browsers. It also automatically transpiles JavaScript and adds polyfills to support older browsers. See [modern-web.dev's Web Dev Server documentation](https://modern-web.dev/docs/dev-server/overview/) for more information.
 
 To run the dev server and open the project in a new browser tab:
 
@@ -35,15 +39,16 @@ There is a development HTML file located at `/dev/index.html` that you can view 
 ## Editing
 
 If you use VS Code, we highly reccomend the [lit-plugin extension](https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin), which enables some extremely useful features for lit-html templates:
-  - Syntax highlighting
-  - Type-checking
-  - Code completion
-  - Hover-over docs
-  - Jump to definition
-  - Linting
-  - Quick Fixes
-  
-  The project is setup to reccomend lit-plugin to VS Code users if they don't already have it installed.
+
+- Syntax highlighting
+- Type-checking
+- Code completion
+- Hover-over docs
+- Jump to definition
+- Linting
+- Quick Fixes
+
+The project is setup to reccomend lit-plugin to VS Code users if they don't already have it installed.
 
 ## Linting
 
@@ -94,7 +99,6 @@ The site will usually be served at http://localhost:8000.
 This starter project doesn't include any build-time optimizations like bundling or minification. We recommend publishing components as unoptimized JavaScript modules, and performing build-time optimizations at the application level. This gives build tools the best chance to deduplicate code, remove dead code, and so on.
 
 For information on building application projects that include LitElement components, see [Build for production](https://lit-element.polymer-project.org/guide/build) on the LitElement site.
-
 
 ## More information
 
