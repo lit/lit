@@ -25,12 +25,12 @@
     "/create-component.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
-    "build": "npm run clean && tsc --build && rollup -c",
+    "build:DISABLED": "npm run clean && tsc --build && rollup -c",
     "clean": "rm -rf index.{js,js.map,d.ts} development/ tsconfig.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
-    "test": "npm run test:dev && npm run test:prod",
+    "test:DISABLED": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/react/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
