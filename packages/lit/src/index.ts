@@ -12,6 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export * from '@lit/reactive-element';
-export * from 'lit-html';
+// Although these are re-exported from lit-element.js, we add
+// them here to effectively pre-fetch them and avoid the extra
+// waterfall when loading the lit package unbundled
+import '@lit/reactive-element';
+import 'lit-html';
+
 export * from 'lit-element/lit-element.js';
