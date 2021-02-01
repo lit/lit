@@ -12,10 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {nothing, ElementPart} from '../lit-html.js';
-import {
-  directive,
-  DisconnectableDirective,
-} from '../disconnectable-directive.js';
+import {directive, AsyncDirective} from '../async-directive.js';
 
 /**
  * Creates a new Ref object, which is container for a reference to an element.
@@ -44,7 +41,7 @@ const lastElementForCallback: WeakMap<
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 
-class RefDirective extends DisconnectableDirective {
+class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
 

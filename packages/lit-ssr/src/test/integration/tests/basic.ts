@@ -45,7 +45,7 @@ import {
 } from 'lit-html/directives/render-light.js';
 
 import {SSRTest} from './ssr-test';
-import {DisconnectableDirective} from 'lit-html/disconnectable-directive';
+import {AsyncDirective} from 'lit-html/async-directive';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -3845,13 +3845,13 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
-   * DisconnectableDirective tests
+   * AsyncDirective tests
    ******************************************************/
 
-  DisconnectableDirective: () => {
+  AsyncDirective: () => {
     const log: string[] = [];
     const dir = directive(
-      class extends DisconnectableDirective {
+      class extends AsyncDirective {
         id!: string;
         render(id: string) {
           this.id = id;

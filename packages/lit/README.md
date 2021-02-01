@@ -15,7 +15,7 @@ Modules:
 - `lit/static-html.js`: The lit-html `static.js` module
 - `lit/directives.js`: Contains the `Directive` base class for implementing directives.
 - `lit/directive-helpers.js`: Optional helper utilities for implementing directives.
-- `lit/disconnectable-directive.js`: A directive base class that supports disconnection and reconnection.
+- `lit/async-directive.js`: A directive base class that supports disconnection and reconnection.
 - `lit/directives/...`: The `directives/` folder contains all of the first-party lit-html directives, like `repeat`, `classMap`, etc.
 - `lit/polyfill-support.js`: A module that connects Lit to the web components polyfills where necessary to support older browsers.
 - `lit/hydrate-support.js`: A module that add hydration support to LitElement.

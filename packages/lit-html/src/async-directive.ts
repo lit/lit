@@ -15,11 +15,11 @@
 /**
  * Overview:
  *
- * This module is designed to add support for a `disconnected` callback to
- * directives with the least impact on the core runtime or payload when that
- * feature is not used.
+ * This module is designed to add support for an async `setValue` API and
+ * `disconnected` callback to directives with the least impact on the core
+ * runtime or payload when that feature is not used.
  *
- * The strategy is to introduce a `DisconnectableDirective` subclass of
+ * The strategy is to introduce a `AsyncDirective` subclass of
  * `Directive` that climbs the "parent" tree in its constructor to note which
  * branches of lit-html's "logical tree" of data structures contain such
  * directives and thus need to be crawled when a subtree is being cleared (or
@@ -31,42 +31,42 @@
  * `_$parent` reference which is set during construction in the core code, and a
  * `_$disconnectableChildren` field which is initially undefined.
  *
- * The sparse tree created by means of the `DisconnectableDirective` constructor
+ * The sparse tree created by means of the `AsyncDirective` constructor
  * crawling up the `_$parent` tree and placing a `_$disconnectableChildren` Set
  * on each parent that includes each child that contains a
- * `DisconnectableDirective` directly or transitively via its children. In order
+ * `AsyncDirective` directly or transitively via its children. In order
  * disconnect (or reconnect) a tree, the `_$setChildPartConnected` API is patched
  * onto ChildParts as a directive climbs the parent tree, which is called by the
  * core when clearing a part if it exists. When called, that method iterates
  * over the sparse tree of Set<DisconnectableChildren> built up by
- * DisconnectableDirectives, and calls `_$setDirectiveConnected` on any
+ * AsyncDirectives, and calls `_$setDirectiveConnected` on any
  * directives that are encountered in that tree, running the required callbacks.
  *
  * A given "logical tree" of lit-html data-structures might look like this:
  *
  *  ChildPart(N1) _$dC=[D2,T3]
  *   ._directive
- *     DisconnectableDirective(D2)
+ *     AsyncDirective(D2)
  *   ._value // user value was TemplateResult
  *     TemplateInstance(T3) _$dC=[A4,A6,N10,N12]
  *      ._parts[]
  *        AttributePart(A4) _$dC=[D5]
  *         ._directives[]
- *           DisconnectableDirective(D5)
+ *           AsyncDirective(D5)
  *        AttributePart(A6) _$dC=[D7,D8]
  *         ._directives[]
- *           DisconnectableDirective(D7)
+ *           AsyncDirective(D7)
  *           Directive(D8) _$dC=[D9]
  *            ._directive
- *              DisconnectableDirective(D9)
+ *              AsyncDirective(D9)
  *        ChildPart(N10) _$dC=[D11]
  *         ._directive
- *           DisconnectableDirective(D11)
+ *           AsyncDirective(D11)
  *         ._value
  *           string
  *        ChildPart(N12) _$dC=[D13,N14,N16]
  *         ._directive
- *           DisconnectableDirective(D13)
+ *           AsyncDirective(D13)
  *         ._value // user value was iterable
  *           Array<ChildPart>
  *             ChildPart(N14) _$dC=[D15]
@@ -74,22 +74,22 @@
  *                string
  *             ChildPart(N16) _$dC=[D17,T18]
  *              ._directive
- *                DisconnectableDirective(D17)
+ *                AsyncDirective(D17)
  *              ._value // user value was TemplateResult
  *                TemplateInstance(T18) _$dC=[A19,A21,N25]
  *                 ._parts[]
  *                   AttributePart(A19) _$dC=[D20]
  *                    ._directives[]
- *                      DisconnectableDirective(D20)
+ *                      AsyncDirective(D20)
  *                   AttributePart(A21) _$dC=[22,23]
  *                    ._directives[]
- *                      DisconnectableDirective(D22)
+ *                      AsyncDirective(D22)
  *                      Directive(D23) _$dC=[D24]
  *                       ._directive
- *                         DisconnectableDirective(D24)
+ *                         AsyncDirective(D24)
  *                   ChildPart(N25) _$dC=[D26]
  *                    ._directive
- *                      DisconnectableDirective(D26)
+ *                      AsyncDirective(D26)
  *                    ._value
  *                      string
  *
@@ -154,16 +154,13 @@ const setChildrenConnected = (
   }
   for (const obj of children) {
     // The existence of `_$setDirectiveConnected` is used as a "brand" to
-    // disambiguate DisconnectableDirectives from other DisconnectableChildren
+    // disambiguate AsyncDirectives from other DisconnectableChildren
     // (as opposed to using an instanceof check to know when to call it); the
     // redundancy of "Directive" in the API name is to avoid conflicting with
     // `_$setChildPartConnected`, which exists `ChildParts` which are also in
     // this list
     // Disconnect Directive (and any nested directives contained within)
-    (obj as DisconnectableDirective)._$setDirectiveConnected?.(
-      isConnected,
-      false
-    );
+    (obj as AsyncDirective)._$setDirectiveConnected?.(isConnected, false);
     // Disconnect Part/TemplateInstance
     setChildrenConnected(obj, isConnected);
   }
@@ -296,7 +293,7 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  * to its next `update`/`render` callbacks. When implementing `disconnected`,
  * `reconnected` should also be implemented to be compatible with reconnection.
  */
-export abstract class DisconnectableDirective extends Directive {
+export abstract class AsyncDirective extends Directive {
   isConnected = true;
   _pendingValue: unknown = noChange;
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
@@ -362,7 +359,7 @@ export abstract class DisconnectableDirective extends Directive {
   _resolve(props: Array<unknown>): unknown {
     if (!this.isConnected) {
       throw new Error(
-        `DisconnectableDirective ${this.constructor.name} was ` +
+        `AsyncDirective ${this.constructor.name} was ` +
           `rendered while its tree was disconnected.`
       );
     }

@@ -15,7 +15,7 @@
 import {Part, noChange} from '../lit-html.js';
 import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
-import {DisconnectableDirective} from '../disconnectable-directive.js';
+import {AsyncDirective} from '../async-directive.js';
 
 const DEV_MODE = true;
 
@@ -42,7 +42,7 @@ const isPromise = (x: unknown) => {
 // Effectively infinity, but a SMI.
 const _infinity = 0x7fffffff;
 
-class UntilDirective extends DisconnectableDirective {
+class UntilDirective extends AsyncDirective {
   private _state: WeakMap<Part, AsyncState> = new WeakMap<Part, AsyncState>();
 
   render(...args: Array<unknown>) {

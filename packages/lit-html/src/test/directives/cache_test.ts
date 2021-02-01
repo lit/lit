@@ -16,10 +16,7 @@ import {html, render} from '../../lit-html.js';
 import {cache} from '../../directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import {
-  directive,
-  DisconnectableDirective,
-} from '../../disconnectable-directive.js';
+import {directive, AsyncDirective} from '../../async-directive.js';
 
 suite('cache directive', () => {
   let container: HTMLDivElement;
@@ -143,7 +140,7 @@ suite('cache directive', () => {
 
   test('async directives disconnet/reconnect when moved in/out of cache', () => {
     const disconnectable = directive(
-      class extends DisconnectableDirective {
+      class extends AsyncDirective {
         log: string[] | undefined;
         id: string | undefined;
         render(log: string[], id: string) {
