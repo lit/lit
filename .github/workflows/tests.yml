@@ -41,7 +41,7 @@ jobs:
         with:
           path: |
             node_modules
-            */*/node_modules
+            **/node_modules
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
           key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
