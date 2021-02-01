@@ -44,7 +44,8 @@ jobs:
             **/node_modules
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
           # Bump the number after `lit-node-modules` to force a cache update
-          # Note there is another cache action below in the `tests-sauce` section
+          # Note there are cache actions in below in `tests-sauce` and in `benchmarks.yml`
+          # that should all keep keys in sync
           key: lit-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
@@ -103,7 +104,8 @@ jobs:
             **/node_modules
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
           # Bump the number after `lit-node-modules` to force a cache update
-          # Note there is another cache action above in the `tests-local` section
+          # Note there are cache actions in above in `tests-local` and in `benchmarks.yml`
+          # that should all keep keys in sync
           key: lit-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
