@@ -25,6 +25,10 @@
       "development": "./development/polyfill-support.js",
       "default": "./polyfill-support.js"
     },
+    "./private-ssr-support.js": {
+      "development": "./development/private-ssr-support.js",
+      "default": "./private-ssr-support.js"
+    },
     "./hydrate-support.js": {
       "development": "./development/hydrate-support.js",
       "default": "./hydrate-support.js"
@@ -64,8 +68,10 @@
     "/decorators.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
     "/development/",
+    "/hydrate-support.{d.ts,d.ts.map,js,js.map}",
     "/lit-element.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
     "/src/",
     "!/src/demo/",
     "!/src/test/"
