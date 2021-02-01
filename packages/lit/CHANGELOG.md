@@ -23,4 +23,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Changed
 
+- Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
 - Renamed `platform-support` to `polyfill-support`.

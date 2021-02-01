@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- (Since 1.0.0-pre.1) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
 - (Since 1.0.0-pre.1) `ReactiveController` callbacks all now begin with `host`, for example `hostConnected`, `hostDisconnected`, `hostUpdate`, `hostUpdated`.
 - (Since 1.0.0-pre.1) If a `Controller` is added after a host element is connected, its `connected` will be called.
 - (Since 1.0.0-pre.1) Removed `willUpdate` from `ReactiveController`.

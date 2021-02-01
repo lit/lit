@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {queryAssignedNodes} from '../../decorators/queryAssignedNodes.js';
+import {queryAssignedNodes} from '../../decorators/query-assigned-nodes.js';
 import {
   canTestReactiveElement,
   generateElementName,

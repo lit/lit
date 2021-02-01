@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {queryAsync} from '../../decorators/queryAsync.js';
+import {queryAsync} from '../../decorators/query-async.js';
 import {
   canTestReactiveElement,
   generateElementName,
