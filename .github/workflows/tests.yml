@@ -35,7 +35,7 @@ jobs:
 
       # Cache all of our node_modules/ directories and playwright browser
       # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules/playwright
+      - name: Restore node_modules
         id: cache
         uses: actions/cache@v2
         with:
@@ -43,7 +43,9 @@ jobs:
             node_modules
             **/node_modules
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          # Bump the number after `lit-node-modules` to force a cache update
+          # Note there is another cache action below in the `tests-sauce` section
+          key: lit-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
       # cache this.
@@ -92,15 +94,17 @@ jobs:
 
       # Cache all of our node_modules/ directories and playwright browser
       # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules/playwright
+      - name: Restore node_modules
         id: cache
         uses: actions/cache@v2
         with:
           path: |
             node_modules
-            */*/node_modules
+            **/node_modules
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          # Bump the number after `lit-node-modules` to force a cache update
+          # Note there is another cache action above in the `tests-local` section
+          key: lit-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
       # cache this.
