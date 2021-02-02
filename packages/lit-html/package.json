@@ -40,6 +40,10 @@
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"
+    },
+    "./static.js": {
+      "development": "./development/static.js",
+      "default": "./static.js"
     }
   },
   "scripts": {
@@ -49,7 +53,7 @@
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} async-directive.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/ tsconfig.tsbuildinfo",
+    "clean": "rm -rf {async-directive,directive-helpers,directive,hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
@@ -58,43 +62,19 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
+    "/async-directive.{d.ts,d.ts.map,js,js.map}",
+    "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
+    "/directive.{d.ts,d.ts.map,js,js.map}",
+    "/hydrate.{d.ts,d.ts.map,js,js.map}",
+    "/lit-html.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
+    "/static.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
     "/directives/",
-    "/directive.d.ts",
-    "/directive.d.ts.map",
-    "/directive.js",
-    "/directive.js.map",
-    "/directive-helpers.d.ts",
-    "/directive-helpers.d.ts.map",
-    "/directive-helpers.js",
-    "/directive-helpers.js.map",
-    "/async-directive.d.ts",
-    "/async-directive.d.ts.map",
-    "/async-directive.js",
-    "/async-directive.js.map",
-    "/hydrate.js",
-    "/hydrate.js.map",
-    "/hydrate.d.ts",
-    "/hydrate.d.ts.map",
-    "/lit-html.d.ts",
-    "/lit-html.d.ts.map",
-    "/lit-html.js",
-    "/lit-html.js.map",
-    "/polyfill-support.d.ts",
-    "/polyfill-support.d.ts.map",
-    "/polyfill-support.js",
-    "/polyfill-support.js.map",
-    "/private-ssr-support.js",
-    "/private-ssr-support.js.map",
-    "/private-ssr-support.d.ts",
-    "/private-ssr-support.d.ts.map",
     "/src/",
-    "!/src/test/",
-    "/static.js",
-    "/static.js.map",
-    "/static.d.ts",
-    "/static.d.ts.map"
+    "!/src/test/"
   ],
   "dependencies": {},
   "devDependencies": {

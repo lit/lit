@@ -17,10 +17,7 @@
   },
   "files": [
     "/lib/",
-    "/index.d.ts",
-    "/index.d.ts.map",
-    "/index.js",
-    "/index.js.map"
+    "/index.{d.ts,d.ts.map,js,js.map}"
   ],
   "author": "",
   "license": "BSD-3-Clause",
