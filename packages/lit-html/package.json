@@ -47,7 +47,7 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc && rollup -c",
+    "build": "npm run clean && tsc --build && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
