@@ -88,6 +88,8 @@ const styledScopes: Set<string> = new Set();
 // styling is prepared, and then discarded.
 const scopeCssStore: Map<string, string[]> = new Map();
 
+const construct = globalThis.Reflect?.construct;
+
 const ENABLE_SHADYDOM_NOPATCH = true;
 
 /**
@@ -165,10 +167,10 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     // call; we must use Reflect.construct if it's available
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
     constructor(...args: any[]) {
-      if (window.Reflect) {
-        return Reflect.construct(Template, args, ShadyTemplate);
+      if (construct === undefined) {
+        super(...args);
       } else {
-        super();
+        return construct(Template, args, ShadyTemplate);
       }
     }
     /**
