@@ -26,7 +26,7 @@
     "/lit-html.d.ts.map",
     "/lib/",
     "/directives/",
-    "/polyfills",
+    "/polyfills/",
     "/src/",
     "/ts3.4/",
     "!/src/test/"
@@ -80,5 +80,13 @@
     "src/**/*.{js,ts}": [
       "eslint --fix"
     ]
+  },
+  "exports": {
+    ".": "./lit-html.js",
+    "./directives/*": "./directives/*.js",
+    "./lib/*": "./lib/*.js",
+    "./polyfills/": "./polyfills/*.js",
+    "./src/*": "./src/*.ts",
+    "./ts3.4/*": "./ts3.4/*.ts"
   }
 }
