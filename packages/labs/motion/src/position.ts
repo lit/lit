@@ -1,4 +1,4 @@
-import {ReactiveElement} from 'reactive-element';
+import {LitElement} from 'lit-element';
 import {nothing, AttributePart} from 'lit-html';
 import {directive, PartInfo, PartType} from 'lit-html/directive.js';
 import {DisconnectableDirective} from 'lit-html/disconnectable-directive.js';
@@ -17,11 +17,10 @@ export type Positions = Array<keyof Positionables>;
 const positionedPoints = ['top', 'right', 'bottom', 'left'];
 
 export class Position extends DisconnectableDirective {
-  private _host?: ReactiveElement;
+  private _host?: LitElement;
   private _element?: Element;
   private _targetCb?: () => HTMLElement;
   private _positions?: Positions;
-  private _hasUpdated = false;
 
   constructor(part: PartInfo) {
     super(part);
@@ -41,10 +40,8 @@ export class Position extends DisconnectableDirective {
     [targetCb, positions]: Parameters<this['render']>
   ) {
     if (this._host === undefined) {
-      this._host = part.options?.host as ReactiveElement;
-      this._host.addController({
-        updated: () => this._updated(),
-      });
+      this._host = part.options?.host as LitElement;
+      this._host.addController(this);
     }
     this._element = part.element;
     this._targetCb = targetCb;
@@ -52,7 +49,7 @@ export class Position extends DisconnectableDirective {
     return this.render(targetCb, positions);
   }
 
-  private _updated() {
+  hostUpdated() {
     this._position();
   }
 

@@ -1,4 +1,4 @@
-import {ReactiveElement} from 'reactive-element';
+import {LitElement} from 'lit-element';
 import {nothing, AttributePart} from 'lit-html';
 import {directive, PartInfo, PartType} from 'lit-html/directive.js';
 import {DisconnectableDirective} from 'lit-html/disconnectable-directive.js';
@@ -93,7 +93,7 @@ const isDirty = (value: unknown, previous: unknown) => {
 };
 
 export class Flip extends DisconnectableDirective {
-  private _host?: ReactiveElement;
+  private _host?: LitElement;
   private _from!: CSSProperties;
   private _to!: CSSProperties;
   private _animatingElement!: HTMLElement;
@@ -121,11 +121,8 @@ export class Flip extends DisconnectableDirective {
 
   update(part: AttributePart, [options]: Parameters<this['render']>) {
     if (this._host === undefined) {
-      this._host = part.options?.host as ReactiveElement;
-      this._host.addController({
-        willUpdate: () => this._willUpdate(),
-        updated: () => this._updated(),
-      });
+      this._host = part.options?.host as LitElement;
+      this._host.addController(this);
     }
     this.options = options || {};
     this.options.animationOptions ??= defaultAnimationOptions;
@@ -154,7 +151,7 @@ export class Flip extends DisconnectableDirective {
     return el ?? this._animatingElement;
   }
 
-  private _willUpdate() {
+  hostUpdate() {
     const value = this.options.guard?.();
     this._shouldAnimate =
       !this._isAnimating() && isDirty(value, this._previousValue);
@@ -177,7 +174,7 @@ export class Flip extends DisconnectableDirective {
     this._nextSibling = this._animatingElement.nextSibling;
   }
 
-  private _updated() {
+  hostUpdated() {
     if (!this._shouldAnimate || !this._animatingElement.isConnected) {
       return;
     }

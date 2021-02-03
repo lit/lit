@@ -37,11 +37,11 @@
       <span>User 3</span>
     </my-element>
     <script type="module">
-      import {LitElement, css} from 'lit-element/lit-element.js';
+      import {LitElement, css} from 'lit-element';
       import {html, unsafeStatic} from 'lit-html/static.js';
-      import {guard} from 'lit-html/directives/guard.js';
-      import {flip} from '../development/animation/flip.js';
-      import {position} from '../development/animation/position.js';
+      // import {guard} from 'lit-html/directives/guard.js';
+      import {flip} from '../development/flip.js';
+      import {position} from '../development/position.js';
 
       class MyElement extends LitElement {
         static styles = [
