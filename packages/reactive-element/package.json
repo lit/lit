@@ -39,10 +39,11 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc --build && rollup -c",
+    "build": "npm run clean && tsc --build && rollup -c && npm run build:babel",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
+    "build:babel": "babel --extensions '.ts' src/test/decorators  --out-dir development/test/decorators-babel",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "clean": "rm -rf {css-tag,decorators,polyfill-support,reactive-controller,reactive-element}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",
@@ -70,10 +71,11 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/plugin-proposal-class-properties": "^7.2.3",
-    "@babel/plugin-proposal-decorators": "^7.2.3",
-    "@babel/plugin-transform-typescript": "^7.2.0",
+    "@babel/core": "^7.12.10",
+    "@babel/cli": "^7.12.10",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/plugin-proposal-decorators": "^7.12.12",
+    "@babel/plugin-transform-typescript": "^7.12.1",
     "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",
