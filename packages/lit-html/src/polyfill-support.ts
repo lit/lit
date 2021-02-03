@@ -88,8 +88,6 @@ const styledScopes: Set<string> = new Set();
 // styling is prepared, and then discarded.
 const scopeCssStore: Map<string, string[]> = new Map();
 
-const construct = globalThis.Reflect?.construct;
-
 const ENABLE_SHADYDOM_NOPATCH = true;
 
 /**
@@ -159,48 +157,35 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     Map<TemplateStringsArray, PatchableTemplate>
   >();
 
-  // Note, it's ok to subclass Template since it's only used via ChildPart.
-  class ShadyTemplate extends Template {
-    // Since polyfill-support will be downleveled to ES5 but may possibly
-    // be used with non-downleveled libraries (e.g. in the case of forcing
-    // polyfills on Chrome, or using ApplyShim), we can't do an ES5 super
-    // call; we must use Reflect.construct if it's available
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-    constructor(...args: any[]) {
-      if (construct === undefined) {
-        super(...args);
-      } else {
-        return construct(Template, args, ShadyTemplate);
+  /**
+   * Override to extract style elements from the template
+   * and store all style.textContent in the shady scope data.
+   * Note, it's ok to patch Template since it's only used via ChildPart.
+   */
+  const originalCreateElement = Template.prototype._$createElement;
+  Template.prototype._$createElement = function (html: string) {
+    const template = originalCreateElement.call(this, html);
+    const scope = this._$options?.scope;
+    if (scope !== undefined) {
+      if (!window.ShadyCSS!.nativeShadow) {
+        window.ShadyCSS!.prepareTemplateDom(template, scope);
       }
+      const scopeCss = cssForScope(scope);
+      // Remove styles and store textContent.
+      const styles = template.content.querySelectorAll(
+        'style'
+      ) as NodeListOf<HTMLStyleElement>;
+      // Store the css in this template in the scope css and remove the <style>
+      // from the template _before_ the node-walk captures part indices
+      scopeCss.push(
+        ...Array.from(styles).map((style) => {
+          style.parentNode?.removeChild(style);
+          return style.textContent!;
+        })
+      );
     }
-    /**
-     * Override to extract style elements from the template
-     * and store all style.textContent in the shady scope data.
-     */
-    _$createElement(html: string) {
-      const template = super._$createElement(html);
-      const scope = this._$options?.scope;
-      if (scope !== undefined) {
-        if (!window.ShadyCSS!.nativeShadow) {
-          window.ShadyCSS!.prepareTemplateDom(template, scope);
-        }
-        const scopeCss = cssForScope(scope);
-        // Remove styles and store textContent.
-        const styles = template.content.querySelectorAll(
-          'style'
-        ) as NodeListOf<HTMLStyleElement>;
-        // Store the css in this template in the scope css and remove the <style>
-        // from the template _before_ the node-walk captures part indices
-        scopeCss.push(
-          ...Array.from(styles).map((style) => {
-            style.parentNode?.removeChild(style);
-            return style.textContent!;
-          })
-        );
-      }
-      return template;
-    }
-  }
+    return template;
+  };
 
   const renderContainer = document.createDocumentFragment();
   const renderContainerMarker = document.createComment('');
@@ -282,7 +267,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     if (template === undefined) {
       templateCache.set(
         strings,
-        (template = new ShadyTemplate(result, this.options))
+        (template = new Template(result, this.options))
       );
     }
     return template;
