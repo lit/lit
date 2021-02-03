@@ -76,6 +76,7 @@ export const cache = directive(
         // Move into cache
         setComittedValue(cachedContainerPart, [childPart]);
         insertPart(cachedContainerPart, undefined, childPart);
+        childPart.setConnected(false);
       }
       // If the new value is a TemplateResult and the previous value is not,
       // or is a different Template as the previous value, restore the child
@@ -95,6 +96,7 @@ export const cache = directive(
           clearPart(containerPart);
           insertPart(containerPart, undefined, cachedPart);
           setComittedValue(containerPart, [cachedPart]);
+          cachedPart.setConnected(true);
         }
         this.value = v;
       } else {

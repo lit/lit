@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "2.0.0-pre.3",
+  "version": "2.0.0-pre.5",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
@@ -21,13 +21,13 @@
       "development": "./development/directive-helpers.js",
       "default": "./directive-helpers.js"
     },
-    "./disconnectable-directive.js": {
-      "development": "./development/disconnectable-directive.js",
-      "default": "./disconnectable-directive.js"
+    "./async-directive.js": {
+      "development": "./development/async-directive.js",
+      "default": "./async-directive.js"
     },
-    "./platform-support.js": {
-      "development": "./development/platform-support.js",
-      "default": "./platform-support.js"
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
     },
     "./directives/": {
       "development": "./development/directives/",
@@ -40,16 +40,20 @@
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"
+    },
+    "./static.js": {
+      "development": "./development/static.js",
+      "default": "./static.js"
     }
   },
   "scripts": {
     "build": "npm run clean && tsc && rollup -c",
     "build:watch": "rollup -c --watch",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
+    "build:ts": "tsc --build",
+    "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf lit-html.{js,js.map,d.ts} platform-support.{js,js.map,d.ts} directive.{js,js.map,d.ts} directive-helpers.{js,js.map,d.ts} disconnectable-directive.{js,js.map,d.ts} hydrate.{js,js.map,d.ts} private-ssr-support.{js,js.map,d.ts} directives/ development/",
+    "clean": "rm -rf {async-directive,directive-helpers,directive,hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
@@ -58,37 +62,17 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
+    "/async-directive.{d.ts,d.ts.map,js,js.map}",
+    "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
+    "/directive.{d.ts,d.ts.map,js,js.map}",
+    "/hydrate.{d.ts,d.ts.map,js,js.map}",
+    "/lit-html.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
+    "/static.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
     "/directives/",
-    "/lit-html.d.ts",
-    "/lit-html.d.ts.map",
-    "/lit-html.js",
-    "/lit-html.js.map",
-    "/directive.d.ts",
-    "/directive.d.ts.map",
-    "/directive.js",
-    "/directive.js.map",
-    "/directive-helpers.d.ts",
-    "/directive-helpers.d.ts.map",
-    "/directive-helpers.js",
-    "/directive-helpers.js.map",
-    "/disconnectable-directive.d.ts",
-    "/disconnectable-directive.d.ts.map",
-    "/disconnectable-directive.js",
-    "/disconnectable-directive.js.map",
-    "/platform-support.d.ts",
-    "/platform-support.d.ts.map",
-    "/platform-support.js",
-    "/platform-support.js.map",
-    "/hydrate.js",
-    "/hydrate.js.map",
-    "/hydrate.d.ts",
-    "/hydrate.d.ts.map",
-    "/private-ssr-support.js",
-    "/private-ssr-support.js.map",
-    "/private-ssr-support.d.ts",
-    "/private-ssr-support.d.ts.map",
     "/src/",
     "!/src/test/"
   ],
@@ -100,6 +84,7 @@
     "@web/test-runner-mocha": "^0.3.5",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/template": "^1.4.4",
     "chokidar-cli": "^2.1.0",
     "concurrently": "^5.3.0",
     "mocha": "^8.1.3",

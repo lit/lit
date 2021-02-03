@@ -21,6 +21,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+#### Changed
+
+- (Since 3.0.0-pre.2) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
+- (Since 3.0.0-pre.2) Renamed `platform-support` to `polyfill-support`.
+- (Since 3.0.0-pre.2) Changed a new `index.js` file as the package entrypoint to export the main export plus the decorators again. This undoes a breaking change in 3.0.0-pre.1 which moved the decorators to `decorators.js`.
+
+  This new file is an upgrade helper: it's more backwards compatible, but immediately deprecated. It's recommended to import from `'lit-element/lit-element.js'` or the new `lit` package with `import {LitElement} from 'lit';`.
+
+## [3.0.0-pre.2] - 2020-12-16
+
 ### Changed
 
 - [Breaking] Update and render callbacks will only be called when the element is
@@ -37,7 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - [Breaking] `UpdatingElement` has been renamed to `ReactiveElement`.
-- [Breaking] The `updating-element` package has been renamed to `reactive-element`.
+- [Breaking] The `updating-element` package has been renamed to
+  `@lit/reactive-element`.
 - [Breaking] The `@internalProperty` decorator has been renamed to `@state`.
 - [Breaking] Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledrejection` event handler on window.
 - [Breaking] `UpdatingElement` has been moved to its own package. The `updating-element`, `css-tag`, and all `decorators` have moved to the `updating-element` package. For convenience, all decorators are re-exported in `LitElement` at `lit-element/decorators` and `lit-element/decorators/*`.

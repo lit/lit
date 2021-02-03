@@ -25,11 +25,11 @@ Full documentation is available at [lit-element.polymer-project.org](https://lit
 
 ## Overview
 
-ReactiveElement is a low level base class for creating custom elements that
-render content to shadowRoot via a user implemented method. It adds API to help
-manage element properties and attributes. ReactiveElement reacts to changes in
-properties and calls the update method which should be implemented to update
-the rendered state of the element.
+`ReactiveElement` is a base class for writing web components that react to changes in properties and attributes. `ReactiveElement` adds reactive properties and a batching, asynchronous update lifecycle to the standard web component APIs. Subclasses can respond to changes and update the DOM to reflect the element state.
+
+`ReactiveElement` doesn't include a DOM template system, but can easily be extended to add one by overriding the `update()` method to call the template library. `LitElement` is such an extension that adds `lit-html` templating.
+
+## Example
 
 ```ts
 import {
@@ -39,7 +39,7 @@ import {
   customElement,
   property,
   PropertyValues,
-} from 'reactive-element';
+} from '@lit/reactive-element';
 
 // This decorator defines the element.
 @customElement('my-element')
@@ -80,21 +80,12 @@ export class MyElement extends ReactiveElement {
 Note, this example uses decorators to create properties. Decorators are a proposed
 standard currently available in [TypeScript](https://www.typescriptlang.org/) or [Babel](https://babeljs.io/docs/en/babel-plugin-proposal-decorators). ReactiveElement also supports a [vanilla JavaScript method](https://lit-element.polymer-project.org/guide/properties#declare) of declaring reactive properties.
 
-## Examples
-
-- Runs in all [supported](#supported-browsers) browsers: [Glitch](https://glitch.com/edit/#!/hello-lit-element?path=index.html)
-
-- Runs in browsers with [JavaScript Modules](https://caniuse.com/#search=modules): [Stackblitz](https://stackblitz.com/edit/lit-element-demo?file=src%2Fmy-element.js), [JSFiddle](https://jsfiddle.net/sorvell1/801f9cdu/), [JSBin](http://jsbin.com/vecuyan/edit?html,output),
-  [CodePen](https://codepen.io/sorvell/pen/RYQyoe?editors=1000).
-
-- You can also copy [this HTML file](https://gist.githubusercontent.com/sorvell/48f4b7be35c8748e8f6db5c66d36ee29/raw/67346e4e8bc4c81d5a7968d18f0a6a8bc00d792e/index.html) into a local file and run it in any browser that supports [JavaScript Modules](<(https://caniuse.com/#search=modules)>).
-
 ## Installation
 
 From inside your project folder, run:
 
 ```bash
-$ npm install reactive-element
+$ npm install @lit/reactive-element
 ```
 
 To install the web components polyfills needed for older browsers:
@@ -105,15 +96,13 @@ $ npm i -D @webcomponents/webcomponentsjs
 
 ## Development mode
 
-reactive-element includes a development mode which adds additional checks that are
+`@lit/reactive-element` includes a development mode which adds additional checks that are
 reported in the console.
 
 To enable development mode, add the `development` exports condition to your node
 resolve configuration.
 
 #### @web/dev-server
-
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
 
 ```js
 {
@@ -124,8 +113,6 @@ resolve configuration.
 ```
 
 #### Rollup
-
-> NOTE: Requires [rollup#540](https://github.com/rollup/plugins/pull/540)
 
 ```js
 {
@@ -154,7 +141,14 @@ resolve configuration.
 The last 2 versions of all modern browsers are supported, including
 Chrome, Safari, Opera, Firefox, Edge. In addition, Internet Explorer 11 is also supported.
 
-Edge and Internet Explorer 11 require the web components polyfills.
+Edge and Internet Explorer 11 require the web components polyfills and the
+`polyfill-support` module included in this package.
+
+```html
+<script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+<script src="node_modules/@lit/reactive-element/polyfill-support.js"></script>
+<!-- load application code -->
+```
 
 ## Contributing
 

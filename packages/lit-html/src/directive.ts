@@ -13,7 +13,7 @@
  */
 
 import {
-  _$private,
+  _Σ,
   AttributePart,
   Disconnectable,
   ChildPart,
@@ -21,7 +21,7 @@ import {
   ElementPart,
 } from './lit-html';
 
-const resolveDirective = _$private._resolveDirective;
+const resolveDirective = _Σ._resolveDirective;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
@@ -117,7 +117,7 @@ export abstract class Directive {
   //@internal
   _$parent: Disconnectable;
 
-  // These will only exist on the DisconnectableDirective subclass
+  // These will only exist on the AsyncDirective subclass
   //@internal
   _$disconnetableChildren?: Set<Disconnectable>;
   //@internal

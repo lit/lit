@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
+    <meta name="manual-polyfills" />
+    <script>
+      window.ShadyDOM = {
+        force: true,
+      };
+      window.customElements = window.customElements || {};
+      window.customElements.forcePolyfill = true;
+    </script>
+    <script src="../../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  </head>
+
+  <body>
+    <script type="module">
+      // TODO(sorvell): node resolution doesn't seem to be working here.
+      import {
+        mocha,
+        sessionFinished,
+        sessionFailed,
+      } from '../../../../tests/node_modules/@web/test-runner-mocha/dist/standalone.js';
+      // import { mocha, sessionFinished, sessionFailed } from '@web/test-runner-mocha';
+
+      (async () => {
+        try {
+          // setup mocha
+          mocha.setup({ui: 'tdd'});
+
+          await import('./reactive-element_html-test.js');
+
+          // run the tests, and notify the test runner after finishing
+          mocha.run(() => {
+            sessionFinished();
+          });
+        } catch (error) {
+          console.error(error);
+          // notify the test runner about errors
+          sessionFailed(error);
+        }
+      })();
+    </script>
+    <div id="mocha"></div>
+  </body>
+</html>

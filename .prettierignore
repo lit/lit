@@ -6,6 +6,8 @@
 node_modules/
 lerna-debug.log
 *.tgz
+*.tsbuildinfo
+.DS_Store
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -18,11 +20,32 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-packages/labs/development/
-packages/labs/node_modules/
-packages/labs/index.*
-packages/labs/frameworks/
-packages/labs/animation/
+packages/labs/task/development/
+packages/labs/task/node_modules/
+packages/labs/task/index.*
+packages/labs/task/task.*
+packages/labs/react/development/
+packages/labs/react/node_modules/
+packages/labs/react/index.*
+packages/labs/react/create-component.*
+packages/lit/decorators/
+packages/lit/development/
+packages/lit/directives/
+packages/lit/node_modules/
+packages/lit/test/
+
+packages/lit/decorators.*
+packages/lit/directive-helpers.*
+packages/lit/directive.*
+packages/lit/async-directive.*
+packages/lit/html.*
+packages/lit/hydrate-support.*
+packages/lit/hydrate.*
+packages/lit/index.*
+packages/lit/static-html.*
+
+packages/lit/lit.min.*
+packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
@@ -34,9 +57,10 @@ packages/lit-element/node_modules/
 packages/lit-element/test/
 packages/lit-element/decorators.*
 packages/lit-element/hydrate-support.*
+packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
-packages/lit-element/platform-support.*
+packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
@@ -47,8 +71,8 @@ packages/lit-html/hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
-packages/lit-html/disconnectable-directive.*
-packages/lit-html/platform-support.*
+packages/lit-html/async-directive.*
+packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
@@ -57,6 +81,32 @@ packages/lit-ssr/lib/
 packages/lit-ssr/node_modules/
 packages/lit-ssr/test/
 packages/lit-ssr/index.*
+
+packages/lit-starter-ts/node_modules/
+packages/lit-starter-ts/lib/
+packages/lit-starter-ts/test/
+packages/lit-starter-ts/**/custom-elements.json
+# top level source
+packages/lit-starter-ts/**/my-element.js
+packages/lit-starter-ts/**/my-element.js.map
+packages/lit-starter-ts/**/my-element.d.ts
+packages/lit-starter-ts/**/my-element.d.ts.map
+
+packages/lit-starter-ts/node_modules/*
+packages/lit-starter-ts/docs/*
+packages/lit-starter-ts/docs-src/*
+packages/lit-starter-ts/**/rollup-config.js
+packages/lit-starter-ts/**/custom-elements.json
+
+packages/lit-starter-js/node_modules/
+packages/lit-starter-js/**/custom-elements.json
+# only generated for size check
+packages/lit-starter-js/**/my-element.bundled.js
+packages/lit-starter-js/node_modules/*
+packages/lit-starter-js/docs/*
+packages/lit-starter-js/docs-src/*
+packages/lit-starter-js/**/rollup-config.js
+packages/lit-starter-js/**/custom-elements.json
 
 packages/localize/lib/
 packages/localize/lib_client/
@@ -77,8 +127,9 @@ packages/reactive-element/development/
 packages/reactive-element/test/
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
-packages/reactive-element/platform-support.*
+packages/reactive-element/polyfill-support.*
 packages/reactive-element/reactive-element.*
+packages/reactive-element/reactive-controller.*
 
 packages/localize/examples/
 packages/localize/testdata/

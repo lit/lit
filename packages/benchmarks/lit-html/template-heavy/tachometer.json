@@ -52,7 +52,7 @@
                   "npm run build"
                 ]
               },
-              "reactive-element": {
+              "@lit/reactive-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
                 "ref": "lit-next",
@@ -74,7 +74,7 @@
             "dependencies": {
               "lit-html": "^1.0.0",
               "lit-element": "^2.0.0",
-              "reactive-element": {
+              "@lit/reactive-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
                 "ref": "lit-next",

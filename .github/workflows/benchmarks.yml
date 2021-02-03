@@ -27,15 +27,17 @@ jobs:
 
       # Cache all of our node_modules/ directories and playwright browser
       # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules/playwright
+      - name: Restore node_modules
         id: cache
         uses: actions/cache@v2
         with:
           path: |
             node_modules
-            */*/node_modules
+            **/node_modules
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: npm-playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          # Bump the number after `lit-node-modules` to force a cache update
+          # Note there are 2 cache actions in `tests.yml` that should all keep keys in sync
+          key: lit-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: NPM install
         if: steps.cache.outputs.cache-hit != 'true'

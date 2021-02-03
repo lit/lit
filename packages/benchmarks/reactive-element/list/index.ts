@@ -16,9 +16,9 @@ import {
   PropertyDeclaration,
   PropertyValues,
   css,
-  Controller,
-} from 'reactive-element';
-import {property} from 'reactive-element/decorators.js';
+  ReactiveController,
+} from '@lit/reactive-element';
+import {property} from '@lit/reactive-element/decorators.js';
 import {queryParams} from '../../utils/query-params.js';
 
 (async () => {
@@ -65,7 +65,7 @@ import {queryParams} from '../../utils/query-params.js';
 
   const useController = queryParams.controller;
 
-  class MyController implements Controller {
+  class MyController implements ReactiveController {
     host: ReactiveElement;
     isConnected = false;
     value = '';
@@ -73,17 +73,17 @@ import {queryParams} from '../../utils/query-params.js';
       this.host = host;
       this.host.addController(this);
     }
-    connectedCallback() {
+    hostConnected() {
       this.isConnected = true;
     }
-    disconnectedCallback() {
+    hostDisconnected() {
       this.isConnected = false;
     }
-    willUpdate() {
+    hostUpdate() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.value = (this.host as any).time;
     }
-    updated() {}
+    hostUpdated() {}
   }
 
   class XThing extends ReactiveElement {

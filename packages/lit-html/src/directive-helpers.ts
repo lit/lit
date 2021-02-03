@@ -13,8 +13,7 @@
  */
 
 import {
-  _$private,
-  AttributePart,
+  _Σ,
   ChildPart,
   Part,
   DirectiveParent,
@@ -28,7 +27,16 @@ import {
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
-const {_ChildPart: ChildPartImpl} = _$private;
+const {_ChildPart: ChildPartImpl} = _Σ;
+
+const ENABLE_SHADYDOM_NOPATCH = true;
+
+const wrap =
+  ENABLE_SHADYDOM_NOPATCH &&
+  window.ShadyDOM?.inUse &&
+  window.ShadyDOM?.noPatch === true
+    ? window.ShadyDOM!.wrap
+    : (node: Node) => node;
 
 /**
  * Tests if a value is a primitive value.
@@ -97,14 +105,14 @@ export const insertPart = (
   refPart: ChildPart | undefined,
   part?: ChildPart
 ): ChildPart => {
-  const container = containerPart._$startNode.parentNode!;
+  const container = wrap(containerPart._$startNode).parentNode!;
 
   const refNode =
     refPart === undefined ? containerPart._$endNode : refPart._$startNode;
 
   if (part === undefined) {
-    const startNode = container.insertBefore(createMarker(), refNode);
-    const endNode = container.insertBefore(createMarker(), refNode);
+    const startNode = wrap(container).insertBefore(createMarker(), refNode);
+    const endNode = wrap(container).insertBefore(createMarker(), refNode);
     part = new ChildPartImpl(
       startNode,
       endNode,
@@ -112,12 +120,21 @@ export const insertPart = (
       containerPart.options
     );
   } else {
-    const endNode = part._$endNode!.nextSibling;
-    if (endNode !== refNode) {
+    const endNode = wrap(part._$endNode!).nextSibling;
+    const parentChanged = part._$parent !== containerPart;
+    if (parentChanged) {
+      part._$reparentDisconnectables?.(containerPart);
+      // Note that although `_$reparentDisconnectables` updates the part's
+      // `_$parent` reference after unlinking from its current parent, that
+      // method only exists if Disconnectables are present, so we need to
+      // unconditionally set it here
+      part._$parent = containerPart;
+    }
+    if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
       while (start !== endNode) {
-        const n: Node | null = start!.nextSibling;
-        container.insertBefore(start!, refNode);
+        const n: Node | null = wrap(start!).nextSibling;
+        wrap(container).insertBefore(start!, refNode);
         start = n;
       }
     }
@@ -135,31 +152,19 @@ export const insertPart = (
  * should return a value from `update`/`render` to update their part state.
  *
  * For directives that require setting their part value asynchronously, they
- * should extend `DisconnectableDirective` and call `this.setValue()`.
+ * should extend `AsyncDirective` and call `this.setValue()`.
  *
  * @param part Part to set
  * @param value Value to set
  * @param index For `AttributePart`s, the index to set
  * @param directiveParent Used internally; should not be set by user
  */
-export const setPartValue = <T extends Part>(
+export const setChildPartValue = <T extends ChildPart>(
   part: T,
   value: unknown,
-  index?: number,
   directiveParent: DirectiveParent = part
 ): T => {
-  if ((part as AttributePart).strings !== undefined) {
-    if (index === undefined) {
-      throw new Error(
-        "An index must be provided to set an AttributePart's value."
-      );
-    }
-    const newValues = [...(part._$committedValue as Array<unknown>)];
-    newValues[index] = value;
-    (part as AttributePart)._$setValue(newValues, directiveParent, 0);
-  } else {
-    part._$setValue(value, directiveParent);
-  }
+  part._$setValue(value, directiveParent);
   return part;
 };
 
@@ -205,10 +210,10 @@ export const getComittedValue = (part: ChildPart) => part._$committedValue;
 export const removePart = (part: ChildPart) => {
   part._$setChildPartConnected?.(false, true);
   let start: ChildNode | null = part._$startNode;
-  const end: ChildNode | null = part._$endNode!.nextSibling;
+  const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
   while (start !== end) {
-    const n: ChildNode | null = start!.nextSibling;
-    start!.remove();
+    const n: ChildNode | null = wrap(start!).nextSibling;
+    (wrap(start!) as ChildNode).remove();
     start = n;
   }
 };

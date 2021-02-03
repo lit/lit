@@ -3,5 +3,6 @@
 /test/
 /css-tag.*
 /decorators.*
-/platform-support.*
+/polyfill-support.*
 /reactive-element.*
+/reactive-controller.*

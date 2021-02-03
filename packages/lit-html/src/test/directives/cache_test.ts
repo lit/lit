@@ -16,6 +16,7 @@ import {html, render} from '../../lit-html.js';
 import {cache} from '../../directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
+import {directive, AsyncDirective} from '../../async-directive.js';
 
 suite('cache directive', () => {
   let container: HTMLDivElement;
@@ -97,6 +98,20 @@ suite('cache directive', () => {
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
   });
 
+  test('caches templates when switching against TemplateResult and undefined values', () => {
+    const renderCached = (v: unknown) =>
+      render(html`<div>${cache(v)}</div>`, container);
+
+    renderCached(html`A`);
+    assert.equal(stripExpressionComments(container.innerHTML), '<div>A</div>');
+
+    renderCached(undefined);
+    assert.equal(stripExpressionComments(container.innerHTML), '<div></div>');
+
+    renderCached(html`B`);
+    assert.equal(stripExpressionComments(container.innerHTML), '<div>B</div>');
+  });
+
   test('cache can be dynamic', () => {
     const renderMaybeCached = (condition: any, v: string) =>
       render(
@@ -121,5 +136,67 @@ suite('cache directive', () => {
 
     renderMaybeCached(false, 'D');
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
+  });
+
+  test('async directives disconnet/reconnect when moved in/out of cache', () => {
+    const disconnectable = directive(
+      class extends AsyncDirective {
+        log: string[] | undefined;
+        id: string | undefined;
+        render(log: string[], id: string) {
+          this.log = log;
+          this.id = id;
+          this.log.push(`render-${this.id}`);
+          return id;
+        }
+        disconnected() {
+          this.log!.push(`disconnected-${this.id}`);
+        }
+        reconnected() {
+          this.log!.push(`reconnected-${this.id}`);
+        }
+      }
+    );
+    const renderCached = (log: string[], condition: boolean) =>
+      render(
+        html`<div>${cache(
+          condition
+            ? html`<div>${disconnectable(log, 'a')}</div>`
+            : html`<span>${disconnectable(log, 'b')}</span>`
+        )}</div>`,
+        container
+      );
+    const log: string[] = [];
+
+    renderCached(log, true);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div><div>a</div></div>'
+    );
+    assert.deepEqual(log, ['render-a']);
+
+    log.length = 0;
+    renderCached(log, false);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div><span>b</span></div>'
+    );
+    assert.deepEqual(log, ['disconnected-a', 'render-b']);
+
+    log.length = 0;
+    renderCached(log, true);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div><div>a</div></div>'
+    );
+    assert.deepEqual(log, ['disconnected-b', 'reconnected-a', 'render-a']);
+
+    log.length = 0;
+    renderCached(log, false);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div><span>b</span></div>'
+    );
+    assert.deepEqual(log, ['disconnected-a', 'reconnected-b', 'render-b']);
   });
 });

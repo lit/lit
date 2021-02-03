@@ -20,6 +20,8 @@ interface ShadyCSS {
 interface ShadyDOM {
   inUse: boolean;
   flush: () => void;
+  noPatch: boolean | string;
+  wrap: (node: Node) => Node;
 }
 
 interface Window {
@@ -27,7 +29,7 @@ interface Window {
   ShadyDOM?: ShadyDOM;
   ShadowRoot: typeof ShadowRoot;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updatingElementPlatformSupport: (options: {[index: string]: any}) => void;
+  reactiveElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   litElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -19,10 +19,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- (Since 1.0.0-pre.1) Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
+
+### Fixed
+
+### Changed
+
+- (Since 1.0.0-pre.1) Fixed `@query` decorator when cache flag is used and code is compiled with Babel.
+
+- (Since 1.0.0-pre.1) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
+- (Since 1.0.0-pre.1) `ReactiveController` callbacks all now begin with `host`, for example `hostConnected`, `hostDisconnected`, `hostUpdate`, `hostUpdated`.
+- (Since 1.0.0-pre.1) If a `Controller` is added after a host element is connected, its `connected` will be called.
+- (Since 1.0.0-pre.1) Removed `willUpdate` from `ReactiveController`.
+- (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.
+- (Since 1.0.0-pre.1) Renamed `Controller` to `ReactiveController`.
+
+## [1.0.0-pre.1] - 2020-12-16
+
 ### Changed
 
 - [Breaking] (since 3.0.0-pre1) `UpdatingElement` has been renamed to `ReactiveElement`.
-- [Breaking] (since 3.0.0-pre1) The `updating-element` package has been renamed to `reactive-element`.
+- [Breaking] (since 3.0.0-pre1) The `updating-element` package has been renamed to `@lit/reactive-element`.
 - [Breaking] (since 3.0.0-pre1) The `@internalProperty` decorator has been renamed to `@state`.
 - [Breaking] For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
 - [Breaking] When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).

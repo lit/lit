@@ -26,8 +26,8 @@
     "benchmark:reactive-element:list-update": "tach --config reactive-element/list/tachometer-update.json",
     "benchmark:reactive-element:list-update-reflect": "tach --config reactive-element/list/tachometer-update-reflect.json",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config reactive-element/list/tachometer.json",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsc --build",
+    "build:watch": "tsc --build --watch",
     "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
     "link:dev": "rm -f node_modules/lit-{html,element} && ln -s ../../lit-html/development node_modules/lit-html && ln -sf ../package.json ../lit-html/development/package.json && ln -s ../../lit-element/development node_modules/lit-element && ln -sf ../package.json ../lit-element/development/package.json",
     "link:prod": "rm -f node_modules/lit-{html,element} && ln -s ../../lit-html node_modules/lit-html && ln -s ../../lit-element node_modules/lit-element",
@@ -35,10 +35,10 @@
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
-    "lit-element": "^3.0.0-pre.1",
-    "lit-html": "^2.0.0-pre.1",
+    "lit-element": "^3.0.0-pre.2",
+    "lit-html": "^2.0.0-pre.4",
     "tachometer": "^0.5.3",
-    "reactive-element": "^1.0.0-pre.1"
+    "@lit/reactive-element": "^1.0.0-pre.1"
   },
   "devDependencies": {
     "chromedriver": "^87.0.1",

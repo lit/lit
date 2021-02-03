@@ -19,11 +19,11 @@
  * not an arrow function.
  */
 
-export * from './decorators/customElement.js';
-export * from './decorators/property.js';
-export * from './decorators/state.js';
-export * from './decorators/eventOptions.js';
-export * from './decorators/query.js';
-export * from './decorators/queryAll.js';
-export * from './decorators/queryAsync.js';
-export * from './decorators/queryAssignedNodes.js';
+export * from '@lit/reactive-element/decorators/custom-element.js';
+export * from '@lit/reactive-element/decorators/property.js';
+export * from '@lit/reactive-element/decorators/state.js';
+export * from '@lit/reactive-element/decorators/event-options.js';
+export * from '@lit/reactive-element/decorators/query.js';
+export * from '@lit/reactive-element/decorators/query-all.js';
+export * from '@lit/reactive-element/decorators/query-async.js';
+export * from '@lit/reactive-element/decorators/query-assigned-nodes.js';

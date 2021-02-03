@@ -6,7 +6,7 @@
 /lit-html.*
 /directive.*
 /directive-helpers.*
-/disconnectable-directive.*
-/platform-support.*
+/async-directive.*
+/polyfill-support.*
 /private-ssr-support.*
 /static.*

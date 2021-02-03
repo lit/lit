@@ -25,7 +25,16 @@ import {
   CSSResultOrNative,
   CSSResultFlatArray,
 } from './css-tag.js';
+import type {
+  ReactiveController,
+  ReactiveControllerHost,
+} from './reactive-controller.js';
+
 export * from './css-tag.js';
+export type {
+  ReactiveController,
+  ReactiveControllerHost,
+} from './reactive-controller.js';
 
 const DEV_MODE = true;
 
@@ -48,7 +57,7 @@ if (DEV_MODE) {
   ) {
     console.warn(
       `Shadow DOM is being polyfilled via ShadyDOM but ` +
-        `the \`platform-support\` module has not been loaded.`
+        `the \`polyfill-support\` module has not been loaded.`
     );
   }
 
@@ -269,15 +278,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
-export interface Controller {
-  connectedCallback?(): void;
-  disconnectedCallback?(): void;
-  willUpdate?(): void;
-  update?(): void;
-  updated?(): void;
-  requestUpdate?(): void;
-}
-
 /**
  * The Closure JS Compiler doesn't currently have good support for static
  * property semantics where "this" is dynamic (e.g.
@@ -294,10 +294,15 @@ export type Warnings = 'change-in-update' | 'migration';
  * should be supplied by subclassers to render updates as desired.
  * @noInheritDoc
  */
-export abstract class ReactiveElement extends HTMLElement {
+export abstract class ReactiveElement
+  extends HTMLElement
+  implements ReactiveControllerHost {
   // Note, these are patched in only in DEV_MODE.
+  /** @nocollapse */
   static enabledWarnings?: Warnings[];
+  /** @nocollapse */
   static enableWarning?: (type: Warnings) => void;
+  /** @nocollapse */
   static disableWarning?: (type: Warnings) => void;
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
@@ -309,6 +314,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * Maps attribute names to properties; for example `foobar` attribute to
    * `fooBar` property. Created lazily on user subclasses when finalizing the
    * class.
+   * @nocollapse
    */
   private static __attributeToPropertyMap: AttributeMap;
 
@@ -320,6 +326,7 @@ export abstract class ReactiveElement extends HTMLElement {
   /**
    * Memoized list of all element properties, including any superclass properties.
    * Created lazily on user subclasses when finalizing the class.
+   * @nocollapse
    */
   static elementProperties?: PropertyDeclarationMap;
 
@@ -345,18 +352,21 @@ export abstract class ReactiveElement extends HTMLElement {
    * private property set with the `state: true` option should be used. When
    * needed, state properties can be initialized via public properties to
    * facilitate complex interactions.
+   * @nocollapse
    */
   static properties: PropertyDeclarations;
 
   /**
    * Memoized list of all element styles.
    * Created lazily on user subclasses when finalizing the class.
+   * @nocollapse
    */
   static elementStyles?: CSSResultFlatArray;
 
   /**
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
+   * @nocollapse
    */
   static styles?: CSSResultGroup;
 
@@ -540,9 +550,8 @@ export abstract class ReactiveElement extends HTMLElement {
         if (obj[name] !== undefined) {
           console.warn(
             `\`${name}\` is implemented. It ` +
-              `has been removed from this version of ReactiveElement. `
-            // TODO(sorvell): add link to changelog when location has stabilized.
-            // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
+              `has been removed from this version of ReactiveElement.` +
+              ` See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
           );
         }
       };
@@ -562,6 +571,7 @@ export abstract class ReactiveElement extends HTMLElement {
    *
    * Note, these options are used in `createRenderRoot`. If this method
    * is customized, options should be respected if possible.
+   * @nocollapse
    */
   static shadowRootOptions: ShadowRootInit = {mode: 'open'};
 
@@ -622,7 +632,7 @@ export abstract class ReactiveElement extends HTMLElement {
   private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
-  private __updatePromise!: Promise<unknown>;
+  private __updatePromise!: Promise<boolean>;
 
   private __pendingConnectionPromise: Promise<void> | undefined = undefined;
   private __enableConnection: (() => void) | undefined = undefined;
@@ -633,8 +643,10 @@ export abstract class ReactiveElement extends HTMLElement {
   /**
    * Map with keys for any properties that have changed since the last
    * update cycle with previous values.
+   *
+   * @internal
    */
-  private __changedProperties!: PropertyValues;
+  _$changedProperties!: PropertyValues;
 
   /**
    * Map with keys of properties that should be reflected when updated.
@@ -649,22 +661,41 @@ export abstract class ReactiveElement extends HTMLElement {
   /**
    * Set of controllers.
    */
-  private __controllers?: Controller[];
+  private __controllers?: ReactiveController[];
 
   constructor() {
     super();
-    this.__updatePromise = new Promise<void>(
+    this._initialize();
+  }
+
+  /**
+   * Internal only override point for customizing work done when elements
+   * are constructed.
+   *
+   * @internal
+   */
+  _initialize() {
+    this.__updatePromise = new Promise<boolean>(
       (res) => (this.enableUpdating = res)
     );
-    this.__changedProperties = new Map();
+    this._$changedProperties = new Map();
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
   }
 
-  addController(controller: Controller) {
+  addController(controller: ReactiveController) {
     (this.__controllers ??= []).push(controller);
+    if (this.isConnected) {
+      controller.hostConnected?.();
+    }
+  }
+
+  removeController(controller: ReactiveController) {
+    // Note, if the indexOf is -1, the >>> will flip the sign which makes the
+    // splice do nothing.
+    this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
   }
 
   /**
@@ -724,8 +755,8 @@ export abstract class ReactiveElement extends HTMLElement {
         renderRoot: Element | DocumentFragment;
       }).renderRoot = this.createRenderRoot();
     }
-    this.enableUpdating();
-    this.__controllers?.forEach((c) => c.connectedCallback?.());
+    this.enableUpdating(true);
+    this.__controllers?.forEach((c) => c.hostConnected?.());
     // If we were disconnected, re-enable updating by resolving the pending
     // connection promise
     if (this.__enableConnection) {
@@ -739,7 +770,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * overridden on the element instance with a function that triggers the first
    * update.
    */
-  protected enableUpdating() {}
+  protected enableUpdating(_requestedUpdate: boolean) {}
 
   /**
    * Allows for `super.disconnectedCallback()` in extensions while
@@ -747,7 +778,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * when disconnecting at some point in the future.
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.disconnectedCallback?.());
+    this.__controllers?.forEach((c) => c.hostDisconnected?.());
     this.__pendingConnectionPromise = new Promise(
       (r) => (this.__enableConnection = r)
     );
@@ -855,7 +886,7 @@ export abstract class ReactiveElement extends HTMLElement {
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
-  ) {
+  ): void {
     let shouldRequestUpdate = true;
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -864,8 +895,8 @@ export abstract class ReactiveElement extends HTMLElement {
         (this.constructor as typeof ReactiveElement).getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
-        if (!this.__changedProperties.has(name)) {
-          this.__changedProperties.set(name, oldValue);
+        if (!this._$changedProperties.has(name)) {
+          this._$changedProperties.set(name, oldValue);
         }
         // Add to reflecting properties set.
         // Note, it's important that every change has a chance to add the
@@ -887,7 +918,7 @@ export abstract class ReactiveElement extends HTMLElement {
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? requestUpdateThenable : undefined;
+    return DEV_MODE ? ((requestUpdateThenable as unknown) as void) : undefined;
   }
 
   /**
@@ -979,13 +1010,12 @@ export abstract class ReactiveElement extends HTMLElement {
       this.__instanceProperties = undefined;
     }
     let shouldUpdate = false;
-    const changedProperties = this.__changedProperties;
+    const changedProperties = this._$changedProperties;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
-        this.__controllers?.forEach((c) => c.willUpdate?.());
         this.willUpdate(changedProperties);
-        this.__controllers?.forEach((c) => c.update?.());
+        this.__controllers?.forEach((c) => c.hostUpdate?.());
         this.update(changedProperties);
       } else {
         this.__markUpdated();
@@ -1006,14 +1036,14 @@ export abstract class ReactiveElement extends HTMLElement {
 
   willUpdate(_changedProperties: PropertyValues) {}
 
-  // Note, this is an override point for platform-support.
+  // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this.__controllers?.forEach((c) => c.updated?.());
+    this.__controllers?.forEach((c) => c.hostUpdated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1032,7 +1062,7 @@ export abstract class ReactiveElement extends HTMLElement {
   }
 
   private __markUpdated() {
-    this.__changedProperties = new Map();
+    this._$changedProperties = new Map();
     this.isUpdatePending = false;
   }
 
@@ -1051,7 +1081,7 @@ export abstract class ReactiveElement extends HTMLElement {
    * @return A promise of a boolean that indicates if the update resolved
    *     without triggering another update.
    */
-  get updateComplete() {
+  get updateComplete(): Promise<boolean> {
     return this.getUpdateComplete();
   }
 
@@ -1071,7 +1101,7 @@ export abstract class ReactiveElement extends HTMLElement {
    *     }
    *   }
    */
-  protected getUpdateComplete() {
+  protected getUpdateComplete(): Promise<boolean> {
     return this.__updatePromise;
   }
 
@@ -1142,13 +1172,19 @@ if (DEV_MODE) {
       ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };
-  ReactiveElement.enableWarning = function (warning: Warnings) {
+  ReactiveElement.enableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     if (this.enabledWarnings!.indexOf(warning) < 0) {
       this.enabledWarnings!.push(warning);
     }
   };
-  ReactiveElement.disableWarning = function (warning: Warnings) {
+  ReactiveElement.disableWarning = function (
+    this: typeof ReactiveElement,
+    warning: Warnings
+  ) {
     ensureOwnWarnings(this);
     const i = this.enabledWarnings!.indexOf(warning);
     if (i >= 0) {
@@ -1156,3 +1192,16 @@ if (DEV_MODE) {
     }
   };
 }
+
+declare global {
+  interface Window {
+    reactiveElementVersions: string[];
+  }
+}
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for ReactiveElement usage.
+// TODO(justinfagnani): inject version number at build time
+(
+  window['reactiveElementVersions'] || (window['reactiveElementVersions'] = [])
+).push('1.0.0-pre.1');

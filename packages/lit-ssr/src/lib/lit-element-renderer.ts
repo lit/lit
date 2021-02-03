@@ -14,12 +14,12 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit-element';
-import {_$private} from 'lit-element/private-ssr-support.js';
+import {_Φ} from 'lit-element/private-ssr-support.js';
 import {render, renderValue, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty} = _$private;
+const {attributeToProperty, changedProperties} = _Φ;
 
 /**
  * ElementRenderer implementation for LitElements
@@ -30,6 +30,10 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
+    // Call LitElement's `willUpdate` method.
+    // Note, this method is required not to use DOM APIs.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.element as any)?.willUpdate(changedProperties(this.element as any));
     // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

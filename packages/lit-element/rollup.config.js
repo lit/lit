@@ -17,24 +17,24 @@ import {litProdConfig} from '../../rollup-common.js';
 export default litProdConfig({
   classPropertyPrefix: 'Φ',
   entryPoints: [
+    'index',
     'lit-element',
     'hydrate-support',
     'private-ssr-support',
     'decorators',
-    'decorators/customElement',
-    'decorators/eventOptions',
+    'decorators/custom-element',
+    'decorators/event-options',
     'decorators/state',
     'decorators/property',
     'decorators/query',
-    'decorators/queryAll',
-    'decorators/queryAssignedNodes',
-    'decorators/queryAsync',
-    'demo/my-element',
+    'decorators/query-all',
+    'decorators/query-assigned-nodes',
+    'decorators/query-async',
   ],
-  external: ['lit-html', 'reactive-element'],
+  external: ['lit-html', '@lit/reactive-element'],
   bundled: [
     {
-      file: 'platform-support',
+      file: 'polyfill-support',
     },
   ],
 });

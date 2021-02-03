@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {queryAll} from '../../decorators/queryAll.js';
+import {queryAll} from '../../decorators/query-all.js';
 import {
   canTestReactiveElement,
   generateElementName,

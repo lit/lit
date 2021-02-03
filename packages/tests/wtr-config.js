@@ -36,8 +36,8 @@ export const prodResolveRemapConfig = {
     // Remap any other development/ modules up one level to the production
     // version.
     {from: 'lit-html/development/', to: 'lit-html/'},
-    {from: 'reactive-element/development/', to: 'reactive-element/'},
     {from: 'lit-element/development/', to: 'lit-element/'},
+    {from: 'reactive-element/development/', to: 'reactive-element/'},
   ],
 };
 

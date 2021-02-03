@@ -54,9 +54,9 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, ReactiveElement} from 'reactive-element';
+import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
 import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
-export * from 'reactive-element';
+export * from '@lit/reactive-element';
 export * from 'lit-html';
 
 // For backwards compatibility export ReactiveElement as UpdatingElement. Note,
@@ -75,7 +75,7 @@ declare global {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 (window['litElementVersions'] || (window['litElementVersions'] = [])).push(
-  '3.0.0-pre.1'
+  '3.0.0-pre.2'
 );
 
 /**
@@ -92,7 +92,7 @@ export class LitElement extends ReactiveElement {
    * it will not needlessly try to `finalize`.
    *
    * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See reactive-element for more information.
+   * optimizations. See @lit/reactive-element for more information.
    */
   protected static ['finalized'] = true;
 
@@ -198,14 +198,17 @@ if (DEV_MODE) {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _$private object containing those members (or
+ * client side code, we export a _Φ object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
  *
+ * This has a unique name, to disambiguate it from private exports in
+ * lit-html, since this module re-exports all of lit-html.
+ *
  * @private
  */
-export const _$private = {
+export const _Φ = {
   _$attributeToProperty: (
     el: LitElement,
     name: string,
@@ -213,4 +216,5 @@ export const _$private = {
   ) => {
     el._$attributeToProperty(name, value);
   },
+  _$changedProperties: (el: LitElement) => el._$changedProperties,
 };

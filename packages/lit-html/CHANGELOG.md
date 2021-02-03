@@ -21,6 +21,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Fixed
+
+- Nested directives whose parent returns `noChange` are now unchanged. This
+  allows the `guard` directive to guard directive values ([#1519](https://github.com/Polymer/lit-html/issues/1519)).
+
+#### Changed
+
+- (Since 2.0.0-pre.4) `DisconnectableDirective` was renamed to `AsyncDirective`, and its module name was renamed from `disconnectable-directive` to `async-directive`.
+- (Since 2.0.0-pre.4) Rendering `null`, `undefined`, or empty string in a `ChildPart` now has the same affect as rendering `nothing`: it does not produce an empty text node. When rendering into an element with Shadow DOM, this makes it harder to inadvertently prevent `<slot>` fallback content from rendering.
+- (Since 2.0.0-pre.4) `DisconnectableDirective`'s `disconnectedCallback` and `reconnectedCallback` were renamed to `disconnected` and `reconnected`.
+- (Since 2.0.0-pre.4) Renamed `platform-support` to `polyfill-support`.
+
+## [2.0.0-pre.4] - 2020-12-16
+
 ### Added
 
 - `render` now returns the `NodePart` that was created/updated by `render`.
@@ -80,6 +94,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [Breaking] (since 2.0.0-pre.3) The part exports (`ChildPart`,
   `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
+
+- [Breaking] (since 2.0.0-pre.3) The `setPartValue` function in
+  `directove-helpers.js` has been renamed to `setChildPartValue` and now only
+  supports ChildParts. Directives that require updating their container
+  part outside the `render`/`update` lifecycle should extend
+  `DisconnectableDirective` and use `this.setValue()`.
+- [Breaking] (since 2.0.0-pre.3) [Breaking] The `eventContext` render option has been changed to `host`.
 
   <!-- ### Fixed -->
   <!-- ### Removed -->
@@ -239,8 +260,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.13.0] - 2018-11-08
 
 ### Changed
-
-= [Breaking] The `eventContext` render option has been changed to `host`.
 
 - [Breaking] Directives are now defined by passing the entire directive factory function to `directive()`. ([#562](https://github.com/Polymer/lit-html/pull/562))
 

@@ -12,10 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {nothing, ElementPart} from '../lit-html.js';
-import {
-  directive,
-  DisconnectableDirective,
-} from '../disconnectable-directive.js';
+import {directive, AsyncDirective} from '../async-directive.js';
 
 /**
  * Creates a new Ref object, which is container for a reference to an element.
@@ -44,7 +41,7 @@ const lastElementForCallback: WeakMap<
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 
-class RefDirective extends DisconnectableDirective {
+class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
 
@@ -95,7 +92,7 @@ class RefDirective extends DisconnectableDirective {
       : this._ref?.value;
   }
 
-  disconnectedCallback() {
+  disconnected() {
     // Only clear the box if our element is still the one in it (i.e. another
     // directive instance hasn't rendered its element to it before us); that
     // only happens in the event of the directive being cleared (not via manual
@@ -105,7 +102,7 @@ class RefDirective extends DisconnectableDirective {
     }
   }
 
-  reconnectedCallback() {
+  reconnected() {
     // If we were manually disconnected, we can safely put our element back in
     // the box, since no rendering could have occurred to change its state
     this._updateRefValue(this._element);
