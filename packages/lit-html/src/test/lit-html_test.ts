@@ -280,6 +280,7 @@ suite('lit-html', () => {
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
+      assertRender(html`<div abc="${'A'}/>"></div>`, '<div abc="A/>"></div>');
       assertRender(html`<input value="${'A'}"/>`, '<input value="A">');
     });
 

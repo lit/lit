@@ -495,8 +495,10 @@ const getTemplateHtml = (
     //     position (attrNameEndIndex === -2), add a sequential suffix to
     //     generate a unique attribute name.
 
-    // detect a binding next to self-closing tag end
-    const end = strings[i + 1].startsWith('/>') ? ' ' : '';
+    // Detect a binding next to self-closing tag end and insert a space to
+    // separate the marker from the tag end:
+    const end =
+      regex === tagEndRegex && strings[i + 1].startsWith('/>') ? ' ' : '';
     html +=
       regex === textEndRegex
         ? s + nodeMarker
