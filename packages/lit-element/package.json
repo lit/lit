@@ -51,7 +51,7 @@
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf index.{js,js.map,d.ts} lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/ tsconfig.tsbuildinfo",
+    "clean": "rm -rf {decorators,hydrate-support,index,lit-element,polyfill-support,private-ssr-support,lit.min}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -64,14 +64,14 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/index.{d.ts,d.ts.map,js,js.map}",
     "/decorators.{d.ts,d.ts.map,js,js.map}",
-    "/decorators/",
-    "/development/",
     "/hydrate-support.{d.ts,d.ts.map,js,js.map}",
+    "/index.{d.ts,d.ts.map,js,js.map}",
     "/lit-element.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
+    "/decorators/",
+    "/development/",
     "/src/",
     "!/src/demo/",
     "!/src/test/"

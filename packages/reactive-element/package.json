@@ -25,13 +25,17 @@
       "development": "./development/css-tag.js",
       "default": "./css-tag.js"
     },
-    "./decorators.js": {
-      "development": "./development/decorators.js",
-      "default": "./decorators.js"
+    "./reactive-controller.js": {
+      "development": "./development/reactive-controller.js",
+      "default": "./reactive-controller.js"
     },
     "./decorators/": {
       "development": "./development/decorators/",
       "default": "./decorators/"
+    },
+    "./decorators.js": {
+      "development": "./development/decorators.js",
+      "default": "./decorators.js"
     }
   },
   "scripts": {
@@ -41,7 +45,7 @@
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf reactive-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} css-tag.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} decorators/ development/ tsconfig.tsbuildinfo",
+    "clean": "rm -rf {css-tag,decorators,polyfill-support,reactive-controller,reactive-element}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -55,13 +59,14 @@
   "files": [
     "/css-tag.{d.ts,d.ts.map,js,js.map}",
     "/decorators.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/reactive-controller.{d.ts,d.ts.map,js,js.map}",
+    "/reactive-element.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
     "/development/",
-    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/src/",
     "!/src/demo/",
-    "!/src/test/",
-    "/reactive-element.{d.ts,d.ts.map,js,js.map}"
+    "!/src/test/"
   ],
   "dependencies": {},
   "devDependencies": {
