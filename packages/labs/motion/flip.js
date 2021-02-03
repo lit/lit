@@ -1,6 +1,6 @@
 import {nothing as t} from 'lit-html';
 import {PartType as i, directive as s} from 'lit-html/directive.js';
-import {DisconnectableDirective as h} from 'lit-html/disconnectable-directive.js';
+import {AsyncDirective as h} from 'lit-html/async-directive.js';
 const e = [{transform: 'translateY(100%) scale(0)', opacity: 0}],
   r = [{transform: 'translateY(-100%) scale(0)', opacity: 0}],
   n = [{opacity: 0}],

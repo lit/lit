@@ -1,6 +1,6 @@
 import {nothing as t} from 'lit-html';
 import {PartType as i, directive as s} from 'lit-html/directive.js';
-import {DisconnectableDirective as o} from 'lit-html/disconnectable-directive.js';
+import {AsyncDirective as o} from 'lit-html/async-directive.js';
 const r = ['top', 'right', 'bottom', 'left'];
 class e extends o {
   constructor(t) {

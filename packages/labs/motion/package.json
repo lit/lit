@@ -54,7 +54,8 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "lit-element": "^3.0.0-pre.2"
+    "lit-element": "^3.0.0-pre.2",
+    "lit-html": "^2.0.0-pre.4"
   },
   "publishConfig": {
     "access": "public"

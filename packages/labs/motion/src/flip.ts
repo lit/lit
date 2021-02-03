@@ -1,7 +1,7 @@
 import {LitElement} from 'lit-element';
 import {nothing, AttributePart} from 'lit-html';
 import {directive, PartInfo, PartType} from 'lit-html/directive.js';
-import {DisconnectableDirective} from 'lit-html/disconnectable-directive.js';
+import {AsyncDirective} from 'lit-html/async-directive.js';
 
 // TODO(sorvell): Type better
 export type CSSProperties = {
@@ -92,7 +92,7 @@ const isDirty = (value: unknown, previous: unknown) => {
   return false;
 };
 
-export class Flip extends DisconnectableDirective {
+export class Flip extends AsyncDirective {
   private _host?: LitElement;
   private _from!: CSSProperties;
   private _to!: CSSProperties;
@@ -192,10 +192,10 @@ export class Flip extends DisconnectableDirective {
     }
   }
 
-  reconnectedCallback() {}
+  reconnected() {}
 
   // Experimental animate out functionality.
-  disconnectedCallback() {
+  disconnected() {
     if (!this._shouldAnimate) {
       return;
     }

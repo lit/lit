@@ -1,7 +1,7 @@
 import {LitElement} from 'lit-element';
 import {nothing, AttributePart} from 'lit-html';
 import {directive, PartInfo, PartType} from 'lit-html/directive.js';
-import {DisconnectableDirective} from 'lit-html/disconnectable-directive.js';
+import {AsyncDirective} from 'lit-html/async-directive.js';
 
 interface Positionables {
   readonly bottom: number;
@@ -16,7 +16,7 @@ export type Positions = Array<keyof Positionables>;
 
 const positionedPoints = ['top', 'right', 'bottom', 'left'];
 
-export class Position extends DisconnectableDirective {
+export class Position extends AsyncDirective {
   private _host?: LitElement;
   private _element?: Element;
   private _targetCb?: () => HTMLElement;
