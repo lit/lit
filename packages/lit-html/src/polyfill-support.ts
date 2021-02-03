@@ -159,6 +159,18 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
   // Note, it's ok to subclass Template since it's only used via ChildPart.
   class ShadyTemplate extends Template {
+    // Since polyfill-support will be downleveled to ES5 but may possibly
+    // be used with non-downleveled libraries (e.g. in the case of forcing
+    // polyfills on Chrome, or using ApplyShim), we can't do an ES5 super
+    // call; we must use Reflect.construct if it's available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
+    constructor(...args: any[]) {
+      if (window.Reflect) {
+        return Reflect.construct(Template, args, ShadyTemplate);
+      } else {
+        super();
+      }
+    }
     /**
      * Override to extract style elements from the template
      * and store all style.textContent in the shady scope data.
