@@ -47,4 +47,10 @@ suite('my-element', () => {
     `
     );
   });
+
+  test('styling applied', async () => {
+    const el = await fixture(html`<my-element></my-element>`);
+    await el.updateComplete;
+    assert.equal(getComputedStyle(el).paddingTop, '16px');
+  });
 });
