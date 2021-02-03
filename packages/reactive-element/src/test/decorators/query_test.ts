@@ -31,7 +31,13 @@ import {assert} from '@esm-bundle/chai';
 
     static properties = {condition: {}};
 
-    condition = false;
+    declare condition: boolean;
+
+    constructor() {
+      super();
+      // Avoiding class fields for Babel compat.
+      this.condition = false;
+    }
 
     render() {
       return html`
