@@ -494,6 +494,9 @@ const getTemplateHtml = (
     //  4. We're somewhere else inside the tag. If we're in attribute name
     //     position (attrNameEndIndex === -2), add a sequential suffix to
     //     generate a unique attribute name.
+
+    // detect a binding next to self-closing tag end
+    const end = strings[i + 1].startsWith('/>') ? ' ' : '';
     html +=
       regex === textEndRegex
         ? s + nodeMarker
@@ -501,10 +504,12 @@ const getTemplateHtml = (
         ? (attrNames.push(attrName!),
           s.slice(0, attrNameEndIndex) +
             boundAttributeSuffix +
-            s.slice(attrNameEndIndex)) + marker
+            s.slice(attrNameEndIndex)) +
+          marker +
+          end
         : s +
           marker +
-          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : '');
+          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
   // Returned as an array for terseness

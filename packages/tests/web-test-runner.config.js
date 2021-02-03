@@ -22,7 +22,11 @@ if (mode === 'prod') {
 
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
-  local: ['chromium', 'firefox', 'webkit'],
+  local: [
+    'chromium', // keep browsers on separate lines
+    'firefox', // to make it easier to comment out
+    'webkit', // individual browsers
+  ],
 
   // Browsers to test during automated continuous integration.
   //
