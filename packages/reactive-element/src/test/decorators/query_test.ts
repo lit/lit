@@ -27,11 +27,18 @@ import {assert} from '@esm-bundle/chai';
 
   class C extends RenderingElement {
     @query('#blah') div?: HTMLDivElement;
+    @query('#blah', true) divCached?: HTMLDivElement;
     @query('span', true) span?: HTMLSpanElement;
 
     static properties = {condition: {}};
 
-    condition = false;
+    declare condition: boolean;
+
+    constructor() {
+      super();
+      // Avoiding class fields for Babel compat.
+      this.condition = false;
+    }
 
     render() {
       return html`
@@ -72,6 +79,12 @@ import {assert} from '@esm-bundle/chai';
   test('returns cached value', async () => {
     el.condition = true;
     await el.updateComplete;
+    // trigger caching, so we can verify that multiple elements can be cached
+    el.divCached;
+    assert.equal(
+      el.divCached,
+      el.renderRoot.querySelector('#blah') as HTMLDivElement
+    );
     assert.equal(el.span, el.renderRoot.querySelector('span'));
     assert.instanceOf(el.span, HTMLSpanElement);
     el.condition = false;

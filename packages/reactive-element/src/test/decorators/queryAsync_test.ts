@@ -29,9 +29,15 @@ import {assert} from '@esm-bundle/chai';
     @queryAsync('#blah') blah!: Promise<HTMLDivElement>;
     @queryAsync('span') nope!: Promise<HTMLSpanElement | null>;
 
-    foo = false;
-
     static properties = {foo: {}};
+
+    declare foo: boolean;
+
+    constructor() {
+      super();
+      // Avoiding class fields for Babel compat.
+      this.foo = false;
+    }
 
     render() {
       return html`

@@ -23,7 +23,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - (Since 1.0.0-pre.1) Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
 
+### Fixed
+
 ### Changed
+
+- (Since 1.0.0-pre.1) Fixed `@query` decorator when cache flag is used and code is compiled with Babel.
 
 - (Since 1.0.0-pre.1) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
 - (Since 1.0.0-pre.1) `ReactiveController` callbacks all now begin with `host`, for example `hostConnected`, `hostDisconnected`, `hostUpdate`, `hostUpdated`.

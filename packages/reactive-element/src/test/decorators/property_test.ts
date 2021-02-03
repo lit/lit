@@ -264,7 +264,13 @@ suite('@property', () => {
         return {foo: {type: Number, reflect: true}};
       }
 
-      foo = 1;
+      declare foo: number;
+
+      constructor() {
+        super();
+        // Avoiding class fields for Babel compat.
+        this.foo = 1;
+      }
     }
     customElements.define(generateElementName(), E);
     // Note, this forces `E` to finalize
@@ -300,6 +306,7 @@ suite('@property', () => {
 
       constructor() {
         super();
+        // Avoiding class fields for Babel compat.
         this.foo = 'foo';
       }
     }
@@ -400,9 +407,15 @@ suite('@property', () => {
       } as PropertyDeclaration)
       zot = '';
 
-      zot2 = '';
+      declare zot2: string;
+      declare foo2: number;
 
-      foo2 = 5;
+      constructor() {
+        super();
+        // Avoiding class fields for Babel compat.
+        this.zot2 = '';
+        this.foo2 = 5;
+      }
 
       // custom typed properties
       static get properties(): MyPropertyDeclarations {
