@@ -63,14 +63,19 @@ const browsers = {
   // safari: browserstackLauncher({browserName: 'Safari', browser_version: '14.0', os: 'OS X', os_version: 'Big Sur'}),
 };
 
-// Prepent BROWSERS=x,y to `npm run test` to run a subset of browsers
+// Prepend BROWSERS=x,y to `npm run test` to run a subset of browsers
 // e.g. `BROWSERS=chromium,firefox npm run test`
 const noBrowser = (b) => {
-  throw new Error(`No browser configured named '${b}'`);
+  throw new Error(`No browser configured named '${b}'; using defaults`);
 };
-const commandLineBrowsers = process.env.BROWSERS?.split(',').map(
-  (b) => browsers[b] ?? noBrowser(b)
-);
+let commandLineBrowsers;
+try {
+  commandLineBrowsers = process.env.BROWSERS?.split(',').map(
+    (b) => browsers[b] ?? noBrowser(b)
+  );
+} catch (e) {
+  console.warn(e);
+}
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
