@@ -160,6 +160,8 @@ export class LitElement extends ReactiveElement {
 
 // DEV mode warnings
 if (DEV_MODE) {
+  // Note, for compatibility with closure compilation, this access
+  // needs to be as a string property index.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (LitElement as any)['finalize'] = function (this: typeof LitElement) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
