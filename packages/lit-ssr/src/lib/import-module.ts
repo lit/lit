@@ -65,8 +65,8 @@ const resolveSpecifier = (specifier: string, referrer: string): URL => {
   } catch (e) {
     if (
       specifierMatches(specifier, 'lit') ||
-      specifierMatches(specifier, 'lit') ||
-      specifierMatches(specifier, 'lit')
+      specifierMatches(specifier, 'lit-html') ||
+      specifierMatches(specifier, 'lit-element')
     ) {
       // Override where we resolve lit-html from so that we always resolve to
       // a single version of lit-html.
