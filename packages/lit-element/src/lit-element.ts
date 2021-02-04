@@ -161,7 +161,7 @@ export class LitElement extends ReactiveElement {
 // DEV mode warnings
 if (DEV_MODE) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (LitElement as any).finalize = function () {
+  (LitElement as any)['finalize'] = function (this: typeof LitElement) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalized = (ReactiveElement as any).finalize.call(this);
     if (!finalized) {
