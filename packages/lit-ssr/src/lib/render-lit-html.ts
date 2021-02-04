@@ -78,13 +78,14 @@ const patchDirective = (value: unknown) => {
         const {__part, __attributeIndex} = this;
         return resolveDirective(
           __part,
-          this.render(...values),
+          patchDirective(this.render(...values)),
           this,
           __attributeIndex
         );
       }
     );
   }
+  return value;
 };
 
 /**
