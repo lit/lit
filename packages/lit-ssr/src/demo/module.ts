@@ -2,10 +2,10 @@
  * This is a shared client/server module.
  */
 
-import {html} from 'lit-html';
-import {LitElement, css} from 'lit-element';
-import {property} from 'lit-element/decorators/property.js';
-//import {repeat} from 'lit-html/directives/repeat.js';
+import {html} from 'lit';
+import {LitElement, css} from 'lit';
+import {property} from 'lit/decorators/property.js';
+//import {repeat} from 'lit/directives/repeat.js';
 
 export const initialData = {
   name: 'SSR',

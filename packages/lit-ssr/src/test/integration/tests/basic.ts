@@ -12,40 +12,37 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import 'lit-element/hydrate-support.js';
+import 'lit/hydrate-support.js';
 
-import {html, noChange, nothing, Part} from 'lit-html';
+import {html, noChange, nothing, Part} from 'lit';
 import {
   directive,
   Directive,
   DirectiveParameters,
   DirectiveResult,
-} from 'lit-html/directive.js';
-import {repeat} from 'lit-html/directives/repeat.js';
-import {guard} from 'lit-html/directives/guard.js';
-import {cache} from 'lit-html/directives/cache.js';
-import {classMap} from 'lit-html/directives/class-map.js';
-import {styleMap} from 'lit-html/directives/style-map.js';
-import {until} from 'lit-html/directives/until.js';
+} from 'lit/directive.js';
+import {repeat} from 'lit/directives/repeat.js';
+import {guard} from 'lit/directives/guard.js';
+import {cache} from 'lit/directives/cache.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {styleMap} from 'lit/directives/style-map.js';
+import {until} from 'lit/directives/until.js';
 // TODO(kschaaf): Enable once async directives are implemented
-// import {asyncAppend} from 'lit-html/directives/async-append.js';
-// import {asyncReplace} from 'lit-html/directives/async-replace.js';
-// import {TestAsyncIterable} from 'lit-html/test/lib/test-async-iterable.js';
-import {ifDefined} from 'lit-html/directives/if-defined.js';
-import {live} from 'lit-html/directives/live.js';
-import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
-import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
-import {createRef, ref} from 'lit-html/directives/ref.js';
+// import {asyncAppend} from 'lit/directives/async-append.js';
+// import {asyncReplace} from 'lit/directives/async-replace.js';
+// import {TestAsyncIterable} from 'lit/test/lib/test-async-iterable.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
+import {live} from 'lit/directives/live.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
+import {createRef, ref} from 'lit/directives/ref.js';
 
-import {LitElement, PropertyValues} from 'lit-element';
-import {property} from 'lit-element/decorators/property.js';
-import {
-  renderLight,
-  RenderLightHost,
-} from 'lit-html/directives/render-light.js';
+import {LitElement, PropertyValues} from 'lit';
+import {property} from 'lit/decorators/property.js';
+import {renderLight, RenderLightHost} from 'lit/directives/render-light.js';
 
 import {SSRTest} from './ssr-test';
-import {AsyncDirective} from 'lit-html/async-directive';
+import {AsyncDirective} from 'lit/async-directive';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;

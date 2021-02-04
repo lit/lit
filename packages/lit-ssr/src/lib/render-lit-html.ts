@@ -15,11 +15,11 @@
  */
 
 // Type-only imports
-import {TemplateResult, ChildPart} from 'lit-html';
+import {TemplateResult, ChildPart} from 'lit';
 
-import {nothing, noChange} from 'lit-html';
-import {PartType} from 'lit-html/directive.js';
-import {isTemplateResult} from 'lit-html/directive-helpers.js';
+import {nothing, noChange} from 'lit';
+import {PartType} from 'lit/directive.js';
+import {isTemplateResult} from 'lit/directive-helpers.js';
 import {_Σ} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -36,7 +36,7 @@ const {
   EventPart,
 } = _Σ;
 
-import {digestForTemplateResult} from 'lit-html/hydrate.js';
+import {digestForTemplateResult} from 'lit/hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
@@ -53,11 +53,11 @@ import {
   isElement,
 } from './util/parse5-utils.js';
 
-import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
-import {LitElement} from 'lit-element';
+import {isRenderLightDirective} from 'lit/directives/render-light.js';
+import {LitElement} from 'lit';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
-import {Directive} from 'lit-html/directive';
+import {Directive} from 'lit/directive';
 
 declare module 'parse5' {
   interface DefaultTreeElement {

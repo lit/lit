@@ -13,7 +13,7 @@
  */
 
 import {ElementRenderer} from './element-renderer.js';
-import {LitElement, CSSResult, ReactiveElement} from 'lit-element';
+import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_Φ} from 'lit-element/private-ssr-support.js';
 import {render, renderValue, RenderInfo} from './render-lit-html.js';
 

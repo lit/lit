@@ -81,6 +81,7 @@ packages/lit-ssr/lib/
 packages/lit-ssr/node_modules/
 packages/lit-ssr/test/
 packages/lit-ssr/index.*
+packages/lit-ssr/**/*.d.ts
 
 packages/lit-starter-ts/node_modules/
 packages/lit-starter-ts/lib/
