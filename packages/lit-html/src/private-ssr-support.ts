@@ -37,7 +37,7 @@ export const _Σ = {
     directive: Directive,
     fn: (this: Directive, values: unknown[]) => unknown
   ) => {
-    directive._resolve = fn;
+    directive._$resolve = fn;
   },
   getAttributePartCommittedValue: (
     part: AttributePart,
@@ -47,6 +47,9 @@ export const _Σ = {
     // Use the part setter to resolve directives/concatenate multiple parts
     // into a final value (captured by passing in a commitValue override)
     let committedValue: unknown = noChange;
+    // Note that _commitValue need not be in `stableProperties` because this
+    // method is only run on `AttributePart`s created by lit-ssr using the same
+    // version of the library as this file
     part._commitValue = (value: unknown) => (committedValue = value);
     part._$setValue(value, part, index);
     return committedValue;

@@ -356,14 +356,14 @@ export abstract class AsyncDirective extends Directive {
    * @override
    * @internal
    */
-  _resolve(props: Array<unknown>): unknown {
+  _$resolve(props: Array<unknown>): unknown {
     if (!this.isConnected) {
       throw new Error(
         `AsyncDirective ${this.constructor.name} was ` +
           `rendered while its tree was disconnected.`
       );
     }
-    return super._resolve(props);
+    return super._$resolve(props);
   }
 
   /**

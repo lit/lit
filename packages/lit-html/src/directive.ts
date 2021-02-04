@@ -129,7 +129,7 @@ export abstract class Directive {
     this.__attributeIndex = partInfo._$attributeIndex;
   }
   /** @internal */
-  _resolve(props: Array<unknown>): unknown {
+  _$resolve(props: Array<unknown>): unknown {
     const {__part, __attributeIndex} = this;
     return resolveDirective(
       __part,

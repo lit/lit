@@ -707,7 +707,7 @@ function resolveDirective(
     }
   }
   if (currentDirective !== undefined) {
-    value = currentDirective._resolve((value as DirectiveResult).values);
+    value = currentDirective._$resolve((value as DirectiveResult).values);
   }
   return value;
 }
