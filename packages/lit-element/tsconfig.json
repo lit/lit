@@ -20,9 +20,17 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "stripInternal": true
   },
   "include": ["src/**/*.ts"],
   "exclude": [],
-  "references": [{"path": "../lit-html"}, {"path": "../reactive-element"}]
+  "references": [
+    {
+      "path": "../lit-html"
+    },
+    {
+      "path": "../reactive-element"
+    }
+  ]
 }

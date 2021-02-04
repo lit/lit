@@ -216,7 +216,9 @@ export const _Φ = {
     name: string,
     value: string | null
   ) => {
-    el._$attributeToProperty(name, value);
+    // eslint-disable-next-line
+    (el as any)._$attributeToProperty(name, value);
   },
-  _$changedProperties: (el: LitElement) => el._$changedProperties,
+  // eslint-disable-next-line
+  _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };
