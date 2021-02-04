@@ -18,7 +18,7 @@
 import {TemplateResult, ChildPart} from 'lit';
 
 import {nothing, noChange} from 'lit';
-import {PartType} from 'lit/directive.js';
+import {Directive, DirectiveResult, PartType} from 'lit/directive.js';
 import {isTemplateResult} from 'lit/directive-helpers.js';
 import {_Σ} from 'lit-html/private-ssr-support.js';
 
@@ -57,7 +57,6 @@ import {isRenderLightDirective} from 'lit/directives/render-light.js';
 import {LitElement} from 'lit';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
-import {Directive} from 'lit/directive';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -65,18 +64,46 @@ declare module 'parse5' {
   }
 }
 
-patchDirectiveResolve(
-  Directive.prototype,
-  function (this: Directive, values: unknown[]) {
-    const {__part, __attributeIndex} = this;
-    return resolveDirective(
-      __part,
-      this.render(...values),
-      this,
-      __attributeIndex
+/**
+ * Looks for values of type `DirectiveResult` and patches a `Directive` class's
+ * implementation of `_$resolve` to call `render` rather than `update`, per the
+ * SSR contract
+ */
+const patchDirective = (value: unknown) => {
+  const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+  if (directiveCtor !== undefined) {
+    patchDirectiveResolve(
+      directiveCtor.prototype,
+      function (this: Directive, values: unknown[]) {
+        const {__part, __attributeIndex} = this;
+        return resolveDirective(
+          __part,
+          this.render(...values),
+          this,
+          __attributeIndex
+        );
+      }
     );
   }
-);
+};
+
+/**
+ * Patches `DirectiveResult` `Directive` classes for AttributePart values, which
+ * may be an array
+ */
+const patchDirectives = (
+  part: InstanceType<typeof AttributePart>,
+  value: unknown,
+  valueIndex: number
+) => {
+  if (part.strings !== undefined) {
+    for (let i = 0; i < part.strings.length - 1; i++) {
+      patchDirective((value as unknown[])[valueIndex + i]);
+    }
+  } else {
+    patchDirective(value);
+  }
+};
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
 /**
@@ -464,6 +491,7 @@ export function* renderValue(
   value: unknown,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
+  patchDirective(value);
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
@@ -546,6 +574,7 @@ export function* renderTemplateResult(
         );
         const value =
           part.strings === undefined ? result.values[partIndex] : result.values;
+        patchDirectives(part, value, partIndex);
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
         if (!(part.type === PartType.EVENT)) {
