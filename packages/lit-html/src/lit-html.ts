@@ -13,7 +13,7 @@
  */
 
 // IMPORTANT: these imports must be type-only
-import {Directive, DirectiveResult, PartInfo} from './directive.js';
+import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;

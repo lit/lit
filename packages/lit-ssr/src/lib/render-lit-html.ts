@@ -14,11 +14,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// Type-only imports
-import {TemplateResult, ChildPart} from 'lit';
+import type {TemplateResult, ChildPart} from 'lit';
+import type {DirectiveClass, DirectiveResult} from 'lit/directive.js';
 
 import {nothing, noChange} from 'lit';
-import {DirectiveClass, DirectiveResult, PartType} from 'lit/directive.js';
+import {PartType} from 'lit/directive.js';
 import {isTemplateResult} from 'lit/directive-helpers.js';
 import {_Σ} from 'lit-html/private-ssr-support.js';
 
