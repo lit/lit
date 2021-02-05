@@ -54,6 +54,12 @@ interface ClickableButton extends HTMLButtonElement {
   __wasClicked2: boolean;
 }
 
+const throwIfRunOnServer = () => {
+  if (!(globalThis instanceof window.constructor)) {
+    throw new Error('Upate should not be run on the server');
+  }
+};
+
 const filterNodes = (nodes: ArrayLike<Node>, nodeType: number) =>
   Array.from(nodes).filter((n) => n.nodeType === nodeType);
 
@@ -449,6 +455,10 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(v);
+        }
         render(v: string) {
           if (v !== this.lastValue) {
             this.lastValue = v;
@@ -479,6 +489,10 @@ export const tests: {[name: string]: SSRTest} = {
   'ChildPart accepts nested directives': () => {
     const aDirective = directive(
       class extends Directive {
+        update(_part: Part, [bool, v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(bool, v);
+        }
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
@@ -488,6 +502,10 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(v);
+        }
         render(v: string) {
           if (v !== this.lastValue) {
             this.lastValue = v;
@@ -1007,6 +1025,10 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(v);
+        }
         render(v: string) {
           if (v !== this.lastValue) {
             this.lastValue = v;
@@ -1037,6 +1059,10 @@ export const tests: {[name: string]: SSRTest} = {
   'AttributePart accepts nested directives': () => {
     const aDirective = directive(
       class extends Directive {
+        update(_part: Part, [bool, v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(bool, v);
+        }
         render(bool: boolean, v: unknown) {
           return bool ? v : nothing;
         }
@@ -1046,6 +1072,10 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(v);
+        }
         render(v: string) {
           if (v !== this.lastValue) {
             this.lastValue = v;
@@ -3296,6 +3326,7 @@ export const tests: {[name: string]: SSRTest} = {
           log.push('render should not be called');
         }
         update(_part: Part, [v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
           log.push(v);
         }
       }
@@ -3461,6 +3492,10 @@ export const tests: {[name: string]: SSRTest} = {
     const dir = directive(
       class extends Directive {
         value: string | undefined;
+        update(_part: Part, [v]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(v);
+        }
         render(value: string) {
           if (this.value !== value) {
             this.value = value;
@@ -3939,6 +3974,10 @@ export const tests: {[name: string]: SSRTest} = {
     const log: number[] = [];
     const nest = directive(
       class extends Directive {
+        update(_part: Part, [n]: DirectiveParameters<this>) {
+          throwIfRunOnServer();
+          return this.render(n);
+        }
         render(n: number): string | DirectiveResult {
           log.push(n);
           if (n > 1) {

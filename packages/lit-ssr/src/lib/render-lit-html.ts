@@ -15,7 +15,11 @@
  */
 
 import type {TemplateResult, ChildPart} from 'lit';
-import type {DirectiveClass, DirectiveResult} from 'lit/directive.js';
+import type {
+  Directive,
+  DirectiveClass,
+  DirectiveResult,
+} from 'lit/directive.js';
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
@@ -43,8 +47,7 @@ import {ElementRenderer} from './element-renderer.js';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
 
-// types only
-import {DefaultTreeDocumentFragment} from 'parse5';
+import type {DefaultTreeDocumentFragment} from 'parse5';
 
 import {
   traverse,
@@ -78,7 +81,14 @@ const patchIfDirective = (value: unknown) => {
   if (directiveCtor !== undefined) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
-      patchedCtor = overrideDirectiveResolve(directiveCtor);
+      patchedCtor = overrideDirectiveResolve(
+        directiveCtor,
+        (directive: Directive, values: unknown[]) => {
+          // Since the return value may also be a directive result in the case of
+          // nested directives, we may need to patch that as well
+          return patchIfDirective(directive.render(...values));
+        }
+      );
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
     (value as DirectiveResult)._$litDirective$ = patchedCtor;

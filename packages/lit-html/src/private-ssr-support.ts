@@ -34,11 +34,12 @@ export const _Σ = {
   HTML_RESULT: p._HTML_RESULT,
   getTemplateHtml: p._getTemplateHtml,
   overrideDirectiveResolve: (
-    directiveClass: new (part: PartInfo) => Directive & {render(): unknown}
+    directiveClass: new (part: PartInfo) => Directive & {render(): unknown},
+    resolveOverrideFn: (directive: Directive, values: unknown[]) => unknown
   ) =>
     class extends directiveClass {
       _$resolve(this: Directive, _part: Part, values: unknown[]): unknown {
-        return this.render(...values);
+        return resolveOverrideFn(this, values);
       }
     },
   getAttributePartCommittedValue: (
