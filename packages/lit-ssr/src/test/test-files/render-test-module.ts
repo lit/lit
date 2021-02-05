@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {html, nothing} from 'lit-html';
-import {repeat} from 'lit-html/directives/repeat.js';
-import {classMap} from 'lit-html/directives/class-map.js';
-import {LitElement, css, PropertyValues} from 'lit-element';
-import {property, customElement} from 'lit-element/decorators.js';
-export {digestForTemplateResult} from 'lit-html/hydrate.js';
+import {html, nothing} from 'lit';
+import {repeat} from 'lit/directives/repeat.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {LitElement, css, PropertyValues} from 'lit';
+import {property, customElement} from 'lit/decorators.js';
+export {digestForTemplateResult} from 'lit/hydrate.js';
 
 export {render} from '../../lib/render-lit-html.js';
 

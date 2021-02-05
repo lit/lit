@@ -13,15 +13,12 @@
  */
 
 import {
-  _Σ,
   AttributePart,
   Disconnectable,
   ChildPart,
   Part,
   ElementPart,
 } from './lit-html';
-
-const resolveDirective = _Σ._resolveDirective;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
@@ -109,7 +106,7 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  __part: ChildPart | AttributePart | ElementPart;
+  __part: Part;
   //@internal
   __attributeIndex: number | undefined;
   //@internal
@@ -130,14 +127,8 @@ export abstract class Directive {
     this.__attributeIndex = partInfo._$attributeIndex;
   }
   /** @internal */
-  _resolve(props: Array<unknown>): unknown {
-    const {__part, __attributeIndex} = this;
-    return resolveDirective(
-      __part,
-      this.update(__part, props),
-      this,
-      __attributeIndex
-    );
+  _$resolve(part: Part, props: Array<unknown>): unknown {
+    return this.update(part, props);
   }
   abstract render(...props: Array<unknown>): unknown;
   update(_part: Part, props: Array<unknown>): unknown {

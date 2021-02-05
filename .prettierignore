@@ -73,6 +73,7 @@ packages/lit-ssr/lib/
 packages/lit-ssr/node_modules/
 packages/lit-ssr/test/
 packages/lit-ssr/index.*
+packages/lit-ssr/**/*.d.ts
 
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json

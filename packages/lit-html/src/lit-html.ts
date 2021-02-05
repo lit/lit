@@ -13,7 +13,7 @@
  */
 
 // IMPORTANT: these imports must be type-only
-import {Directive, DirectiveResult, PartInfo} from './directive.js';
+import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -714,7 +714,12 @@ function resolveDirective(
     }
   }
   if (currentDirective !== undefined) {
-    value = currentDirective._resolve((value as DirectiveResult).values);
+    value = resolveDirective(
+      part,
+      currentDirective._$resolve(part, (value as DirectiveResult).values),
+      currentDirective,
+      _$attributeIndex
+    );
   }
   return value;
 }
