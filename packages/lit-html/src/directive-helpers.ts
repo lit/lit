@@ -67,13 +67,15 @@ export const isTemplateResult = (
 /**
  * Tests if a value is a DirectiveResult.
  */
-export const isDirectiveResult = (
-  value: unknown,
-  klass?: DirectiveClass
-): value is DirectiveResult =>
-  klass === undefined
-    ? (value as DirectiveResult)?._$litDirective$ !== undefined
-    : (value as DirectiveResult)?._$litDirective$ === klass;
+export const isDirectiveResult = (value: unknown): value is DirectiveResult =>
+  (value as DirectiveResult)?._$litDirective$ !== undefined;
+
+/**
+ * Retrieves the Directive class for a DirectiveResult
+ */
+export const classForDirectiveResult = (
+  value: unknown
+): DirectiveClass | undefined => (value as DirectiveResult)?._$litDirective$;
 
 /**
  * Tests whether a part has only a single-expression with no strings to

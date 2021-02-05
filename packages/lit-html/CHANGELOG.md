@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Changed
 
+- (Since 2.0.0-pre.4) Removes second `klass` argument from `isDirectiveResult` since it is generally not version-agnostic to test directives using `instanceof`. A new `classForDirectiveResult` helper is introduced, which allows for e.g. directive class branding checks instead.
 - (Since 2.0.0-pre.4) `DisconnectableDirective` was renamed to `AsyncDirective`, and its module name was renamed from `disconnectable-directive` to `async-directive`.
 - (Since 2.0.0-pre.4) Rendering `null`, `undefined`, or empty string in a `ChildPart` now has the same affect as rendering `nothing`: it does not produce an empty text node. When rendering into an element with Shadow DOM, this makes it harder to inadvertently prevent `<slot>` fallback content from rendering.
 - (Since 2.0.0-pre.4) `DisconnectableDirective`'s `disconnectedCallback` and `reconnectedCallback` were renamed to `disconnected` and `reconnected`.

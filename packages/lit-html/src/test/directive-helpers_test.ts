@@ -16,6 +16,7 @@ import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
 import {
+  classForDirectiveResult,
   insertPart,
   isDirectiveResult,
   isPrimitive,
@@ -24,7 +25,6 @@ import {
   TemplateResultType,
 } from '../directive-helpers.js';
 import {classMap} from '../directives/class-map.js';
-import {UnsafeHTML, unsafeHTML} from '../directives/unsafe-html.js';
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
@@ -66,15 +66,20 @@ suite('directive-helpers', () => {
 
   test('isDirectiveResult', () => {
     assert.isTrue(isDirectiveResult(classMap({})));
-    assert.isTrue(isDirectiveResult(unsafeHTML(''), UnsafeHTML));
 
     assert.isFalse(isDirectiveResult(null));
     assert.isFalse(isDirectiveResult(undefined));
     assert.isFalse(isDirectiveResult({}));
-    assert.isFalse(isDirectiveResult(classMap({}), UnsafeHTML));
-    assert.isFalse(isDirectiveResult(null, UnsafeHTML));
-    assert.isFalse(isDirectiveResult(undefined, UnsafeHTML));
-    assert.isFalse(isDirectiveResult({}, UnsafeHTML));
+  });
+
+  test('classForDirectiveResult', () => {
+    assert.instanceOf(
+      classForDirectiveResult(classMap({}))?.prototype,
+      Directive
+    );
+    assert.equal(classForDirectiveResult(null), undefined);
+    assert.equal(classForDirectiveResult(undefined), undefined);
+    assert.equal(classForDirectiveResult({}), undefined);
   });
 
   test('insertPart', () => {
