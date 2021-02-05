@@ -19,7 +19,8 @@
     "noImplicitThis": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "stripInternal": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/polyfill-support.ts"],

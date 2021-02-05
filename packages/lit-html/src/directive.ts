@@ -36,10 +36,11 @@ export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
 /**
  * A generated directive function doesn't evaluate the directive, but just
  * returns a DirectiveResult object that captures the arguments.
- * @internal
  */
 export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
+  /** @internal */
   _$litDirective$: C;
+  /** @internal */
   values: DirectiveParameters<InstanceType<C>>;
 };
 
