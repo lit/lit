@@ -20,14 +20,6 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-packages/labs/task/development/
-packages/labs/task/node_modules/
-packages/labs/task/index.*
-packages/labs/task/task.*
-packages/labs/react/development/
-packages/labs/react/node_modules/
-packages/labs/react/index.*
-packages/labs/react/create-component.*
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/
@@ -82,6 +74,22 @@ packages/lit-ssr/node_modules/
 packages/lit-ssr/test/
 packages/lit-ssr/index.*
 
+packages/lit-starter-js/node_modules/*
+packages/lit-starter-js/docs/*
+packages/lit-starter-js/docs-src/*
+packages/lit-starter-js/**/rollup-config.js
+packages/lit-starter-js/**/custom-elements.json
+
+packages/lit-starter-js/node_modules/
+packages/lit-starter-js/**/custom-elements.json
+# only generated for size check
+packages/lit-starter-js/**/my-element.bundled.js
+packages/lit-starter-ts/node_modules/*
+packages/lit-starter-ts/docs/*
+packages/lit-starter-ts/docs-src/*
+packages/lit-starter-ts/**/rollup-config.js
+packages/lit-starter-ts/**/custom-elements.json
+
 packages/lit-starter-ts/node_modules/
 packages/lit-starter-ts/lib/
 packages/lit-starter-ts/test/
@@ -91,22 +99,6 @@ packages/lit-starter-ts/**/my-element.js
 packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
-
-packages/lit-starter-ts/node_modules/*
-packages/lit-starter-ts/docs/*
-packages/lit-starter-ts/docs-src/*
-packages/lit-starter-ts/**/rollup-config.js
-packages/lit-starter-ts/**/custom-elements.json
-
-packages/lit-starter-js/node_modules/
-packages/lit-starter-js/**/custom-elements.json
-# only generated for size check
-packages/lit-starter-js/**/my-element.bundled.js
-packages/lit-starter-js/node_modules/*
-packages/lit-starter-js/docs/*
-packages/lit-starter-js/docs-src/*
-packages/lit-starter-js/**/rollup-config.js
-packages/lit-starter-js/**/custom-elements.json
 
 packages/localize/lib/
 packages/localize/lib_client/
@@ -120,8 +112,6 @@ packages/localize/examples/*/node_modules/
 packages/localize/fnv1a64.*
 packages/localize/id-generation.*
 
-packages/tests/node_modules/
-
 packages/reactive-element/decorators/
 packages/reactive-element/development/
 packages/reactive-element/test/
@@ -130,5 +120,18 @@ packages/reactive-element/decorators.*
 packages/reactive-element/polyfill-support.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
+
+packages/tests/node_modules/
+
+packages/labs/react/development/
+packages/labs/react/node_modules/
+packages/labs/react/index.*
+packages/labs/react/create-component.*
+packages/labs/task/development/
+packages/labs/task/node_modules/
+packages/labs/task/index.*
+packages/labs/task/task.*
+packages/localize/examples/runtime/lib/
+packages/localize/examples/transform/lib/
 
 packages/localize/testdata/
