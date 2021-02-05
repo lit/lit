@@ -24,13 +24,10 @@
     "stripInternal": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
+  "exclude": ["src/polyfill-support.ts"],
   "references": [
-    {
-      "path": "../lit-html"
-    },
-    {
-      "path": "../reactive-element"
-    }
+    {"path": "../lit-html"},
+    {"path": "../reactive-element"},
+    {"path": "./tsconfig.polyfill-support.json"}
   ]
 }
