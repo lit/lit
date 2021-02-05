@@ -14,7 +14,7 @@
 
 import {ChildPart} from '../lit-html.js';
 import {directive, Directive} from '../directive.js';
-import {classForDirectiveResult} from '../directive-helpers.js';
+import {getDirectiveClass} from '../directive-helpers.js';
 
 export interface RenderLightHost extends HTMLElement {
   renderLight(): unknown;
@@ -120,4 +120,4 @@ class RenderLight extends Directive {
 export const renderLight = directive(RenderLight);
 
 export const isRenderLightDirective = (value: unknown): boolean =>
-  (classForDirectiveResult(value) as typeof RenderLight)?._$litRenderLight;
+  (getDirectiveClass(value) as typeof RenderLight)?._$litRenderLight;

@@ -73,9 +73,8 @@ export const isDirectiveResult = (value: unknown): value is DirectiveResult =>
 /**
  * Retrieves the Directive class for a DirectiveResult
  */
-export const classForDirectiveResult = (
-  value: unknown
-): DirectiveClass | undefined => (value as DirectiveResult)?._$litDirective$;
+export const getDirectiveClass = (value: unknown): DirectiveClass | undefined =>
+  (value as DirectiveResult)?._$litDirective$;
 
 /**
  * Tests whether a part has only a single-expression with no strings to

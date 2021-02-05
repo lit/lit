@@ -16,7 +16,7 @@ import {directive, Directive} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
 import {
-  classForDirectiveResult,
+  getDirectiveClass,
   insertPart,
   isDirectiveResult,
   isPrimitive,
@@ -72,14 +72,11 @@ suite('directive-helpers', () => {
     assert.isFalse(isDirectiveResult({}));
   });
 
-  test('classForDirectiveResult', () => {
-    assert.instanceOf(
-      classForDirectiveResult(classMap({}))?.prototype,
-      Directive
-    );
-    assert.equal(classForDirectiveResult(null), undefined);
-    assert.equal(classForDirectiveResult(undefined), undefined);
-    assert.equal(classForDirectiveResult({}), undefined);
+  test('getDirectiveClass', () => {
+    assert.instanceOf(getDirectiveClass(classMap({}))?.prototype, Directive);
+    assert.equal(getDirectiveClass(null), undefined);
+    assert.equal(getDirectiveClass(undefined), undefined);
+    assert.equal(getDirectiveClass({}), undefined);
   });
 
   test('insertPart', () => {
