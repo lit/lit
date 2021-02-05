@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive} from './directive.js';
-import {_Σ as p, AttributePart, noChange} from './lit-html.js';
+import {Directive, PartInfo} from './directive.js';
+import {_Σ as p, AttributePart, noChange, Part} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -33,12 +33,14 @@ export const _Σ = {
   markerMatch: p._markerMatch,
   HTML_RESULT: p._HTML_RESULT,
   getTemplateHtml: p._getTemplateHtml,
-  patchDirectiveResolve: (
-    directive: Directive,
-    fn: (this: Directive, values: unknown[]) => unknown
-  ) => {
-    directive._$resolve = fn;
-  },
+  overrideDirectiveResolve: (
+    directiveClass: new (part: PartInfo) => Directive & {render(): unknown}
+  ) =>
+    class extends directiveClass {
+      _$resolve(this: Directive, _part: Part, values: unknown[]): unknown {
+        return this.render(...values);
+      }
+    },
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,

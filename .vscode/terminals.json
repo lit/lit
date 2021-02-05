@@ -20,6 +20,12 @@
       "command": "npm run build:ts:watch"
     },
     {
+      "name": "TS: lit",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit",
+      "command": "npm run build:ts:watch"
+    },
+    {
       "name": "TS: lit-ssr",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/lit-ssr",
@@ -42,6 +48,12 @@
       "name": "Rollup: lit-element",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/lit-element",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: lit",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit",
       "command": "npm run build:watch"
     }
   ]

@@ -18,7 +18,7 @@
 import {TemplateResult, ChildPart} from 'lit';
 
 import {nothing, noChange} from 'lit';
-import {Directive, DirectiveResult, PartType} from 'lit/directive.js';
+import {DirectiveClass, DirectiveResult, PartType} from 'lit/directive.js';
 import {isTemplateResult} from 'lit/directive-helpers.js';
 import {_Σ} from 'lit-html/private-ssr-support.js';
 
@@ -27,7 +27,7 @@ const {
   marker,
   markerMatch,
   boundAttributeSuffix,
-  patchDirectiveResolve,
+  overrideDirectiveResolve,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
@@ -64,26 +64,24 @@ declare module 'parse5' {
   }
 }
 
+const patchedDirectiveCache: WeakMap<
+  DirectiveClass,
+  DirectiveClass
+> = new Map();
+
 /**
- * Looks for values of type `DirectiveResult` and patches a `Directive` class's
- * implementation of `_$resolve` to call `render` rather than `update`, per the
- * SSR contract
+ * Looks for values of type `DirectiveResult` and replaces its Directive class
+ * with a subclass that calls `render` rather than `update`
  */
 const patchIfDirective = (value: unknown) => {
   const directiveCtor = (value as DirectiveResult)?._$litDirective$;
   if (directiveCtor !== undefined) {
-    patchDirectiveResolve(
-      directiveCtor.prototype,
-      function (this: Directive, values: unknown[]) {
-        const {__part, __attributeIndex} = this;
-        return resolveDirective(
-          __part,
-          patchIfDirective(this.render(...values)),
-          this,
-          __attributeIndex
-        );
-      }
-    );
+    let patchedCtor = patchedDirectiveCache.get(directiveCtor);
+    if (patchedCtor === undefined) {
+      patchedCtor = overrideDirectiveResolve(directiveCtor);
+      patchedDirectiveCache.set(directiveCtor, patchedCtor);
+    }
+    (value as DirectiveResult)._$litDirective$ = patchedCtor;
   }
   return value;
 };

@@ -130,6 +130,7 @@ import {
   ChildPart,
   Disconnectable,
   noChange,
+  Part,
 } from './lit-html.js';
 import {isSingleExpression} from './directive-helpers.js';
 import {Directive, PartInfo, PartType} from './directive.js';
@@ -356,14 +357,14 @@ export abstract class AsyncDirective extends Directive {
    * @override
    * @internal
    */
-  _$resolve(props: Array<unknown>): unknown {
+  _$resolve(part: Part, props: Array<unknown>): unknown {
     if (!this.isConnected) {
       throw new Error(
         `AsyncDirective ${this.constructor.name} was ` +
           `rendered while its tree was disconnected.`
       );
     }
-    return super._$resolve(props);
+    return super._$resolve(part, props);
   }
 
   /**

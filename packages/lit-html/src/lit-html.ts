@@ -707,7 +707,12 @@ function resolveDirective(
     }
   }
   if (currentDirective !== undefined) {
-    value = currentDirective._$resolve((value as DirectiveResult).values);
+    value = resolveDirective(
+      part,
+      currentDirective._$resolve(part, (value as DirectiveResult).values),
+      currentDirective,
+      _$attributeIndex
+    );
   }
   return value;
 }
