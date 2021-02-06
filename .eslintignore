@@ -132,7 +132,5 @@ packages/labs/task/development/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*
-packages/localize/examples/runtime/lib/
-packages/localize/examples/transform/lib/
 
 packages/localize/testdata/
