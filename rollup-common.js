@@ -87,9 +87,9 @@ const stableProperties = {
   _$setValue: 'M',
   // polyfill-support: LitElement (added by polyfill-support)
   _$handlesPrepareStyles: 'N',
-  // lit-element: ReactiveElement (used bby ssr-support)
+  // lit-element: ReactiveElement (used by private-ssr-support)
   _$attributeToProperty: 'O',
-  // lit-element: ReactiveElement (used bby ssr-support)
+  // lit-element: ReactiveElement (used by private-ssr-support)
   _$changedProperties: 'P',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // async-directive)
@@ -103,6 +103,8 @@ const stableProperties = {
   _$reparentDisconnectables: 'U',
   // lit-html: ChildPart (used by directive-helpers)
   _$clear: 'V',
+  // lit-html: Directive (used by private-ssr-support)
+  _$resolve: 'W',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -379,6 +381,9 @@ const litMonoBundleConfig = ({
         'const ENABLE_EXTRA_SECURITY_HOOKS = false',
       'const ENABLE_SHADYDOM_NOPATCH = true':
         'const ENABLE_SHADYDOM_NOPATCH = false',
+      // For downleveled ES5 build of polyfill-support
+      'var ENABLE_SHADYDOM_NOPATCH = true':
+        'var ENABLE_SHADYDOM_NOPATCH = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.

@@ -14,12 +14,16 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// Type-only imports
-import {TemplateResult, ChildPart} from 'lit-html';
+import type {TemplateResult, ChildPart} from 'lit';
+import type {
+  Directive,
+  DirectiveClass,
+  DirectiveResult,
+} from 'lit/directive.js';
 
-import {nothing, noChange} from 'lit-html';
-import {PartType} from 'lit-html/directive.js';
-import {isTemplateResult} from 'lit-html/directive-helpers.js';
+import {nothing, noChange} from 'lit';
+import {PartType} from 'lit/directive.js';
+import {isTemplateResult} from 'lit/directive-helpers.js';
 import {_Σ} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -27,7 +31,7 @@ const {
   marker,
   markerMatch,
   boundAttributeSuffix,
-  patchDirectiveResolve,
+  overrideDirectiveResolve,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
@@ -36,15 +40,14 @@ const {
   EventPart,
 } = _Σ;
 
-import {digestForTemplateResult} from 'lit-html/hydrate.js';
+import {digestForTemplateResult} from 'lit/hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
 
-// types only
-import {DefaultTreeDocumentFragment} from 'parse5';
+import type {DefaultTreeDocumentFragment} from 'parse5';
 
 import {
   traverse,
@@ -53,11 +56,10 @@ import {
   isElement,
 } from './util/parse5-utils.js';
 
-import {isRenderLightDirective} from 'lit-html/directives/render-light.js';
-import {LitElement} from 'lit-element';
+import {isRenderLightDirective} from 'lit/directives/render-light.js';
+import {LitElement} from 'lit';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
-import {Directive} from 'lit-html/directive';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -65,18 +67,52 @@ declare module 'parse5' {
   }
 }
 
-patchDirectiveResolve(
-  Directive.prototype,
-  function (this: Directive, values: unknown[]) {
-    const {__part, __attributeIndex} = this;
-    return resolveDirective(
-      __part,
-      this.render(...values),
-      this,
-      __attributeIndex
-    );
+const patchedDirectiveCache: WeakMap<
+  DirectiveClass,
+  DirectiveClass
+> = new Map();
+
+/**
+ * Looks for values of type `DirectiveResult` and replaces its Directive class
+ * with a subclass that calls `render` rather than `update`
+ */
+const patchIfDirective = (value: unknown) => {
+  const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+  if (directiveCtor !== undefined) {
+    let patchedCtor = patchedDirectiveCache.get(directiveCtor);
+    if (patchedCtor === undefined) {
+      patchedCtor = overrideDirectiveResolve(
+        directiveCtor,
+        (directive: Directive, values: unknown[]) => {
+          // Since the return value may also be a directive result in the case of
+          // nested directives, we may need to patch that as well
+          return patchIfDirective(directive.render(...values));
+        }
+      );
+      patchedDirectiveCache.set(directiveCtor, patchedCtor);
+    }
+    (value as DirectiveResult)._$litDirective$ = patchedCtor;
   }
-);
+  return value;
+};
+
+/**
+ * Patches `DirectiveResult` `Directive` classes for AttributePart values, which
+ * may be an array
+ */
+const patchAnyDirectives = (
+  part: InstanceType<typeof AttributePart>,
+  value: unknown,
+  valueIndex: number
+) => {
+  if (part.strings !== undefined) {
+    for (let i = 0; i < part.strings.length - 1; i++) {
+      patchIfDirective((value as unknown[])[valueIndex + i]);
+    }
+  } else {
+    patchIfDirective(value);
+  }
+};
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
 /**
@@ -464,6 +500,7 @@ export function* renderValue(
   value: unknown,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
+  patchIfDirective(value);
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
@@ -546,6 +583,7 @@ export function* renderTemplateResult(
         );
         const value =
           part.strings === undefined ? result.values[partIndex] : result.values;
+        patchAnyDirectives(part, value, partIndex);
         let committedValue: unknown = noChange;
         // Values for EventParts are never emitted
         if (!(part.type === PartType.EVENT)) {

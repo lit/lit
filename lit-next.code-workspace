@@ -21,6 +21,14 @@
 			"path": "packages/lit-ssr"
 		},
 		{
+			"name": "lit-starter-ts",
+			"path": "packages/lit-starter-ts"
+		},
+		{
+			"name": "lit-starter-js",
+			"path": "packages/lit-starter-js"
+		},
+		{
 			"name": "localize",
 			"path": "packages/localize"
 		},

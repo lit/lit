@@ -20,9 +20,14 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "stripInternal": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [{"path": "../lit-html"}, {"path": "../reactive-element"}]
+  "exclude": ["src/polyfill-support.ts"],
+  "references": [
+    {"path": "../lit-html"},
+    {"path": "../reactive-element"},
+    {"path": "./tsconfig.polyfill-support.json"}
+  ]
 }

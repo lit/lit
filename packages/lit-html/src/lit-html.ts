@@ -13,7 +13,7 @@
  */
 
 // IMPORTANT: these imports must be type-only
-import {Directive, DirectiveResult, PartInfo} from './directive.js';
+import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -494,6 +494,11 @@ const getTemplateHtml = (
     //  4. We're somewhere else inside the tag. If we're in attribute name
     //     position (attrNameEndIndex === -2), add a sequential suffix to
     //     generate a unique attribute name.
+
+    // Detect a binding next to self-closing tag end and insert a space to
+    // separate the marker from the tag end:
+    const end =
+      regex === tagEndRegex && strings[i + 1].startsWith('/>') ? ' ' : '';
     html +=
       regex === textEndRegex
         ? s + nodeMarker
@@ -501,10 +506,12 @@ const getTemplateHtml = (
         ? (attrNames.push(attrName!),
           s.slice(0, attrNameEndIndex) +
             boundAttributeSuffix +
-            s.slice(attrNameEndIndex)) + marker
+            s.slice(attrNameEndIndex)) +
+          marker +
+          end
         : s +
           marker +
-          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : '');
+          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
   // Returned as an array for terseness
@@ -707,7 +714,12 @@ function resolveDirective(
     }
   }
   if (currentDirective !== undefined) {
-    value = currentDirective._resolve((value as DirectiveResult).values);
+    value = resolveDirective(
+      part,
+      currentDirective._$resolve(part, (value as DirectiveResult).values),
+      currentDirective,
+      _$attributeIndex
+    );
   }
   return value;
 }

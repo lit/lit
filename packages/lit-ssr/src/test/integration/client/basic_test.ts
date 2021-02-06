@@ -15,8 +15,8 @@
 import '@open-wc/testing';
 
 import {tests} from '../tests/basic.js';
-import {render} from 'lit-html';
-import {hydrate} from 'lit-html/hydrate.js';
+import {render} from 'lit';
+import {hydrate} from 'lit/hydrate.js';
 import {hydrateShadowRoots} from 'template-shadowroot/template-shadowroot.js';
 import {SSRExpectedHTML} from '../tests/ssr-test.js';
 

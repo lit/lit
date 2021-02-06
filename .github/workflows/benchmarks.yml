@@ -37,7 +37,7 @@ jobs:
             ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
           # Bump the number after `lit-node-modules` to force a cache update
           # Note there are 2 cache actions in `tests.yml` that should all keep keys in sync
-          key: lit-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: lit-node-modules-1-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: NPM install
         if: steps.cache.outputs.cache-hit != 'true'

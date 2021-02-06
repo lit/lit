@@ -272,12 +272,16 @@ suite('lit-html', () => {
       assertRender(html`<div a=${'A'}></div>`, '<div a="A"></div>');
       assertRender(html`<div abc=${'A'}></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = ${'A'}></div>`, '<div abc="A"></div>');
+      assertRender(html`<input value=${'A'}/>`, '<input value="A">');
+      assertRender(html`<input value=${'A'}${'B'}/>`, '<input value="AB">');
     });
 
     test('quoted attribute', () => {
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
+      assertRender(html`<div abc="${'A'}/>"></div>`, '<div abc="A/>"></div>');
+      assertRender(html`<input value="${'A'}"/>`, '<input value="A">');
     });
 
     test('second quoted attribute', () => {
@@ -1137,6 +1141,18 @@ suite('lit-html', () => {
       assert.equal(count, 1);
     });
 
+    test('adds event listeners on self-closing tags', () => {
+      let count = 0;
+      const listener = () => {
+        count++;
+      };
+      render(html`<div @click=${listener}/></div>`, container);
+
+      const div = container.querySelector('div')!;
+      div.click();
+      assert.equal(count, 1);
+    });
+
     test('allows updating event listener', () => {
       let count1 = 0;
       const listener1 = () => {
@@ -1580,33 +1596,34 @@ suite('lit-html', () => {
 
     test('renders directives on ElementParts', () => {
       const log: string[] = [];
-      assertRender(html`<div ${count('x', log)}}></div>`, `<div></div>`);
+      assertRender(html`<div ${count('x', log)}></div>`, `<div></div>`);
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div a=${'a'} ${count('x', log)}}></div>`,
+        // Purposefully adds a self-closing tag slash
+        html`<div a=${'a'} ${count('x', log)}/></div>`,
         `<div a="a"></div>`
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div ${count('x', log)}} a=${'a'}></div>`,
+        html`<div ${count('x', log)} a=${'a'}></div>`,
         `<div a="a"></div>`
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div a=${'a'} ${count('x', log)}} b=${'b'}></div>`,
+        html`<div a=${'a'} ${count('x', log)} b=${'b'}></div>`,
         `<div a="a" b="b"></div>`
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div ${count('x', log)} ${count('y', log)}}></div>`,
+        html`<div ${count('x', log)} ${count('y', log)}></div>`,
         `<div></div>`
       );
       assert.deepEqual(log, ['x:1', 'y:1']);
@@ -1615,7 +1632,7 @@ suite('lit-html', () => {
       const template = html`<div ${count('x', log)} a=${'a'} ${count(
         'y',
         log
-      )}}></div>`;
+      )}></div>`;
       assertRender(template, `<div a="a"></div>`);
       assert.deepEqual(log, ['x:1', 'y:1']);
       log.length = 0;

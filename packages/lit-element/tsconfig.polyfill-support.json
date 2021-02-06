@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2020",
+    "target": "es5",
     "module": "es2020",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
@@ -18,10 +18,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "stripInternal": false
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/polyfill-support.ts"],
-  "references": [{"path": "./tsconfig.polyfill-support.json"}]
+  "include": ["src/env.d.ts", "src/polyfill-support.ts"]
 }

@@ -2,20 +2,7 @@
 .gitignore
 
 [relative]
-packages/benchmarks/.gitignore
-packages/labs/task/.gitignore
-packages/labs/react/.gitignore
-packages/lit/.gitignore
-packages/lit-element/.gitignore
-packages/lit-html/.gitignore
-packages/lit-ssr/.gitignore
-packages/lit-starter-ts/.gitignore
-packages/lit-starter-ts/.eslintignore
-packages/lit-starter-js/.gitignore
-packages/lit-starter-js/.eslintignore
-packages/localize/.gitignore
-packages/tests/.gitignore
-packages/reactive-element/.gitignore
+packages/**/{.gitignore,.prettierignore}
 
 [inline]
 packages/localize/examples/

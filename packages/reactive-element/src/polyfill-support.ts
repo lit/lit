@@ -24,11 +24,6 @@
  * @packageDocumentation
  */
 
-const needsPlatformSupport = !!(
-  window.ShadyCSS !== undefined &&
-  (!window.ShadyCSS.nativeShadow || window.ShadyCSS.ApplyShim)
-);
-
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
   scope?: string;
@@ -62,7 +57,13 @@ interface PatchableReactiveElement extends HTMLElement {
 }: {
   ReactiveElement: PatchableReactiveElement;
 }) => {
-  if (!needsPlatformSupport) {
+  // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
+  // We test at the point of patching, which makes it safe to load
+  // webcomponentsjs and polyfill-support in either order
+  if (
+    window.ShadyCSS === undefined ||
+    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
+  ) {
     return;
   }
 

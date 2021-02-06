@@ -12,8 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// Type-only imports
-import {TemplateResult} from './lit-html.js';
+import type {TemplateResult} from './lit-html.js';
 
 import {
   noChange,
