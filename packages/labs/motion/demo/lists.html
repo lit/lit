@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Lit</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        font-family: sans-serif;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+      }
+
+      my-element {
+        display: inline-block;
+        width: 800px;
+        outline: none;
+      }
+
+      @media screen and (max-width: 800px) {
+        my-element {
+          width: 100%;
+        }
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit-element/lit-element.js';
+      import {repeat} from 'lit-html/directives/repeat.js';
+      import {flip, fadeIn, flyBelow} from '../development/flip.js';
+
+      const shuffle = (a) => {
+        a = a.slice();
+        let j, x, i;
+        for (i = a.length - 1; i > 0; i--) {
+          j = Math.floor(Math.random() * (i + 1));
+          x = a[i];
+          a[i] = a[j];
+          a[j] = x;
+        }
+        return a;
+      };
+
+      const data = [
+        {id: 1, value: 'Go running.', completed: false},
+        {id: 2, value: 'Strength training', completed: true},
+        {id: 3, value: 'Walk with friends.', completed: false},
+        {id: 4, value: 'Feed the cats.', completed: true},
+        {id: 5, value: 'Shop for dinner.', completed: false},
+        {id: 6, value: 'Order clothes.', completed: false},
+        {id: 7, value: 'BBQ!', completed: false},
+      ];
+
+      class MyElement extends LitElement {
+        static shadowRootOptions = {mode: 'open', delegatesFocus: true};
+        static styles = [
+          css`
+            :host {
+              display: block;
+              color: #040424;
+            }
+
+            .lists {
+              display: flex;
+            }
+
+            .list {
+              width: 50%;
+              box-sizing: border-box;
+              margin: 4px;
+            }
+
+            ul {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+
+            li {
+              text-align: center;
+              background: lightblue;
+              padding: 16px;
+              border-radius: 12px;
+              margin: 8px;
+              width: 100%;
+              box-sizing: border-box;
+              display: flex;
+              align-items: center;
+            }
+
+            li > button {
+              --webkit-appearance: none;
+              border: none;
+              background: none;
+            }
+
+            li > label {
+              display: flex;
+              flex: 1;
+            }
+
+            li > label > span {
+              padding-left: 4px;
+            }
+          `,
+        ];
+
+        static properties = {
+          data: {},
+          count: {},
+          shouldAnimate: {},
+        };
+
+        constructor() {
+          super();
+          this.addEventListener('click', (e) => this.onClick(e));
+          this.count = 0;
+          this.data = data;
+          this.length = this.data.length;
+          this.shouldAnimate = true;
+        }
+
+        addItem(e) {
+          this.data = [
+            ...this.data,
+            {
+              id: ++this.length,
+              value: e.target.value,
+              completed: false,
+            },
+          ];
+        }
+
+        removeItem(item) {
+          this.data = this.data.filter((i) => i != item);
+        }
+
+        updateItem(updatingItem, completed) {
+          this.data = this.data.map((item) => {
+            if (updatingItem === item) {
+              updatingItem.completed = completed;
+            }
+            return item;
+          });
+        }
+
+        render() {
+          const animationOptions = {
+            duration: 500,
+            easing: 'ease-in-out',
+            fill: 'both',
+          };
+          const d = animationOptions.duration / this.data.length;
+          const list = (completed) => html`<div class="list">
+            <h3>${completed ? `Completed` : `Tasks`}</h3>
+            <ul>
+              ${repeat(
+                this.data.filter((item) =>
+                  completed ? item.completed : !item.completed
+                ),
+                (item) => item.id,
+                (item) => html`<li
+                  ${flip({
+                    animationOptions,
+                    in: flyBelow,
+                    out: flyBelow,
+                    stabilizeOut: true,
+                    id: item.id,
+                  })}
+                >
+                  <label
+                    ><input
+                      type="checkbox"
+                      ?checked=${completed}
+                      @change=${(e) => this.updateItem(item, e.target.checked)}
+                    /><span>${item.id}: ${item.value}</span></label
+                  ><button @click=${() => this.removeItem(item)}>🗑</button>
+                </li>`
+              )}
+            </ul>
+          </div>`;
+          return html`
+            <input
+              @change=${(e) => this.addItem(e)}
+              placeholder="Enter a task..."
+              autofocus
+            />
+            <div class="lists">${list()} ${list(true)}</div>
+          `;
+        }
+
+        advance() {
+          if (this.shouldAnimate) {
+            this.count++;
+            const out = this.count % 5 === 0;
+            if (out) {
+              this.data = [];
+            } else {
+              this.row = !this.row;
+              this.data = shuffle(data);
+            }
+          }
+        }
+
+        onClick(e) {}
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>
