@@ -1,4 +1,5 @@
 /development/
 /node_modules/
 /index.*
-/task.*
+/flip.*
+/position.*
