@@ -10,15 +10,17 @@ export type CSSProperties = {
 
 export type CSSPropertiesList = string[];
 
+const disconnectedProps: Map<unknown, CSSProperties> = new Map();
+
 export type FlipOptions = {
+  id?: unknown;
   onComplete?: (element: HTMLElement, flip: Flip) => void;
   animationOptions?: KeyframeAnimationOptions;
   properties?: CSSPropertiesList;
   in?: Keyframe[];
   out?: Keyframe[];
-  fromElement?: Element;
-  toElement?: Element;
   stabilizeOut?: boolean;
+  // TODO(sorvell): cannot use the guard directive because this need to guard against work being done in `hostUpdate` which happens before guard. A version of guard that was a controller and could subvert work done in `hostUpdate/Updated` on a nested directive ?!!? could address this and remove the need for a separate guard here.
   guard?: () => unknown;
 };
 
@@ -144,14 +146,7 @@ export class Flip extends AsyncDirective {
     // console.log('measuring', element, props);
   }
 
-  getMeasuredElement() {
-    const el = this.reversing
-      ? this.options.fromElement
-      : this.options.toElement;
-    return el ?? this._animatingElement;
-  }
-
-  hostUpdate() {
+  guard() {
     const value = this.options.guard?.();
     this._shouldAnimate =
       !this._isAnimating() && isDirty(value, this._previousValue);
@@ -165,8 +160,15 @@ export class Flip extends AsyncDirective {
     if (value !== undefined) {
       this._previousValue = Array.isArray(value) ? Array.from(value) : value;
     }
+  }
+
+  hostUpdate() {
+    this.guard();
+    if (!this._shouldAnimate) {
+      return;
+    }
     //
-    const element = this.getMeasuredElement();
+    const element = this._animatingElement;
     if (element.isConnected) {
       this._record(element, (this._from = {}));
     }
@@ -178,14 +180,14 @@ export class Flip extends AsyncDirective {
     if (!this._shouldAnimate || !this._animatingElement.isConnected) {
       return;
     }
-    const element = this.getMeasuredElement();
+    const element = this._animatingElement;
     this._record(element, (this._to = {}));
-    const frames =
-      this._from !== undefined
-        ? this._calculateFrames(this._from, this._to)
-        : this.options.in
-        ? [...this.options.in, {}]
-        : undefined;
+    const from = this._from || disconnectedProps.get(this.options.id);
+    const frames = from
+      ? this._calculateFrames(from, this._to)
+      : this.options.in
+      ? [...this.options.in, {}]
+      : undefined;
     console.log('animation frames', frames);
     if (frames !== undefined) {
       this._animate(frames);
@@ -198,6 +200,9 @@ export class Flip extends AsyncDirective {
   disconnected() {
     if (!this._shouldAnimate) {
       return;
+    }
+    if (this.options.id) {
+      disconnectedProps.set(this.options.id, this._from);
     }
     requestAnimationFrame(async () => {
       if (this._parentNode?.isConnected && this.options.out !== undefined) {
