@@ -40,7 +40,7 @@ const browserPresets = {
     'sauce:Windows 10/Chrome@latest-3',
     'sauce:macOS 10.15/Safari@latest',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
-    'sauce:Windows 10/Internet Explorer@11',
+    'sauce:Windows 7/Internet Explorer@11',
   ],
 };
 
