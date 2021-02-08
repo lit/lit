@@ -2,7 +2,10 @@
 .gitignore
 
 [relative]
-packages/**/{.gitignore,.prettierignore}
+packages/{*,labs/*}/{.gitignore,.prettierignore}
+# Starter templates specify the lint/format ignore in .eslintignore to stay DRY
+packages/{lit-starter-ts,lit-starter-js}/.eslintignore
+
 
 [inline]
 packages/localize/examples/
