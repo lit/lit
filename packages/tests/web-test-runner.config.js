@@ -38,11 +38,10 @@ const browserPresets = {
   sauce: [
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
-    // TODO(kshaaf): re-enable Safari when #1550 is addressed.
-    //'sauce:macOS 10.15/Safari@latest',
-    // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    'sauce:Windows 7/Internet Explorer@11', // Browser start timeout
+    'sauce:macOS 10.15/Safari@latest',
+    // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
+  'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 
 let sauceLauncher;
@@ -158,7 +157,7 @@ export default {
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
-  concurrency: 6, // default cores / 2
+  concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
   browsers,
   plugins: [
