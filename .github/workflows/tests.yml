@@ -201,5 +201,4 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce-ie11
           CONCURRENT_BROWSERS: 1
-          CONCURRENT_FRAMES: 1
         run: npm run test
