@@ -1,6 +1,8 @@
-/* @license
-Copyright 2014 Travis Webb
-SPDX-License-Identifier: MIT */
+/**
+ * @license
+ * Copyright 2014 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
 // This module is derived from the file:
 // https://github.com/tjwebb/fnv-plus/blob/1e2ce68a07cb7dd4c3c85364f3d8d96c95919474/index.js#L309
