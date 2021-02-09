@@ -37,7 +37,7 @@
     "checksize": "rollup -c --environment=CHECKSIZE",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
-  "author": "The Polymer Authors",
+  "author": "Google LLC",
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
     "@types/mocha": "^8.0.3",

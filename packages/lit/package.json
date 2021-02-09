@@ -7,7 +7,7 @@
   "description": "A library for building fast, lightweight web components",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "author": "The Polymer Authors",
+  "author": "Google LLC",
   "homepage": "https://github.com/Polymer/lit-html/tree/lit-next",
   "main": "index.js",
   "module": "index.js",
