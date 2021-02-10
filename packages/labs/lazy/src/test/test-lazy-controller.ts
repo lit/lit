@@ -22,8 +22,8 @@ export class Controller implements ReactiveController {
     this.host.addController(this);
   }
 
-  clickHandler(e: Event) {
-    this.host.foo = e.type;
+  clickHandler(e: Event, prop: 'p1' | 'p2') {
+    this.host[prop] = `${(e.target as HTMLElement).id}:${e.type}`;
   }
 
   hostConnected() {

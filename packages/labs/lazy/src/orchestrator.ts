@@ -66,6 +66,7 @@ export class Orchestrator {
             return;
           } else {
             needsRefire = true;
+            patchEvent(e);
             if (this._loadPromise === undefined) {
               this._loadPromise = new Promise((r) => (this._loadResolver = r));
             }
@@ -86,5 +87,23 @@ export class Orchestrator {
     return this._loadPromise;
   }
 }
+
+interface PatchedEvent extends Event {
+  _isPatched?: boolean;
+}
+
+export const patchEvent = (e: PatchedEvent) => {
+  if (e._isPatched) {
+    return;
+  }
+  e._isPatched = true;
+  const target = e?.target;
+  const composedPath = e?.composedPath().slice();
+  Object.defineProperty(e, 'target', {
+    value: target,
+    configurable: true,
+  });
+  e.composedPath = () => composedPath!;
+};
 
 export const orchestrator = new Orchestrator();

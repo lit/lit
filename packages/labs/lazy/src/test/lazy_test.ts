@@ -42,13 +42,13 @@ suite('Lazy', () => {
   });
 
   test('initial status', async () => {
-    assert.equal(el.shadowRoot?.textContent, 'initial');
+    assert.equal(el.div1.textContent, 'initial');
   });
 
   test('bootstraps on event', async () => {
-    el.div.dispatchEvent(new Event('click'));
+    el.div1.dispatchEvent(new Event('click'));
     await el.updateComplete;
     assert.isTrue(el.lazyController!.isConnected);
-    assert.equal(el.shadowRoot?.textContent, 'click');
+    assert.equal(el.div1.textContent, 'div1:click');
   });
 });

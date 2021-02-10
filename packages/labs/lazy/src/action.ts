@@ -20,6 +20,7 @@ import {
   PartInfo,
   PartType,
 } from 'lit-html/directive.js';
+import {patchEvent} from './orchestrator.js';
 
 export class Action extends Directive {
   host: LazyElement<ReactiveController> | undefined;
@@ -45,6 +46,7 @@ export class Action extends Directive {
       if (host !== undefined) {
         this._listener = async (e: Event) => {
           if (!host.isBootstrapped) {
+            patchEvent(e);
             await host.bootstrap();
           }
           if (host.isBootstrapped) {

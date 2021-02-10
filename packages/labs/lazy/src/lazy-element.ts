@@ -43,9 +43,13 @@ export class LazyElement<T extends ReactiveController> extends LitElement {
   constructor() {
     super();
     const ctor = this.constructor as typeof LazyElement;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ctor.orchestrator ??= (window as any).orchestrator;
     if (ctor.orchestrator !== undefined) {
       ctor.orchestrator.load(ctor.dependencies);
-    }
+    } /*else {
+      this.bootstrap();
+    }*/
   }
 
   isBootstrapping = false;

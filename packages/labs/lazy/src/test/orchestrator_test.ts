@@ -42,9 +42,15 @@ suite('Orchestrator', () => {
     await orchestrator.loadComplete();
     assert.isTrue(el.isBootstrapped);
     assert.isTrue(el.lazyController.isConnected);
-    assert.equal(el.shadowRoot.textContent, 'initial');
-    el.div.dispatchEvent(new Event('click'));
+    assert.equal(el.div1.textContent, 'initial');
+    assert.equal(el.div2.textContent, 'initial');
+    el.div2.dispatchEvent(new Event('click'));
     await el.updateComplete;
-    assert.equal(el.shadowRoot.textContent, 'click');
+    assert.equal(el.div2.textContent, 'div2:click');
+    assert.equal(el.div1.textContent, 'initial');
+    //
+    el.div1.dispatchEvent(new Event('click'));
+    await el.updateComplete;
+    assert.equal(el.div1.textContent, 'div1:click');
   });
 });
