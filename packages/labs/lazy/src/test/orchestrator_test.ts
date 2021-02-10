@@ -12,27 +12,20 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TestLazyElement} from './test-lazy-element.js';
+import {orchestrator} from '../orchestrator.js';
 import {assert} from '@esm-bundle/chai';
 
-// Note, since tests are not built with production support, detect DEV_MODE
-// by checking if warning API is available.
-const DEV_MODE = !!TestLazyElement.enableWarning;
+orchestrator.elementModules.set(
+  'test-lazy-element',
+  () => import('./test-lazy-element.js')
+);
 
-if (DEV_MODE) {
-  TestLazyElement.disableWarning?.('change-in-update');
-}
-
-suite('Lazy', () => {
+suite('Orchestrator', () => {
   let container: HTMLElement;
-  let el: TestLazyElement;
 
   setup(async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    el = new TestLazyElement();
-    container.appendChild(el);
-    await el.updateComplete;
   });
 
   teardown(() => {
@@ -41,14 +34,17 @@ suite('Lazy', () => {
     }
   });
 
-  test('initial status', async () => {
-    assert.equal(el.shadowRoot?.textContent, 'initial');
-  });
-
-  test('bootstraps on event', async () => {
+  test('loads on event', async () => {
+    container.innerHTML =
+      '<test-lazy-element lazyactions="click"></test-lazy-element>';
+    const el = container.firstChild as any;
+    (el as HTMLElement).dispatchEvent(new Event('click'));
+    await orchestrator.loadComplete();
+    assert.isTrue(el.isBootstrapped);
+    assert.isTrue(el.lazyController.isConnected);
+    assert.equal(el.shadowRoot.textContent, 'initial');
     el.div.dispatchEvent(new Event('click'));
     await el.updateComplete;
-    assert.isTrue(el.lazyController!.isConnected);
-    assert.equal(el.shadowRoot?.textContent, 'click');
+    assert.equal(el.shadowRoot.textContent, 'click');
   });
 });

@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "lit-element": "^3.0.0-pre.2",
-    "lit-html": "^1.0.0-pre.5"
+    "lit-html": "^2.0.0-pre.5"
   },
   "publishConfig": {
     "access": "public"

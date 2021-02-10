@@ -11,7 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {noChange, EventPart} from 'lit-html';
+import {LazyElement, ReactiveController} from './lazy-element.js';
+import {EventPart} from 'lit-html';
 import {
   directive,
   Directive,
@@ -21,6 +22,8 @@ import {
 } from 'lit-html/directive.js';
 
 export class Action extends Directive {
+  host: LazyElement<ReactiveController> | undefined;
+
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (partInfo.type !== PartType.EVENT) {
@@ -30,11 +33,27 @@ export class Action extends Directive {
     }
   }
 
-  render(_cb: (e: Event) => void) {
-    return noChange;
+  render(cb: (e: Event) => void) {
+    return cb;
   }
-  update(_part: EventPart, [cb]: DirectiveParameters<this>) {
-    return this.render(cb);
+
+  private _listener?: (e: Event) => void;
+
+  update(part: EventPart, [cb]: DirectiveParameters<this>) {
+    if (this._listener === undefined) {
+      const host = part.options?.host as LazyElement<ReactiveController>;
+      if (host !== undefined) {
+        this._listener = async (e: Event) => {
+          if (!host.isBootstrapped) {
+            await host.bootstrap();
+          }
+          if (host.isBootstrapped) {
+            cb(e);
+          }
+        };
+      }
+    }
+    return this.render(this._listener!);
   }
 }
 
