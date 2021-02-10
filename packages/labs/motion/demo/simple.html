@@ -34,27 +34,60 @@
     </main>
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
-      import {flip} from '../development/flip.js';
+      import {flip, defaultCssProperties} from '../development/flip.js';
 
       class MyElement extends LitElement {
         static properties = {shifted: {}, moving: {}};
         static styles = css`
+          * {
+            box-sizing: border-box;
+          }
           .box {
+            will-change: transform;
             position: absolute;
+            top: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1em;
+            color: black;
             width: 100px;
             height: 100px;
-            background: steelblue;
-            top: 100px;
-            border-radius: 50%;
+            background: #90caf9;
+            border: 0px solid #5d99c6;
+            transform-origin: top left;
+          }
+
+          .box > span {
             will-change: transform;
+            display: inline-block;
+            border-radius: 50%;
+            height: 100px;
+            width: 100px;
+            border: 2px solid orange;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
           }
 
           .shifted {
             right: 1em;
+            width: 300px;
+            height: 300px;
+            background: #b71c1c;
+            color: white;
           }
         `;
 
+        firstUpdated() {
+          this.toggle();
+        }
+
         render() {
+          const animationOptions = {duration: 3000, easing: 'ease-in-out'};
           return html`
             <button @click=${this.toggle}>
               ${this.moving ? 'Stop' : 'Move'}
@@ -62,10 +95,22 @@
             <div
               class="box ${this.shifted ? 'shifted' : ''}"
               ${flip({
-                animationOptions: {duration: 1000, easing: 'ease-in-out'},
+                animationOptions,
+                properties: [
+                  ...defaultCssProperties,
+                  'background',
+                  'border',
+                  'color',
+                ],
+                id: 'simple',
                 onComplete: () => this.shift(),
               })}
-            ></div>
+            >
+              <span ${flip({inverseId: 'simple'})}
+                >Simple...<br />
+                is beautiful.</span
+              >
+            </div>
           `;
         }
 
