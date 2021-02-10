@@ -14,7 +14,7 @@
 import {LitElement} from 'lit-element';
 import {Loader, ElementDependencies, Orchestrator} from './orchestrator.js';
 
-export * from './directives.js';
+export * from './action.js';
 export * from 'lit-element';
 
 export class BurnerElement extends LitElement {
