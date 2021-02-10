@@ -21,4 +21,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Adds `BurnerElement`. A simple base class for scalable Lit components.
+- Adds `LazyElement`. A simple base class for scalable Lit components.

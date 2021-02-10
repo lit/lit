@@ -11,24 +11,6 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {LitElement} from 'lit-element';
-import {Loader, ElementDependencies, Orchestrator} from './orchestrator.js';
-
+export * from './lazy-element.js';
+export * from './orchestrator.js';
 export * from './action.js';
-export * from 'lit-element';
-
-export class BurnerElement extends LitElement {
-  static dependencies: Loader;
-
-  static elementDependencies: ElementDependencies;
-
-  static orchestrator: Orchestrator;
-
-  constructor() {
-    super();
-    const ctor = this.constructor as typeof BurnerElement;
-    if (ctor.orchestrator !== undefined) {
-      ctor.orchestrator.load(ctor.dependencies);
-    }
-  }
-}

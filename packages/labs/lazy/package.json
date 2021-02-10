@@ -1,5 +1,5 @@
 {
-  "name": "@lit-labs/after-burner",
+  "name": "@lit-labs/lazy",
   "version": "1.0.0-pre.1",
   "description": "Tools for making Lit scale.",
   "license": "BSD-3-Clause",
@@ -22,7 +22,7 @@
     "/src/",
     "!/src/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/burner-element.{d.ts,d.ts.map,js,js.map}",
+    "/lazy-element.{d.ts,d.ts.map,js,js.map}",
     "/orchestrator.{d.ts,d.ts.map,js,js.map}",
     "/action.{d.ts,d.ts.map,js,js.map}"
   ],
@@ -33,7 +33,7 @@
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../../tests && npx wtr '../labs/after-burner/development/**/*_test.js'",
+    "test:dev": "cd ../../tests && npx wtr '../labs/lazy/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",

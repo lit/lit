@@ -1,4 +1,4 @@
-# @lit-labs/after-burner
+# @lit-labs/lazy
 
 Tools for making Lit scale.
 
@@ -9,7 +9,7 @@ Tools for making Lit scale.
 From inside your project folder, run:
 
 ```bash
-$ npm install @lit-labs/after-burner
+$ npm install @lit-labs/lazy
 ```
 
 ## Usage
@@ -17,10 +17,10 @@ $ npm install @lit-labs/after-burner
 Here's an example:
 
 ```ts
-import {BurnerElement, BurnerController, action} from '@lit-labs/after-burner';
+import {LazyElement, action} from '@lit-labs/lazy';
 // ...
 
-class MyElement extends BurnerElement {
+class MyElement extends LazyElement {
 
   @state()
   private _userId: number;

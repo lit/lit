@@ -16,6 +16,6 @@ import {litProdConfig} from '../../../rollup-common.js';
 
 export default litProdConfig({
   classPropertyPrefix: '⍶',
-  entryPoints: ['index', 'burner-element', 'orchestrator', 'action'],
+  entryPoints: ['index', 'lazy-element', 'orchestrator', 'action'],
   external: ['lit-html', 'lit-element'],
 });

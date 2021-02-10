@@ -1,6 +1,6 @@
 /development/
 /node_modules/
 /index.*
-/burner-element.*
+/lazy-element.*
 /orchestrator.*
 /action.*

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {BurnerElement, html} from '../burner-element.js';
+import {LazyElement, html} from '../lazy-element.js';
 import {property} from 'lit-element/decorators/property.js';
 import {customElement} from 'lit-element/decorators/custom-element.js';
 import {generateElementName} from './test-helpers';
@@ -20,18 +20,18 @@ import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
-const DEV_MODE = !!BurnerElement.enableWarning;
+const DEV_MODE = !!LazyElement.enableWarning;
 
 if (DEV_MODE) {
-  BurnerElement.disableWarning?.('change-in-update');
+  LazyElement.disableWarning?.('change-in-update');
 }
 
-suite('After Burner', () => {
+suite('Lazy', () => {
   let container: HTMLElement;
   let el: A;
 
   @customElement(generateElementName())
-  class A extends BurnerElement {
+  class A extends LazyElement {
     @property() foo = 'hi';
 
     render() {
@@ -55,6 +55,6 @@ suite('After Burner', () => {
 
   test('initial status', async () => {
     el = new A();
-    assert.instanceOf(el, BurnerElement);
+    assert.instanceOf(el, LazyElement);
   });
 });
