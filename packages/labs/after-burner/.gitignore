@@ -1,0 +1,6 @@
+/development/
+/node_modules/
+/index.*
+/burner-element.*
+/orchestrator.*
+/action.*
