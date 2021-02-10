@@ -43,19 +43,16 @@
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
       import {repeat} from 'lit-html/directives/repeat.js';
-      import {flip, fadeIn, flyBelow} from '../development/flip.js';
-
-      const shuffle = (a) => {
-        a = a.slice();
-        let j, x, i;
-        for (i = a.length - 1; i > 0; i--) {
-          j = Math.floor(Math.random() * (i + 1));
-          x = a[i];
-          a[i] = a[j];
-          a[j] = x;
-        }
-        return a;
-      };
+      import {classMap} from 'lit-html/directives/class-map.js';
+      import {
+        flip,
+        fadeOut,
+        flyBelow,
+        defaultCssProperties,
+      } from '../development/flip.js';
+      import 'https://unpkg.com/@material/mwc-textfield@0.20.0/mwc-textfield.js?module';
+      import 'https://unpkg.com/@material/mwc-checkbox@0.20.0/mwc-checkbox.js?module';
+      import 'https://unpkg.com/@material/mwc-formfield@0.20.0/mwc-formfield.js?module';
 
       const data = [
         {id: 1, value: 'Go running.', completed: false},
@@ -73,7 +70,17 @@
           css`
             :host {
               display: block;
-              color: #040424;
+              padding: 8px;
+              --mdc-theme-primary: #0069c0;
+              --mdc-theme-secondary: #1b5e20;
+              --mdc-typography-body2-font-size: 1.1rem;
+              --mdc-typography-body2-font-weight: 600;
+              --mdc-checkbox-unchecked-color: black;
+            }
+
+            mwc-textfield {
+              display: block;
+              --mdc-shape-small: 12px;
             }
 
             .lists {
@@ -81,59 +88,49 @@
             }
 
             .list {
-              width: 50%;
-              box-sizing: border-box;
-              margin: 4px;
+              flex: 1;
             }
 
             ul {
-              list-style: none;
-              padding: 0;
               margin: 0;
+              padding: 0;
             }
 
             li {
-              text-align: center;
-              background: lightblue;
-              padding: 16px;
+              will-change: transform;
+              position: relative;
+              background: #ffeb3b;
+              padding: 8px;
               border-radius: 12px;
               margin: 8px;
-              width: 100%;
-              box-sizing: border-box;
               display: flex;
               align-items: center;
             }
 
             li > button {
-              --webkit-appearance: none;
               border: none;
               background: none;
+              outline: none;
             }
 
-            li > label {
-              display: flex;
+            li > mwc-formfield {
               flex: 1;
             }
 
-            li > label > span {
-              padding-left: 4px;
+            .list.completed li {
+              background: #4caf50;
             }
           `,
         ];
 
         static properties = {
           data: {},
-          count: {},
-          shouldAnimate: {},
         };
 
         constructor() {
           super();
-          this.addEventListener('click', (e) => this.onClick(e));
-          this.count = 0;
           this.data = data;
           this.length = this.data.length;
-          this.shouldAnimate = true;
         }
 
         addItem(e) {
@@ -145,6 +142,7 @@
               completed: false,
             },
           ];
+          e.target.value = '';
         }
 
         removeItem(item) {
@@ -167,7 +165,9 @@
             fill: 'both',
           };
           const d = animationOptions.duration / this.data.length;
-          const list = (completed) => html`<div class="list">
+          const list = (completed) => html`<div
+            class="list ${classMap({completed})}"
+          >
             <h3>${completed ? `Completed` : `Tasks`}</h3>
             <ul>
               ${repeat(
@@ -178,47 +178,37 @@
                 (item) => html`<li
                   ${flip({
                     animationOptions,
+                    properties: [...defaultCssProperties, 'background'],
                     in: flyBelow,
-                    out: flyBelow,
+                    out: fadeOut,
                     stabilizeOut: true,
                     id: item.id,
+                    skipInitial: true,
                   })}
                 >
-                  <label
-                    ><input
+                  <mwc-formfield label="${item.id}: ${item.value}"
+                    ><mwc-checkbox
                       type="checkbox"
                       ?checked=${completed}
                       @change=${(e) => this.updateItem(item, e.target.checked)}
-                    /><span>${item.id}: ${item.value}</span></label
-                  ><button @click=${() => this.removeItem(item)}>🗑</button>
+                    ></mwc-checkbox></mwc-formfield
+                  ><button @click=${() => this.removeItem(item)}>
+                    <img src="delete.svg" title="Delete" alt="Delete" />
+                  </button>
                 </li>`
               )}
             </ul>
           </div>`;
           return html`
-            <input
+            <mwc-textfield
+              outlined
               @change=${(e) => this.addItem(e)}
-              placeholder="Enter a task..."
+              label="Enter a task..."
               autofocus
-            />
+            ></mwc-textfield>
             <div class="lists">${list()} ${list(true)}</div>
           `;
         }
-
-        advance() {
-          if (this.shouldAnimate) {
-            this.count++;
-            const out = this.count % 5 === 0;
-            if (out) {
-              this.data = [];
-            } else {
-              this.row = !this.row;
-              this.data = shuffle(data);
-            }
-          }
-        }
-
-        onClick(e) {}
       }
 
       customElements.define('my-element', MyElement);

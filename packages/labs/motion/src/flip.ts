@@ -2,6 +2,15 @@ import {LitElement} from 'lit-element';
 import {nothing, AttributePart} from 'lit-html';
 import {directive, PartInfo, PartType} from 'lit-html/directive.js';
 import {AsyncDirective} from 'lit-html/async-directive.js';
+import {ReactiveControllerHost} from 'lit-element';
+
+// TODO(sorvell):
+// 1. animate other properties than transform
+// 2. hero animation
+// 3. reverse scaling
+// 4. spring?
+// 5. cleanup
+// 6. tests
 
 // TODO(sorvell): Type better
 export type CSSProperties = {
@@ -10,19 +19,35 @@ export type CSSProperties = {
 
 export type CSSPropertiesList = string[];
 
+let z = 0;
+
 const disconnectedProps: Map<unknown, CSSProperties> = new Map();
+interface InverseData {
+  options: FlipOptions;
+  props: CSSProperties;
+}
+
+const inverseProps: Map<unknown, InverseData> = new Map();
+
+const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
 
 export type FlipOptions = {
   id?: unknown;
+  inverseId?: unknown;
   onComplete?: (element: HTMLElement, flip: Flip) => void;
   animationOptions?: KeyframeAnimationOptions;
+  animationClass?: string;
   properties?: CSSPropertiesList;
   in?: Keyframe[];
   out?: Keyframe[];
   stabilizeOut?: boolean;
+  skipInitial?: boolean;
   // TODO(sorvell): cannot use the guard directive because this need to guard against work being done in `hostUpdate` which happens before guard. A version of guard that was a controller and could subvert work done in `hostUpdate/Updated` on a nested directive ?!!? could address this and remove the need for a separate guard here.
   guard?: () => unknown;
 };
+
+const animationFrame = () =>
+  new Promise((resolve) => requestAnimationFrame(resolve));
 
 export const flyBelow = [{transform: 'translateY(100%) scale(0)', opacity: 0}];
 
@@ -32,6 +57,12 @@ export const fadeOut = [{opacity: 0}];
 export const fade = fadeOut;
 
 export const fadeIn = [{opacity: 0}, {opacity: 1}];
+
+export const fadeInSlow = [
+  {opacity: 0},
+  {opacity: 0.25, offset: 0.75},
+  {opacity: 1},
+];
 
 const diffOp = (a: number, b: number) => {
   const v = a - b;
@@ -44,20 +75,20 @@ const quotientOp = (a: number, b: number) => {
 
 const transformProps = {
   left: (a: number, b: number) => {
-    const v = diffOp(a, b);
-    return v && `translateX(${v}px)`;
+    const value = diffOp(a, b);
+    return {value, transform: value && `translateX(${value}px)`};
   },
   top: (a: number, b: number) => {
-    const v = diffOp(a, b);
-    return v && `translateY(${v}px)`;
+    const value = diffOp(a, b);
+    return {value, transform: value && `translateY(${value}px)`};
   },
   width: (a: number, b: number) => {
-    const v = quotientOp(a, b);
-    return v && `scaleX(${v})`;
+    const value = quotientOp(a, b);
+    return {value, transform: value && `scaleX(${value})`};
   },
   height: (a: number, b: number) => {
-    const v = quotientOp(a, b);
-    return v && `scaleY(${v})`;
+    const value = quotientOp(a, b);
+    return {value, transform: value && `scaleY(${value})`};
   },
 };
 
@@ -104,7 +135,7 @@ export class Flip extends AsyncDirective {
   private _shouldAnimate = true;
   private _previousValue: unknown;
 
-  reversing = false;
+  rendered = false;
   animation?: Animation;
   options!: FlipOptions;
 
@@ -149,7 +180,9 @@ export class Flip extends AsyncDirective {
   guard() {
     const value = this.options.guard?.();
     this._shouldAnimate =
-      !this._isAnimating() && isDirty(value, this._previousValue);
+      this._host!.hasUpdated &&
+      !this._isAnimating() &&
+      isDirty(value, this._previousValue);
     if (!this._shouldAnimate) {
       // TODO(sorvell): what should this do?
       //this.animation.cancel();
@@ -167,7 +200,6 @@ export class Flip extends AsyncDirective {
     if (!this._shouldAnimate) {
       return;
     }
-    //
     const element = this._animatingElement;
     if (element.isConnected) {
       this._record(element, (this._from = {}));
@@ -176,88 +208,135 @@ export class Flip extends AsyncDirective {
     this._nextSibling = this._animatingElement.nextSibling;
   }
 
-  hostUpdated() {
-    if (!this._shouldAnimate || !this._animatingElement.isConnected) {
+  async hostUpdated() {
+    // wait for rendering so any sub-elements have a chance to render.
+    await animationFrame;
+    const hostRendered = renderedHosts.has(this._host!);
+    this._host!.updateComplete.then(() => {
+      renderedHosts.add(this._host!);
+    });
+    const inverse = this.options.inverseId
+      ? inverseProps.get(this.options.inverseId)
+      : undefined;
+    const options = inverse ? inverse.options : this.options;
+    if (
+      !this._shouldAnimate ||
+      !this._animatingElement.isConnected ||
+      (options.skipInitial && !hostRendered)
+    ) {
       return;
     }
-    const element = this._animatingElement;
-    this._record(element, (this._to = {}));
-    const from = this._from || disconnectedProps.get(this.options.id);
-    const frames = from
-      ? this._calculateFrames(from, this._to)
-      : this.options.in
-      ? [...this.options.in, {}]
-      : undefined;
-    console.log('animation frames', frames);
+    let frames: Keyframe[] | undefined;
+    let animationOptions = options.animationOptions;
+    if (inverse) {
+      animationOptions = {...options.animationOptions, fill: 'both'};
+      const w = inverse.props.width as number;
+      const h = inverse.props.height as number;
+      const x = w < 1 ? 1 / w : 1;
+      const y = h < 1 ? 1 / h : 1;
+      const f = {transform: `scaleX(${x}) scaleY(${y})`};
+      frames = [f, f];
+      console.log('inverse animation frames', x);
+    } else {
+      const element = this._animatingElement;
+      this._record(element, (this._to = {}));
+      const disconnected = disconnectedProps.get(this.options.id);
+      const reconnectedFrames =
+        disconnected && this._calculateFrames(disconnected, this._to);
+      if (this._from) {
+        frames = this._calculateFrames(this._from, this._to);
+      } else if (reconnectedFrames) {
+        frames = this.options.in
+          ? [
+              {...this.options.in[0], ...reconnectedFrames![0]},
+              ...this.options.in.slice(1),
+              reconnectedFrames![1],
+            ]
+          : reconnectedFrames;
+      } else if (this.options.in) {
+        frames = [...this.options.in, {}];
+      }
+      //console.log('animation frames', frames);
+      if (disconnected && frames) {
+        z++;
+        frames.forEach((f) => (f.zIndex = z));
+      }
+    }
     if (frames !== undefined) {
-      this._animate(frames);
+      this._animate(frames, animationOptions);
     }
   }
 
   reconnected() {}
 
   // Experimental animate out functionality.
-  disconnected() {
+  async disconnected() {
     if (!this._shouldAnimate) {
       return;
     }
-    if (this.options.id) {
+    if (this.options.id !== undefined) {
       disconnectedProps.set(this.options.id, this._from);
     }
-    requestAnimationFrame(async () => {
-      if (this._parentNode?.isConnected && this.options.out !== undefined) {
-        const ref =
-          this._nextSibling && this._nextSibling.parentNode === this._parentNode
-            ? this._nextSibling
-            : null;
-        this._parentNode.insertBefore(this._animatingElement, ref);
-        // Move to position before removal before animating
-        const shifted: CSSProperties = {};
-        this._record(this._animatingElement, shifted);
-        if (this.options.stabilizeOut) {
-          const left = diffOp(
-            this._from.left as number,
-            shifted.left as number
-          );
-          // TODO(sorvell): these nudges could conflict with existing styling
-          // or animation but setting left/top should be rare, especially via
-          // animation.
-          if (left !== 0) {
-            this._animatingElement.style.position = 'relative';
-            this._animatingElement.style.left = left + 'px';
-          }
-          const top = diffOp(this._from.top as number, shifted.top as number);
-          if (top !== 0) {
-            this._animatingElement.style.position = 'relative';
-            this._animatingElement.style.top = top + 'px';
-          }
+    await animationFrame;
+    if (this._parentNode?.isConnected && this.options.out !== undefined) {
+      const ref =
+        this._nextSibling && this._nextSibling.parentNode === this._parentNode
+          ? this._nextSibling
+          : null;
+      this._parentNode.insertBefore(this._animatingElement, ref);
+      // Move to position before removal before animating
+      const shifted: CSSProperties = {};
+      this._record(this._animatingElement, shifted);
+      if (this.options.stabilizeOut) {
+        const left = diffOp(this._from.left as number, shifted.left as number);
+        // TODO(sorvell): these nudges could conflict with existing styling
+        // or animation but setting left/top should be rare, especially via
+        // animation.
+        if (left !== 0) {
+          this._animatingElement.style.position = 'relative';
+          this._animatingElement.style.left = left + 'px';
         }
-        await this._animate(this.options.out);
-        this._animatingElement.remove();
+        const top = diffOp(this._from.top as number, shifted.top as number);
+        if (top !== 0) {
+          this._animatingElement.style.position = 'relative';
+          this._animatingElement.style.top = top + 'px';
+        }
       }
-    });
+      await this._animate(this.options.out);
+      this._animatingElement.remove();
+    }
   }
 
   private _calculateFrames(from: CSSProperties, to: CSSProperties) {
     const fromFrame: Keyframe = {};
     const toFrame: Keyframe = {};
     let hasFrames = false;
-
+    const props: CSSProperties = {};
     for (const p in to) {
       const f = from[p],
         t = to[p];
       if (p in transformProps) {
         const tp = transformProps[p as keyof typeof transformProps];
-        const v = tp(f as number, t as number);
-        if (v !== undefined) {
-          hasFrames = true;
-          fromFrame.transform = `${fromFrame.transform ?? ''} ${v}`;
+        if (f === undefined || t === undefined) {
+          continue;
         }
-      } else if (f !== t) {
+        const op = tp(f as number, t as number);
+        if (op.transform !== undefined) {
+          if (this.options.id) {
+            props[p] = op.value!;
+          }
+          hasFrames = true;
+          fromFrame.transform = `${fromFrame.transform ?? ''} ${op.transform}`;
+        }
+      } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
         fromFrame[p] = f;
         toFrame[p] = t;
       }
+    }
+    fromFrame.transformOrigin = toFrame.transformOrigin = 'top left';
+    if (this.options.id) {
+      inverseProps.set(this.options.id, {options: this.options, props});
     }
     return hasFrames ? [fromFrame, toFrame] : undefined;
   }
@@ -266,16 +345,17 @@ export class Flip extends AsyncDirective {
     return this.animation?.playState === 'running';
   }
 
-  private async _animate(frames: Keyframe[]) {
+  private async _animate(
+    frames: Keyframe[],
+    options = this.options.animationOptions
+  ) {
     if (this._isAnimating()) {
       return;
     }
-    //console.log('animate', frames);
-    this.animation = this._animatingElement.animate(
-      frames,
-      this.options.animationOptions
-    );
+    this.animation = this._animatingElement.animate(frames, options);
     await this.animation.finished;
+    disconnectedProps.delete(this.options.id);
+    inverseProps.delete(this.options.id);
     this.options.onComplete?.(this._animatingElement, this);
   }
 }
