@@ -124,12 +124,12 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 
-packages/labs/after-burner/development/
-packages/labs/after-burner/node_modules/
-packages/labs/after-burner/index.*
-packages/labs/after-burner/burner-element.*
-packages/labs/after-burner/orchestrator.*
-packages/labs/after-burner/action.*
+packages/labs/lazy/development/
+packages/labs/lazy/node_modules/
+packages/labs/lazy/index.*
+packages/labs/lazy/lazy-element.*
+packages/labs/lazy/orchestrator.*
+packages/labs/lazy/action.*
 packages/labs/react/development/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
