@@ -1202,6 +1202,5 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
-(
-  window['reactiveElementVersions'] || (window['reactiveElementVersions'] = [])
-).push('1.0.0-pre.1');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-pre.2');
