@@ -17,8 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## [1.0.0-pre.1] - 2020-12-16
+## [1.0.0-pre.1] - 2021-02-11
 
 ### Added
 
-- Adds react component wrapper for custom elements. Use by calling `createComponent`.
+- Adds react component wrapper for custom elements. Use by calling `createComponent` ([#1420](https://github.com/Polymer/lit-html/pulls/1420)).

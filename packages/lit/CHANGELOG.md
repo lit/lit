@@ -17,11 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-<!-- ## [x.y.z] - YYYY-MM-DD -->
+## [2.0.0-pre.1] - 2021-02-11
 
-## Unreleased
-
-#### Changed
-
-- Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
-- Renamed `platform-support` to `polyfill-support`.
+Initial release
