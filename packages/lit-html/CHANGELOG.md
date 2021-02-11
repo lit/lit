@@ -17,16 +17,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-<!-- ## [X.Y.Z] - YYYY-MM-DD -->
-
-## Unreleased
+## [2.0.0-pre.6] - 2021-02-11
 
 ### Fixed
 
 - Nested directives whose parent returns `noChange` are now unchanged. This
   allows the `guard` directive to guard directive values ([#1519](https://github.com/Polymer/lit-html/issues/1519)).
 
-#### Changed
+### Changed
 
 - (Since 2.0.0-pre.4) Removes second `klass` argument from `isDirectiveResult` since it is generally not version-agnostic to test directives using `instanceof`. A new `getDirectiveClass` helper is introduced, which allows for directive class branding checks instead.
 - (Since 2.0.0-pre.4) `DisconnectableDirective` was renamed to `AsyncDirective`, and its module name was renamed from `disconnectable-directive` to `async-directive`.
