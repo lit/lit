@@ -44,7 +44,7 @@ export function UseScopedRegistry<SuperClass extends LitElementConstructor>(
         );
       }
 
-      return (this.renderOptions.ownerRoot = this.attachShadow({
+      return (this.renderOptions.creationScope = this.attachShadow({
         ...shadowRootOptions,
         customElements: constructor.registry,
       }));

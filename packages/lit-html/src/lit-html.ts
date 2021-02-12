@@ -297,10 +297,11 @@ export interface RenderOptions {
    */
   renderBefore?: ChildNode | null;
   /**
-   * Node which is going to clone and import the TemplateInstance in case Scoped Registries
-   * are available.
+   * Node used for cloning the template (`importNode` will be called on this
+   * node). This controls the `ownerDocument` of the rendered DOM, along with
+   * any inherited context. Defaults to the global `document`.
    */
-  ownerRoot?: Document | ShadowRoot;
+  creationScope?: {importNode(node: Node, deep?: boolean): Node};
 }
 
 /**
@@ -756,8 +757,7 @@ class TemplateInstance {
       _$element: {content},
       _parts: parts,
     } = this._$template;
-    // @ts-expect-error: importNode not yet in ShadowRoot
-    const fragment = (options?.ownerRoot ?? d).importNode(content, true);
+    const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
     let node = walker.nextNode();
