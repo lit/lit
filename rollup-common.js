@@ -61,7 +61,7 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // and choose the next letter.
 //
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
-// FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
+// FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
   // lit-html: Template (used by polyfill-support)
   _$createElement: 'A',
@@ -101,6 +101,8 @@ const stableProperties = {
   _$reparentDisconnectables: 'T',
   // lit-html: ChildPart (used by directive-helpers)
   _$clear: 'U',
+  // lit-html: Directive (used by private-ssr-support)
+  _$resolve: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -377,6 +379,9 @@ const litMonoBundleConfig = ({
         'const ENABLE_EXTRA_SECURITY_HOOKS = false',
       'const ENABLE_SHADYDOM_NOPATCH = true':
         'const ENABLE_SHADYDOM_NOPATCH = false',
+      // For downleveled ES5 build of polyfill-support
+      'var ENABLE_SHADYDOM_NOPATCH = true':
+        'var ENABLE_SHADYDOM_NOPATCH = false',
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.

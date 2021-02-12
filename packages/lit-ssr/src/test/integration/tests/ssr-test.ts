@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateResult} from 'lit-html';
+import {TemplateResult} from 'lit';
 
 export type SSRExpectedHTML =
   | string

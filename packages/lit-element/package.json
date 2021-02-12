@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-pre.2",
+  "version": "3.0.0-pre.3",
   "publishConfig": {
     "access": "public"
   },
@@ -25,6 +25,10 @@
       "development": "./development/polyfill-support.js",
       "default": "./polyfill-support.js"
     },
+    "./private-ssr-support.js": {
+      "development": "./development/private-ssr-support.js",
+      "default": "./private-ssr-support.js"
+    },
     "./hydrate-support.js": {
       "development": "./development/hydrate-support.js",
       "default": "./hydrate-support.js"
@@ -41,13 +45,12 @@
   "scripts": {
     "build": "npm run clean && tsc --build && rollup -c",
     "build:watch": "rollup -c --watch",
-    "build:babel-test": "babel src/test/lib/decorators_test.ts --out-file test/lib/decorators-babel_test.js",
     "build:bundle": "npm run clean:bundle && tsc --build && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf index.{js,js.map,d.ts} lit-element.{js,js.map,d.ts} decorators.{js,js.map,d.ts} polyfill-support.{js,js.map,d.ts} hydrate-support.{js,js.map,d.ts} decorators/ development/",
+    "clean": "rm -rf {decorators,hydrate-support,index,lit-element,polyfill-support,private-ssr-support,lit.min}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -60,12 +63,14 @@
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
-    "/index.{d.ts,d.ts.map,js,js.map}",
     "/decorators.{d.ts,d.ts.map,js,js.map}",
-    "/decorators/",
-    "/development/",
+    "/hydrate-support.{d.ts,d.ts.map,js,js.map}",
+    "/index.{d.ts,d.ts.map,js,js.map}",
     "/lit-element.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
+    "/decorators/",
+    "/development/",
     "/src/",
     "!/src/demo/",
     "!/src/test/"
@@ -75,10 +80,6 @@
     "@lit/reactive-element": "^1.0.0-pre.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/plugin-proposal-class-properties": "^7.2.3",
-    "@babel/plugin-proposal-decorators": "^7.2.3",
-    "@babel/plugin-transform-typescript": "^7.2.0",
     "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",

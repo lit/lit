@@ -11,6 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 /**
  * LitElement patch to support browsers without native web components.
  *
@@ -31,11 +32,6 @@
 
 import '@lit/reactive-element/polyfill-support.js';
 import 'lit-html/polyfill-support.js';
-
-const needsPlatformSupport = !!(
-  window.ShadyCSS !== undefined &&
-  (!window.ShadyCSS.nativeShadow || window.ShadyCSS.ApplyShim)
-);
 
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
@@ -60,7 +56,13 @@ interface PatchableLitElement extends HTMLElement {
 }: {
   LitElement: PatchableLitElement;
 }) => {
-  if (!needsPlatformSupport) {
+  // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
+  // We test at the point of patching, which makes it safe to load
+  // webcomponentsjs and polyfill-support in either order
+  if (
+    window.ShadyCSS === undefined ||
+    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
+  ) {
     return;
   }
 

@@ -74,9 +74,8 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
-(window['litElementVersions'] || (window['litElementVersions'] = [])).push(
-  '3.0.0-pre.2'
-);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-pre.3');
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -160,8 +159,10 @@ export class LitElement extends ReactiveElement {
 
 // DEV mode warnings
 if (DEV_MODE) {
+  // Note, for compatibility with closure compilation, this access
+  // needs to be as a string property index.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (LitElement as any).finalize = function () {
+  (LitElement as any)['finalize'] = function (this: typeof LitElement) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalized = (ReactiveElement as any).finalize.call(this);
     if (!finalized) {
@@ -214,7 +215,9 @@ export const _Φ = {
     name: string,
     value: string | null
   ) => {
-    el._$attributeToProperty(name, value);
+    // eslint-disable-next-line
+    (el as any)._$attributeToProperty(name, value);
   },
-  _$changedProperties: (el: LitElement) => el._$changedProperties,
+  // eslint-disable-next-line
+  _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };

@@ -13,7 +13,7 @@
  */
 
 import {ReactiveElement} from '../../reactive-element.js';
-import {eventOptions} from '../../decorators/eventOptions.js';
+import {eventOptions} from '../../decorators/event-options.js';
 import {
   canTestReactiveElement,
   generateElementName,

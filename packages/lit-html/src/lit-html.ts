@@ -13,7 +13,7 @@
  */
 
 // IMPORTANT: these imports must be type-only
-import {Directive, DirectiveResult, PartInfo} from './directive.js';
+import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -499,6 +499,11 @@ const getTemplateHtml = (
     //  4. We're somewhere else inside the tag. If we're in attribute name
     //     position (attrNameEndIndex === -2), add a sequential suffix to
     //     generate a unique attribute name.
+
+    // Detect a binding next to self-closing tag end and insert a space to
+    // separate the marker from the tag end:
+    const end =
+      regex === tagEndRegex && strings[i + 1].startsWith('/>') ? ' ' : '';
     html +=
       regex === textEndRegex
         ? s + nodeMarker
@@ -506,10 +511,12 @@ const getTemplateHtml = (
         ? (attrNames.push(attrName!),
           s.slice(0, attrNameEndIndex) +
             boundAttributeSuffix +
-            s.slice(attrNameEndIndex)) + marker
+            s.slice(attrNameEndIndex)) +
+          marker +
+          end
         : s +
           marker +
-          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : '');
+          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
   // Returned as an array for terseness
@@ -712,7 +719,12 @@ function resolveDirective(
     }
   }
   if (currentDirective !== undefined) {
-    value = currentDirective._resolve((value as DirectiveResult).values);
+    value = resolveDirective(
+      part,
+      currentDirective._$resolve(part, (value as DirectiveResult).values),
+      currentDirective,
+      _$attributeIndex
+    );
   }
   return value;
 }
@@ -882,7 +894,7 @@ class ChildPartImpl {
   _$parent: Disconnectable | undefined;
 
   // The following fields will be patched onto ChildParts when required by
-  // DisconnectableDirective
+  // AsyncDirective
   /** @internal */
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
@@ -911,7 +923,7 @@ class ChildPartImpl {
   }
 
   /**
-   * Sets the connection state for any `DisconnectableDirectives` contained
+   * Sets the connection state for any `AsyncDirectives` contained
    * within this part and runs their `disconnected` or `reconnected`, according
    * to the `isConnected` argument.
    */
@@ -926,8 +938,13 @@ class ChildPartImpl {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
-      if (value === nothing) {
-        this._$clear();
+      // Non-rendering child values. It's important that these do not render
+      // empty text nodes to avoid issues with preventing default <slot>
+      // fallback content.
+      if (value === nothing || value == null || value === '') {
+        if (this._$committedValue !== nothing) {
+          this._$clear();
+        }
         this._$committedValue = nothing;
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
@@ -972,9 +989,6 @@ class ChildPartImpl {
 
   private _commitText(value: unknown): void {
     const node = wrap(this._$startNode).nextSibling;
-    // Make sure undefined and null render as an empty string
-    // TODO: use `nothing` to clear the node?
-    value ??= '';
     // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
     if (
       node !== null &&
@@ -1467,4 +1481,4 @@ export const _Σ = {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.5');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.6');

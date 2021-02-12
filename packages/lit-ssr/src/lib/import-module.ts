@@ -52,6 +52,9 @@ const resolveSpecifier = (specifier: string, referrer: string): URL => {
     throw new Error('referrer is undefined');
   }
 
+  const specifierMatches = (specifier: string, match: string) =>
+    specifier === match || specifier.startsWith(match + '/');
+
   try {
     // First see if the specifier is a full URL, and if so, use that.
 
@@ -61,8 +64,9 @@ const resolveSpecifier = (specifier: string, referrer: string): URL => {
     return new URL(specifier);
   } catch (e) {
     if (
-      specifier.startsWith('lit-html') ||
-      specifier.startsWith('lit-element')
+      specifierMatches(specifier, 'lit') ||
+      specifierMatches(specifier, 'lit-html') ||
+      specifierMatches(specifier, 'lit-element')
     ) {
       // Override where we resolve lit-html from so that we always resolve to
       // a single version of lit-html.

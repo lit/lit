@@ -31,7 +31,7 @@ import {
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
 import {repeat} from '../directives/repeat.js';
-import {DisconnectableDirective} from '../disconnectable-directive.js';
+import {AsyncDirective} from '../async-directive.js';
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -272,12 +272,16 @@ suite('lit-html', () => {
       assertRender(html`<div a=${'A'}></div>`, '<div a="A"></div>');
       assertRender(html`<div abc=${'A'}></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = ${'A'}></div>`, '<div abc="A"></div>');
+      assertRender(html`<input value=${'A'}/>`, '<input value="A">');
+      assertRender(html`<input value=${'A'}${'B'}/>`, '<input value="AB">');
     });
 
     test('quoted attribute', () => {
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
+      assertRender(html`<div abc="${'A'}/>"></div>`, '<div abc="A/>"></div>');
+      assertRender(html`<input value="${'A'}"/>`, '<input value="A">');
     });
 
     test('second quoted attribute', () => {
@@ -506,6 +510,13 @@ suite('lit-html', () => {
   });
 
   suite('text', () => {
+    const assertNoRenderedNodes = () => {
+      const children = Array.from(container.querySelector('div')!.childNodes);
+      assert.isEmpty(
+        children.filter((node) => node.nodeType !== Node.COMMENT_NODE)
+      );
+    };
+
     test('renders plain text expression', () => {
       render(html`test`, container);
       assertContent('test');
@@ -521,14 +532,17 @@ suite('lit-html', () => {
       assertContent('<div>123</div>');
     });
 
-    test('renders undefined as empty string', () => {
-      render(html`<div>${undefined}</div>`, container);
-      assertContent('<div></div>');
-    });
-
-    test('renders null as empty string', () => {
-      render(html`<div>${null}</div>`, container);
-      assertContent('<div></div>');
+    [nothing, undefined, null, ''].forEach((value: unknown) => {
+      test(`renders '${
+        value === '' ? 'empty string' : value === nothing ? 'nothing' : value
+      }' as nothing`, () => {
+        const template = (i: any) => html`<div>${i}</div>`;
+        render(template(value), container);
+        assertNoRenderedNodes();
+        render(template('foo'), container);
+        render(template(value), container);
+        assertNoRenderedNodes();
+      });
     });
 
     test('renders noChange', () => {
@@ -536,16 +550,6 @@ suite('lit-html', () => {
       render(template('foo'), container);
       render(template(noChange), container);
       assertContent('<div>foo</div>');
-    });
-
-    test('renders nothing', () => {
-      const template = (i: any) => html`<div>${i}</div>`;
-      render(template('foo'), container);
-      render(template(nothing), container);
-      const children = Array.from(container.querySelector('div')!.childNodes);
-      assert.isEmpty(
-        children.filter((node) => node.nodeType !== Node.COMMENT_NODE)
-      );
     });
 
     test.skip('renders a Symbol', () => {
@@ -910,6 +914,11 @@ suite('lit-html', () => {
       assertContent('<div attribute=""></div>');
     });
 
+    test('renders null in attributes', () => {
+      render(html`<div attribute="${null as any}"></div>`, container);
+      assertContent('<div attribute=""></div>');
+    });
+
     test('nothing sentinel removes an attribute', () => {
       const go = (v: any) => html`<div a=${v}></div>`;
       render(go(nothing), container);
@@ -1126,6 +1135,18 @@ suite('lit-html', () => {
       };
       render(html`<div @click=${listener}></div>`, container);
       render(html`<div @click=${listener}></div>`, container);
+
+      const div = container.querySelector('div')!;
+      div.click();
+      assert.equal(count, 1);
+    });
+
+    test('adds event listeners on self-closing tags', () => {
+      let count = 0;
+      const listener = () => {
+        count++;
+      };
+      render(html`<div @click=${listener}/></div>`, container);
 
       const div = container.querySelector('div')!;
       div.click();
@@ -1575,33 +1596,34 @@ suite('lit-html', () => {
 
     test('renders directives on ElementParts', () => {
       const log: string[] = [];
-      assertRender(html`<div ${count('x', log)}}></div>`, `<div></div>`);
+      assertRender(html`<div ${count('x', log)}></div>`, `<div></div>`);
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div a=${'a'} ${count('x', log)}}></div>`,
+        // Purposefully adds a self-closing tag slash
+        html`<div a=${'a'} ${count('x', log)}/></div>`,
         `<div a="a"></div>`
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div ${count('x', log)}} a=${'a'}></div>`,
+        html`<div ${count('x', log)} a=${'a'}></div>`,
         `<div a="a"></div>`
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div a=${'a'} ${count('x', log)}} b=${'b'}></div>`,
+        html`<div a=${'a'} ${count('x', log)} b=${'b'}></div>`,
         `<div a="a" b="b"></div>`
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
-        html`<div ${count('x', log)} ${count('y', log)}}></div>`,
+        html`<div ${count('x', log)} ${count('y', log)}></div>`,
         `<div></div>`
       );
       assert.deepEqual(log, ['x:1', 'y:1']);
@@ -1610,7 +1632,7 @@ suite('lit-html', () => {
       const template = html`<div ${count('x', log)} a=${'a'} ${count(
         'y',
         log
-      )}}></div>`;
+      )}></div>`;
       assertRender(template, `<div a="a"></div>`);
       assert.deepEqual(log, ['x:1', 'y:1']);
       log.length = 0;
@@ -1726,7 +1748,7 @@ suite('lit-html', () => {
 
     suite('async directives', () => {
       const aDirective = directive(
-        class extends DisconnectableDirective {
+        class extends AsyncDirective {
           value: unknown;
           promise!: Promise<unknown>;
           render(_promise: Promise<unknown>) {
@@ -1779,14 +1801,14 @@ suite('lit-html', () => {
         const log: string[] = [];
         const template = (promise: Promise<unknown>) =>
           html`<div>${aDirective(promise)}</div>`;
-        // Async render a TemplateResult containing a DisconnectableDirective
+        // Async render a TemplateResult containing a AsyncDirective
         let promise: Promise<unknown> = Promise.resolve(
           html`${disconnectingDirective(log, 'dd', 'dd')}`
         );
         const part = assertRender(template(promise), `<div>initial</div>`);
         await promise;
         assertContent(`<div>dd</div>`);
-        // Eneuque an async clear of the TemplateResult+DisconnectableDirective
+        // Eneuque an async clear of the TemplateResult+AsyncDirective
         promise = Promise.resolve(nothing);
         assertRender(template(promise), `<div>dd</div>`);
         assert.deepEqual(log, []);
@@ -1797,7 +1819,7 @@ suite('lit-html', () => {
         assert.deepEqual(log, ['disconnected-dd']);
         assertContent(`<div>dd</div>`);
         // Re-connect the tree, which should clear the part but not reconnect
-        // the DisconnectableDirective that was cleared
+        // the AsyncDirective that was cleared
         part.setConnected(true);
         assertRender(template(promise), `<div></div>`);
         assert.deepEqual(log, ['disconnected-dd']);
@@ -1861,7 +1883,7 @@ suite('lit-html', () => {
   });
 
   const disconnectingDirective = directive(
-    class extends DisconnectableDirective {
+    class extends AsyncDirective {
       log!: Array<string>;
       id!: string;
 
@@ -1992,7 +2014,7 @@ suite('lit-html', () => {
     assert.deepEqual(log, ['disconnected-right']);
   });
 
-  test('directives returned from other DisconnectableDirectives can be disconnected', () => {
+  test('directives returned from other AsyncDirectives can be disconnected', () => {
     const log: Array<string> = [];
     const go = (
       clearAll: boolean,

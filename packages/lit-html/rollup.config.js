@@ -33,7 +33,7 @@ export default litProdConfig({
     'lit-html',
     'directive',
     'directive-helpers',
-    'disconnectable-directive',
+    'async-directive',
     'static',
     'hydrate',
     'private-ssr-support',

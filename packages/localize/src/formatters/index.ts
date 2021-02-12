@@ -52,12 +52,12 @@ export abstract class Formatter {
   /**
    * Read translations we have already received.
    */
-  abstract async readTranslations(): Promise<Bundle[]>;
+  abstract readTranslations(): Promise<Bundle[]>;
 
   /**
    * Write localization interchange data (i.e. translation requests) to disk.
    */
-  abstract async writeOutput(
+  abstract writeOutput(
     sourceMessages: ProgramMessage[],
     translations: Map<Locale, Message[]>
   ): Promise<void>;

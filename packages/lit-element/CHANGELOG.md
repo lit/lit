@@ -17,12 +17,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-<!-- ## [x.y.z] - YYYY-MM-DD -->
+## [3.0.0-pre.3] - 2021-02-11
 
-## Unreleased
+### Changed
 
-#### Changed
-
+- (Since 3.0.0-pre.2) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
 - (Since 3.0.0-pre.2) Renamed `platform-support` to `polyfill-support`.
 - (Since 3.0.0-pre.2) Changed a new `index.js` file as the package entrypoint to export the main export plus the decorators again. This undoes a breaking change in 3.0.0-pre.1 which moved the decorators to `decorators.js`.
 

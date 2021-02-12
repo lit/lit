@@ -33,11 +33,6 @@
  * @packageDocumentation
  */
 
-const needsPlatformSupport = !!(
-  window.ShadyCSS !== undefined &&
-  (!window.ShadyCSS.nativeShadow || window.ShadyCSS.ApplyShim)
-);
-
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
   scope?: string;
@@ -105,7 +100,13 @@ const ENABLE_SHADYDOM_NOPATCH = true;
   Template: PatchableTemplate,
   ChildPart: PatchableChildPart
 ) => {
-  if (!needsPlatformSupport) {
+  // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
+  // We test at the point of patching, which makes it safe to load
+  // webcomponentsjs and polyfill-support in either order
+  if (
+    window.ShadyCSS === undefined ||
+    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
+  ) {
     return;
   }
 
@@ -152,40 +153,39 @@ const ENABLE_SHADYDOM_NOPATCH = true;
   };
 
   const scopedTemplateCache = new Map<
-    string,
+    string | undefined,
     Map<TemplateStringsArray, PatchableTemplate>
   >();
 
-  // Note, it's ok to subclass Template since it's only used via ChildPart.
-  class ShadyTemplate extends Template {
-    /**
-     * Override to extract style elements from the template
-     * and store all style.textContent in the shady scope data.
-     */
-    _$createElement(html: string) {
-      const template = super._$createElement(html);
-      const scope = this._$options?.scope;
-      if (scope !== undefined) {
-        if (!window.ShadyCSS!.nativeShadow) {
-          window.ShadyCSS!.prepareTemplateDom(template, scope);
-        }
-        const scopeCss = cssForScope(scope);
-        // Remove styles and store textContent.
-        const styles = template.content.querySelectorAll(
-          'style'
-        ) as NodeListOf<HTMLStyleElement>;
-        // Store the css in this template in the scope css and remove the <style>
-        // from the template _before_ the node-walk captures part indices
-        scopeCss.push(
-          ...Array.from(styles).map((style) => {
-            style.parentNode?.removeChild(style);
-            return style.textContent!;
-          })
-        );
+  /**
+   * Override to extract style elements from the template
+   * and store all style.textContent in the shady scope data.
+   * Note, it's ok to patch Template since it's only used via ChildPart.
+   */
+  const originalCreateElement = Template.prototype._$createElement;
+  Template.prototype._$createElement = function (html: string) {
+    const template = originalCreateElement.call(this, html);
+    const scope = this._$options?.scope;
+    if (scope !== undefined) {
+      if (!window.ShadyCSS!.nativeShadow) {
+        window.ShadyCSS!.prepareTemplateDom(template, scope);
       }
-      return template;
+      const scopeCss = cssForScope(scope);
+      // Remove styles and store textContent.
+      const styles = template.content.querySelectorAll(
+        'style'
+      ) as NodeListOf<HTMLStyleElement>;
+      // Store the css in this template in the scope css and remove the <style>
+      // from the template _before_ the node-walk captures part indices
+      scopeCss.push(
+        ...Array.from(styles).map((style) => {
+          style.parentNode?.removeChild(style);
+          return style.textContent!;
+        })
+      );
     }
-  }
+    return template;
+  };
 
   const renderContainer = document.createDocumentFragment();
   const renderContainerMarker = document.createComment('');
@@ -254,6 +254,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    * by element name.
    */
   childPartProto._$getTemplate = function (
+    this: PatchableChildPart,
     strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {
@@ -266,7 +267,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     if (template === undefined) {
       templateCache.set(
         strings,
-        (template = new ShadyTemplate(result, this.options))
+        (template = new Template(result, this.options))
       );
     }
     return template;

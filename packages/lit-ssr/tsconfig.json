@@ -21,8 +21,5 @@
   },
   "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
   "exclude": [],
-  "references": [
-    {"path": "../lit-html"},
-    {"path": "../lit-element"},
-  ]
+  "references": [{"path": "../lit-html"}, {"path": "../lit-element"}]
 }

@@ -22,7 +22,11 @@ if (mode === 'prod') {
 
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
-  local: ['chromium', 'firefox', 'webkit'],
+  local: [
+    'chromium', // keep browsers on separate lines
+    'firefox', // to make it easier to comment out
+    'webkit', // individual browsers
+  ],
 
   // Browsers to test during automated continuous integration.
   //
@@ -35,9 +39,9 @@ const browserPresets = {
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
     'sauce:macOS 10.15/Safari@latest',
-    // "sauce:Windows 10/MicrosoftEdge@18", // Browser start timeout
-    'sauce:Windows 7/Internet Explorer@11', // Browser start timeout
+    // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
+  'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 
 let sauceLauncher;
@@ -142,7 +146,6 @@ const browsers = (process.env.BROWSERS || 'preset:local')
   .flat();
 
 const require = createRequire(import.meta.url);
-const seenDevModeLogs = new Set();
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
@@ -154,7 +157,7 @@ export default {
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
-  concurrency: 6, // default cores / 2
+  concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
   browsers,
   plugins: [
@@ -188,24 +191,11 @@ export default {
       },
     }),
   ],
-  filterBrowserLogs: ({args}) => {
-    if (
-      mode === 'dev' &&
-      typeof args[0] === 'string' &&
-      args[0].includes('in dev mode')
-    ) {
-      if (!seenDevModeLogs.has(args[0])) {
-        seenDevModeLogs.add(args[0]);
-        // Log it one time.
-        return true;
-      }
-      return false;
-    }
-    return true;
-  },
-  browserStartTimeout: 120000, // default 30000
-  testsStartTimeout: 120000, // default 10000
-  testsFinishTimeout: 240000, // default 20000
+  // Only actually log errors and warnings. This helps make test output less spammy.
+  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  browserStartTimeout: 60000, // default 30000
+  testsStartTimeout: 60000, // default 10000
+  testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {

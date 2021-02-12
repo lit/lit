@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Directive} from './directive.js';
-import {_Σ as p, AttributePart, noChange} from './lit-html.js';
+import {Directive, PartInfo} from './directive.js';
+import {_Σ as p, AttributePart, noChange, Part} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -33,12 +33,15 @@ export const _Σ = {
   markerMatch: p._markerMatch,
   HTML_RESULT: p._HTML_RESULT,
   getTemplateHtml: p._getTemplateHtml,
-  patchDirectiveResolve: (
-    directive: Directive,
-    fn: (this: Directive, values: unknown[]) => unknown
-  ) => {
-    directive._resolve = fn;
-  },
+  overrideDirectiveResolve: (
+    directiveClass: new (part: PartInfo) => Directive & {render(): unknown},
+    resolveOverrideFn: (directive: Directive, values: unknown[]) => unknown
+  ) =>
+    class extends directiveClass {
+      _$resolve(this: Directive, _part: Part, values: unknown[]): unknown {
+        return resolveOverrideFn(this, values);
+      }
+    },
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
@@ -47,6 +50,9 @@ export const _Σ = {
     // Use the part setter to resolve directives/concatenate multiple parts
     // into a final value (captured by passing in a commitValue override)
     let committedValue: unknown = noChange;
+    // Note that _commitValue need not be in `stableProperties` because this
+    // method is only run on `AttributePart`s created by lit-ssr using the same
+    // version of the library as this file
     part._commitValue = (value: unknown) => (committedValue = value);
     part._$setValue(value, part, index);
     return committedValue;

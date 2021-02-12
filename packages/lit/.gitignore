@@ -7,7 +7,7 @@
 /decorators.*
 /directive-helpers.*
 /directive.*
-/disconnectable-directive.*
+/async-directive.*
 /html.*
 /hydrate-support.*
 /hydrate.*

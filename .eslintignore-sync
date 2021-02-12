@@ -2,15 +2,7 @@
 .gitignore
 
 [relative]
-packages/benchmarks/.gitignore
-packages/labs/.gitignore
-packages/lit/.gitignore
-packages/lit-element/.gitignore
-packages/lit-html/.gitignore
-packages/lit-ssr/.gitignore
-packages/localize/.gitignore
-packages/tests/.gitignore
-packages/reactive-element/.gitignore
+packages/{*,labs/*}/{.gitignore,.eslintignore}
 
 [inline]
 packages/localize/testdata/

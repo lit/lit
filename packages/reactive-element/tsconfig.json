@@ -19,8 +19,10 @@
     "noImplicitThis": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "stripInternal": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": []
+  "exclude": ["src/polyfill-support.ts"],
+  "references": [{"path": "./tsconfig.polyfill-support.json"}]
 }

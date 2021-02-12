@@ -4,13 +4,14 @@
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "clean": "lerna run clean",
     "format": "npm run format:eslint && npm run format:prettier",
     "format:eslint": "eslint \"**/*.{js,ts}\" --fix",
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
-    "nuke": "rm -rf node_modules package-lock.json packages/*/{node_modules,package-lock.json} && npm install && npm run bootstrap",
-    "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test)"
+    "nuke": "rm -rf node_modules packages/{*,labs/*}/node_modules && npm install && npm run bootstrap && npm run clean",
+    "test": "(cd packages/tests && npm test) && (cd packages/lit-ssr && npm test) && (cd packages/localize && npm test) && (cd packages/lit-starter-ts && npm test) && (cd packages/lit-starter-js && npm test)"
   },
   "dependencies": {
     "lerna": "^3.22.1"
@@ -21,10 +22,11 @@
     "@rollup/plugin-virtual": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
+    "babel-eslint": "^10.1.0",
     "eslint": "^7.17.0",
     "eslint-plugin-no-only-tests": "^2.4.0",
     "husky": "^4.3.0",
-    "ignore-sync": "^3.0.0",
+    "ignore-sync": "^3.1.0",
     "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "rollup-plugin-copy": "^3.3.0",
