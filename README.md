@@ -11,18 +11,23 @@ following links for details on the changes being made:
 
 ## Packages
 
-- [`lit`](./packages/lit)
-- [`lit-html`](./packages/lit-html)
-- [`lit-element`](./packages/lit-element)
-- [`lit-starter-ts`](./packages/lit-starter-ts)
-- [`lit-starter-js`](./packages/lit-starter-js)
-- [`@lit/reactive-element`](./packages/reactive-element)
-- [`@lit-labs/ssr`](./packages/lit-ssr)
-- [`@lit-labs/react`](./packages/labs/react)
-- [`@lit-labs/task`](./packages/labs/task)
-- [`localize`](./packages/localize)
-- [`tests`](./packages/tests) (not published)
-- [`benchmarks`](./packages/benchmarks) (not published)
+- Core packages
+  - [`lit`](./packages/lit)
+  - [`lit-html`](./packages/lit-html)
+  - [`lit-element`](./packages/lit-element)
+  - [`@lit/reactive-element`](./packages/reactive-element)
+- Additional libraries
+  - [`@lit/localize`](./packages/localize)
+- Labs
+  - [`@lit-labs/ssr`](./packages/lit-ssr)
+  - [`@lit-labs/react`](./packages/labs/react)
+  - [`@lit-labs/task`](./packages/labs/task)
+- Starter kits (not published to npm)
+  - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next))
+  - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/PolymerLabs/lit-element-starter-js/tree/lit-next))
+- Internal packages (not published to npm)
+  - [`tests`](./packages/tests) 
+  - [`benchmarks`](./packages/benchmarks)
 
 ## Development guide
 
