@@ -44,6 +44,7 @@ export function UseScopedRegistry<SuperClass extends LitElementConstructor>(
         );
       }
 
+      // @ts-expect-error: importNode not yet in ShadowRoot
       return (this.renderOptions.creationScope = this.attachShadow({
         ...shadowRootOptions,
         customElements: constructor.registry,
