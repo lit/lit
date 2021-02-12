@@ -3,6 +3,7 @@ const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(syntaxHighlight);
   eleventyConfig.addPassthroughCopy('docs-src/docs.css');
+  eleventyConfig.addPassthroughCopy('docs-src/prism-okaidia.css');
   eleventyConfig.addPassthroughCopy('docs-src/.nojekyll');
   eleventyConfig.addPassthroughCopy(
     'node_modules/@webcomponents/webcomponentsjs'
@@ -11,7 +12,7 @@ module.exports = function (eleventyConfig) {
   return {
     dir: {
       input: 'docs-src',
-      output: 'docs',
+      output: 'docs-dev',
     },
     templateExtensionAliases: {
       '11ty.cjs': '11ty.js',

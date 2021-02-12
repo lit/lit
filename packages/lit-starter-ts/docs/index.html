@@ -1,22 +1,18 @@
-
-<!doctype html>
-
-<html lang="en">
-  <head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><my-element> ⌲ Home</title>
-    <link rel="stylesheet" href="docs.css">
+    <title>&lt;my-element&gt; ⌲ Home</title>
+    <link rel="stylesheet" href="assets/docs-9e47b341.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
-    <link href="prism-okaidia.css" rel="stylesheet" />
-    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="/node_modules/lit/polyfill-support.js"></script>
-    <script type="module" src="my-element.bundled.js"></script>
-  </head>
+    <link href="assets/prism-okaidia-55aad43b.css" rel="stylesheet">
+    
+  
+<link rel="preload" href="./my-element-b0100078.js" as="script" crossorigin="anonymous">
+</head>
   <body>
     
 <header>
-  <h1>&lt;my-element></h1>
+  <h1>&lt;my-element&gt;</h1>
   <h2>A web component just for me.</h2>
 </header>
     
@@ -34,7 +30,7 @@
 <section class="columns">
   <div>
 <p><code>&lt;my-element&gt;</code> is just an HTML element. You can it anywhere you can use HTML!</p>
-<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">></span></span></code></pre>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">&gt;</span></span></code></pre>
   </div>
   <div>
 <p><my-element></my-element></p>
@@ -44,7 +40,7 @@
 <section class="columns">
   <div>
 <p><code>&lt;my-element&gt;</code> can be configured with attributed in plain HTML.</p>
-<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>HTML<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">></span></span></code></pre>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>HTML<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">&gt;</span></span></code></pre>
   </div>
   <div>
 <p><my-element name="HTML"></my-element></p>
@@ -54,7 +50,7 @@
 <section class="columns">
   <div>
 <p><code>&lt;my-element&gt;</code> can be used with declarative rendering libraries like Angular, React, Vue, and lit-html</p>
-<pre class="language-js"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token keyword">const</span> name <span class="token operator">=</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token function">render</span><span class="token punctuation">(</span><br>  html<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string"><br>    &lt;h2>This is a &amp;lt;my-element&amp;gt;&lt;/h2><br>    &lt;my-element .name=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>&lt;/my-element><br>  </span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span><br>  document<span class="token punctuation">.</span>body<br><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<pre class="language-js"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token keyword">const</span> name <span class="token operator">=</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token function">render</span><span class="token punctuation">(</span><br>  html<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string"><br>    &lt;h2&gt;This is a &amp;lt;my-element&amp;gt;&lt;/h2&gt;<br>    &lt;my-element .name=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">&gt;&lt;/my-element&gt;<br>  </span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span><br>  document<span class="token punctuation">.</span>body<br><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
   </div>
   <div>
 <h2>This is a &lt;my-element&gt;</h2>
@@ -71,5 +67,89 @@
     <a href="https://github.com/PolymerLabs/lit-starter-ts">lit-starter-ts</a>
   </p>
 </footer>
-  </body>
-</html>
+  
+<script>(function () {
+  function polyfillsLoader() {
+    function loadScript(src, type) {
+      return new Promise(function (resolve) {
+        var script = document.createElement('script');
+
+        function onLoaded() {
+          if (script.parentElement) {
+            script.parentElement.removeChild(script);
+          }
+
+          resolve();
+        }
+
+        script.src = src;
+        script.onload = onLoaded;
+
+        script.onerror = function () {
+          console.error('[polyfills-loader] failed to load: ' + src + ' check the network tab for HTTP status.');
+          onLoaded();
+        };
+
+        if (type) script.type = type;
+        document.head.appendChild(script);
+      });
+    }
+
+    var polyfills = [];
+
+    if (!('noModule' in HTMLScriptElement.prototype)) {
+      polyfills.push(loadScript('polyfills/regenerator-runtime.ebfd7b154777d0fed9fa79f20e07b8fc.js'));
+    }
+
+    if (!('noModule' in HTMLScriptElement.prototype)) {
+      polyfills.push(loadScript('polyfills/systemjs.c80aa2992e2de3b6e03317286a7104c8.js'));
+    }
+
+    if (!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force) {
+      polyfills.push(loadScript('polyfills/webcomponents.ed846db3e7c3b1354dcb129b8858e4d4.js'));
+    }
+
+    if (!('noModule' in HTMLScriptElement.prototype) && 'getRootNode' in Element.prototype) {
+      polyfills.push(loadScript('polyfills/custom-elements-es5-adapter.3342b468203af1a14ca005e80d14148f.js'));
+    }
+
+    if (!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force) {
+      polyfills.push(loadScript('polyfills/lit-polyfill-support.3f13d169161200218e5e6528dd08b09e.js'));
+    }
+
+    function loadFiles() {
+      if (!('noModule' in HTMLScriptElement.prototype)) {
+        System.import('./legacy-my-element-dfa87535.js');
+      } else {
+        loadScript('./my-element-b0100078.js', 'module');
+      }
+    }
+
+    if (polyfills.length) {
+      Promise.all(polyfills).then(loadFiles);
+    } else {
+      loadFiles();
+    }
+  }
+
+  if (!('noModule' in HTMLScriptElement.prototype)) {
+    var s = document.createElement('script');
+
+    function onLoaded() {
+      document.head.removeChild(s);
+      polyfillsLoader();
+    }
+
+    s.src = "polyfills/core-js.97f5bc29ae3c01b5b597f9e8c0aafefb.js";
+    s.onload = onLoaded;
+
+    s.onerror = function () {
+      console.error('[polyfills-loader] failed to load: ' + s.src + ' check the network tab for HTTP status.');
+      onLoaded();
+    };
+
+    document.head.appendChild(s);
+  } else {
+    polyfillsLoader();
+  }
+})();</script></body></html>

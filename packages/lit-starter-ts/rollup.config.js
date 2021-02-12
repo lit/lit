@@ -12,23 +12,61 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import summary from 'rollup-plugin-summary';
-import {terser} from 'rollup-plugin-terser';
+import html from '@web/rollup-plugin-html';
+import polyfillsLoader from '@web/rollup-plugin-polyfills-loader';
 import resolve from '@rollup/plugin-node-resolve';
+import {terser} from 'rollup-plugin-terser';
+import summary from 'rollup-plugin-summary';
 import replace from '@rollup/plugin-replace';
+import {getBabelOutputPlugin} from '@rollup/plugin-babel';
+
+const htmlPlugin = html({
+  rootDir: 'docs-dev',
+  flattenOutput: false,
+});
 
 export default {
-  input: 'my-element.js',
-  output: {
-    file: 'my-element.bundled.js',
-    format: 'esm',
-  },
+  input: '**/*.html',
+  output: [
+    {
+      // Modern build
+      plugins: [htmlPlugin.api.addOutput('modern')],
+      format: 'esm',
+      chunkFileNames: '[name]-[hash].js',
+      entryFileNames: '[name]-[hash].js',
+      dir: 'docs',
+    },
+    {
+      // Legacy build
+      plugins: [
+        htmlPlugin.api.addOutput('legacy'),
+        getBabelOutputPlugin({
+          presets: [
+            [
+              '@babel/preset-env',
+              {
+                targets: {
+                  ie: '11',
+                },
+                modules: 'systemjs',
+              },
+            ],
+          ],
+        }),
+      ],
+      format: 'esm',
+      chunkFileNames: 'legacy-[name]-[hash].js',
+      entryFileNames: 'legacy-[name]-[hash].js',
+      dir: 'docs',
+    },
+  ],
   onwarn(warning) {
     if (warning.code !== 'THIS_IS_UNDEFINED') {
       console.error(`(!) ${warning.message}`);
     }
   },
   plugins: [
+    htmlPlugin,
     replace({'Reflect.decorate': 'undefined'}),
     resolve(),
     terser({
@@ -42,5 +80,30 @@ export default {
       },
     }),
     summary(),
+    polyfillsLoader({
+      modernOutput: {
+        name: 'modern',
+      },
+      legacyOutput: {
+        name: 'legacy',
+        test: "!('noModule' in HTMLScriptElement.prototype)",
+        type: 'systemjs',
+      },
+      polyfills: {
+        hash: true,
+        coreJs: true,
+        regeneratorRuntime: true,
+        webcomponents: true,
+        custom: [
+          {
+            name: 'lit-polyfill-support',
+            path: 'node_modules/lit/polyfill-support.js',
+            test:
+              "!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force",
+            module: false,
+          },
+        ],
+      },
+    }),
   ],
 };

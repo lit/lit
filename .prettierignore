@@ -82,6 +82,7 @@ packages/lit-starter-js/**/my-element.bundled.js
 packages/lit-starter-ts/node_modules/
 packages/lit-starter-ts/lib/
 packages/lit-starter-ts/test/
+packages/lit-starter-ts/docs-dev/
 packages/lit-starter-ts/**/custom-elements.json
 # top level source
 packages/lit-starter-ts/**/my-element.js
@@ -129,6 +130,7 @@ packages/lit-starter-js/**/custom-elements.json
 packages/lit-starter-ts/node_modules/*
 packages/lit-starter-ts/docs/*
 packages/lit-starter-ts/docs-src/*
+packages/lit-starter-ts/docs-dev/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
