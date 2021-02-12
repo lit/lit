@@ -1,22 +1,18 @@
-
-<!doctype html>
-
-<html lang="en">
-  <head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><my-element> ⌲ Docs</title>
-    <link rel="stylesheet" href="../docs.css">
+    <title>&lt;my-element&gt; ⌲ Docs</title>
+    <link rel="stylesheet" href="../assets/docs-9e47b341.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
-    <link href="../prism-okaidia.css" rel="stylesheet" />
-    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="/node_modules/lit/polyfill-support.js"></script>
-    <script type="module" src="../my-element.bundled.js"></script>
-  </head>
+    <link href="../assets/prism-okaidia-55aad43b.css" rel="stylesheet">
+    
+  
+<link rel="preload" href="../my-element-b0100078.js" as="script" crossorigin="anonymous">
+</head>
   <body>
     
 <header>
-  <h1>&lt;my-element></h1>
+  <h1>&lt;my-element&gt;</h1>
   <h2>A web component just for me.</h2>
 </header>
     
@@ -31,14 +27,14 @@
         
       <h1>API</h1>
       
-        <h2>&lt;my-element></h2>
+        <h2>&lt;my-element&gt;</h2>
         <div>
           An example element.
         </div>
         
     <h3>Attributes</h3>
     <table>
-      <tr>
+      <tbody><tr>
         <th>Name</th><th>Description</th><th>Type</th><th>Default</th>
       </tr>
       
@@ -50,12 +46,12 @@
           <td>count</td><td>The number of times the button has been clicked.</td><td>number</td><td>0</td>
         </tr>
       
-    </table>
+    </tbody></table>
   
         
     <h3>Properties</h3>
     <table>
-      <tr>
+      <tbody><tr>
         <th>Name</th><th>Attribute</th><th>Description</th><th>Type</th><th>Default</th>
       </tr>
       
@@ -90,17 +86,17 @@ exception was thrown during the update.
 To await additional asynchronous work, override the `getUpdateComplete`
 method. For example, it is sometimes useful to await a rendered element
 before fulfilling this Promise. To do this, first await
-`super.getUpdateComplete()`, then any subsequent state.</td><td>Promise<boolean></td><td>undefined</td>
+`super.getUpdateComplete()`, then any subsequent state.</td><td>Promise<boolean></boolean></td><td>undefined</td>
         </tr>
       
-    </table>
+    </tbody></table>
     
         
             
         
     <h3>Slots</h3>
     <table>
-      <tr>
+      <tbody><tr>
         <th>Name</th><th>Description</th>
       </tr>
       
@@ -108,12 +104,12 @@ before fulfilling this Promise. To do this, first await
           <td></td><td>This element has a slot</td>
         </tr>
       
-    </table>
+    </tbody></table>
     
         
     <h3>CSS Shadow Parts</h3>
     <table>
-      <tr>
+      <tbody><tr>
         <th>Name</th><th>Description</th>
       </tr>
       
@@ -121,7 +117,7 @@ before fulfilling this Promise. To do this, first await
           <td>button</td><td>The button</td>
         </tr>
       
-    </table>
+    </tbody></table>
   
         
         
@@ -135,5 +131,89 @@ before fulfilling this Promise. To do this, first await
     <a href="https://github.com/PolymerLabs/lit-starter-ts">lit-starter-ts</a>
   </p>
 </footer>
-  </body>
-</html>
+  
+<script>(function () {
+  function polyfillsLoader() {
+    function loadScript(src, type) {
+      return new Promise(function (resolve) {
+        var script = document.createElement('script');
+
+        function onLoaded() {
+          if (script.parentElement) {
+            script.parentElement.removeChild(script);
+          }
+
+          resolve();
+        }
+
+        script.src = src;
+        script.onload = onLoaded;
+
+        script.onerror = function () {
+          console.error('[polyfills-loader] failed to load: ' + src + ' check the network tab for HTTP status.');
+          onLoaded();
+        };
+
+        if (type) script.type = type;
+        document.head.appendChild(script);
+      });
+    }
+
+    var polyfills = [];
+
+    if (!('noModule' in HTMLScriptElement.prototype)) {
+      polyfills.push(loadScript('../polyfills/regenerator-runtime.ebfd7b154777d0fed9fa79f20e07b8fc.js'));
+    }
+
+    if (!('noModule' in HTMLScriptElement.prototype)) {
+      polyfills.push(loadScript('../polyfills/systemjs.c80aa2992e2de3b6e03317286a7104c8.js'));
+    }
+
+    if (!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force) {
+      polyfills.push(loadScript('../polyfills/webcomponents.ed846db3e7c3b1354dcb129b8858e4d4.js'));
+    }
+
+    if (!('noModule' in HTMLScriptElement.prototype) && 'getRootNode' in Element.prototype) {
+      polyfills.push(loadScript('../polyfills/custom-elements-es5-adapter.3342b468203af1a14ca005e80d14148f.js'));
+    }
+
+    if (!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force) {
+      polyfills.push(loadScript('../polyfills/lit-polyfill-support.3f13d169161200218e5e6528dd08b09e.js'));
+    }
+
+    function loadFiles() {
+      if (!('noModule' in HTMLScriptElement.prototype)) {
+        System.import('../legacy-my-element-dfa87535.js');
+      } else {
+        loadScript('../my-element-b0100078.js', 'module');
+      }
+    }
+
+    if (polyfills.length) {
+      Promise.all(polyfills).then(loadFiles);
+    } else {
+      loadFiles();
+    }
+  }
+
+  if (!('noModule' in HTMLScriptElement.prototype)) {
+    var s = document.createElement('script');
+
+    function onLoaded() {
+      document.head.removeChild(s);
+      polyfillsLoader();
+    }
+
+    s.src = "polyfills/core-js.97f5bc29ae3c01b5b597f9e8c0aafefb.js";
+    s.onload = onLoaded;
+
+    s.onerror = function () {
+      console.error('[polyfills-loader] failed to load: ' + s.src + ' check the network tab for HTTP status.');
+      onLoaded();
+    };
+
+    document.head.appendChild(s);
+  } else {
+    polyfillsLoader();
+  }
+})();</script></body></html>
