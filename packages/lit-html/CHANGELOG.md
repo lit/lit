@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+- (Since 2.0.0-pre.4) Added `asyncappend` and `asyncReplace` directives.
+
 ### Fixed
 
 - Nested directives whose parent returns `noChange` are now unchanged. This
