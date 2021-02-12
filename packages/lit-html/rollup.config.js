@@ -17,6 +17,8 @@ import {litProdConfig} from '../../rollup-common.js';
 export default litProdConfig({
   classPropertyPrefix: 'Σ',
   entryPoints: [
+    'directives/async-append',
+    'directives/async-replace',
     'directives/cache',
     'directives/class-map',
     'directives/guard',
