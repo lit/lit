@@ -1,17 +1,21 @@
-# lit-ssr
+# @lit-labs/ssr
 
-lit-html & LitElement SSR server
+Lit SSR server
 
-## Setup
+## Status
 
-This repo requires Node 14+ because of it's use of experimental VM modules for
-creating VM sandbox for executing the client-side code in. It also requires
-templates/elements be authored using pre-release versions of lit-html@2 and
-lit-element@3.
+`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that the next versions of `lit-html` and `lit-element` are SSR-ready.
 
-## Usage
+## Developing
 
-### Low-level API: render `lit-html` templates
+### Setup
+
+This package requires Node 14+ because of its use of experimental VM modules for creating VM sandbox for executing the client-side code in. It also requires
+templates and elements be authored using pre-release versions of `lit-html@2.0` and `lit-element@3.0`.
+
+### Usage
+
+#### Low-level API: render `lit-html` templates
 
 As a low-level means of rendering `lit-html` templates (optionally containing
 `LitElement` components), the `renderModule` function from the
@@ -47,7 +51,7 @@ const ssrResult = await (renderModule(
   [{some: "data"}]         // Arguments to function
 ) as Promise<Iterable<unknown>>);
 
-for await (let text of ssrResult) {
+for (let text of ssrResult) {
   console.log(text);
 }
 ```

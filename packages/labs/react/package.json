@@ -53,7 +53,7 @@
     "react-dom": "^17.0.1",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
-    "@lit/reactive-element": "^1.0.0-pre.1"
+    "@lit/reactive-element": "^1.0.0-pre.2"
   },
   "dependencies": {},
   "publishConfig": {

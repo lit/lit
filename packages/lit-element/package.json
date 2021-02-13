@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-pre.2",
+  "version": "3.0.0-pre.3",
   "publishConfig": {
     "access": "public"
   },

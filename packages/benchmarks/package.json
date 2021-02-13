@@ -35,10 +35,10 @@
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
-    "lit-element": "^3.0.0-pre.2",
-    "lit-html": "^2.0.0-pre.4",
+    "lit-element": "^3.0.0-pre.3",
+    "lit-html": "^2.0.0-pre.6",
     "tachometer": "^0.5.3",
-    "@lit/reactive-element": "^1.0.0-pre.1"
+    "@lit/reactive-element": "^1.0.0-pre.2"
   },
   "devDependencies": {
     "chromedriver": "^87.0.1",

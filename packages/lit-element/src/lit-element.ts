@@ -74,9 +74,8 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
-(window['litElementVersions'] || (window['litElementVersions'] = [])).push(
-  '3.0.0-pre.2'
-);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-pre.3');
 
 /**
  * Base element class that manages element properties and attributes, and
