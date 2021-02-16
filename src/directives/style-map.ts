@@ -82,7 +82,7 @@ export const styleMap = directive((styleInfo: StyleInfo) => (part: Part) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (style as any)[name] = styleInfo[name];
     } else {
-      style.setProperty(name, styleInfo[name]);
+      style.setProperty(name, styleInfo[name] || '');
     }
   }
 });
