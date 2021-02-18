@@ -27,14 +27,14 @@ if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
 
 suite('asyncReplace', () => {
   let container: HTMLDivElement;
-  let iterable: TestAsyncIterable<string>;
+  let iterable: TestAsyncIterable<unknown>;
 
   setup(() => {
     container = document.createElement('div');
-    iterable = new TestAsyncIterable<string>();
+    iterable = new TestAsyncIterable<unknown>();
   });
 
-  test('replaces content as the async iterable yields new values', async () => {
+  test('replaces content as the async iterable yields new values (ChildPart)', async () => {
     render(html`<div>${asyncReplace(iterable)}</div>`, container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
@@ -43,6 +43,70 @@ suite('asyncReplace', () => {
 
     await iterable.push('bar');
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
+  });
+
+  test('replaces content as the async iterable yields new values (AttributePart)', async () => {
+    render(html`<div class="${asyncReplace(iterable)}"></div>`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await iterable.push('foo');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div class="foo"></div>'
+    );
+
+    await iterable.push('bar');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div class="bar"></div>'
+    );
+  });
+
+  test('replaces content as the async iterable yields new values (PropertyPart)', async () => {
+    render(html`<div .className=${asyncReplace(iterable)}></div>`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await iterable.push('foo');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div class="foo"></div>'
+    );
+
+    await iterable.push('bar');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div class="bar"></div>'
+    );
+  });
+
+  test('replaces content as the async iterable yields new values (BooleanAttributePart)', async () => {
+    render(html`<div ?hidden=${asyncReplace(iterable)}></div>`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await iterable.push(true);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div hidden=""></div>'
+    );
+
+    await iterable.push(false);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+  });
+
+  test('replaces content as the async iterable yields new values (EventPart)', async () => {
+    render(html`<div @click=${asyncReplace(iterable)}></div>`, container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    let value;
+    await iterable.push(() => (value = 1));
+    (container.firstElementChild as HTMLDivElement)!.click();
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    assert.equal(value, 1);
+
+    await iterable.push(() => (value = 2));
+    (container.firstElementChild as HTMLDivElement)!.click();
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    assert.equal(value, 2);
   });
 
   test('clears the Part when a value is undefined', async () => {

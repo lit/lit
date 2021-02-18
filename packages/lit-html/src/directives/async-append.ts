@@ -40,7 +40,9 @@ class AsyncAppendDirective extends AsyncDirective {
     }
   }
 
-  render<T>(_value: AsyncIterable<T>, _mapper?: Mapper<T>) {
+  // @ts-expect-error value not used, but we want a nice parameter for docs
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  render<T>(value: AsyncIterable<T>, _mapper?: Mapper<T>) {
     return noChange;
   }
 
@@ -90,15 +92,15 @@ class AsyncAppendDirective extends AsyncDirective {
     }
   }
 
-  // Pause iteration while disconnected
   disconnected() {
+    // Pause iteration while disconnected
     this.reconnectPromise = new Promise(
       (resolve) => (this.reconnectResolver = resolve)
     );
   }
 
-  // Resume iteration when reconnected
   reconnected() {
+    // Resume iteration when reconnected
     this.reconnectPromise = undefined;
     this.reconnectResolver!();
   }
@@ -107,6 +109,7 @@ class AsyncAppendDirective extends AsyncDirective {
 /**
  * A directive that renders the items of an async iterable[1], appending new
  * values after previous values, similar to the built-in support for iterables.
+ * This directive is usable only in child expressions.
  *
  * Async iterables are objects with a [Symbol.asyncIterator] method, which
  * returns an iterator who's `next()` method returns a Promise. When a new
@@ -115,7 +118,7 @@ class AsyncAppendDirective extends AsyncDirective {
  * directive has been set on the Part, the iterable will no longer be listened
  * to and new values won't be written to the Part.
  *
- * [1]: https://github.com/tc39/proposal-async-iteration
+ * [1]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
  *
  * @param value An async iterable
  * @param mapper An optional function that maps from (value, index) to another
