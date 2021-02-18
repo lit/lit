@@ -103,7 +103,7 @@ const createMarker = () => document.createComment('');
  */
 export const insertPart = (
   containerPart: ChildPart,
-  refPart: ChildPart | undefined,
+  refPart?: ChildPart,
   part?: ChildPart
 ): ChildPart => {
   const container = wrap(containerPart._$startNode).parentNode!;

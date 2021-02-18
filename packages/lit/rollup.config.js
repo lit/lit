@@ -28,6 +28,8 @@ export default litProdConfig({
     'decorators/state',
     'directive-helpers',
     'directive',
+    'directives/async-append',
+    'directives/async-replace',
     'directives/cache',
     'directives/class-map',
     'directives/guard',
