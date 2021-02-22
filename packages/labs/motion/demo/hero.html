@@ -30,27 +30,49 @@
         height: 100vh;
         width: 100vw;
       }
-
-      my-element {
-        flex: 1;
-      }
     </style>
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
       import {repeat} from 'lit-html/directives/repeat.js';
-      import {flip, fadeIn, fadeInSlow, fadeOut} from '../development/flip.js';
+      // import {Spring} from 'wobble/dist/wobble.es.js';
+      import {
+        flip,
+        FlipController,
+        fadeIn,
+        fadeInSlow,
+        fadeOut,
+        transformProps,
+      } from '../development/flip.js';
+      import {SimpleSpring} from '../development/simple-spring.js';
 
-      const shuffle = (a) => {
-        a = a.slice();
-        let j, x, i;
-        for (i = a.length - 1; i > 0; i--) {
-          j = Math.floor(Math.random() * (i + 1));
-          x = a[i];
-          a[i] = a[j];
-          a[j] = x;
+      const spring = new SimpleSpring({
+        stiffness: 700,
+        damping: 50,
+        mass: 2,
+      });
+
+      const onFrames = (props, frames) => {
+        if (frames === undefined) {
+          return;
         }
-        return a;
+        return [
+          frames[0],
+          ...spring.values.map((v) => {
+            const frame = {};
+            const x = props.left ? `translateX(${props.left * (1 - v)}px)` : '';
+            const y = props.top ? `translateY(${props.top * (1 - v)}px)` : '';
+            const sx = props.width
+              ? `scaleX(${props.width + (1 - props.width) * v})`
+              : '';
+            const sy = props.height
+              ? `scaleY(${props.height + (1 - props.height) * v})`
+              : '';
+            frame.transform = `${x} ${y} ${sx} ${sy}`;
+            return frame;
+          }),
+          frames[1],
+        ];
       };
 
       const data = [
@@ -60,19 +82,19 @@
         {
           id: 3,
           value: 'Elephants',
-          summary: 'Elephants are really quite huge.',
+          summary: 'Elephants are really huge.',
         },
         {
           id: 4,
           value: 'Mosquitoes',
-          summary: 'Mosquitoes bite you a lot.',
+          summary: 'Mosquitoes bite you.',
         },
-        {id: 5, value: 'Snakes', summary: 'Snakes are pretty darn scary.'},
-        {id: 6, value: 'Frogs', summary: 'Frogs are amphibious creatures.'},
+        {id: 5, value: 'Snakes', summary: 'Snakes are pretty scary.'},
+        {id: 6, value: 'Frogs', summary: 'Frogs are amphibious.'},
         {
           id: 7,
           value: 'Alligators',
-          summary: 'Alligators will sneak up on you.',
+          summary: 'Alligators sneak up on you.',
         },
         {id: 8, value: 'Cows', summary: 'Cows make good hamburgers.'},
       ];
@@ -81,20 +103,52 @@
         static styles = [
           css`
             :host {
-              display: block;
-              position: relative;
+              display: flex;
               color: #040424;
               height: 100%;
               overflow: hidden;
+              justify-content: center;
+              --card-color: #546e7a;
+              --card-text-color: white;
+              --detail-color: #819ca9;
+              --detail-text-color: black;
+              --accent-color: #29434e;
+              --divider: 2px solid var(--accent-color);
+              --border: 8px solid var(--accent-color);
+              --border-radius: 8px;
             }
 
             * {
               box-sizing: border-box;
+              -webkit-user-select: none;
+              -moz-user-select: none;
+              user-select: none;
             }
 
             .fit {
               position: absolute;
               inset: 0;
+            }
+
+            .icon {
+              font-family: 'Material Icons';
+              font-style: normal;
+              color: var(--accent-color);
+            }
+
+            .divider {
+              will-change: opacity;
+              border-bottom: var(--divider);
+            }
+
+            .divider-top {
+              will-change: opacity;
+              border-top: var(--divider);
+            }
+
+            .container {
+              width: 800px;
+              position: relative;
             }
 
             .cards {
@@ -106,86 +160,94 @@
             }
 
             li {
-              cursor: pointer;
-              height: 30%;
-              flex: 1 1 30%;
+              will-change: transform;
+              position: relative;
+              overflow: hidden;
               display: flex;
               flex-direction: column;
-              background: #006064;
-              color: white;
+              flex: 1;
+              flex-basis: 30%;
+              cursor: pointer;
               margin: 8px;
               padding: 16px;
-              border-radius: 8px;
-              overflow: hidden;
-              border: 8px solid #00363a;
+              border-radius: var(--border-radius);
+              background: var(--card-color);
+              color: var(--card-text-color);
             }
 
-            .icon {
-              font-family: 'Material Icons';
-              font-style: normal;
-              font-weight: 400;
-              color: #00363a;
+            .card-background {
+              will-change: opacity;
+              border-radius: var(--border-radius);
+              border: var(--border);
             }
 
             .card-icon {
-              font-size: 6em;
+              will-change: transform;
+              font-size: 9em;
               text-align: center;
               margin: 8px 0;
-              flex: 1;
             }
 
-            .divider {
-              border-bottom: 2px solid #00363a;
+            .card-content {
+              flex: 1;
+              display: flex;
+              align-items: center;
+              justify-content: center;
             }
 
             .card-header {
+              padding-top: 8px;
+              min-height: 40px;
+            }
+
+            .card-header-title {
               font-weight: 800;
-              padding: 8px 0;
             }
 
             .detail {
+              will-change: transform;
               display: flex;
               flex-direction: column;
               flex: 1;
-              background: #006064;
-              color: white;
+              color: var(--detail-text-color);
               margin: 8px;
               padding: 16px;
               border-radius: 8px;
               overflow: hidden;
-              border: 8px solid #00363a;
-            }
-
-            .detail-inverse {
-              display: flex;
-              flex-direction: column;
-              flex: 1;
+              background: var(--detail-color);
+              border-radius: var(--border-radius);
+              border: var(--border);
             }
 
             .detail-header {
               display: flex;
-              align-items: flex-start;
+              align-items: center;
             }
 
             .detail-header-title {
               font-weight: 800;
             }
 
+            .hero-text {
+              will-change: transform;
+              display: inline-block;
+              width: 218px;
+            }
+
             .detail-header-text {
-              flex: 1;
+              margin-left: 8px;
             }
 
             .detail-header-icon {
+              will-change: transform;
               font-size: 3em;
-              padding-right: 8px;
+              min-width: 48px;
             }
 
-            .detail-content-icon {
-              font-size: 25em;
-              flex: 1;
-              display: flex;
-              justify-content: center;
-              align-items: center;
+            .detail-content {
+              padding: 16px;
+              font-size: 1.1em;
+              line-height: 200%;
             }
           `,
         ];
@@ -198,108 +260,132 @@
         constructor() {
           super();
           this.data = data;
+          this._flipController = new FlipController(this, {
+            animationOptions: {
+              duration: 1000,
+              easing: 'ease-in-out',
+              fill: 'both',
+            },
+            onFrames,
+          });
         }
 
         render() {
-          const animationOptions = {
-            duration: 500,
-            easing: 'ease-in-out',
-            fill: 'both',
-          };
-          return html`${this.detail
-              ? html`<div
-                  class="detail fit"
-                  @click=${this.onDetailClick}
-                  ${flip({
-                    animationOptions,
-                    id: this.detail.id,
-                  })}
-                >
-                  <div
-                    class="detail-inverse"
-                    ${flip({
-                      animationOptions,
-                      inverseId: this.detail.id,
-                    })}
-                  >
-                    <div class="detail-header divider">
-                      <div
-                        class="icon detail-header-icon"
-                        ${flip({
-                          animationOptions,
-                          id: this.detail.id + 'icon',
-                          in: fadeInSlow,
-                          properties: ['height', 'width'],
-                        })}
-                      >
-                        offline_bolt
-                      </div>
-                      <div class="detail-header-text">
-                        <div class="detail-header-title">
-                          ${this.detail.value}
-                        </div>
-                        <div
-                          ${flip({
-                            animationOptions,
-                            in: fadeInSlow,
-                            skipInitial: true,
-                          })}
-                        >
-                          ${this.detail.summary}
-                        </div>
-                      </div>
-                    </div>
-                    <div class="icon detail-content-icon"></div>
-                  </div>
-                </div>`
-              : ''}
+          return html`<div class="container">
             <ul class="cards fit">
               ${repeat(
                 this.detail ? [] : this.data,
                 (i) => i,
                 (i, x) =>
                   html`<li
-                    @click=${(e) => this.onItemClick(e, i)}
+                    @click=${(e) => this.onClick(e, i)}
                     ${flip({
                       out: fadeOut,
-                      animationOptions,
-                      id: i.id,
+                      id: `${i.id}:card`,
+                      inId: `${i.id}:detail`,
                     })}
                   >
                     <div
-                      class="icon card-icon"
+                      class="card-background fit"
                       ${flip({
-                        animationOptions,
-                        id: i.id + 'icon',
                         in: fadeInSlow,
                         skipInitial: true,
-                        properties: ['height', 'width'],
                       })}
-                    >
-                      offline_bolt
+                    ></div>
+                    <div class="card-content">
+                      <div
+                        class="icon card-icon"
+                        ${flip({
+                          id: `${i.id}:card-icon`,
+                          inId: `${i.id}:detail-icon`,
+                          skipInitial: true,
+                        })}
+                      >
+                        pets
+                      </div>
                     </div>
-                    <div class="divider"></div>
-                    <div class="card-header">${i.value}</div>
                     <div
+                      class="divider"
                       ${flip({
-                        animationOptions,
                         in: fadeInSlow,
                         skipInitial: true,
                       })}
-                    >
-                      ${i.summary}
+                    ></div>
+                    <div class="card-header hero-text">
+                      <div
+                        ${flip({
+                          id: `${i.id}:card-header`,
+                          inId: `${i.id}:detail-header`,
+                          skipInitial: true,
+                        })}
+                      >
+                        <div class="card-header-title">${i.value}</div>
+                        <div>${i.summary}</div>
+                      </div>
                     </div>
                   </li>`
               )}
-            </ul>`;
+            </ul>
+            ${this.detail
+              ? html`<div
+                  class="detail fit"
+                  @click=${this.onClick}
+                  ${flip({
+                    id: `${this.detail.id}:detail`,
+                    inId: `${this.detail.id}:card`,
+                  })}
+                >
+                  <div class="detail-header">
+                    <div
+                      class="icon detail-header-icon"
+                      ${flip({
+                        id: `${this.detail.id}:detail-icon`,
+                        inId: `${this.detail.id}:card-icon`,
+                      })}
+                    >
+                      pets
+                    </div>
+                    <div
+                      class="detail-header-text hero-text"
+                      ${flip({
+                        id: `${this.detail.id}:detail-header`,
+                        inId: `${this.detail.id}:card-header`,
+                      })}
+                    >
+                      <div class="detail-header-title">
+                        ${this.detail.value}
+                      </div>
+                      <div>${this.detail.summary}</div>
+                    </div>
+                  </div>
+                  <div
+                    class="detail-content divider-top"
+                    ${flip({
+                      in: fadeInSlow,
+                    })}
+                  >
+                    Sed ut perspiciatis unde omnis iste natus error sit
+                    voluptatem accusantium doloremque laudantium, totam rem
+                    aperiam, eaque ipsa quae ab illo inventore veritatis et
+                    quasi architecto beatae vitae dicta sunt explicabo. Nemo
+                    enim ipsam voluptatem quia voluptas sit aspernatur aut odit
+                    aut fugit, sed quia consequuntur magni dolores eos qui
+                    ratione voluptatem sequi nesciunt. Neque porro quisquam est,
+                    qui dolorem ipsum quia dolor sit amet, consectetur, adipisci
+                    velit, sed quia non numquam eius modi tempora incidunt ut
+                    labore et dolore magnam aliquam quaerat voluptatem.
+                  </div>
+                </div>`
+              : ''}
+          </div>`;
         }
 
-        onDetailClick() {
-          this.detail = undefined;
-        }
-
-        onItemClick(e, item) {
-          this.detail = item;
+        onClick(e, item) {
+          if (this._flipController.isAnimating) {
+            this._flipController.toggle();
+          } else {
+            this.detail = item;
+          }
         }
       }
 

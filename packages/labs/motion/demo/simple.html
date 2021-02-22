@@ -57,12 +57,16 @@
             height: 100px;
             background: #90caf9;
             border: 0px solid #5d99c6;
-            transform-origin: top left;
+          }
+
+          .box.copy {
+            width: auto;
+            height: auto;
           }
 
           .box > span {
             will-change: transform;
-            display: inline-block;
+            position: relative;
             border-radius: 50%;
             height: 100px;
             width: 100px;
@@ -87,7 +91,7 @@
         }
 
         render() {
-          const animationOptions = {duration: 3000, easing: 'ease-in-out'};
+          const animationOptions = {duration: 1500, easing: 'ease-in-out'};
           return html`
             <button @click=${this.toggle}>
               ${this.moving ? 'Stop' : 'Move'}
@@ -104,13 +108,20 @@
                 ],
                 id: 'simple',
                 onComplete: () => this.shift(),
+                //disabled: true,
               })}
             >
-              <span ${flip({inverseId: 'simple'})}
+              <span ${flip({inverseId: 'simple', Xdisabled: true})}
                 >Simple...<br />
                 is beautiful.</span
               >
             </div>
+            <!--<div class="box copy">
+              <span
+                >Simple...<br />
+                is beautiful.</span
+              >
+            </div>-->
           `;
         }
 

@@ -22,15 +22,13 @@
       html,
       body {
         font-family: sans-serif;
-        width: 100vw;
+        margin: 0;
         display: flex;
         justify-content: center;
       }
 
       my-element {
-        display: inline-block;
         width: 800px;
-        outline: none;
       }
 
       @media screen and (max-width: 800px) {
@@ -69,7 +67,8 @@
         static styles = [
           css`
             :host {
-              display: block;
+              display: inline-block;
+              outline: none;
               padding: 8px;
               --mdc-theme-primary: #0069c0;
               --mdc-theme-secondary: #1b5e20;
@@ -94,6 +93,7 @@
             ul {
               margin: 0;
               padding: 0;
+              outline: none;
             }
 
             li {
@@ -169,7 +169,7 @@
             class="list ${classMap({completed})}"
           >
             <h3>${completed ? `Completed` : `Tasks`}</h3>
-            <ul>
+            <ul tabindex="-1">
               ${repeat(
                 this.data.filter((item) =>
                   completed ? item.completed : !item.completed
@@ -178,11 +178,11 @@
                 (item) => html`<li
                   ${flip({
                     animationOptions,
-                    properties: [...defaultCssProperties, 'background'],
                     in: flyBelow,
                     out: fadeOut,
                     stabilizeOut: true,
-                    id: item.id,
+                    id: `${item.id}:${completed ? 'right' : 'left'}`,
+                    inId: `${item.id}:${completed ? 'left' : 'right'}`,
                     skipInitial: true,
                   })}
                 >
