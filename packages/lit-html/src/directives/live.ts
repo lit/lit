@@ -20,7 +20,7 @@ import {
   PartInfo,
   PartType,
 } from '../directive.js';
-import {isSingleExpression, setComittedValue} from '../directive-helpers.js';
+import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
@@ -71,7 +71,7 @@ class LiveDirective extends Directive {
     }
     // Resets the part's value, causing its dirty-check to fail so that it
     // always sets the value.
-    setComittedValue(part);
+    setCommittedValue(part);
     return value;
   }
 }

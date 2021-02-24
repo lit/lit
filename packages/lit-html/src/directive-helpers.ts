@@ -93,7 +93,7 @@ const createMarker = () => document.createComment('');
  * Inserts a ChildPart into the given container ChildPart's DOM, either at the
  * end of the container ChildPart, or before the optional `refPart`.
  *
- * This does not add the part to the containerPart's comitted value. That must
+ * This does not add the part to the containerPart's committed value. That must
  * be done by callers.
  *
  * @param containerPart Part within which to add the new ChildPart
@@ -184,7 +184,7 @@ const RESET_VALUE = {};
  * @param part
  * @param value
  */
-export const setComittedValue = (part: Part, value: unknown = RESET_VALUE) =>
+export const setCommittedValue = (part: Part, value: unknown = RESET_VALUE) =>
   (part._$committedValue = value);
 
 /**
@@ -201,7 +201,7 @@ export const setComittedValue = (part: Part, value: unknown = RESET_VALUE) =>
  *
  * @param part
  */
-export const getComittedValue = (part: ChildPart) => part._$committedValue;
+export const getCommittedValue = (part: ChildPart) => part._$committedValue;
 
 /**
  * Removes a ChildPart from the DOM, including any of its content.
