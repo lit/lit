@@ -231,8 +231,8 @@ const COMMENT_PART = 7;
 /**
  * The return type of the template tag functions.
  */
-export type TemplateResult = {
-  _$litType$: ResultType;
+export type TemplateResult<T extends ResultType = typeof HTML_RESULT> = {
+  _$litType$: T;
   // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
   // semi-public API though. We can't just let Terser rename them for us,
   // because we need TemplateResults to work between compatible versions of
@@ -241,14 +241,16 @@ export type TemplateResult = {
   values: unknown[];
 };
 
+export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
+
 /**
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = (_$litType$: ResultType) => (
+const tag = <T extends ResultType>(_$litType$: T) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
-): TemplateResult => ({
+): TemplateResult<T> => ({
   _$litType$,
   strings,
   values,
