@@ -695,13 +695,13 @@ suite('lit-html', () => {
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
     });
 
-    const staticAssertExtends = <T, U extends T>(_t?: T, _u?: U) => {};
+    const staticAssertExtends = <T, U extends T>(_?: [T, U]) => {};
 
-    test('SVGTemplateResult is a subtype of TemplateResult', () => {
+    test('`SVGTemplateResult` is a subtype of `TemplateResult`', () => {
       staticAssertExtends<TemplateResult, SVGTemplateResult>();
     });
 
-    test('`svg` returns a `SVGTemplateResult`', () => {
+    test('`svg` returns an `SVGTemplateResult`', () => {
       staticAssertExtends<SVGTemplateResult, ReturnType<typeof svg>>();
     });
   });
