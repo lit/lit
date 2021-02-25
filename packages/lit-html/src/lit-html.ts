@@ -526,6 +526,11 @@ const getTemplateHtml = (
   ];
 };
 
+const replaceContent = (content: DocumentFragment, withContent: Node[] | NodeListOf<Node>) => {
+  content.textContent = '';
+  content.append(...withContent)
+}
+
 export type Template = Interface<TemplateImpl>;
 class TemplateImpl {
   /** @internal */
@@ -534,6 +539,8 @@ class TemplateImpl {
   _parts: Array<TemplatePart> = [];
   // Note, this is used by the `polyfill-support` module.
   _$options?: RenderOptions;
+  /** @internal */
+  _hostWrapper: Element | undefined;
 
   constructor(
     {strings, _$litType$: type}: TemplateResult,
@@ -551,12 +558,21 @@ class TemplateImpl {
     this._$element = this._$createElement(html);
     walker.currentNode = this._$element.content;
 
-    // Reparent SVG nodes into template root
+    const {content} = this._$element;
+    const wrapper = content.firstElementChild;
     if (type === SVG_RESULT) {
-      const content = this._$element.content;
-      const svgElement = content.firstChild!;
-      svgElement.remove();
-      content.append(...svgElement.childNodes);
+      // Reparent SVG nodes into template root
+      replaceContent(content, wrapper!.childNodes);
+    } else if (wrapper?.nodeName === 'HOST') {
+      this._hostWrapper = wrapper;
+      if (DEV_MODE) {
+        if (wrapper.nextElementSibling !== null) {
+          throw new Error('When using <host> in template, there must only be one top-level element');
+        }
+      }
+      // Ensure there are no stray text nodes before/after the host element
+      // so they don't mess up node counts once the content is reparented
+      replaceContent(content, [wrapper]);
     }
 
     // Walk the template to find binding markers and create TemplateParts
@@ -661,6 +677,10 @@ class TemplateImpl {
       }
       nodeIndex++;
     }
+    if (this._hostWrapper) {
+      // Reparent <host> children to root
+      replaceContent(content, wrapper!.childNodes);
+    }
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
@@ -750,11 +770,18 @@ class TemplateInstance {
     const {
       _$element: {content},
       _parts: parts,
+      _hostWrapper,
     } = this._$template;
     const fragment = d.importNode(content, true);
     walker.currentNode = fragment;
 
-    let node = walker.nextNode();
+    if (DEV_MODE) {
+      if (_hostWrapper && !(options?.host instanceof HTMLElement)) {
+        throw new Error('When using <host> in template, RenderOptions must include a `host` property set to the host element');
+      }
+    }
+
+    let node = _hostWrapper ? options!.host as Element : walker.nextNode();
     let nodeIndex = 0;
     let partIndex = 0;
     let templatePart = parts[0];
@@ -786,6 +813,12 @@ class TemplateInstance {
       if (templatePart !== undefined && nodeIndex !== templatePart._index) {
         node = walker.nextNode();
         nodeIndex++;
+      }
+    }
+    if (_hostWrapper !== undefined) {
+      // Apply static attributes to host
+      for (const attr of _hostWrapper.attributes) {
+        (options!.host as Element)!.setAttribute(attr.name, attr.value);
       }
     }
     return fragment;
