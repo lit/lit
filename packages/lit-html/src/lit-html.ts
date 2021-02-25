@@ -231,7 +231,7 @@ const COMMENT_PART = 7;
 /**
  * The return type of the template tag functions.
  */
-export type TemplateResult<T extends ResultType = typeof HTML_RESULT> = {
+export type TemplateResult<T extends ResultType = ResultType> = {
   _$litType$: T;
   // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
   // semi-public API though. We can't just let Terser rename them for us,

@@ -35,7 +35,7 @@ const stringsCache = new Map<string, TemplateStringsArray>();
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
  */
-export const withStatic = (coreTag: typeof coreHtml) => (
+export const withStatic = (coreTag: typeof coreHtml | typeof coreSvg) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {
