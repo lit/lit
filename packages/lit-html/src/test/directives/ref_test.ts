@@ -161,7 +161,7 @@ suite('ref', () => {
           ? html`<div ${ref(host.elCallback)}></div>`
           : html`<span ${ref(host.elCallback)}></span>`,
         container,
-        {host: (host as unknown) as EventTarget}
+        {host}
       );
 
     go(true);
