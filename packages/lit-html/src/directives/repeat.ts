@@ -13,7 +13,13 @@
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
-import {directive, Directive, PartInfo, PartType} from '../directive.js';
+import {
+  directive,
+  Directive,
+  DirectiveResult,
+  PartInfo,
+  PartType,
+} from '../directive.js';
 import {
   insertPart,
   getCommittedValue,
@@ -29,7 +35,7 @@ export type ItemTemplate<T> = (item: T, index: number) => unknown;
 // of an array (used to lazily generate `newKeyToIndexMap` and
 // `oldKeyToIndexMap`)
 const generateMap = (list: unknown[], start: number, end: number) => {
-  const map = new Map();
+  const map = new Map<unknown, number>();
   for (let i = start; i <= end; i++) {
     map.set(list[i], i);
   }
@@ -56,7 +62,7 @@ const generateMap = (list: unknown[], start: number, end: number) => {
  * items to values, and DOM will be reused against potentially different items.
  */
 
-class RepeatDirective extends Directive {
+class RepeatDirectiveClass extends Directive {
   itemKeys?: unknown[];
 
   constructor(partInfo: PartInfo) {
@@ -445,10 +451,21 @@ class RepeatDirective extends Directive {
   }
 }
 
+/**
+ * Type of the repeat directive function.
+ *
+ * The inferred types set the generic value as `unknown`.
+ */
 export type RepeatDirectiveFn = <T>(
   items: Iterable<T>,
   keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
   template?: ItemTemplate<T>
-) => unknown;
+) => DirectiveResult<typeof RepeatDirectiveClass>;
 
-export const repeat = directive(RepeatDirective) as RepeatDirectiveFn;
+export const repeat = directive(RepeatDirectiveClass) as RepeatDirectiveFn;
+
+/**
+ * Non-callable type of the directive class. Necessary for when a function or
+ * method returns the return type of the above directive.
+ */
+export type {RepeatDirectiveClass};
