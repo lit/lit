@@ -147,6 +147,44 @@ suite('ref', () => {
     assert.deepEqual(calls, ['DIV', undefined, 'SPAN', undefined, 'DIV']);
   });
 
+  test('calls callback bound to options.host', () => {
+    let queriedEl: Element | null;
+    const host = {
+      calls: [] as Array<string | undefined>,
+      elCallback(e: Element | undefined) {
+        this.calls.push(e?.tagName);
+      },
+    };
+    const go = (x: boolean) =>
+      render(
+        x
+          ? html`<div ${ref(host.elCallback)}></div>`
+          : html`<span ${ref(host.elCallback)}></span>`,
+        container,
+        {host: (host as unknown) as EventTarget}
+      );
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(host.calls, ['DIV']);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(host.calls, ['DIV']);
+
+    go(false);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'SPAN');
+    assert.deepEqual(host.calls, ['DIV', undefined, 'SPAN']);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(host.calls, ['DIV', undefined, 'SPAN', undefined, 'DIV']);
+  });
+
   test('two refs', () => {
     const divRef1 = createRef();
     const divRef2 = createRef();

@@ -44,6 +44,7 @@ export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
+  private _context: unknown;
 
   render(_ref: RefOrCallback) {
     return nothing;
@@ -60,6 +61,7 @@ class RefDirective extends AsyncDirective {
       // We either got a new ref or this is the first render;
       // store the ref/element & update the ref value
       this._ref = ref;
+      this._context = part.options?.host;
       this._updateRefValue((this._element = part.element));
     }
     return nothing;
@@ -74,12 +76,12 @@ class RefDirective extends AsyncDirective {
       // previous one unsets it) and down in the tree (where it would be unset
       // before being set)
       if (lastElementForCallback.get(this._ref) !== undefined) {
-        this._ref(undefined);
+        this._ref.call(this._context, undefined);
       }
       lastElementForCallback.set(this._ref, element);
       // Call the ref with the new element value
       if (element !== undefined) {
-        this._ref(element);
+        this._ref.call(this._context, element);
       }
     } else {
       (this._ref as RefInternal)!.value = element;
