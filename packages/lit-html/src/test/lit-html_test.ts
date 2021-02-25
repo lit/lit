@@ -21,6 +21,7 @@ import {
   RenderOptions,
   svg,
   TemplateResult,
+  SVGTemplateResult,
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
@@ -692,6 +693,17 @@ suite('lit-html', () => {
       const line = container.firstElementChild!;
       assert.equal(line.tagName, 'line');
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
+    });
+
+    test('SVGTemplateResult is a subtype of TemplateResult', () => {
+      const staticAssertExtends = <T>(_x: T) => {};
+
+      staticAssertExtends<TemplateResult>(html`<div></div>`);
+      staticAssertExtends<TemplateResult>(svg`<g></g>`);
+      staticAssertExtends<SVGTemplateResult>(svg`<g></g>`);
+
+      // This should not compile.
+      // staticAssertExtends<SVGTemplateResult>(html`<div></div>`);
     });
   });
 
