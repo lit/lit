@@ -696,14 +696,8 @@ suite('lit-html', () => {
     });
 
     test('SVGTemplateResult is a subtype of TemplateResult', () => {
-      const staticAssertExtends = <T>(_x: T) => {};
-
-      staticAssertExtends<TemplateResult>(html`<div></div>`);
-      staticAssertExtends<TemplateResult>(svg`<g></g>`);
-      staticAssertExtends<SVGTemplateResult>(svg`<g></g>`);
-
-      // This should not compile.
-      // staticAssertExtends<SVGTemplateResult>(html`<div></div>`);
+      const staticAssertExtends = <T, U extends T>(_t?: T, _u?: U) => {};
+      staticAssertExtends<TemplateResult, SVGTemplateResult>();
     });
   });
 
