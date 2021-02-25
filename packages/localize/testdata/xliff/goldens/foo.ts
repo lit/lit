@@ -1,36 +1,43 @@
 import {html} from 'lit-html';
-import {msg} from '../../../lit-localize.js';
+import {msg, str} from '../../../lit-localize.js';
 
-msg('Hello World!', {id: 'string'});
+const user = 'Friend';
+const url = 'https://www.example.com/';
 
-msg(html`Hello <b><i>World!</i></b>`, {id: 'lit'});
+// Plain string
+msg('Hello World!');
 
-msg((name: string) => `Hello ${name}!`, {id: 'variables_1', args: ['World']});
+// Plain string with expression
+msg(str`Hello ${user}!`);
 
-msg(
-  (url: string, name: string) =>
-    html`Hello ${name}, click <a href="${url}">here</a>!`,
-  {id: 'lit_variables_1', args: ['World', 'https://www.example.com/']}
-);
-
-msg((x: string) => html`${x}y${x}y${x}`, {id: 'lit_variables_2', args: ['x']});
-
-msg(
-  (x: string) => html`<b>${x}</b>
-    <i>y</i>
-    <b>${x}</b>
-    <i>y</i>
-    <b>${x}</b>`,
-  {id: 'lit_variables_3', args: ['x']}
-);
-
-msg(html`Hello <b><!-- comment -->World!</b>`, {id: 'comment'});
-
-// Auto IDs
-msg(`Hello World!`);
-msg((name) => `Hello ${name}!`, {args: ['Friend']});
+// Lit template
 msg(html`Hello <b>World</b>!`);
-msg((name) => html`Hello <b>${name}</b>!`, {args: ['Friend']});
+
+// Lit template with variable expression (one placeholder)
+msg(html`Hello <b>${user}</b>!`);
+
+// Lit template with variable expression (two placeholders)
+msg(html`Click <a href=${url}>here</a>!`);
+
+// Lit template with string expression
+//
+// TODO(aomarks) The "SALT" text is here because we have a check to make sure
+// that two messages can't have the same ID unless they have identical template
+// contents. After https://github.com/Polymer/lit-html/issues/1621 is
+// implemented, add a "meaning" parameter instead.
+msg(html`[SALT] Click <a href="${'https://www.example.com/'}">here</a>!`);
+
+// Lit template with nested msg expression
+msg(html`[SALT] Hello <b>${msg('World')}</b>!`);
+
+// Lit template with comment
+msg(html`Hello <b><!-- comment -->World</b>!`);
+
+// Lit template with expression order inversion
+msg(html`a:${'A'} b:${'B'} c:${'C'}`);
+
+// Custom ID
+msg('Hello World', {id: 'myId'});
 
 // msgdesc: Description of 0
 msg('described 0');
