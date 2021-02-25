@@ -105,11 +105,15 @@ function extractMsg(
   }
   const [templateArg, optionsArg] = node.arguments;
 
-  const templateResult = extractTemplate(templateArg, file);
+  const templateResult = extractTemplate(
+    templateArg,
+    file,
+    program.getTypeChecker()
+  );
   if (templateResult.error) {
     return {error: templateResult.error};
   }
-  const {contents, template, params, isLitTemplate} = templateResult.result;
+  const {contents, template, isLitTemplate} = templateResult.result;
 
   const optionsResult = extractOptions(optionsArg, file);
   if (optionsResult.error) {
@@ -124,7 +128,6 @@ function extractMsg(
       file,
       node,
       contents,
-      params,
       isLitTemplate,
       descStack: descStack.map((desc) => desc.text),
     },
@@ -245,10 +248,11 @@ interface ExtractedTemplate {
  */
 export function extractTemplate(
   templateArg: ts.Node,
-  file: ts.SourceFile
+  file: ts.SourceFile,
+  typeChecker: ts.TypeChecker
 ): ResultOrError<ExtractedTemplate, ts.DiagnosticWithLocation> {
   if (isStaticString(templateArg)) {
-    // E.g. 'Hello World'
+    // E.g. 'Hello World', `Hello World`
     return {
       result: {
         template: templateArg,
@@ -259,50 +263,35 @@ export function extractTemplate(
   }
 
   if (isLitTemplate(templateArg)) {
-    if (ts.isNoSubstitutionTemplateLiteral(templateArg.template)) {
-      // E.g. html`Hello <b>World</b>`
-      return {
-        result: {
-          template: templateArg.template,
-          contents: combineAdjacentPlaceholders(
-            replaceHtmlWithPlaceholders(templateArg.template.text)
-          ),
-          isLitTemplate: true,
-        },
-      };
-    }
-    // E.g. html`Hello ${who}`
+    // E.g. html`Hello <b>${name}</b>`
+    return paramTemplate(templateArg, file);
+  }
+
+  if (isStrTaggedTemplate(templateArg, typeChecker)) {
+    // E.g. str`Hello ${who}`
+    return paramTemplate(templateArg, file);
+  }
+
+  if (
+    ts.isTemplateExpression(templateArg) ||
+    ts.isTaggedTemplateExpression(templateArg)
+  ) {
+    // E.g. `Hello ${who}`, wrongTag`Hello ${who}`
     return {
       error: createDiagnostic(
         file,
         templateArg,
-        `To use a variable, pass an arrow function.`
+        `String literal with expressions must use the str tag`
       ),
     };
-  }
-
-  if (ts.isTemplateExpression(templateArg)) {
-    // E.g. `Hello ${who}`
-    return {
-      error: createDiagnostic(
-        file,
-        templateArg,
-        `To use a variable, pass an arrow function.`
-      ),
-    };
-  }
-
-  if (ts.isArrowFunction(templateArg)) {
-    // E.g. (who) => html`Hello ${who}`
-    return functionTemplate(templateArg, file);
   }
 
   return {
     error: createDiagnostic(
       file,
       templateArg,
-      `Expected second argument to msg() to be a string, a lit-html ` +
-        `template, or an arrow function that returns one of those.`
+      `Expected first argument to msg() to be a string or lit-html ` +
+        `template.`
     ),
   };
 }
@@ -335,79 +324,38 @@ export function generateMsgIdFromAstNode(
 
 /**
  * Extract a message from calls like:
- *   (name) => `Hello ${name}`
- *   (name) => html`Hello <b>${name}</b>`
+ *   str`Hello ${name}`
+ *   html`Hello <b>${name}</b>`
  */
-function functionTemplate(
-  fn: ts.ArrowFunction,
+function paramTemplate(
+  arg: ts.TaggedTemplateExpression | ts.TemplateExpression,
   file: ts.SourceFile
 ): ResultOrError<ExtractedTemplate, ts.DiagnosticWithLocation> {
-  if (fn.parameters.length === 0) {
-    return {
-      error: createDiagnostic(
-        file,
-        fn,
-        `Expected template function to have at least one parameter. ` +
-          `Use a regular string or lit-html template if there are no variables.`
-      ),
-    };
-  }
-  const params = [];
-  for (const param of fn.parameters) {
-    if (!ts.isIdentifier(param.name)) {
-      return {
-        error: createDiagnostic(
-          file,
-          param,
-          `Expected template function parameter to be an identifier`
-        ),
-      };
-    }
-    params.push(param.name.text);
-  }
-  const body = fn.body;
-  if (
-    !ts.isTemplateExpression(body) &&
-    !ts.isNoSubstitutionTemplateLiteral(body) &&
-    !isLitTemplate(body)
-  ) {
-    return {
-      error: createDiagnostic(
-        file,
-        body,
-        `Expected template function to return a template string literal ` +
-          `or a lit-html template, without braces`
-      ),
-    };
-  }
-  const template = isLitTemplate(body) ? body.template : body;
   const parts: Array<string | {identifier: string}> = [];
-  if (ts.isTemplateExpression(template)) {
-    const spans = template.templateSpans;
-    parts.push(template.head.text);
-    for (const span of spans) {
-      if (
-        !ts.isIdentifier(span.expression) ||
-        !params.includes(span.expression.text)
-      ) {
-        return {
-          error: createDiagnostic(
-            file,
-            span.expression,
-            `Placeholder must be one of the following identifiers: ` +
-              params.join(', ')
-          ),
-        };
-      }
-      const identifier = span.expression.text;
-      parts.push({identifier});
-      parts.push(span.literal.text);
-    }
-  } else {
-    // A NoSubstitutionTemplateLiteral. No spans.
+  const template = ts.isTaggedTemplateExpression(arg) ? arg.template : arg;
+  let spans;
+  if (ts.isNoSubstitutionTemplateLiteral(template)) {
+    spans = [];
     parts.push(template.text);
+  } else {
+    spans = template.templateSpans;
+    parts.push(template.head.text);
   }
-  const isLit = isLitTemplate(body);
+  const printer = ts.createPrinter({
+    newLine: ts.NewLineKind.LineFeed,
+    noEmitHelpers: true,
+  });
+  for (const span of spans) {
+    parts.push({
+      identifier: printer.printNode(
+        ts.EmitHint.Unspecified,
+        span.expression,
+        file
+      ),
+    });
+    parts.push(span.literal.text);
+  }
+  const isLit = isLitTemplate(arg);
   const contents = isLit
     ? replaceExpressionsAndHtmlWithPlaceholders(parts)
     : parts.map((part) =>
@@ -415,11 +363,11 @@ function functionTemplate(
           ? part
           : {untranslatable: '${' + part.identifier + '}'}
       );
+  const combined = combineAdjacentPlaceholders(contents);
   return {
     result: {
       template,
-      contents: combineAdjacentPlaceholders(contents),
-      params,
+      contents: combined,
       isLitTemplate: isLit,
     },
   };
@@ -700,9 +648,34 @@ export function isMsgCall(
   if (!ts.isCallExpression(node)) {
     return false;
   }
-  const type = typeChecker.getTypeAtLocation(node.expression);
+  let type;
+  try {
+    type = typeChecker.getTypeAtLocation(node.expression);
+  } catch {
+    return false;
+  }
   const props = typeChecker.getPropertiesOfType(type);
   return props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_MSG_');
+}
+
+/**
+ * Return whether a node is a string tagged with our special `str` tag.
+ */
+export function isStrTaggedTemplate(
+  node: ts.Node,
+  typeChecker: ts.TypeChecker
+): node is ts.TaggedTemplateExpression {
+  if (!ts.isTaggedTemplateExpression(node)) {
+    return false;
+  }
+  let tag;
+  try {
+    tag = typeChecker.getTypeAtLocation(node.tag);
+  } catch {
+    return false;
+  }
+  const props = typeChecker.getPropertiesOfType(tag);
+  return props.some((prop) => prop.escapedName === '_LIT_LOCALIZE_STR_');
 }
 
 /**

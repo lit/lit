@@ -14,9 +14,13 @@ import {applyPatches, Patches} from '../patches';
 import {Locale, writeLocaleCodesModule} from '../locales';
 import {Config} from '../config';
 import {KnownError} from '../error';
-import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
+import {
+  escapeStringToEmbedInTemplateLiteral,
+  parseStringAsTemplateLiteral,
+} from '../typescript';
 import * as fsExtra from 'fs-extra';
 import * as pathLib from 'path';
+import * as ts from 'typescript';
 
 /**
  * Configuration specific to the `runtime` output mode.
@@ -178,21 +182,43 @@ function makeMessageString(
   contents: Array<string | Placeholder>,
   canon: ProgramMessage
 ): string {
+  // Translations can modify the order of expressions in a template. We encode
+  // local expression order by replacing the value with the index number. It's
+  // okay to lose the original value, because at runtime we always substitute
+  // the source locale value anyway (because of variable scoping).
+  //
+  // For example, if some placeholders were reordered from [0 1 2] to [2 0 1],
+  // then we'll generate a template like: html`foo ${2} bar ${0} baz ${1}`
+  const placeholderOrder = new Map<string, number>(
+    canon.contents
+      .filter((value) => typeof value !== 'string')
+      .map((placeholder, idx) => [
+        (placeholder as Placeholder).untranslatable,
+        idx,
+      ])
+  );
+
   const fragments = [];
   for (const content of contents) {
     if (typeof content === 'string') {
       fragments.push(escapeStringToEmbedInTemplateLiteral(content));
     } else {
-      fragments.push(content.untranslatable);
+      const template = parseStringAsTemplateLiteral(content.untranslatable);
+      if (ts.isNoSubstitutionTemplateLiteral(template)) {
+        fragments.push(template.text);
+      } else {
+        fragments.push(template.head.text);
+        for (const span of template.templateSpans) {
+          // Substitute the value with the index (see note above).
+          fragments.push(
+            '${' + placeholderOrder.get(content.untranslatable) + '}'
+          );
+          fragments.push(span.literal.text);
+        }
+      }
     }
   }
+
   const tag = canon.isLitTemplate ? 'html' : '';
-  const msgStr = `${tag}\`${fragments.join('')}\``;
-  if (canon.params !== undefined && canon.params.length > 0) {
-    return `(${canon.params
-      .map((param) => `${param}: any`)
-      .join(', ')}) => ${msgStr}`;
-  } else {
-    return msgStr;
-  }
+  return `${tag}\`${fragments.join('')}\``;
 }
