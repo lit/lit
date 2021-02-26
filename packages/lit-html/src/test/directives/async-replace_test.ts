@@ -213,9 +213,14 @@ suite('asyncReplace', () => {
     const delay = (delay: number) =>
       new Promise((res) => setTimeout(res, delay));
 
-    render(component(generator(delay(20), 'slow')), container);
-    render(component(generator(delay(10), 'fast')), container);
-    await delay(30);
+    const slowDelay = delay(20);
+    const fastDelay = delay(10);
+
+    render(component(generator(slowDelay, 'slow')), container);
+    render(component(generator(fastDelay, 'fast')), container);
+
+    await slowDelay;
+    await delay(10);
 
     assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });
