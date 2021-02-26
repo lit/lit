@@ -1,4 +1,10 @@
 /**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
  * This module exports the cross-environment test definitions and the
  * server-only SSR render function.
  *

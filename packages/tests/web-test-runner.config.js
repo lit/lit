@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';

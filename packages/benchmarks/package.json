@@ -5,7 +5,7 @@
   "description": "Benchmarks for lit",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "author": "The Polymer Project Authors",
+  "author": "Google LLC",
   "scripts": {
     "benchmark:lit-element:list": "tach --config lit-element/list/tachometer.json",
     "benchmark:lit-element:list-render": "tach --config lit-element/list/tachometer-render.json",

@@ -1,4 +1,10 @@
 /**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
  * This is a server-old module that renders the HTML file shell.
  */
 
