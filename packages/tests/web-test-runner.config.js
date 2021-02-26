@@ -190,7 +190,7 @@ export default {
             ),
             // Don't load if the page is tagged with a special meta indicating
             // the polyfills will be loaded manually
-            test: '!document.querySelector("meta[name=manual-polyfills")',
+            test: '!document.querySelector("meta[name=manual-polyfills]")',
             module: false,
           },
         ],
