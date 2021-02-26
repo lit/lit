@@ -3,7 +3,6 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
 import {LitElement, html} from 'lit-element';
 const {getLocale} = {getLocale: () => 'en'};
 console.log(`Locale is ${getLocale()}`);
