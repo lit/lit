@@ -35,4 +35,4 @@ export const unsafeSVG = directive(UnsafeSVGDirective);
  * Non-callable type of the directive class. Necessary for when a function or
  * method returns the return type of the above directive.
  */
-export type {UnsafeSVGLDirective as UnsafeSVGLDirectiveType};
+export type {UnsafeSVGDirective as UnsafeSVGDirectiveType};
