@@ -176,7 +176,7 @@ const comment2EndRegex = />/g;
  *
  * So an attribute is:
  *  * The name: any character except a whitespace character, ("), ('), ">",
- *    "=", or "/"
+ *    "=", or "/". Note: this is different from the HTML spec which also excludes control characters.
  *  * Followed by zero or more space characters
  *  * Followed by "="
  *  * Followed by zero or more space characters
