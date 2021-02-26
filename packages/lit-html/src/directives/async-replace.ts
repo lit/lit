@@ -103,3 +103,9 @@ class AsyncReplaceDirective extends AsyncDirective {
  *     value. Useful for generating templates for each item in the iterable.
  */
 export const asyncReplace = directive(AsyncReplaceDirective);
+
+/**
+ * Non-callable type of the directive class. Necessary for when a function or
+ * method returns the return type of the above directive.
+ */
+export type {AsyncReplaceDirective as AsyncReplaceDirectiveType};

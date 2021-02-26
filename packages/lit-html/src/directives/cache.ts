@@ -27,7 +27,7 @@ import {
   setCommittedValue,
 } from '../directive-helpers.js';
 
-class CacheDirectiveClass extends Directive {
+class CacheDirective extends Directive {
   templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
   value?: TemplateResult;
 
@@ -105,10 +105,10 @@ class CacheDirectiveClass extends Directive {
  * `
  * ```
  */
-export const cache = directive(CacheDirectiveClass);
+export const cache = directive(CacheDirective);
 
 /**
  * Non-callable type of the directive class. Necessary for when a function or
  * method returns the return type of the above directive.
  */
-export type {CacheDirectiveClass};
+export type {CacheDirective as CacheDirectiveType};

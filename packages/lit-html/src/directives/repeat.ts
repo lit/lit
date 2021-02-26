@@ -62,7 +62,7 @@ const generateMap = (list: unknown[], start: number, end: number) => {
  * items to values, and DOM will be reused against potentially different items.
  */
 
-class RepeatDirectiveClass extends Directive {
+class RepeatDirective extends Directive {
   itemKeys?: unknown[];
 
   constructor(partInfo: PartInfo) {
@@ -460,12 +460,12 @@ export type RepeatDirectiveFn = <T>(
   items: Iterable<T>,
   keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
   template?: ItemTemplate<T>
-) => DirectiveResult<typeof RepeatDirectiveClass>;
+) => DirectiveResult<typeof RepeatDirective>;
 
-export const repeat = directive(RepeatDirectiveClass) as RepeatDirectiveFn;
+export const repeat = directive(RepeatDirective) as RepeatDirectiveFn;
 
 /**
  * Non-callable type of the directive class. Necessary for when a function or
  * method returns the return type of the above directive.
  */
-export type {RepeatDirectiveClass};
+export type {RepeatDirective as RepeatDirectiveType};

@@ -22,7 +22,7 @@ import {
 } from '../directive.js';
 import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
-class LiveDirectiveClass extends Directive {
+class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
@@ -98,10 +98,10 @@ class LiveDirectiveClass extends Directive {
  * you use `live()` with an attribute binding, make sure that only strings are
  * passed in, or the binding will update every render.
  */
-export const live = directive(LiveDirectiveClass);
+export const live = directive(LiveDirective);
 
 /**
  * Non-callable type of the directive class. Necessary for when a function or
  * method returns the return type of the above directive.
  */
-export type {LiveDirectiveClass};
+export type {LiveDirective as LiveDirectiveType};

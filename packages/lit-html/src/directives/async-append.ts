@@ -125,3 +125,9 @@ class AsyncAppendDirective extends AsyncDirective {
  *     value. Useful for generating templates for each item in the iterable.
  */
 export const asyncAppend = directive(AsyncAppendDirective);
+
+/**
+ * Non-callable type of the directive class. Necessary for when a function or
+ * method returns the return type of the above directive.
+ */
+export type {AsyncAppendDirective as AsyncAppendDirectiveType};

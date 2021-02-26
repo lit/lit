@@ -18,7 +18,7 @@ import {directive, Directive, DirectiveParameters} from '../directive.js';
 // A sentinal that indicates guard() hasn't rendered anything yet
 const initialValue = {};
 
-class GuardDirectiveClass extends Directive {
+class GuardDirective extends Directive {
   previousValue: unknown = initialValue;
 
   render(_value: unknown, f: () => unknown) {
@@ -87,10 +87,10 @@ class GuardDirectiveClass extends Directive {
  * @param value the value to check before re-rendering
  * @param f the template function
  */
-export const guard = directive(GuardDirectiveClass);
+export const guard = directive(GuardDirective);
 
 /**
  * Non-callable type of the directive class. Necessary for when a function or
  * method returns the return type of the above directive.
  */
-export type {GuardDirectiveClass};
+export type {GuardDirective as GuardDirectiveType};

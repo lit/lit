@@ -41,7 +41,7 @@ const lastElementForCallback: WeakMap<
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 
-class RefDirectiveClass extends AsyncDirective {
+class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
 
@@ -134,10 +134,10 @@ class RefDirectiveClass extends AsyncDirective {
  *    const callback = (inputElement) => inputElement.focus();
  *    render(html`<input ${ref(callback)}>`, container);
  */
-export const ref = directive(RefDirectiveClass);
+export const ref = directive(RefDirective);
 
 /**
  * Non-callable type of the directive class. Necessary for when a function or
  * method returns the return type of the above directive.
  */
-export type {RefDirectiveClass};
+export type {RefDirective as RefDirectiveType};
