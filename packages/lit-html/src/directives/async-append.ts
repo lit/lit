@@ -127,7 +127,7 @@ class AsyncAppendDirective extends AsyncDirective {
 export const asyncAppend = directive(AsyncAppendDirective);
 
 /**
- * Non-callable type of the directive class. Necessary for when a function or
- * method returns the return type of the above directive.
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
  */
 export type {AsyncAppendDirective as AsyncAppendDirectiveType};

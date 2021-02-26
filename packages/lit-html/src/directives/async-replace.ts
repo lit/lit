@@ -105,7 +105,7 @@ class AsyncReplaceDirective extends AsyncDirective {
 export const asyncReplace = directive(AsyncReplaceDirective);
 
 /**
- * Non-callable type of the directive class. Necessary for when a function or
- * method returns the return type of the above directive.
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
  */
 export type {AsyncReplaceDirective as AsyncReplaceDirectiveType};
