@@ -28,6 +28,7 @@
     "husky": "^4.3.0",
     "ignore-sync": "^3.1.0",
     "lint-staged": "^10.4.0",
+    "magic-string": "^0.25.7",
     "prettier": "^2.1.2",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-sourcemaps": "^0.6.2",

@@ -20,6 +20,7 @@ import * as pathLib from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
+import MagicString from 'magic-string';
 
 // In CHECKSIZE mode we:
 // 1) Don't emit any files.
@@ -192,6 +193,35 @@ const generateTerserOptions = (nameCache = null, classPropertyPrefix = '') => ({
   },
 });
 
+/**
+ * Replace literal null bytes with escaped "\0", assuming they only appear
+ * inside strings,
+ *
+ * With unsafe minifications on, Terser replaces "\0" and "\x00" escape
+ * sequences with actual null bytes. This can cause problems with tools,
+ * especially if the null byte appears early in the file. E.g. VSCode will not
+ * detect the file as UTF-8, and a bug caused @web/dev-server to crash.
+ *
+ * See https://github.com/Polymer/lit-html/issues/1633
+ */
+const escapeNullByte = {
+  name: 'escapeNullByte',
+  transform(code) {
+    const matches = [...code.matchAll(/\0/g)];
+    if (matches.length === 0) {
+      return null;
+    }
+    const magicStr = new MagicString(code);
+    for (const match of matches) {
+      magicStr.overwrite(match.index, match.index + match[0].length, '\\0');
+    }
+    return {
+      code: magicStr.toString(),
+      map: magicStr.generateMap({hires: true}),
+    };
+  },
+};
+
 export function litProdConfig({
   entryPoints,
   external = [],
@@ -285,6 +315,9 @@ export function litProdConfig({
       },
       external,
       plugins: [
+        // This plugin automatically composes the existing TypeScript -> raw JS
+        // sourcemap with the raw JS -> minified JS one that we're generating here.
+        sourcemaps(),
         // Switch all DEV_MODE variable assignment values to false. Terser's dead
         // code removal will then remove any blocks that are conditioned on this
         // variable.
@@ -312,10 +345,8 @@ export function litProdConfig({
           'const ENABLE_SHADYDOM_NOPATCH = true':
             'const ENABLE_SHADYDOM_NOPATCH = false',
         }),
-        // This plugin automatically composes the existing TypeScript -> raw JS
-        // sourcemap with the raw JS -> minified JS one that we're generating here.
-        sourcemaps(),
         terser(terserOptions),
+        // escapeNullByte,
         summary(),
         ...(CHECKSIZE
           ? [skipBundleOutput]
@@ -374,6 +405,9 @@ const litMonoBundleConfig = ({
     sourcemap: !CHECKSIZE,
   },
   plugins: [
+    // This plugin automatically composes the existing TypeScript -> raw JS
+    // sourcemap with the raw JS -> minified JS one that we're generating here.
+    sourcemaps(),
     nodeResolve(),
     replace({
       'const DEV_MODE = true': 'const DEV_MODE = false',
@@ -385,10 +419,8 @@ const litMonoBundleConfig = ({
       'var ENABLE_SHADYDOM_NOPATCH = true':
         'var ENABLE_SHADYDOM_NOPATCH = false',
     }),
-    // This plugin automatically composes the existing TypeScript -> raw JS
-    // sourcemap with the raw JS -> minified JS one that we're generating here.
-    sourcemaps(),
     terser(terserOptions),
+    escapeNullByte,
     summary(),
   ],
 });
