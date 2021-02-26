@@ -21,10 +21,10 @@ import {
 } from '../directive.js';
 import {
   clearPart,
-  getComittedValue,
+  getCommittedValue,
   insertPart,
   isTemplateResult,
-  setComittedValue,
+  setCommittedValue,
 } from '../directive-helpers.js';
 
 /**
@@ -65,7 +65,7 @@ export const cache = directive(
         (!isTemplateResult(v) || this.value.strings !== v.strings)
       ) {
         // This is always an array because we return [v] in render()
-        const partValue = getComittedValue(containerPart) as Array<ChildPart>;
+        const partValue = getCommittedValue(containerPart) as Array<ChildPart>;
         const childPart = partValue.pop()!;
         let cachedContainerPart = this.templateCache.get(this.value.strings);
         if (cachedContainerPart === undefined) {
@@ -74,7 +74,7 @@ export const cache = directive(
           this.templateCache.set(this.value.strings, cachedContainerPart);
         }
         // Move into cache
-        setComittedValue(cachedContainerPart, [childPart]);
+        setCommittedValue(cachedContainerPart, [childPart]);
         insertPart(cachedContainerPart, undefined, childPart);
         childPart.setConnected(false);
       }
@@ -88,14 +88,14 @@ export const cache = directive(
         const cachedContainerPart = this.templateCache.get(v.strings);
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value
-          const partValue = getComittedValue(
+          const partValue = getCommittedValue(
             cachedContainerPart
           ) as Array<ChildPart>;
           const cachedPart = partValue.pop()!;
           // Move cached part back into DOM
           clearPart(containerPart);
           insertPart(containerPart, undefined, cachedPart);
-          setComittedValue(containerPart, [cachedPart]);
+          setCommittedValue(containerPart, [cachedPart]);
           cachedPart.setConnected(true);
         }
         this.value = v;
