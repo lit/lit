@@ -734,6 +734,27 @@ suite('lit-html', () => {
       assertContent('<div foo="ABC"></div>');
     });
 
+    test('renders interpolation to an unquoted attribute with nbsp character', () => {
+      assertRender(
+        html`<div a=${'A'}\u00a0${'B'}></div>`,
+        '<div a="A&nbsp;B"></div>'
+      );
+    });
+
+    test('renders interpolation to a quoted attribute with nbsp character', () => {
+      assertRender(
+        html`<div a="${'A'}\u00a0${'B'}"></div>`,
+        '<div a="A&nbsp;B"></div>'
+      );
+    });
+
+    test('renders non-latin attribute name and interpolated unquoted non-latin values', () => {
+      assertRender(
+        html`<div ふ=ふ${'ふ'}ふ フ=フ${'フ'}フ></div>`,
+        '<div ふ="ふふふ" フ="フフフ"></div>'
+      );
+    });
+
     test('renders multiple bindings in an attribute', () => {
       render(html`<div foo="a${'b'}c${'d'}e"></div>`, container);
       assertContent('<div foo="abcde"></div>');

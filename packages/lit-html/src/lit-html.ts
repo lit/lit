@@ -134,10 +134,9 @@ const isIterable = (value: unknown): value is Iterable<unknown> =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   typeof (value as any)?.[Symbol.iterator] === 'function';
 
-// TODO (justinfagnani): can we get away with `\s`?
 const SPACE_CHAR = `[ \t\n\f\r]`;
 const ATTR_VALUE_CHAR = `[^ \t\n\f\r"'\`<>=]`;
-const NAME_CHAR = `[^\0-\x1F\x7F-\x9F "'>=/]`;
+const NAME_CHAR = `[^\\s"'>=/]`;
 
 // These regexes represent the five parsing states that we care about in the
 // Template's HTML scanner. They match the *end* of the state they're named
@@ -148,10 +147,6 @@ const NAME_CHAR = `[^\0-\x1F\x7F-\x9F "'>=/]`;
 // across the multiple regexes used. In addition to the five regexes below
 // we also dynamically create a regex to find the matching end tags for raw
 // text elements.
-
-// TODO (justinfagnani): we detect many more parsing edge-cases than we
-// used to, and many of those are of dubious value. Decide and document
-// how to relax correctness to simplify the regexes and states.
 
 /**
  * End of text is: `<` followed by:
@@ -179,12 +174,9 @@ const comment2EndRegex = />/g;
  * " \t\n\f\r" are HTML space characters:
  * https://infra.spec.whatwg.org/#ascii-whitespace
  *
- * "\0-\x1F\x7F-\x9F" are Unicode control characters, which includes every
- * space character except " ".
- *
  * So an attribute is:
- *  * The name: any character except a control character, space character, ('),
- *    ("), ">", "=", or "/"
+ *  * The name: any character except a whitespace character, ("), ('), ">",
+ *    "=", or "/". Note: this is different from the HTML spec which also excludes control characters.
  *  * Followed by zero or more space characters
  *  * Followed by "="
  *  * Followed by zero or more space characters
