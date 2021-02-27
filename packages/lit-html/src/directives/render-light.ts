@@ -120,7 +120,8 @@ class RenderLightDirectiveImpl extends Directive {
 export const renderLight = directive(RenderLightDirectiveImpl);
 
 export const isRenderLightDirective = (value: unknown): boolean =>
-  (getDirectiveClass(value) as typeof RenderLightDirectiveImpl)?._$litRenderLight;
+  (getDirectiveClass(value) as typeof RenderLightDirectiveImpl)
+    ?._$litRenderLight;
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
