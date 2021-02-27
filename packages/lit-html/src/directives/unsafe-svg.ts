@@ -13,11 +13,11 @@
  */
 
 import {directive} from '../directive.js';
-import {UnsafeHTMLDirective} from './unsafe-html.js';
+import {UnsafeHTMLDirectiveImpl} from './unsafe-html.js';
 
 const SVG_RESULT = 2;
 
-class UnsafeSVGDirective extends UnsafeHTMLDirective {
+class UnsafeSVGDirectiveImpl extends UnsafeHTMLDirectiveImpl {
   static directiveName = 'unsafeSVG';
   static resultType = SVG_RESULT;
 }
@@ -29,10 +29,10 @@ class UnsafeSVGDirective extends UnsafeHTMLDirective {
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeSVG = directive(UnsafeSVGDirective);
+export const unsafeSVG = directive(UnsafeSVGDirectiveImpl);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {UnsafeSVGDirective as UnsafeSVGDirectiveType};
+export type {UnsafeSVGDirectiveImpl as UnsafeSVGDirective};

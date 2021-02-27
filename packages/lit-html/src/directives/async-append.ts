@@ -28,7 +28,7 @@ import {
 
 type Mapper<T> = (v: T, index?: number) => unknown;
 
-class AsyncAppendDirective extends AsyncDirective {
+class AsyncAppendDirectiveImpl extends AsyncDirective {
   value?: AsyncIterable<unknown>;
   reconnectResolver?: () => void;
   reconnectPromise?: Promise<void>;
@@ -124,10 +124,10 @@ class AsyncAppendDirective extends AsyncDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend = directive(AsyncAppendDirective);
+export const asyncAppend = directive(AsyncAppendDirectiveImpl);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {AsyncAppendDirective as AsyncAppendDirectiveType};
+export type {AsyncAppendDirectiveImpl as AsyncAppendDirective};

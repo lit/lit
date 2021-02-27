@@ -18,7 +18,7 @@ import {AsyncDirective} from '../async-directive.js';
 
 type Mapper<T> = (v: T, index?: number) => unknown;
 
-class AsyncReplaceDirective extends AsyncDirective {
+class AsyncReplaceDirectiveImpl extends AsyncDirective {
   value?: AsyncIterable<unknown>;
   reconnectResolver?: () => void;
   reconnectPromise?: Promise<void>;
@@ -102,10 +102,10 @@ class AsyncReplaceDirective extends AsyncDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncReplace = directive(AsyncReplaceDirective);
+export const asyncReplace = directive(AsyncReplaceDirectiveImpl);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {AsyncReplaceDirective as AsyncReplaceDirectiveType};
+export type {AsyncReplaceDirectiveImpl as AsyncReplaceDirective};

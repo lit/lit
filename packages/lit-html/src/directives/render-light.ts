@@ -20,7 +20,7 @@ export interface RenderLightHost extends HTMLElement {
   renderLight(): unknown;
 }
 
-class RenderLightDirective extends Directive {
+class RenderLightDirectiveImpl extends Directive {
   static _$litRenderLight = true;
   render() {
     /* SSR handled specially in render-lit-html */
@@ -117,13 +117,13 @@ class RenderLightDirective extends Directive {
  * split light an shadow DOM rendering in a similar way have reported that it's
  * faster to first contentful paint than the "deep" SSR that is common place.
  */
-export const renderLight = directive(RenderLightDirective);
+export const renderLight = directive(RenderLightDirectiveImpl);
 
 export const isRenderLightDirective = (value: unknown): boolean =>
-  (getDirectiveClass(value) as typeof RenderLightDirective)?._$litRenderLight;
+  (getDirectiveClass(value) as typeof RenderLightDirectiveImpl)?._$litRenderLight;
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {RenderLightDirective as RenderLightDirectiveType};
+export type {RenderLightDirectiveImpl as RenderLightDirective};

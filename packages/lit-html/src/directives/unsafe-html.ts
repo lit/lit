@@ -17,7 +17,7 @@ import {directive, Directive, PartInfo, PartType} from '../directive.js';
 
 const HTML_RESULT = 1;
 
-export class UnsafeHTMLDirective extends Directive {
+export class UnsafeHTMLDirectiveImpl extends Directive {
   static directiveName = 'unsafeHTML';
   static resultType = HTML_RESULT;
 
@@ -29,7 +29,7 @@ export class UnsafeHTMLDirective extends Directive {
     if (partInfo.type !== PartType.CHILD) {
       throw new Error(
         `${
-          (this.constructor as typeof UnsafeHTMLDirective).directiveName
+          (this.constructor as typeof UnsafeHTMLDirectiveImpl).directiveName
         }() can only be used in child bindings`
       );
     }
@@ -47,7 +47,7 @@ export class UnsafeHTMLDirective extends Directive {
     if (typeof value != 'string') {
       throw new Error(
         `${
-          (this.constructor as typeof UnsafeHTMLDirective).directiveName
+          (this.constructor as typeof UnsafeHTMLDirectiveImpl).directiveName
         }() called with a non-string value`
       );
     }
@@ -63,7 +63,7 @@ export class UnsafeHTMLDirective extends Directive {
     return (this.templateResult = {
       // Cast to a known set of integers that satisfy ResultType so that we
       // don't have to export ResultType and possibly encourage this pattern.
-      _$litType$: (this.constructor as typeof UnsafeHTMLDirective)
+      _$litType$: (this.constructor as typeof UnsafeHTMLDirectiveImpl)
         .resultType as 1 | 2,
       strings,
       values: [],
@@ -78,10 +78,4 @@ export class UnsafeHTMLDirective extends Directive {
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeHTML = directive(UnsafeHTMLDirective);
-
-/**
- * The type of the class that powers this directive. Necessary for naming the
- * directive's return type.
- */
-export type {UnsafeHTMLDirective as UnsafeHTMLDirectiveType};
+export const unsafeHTML = directive(UnsafeHTMLDirectiveImpl);

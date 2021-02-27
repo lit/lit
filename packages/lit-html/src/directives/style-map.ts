@@ -32,7 +32,7 @@ export interface StyleInfo {
   readonly [name: string]: string;
 }
 
-class StyleMapDirective extends Directive {
+class StyleMapDirectiveImpl extends Directive {
   previousStyleProperties?: Set<string>;
 
   constructor(partInfo: PartInfo) {
@@ -126,10 +126,10 @@ class StyleMapDirective extends Directive {
  *
  * @param styleInfo
  */
-export const styleMap = directive(StyleMapDirective);
+export const styleMap = directive(StyleMapDirectiveImpl);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {StyleMapDirective as StyleMapDirectiveType};
+export type {StyleMapDirectiveImpl as StyleMapDirective};
