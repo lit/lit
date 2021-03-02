@@ -913,6 +913,22 @@ class ChildPartImpl {
     return wrap(this._$startNode).parentNode!;
   }
 
+  /**
+   * The first node within the part.
+   */
+  get startNode(): Node | undefined {
+    return this._$startNode === this._$endNode ? undefined : this._$startNode;
+  }
+
+  /**
+   * The last node within the part.
+   */
+  get endNode(): Node | undefined {
+    return this._$startNode === this._$endNode
+      ? undefined
+      : this._$endNode ?? undefined;
+  }
+
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
