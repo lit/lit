@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 import {
   AttributePart,
@@ -743,6 +735,27 @@ suite('lit-html', () => {
       assertContent('<div foo="ABC"></div>');
       render(html`<div foo=${'A'}B${'C'}></div>`, container);
       assertContent('<div foo="ABC"></div>');
+    });
+
+    test('renders interpolation to an unquoted attribute with nbsp character', () => {
+      assertRender(
+        html`<div a=${'A'}\u00a0${'B'}></div>`,
+        '<div a="A&nbsp;B"></div>'
+      );
+    });
+
+    test('renders interpolation to a quoted attribute with nbsp character', () => {
+      assertRender(
+        html`<div a="${'A'}\u00a0${'B'}"></div>`,
+        '<div a="A&nbsp;B"></div>'
+      );
+    });
+
+    test('renders non-latin attribute name and interpolated unquoted non-latin values', () => {
+      assertRender(
+        html`<div ふ=ふ${'ふ'}ふ フ=フ${'フ'}フ></div>`,
+        '<div ふ="ふふふ" フ="フフフ"></div>'
+      );
     });
 
     test('renders multiple bindings in an attribute', () => {

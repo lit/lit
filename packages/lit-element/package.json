@@ -7,7 +7,7 @@
   "description": "A simple base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "author": "The Polymer Authors",
+  "author": "Google LLC",
   "homepage": "https://lit-element.polymer-project.org/",
   "main": "index.js",
   "module": "index.js",
