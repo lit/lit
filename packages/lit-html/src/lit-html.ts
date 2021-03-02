@@ -909,19 +909,39 @@ class ChildPartImpl {
     this._$setChildPartConnected?.(isConnected);
   }
 
+  /**
+   * The parent node into which the part renders its content.
+   *
+   * A ChildPart's content consists of a range of adjacent child nodes of
+   * `.parentNode`, possibly bordered by 'marker nodes' (`.startNode` and
+   * `.endNode`).
+   *
+   * - If both `.startNode` and `.endNode` are defined, then the part's content
+   * consists of all siblings between `.startNode` and `.endNode`, exclusively.
+   *
+   * - If `.startNode` is defined but `.endNode` is undefined, then the part's
+   * content consists of all siblings following `.startNode`, up to and
+   * including the last child of `.parentNode`. (If `.endNode` is defined, then
+   * `.startNode` will always be defined.)
+   *
+   * - If both `.endNode` and `.startNode` are undefined, then the part's
+   * content consists of all child nodes of `.parentNode`.
+   */
   get parentNode(): Node {
     return wrap(this._$startNode).parentNode!;
   }
 
   /**
-   * The first node within the part.
+   * The part's leading marker node, if any. See `.parentNode` for more
+   * information.
    */
   get startNode(): Node | undefined {
     return this._$startNode === this._$endNode ? undefined : this._$startNode;
   }
 
   /**
-   * The last node within the part.
+   * The part's trailing marker node, if any. See `.parentNode` for more
+   * information.
    */
   get endNode(): Node | undefined {
     return this._$startNode === this._$endNode
