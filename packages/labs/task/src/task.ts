@@ -6,9 +6,11 @@
 import {notEqual} from '@lit/reactive-element';
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
-export type TaskFunction = (args: Array<unknown>) => unknown;
-export type Deps = Array<unknown>;
-export type DepsFunction = () => Deps;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TaskFunction<D extends [...unknown[]], R = any> = (
+  args: D
+) => R | typeof initialState | Promise<R | typeof initialState>;
+export type DepsFunction<D extends [...unknown[]]> = () => D;
 
 /**
  * States for task status
@@ -20,12 +22,18 @@ export const TaskStatus = {
   ERROR: 3,
 } as const;
 
+/**
+ * A special value that can be returned from task functions to reset the task
+ * status to INITIAL.
+ */
+export const initialState = Symbol();
+
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
-export type StatusRenderer = {
+export type StatusRenderer<R> = {
   initial?: () => unknown;
   pending?: () => unknown;
-  complete?: (value: unknown) => unknown;
+  complete?: (value: R) => unknown;
   error?: (error: unknown) => unknown;
 };
 
@@ -76,20 +84,21 @@ export type StatusRenderer = {
  *   }
  * }
  */
-export class Task {
-  private _previousDeps: Deps = [];
-  private _task: TaskFunction;
-  private _getDependencies: DepsFunction;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export class Task<T extends [...unknown[]] = any, R = any> {
+  private _previousDeps: T = ([] as unknown) as T;
+  private _task: TaskFunction<T, R>;
+  private _getDependencies: DepsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
-  private _value?: unknown;
+  private _value?: R;
   private _error?: unknown;
   status: TaskStatus = TaskStatus.INITIAL;
 
   constructor(
     host: ReactiveControllerHost,
-    task: TaskFunction,
-    getDependencies: DepsFunction
+    task: TaskFunction<T, R>,
+    getDependencies: DepsFunction<T>
   ) {
     this._host = host;
     this._host.addController(this);
@@ -107,22 +116,26 @@ export class Task {
       this.status = TaskStatus.PENDING;
       this._error = undefined;
       this._value = undefined;
-      let value: unknown;
+      let result!: R | typeof initialState;
       let error: unknown;
       // Request an update to report pending state.
       this._host.requestUpdate();
       const key = ++this._callId;
       try {
-        value = await this._task(deps);
+        result = await this._task(deps);
       } catch (e) {
         error = e;
       }
       // If this is the most recent task call, process this value.
       if (this._callId === key) {
-        this.status =
-          error === undefined ? TaskStatus.COMPLETE : TaskStatus.ERROR;
-        this._value = value;
-        this._error = error;
+        if (result === initialState) {
+          this.status = TaskStatus.INITIAL;
+        } else {
+          this.status =
+            error === undefined ? TaskStatus.COMPLETE : TaskStatus.ERROR;
+          this._value = result as R;
+          this._error = error;
+        }
         // Request an update with the final value.
         this._host.requestUpdate();
       }
@@ -137,20 +150,23 @@ export class Task {
     return this._error;
   }
 
-  render(renderer: StatusRenderer) {
+  render(renderer: StatusRenderer<R>) {
     switch (this.status) {
       case TaskStatus.INITIAL:
         return renderer.initial?.();
       case TaskStatus.PENDING:
         return renderer.pending?.();
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value);
+        return renderer.complete?.(this.value!);
       case TaskStatus.ERROR:
         return renderer.error?.(this.error);
+      default:
+        // exhaustiveness check
+        this.status as void;
     }
   }
 
-  private _isDirty(deps: Deps) {
+  private _isDirty(deps: T) {
     let i = 0;
     const previousDeps = this._previousDeps;
     this._previousDeps = deps;
