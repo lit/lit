@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {playwrightLauncher} from '@web/test-runner-playwright';
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/

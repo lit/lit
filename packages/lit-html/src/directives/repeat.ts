@@ -1,24 +1,16 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
 import {directive, Directive, PartInfo, PartType} from '../directive.js';
 import {
   insertPart,
-  getComittedValue,
+  getCommittedValue,
   removePart,
-  setComittedValue,
+  setCommittedValue,
   setChildPartValue,
 } from '../directive-helpers.js';
 
@@ -109,7 +101,9 @@ class RepeatDirective extends Directive {
   ) {
     // Old part & key lists are retrieved from the last update
     // TODO: deal with directive being swapped out?
-    const oldParts = getComittedValue(containerPart) as Array<ChildPart | null>;
+    const oldParts = getCommittedValue(
+      containerPart
+    ) as Array<ChildPart | null>;
     const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
       items,
       keyFnOrTemplate,
@@ -438,7 +432,7 @@ class RepeatDirective extends Directive {
     // Save order of new parts for next round
     this.itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
-    setComittedValue(containerPart, newParts);
+    setCommittedValue(containerPart, newParts);
     return noChange;
   }
 }

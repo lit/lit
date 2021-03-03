@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 import {html, render} from '../../lit-html.js';
 import {ref, createRef, RefOrCallback} from '../../directives/ref.js';
@@ -145,6 +137,44 @@ suite('ref', () => {
     queriedEl = container.firstElementChild;
     assert.equal(queriedEl?.tagName, 'DIV');
     assert.deepEqual(calls, ['DIV', undefined, 'SPAN', undefined, 'DIV']);
+  });
+
+  test('calls callback bound to options.host', () => {
+    let queriedEl: Element | null;
+    const host = {
+      calls: [] as Array<string | undefined>,
+      elCallback(e: Element | undefined) {
+        this.calls.push(e?.tagName);
+      },
+    };
+    const go = (x: boolean) =>
+      render(
+        x
+          ? html`<div ${ref(host.elCallback)}></div>`
+          : html`<span ${ref(host.elCallback)}></span>`,
+        container,
+        {host}
+      );
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(host.calls, ['DIV']);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(host.calls, ['DIV']);
+
+    go(false);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'SPAN');
+    assert.deepEqual(host.calls, ['DIV', undefined, 'SPAN']);
+
+    go(true);
+    queriedEl = container.firstElementChild;
+    assert.equal(queriedEl?.tagName, 'DIV');
+    assert.deepEqual(host.calls, ['DIV', undefined, 'SPAN', undefined, 'DIV']);
   });
 
   test('two refs', () => {

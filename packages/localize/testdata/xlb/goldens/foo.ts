@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {html} from 'lit-html';
 import * as litLocalize from '../../../lit-localize.js';
 

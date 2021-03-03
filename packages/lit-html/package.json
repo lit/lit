@@ -4,7 +4,7 @@
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "author": "The Polymer Authors",
+  "author": "Google LLC",
   "homepage": "https://lit-html.polymer-project.org/",
   "main": "lit-html.js",
   "type": "module",

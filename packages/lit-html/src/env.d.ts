@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 interface ShadyCSS {
   nativeCss: boolean;
   nativeShadow: boolean;
