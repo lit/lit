@@ -141,6 +141,20 @@ export class LitElement extends ReactiveElement {
   }
 }
 
+/**
+ * Constructor type for easier definition of mixins that apply to LitElement.
+ *
+ * ```ts
+ * const MyMixin = <T extends LitElementConstructor>(superClass: T) => {
+ *   class MyMixinSubclass extends superClass {
+ *     // ...
+ *   }
+ *   return MyMixinSubclass;
+ * }
+ * ```
+ */
+export type LitElementConstructor = new (...args: unknown[]) => LitElement;
+
 // Install hydration if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litElementHydrateSupport']?.({LitElement});

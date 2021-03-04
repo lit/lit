@@ -1151,6 +1151,22 @@ export abstract class ReactiveElement
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
 
+/**
+ * Constructor type for easier definition of mixins that apply to ReactiveElement.
+ *
+ * ```ts
+ * const MyMixin = <T extends ReactiveElementConstructor>(superClass: T) => {
+ *   class MyMixinSubclass extends superClass {
+ *     // ...
+ *   }
+ *   return MyMixinSubclass;
+ * }
+ * ```
+ */
+export type ReactiveElementConstructor = new (
+  ...args: unknown[]
+) => ReactiveElement;
+
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['reactiveElementPlatformSupport']?.({ReactiveElement});
