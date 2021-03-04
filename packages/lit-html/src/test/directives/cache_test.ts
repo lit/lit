@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, render} from '../../lit-html.js';
+import {html, render, nothing} from '../../lit-html.js';
 import {cache} from '../../directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
@@ -128,6 +128,28 @@ suite('cache directive', () => {
 
     renderMaybeCached(false, 'D');
     assert.equal(stripExpressionComments(container.innerHTML), 'D');
+  });
+
+  test('cache can switch between TemplateResult and non-TemplateResult', () => {
+    const renderCache = (bool: boolean) =>
+      render(html`${cache(bool ? html`<p></p>` : nothing)}`, container);
+
+    renderCache(true);
+    assert.equal(stripExpressionComments(container.innerHTML), '<p></p>');
+    renderCache(false);
+    assert.equal(stripExpressionComments(container.innerHTML), '');
+    renderCache(true);
+    assert.equal(stripExpressionComments(container.innerHTML), '<p></p>');
+    renderCache(true);
+    assert.equal(stripExpressionComments(container.innerHTML), '<p></p>');
+    renderCache(false);
+    assert.equal(stripExpressionComments(container.innerHTML), '');
+    renderCache(true);
+    assert.equal(stripExpressionComments(container.innerHTML), '<p></p>');
+    renderCache(false);
+    assert.equal(stripExpressionComments(container.innerHTML), '');
+    renderCache(false);
+    assert.equal(stripExpressionComments(container.innerHTML), '');
   });
 
   test('async directives disconnet/reconnect when moved in/out of cache', () => {
