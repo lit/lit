@@ -22,6 +22,10 @@ export interface SpringConfig {
 
 export type PartialSpringConfig = Partial<SpringConfig>;
 
+/**
+ * Synchronously generates a set of spring values. This is useful for computing
+ * a set of keyframes to be used by the `flip()` directives.
+ */
 export class SimpleSpring {
   DELTA_TIME = (1 / 60) * 1000;
 

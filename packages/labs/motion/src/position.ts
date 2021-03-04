@@ -12,41 +12,45 @@ interface Positionables {
   readonly width: number;
 }
 
+type Ref = {value: HTMLElement};
+export type TargetCallbackOrRef = () => HTMLElement | Ref;
+
 export type Positions = Array<keyof Positionables>;
 
 const positionedPoints = ['top', 'right', 'bottom', 'left'];
 
+/**
+ * Positions and sizes the element on which the `position()` directive is used
+ * relative to the given target element.
+ */
 export class Position extends AsyncDirective {
   private _host?: LitElement;
   private _element?: Element;
-  private _targetCb?: () => HTMLElement;
+  private _targetCallbackOrRef!: TargetCallbackOrRef;
   private _positions?: Positions;
 
   constructor(part: PartInfo) {
     super(part);
     if (part.type === PartType.CHILD) {
       throw new Error(
-        'The `flip` directive must be used in attribute position.'
+        'The `position` directive must be used in attribute position.'
       );
     }
   }
 
-  render(_targetCb: () => HTMLElement, _positions: Positions) {
+  render(_targetCallbackOrRef: TargetCallbackOrRef, _positions: Positions) {
     return nothing;
   }
 
-  update(
-    part: AttributePart,
-    [targetCb, positions]: Parameters<this['render']>
-  ) {
+  update(part: AttributePart, [target, positions]: Parameters<this['render']>) {
     if (this._host === undefined) {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);
     }
     this._element = part.element;
-    this._targetCb = targetCb;
+    this._targetCallbackOrRef = target;
     this._positions = positions ?? ['left', 'top', 'width', 'height'];
-    return this.render(targetCb, positions);
+    return this.render(target, positions);
   }
 
   hostUpdated() {
@@ -54,8 +58,10 @@ export class Position extends AsyncDirective {
   }
 
   private _position() {
-    const target = this._targetCb?.();
-    const parent = target?.offsetParent;
+    const target =
+      ((this._targetCallbackOrRef as unknown) as Ref).value ??
+      this._targetCallbackOrRef?.();
+    const parent = target.offsetParent;
     if (target === undefined || !parent) {
       return;
     }
