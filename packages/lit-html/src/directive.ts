@@ -97,6 +97,11 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  * `directive`.
  */
 export abstract class Directive {
+  /**
+   * @nocollapse
+   * @internal
+   */
+  static readonly _$isDirectiveClass$ = true;
   //@internal
   __part: Part;
   //@internal
