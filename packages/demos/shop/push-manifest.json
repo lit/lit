@@ -1,0 +1,77 @@
+{
+  "/": {
+    "src/components/shop-app.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/list/.*": {
+    "src/components/shop-app.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "src/components/shop-list.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/detail/.*": {
+    "src/components/shop-app.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "src/components/shop-detail.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/cart": {
+    "src/components/shop-app.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "src/components/shop-cart.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  },
+  "/checkout": {
+    "src/components/shop-app.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "src/components/shop-checkout.js": {
+      "crossorigin": "anonymous",
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js": {
+      "type": "script",
+      "weight": 1
+    }
+  }
+}
