@@ -1,31 +1,39 @@
 # @lit-labs/scoped-registry-mixin
 
-`UseScopedRegistry` mixin for `LitElement` that integrates with the speculative [Scoped CustomElementRegistry polyfill](https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry).
+`ScopedRegistryHost` mixin for `LitElement` that integrates with the speculative [Scoped CustomElementRegistry polyfill](https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry).
 
-🚨 **Warning: Scoped Custom Element Registries is a speculative browser API that has not shipped and may change.** This mixin is provided to evaluate the spec proposal and provide feedback. **Use this feature and the polyfill in production code at your own risk.**
+🚨 **Warning: Scoped Custom Element Registries is a proposed browser API. It has not been finalized nor shipped in any browser.** This mixin is provided to evaluate the proposal and facilitate feedback. **Use this feature, and the polyfill in production code at your own risk.**
 
 ## Overview
 
-The [Scoped Custom Element Registries](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Scoped-Custom-Element-Registries.md) WICG proposal introduces new APIs for scoping custom elements to ShadowRoots, such that the tagName-to-custom element class mapping is local per Shadow Root.
+The [Scoped Custom Element Registries](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Scoped-Custom-Element-Registries.md) WICG proposal introduces new APIs for scoping custom element definitions to shadow roots, such that the mapping of tag names to custom element class doesn't rely on a single global registry.
 
-A speculative polyfill exists at [Scoped CustomElementRegistry polyfill](https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry). This package introduces a `UseScopedRegistry` mixin that may be applied to `LitElement`, used in conjunction with this polyfill, to register local tag-class mappings for a given element.
+When new elements are created within a shadow root with a scoped custom element registry, the browser will use the scoped registry rather than the global registry to look up custom element definitions. When using a scoped element registry, all used custom element elements must be defined within that scope.
+
+`ScopedRegistryHost` adds the following features to LitElement:
+1. Automatically creates a scoped CustomElementRegistry for the class
+2. Provides sugar for defining custom elements in the scoped registry
+3. Passes the registry to `attachShadow()` to enable scoping
+4. Passes the shadow root to lit-html to create DOM within the scope
+
+A speculative [Scoped CustomElementRegistry polyfill](https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry) is being developed. Because the proposal is not implemented natively, `ScopedRegistryHost` requires the polyfill.
 
 ## Usage
 
-The mixin adds a declarative `static scopedElements` property for declaring the custom elements to be scoped locallay to its Shadow DOM.
+The mixin adds a declarative `static elementDefinitions` property for declaring the custom elements to be scoped locally to its Shadow DOM.
 
 Basic usage is as follows:
 
 ```js
 import {LitElement, html} from 'lit';
-import {UseScopedRegistry} from '@lit-labs/scoped-registry-mixin';
+import {ScopedRegistryHost} from '@lit-labs/scoped-registry-mixin';
 
 import {SimpleGreeting} from './simple-greeting.js';
 
-class ScopedComponent extends UseScopedRegistry(LitElement) {
+class ScopedComponent extends ScopedRegistryHost(LitElement) {
   // Elements here will be registered against the tag names provided only
   // in the shadow root for this element
-  static scopedElements = {
+  static elementDefinitions = {
     'simple-greeting': SimpleGreeting,
   };
 

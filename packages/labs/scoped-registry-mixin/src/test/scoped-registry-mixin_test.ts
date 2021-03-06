@@ -14,10 +14,10 @@
 
 import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import {LitElement, html} from 'lit';
-import {UseScopedRegistry} from '../scoped-registry-mixin';
+import {ScopedRegistryHost} from '../scoped-registry-mixin';
 import {assert} from '@esm-bundle/chai';
 
-class SimpleGreeting extends UseScopedRegistry(LitElement) {
+class SimpleGreeting extends ScopedRegistryHost(LitElement) {
   private name: String;
 
   static get properties() {
@@ -35,8 +35,8 @@ class SimpleGreeting extends UseScopedRegistry(LitElement) {
   }
 }
 
-class ScopedComponent extends UseScopedRegistry(LitElement) {
-  static scopedElements = {
+class ScopedComponent extends ScopedRegistryHost(LitElement) {
+  static elementDefinitions = {
     'simple-greeting': SimpleGreeting,
   };
 

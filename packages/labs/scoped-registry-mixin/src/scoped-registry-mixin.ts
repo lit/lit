@@ -17,29 +17,29 @@ import type {LitElement} from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LitElementConstructor = new (...args: any[]) => LitElement;
 
-export type ScopedElementsMap = {
+export type ElementDefinitionsMap = {
   [key: string]: typeof HTMLElement;
 };
 
-export function UseScopedRegistry<SuperClass extends LitElementConstructor>(
+export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
   superclass: SuperClass
 ): SuperClass {
   return class ScopedRegistryMixin extends superclass {
     /**
      * Obtains the scoped elements definitions map
      */
-    static scopedElements?: ScopedElementsMap;
+    static elementDefinitions?: ElementDefinitionsMap;
     static registry?: CustomElementRegistry;
 
     createRenderRoot() {
       const constructor = this.constructor as typeof ScopedRegistryMixin;
-      // @ts-expect-error: customElements not yet in ShadowRootInit type
-      const {registry, scopedElements, shadowRootOptions} = constructor;
+      // @ts-expect-error: shadowRootOptions
+      const {registry, elementDefinitions, shadowRootOptions} = constructor;
 
-      if (scopedElements && !registry) {
+      if (elementDefinitions && !registry) {
         constructor.registry = new CustomElementRegistry();
 
-        Object.entries(scopedElements).forEach(([tagName, klass]) =>
+        Object.entries(elementDefinitions).forEach(([tagName, klass]) =>
           constructor.registry?.define(tagName, klass)
         );
       }
