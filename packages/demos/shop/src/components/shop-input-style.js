@@ -8,10 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { html } from 'lit-element';
+import {html} from 'lit';
 
-export const shopInputStyle = html`
-<style>
+export const shopInputStyle = html` <style>
   shop-input {
     display: inline-block;
     margin: 20px 0;
@@ -120,13 +119,17 @@ export const shopInputStyle = html`
     opacity: 1;
   }
 
-  shop-input > input:optional:not(:placeholder-shown) + shop-md-decorator > label {
+  shop-input
+    > input:optional:not(:placeholder-shown)
+    + shop-md-decorator
+    > label {
     -webkit-transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     opacity: 1;
   }
 
-  _:-ms-lang(x), shop-input > input + shop-md-decorator > label {
+  _:-ms-lang(x),
+  shop-input > input + shop-md-decorator > label {
     -webkit-transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     opacity: 1;
@@ -139,7 +142,10 @@ export const shopInputStyle = html`
   }
 
   /* Underline */
-  shop-input > input:not(:focus):not(:placeholder-shown):invalid + shop-md-decorator > shop-underline {
+  shop-input
+    > input:not(:focus):not(:placeholder-shown):invalid
+    + shop-md-decorator
+    > shop-underline {
     background-color: #dd2c00;
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
@@ -147,7 +153,10 @@ export const shopInputStyle = html`
     transition: transform 0.2s ease-out;
   }
 
-  shop-input > input:not(:focus):-moz-ui-invalid:invalid + shop-md-decorator > shop-underline {
+  shop-input
+    > input:not(:focus):-moz-ui-invalid:invalid
+    + shop-md-decorator
+    > shop-underline {
     background-color: #dd2c00;
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
@@ -155,7 +164,10 @@ export const shopInputStyle = html`
     transition: transform 0.2s ease-out;
   }
 
-  shop-input > input[aria-invalid='true']:not(:valid) + shop-md-decorator > shop-underline {
+  shop-input
+    > input[aria-invalid='true']:not(:valid)
+    + shop-md-decorator
+    > shop-underline {
     background-color: #dd2c00;
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
@@ -164,34 +176,49 @@ export const shopInputStyle = html`
   }
 
   /* Error message */
-  shop-input > input:not(:focus):not(:placeholder-shown):invalid + shop-md-decorator::after {
+  shop-input
+    > input:not(:focus):not(:placeholder-shown):invalid
+    + shop-md-decorator::after {
     display: block;
   }
 
-  shop-input > input:not(:focus):-moz-ui-invalid:invalid + shop-md-decorator::after {
+  shop-input
+    > input:not(:focus):-moz-ui-invalid:invalid
+    + shop-md-decorator::after {
     display: block;
   }
 
-  shop-input > input[aria-invalid='true']:not(:valid) + shop-md-decorator::after {
+  shop-input
+    > input[aria-invalid='true']:not(:valid)
+    + shop-md-decorator::after {
     display: block;
   }
 
   /* Error label */
-  shop-input > input:not(:focus):not(:placeholder-shown):invalid + shop-md-decorator > label {
+  shop-input
+    > input:not(:focus):not(:placeholder-shown):invalid
+    + shop-md-decorator
+    > label {
     -webkit-transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     opacity: 1;
     color: #dd2c00;
   }
 
-  shop-input > input:not(:focus):-moz-ui-invalid:invalid + shop-md-decorator > label {
+  shop-input
+    > input:not(:focus):-moz-ui-invalid:invalid
+    + shop-md-decorator
+    > label {
     -webkit-transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     opacity: 1;
     color: #dd2c00;
   }
 
-  shop-input > input[aria-invalid='true']:not(:valid) + shop-md-decorator > label {
+  shop-input
+    > input[aria-invalid='true']:not(:valid)
+    + shop-md-decorator
+    > label {
     -webkit-transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     transform: translate3d(0px, -3.4em, 0px) scale(0.8, 0.8);
     opacity: 1;

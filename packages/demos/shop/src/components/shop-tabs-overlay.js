@@ -8,14 +8,13 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from 'lit-element';
-import { flush } from '@polymer/polymer/lib/legacy/polymer.dom.js';
-import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
+import {LitElement, html} from 'lit';
+import {flush} from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import {microTask, timeOut} from '@polymer/polymer/lib/utils/async.js';
 
 class ShopTabsOverlay extends LitElement {
   render() {
-    return html`
-    <style>
+    return html` <style>
       :host {
         position: absolute;
         display: none;
@@ -30,12 +29,14 @@ class ShopTabsOverlay extends LitElement {
     </style>`;
   }
 
-  static get properties() { return {
-    /**
-     * The element the overlay should cover.
-     */
-    target: { type: Object }
-  }}
+  static get properties() {
+    return {
+      /**
+       * The element the overlay should cover.
+       */
+      target: {type: Object},
+    };
+  }
 
   constructor() {
     super();
@@ -44,7 +45,7 @@ class ShopTabsOverlay extends LitElement {
   }
 
   firstUpdated() {
-    this.addEventListener('transitionend', (e)=>this._onTransitionend(e));
+    this.addEventListener('transitionend', (e) => this._onTransitionend(e));
   }
 
   updated(changedProps) {
@@ -101,31 +102,39 @@ class ShopTabsOverlay extends LitElement {
     let fromRect = from.getBoundingClientRect();
     let toRect = to.getBoundingClientRect();
 
-    if (toRect.top === 0 && toRect.right === 0 &&
-        toRect.bottom === 0 && toRect.left === 0 &&
-        toRect.width === 0 && toRect.height === 0) {
+    if (
+      toRect.top === 0 &&
+      toRect.right === 0 &&
+      toRect.bottom === 0 &&
+      toRect.left === 0 &&
+      toRect.width === 0 &&
+      toRect.height === 0
+    ) {
       this.style.transitionProperty = 'none';
       this.style.opacity = toOpacity;
       this._transitionsInFlight = [];
-      microTask.run(this._moveComplete.bind(this))
+      microTask.run(this._moveComplete.bind(this));
       return;
     } else {
       this.style.transitionProperty = '';
     }
 
     let top = parseFloat(thisStyle.top || '0') + (fromRect.top - thisRect.top);
-    let right = parseFloat(thisStyle.right || '0') - (fromRect.right - thisRect.right);
-    let bottom = parseFloat(thisStyle.bottom || '0') - (fromRect.bottom - thisRect.bottom);
-    let left = parseFloat(thisStyle.left || '0') + (fromRect.left - thisRect.left);
+    let right =
+      parseFloat(thisStyle.right || '0') - (fromRect.right - thisRect.right);
+    let bottom =
+      parseFloat(thisStyle.bottom || '0') - (fromRect.bottom - thisRect.bottom);
+    let left =
+      parseFloat(thisStyle.left || '0') + (fromRect.left - thisRect.left);
 
     this.style.transitionDuration = '0s';
     this.style.transitionDelay = '0s';
     let startValues = [
-      this.style.top = top + 'px',
-      this.style.right = right + 'px',
-      this.style.bottom = bottom + 'px',
-      this.style.left = left + 'px',
-      this.style.opacity = String(fromOpacity)
+      (this.style.top = top + 'px'),
+      (this.style.right = right + 'px'),
+      (this.style.bottom = bottom + 'px'),
+      (this.style.left = left + 'px'),
+      (this.style.opacity = String(fromOpacity)),
     ];
 
     top += toRect.top - fromRect.top;
@@ -154,7 +163,7 @@ class ShopTabsOverlay extends LitElement {
       right + 'px',
       bottom + 'px',
       left + 'px',
-      String(toOpacity)
+      String(toOpacity),
     ];
 
     let names = ['top', 'right', 'bottom', 'left', 'opacity'];
@@ -165,8 +174,16 @@ class ShopTabsOverlay extends LitElement {
     }
 
     timeOut.run(() => {
-      this.style.transitionDuration = durations.map((x) => { return x + 's'; }).join(', ');
-      this.style.transitionDelay = delays.map((x) => { return x + 's'; }).join(', ');
+      this.style.transitionDuration = durations
+        .map((x) => {
+          return x + 's';
+        })
+        .join(', ');
+      this.style.transitionDelay = delays
+        .map((x) => {
+          return x + 's';
+        })
+        .join(', ');
       this.style.top = top + 'px';
       this.style.right = right + 'px';
       this.style.bottom = bottom + 'px';
@@ -174,7 +191,6 @@ class ShopTabsOverlay extends LitElement {
       this.style.opacity = String(toOpacity);
     }, 1);
   }
-
 }
 
 customElements.define('shop-tabs-overlay', ShopTabsOverlay);

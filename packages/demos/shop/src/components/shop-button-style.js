@@ -8,10 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { html } from 'lit-element';
+import {html} from 'lit';
 
-export const shopButtonStyle = html`
-<style>
+export const shopButtonStyle = html` <style>
   shop-button {
     display: inline-block;
   }
@@ -20,7 +19,7 @@ export const shopButtonStyle = html`
     display: inline-block;
     box-sizing: border-box;
     border: 2px solid #000;
-    background-color: #FFF;
+    background-color: #fff;
     font-size: 14px;
     font-weight: 500;
     color: var(--app-primary-color);
@@ -40,11 +39,10 @@ export const shopButtonStyle = html`
 
   shop-button > *:active {
     background-color: #000;
-    color: #FFF;
+    color: #fff;
   }
 
   @media (max-width: 767px) {
-
     /* Responsive buttons are used in shop-detail, shop-cart and shop-checkout */
     shop-button[responsive] {
       position: fixed;
@@ -68,6 +66,5 @@ export const shopButtonStyle = html`
     shop-button[responsive] > *:focus {
       background-color: var(--app-accent-color);
     }
-
   }
 </style>`;

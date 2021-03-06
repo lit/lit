@@ -8,10 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { html } from 'lit-element';
+import {html} from 'lit';
 
-export const shopCommonStyle = html`
-<style>
+export const shopCommonStyle = html` <style>
   [hidden] {
     display: none !important;
   }
@@ -36,10 +35,8 @@ export const shopCommonStyle = html`
   }
 
   @media (max-width: 767px) {
-
     header > h1 {
       font-size: 1.1em;
     }
-
   }
 </style>`;

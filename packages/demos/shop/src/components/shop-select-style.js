@@ -8,10 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { html } from 'lit-element';
+import {html} from 'lit';
 
-export const shopSelectStyle = html`
-<style>
+export const shopSelectStyle = html` <style>
   shop-select {
     display: inline-block;
     position: relative;
@@ -34,8 +33,8 @@ export const shopSelectStyle = html`
     bottom: calc(50% - 0.75em);
     right: 8px;
     speak: none;
-    -webkit-transform: scaleY(.6);
-    transform: scaleY(.6);
+    -webkit-transform: scaleY(0.6);
+    transform: scaleY(0.6);
     color: var(--app-secondary-color);
     pointer-events: none;
   }

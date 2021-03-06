@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement } from 'lit-element';
+import {LitElement} from 'lit';
 
 export class PageViewElement extends LitElement {
   // Only render this page if it's actually visible.
@@ -19,8 +19,8 @@ export class PageViewElement extends LitElement {
   static get properties() {
     return {
       active: {
-        type: Boolean
-      }
-    }
+        type: Boolean,
+      },
+    };
   }
 }

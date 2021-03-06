@@ -8,142 +8,139 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { PageViewElement } from './page-view-element.js';
-import { html } from 'lit-element';
-import { repeat } from 'lit-html/directives/repeat.js';
-import { shopButtonStyle } from './shop-button-style.js';
-import { shopCheckboxStyle } from'./shop-checkbox-style.js';
-import { shopCommonStyle } from './shop-common-style.js';
-import { shopFormStyle } from './shop-form-style.js';
-import { shopInputStyle } from'./shop-input-style.js';
-import { shopSelectStyle } from './shop-select-style.js';
+import {PageViewElement} from './page-view-element.js';
+import {html} from 'lit';
+import {repeat} from 'lit/directives/repeat.js';
+import {shopButtonStyle} from './shop-button-style.js';
+import {shopCheckboxStyle} from './shop-checkbox-style.js';
+import {shopCommonStyle} from './shop-common-style.js';
+import {shopFormStyle} from './shop-form-style.js';
+import {shopInputStyle} from './shop-input-style.js';
+import {shopSelectStyle} from './shop-select-style.js';
 
-import { store } from '../store.js';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-import { totalSelector } from '../reducers/cart.js';
-import { updateCheckoutState } from '../actions/checkout.js';
-import { clearCart } from '../actions/cart.js';
-import { announceLabel } from '../actions/app.js';
+import {store} from '../store.js';
+import {connect} from 'pwa-helpers/connect-mixin.js';
+import {totalSelector} from '../reducers/cart.js';
+import {updateCheckoutState} from '../actions/checkout.js';
+import {clearCart} from '../actions/cart.js';
+import {announceLabel} from '../actions/app.js';
 import checkout from '../reducers/checkout.js';
 
 store.addReducers({
-  checkout
+  checkout,
 });
 
 class ShopCheckout extends connect(store)(PageViewElement) {
   render() {
     const cart = this._cart;
-    const cartList = cart ? Object.keys(cart).map(key => cart[key]) : [];
+    const cartList = cart ? Object.keys(cart).map((key) => cart[key]) : [];
 
-    return html`
-    ${shopButtonStyle}
-    ${shopCheckboxStyle}
-    ${shopCommonStyle}
-    ${shopFormStyle}
-    ${shopInputStyle}
-    ${shopSelectStyle}
-    <style>
+    return html` ${shopButtonStyle} ${shopCheckboxStyle} ${shopCommonStyle}
+      ${shopFormStyle} ${shopInputStyle} ${shopSelectStyle}
+      <style>
+        .main-frame {
+          transition: opacity 0.5s;
+        }
 
-      .main-frame {
-        transition: opacity 0.5s;
-      }
+        .main-frame.waiting {
+          opacity: 0.1;
+        }
 
-      .main-frame.waiting {
-        opacity: 0.1;
-      }
+        shop-input,
+        shop-select {
+          font-size: 16px;
+        }
 
-      shop-input, shop-select {
-        font-size: 16px;
-      }
+        shop-select {
+          margin-bottom: 20px;
+        }
 
-      shop-select {
-        margin-bottom: 20px;
-      }
+        paper-spinner-lite {
+          position: fixed;
+          top: calc(50% - 14px);
+          left: calc(50% - 14px);
+        }
 
-      paper-spinner-lite {
-        position: fixed;
-        top: calc(50% - 14px);
-        left: calc(50% - 14px);
-      }
+        .billing-address-picker {
+          margin: 28px 0;
+          height: 20px;
+          display: flex;
+        }
 
-      .billing-address-picker {
-        margin: 28px 0;
-        height: 20px;
-        display: flex;
-      }
-
-      .billing-address-picker > label {
-        margin-left: 12px;
-      }
-
-      .grid {
-        margin-top: 40px;
-        display: flex;
-      }
-
-      .grid > section {
-        flex: 1;
-      }
-
-      .grid > section:not(:first-child) {
-        margin-left: 80px;
-      }
-
-      .row {
-        display: flex;
-        align-items: flex-end;
-      }
-
-      .column {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .row > .flex,
-      .input-row > * {
-        flex: 1;
-      }
-
-      .input-row > *:not(:first-child) {
-        margin-left: 8px;
-      }
-
-      .shop-select-label {
-        line-height: 20px;
-      }
-
-      .order-summary-row {
-        line-height: 24px;
-      }
-
-      .total-row {
-        font-weight: 500;
-        margin: 30px 0;
-      }
-
-      @media (max-width: 767px) {
+        .billing-address-picker > label {
+          margin-left: 12px;
+        }
 
         .grid {
-          display: block;
-          margin-top: 0;
+          margin-top: 40px;
+          display: flex;
+        }
+
+        .grid > section {
+          flex: 1;
         }
 
         .grid > section:not(:first-child) {
-          margin-left: 0;
+          margin-left: 80px;
         }
 
-      }
+        .row {
+          display: flex;
+          align-items: flex-end;
+        }
 
-    </style>
+        .column {
+          display: flex;
+          flex-direction: column;
+        }
 
-    <div class="${this._waiting ? 'main-frame waiting' : 'main-frame'}">
-      ${this._state === 'init' ? html`
-        <div state="init">
-          <form id="checkoutForm">
-            ${cartList.length === 0 ? html`
-              <div class="subsection">
-                <p class="empty-cart">Your <iron-icon icon="shopping-cart"></iron-icon> is empty.</p>
-              </div>` : html`
+        .row > .flex,
+        .input-row > * {
+          flex: 1;
+        }
+
+        .input-row > *:not(:first-child) {
+          margin-left: 8px;
+        }
+
+        .shop-select-label {
+          line-height: 20px;
+        }
+
+        .order-summary-row {
+          line-height: 24px;
+        }
+
+        .total-row {
+          font-weight: 500;
+          margin: 30px 0;
+        }
+
+        @media (max-width: 767px) {
+          .grid {
+            display: block;
+            margin-top: 0;
+          }
+
+          .grid > section:not(:first-child) {
+            margin-left: 0;
+          }
+        }
+      </style>
+
+      <div class="${this._waiting ? 'main-frame waiting' : 'main-frame'}">
+        ${this._state === 'init'
+          ? html`
+              <div state="init">
+                <form id="checkoutForm">
+                  ${cartList.length === 0
+                    ? html` <div class="subsection">
+                        <p class="empty-cart">
+                          Your <iron-icon icon="shopping-cart"></iron-icon> is
+                          empty.
+                        </p>
+                      </div>`
+                    : html`
               <header class="subsection">
                 <h1>Checkout</h1>
                 <span>Shop is a demo app - form data will not be sent</span>
@@ -240,68 +237,120 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     </shop-checkbox>
                     <label for="setBilling">Use different billing address</label>
                   </div>
-                  ${this._hasBillingAddress ? html`
-                    <div class="row input-row">
-                      <shop-input>
-                        <input type="text" id="billAddress" name="billAddress" pattern=".{5,}"
-                            placeholder="Address" required="${this._hasBillingAddress}"
-                            autocomplete="billing street-address"
-                            aria-labelledby="billAddressLabel billAddressHeading">
-                        <shop-md-decorator error-message="Invalid Address" aria-hidden="true">
-                          <label id="billAddressLabel">Address</label>
-                          <shop-underline></shop-underline>
-                        </shop-md-decorator>
-                      </shop-input>
-                    </div>
-                    <div class="row input-row">
-                      <shop-input>
-                        <input type="text" id="billCity" name="billCity" pattern=".{2,}"
-                            placeholder="City" required="${this._hasBillingAddress}"
-                            autocomplete="billing address-level2"
-                            aria-labelledby="billCityLabel billAddressHeading">
-                        <shop-md-decorator error-message="Invalid City" aria-hidden="true">
-                          <label id="billCityLabel">City</label>
-                          <shop-underline></shop-underline>
-                        </shop-md-decorator>
-                      </shop-input>
-                    </div>
-                    <div class="row input-row">
-                      <shop-input>
-                        <input type="text" id="billState" name="billState" pattern=".{2,}"
-                            placeholder="State/Province" required="${this._hasBillingAddress}"
-                            autocomplete="billing address-level1"
-                            aria-labelledby="billStateLabel billAddressHeading">
-                        <shop-md-decorator error-message="Invalid State/Province" aria-hidden="true">
-                          <label id="billStateLabel">State/Province</label>
-                          <shop-underline></shop-underline>
-                        </shop-md-decorator>
-                      </shop-input>
-                      <shop-input>
-                        <input type="text" id="billZip" name="billZip" pattern=".{4,}"
-                            placeholder="Zip/Postal Code" required="${this._hasBillingAddress}"
-                            autocomplete="billing postal-code"
-                            aria-labelledby="billZipLabel billAddressHeading">
-                        <shop-md-decorator error-message="Invalid Zip/Postal Code" aria-hidden="true">
-                          <label id="billZipLabel">Zip/Postal Code</label>
-                          <shop-underline></shop-underline>
-                        </shop-md-decorator>
-                      </shop-input>
-                    </div>
-                    <div class="column">
-                      <label id="billCountryLabel" class="shop-select-label">Country</label>
-                      <shop-select>
-                        <select id="billCountry" name="billCountry" required="${this._hasBillingAddress}"
-                            autocomplete="billing country"
-                            aria-labelledby="billCountryLabel billAddressHeading">
-                          <option value="US" selected>United States</option>
-                          <option value="CA">Canada</option>
-                        </select>
-                        <shop-md-decorator aria-hidden="true">
-                          <shop-underline></shop-underline>
-                        </shop-md-decorator>
-                      </shop-select>
-                    </div>
-                  ` : null}
+                  ${
+                    this._hasBillingAddress
+                      ? html`
+                          <div class="row input-row">
+                            <shop-input>
+                              <input
+                                type="text"
+                                id="billAddress"
+                                name="billAddress"
+                                pattern=".{5,}"
+                                placeholder="Address"
+                                required="${this._hasBillingAddress}"
+                                autocomplete="billing street-address"
+                                aria-labelledby="billAddressLabel billAddressHeading"
+                              />
+                              <shop-md-decorator
+                                error-message="Invalid Address"
+                                aria-hidden="true"
+                              >
+                                <label id="billAddressLabel">Address</label>
+                                <shop-underline></shop-underline>
+                              </shop-md-decorator>
+                            </shop-input>
+                          </div>
+                          <div class="row input-row">
+                            <shop-input>
+                              <input
+                                type="text"
+                                id="billCity"
+                                name="billCity"
+                                pattern=".{2,}"
+                                placeholder="City"
+                                required="${this._hasBillingAddress}"
+                                autocomplete="billing address-level2"
+                                aria-labelledby="billCityLabel billAddressHeading"
+                              />
+                              <shop-md-decorator
+                                error-message="Invalid City"
+                                aria-hidden="true"
+                              >
+                                <label id="billCityLabel">City</label>
+                                <shop-underline></shop-underline>
+                              </shop-md-decorator>
+                            </shop-input>
+                          </div>
+                          <div class="row input-row">
+                            <shop-input>
+                              <input
+                                type="text"
+                                id="billState"
+                                name="billState"
+                                pattern=".{2,}"
+                                placeholder="State/Province"
+                                required="${this._hasBillingAddress}"
+                                autocomplete="billing address-level1"
+                                aria-labelledby="billStateLabel billAddressHeading"
+                              />
+                              <shop-md-decorator
+                                error-message="Invalid State/Province"
+                                aria-hidden="true"
+                              >
+                                <label id="billStateLabel"
+                                  >State/Province</label
+                                >
+                                <shop-underline></shop-underline>
+                              </shop-md-decorator>
+                            </shop-input>
+                            <shop-input>
+                              <input
+                                type="text"
+                                id="billZip"
+                                name="billZip"
+                                pattern=".{4,}"
+                                placeholder="Zip/Postal Code"
+                                required="${this._hasBillingAddress}"
+                                autocomplete="billing postal-code"
+                                aria-labelledby="billZipLabel billAddressHeading"
+                              />
+                              <shop-md-decorator
+                                error-message="Invalid Zip/Postal Code"
+                                aria-hidden="true"
+                              >
+                                <label id="billZipLabel">Zip/Postal Code</label>
+                                <shop-underline></shop-underline>
+                              </shop-md-decorator>
+                            </shop-input>
+                          </div>
+                          <div class="column">
+                            <label
+                              id="billCountryLabel"
+                              class="shop-select-label"
+                              >Country</label
+                            >
+                            <shop-select>
+                              <select
+                                id="billCountry"
+                                name="billCountry"
+                                required="${this._hasBillingAddress}"
+                                autocomplete="billing country"
+                                aria-labelledby="billCountryLabel billAddressHeading"
+                              >
+                                <option value="US" selected>
+                                  United States
+                                </option>
+                                <option value="CA">Canada</option>
+                              </select>
+                              <shop-md-decorator aria-hidden="true">
+                                <shop-underline></shop-underline>
+                              </shop-md-decorator>
+                            </shop-select>
+                          </div>
+                        `
+                      : null
+                  }
                 </section>
 
                 <section>
@@ -382,82 +431,95 @@ class ShopCheckout extends connect(store)(PageViewElement) {
                     </shop-input>
                   </div>
                   <h2>Order Summary</h2>
-                  ${repeat(cartList, entry => html`
-                    <div class="row order-summary-row">
-                      <div class="flex">${entry.item.title}</div>
-                      <div>$${(entry.quantity * entry.item.price).toFixed(2)}</div>
-                    </div>
-                  `)}
+                  ${repeat(
+                    cartList,
+                    (entry) => html`
+                      <div class="row order-summary-row">
+                        <div class="flex">${entry.item.title}</div>
+                        <div>
+                          $${(entry.quantity * entry.item.price).toFixed(2)}
+                        </div>
+                      </div>
+                    `
+                  )}
                   <div class="row total-row">
                     <div class="flex">Total</div>
                     <div>$${this._total.toFixed(2)}</div>
                   </div>
                   <shop-button responsive id="submitBox">
-                    <input type="button" @click="${this._submit}" value="Place Order">
+                    <input type="button" @click="${
+                      this._submit
+                    }" value="Place Order">
                   </shop-button>
                 </section>
               </div>
             `}
-          </form>
-        </div>
-      ` : this._state === 'success' ? html`
-        <!-- Success message UI -->
-        <header state="success">
-          <h1>Thank you</h1>
-          <p>${this._response.successMessage}</p>
-          <shop-button responsive>
-            <a href="/">Finish</a>
-          </shop-button>
-        </header>` : html`
-        <!-- Error message UI -->
-        <header state="error">
-          <h1>We couldn't process your order</h1>
-          <p id="errorMessage">${this._response.errorMessage}</p>
-          <shop-button responsive>
-            <input type="button" @click="${this._resetCheckoutForm}" value="Try Again">
-          </shop-button>
-        </header>
-      `}
-    </div>
+                </form>
+              </div>
+            `
+          : this._state === 'success'
+          ? html` <!-- Success message UI -->
+              <header state="success">
+                <h1>Thank you</h1>
+                <p>${this._response.successMessage}</p>
+                <shop-button responsive>
+                  <a href="/">Finish</a>
+                </shop-button>
+              </header>`
+          : html`
+              <!-- Error message UI -->
+              <header state="error">
+                <h1>We couldn't process your order</h1>
+                <p id="errorMessage">${this._response.errorMessage}</p>
+                <shop-button responsive>
+                  <input
+                    type="button"
+                    @click="${this._resetCheckoutForm}"
+                    value="Try Again"
+                  />
+                </shop-button>
+              </header>
+            `}
+      </div>
 
-    <!-- Show spinner when waiting for the server to repond -->
-    <paper-spinner-lite ?active="${this._waiting}"></paper-spinner-lite>`;
+      <!-- Show spinner when waiting for the server to repond -->
+      <paper-spinner-lite ?active="${this._waiting}"></paper-spinner-lite>`;
   }
 
-  static get properties() { return {
+  static get properties() {
+    return {
+      /**
+       * The total price of the contents in the user's cart.
+       */
+      _total: {type: Number},
 
-    /**
-     * The total price of the contents in the user's cart.
-     */
-    _total: { type: Number },
+      /**
+       * The state of the form. Valid values are:
+       * `init`, `success` and `error`.
+       */
+      _state: {type: String},
 
-    /**
-     * The state of the form. Valid values are:
-     * `init`, `success` and `error`.
-     */
-    _state: { type: String },
+      /**
+       * The cart contents.
+       */
+      _cart: {type: Object},
 
-    /**
-     * The cart contents.
-     */
-    _cart: { type: Object },
+      /**
+       * The server's response.
+       */
+      _response: {type: Object},
 
-    /**
-     * The server's response.
-     */
-    _response: { type: Object },
+      /**
+       * If true, the user must enter a billing address.
+       */
+      _hasBillingAddress: {type: Boolean},
 
-    /**
-     * If true, the user must enter a billing address.
-     */
-    _hasBillingAddress: { type: Boolean },
-
-    /**
-     * True when waiting for the server to repond.
-     */
-    _waiting: { type: Boolean }
-
-  }}
+      /**
+       * True when waiting for the server to repond.
+       */
+      _waiting: {type: Boolean},
+    };
+  }
 
   stateChanged(state) {
     this._cart = state.cart;
@@ -469,12 +531,14 @@ class ShopCheckout extends connect(store)(PageViewElement) {
     const checkoutForm = this.shadowRoot.querySelector('#checkoutForm');
     if (this._validateForm(checkoutForm)) {
       this._sendRequest(checkoutForm)
-      .then(res => res.json())
-      .then(data => this._didReceiveResponse(data))
-      .catch(_ => this._didReceiveResponse({
-        error: 1,
-        errorMessage: 'Transaction failed.'
-      }));
+        .then((res) => res.json())
+        .then((data) => this._didReceiveResponse(data))
+        .catch((_) =>
+          this._didReceiveResponse({
+            error: 1,
+            errorMessage: 'Transaction failed.',
+          })
+        );
     }
   }
 
@@ -485,14 +549,20 @@ class ShopCheckout extends connect(store)(PageViewElement) {
   _validateForm(form) {
     let firstInvalid = false;
 
-    for (let el, i = 0; el = form.elements[i], i < form.elements.length; i++) {
+    for (
+      let el, i = 0;
+      (el = form.elements[i]), i < form.elements.length;
+      i++
+    ) {
       if (el.checkValidity()) {
         el.removeAttribute('aria-invalid');
       } else {
         if (!firstInvalid) {
           // announce error message
           if (el.nextElementSibling) {
-            store.dispatch(announceLabel(el.nextElementSibling.getAttribute('error-message')));
+            store.dispatch(
+              announceLabel(el.nextElementSibling.getAttribute('error-message'))
+            );
           }
           if (el.scrollIntoViewIfNeeded) {
             // safari, chrome
@@ -527,17 +597,17 @@ class ShopCheckout extends connect(store)(PageViewElement) {
         // ccExpMonth: form.elements.ccExpMonth.value,
         // ccExpYear: form.elements.ccExpYear.value,
         // ...
-        cart: Object.keys(this._cart).map(key => {
+        cart: Object.keys(this._cart).map((key) => {
           const entry = this._cart[key];
           return {
             ...entry,
-            item: entry.item.name
-          }
-        })
+            item: entry.item.name,
+          };
+        }),
       }),
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
   }
 
@@ -570,7 +640,6 @@ class ShopCheckout extends connect(store)(PageViewElement) {
   _resetCheckoutForm() {
     store.dispatch(updateCheckoutState('init'));
   }
-
 }
 
 customElements.define('shop-checkout', ShopCheckout);

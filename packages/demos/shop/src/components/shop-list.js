@@ -8,100 +8,102 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { PageViewElement } from './page-view-element.js';
-import { html } from 'lit-element';
-import { repeat } from 'lit-html/directives/repeat.js';
-import { shopCommonStyle } from './shop-common-style.js';
+import {PageViewElement} from './page-view-element.js';
+import {html} from 'lit';
+import {repeat} from 'lit/directives/repeat.js';
+import {shopCommonStyle} from './shop-common-style.js';
 import './shop-image.js';
 import './shop-list-item.js';
 
-import { store } from '../store.js';
-import { connect } from 'pwa-helpers/connect-mixin.js';
-import { currentCategorySelector } from '../reducers/categories.js';
+import {store} from '../store.js';
+import {connect} from 'pwa-helpers/connect-mixin.js';
+import {currentCategorySelector} from '../reducers/categories.js';
 
 class ShopList extends connect(store)(PageViewElement) {
   render() {
     const _failure = this._failure;
-    return html`
-    ${shopCommonStyle}
-    <style>
-
-      .hero-image {
-        position: relative;
-        height: 320px;
-        overflow: hidden;
-        margin-bottom: 32px;
-      }
-
-      .grid {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        margin: 0 10px 32px 10px;
-        padding: 0;
-        list-style: none;
-      }
-
-      .grid li {
-        -webkit-flex: 1 1;
-        flex: 1 1;
-        -webkit-flex-basis: 33%;
-        flex-basis: 33%;
-        max-width: 33%;
-      }
-
-      .grid a {
-        display:block;
-        text-decoration: none;
-      }
-
-      @media (max-width: 767px) {
+    return html` ${shopCommonStyle}
+      <style>
         .hero-image {
-          display: none;
+          position: relative;
+          height: 320px;
+          overflow: hidden;
+          margin-bottom: 32px;
         }
 
-        .grid  li {
-          -webkit-flex-basis: 50%;
-          flex-basis: 50%;
-          max-width: 50%;
+        .grid {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          margin: 0 10px 32px 10px;
+          padding: 0;
+          list-style: none;
         }
-      }
 
-    </style>
+        .grid li {
+          -webkit-flex: 1 1;
+          flex: 1 1;
+          -webkit-flex-basis: 33%;
+          flex-basis: 33%;
+          max-width: 33%;
+        }
 
-    <shop-image
+        .grid a {
+          display: block;
+          text-decoration: none;
+        }
+
+        @media (max-width: 767px) {
+          .hero-image {
+            display: none;
+          }
+
+          .grid li {
+            -webkit-flex-basis: 50%;
+            flex-basis: 50%;
+            max-width: 50%;
+          }
+        }
+      </style>
+
+      <shop-image
         alt="${this._category.title}"
         src="${this._category.image}"
-        placeholder="${this._category.placeholder}" class="hero-image"></shop-image>
+        placeholder="${this._category.placeholder}"
+        class="hero-image"
+      ></shop-image>
 
-    <header>
-      <h1>${this._category.title}</h1>
-      <span>${this._getPluralizedQuantity(this._category.items)}</span>
-    </header>
+      <header>
+        <h1>${this._category.title}</h1>
+        <span>${this._getPluralizedQuantity(this._category.items)}</span>
+      </header>
 
-    ${!this._failure ? html`
-      <ul class="grid">
-        ${repeat(this._getListItems(this._category.items), item => html`
-          <li>
-            <a href="/detail/${this._category.name}/${item.name}">
-              <shop-list-item .item="${item}"></shop-list-item>
-            </a>
-          </li>
-        `)}
-      </ul>
-    ` : html`
-      <shop-network-warning></shop-network-warning>
-    `}`;
+      ${!this._failure
+        ? html`
+            <ul class="grid">
+              ${repeat(
+                this._getListItems(this._category.items),
+                (item) => html`
+                  <li>
+                    <a href="/detail/${this._category.name}/${item.name}">
+                      <shop-list-item .item="${item}"></shop-list-item>
+                    </a>
+                  </li>
+                `
+              )}
+            </ul>
+          `
+        : html` <shop-network-warning></shop-network-warning> `}`;
   }
 
-  static get properties() { return {
+  static get properties() {
+    return {
+      _category: {type: Object},
 
-    _category: { type: Object },
-
-    _failure: { type: Boolean }
-
-  }}
+      _failure: {type: Boolean},
+    };
+  }
 
   stateChanged(state) {
     const category = currentCategorySelector(state);
@@ -111,7 +113,9 @@ class ShopList extends connect(store)(PageViewElement) {
 
   _getListItems(items) {
     // Return placeholder items when the items haven't loaded yet.
-    return items ? Object.keys(items).map(key => items[key]) : [{},{},{},{},{},{},{},{},{},{}];
+    return items
+      ? Object.keys(items).map((key) => items[key])
+      : [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
   }
 
   _getPluralizedQuantity(items) {
@@ -120,9 +124,8 @@ class ShopList extends connect(store)(PageViewElement) {
       return '';
     }
     let pluralizedQ = quantity === 1 ? 'item' : 'items';
-    return  '(' + quantity + ' ' + pluralizedQ + ')';
+    return '(' + quantity + ' ' + pluralizedQ + ')';
   }
-
 }
 
 customElements.define('shop-list', ShopList);

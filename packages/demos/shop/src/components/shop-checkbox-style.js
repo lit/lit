@@ -8,10 +8,9 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { html } from 'lit-element';
+import {html} from 'lit';
 
-export const shopCheckboxStyle = html`
-<style>
+export const shopCheckboxStyle = html` <style>
   shop-checkbox {
     display: inline-block;
     width: 14px;
@@ -21,7 +20,7 @@ export const shopCheckboxStyle = html`
     border-radius: 2px;
   }
 
-  shop-checkbox > input[type=checkbox] {
+  shop-checkbox > input[type='checkbox'] {
     position: absolute;
     top: 0;
     left: 0;
@@ -49,7 +48,7 @@ export const shopCheckboxStyle = html`
     will-change: opacity;
   }
 
-  shop-checkbox > input[type=checkbox]:checked + shop-md-decorator::after {
+  shop-checkbox > input[type='checkbox']:checked + shop-md-decorator::after {
     opacity: 1;
   }
 
@@ -72,7 +71,7 @@ export const shopCheckboxStyle = html`
     will-change: transform;
   }
 
-  shop-checkbox > input[type=checkbox]:focus + shop-md-decorator::before {
+  shop-checkbox > input[type='checkbox']:focus + shop-md-decorator::before {
     -webkit-transform: scale3d(1, 1, 1);
     transform: scale3d(1, 1, 1);
   }

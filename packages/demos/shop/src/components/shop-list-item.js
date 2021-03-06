@@ -8,58 +8,57 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import { LitElement, html } from 'lit-element';
+import {LitElement, html} from 'lit';
 
 class ShopListItem extends LitElement {
   render() {
     const item = this.item || {};
-    return html`
-    <style>
-
-      :host {
-        display: flex;
-        flex-direction: column;
-        text-align: center;
-        margin: 0 48px;
-      }
-
-      shop-image {
-        margin: 32px 0 16px;
-      }
-
-      shop-image::before {
-        content: "";
-        display: block;
-        padding-top: 100%;
-      }
-
-      .title {
-        color: var(--app-primary-color);
-        font-weight: bold;
-      }
-
-      .price {
-        color: var(--app-secondary-color);
-      }
-
-      @media (max-width: 767px) {
+    return html` <style>
         :host {
-          margin: 0 12px;
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+          margin: 0 48px;
         }
-      }
 
-    </style>
+        shop-image {
+          margin: 32px 0 16px;
+        }
 
-    <shop-image src="${item.image}" alt="${item.title}"></shop-image>
-    <div class="title">${item.title}</div>
-    <span class="price">${item.price ? `$${item.price.toFixed(2)}` : null}</span>`;
+        shop-image::before {
+          content: '';
+          display: block;
+          padding-top: 100%;
+        }
+
+        .title {
+          color: var(--app-primary-color);
+          font-weight: bold;
+        }
+
+        .price {
+          color: var(--app-secondary-color);
+        }
+
+        @media (max-width: 767px) {
+          :host {
+            margin: 0 12px;
+          }
+        }
+      </style>
+
+      <shop-image src="${item.image}" alt="${item.title}"></shop-image>
+      <div class="title">${item.title}</div>
+      <span class="price"
+        >${item.price ? `$${item.price.toFixed(2)}` : null}</span
+      >`;
   }
 
-  static get properties() { return {
-
-    item: { type: Object }
-
-  }}
+  static get properties() {
+    return {
+      item: {type: Object},
+    };
+  }
 }
 
 customElements.define('shop-list-item', ShopListItem);
