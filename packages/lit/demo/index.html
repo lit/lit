@@ -1,0 +1,49 @@
+<script type="module">
+  import {LitElement, html} from '../index.js';
+
+  customElements.define(
+    'x-foo',
+    class extends LitElement {
+      render() {
+        return html`
+          <host tabIndex="5" role=${'button'}>
+            <div>${'Hello world!'}</div>
+          </host>
+        `;
+      }
+    }
+  );
+</script>
+
+<x-foo></x-foo>
+
+<script type="module">
+  // Import lit-html functions
+  import {html, render, nothing} from 'lit';
+  import {cache} from 'lit/directives/cache.js';
+
+  const page0 = () => html` <p>1</p> `;
+  const page1 = () => html` <p>2</p> `;
+  const page2 = () => html` <p>3</p> `;
+
+  // Define a template function
+  const myTemplate = (view) => html`
+    ${cache(
+      view < 3
+        ? html`
+            <h1>Pages</h1>
+            ${cache(view === 0 ? page0() : page1())}
+          `
+        : nothing
+    )}
+    ${cache(view === 2 ? page2() : nothing)}
+  `;
+
+  let view = 0;
+  setInterval(() => {
+    render(myTemplate(view++), document.body);
+    if (view > 3) {
+      view = 0;
+    }
+  }, 500);
+</script>
