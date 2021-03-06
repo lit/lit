@@ -12,9 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// TODO(kschaaf): update to `@webcomponents/scoped-custom-element-registry` once
-// released, and update package.json to match
-import '@webcomponents/scoped-custom-element-registry/packages/scoped-custom-element-registry/scoped-custom-element-registry.js';
+import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import {LitElement, html} from 'lit';
 import {UseScopedRegistry} from '../scoped-registry-mixin';
 import {assert} from '@esm-bundle/chai';
