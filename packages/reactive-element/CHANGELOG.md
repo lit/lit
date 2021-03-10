@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - (Since 1.0.0-pre.1) Removed `willUpdate` from `ReactiveController`.
 - (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.
 - (Since 1.0.0-pre.1) Renamed `Controller` to `ReactiveController`.
+- Made JSCompiler_renameProperty block scoped so that it's inlined in the Terser prod build. Closure should compile from the development build, or after a custom TypeScript compilation.
 
 ## [1.0.0-pre.1] - 2020-12-16
 
