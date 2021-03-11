@@ -12,13 +12,19 @@ export type CSSValues = {
 
 export type CSSPropertiesList = string[];
 
+export const SCALE = {
+  none: 0,
+  up: 1,
+  down: 2,
+  both: 3,
+} as const;
+
+export type Scale = typeof SCALE[keyof typeof SCALE];
+
 // zIndex for "in" animations
 let z = 0;
 
 const disconnectedProps: Map<unknown, CSSValues> = new Map();
-
-const scalePropsMap: Map<unknown, CSSValues> = new Map();
-
 const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
 
 export type FlipOptions = {
@@ -26,8 +32,10 @@ export type FlipOptions = {
   id?: unknown;
   // Set to the flip id to map to when rendering "in"
   inId?: unknown;
-  // Set to the flip id to which so scale
-  scaleId?: unknown;
+  // If set, this flip will only scale inversely to its ancestor flips.
+  // Values can be SCALE.up, SCALE.down, SCALE.both
+  // Other flip properties are ignored.
+  scaleInverse?: Scale;
   // Callback run when the flip animation is complete
   onComplete?: (element: HTMLElement, flip: Flip) => void;
   // Callback run to modify frames used to animate the flip
@@ -110,7 +118,6 @@ export const defaultCssProperties: CSSPropertiesList = [
 ];
 
 // Dirty checks the value received from the `guard` option.
-// TODO(sorvell): this is similar to the check we use in the guard directive.
 const isDirty = (value: unknown, previous: unknown) => {
   if (value === undefined && previous === undefined) {
     return true;
@@ -141,15 +148,14 @@ const flipMap: WeakMap<Node, Flip> = new WeakMap();
  */
 export class Flip extends AsyncDirective {
   private _host?: LitElement;
-  private _from!: CSSValues;
-  private _to!: CSSValues;
+  private _fromValues!: CSSValues;
   private _element!: HTMLElement;
   private _parentNode: Element | null = null;
   private _nextSibling: Node | null = null;
   private _shouldFlip = true;
   private _previousValue: unknown;
 
-  shouldLog = false;
+  shouldLog = true;
   flipProps?: CSSValues;
   animation?: Animation;
   options!: FlipOptions;
@@ -191,8 +197,10 @@ export class Flip extends AsyncDirective {
       };
     }
     // Ensure there are some properties to animation and some animation options.
-    options!.animationOptions ??= defaultAnimationOptions;
     options!.properties ??= defaultCssProperties;
+    if (options.scaleInverse !== undefined) {
+      options.properties = ['width', 'height'];
+    }
     this.options = options;
   }
 
@@ -230,7 +238,7 @@ export class Flip extends AsyncDirective {
 
   hostUpdate() {
     if (this._canStartFlip()) {
-      this._from = this._measure();
+      this._fromValues = this._measure();
       // Record parent and nextSibling used to re-attach node when flipping "out"
       this._parentNode =
         this._parentNode ?? (this._element.parentNode as Element);
@@ -245,10 +253,6 @@ export class Flip extends AsyncDirective {
   }
 
   flip() {
-    // TODO(sorvell): decide if inverse scaling is supported.
-    const scaleProps = this.options.scaleId
-      ? scalePropsMap.get(this.options.scaleId)
-      : undefined;
     if (
       !this._shouldFlip ||
       !this._element.isConnected ||
@@ -260,51 +264,46 @@ export class Flip extends AsyncDirective {
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
     // child flips within ancestor flips.
-    let animationOptions = this._calcAnimationOptions(
+    const animationOptions = this._calcAnimationOptions(
       ancestors,
       this.options.animationOptions
     );
-    // Inverse scaling flip
-    if (scaleProps && !this.options.disabled) {
-      animationOptions = {...this.options.animationOptions, fill: 'both'};
-      const w = scaleProps.width as number;
-      const h = scaleProps.height as number;
-      const x = w < 1 ? 1 / w : 1;
-      const y = h < 1 ? 1 / h : 1;
-      const f = {
-        transform: `scaleX(${x}) scaleY(${y})`,
-      };
-      frames = [f, f];
-      // Normal flip
+    const toValues = this._measure();
+    // Normal flip or inverse scale
+    if (this._fromValues) {
+      const {from, to} = this._applyAncestorAdjustments(
+        this._fromValues,
+        this._measure(),
+        ancestors,
+        this.options.scaleInverse!
+      );
+      const shouldScale = !!(this.options.scaleInverse! & SCALE.both);
+      frames = this.calculateFrames(from, to, shouldScale, shouldScale);
+      // "In" flip.
     } else {
-      this._to = this._measure();
-      if (this._from) {
-        frames = this.calculateFrames(this._from, this._to);
-      } else {
-        const disconnected = disconnectedProps.get(this.options.inId);
-        if (disconnected) {
-          // use disconnected data only once.
-          disconnectedProps.delete(this.options.inId);
-          const {from, to} = this._applyAncestorAdjustments(
-            disconnected!,
-            this._to,
-            ancestors
-          );
-          frames = this.calculateFrames(from, to);
-          // "merge" with "in" frames
-          frames = this.options.in
-            ? [
-                {...this.options.in[0], ...frames![0]},
-                ...this.options.in.slice(1),
-                frames![1],
-              ]
-            : frames;
-          // adjust z so always on top...
-          z++;
-          frames!.forEach((f) => (f.zIndex = z));
-        } else if (this.options.in) {
-          frames = [...this.options.in, {}];
-        }
+      const disconnected = disconnectedProps.get(this.options.inId);
+      if (disconnected) {
+        // use disconnected data only once.
+        disconnectedProps.delete(this.options.inId);
+        const {from, to} = this._applyAncestorAdjustments(
+          disconnected!,
+          toValues,
+          ancestors
+        );
+        frames = this.calculateFrames(from, to);
+        // "merge" with "in" frames
+        frames = this.options.in
+          ? [
+              {...this.options.in[0], ...frames![0]},
+              ...this.options.in.slice(1),
+              frames![1],
+            ]
+          : frames;
+        // adjust z so always on top...
+        z++;
+        frames!.forEach((f) => (f.zIndex = z));
+      } else if (this.options.in) {
+        frames = [...this.options.in, {}];
       }
     }
     this.animate(frames, animationOptions);
@@ -325,10 +324,81 @@ export class Flip extends AsyncDirective {
     return ancestors;
   }
 
+  protected get isHostRendered() {
+    const hostRendered = renderedHosts.has(this._host!);
+    if (!hostRendered) {
+      this._host!.updateComplete.then(() => {
+        renderedHosts.add(this._host!);
+      });
+    }
+    return hostRendered;
+  }
+
+  private _calcAnimationOptions(
+    ancestors: Flip[],
+    options?: KeyframeAnimationOptions
+  ) {
+    // merges this flip's options over ancestor options over defaults
+    const animationOptions = {...defaultAnimationOptions};
+    ancestors.forEach((a) =>
+      Object.assign(animationOptions, a.options.animationOptions)
+    );
+    Object.assign(animationOptions, options);
+    return animationOptions;
+  }
+
+  reconnected() {}
+
+  // Experimental animate out functionality.
+  async disconnected() {
+    if (!this._shouldFlip) {
+      return;
+    }
+    if (this.options.id !== undefined) {
+      disconnectedProps.set(this.options.id, this._fromValues);
+    }
+    await animationFrame;
+    if (this._parentNode?.isConnected && this.options.out !== undefined) {
+      const ref =
+        this._nextSibling && this._nextSibling.parentNode === this._parentNode
+          ? this._nextSibling
+          : null;
+      this._parentNode.insertBefore(this._element, ref);
+      // Move to position before removal before animating
+      const shifted = this._measure();
+      if (this.options.stabilizeOut) {
+        this.log('stabilizing out');
+        const left = diffOp(
+          this._fromValues.left as number,
+          shifted.left as number
+        );
+        // TODO(sorvell): these nudges could conflict with existing styling
+        // or animation but setting left/top should be rare, especially via
+        // animation.
+        if (left !== 0) {
+          this._element.style.position = 'relative';
+          this._element.style.left = left + 'px';
+        }
+        const top = diffOp(
+          this._fromValues.top as number,
+          shifted.top as number
+        );
+        if (top !== 0) {
+          this._element.style.position = 'relative';
+          this._element.style.top = top + 'px';
+        }
+      }
+      await this.animate(this.options.out);
+      this._element.remove();
+    }
+  }
+
+  // Adjust position based on ancestor scaling.
   private _applyAncestorAdjustments(
     from: CSSValues,
     to: CSSValues,
-    ancestors: Flip[]
+    ancestors: Flip[],
+    scaleInverse: Scale = SCALE.none
   ) {
     const ancestorProps = ancestors
       .map((a) => a.flipProps)
@@ -344,78 +414,44 @@ export class Flip extends AsyncDirective {
           dScaleY = dScaleY / (a.height as number);
         }
       });
-      from.left = dScaleX * (from.left as number);
-      from.top = dScaleY * (from.top as number);
-      to.left = dScaleX * (to.left as number);
-      to.top = dScaleY * (to.top as number);
+      if (scaleInverse) {
+        // TODO(sorvell): scaling is WIP and needs refinement.
+        const up = scaleInverse & SCALE.up;
+        const down = scaleInverse & SCALE.down;
+        const x = dScaleX < 1 ? (down ? 1 / dScaleX : 1) : up ? dScaleX : 1;
+        const y = dScaleY < 1 ? (down ? 1 / dScaleY : 1) : up ? dScaleY : 1;
+        //const orig = {...to};
+        from.width = x * (to.width as number);
+        from.height = y * (to.height as number);
+        // console.log(
+        //   'dScaleX',
+        //   dScaleX,
+        //   'mod',
+        //   x,
+        //   'orig',
+        //   orig.width,
+        //   'to final',
+        //   from.width
+        // );
+      }
+      if (from.left !== undefined) {
+        from.left = dScaleX * (from.left as number);
+        to.left = dScaleX * (to.left as number);
+      }
+      if (from.top !== undefined) {
+        from.top = dScaleY * (from.top as number);
+        to.top = dScaleY * (to.top as number);
+      }
     }
     return {from, to};
   }
 
-  protected get isHostRendered() {
-    const hostRendered = renderedHosts.has(this._host!);
-    if (!hostRendered) {
-      this._host!.updateComplete.then(() => {
-        renderedHosts.add(this._host!);
-      });
-    }
-    return hostRendered;
-  }
-
-  private _calcAnimationOptions(
-    ancestors: Flip[],
-    options?: KeyframeAnimationOptions
+  protected calculateFrames(
+    from: CSSValues,
+    to: CSSValues,
+    center = false,
+    dupFrame = false
   ) {
-    if (options === defaultAnimationOptions) {
-      const a = ancestors.find(
-        (a) => a.options.animationOptions !== defaultAnimationOptions
-      );
-      options = a?.options.animationOptions ?? options;
-    }
-    return options;
-  }
-
-  reconnected() {}
-
-  // Experimental animate out functionality.
-  async disconnected() {
-    if (!this._shouldFlip) {
-      return;
-    }
-    if (this.options.id !== undefined) {
-      disconnectedProps.set(this.options.id, this._from);
-    }
-    await animationFrame;
-    if (this._parentNode?.isConnected && this.options.out !== undefined) {
-      const ref =
-        this._nextSibling && this._nextSibling.parentNode === this._parentNode
-          ? this._nextSibling
-          : null;
-      this._parentNode.insertBefore(this._element, ref);
-      // Move to position before removal before animating
-      const shifted = this._measure();
-      if (this.options.stabilizeOut) {
-        this.log('stabilizing out');
-        const left = diffOp(this._from.left as number, shifted.left as number);
-        // TODO(sorvell): these nudges could conflict with existing styling
-        // or animation but setting left/top should be rare, especially via
-        // animation.
-        if (left !== 0) {
-          this._element.style.position = 'relative';
-          this._element.style.left = left + 'px';
-        }
-        const top = diffOp(this._from.top as number, shifted.top as number);
-        if (top !== 0) {
-          this._element.style.position = 'relative';
-          this._element.style.top = top + 'px';
-        }
-      }
-      await this.animate(this.options.out);
-      this._element.remove();
-    }
-  }
-
-  protected calculateFrames(from: CSSValues, to: CSSValues) {
     const fromFrame: Keyframe = {};
     const toFrame: Keyframe = {};
     let hasFrames = false;
@@ -430,11 +466,12 @@ export class Flip extends AsyncDirective {
         }
         const op = tp(f as number, t as number);
         if (op.transform !== undefined) {
-          if (this.options.id) {
-            props[p] = op.value!;
-          }
+          props[p] = op.value!;
           hasFrames = true;
           fromFrame.transform = `${fromFrame.transform ?? ''} ${op.transform}`;
+          if (dupFrame) {
+            toFrame.transform = `${toFrame.transform ?? ''} ${op.transform}`;
+          }
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
@@ -442,11 +479,10 @@ export class Flip extends AsyncDirective {
         toFrame[p] = t;
       }
     }
-    fromFrame.transformOrigin = toFrame.transformOrigin = 'top left';
+    fromFrame.transformOrigin = toFrame.transformOrigin = center
+      ? 'center center'
+      : 'top left';
     this.flipProps = props;
-    if (this.options.id) {
-      scalePropsMap.set(this.options.id, props);
-    }
     let frames = hasFrames ? [fromFrame, toFrame] : undefined;
     if (this.options.onFrames) {
       frames = this.options.onFrames(this.flipProps, frames);
@@ -465,10 +501,10 @@ export class Flip extends AsyncDirective {
     this.log('animate', [frames, options]);
     this.animation = this._element.animate(frames, options);
     const controller = flipControllers.get(this._host!);
-    controller?.animations.add(this.animation);
+    controller?.add(this.animation);
     await this.animation.finished;
     this.flipProps = undefined;
-    controller?.animations.delete(this.animation);
+    controller?.remove(this.animation);
     this.options.onComplete?.(this._element, this);
   }
 

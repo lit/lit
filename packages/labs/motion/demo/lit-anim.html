@@ -93,6 +93,7 @@
           const animationOptions = {
             duration: 1000,
             easing: 'ease-in-out',
+            fill: 'backwards',
           };
           return html`
             <div class="info">${this.shouldAnimate ? 'animating' : ''}</div>
@@ -103,7 +104,6 @@
                   ${flip({
                     animationOptions: {
                       ...animationOptions,
-                      fill: 'backwards',
                       delay: i * 200,
                     },
                     in: fade,
@@ -117,14 +117,13 @@
         }
 
         _onComplete(el, flip) {
-          flip.options.animationOptions.delay = 0;
           if (!this._t) {
             this._t = setTimeout(() => {
               this._t = undefined;
               if (this.shouldAnimate) {
                 this.lit = this.lit.length ? [] : lit;
               }
-            }, 1000);
+            }, 1500);
           }
         }
 
