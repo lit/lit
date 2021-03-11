@@ -64,6 +64,14 @@ suite('styleMap', () => {
     assert.equal(style.paddingLeft, '4px');
   });
 
+  test('first render skips undefined properties', () => {
+    renderStyleMap({marginTop: undefined, marginBottom: null});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.getAttribute('style'), '');
+    assert.equal(el.style.marginTop, '');
+    assert.equal(el.style.marginBottom, '');
+  });
+
   test('adds and updates properties', () => {
     renderStyleMap({marginTop: '2px', 'padding-bottom': '4px', opacity: '0.5'});
     const el = container.firstElementChild as HTMLElement;
@@ -77,12 +85,18 @@ suite('styleMap', () => {
   });
 
   test('removes properties', () => {
-    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px'});
+    renderStyleMap({
+      marginTop: '2px',
+      'padding-bottom': '4px',
+      borderRadius: '5px',
+    });
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
-    renderStyleMap({});
+    assert.equal(el.style.borderRadius, '5px');
+    renderStyleMap({borderRadius: undefined});
     assert.equal(el.style.marginTop, '');
+    assert.equal(el.style.paddingBottom, '');
     assert.equal(el.style.paddingBottom, '');
   });
 
