@@ -16,6 +16,7 @@ export const flipControllers: WeakMap<
 export class FlipController {
   host: ReactiveControllerHost;
   options: FlipOptions;
+  startPaused = false;
 
   constructor(host: ReactiveControllerHost, options: FlipOptions) {
     this.host = host;
@@ -27,6 +28,17 @@ export class FlipController {
    * Set of active `flip()` in the host component
    */
   animations: Set<Animation> = new Set();
+
+  add(animation: Animation) {
+    this.animations.add(animation);
+    if (this.startPaused) {
+      animation.pause();
+    }
+  }
+
+  remove(animation: Animation) {
+    this.animations.delete(animation);
+  }
 
   /**
    * Pauses all `flip()` animations running in the host component.
