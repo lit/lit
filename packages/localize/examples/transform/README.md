@@ -13,10 +13,11 @@ mode.
 ## Setup
 
 ```bash
-git clone https://github.com/Polymer/lit-next.git
-cd lit-next/packages/localize/examples/transform
-npm install
+git clone https://github.com/Polymer/lit-html.git
+cd lit-html/packages/localize/examples/transform
+npm i
 npx lit-localize build
+npx rollup -c
 npx es-dev-server --node-resolve
 ```
 

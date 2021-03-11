@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message} from '../messages';
+import {Message, makeMessageIdMap} from '../messages';
 import {Locale, writeLocaleCodesModule} from '../locales';
 import {Config} from '../config';
 import * as ts from 'typescript';
@@ -39,6 +39,10 @@ export interface TransformOutputConfig {
   localeCodesModule?: string;
 }
 
+type TypeScriptTransformerFactoryFactory = (
+  program: ts.Program
+) => ts.TransformerFactory<ts.SourceFile>;
+
 /**
  * Localizes a Lit project in transform mode.
  */
@@ -68,6 +72,30 @@ export class TransformLitLocalizer extends LitLocalizer {
       this.config.output,
       this.program
     );
+  }
+
+  /**
+   * Make a map from each locale code to a function that takes a TypeScript
+   * Program and returns a TypeScript Transformer Factory that replaces all
+   * `msg` calls with localized templates.
+   *
+   * This factory is suitable for inclusion in the `before` array of the
+   * `customTransformers` parameter of the TypeScript `program.emit` method.
+   */
+  transformers(): Map<Locale, TypeScriptTransformerFactoryFactory> {
+    const {translations} = this.readTranslations();
+    const locales = [this.config.sourceLocale, ...this.config.targetLocales];
+    const factories = new Map<Locale, TypeScriptTransformerFactoryFactory>();
+    for (const locale of locales) {
+      factories.set(locale, (program: ts.Program) =>
+        litLocalizeTransform(
+          makeMessageIdMap(translations.get(locale) ?? []),
+          locale,
+          program
+        )
+      );
+    }
+    return factories;
   }
 }
 

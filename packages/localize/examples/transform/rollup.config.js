@@ -2,9 +2,9 @@ import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
 import summary from 'rollup-plugin-summary';
-import {litLocalizeTransformers} from '@lit/localize/lib/rollup.js';
+import {localeTransformers} from '@lit/localize/lib/rollup.js';
 
-const locales = litLocalizeTransformers();
+const locales = localeTransformers();
 
 export default locales.map(({locale, localeTransformer}) => ({
   input: `src/index.ts`,
