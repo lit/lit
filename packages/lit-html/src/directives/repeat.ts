@@ -49,12 +49,12 @@ const generateMap = (list: unknown[], start: number, end: number) => {
  */
 
 class RepeatDirective extends Directive {
-  itemKeys?: unknown[];
+  private _itemKeys?: unknown[];
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (partInfo.type !== PartType.CHILD) {
-      throw new Error('repeat can only be used in text bindings');
+      throw new Error('repeat() can only be used in text expressions');
     }
   }
 
@@ -111,11 +111,11 @@ class RepeatDirective extends Directive {
     );
 
     if (!oldParts) {
-      this.itemKeys = newKeys;
+      this._itemKeys = newKeys;
       return newValues;
     }
 
-    const oldKeys = (this.itemKeys ??= []);
+    const oldKeys = (this._itemKeys ??= []);
 
     // New part list will be built up as we go (either reused from
     // old parts or created for new keys in this update). This is
@@ -430,7 +430,7 @@ class RepeatDirective extends Directive {
     }
 
     // Save order of new parts for next round
-    this.itemKeys = newKeys;
+    this._itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
     setCommittedValue(containerPart, newParts);
     return noChange;
