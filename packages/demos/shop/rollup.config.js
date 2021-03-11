@@ -18,7 +18,7 @@ import {copy} from '@web/rollup-plugin-copy';
 import resolve from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
 import summary from 'rollup-plugin-summary';
-import replace from '@rollup/plugin-replace';
+import minifyHTML from 'rollup-plugin-minify-html-literals';
 import {getBabelOutputPlugin} from '@rollup/plugin-babel';
 
 const htmlPlugin = html({
@@ -27,22 +27,81 @@ const htmlPlugin = html({
 });
 
 export default {
+  // Entry point for application build; can specify a glob to build multiple
+  // HTML files for non-SPA app
   input: 'index.html',
-  extractAssets: false,
+  plugins: [
+    htmlPlugin,
+    // Resolve bare module specifiers to relative paths
+    resolve(),
+    // Minify HTML template literals
+    minifyHTML(),
+    // Minify JS
+    terser({
+      ecma: 2020,
+      module: true,
+      warnings: true,
+    }),
+    // Inject polyfills into HTML (core-js, regnerator-runtime, webcoponents,
+    // lit/polyfill-support) and dynamically loads modern vs. legacy builds
+    polyfillsLoader({
+      modernOutput: {
+        name: 'modern',
+      },
+      // Feature detection for loading legacy bundles
+      legacyOutput: {
+        name: 'legacy',
+        test: "!('noModule' in HTMLScriptElement.prototype)",
+        type: 'systemjs',
+      },
+      // List of polyfills to inject (each has individual feature detection)
+      polyfills: {
+        hash: true,
+        coreJs: true,
+        regeneratorRuntime: true,
+        webcomponents: true,
+        // Custom configuration for loading Lit's polyfill-support module,
+        // required for interfacing with the webcomponents polyfills
+        custom: [
+          {
+            name: 'lit-polyfill-support',
+            path: 'node_modules/lit/polyfill-support.js',
+            test: "!('attachShadow' in Element.prototype)",
+            module: false,
+          },
+        ],
+      },
+    }),
+    // Print bundle summary
+    summary(),
+    // Optional: copy any static assets to build directory
+    copy({
+      patterns: ['data/**/*', 'images/**/*'],
+    }),
+  ],
+  // Specifies two JS output configurations, modern and legacy, which the HTML plugin will
+  // automatically choose between; the legacy build is transpiled to ES5
+  // and SystemJS modules
   output: [
     {
-      // Modern build
-      plugins: [htmlPlugin.api.addOutput('modern')],
+      // Modern JS bundles (no JS transpilation, ES module output)
       format: 'esm',
       chunkFileNames: '[name]-[hash].js',
       entryFileNames: '[name]-[hash].js',
       dir: 'build',
+      plugins: [htmlPlugin.api.addOutput('modern')],
     },
     {
-      // Legacy build
+      // Legacy JS bundles (ES5 transpilation and SystemJS module output)
+      format: 'esm',
+      chunkFileNames: 'legacy-[name]-[hash].js',
+      entryFileNames: 'legacy-[name]-[hash].js',
+      dir: 'build',
       plugins: [
         htmlPlugin.api.addOutput('legacy'),
+        // Uses babel to compile JS to ES5 and modules to SystemJS
         getBabelOutputPlugin({
+          compact: true,
           presets: [
             [
               '@babel/preset-env',
@@ -56,54 +115,7 @@ export default {
           ],
         }),
       ],
-      format: 'esm',
-      chunkFileNames: 'legacy-[name]-[hash].js',
-      entryFileNames: 'legacy-[name]-[hash].js',
-      dir: 'build',
     },
   ],
-  onwarn(warning) {
-    if (warning.code !== 'THIS_IS_UNDEFINED') {
-      console.error(`(!) ${warning.message}`);
-    }
-  },
-  plugins: [
-    htmlPlugin,
-    copy({
-      patterns: ['data/**/*', 'images/**/*'],
-    }),
-    replace({'Reflect.decorate': 'undefined'}),
-    resolve(),
-    terser({
-      ecma: 2017,
-      module: true,
-      warnings: true,
-    }),
-    summary(),
-    polyfillsLoader({
-      modernOutput: {
-        name: 'modern',
-      },
-      legacyOutput: {
-        name: 'legacy',
-        test: "!('noModule' in HTMLScriptElement.prototype)",
-        type: 'systemjs',
-      },
-      polyfills: {
-        hash: true,
-        coreJs: true,
-        regeneratorRuntime: true,
-        webcomponents: true,
-        custom: [
-          {
-            name: 'lit-polyfill-support',
-            path: 'node_modules/lit/polyfill-support.js',
-            test:
-              "!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force",
-            module: false,
-          },
-        ],
-      },
-    }),
-  ],
+  preserveEntrySignatures: 'strict',
 };

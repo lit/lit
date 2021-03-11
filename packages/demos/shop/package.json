@@ -9,8 +9,8 @@
   "scripts": {
     "serve": "wds --watch",
     "serve:build": "wds --watch --root-dir build --app-index build/index.html",
-    "build": "rollup -c",
-    "build:watch": "rollup -c --watch"
+    "build": "rm -rf build && rollup -c",
+    "build:watch": "npm run build -- --watch"
   },
   "dependencies": {
     "@polymer/app-layout": "^3.0.0",
@@ -46,6 +46,7 @@
     "@web/test-runner-playwright": "^0.5.7",
     "@webcomponents/webcomponentsjs": "^2.5.0",
     "rollup": "^2.38.5",
+    "rollup-plugin-minify-html-literals": "^1.2.6",
     "rollup-plugin-summary": "^1.2.3",
     "rollup-plugin-terser": "^7.0.2"
   }
