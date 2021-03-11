@@ -13,6 +13,7 @@ import {
   RenderOptions,
   svg,
   TemplateResult,
+  SVGTemplateResult,
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
@@ -684,6 +685,16 @@ suite('lit-html', () => {
       const line = container.firstElementChild!;
       assert.equal(line.tagName, 'line');
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
+    });
+
+    const staticAssertExtends = <T, U extends T>(_?: [T, U]) => {};
+
+    test('`SVGTemplateResult` is a subtype of `TemplateResult`', () => {
+      staticAssertExtends<TemplateResult, SVGTemplateResult>();
+    });
+
+    test('`svg` returns an `SVGTemplateResult`', () => {
+      staticAssertExtends<SVGTemplateResult, ReturnType<typeof svg>>();
     });
   });
 
