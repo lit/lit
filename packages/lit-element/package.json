@@ -11,6 +11,7 @@
   "homepage": "https://lit-element.polymer-project.org/",
   "main": "index.js",
   "module": "index.js",
+  "types": "index.d.ts",
   "type": "module",
   "exports": {
     ".": {
@@ -93,7 +94,6 @@
     "tslib": "^2.0.3",
     "typescript": "^4.1.3"
   },
-  "typings": "lit-element.d.ts",
   "directories": {
     "test": "test"
   }
