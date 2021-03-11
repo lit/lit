@@ -938,7 +938,7 @@ class ChildPartImpl {
    * information.
    */
   get startNode(): Node | undefined {
-    return this._$startNode === this._$endNode ? undefined : this._$startNode;
+    return this._$startNode;
   }
 
   /**
@@ -946,9 +946,7 @@ class ChildPartImpl {
    * information.
    */
   get endNode(): Node | undefined {
-    return this._$startNode === this._$endNode
-      ? undefined
-      : this._$endNode ?? undefined;
+    return this._$endNode ?? undefined;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
