@@ -23,117 +23,107 @@
       body {
         margin: 0;
         font-family: sans-serif;
-      }
-      main {
-        padding: 0 16px;
+        height: 100vh;
       }
     </style>
-    <h2>Animation</h2>
-    <main>
-      <my-element></my-element>
-    </main>
+    <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
-      import {flip, defaultCssProperties} from '../development/flip.js';
+      import {flip, SCALE} from '../development/flip.js';
+      import {FlipController} from '../development/flip-controller.js';
 
       class MyElement extends LitElement {
         static properties = {shifted: {}, moving: {}};
         static styles = css`
+          :host {
+            display: flex;
+            padding: 20px;
+            font-weight: 800;
+            justify-content: center;
+            min-height: 500px;
+            overflow: hidden;
+            --box-size: 116px;
+          }
+
           * {
             box-sizing: border-box;
           }
-          .box {
-            will-change: transform;
-            position: absolute;
-            top: 200px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1em;
-            color: black;
-            width: 100px;
-            height: 100px;
-            background: #90caf9;
-            border: 0px solid #5d99c6;
-          }
 
-          .box.copy {
-            width: auto;
-            height: auto;
-          }
-
-          .box > span {
-            will-change: transform;
+          .circle {
             position: relative;
+            will-change: transform;
             border-radius: 50%;
-            height: 100px;
-            width: 100px;
-            border: 2px solid orange;
             display: flex;
             align-items: center;
             justify-content: center;
+            width: var(--box-size);
+            height: var(--box-size);
+          }
+          .container {
+            color: black;
+            background: #90caf9;
+          }
+
+          .container > .circle {
+            border: 2px solid orange;
             text-align: center;
           }
 
           .shifted {
-            right: 1em;
-            width: 300px;
-            height: 300px;
+            top: 100px;
+            width: calc(3 * var(--box-size));
+            height: calc(3 * var(--box-size));
             background: #b71c1c;
             color: white;
           }
         `;
 
+        constructor() {
+          super();
+          this.flipController = new FlipController(this);
+          // this.flipController.startPaused = true;
+          this.addEventListener('click', () => this.clickHandler());
+        }
+
         firstUpdated() {
-          this.toggle();
+          this.changeLayout();
         }
 
         render() {
           const animationOptions = {duration: 1500, easing: 'ease-in-out'};
           return html`
-            <button @click=${this.toggle}>
-              ${this.moving ? 'Stop' : 'Move'}
-            </button>
             <div
-              class="box ${this.shifted ? 'shifted' : ''}"
+              class="container circle ${this.shifted ? 'shifted' : ''}"
               ${flip({
                 animationOptions,
-                properties: [
-                  ...defaultCssProperties,
-                  'background',
-                  'border',
-                  'color',
-                ],
-                id: 'simple',
-                onComplete: () => this.shift(),
-                //disabled: true,
+                id: 'container',
+                onComplete: () => this.changeLayout(),
+                Xdisabled: true,
               })}
             >
-              <span ${flip({scaleId: 'simple', Xdisabled: true})}
+              <span
+                class="circle"
+                ${flip({
+                  id: 'content',
+                  scaleInverse: SCALE.up,
+                })}
                 >Simple...<br />
                 is beautiful.</span
               >
             </div>
-            <!--<div class="box copy">
-              <span
-                >Simple...<br />
-                is beautiful.</span
-              >
-            </div>-->
           `;
         }
 
-        toggle() {
-          this.moving = !this.moving;
-          this.shift();
+        async clickHandler() {
+          if (!this.flipController.isAnimating) {
+            this.changeLayout();
+          } else {
+            this.flipController.togglePlay();
+          }
         }
 
-        shift() {
-          if (this.moving) {
-            this.shifted = !this.shifted;
-          }
+        changeLayout() {
+          this.shifted = !this.shifted;
         }
       }
 
