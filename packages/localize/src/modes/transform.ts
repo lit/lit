@@ -18,6 +18,7 @@ import {
 import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as pathLib from 'path';
+import {LitLocalizer} from '../index.js';
 
 /**
  * Configuration specific to the `transform` output mode.
@@ -39,10 +40,44 @@ export interface TransformOutputConfig {
 }
 
 /**
+ * Localizes a Lit project in transform mode.
+ */
+export class TransformLitLocalizer extends LitLocalizer {
+  config: Config & {output: TransformOutputConfig};
+
+  constructor(config: Config & {output: TransformOutputConfig}) {
+    super();
+    if (config.output.mode !== 'transform') {
+      throw new Error(
+        `Error: TransformLocalizer requires a localization config with output.mode "transform"`
+      );
+    }
+    this.config = config;
+  }
+
+  /**
+   * Compile the project for each locale, replacing all templates with their
+   * localized versions, and write to the configured locale directory structure.
+   */
+  async build() {
+    this.assertTranslationsAreValid();
+    const {translations} = this.readTranslations();
+    await transformOutput(
+      translations,
+      this.config,
+      this.config.output,
+      this.program
+    );
+  }
+}
+
+/**
  * Compile and emit the given TypeScript program using the lit-localize
  * transformer.
+ *
+ * TODO(aomarks) Refactor this into the build() method above.
  */
-export async function transformOutput(
+async function transformOutput(
   translationsByLocale: Map<Locale, Message[]>,
   config: Config,
   transformConfig: TransformOutputConfig,

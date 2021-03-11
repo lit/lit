@@ -37,7 +37,7 @@ export interface XliffConfig {
 }
 
 /**
- * Create an XLIF formatter from a main config object.
+ * Create an XLIFF formatter from a main config object.
  */
 export function xliffFactory(config: Config) {
   return new XliffFormatter(config);
@@ -66,37 +66,33 @@ export class XliffFormatter implements Formatter {
    * For each target locale, look for the file "<xliffDir>/<locale>.xlf", and if
    * it exists, parse out translations.
    */
-  async readTranslations(): Promise<Bundle[]> {
-    const bundles: Array<Promise<Bundle | null>> = [];
+  readTranslations(): Bundle[] {
+    const bundles: Array<Bundle> = [];
     for (const locale of this.config.targetLocales) {
-      bundles.push(
-        (async () => {
-          const path = pathLib.join(
-            this.config.resolve(this.xliffConfig.xliffDir),
-            locale + '.xlf'
-          );
-          let xmlStr;
-          try {
-            xmlStr = await fsExtra.readFile(path, 'utf8');
-          } catch (err) {
-            if (err.code === 'ENOENT') {
-              // It's ok if the file doesn't exist, it's probably just the first
-              // time we're running for this locale.
-              return null;
-            }
-            throw err;
-          }
-          return this.parseXlif(xmlStr);
-        })()
+      const path = pathLib.join(
+        this.config.resolve(this.xliffConfig.xliffDir),
+        locale + '.xlf'
       );
+      let xmlStr;
+      try {
+        xmlStr = fsExtra.readFileSync(path, 'utf8');
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          // It's ok if the file doesn't exist, it's probably just the first
+          // time we're running for this locale.
+          continue;
+        }
+        throw err;
+      }
+      bundles.push(this.parseXliff(xmlStr));
     }
-    return (await Promise.all(bundles)).filter((x) => x !== null) as Bundle[];
+    return bundles;
   }
 
   /**
-   * Parse the given XLIF XML string and return its translations.
+   * Parse the given XLIFF XML string and return its translations.
    */
-  private parseXlif(xmlStr: string): Bundle {
+  private parseXliff(xmlStr: string): Bundle {
     const doc = new xmldom.DOMParser().parseFromString(xmlStr);
     const file = getOneElementByTagNameOrThrow(doc, 'file');
     const locale = getNonEmptyAttributeOrThrow(
@@ -189,7 +185,7 @@ export class XliffFormatter implements Formatter {
   }
 
   /**
-   * Encode the given locale in XLIF format.
+   * Encode the given locale in XLIFF format.
    */
   private encodeLocale(
     sourceMessages: ProgramMessage[],
@@ -280,7 +276,7 @@ export class XliffFormatter implements Formatter {
   }
 
   /**
-   * Encode the given message contents in XLIF format.
+   * Encode the given message contents in XLIFF format.
    */
   private encodeContents(doc: Document, contents: Message['contents']): Node[] {
     const nodes = [];

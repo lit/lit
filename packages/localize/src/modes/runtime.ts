@@ -12,6 +12,7 @@ import {KnownError} from '../error';
 import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
 import * as fsExtra from 'fs-extra';
 import * as pathLib from 'path';
+import {LitLocalizer} from '../index.js';
 
 /**
  * Configuration specific to the `runtime` output mode.
@@ -40,9 +41,41 @@ export interface RuntimeOutputConfig {
 }
 
 /**
+ * Localizes a Lit project in runtime mode.
+ */
+export class RuntimeLitLocalizer extends LitLocalizer {
+  config: Config & {output: RuntimeOutputConfig};
+
+  constructor(config: Config & {output: RuntimeOutputConfig}) {
+    super();
+    if (config.output.mode !== 'runtime') {
+      throw new Error(
+        `Error: TransformLocalizer requires a localization config with output.mode "runtime"`
+      );
+    }
+    this.config = config;
+  }
+
+  /**
+   * TODO
+   */
+  async build() {
+    this.assertTranslationsAreValid();
+    const {messages} = this.extractSourceMessages();
+    const {translations} = this.readTranslations();
+    await runtimeOutput(
+      messages,
+      translations,
+      this.config,
+      this.config.output
+    );
+  }
+}
+
+/**
  * Write output for the `runtime` output mode.
  */
-export async function runtimeOutput(
+async function runtimeOutput(
   messages: ProgramMessage[],
   translationMap: Map<Locale, Message[]>,
   config: Config,
@@ -93,6 +126,8 @@ export async function runtimeOutput(
 /**
  * Generate a "<locale>.ts" TypeScript module from the given bundle of
  * translated messages.
+ *
+ * TODO(aomarks) Refactor this into the build() method above.
  */
 function generateLocaleModule(
   locale: Locale,

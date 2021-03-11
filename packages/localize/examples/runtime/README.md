@@ -18,10 +18,10 @@ This package demonstrates an application that uses [lit-localize](https://github
 ## Setup
 
 ```bash
-git clone https://github.com/PolymerLabs/lit-localize.git
-cd lit-localize/examples/runtime
+git clone https://github.com/Polymer/lit-next.git
+cd lit-next/packages/localize/examples/transform
 npm install
-npx lit-localize
+npx lit-localize build
 npx tsc
 npx es-dev-server --node-resolve
 ```

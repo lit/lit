@@ -153,10 +153,10 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    }
    ```
 
-5. Run the `lit-localize` CLI:
+5. Run the `lit-localize` CLI with the `extract` command:
 
    ```bash
-   npx lit-localize
+   npx lit-localize extract
    ```
 
 6. Take a look at the generated XLIFF file `xliff/es-419.xlf`. Note that we have
@@ -181,10 +181,10 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    </trans-unit>
    ```
 
-8. Run `lit-localize` again:
+8. Run the `lit-localize` CLI with the `build` command:
 
    ```bash
-   npx lit-localize
+   npx lit-localize build
    ```
 
 9. Now take a look at the generated file `es-419/index.js`:
@@ -516,30 +516,20 @@ In transform mode, applications of the `Localized` mixin are removed.
 
 ## CLI
 
-Running the `lit-localize` command-line program does the following:
+### Usage
 
-1. Reads your [config file](#config-file) according to the `--config` flag.
+```sh
+lit-localize command [--flags]
+```
 
-2. Analyzes all TypeScript files covered by your `tsconfig.json`, and discovers
-   all calls to the `msg` function.
-
-3. Creates or updates an XLIFF (`.xlf`) file for each of your target locales,
-   with a `<source>` tag corresponding to each `msg` call.
-
-4. Reads existing `<target>` tags from existing XLIFF files for each `msg` call.
-
-5. When in _transform_ mode, compiles your TypeScript project for each locale,
-   where all `msg` calls are replaced with the corresponding static, localized
-   version from that locale's XLIFF file.
-
-6. When in _runtime_ mode, generates a `<locale>.ts` file for each locale, which
-   can be dynamically loaded by the `@lit/localize` module.
-
-It takes the following flags:
+| Command   | Description                                                                                                                                                                                                                                                                                                                                    |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extract` | Extract templates from `msg()` calls across all source files included by your `tsconfig.json`, and create or update XLIFF (`.xlf`) files containing translation requests.                                                                                                                                                                      |
+| `build`   | Read translations and build the project according to the configured mode.<br><br>In _transform_ mode, compile your TypeScript project for each locale, replacing `msg` calls with localized templates.<br><br>In _runtime_ mode, generate a `<locale>.ts` file for each locale, which can be dynamically loaded by the `@lit/localize` module. |
 
 | Flag       | Description                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
-| `--help`   | Display this list of flags.                                                 |
+| `--help`   | Display help about usage.                                                   |
 | `--config` | Path to JSON [config file](#config-file). Defaults to `./lit-localize.json` |
 
 ## Config file

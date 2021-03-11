@@ -6,4 +6,4 @@
 
 import {e2eGoldensTest} from './e2e-goldens-test';
 
-e2eGoldensTest('xliff', ['--config=lit-localize.json']);
+e2eGoldensTest('xliff', ['--config=lit-localize.json', 'build']);

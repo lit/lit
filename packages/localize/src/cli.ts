@@ -6,23 +6,39 @@
 
 import * as path from 'path';
 import * as minimist from 'minimist';
-
-import {programFromTsConfig, printDiagnostics} from './typescript';
-import {extractMessagesFromProgram} from './program-analysis';
-import {runtimeOutput} from './outputters/runtime';
-import {transformOutput} from './outputters/transform';
-import {makeFormatter} from './formatters';
-import {
-  ProgramMessage,
-  Message,
-  validateLocalizedPlaceholders,
-} from './messages';
-import {KnownError, throwUnreachable} from './error';
+import {KnownError, unreachable} from './error';
 import {Config, readConfigFileAndWriteSchema} from './config';
-import {Locale} from './locales';
+import {LitLocalizer} from './index.js';
+import {printDiagnostics} from './typescript.js';
+import {TransformLitLocalizer, TransformOutputConfig} from './modes/transform';
+import {RuntimeLitLocalizer, RuntimeOutputConfig} from './modes/runtime';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('source-map-support').install();
+
+const usage = `
+Usage: lit-localize [--config=lit-localize.json] COMMAND
+
+Commands:
+  extract     Extract messages from source files
+  build       Build your project
+
+Options:
+  --help      Display this help message.
+  --config    Path to JSON configuration file.
+              Default: ./lit-localize.json
+              See https://github.com/Polymer/lit-html/tree/lit-next/packages/localize#readme for details.
+`;
+
+const validCommands = ['build', 'extract'] as const;
+type Command = typeof validCommands[number];
+const isValidCommand = (str: string): str is Command =>
+  validCommands.includes(str as Command);
+
+interface CliOptions {
+  config: Config;
+  command: Command;
+}
 
 export async function runAndExit() {
   const exitCode = await runAndLog(process.argv);
@@ -32,8 +48,9 @@ export async function runAndExit() {
 export async function runAndLog(argv: string[]): Promise<number> {
   let config;
   try {
-    config = configFromArgs(argv);
-    await runAndThrow(config);
+    const cliOpts = cliOptsFromArgs(argv);
+    config = cliOpts.config;
+    await runAndThrow(cliOpts);
   } catch (err) {
     if (err instanceof KnownError) {
       console.error(err.message);
@@ -60,93 +77,88 @@ function version() {
   return require(path.join('..', 'package.json')).version;
 }
 
-async function runAndThrow(config: Config) {
-  // Extract messages from our TypeScript program.
-  const program = programFromTsConfig(config.resolve(config.tsConfig));
-  const {messages, errors} = extractMessagesFromProgram(program);
-  if (errors.length > 0) {
-    printDiagnostics(errors);
-    throw new KnownError('Error analyzing program');
-  }
+async function runAndThrow({config, command}: CliOptions) {
+  const localizer = makeLocalizer(config);
 
-  // Sort by message description, then filename (for determinism, in case there
-  // is no description, since file-process order is arbitrary), then by
-  // source-code position order. The order of entries in interchange files can
-  // be significant, e.g. in determining the order in which messages are
-  // displayed to translators. We want messages that are logically related to be
-  // presented together.
-  messages.sort((a: ProgramMessage, b: ProgramMessage) => {
-    const descCompare = a.descStack
-      .join('')
-      .localeCompare(b.descStack.join(''));
-    if (descCompare !== 0) {
-      return descCompare;
+  if (command === 'extract') {
+    console.log('Extracting messages');
+    const {messages, errors} = localizer.extractSourceMessages();
+    if (errors.length > 0) {
+      printDiagnostics(errors);
+      throw new KnownError('Error analyzing program');
     }
-    return a.file.fileName.localeCompare(b.file.fileName);
-  });
-
-  // Read existing translations, and write translation interchange data
-  // according to the formatter that is configured.
-  const formatter = makeFormatter(config);
-  const translationMap = new Map<Locale, Message[]>();
-  for (const bundle of await formatter.readTranslations()) {
-    translationMap.set(bundle.locale, bundle.messages);
-  }
-  const placeholderErrors = validateLocalizedPlaceholders(
-    messages,
-    translationMap
-  );
-  if (placeholderErrors.length > 0) {
-    // TODO(aomarks) It might be more friendly to replace these invalid
-    // localized templates with the source ones, show the errors and return
-    // non-zero, but still continue with the rest of the process so that at
-    // least some of the app can work during development.
-
-    // TODO(aomarks) It would also be nice to track the filename and line
-    // numbers for each localized template as they appeared in the interchange
-    // (e.g. XLIFF) file, so that users can debug more easily.
-    throw new KnownError(
-      'One or more localized templates contain a set of placeholders ' +
-        '(HTML or template literal expressions) that do not exactly match ' +
-        'the source code, aborting. Details:\n\n' +
-        placeholderErrors.join('\n')
-    );
-  }
-  await formatter.writeOutput(messages, translationMap);
-
-  if (config.output.mode === 'runtime') {
-    await runtimeOutput(messages, translationMap, config, config.output);
-  } else if (config.output.mode === 'transform') {
-    await transformOutput(translationMap, config, config.output, program);
+    console.log(`Extracted ${messages.length} messages`);
+    console.log(`Writing interchange files`);
+    await localizer.writeInterchangeFiles();
+  } else if (command === 'build') {
+    console.log('Building');
+    const {errors} = localizer.validateTranslations();
+    if (errors.length > 0) {
+      // TODO(aomarks) It might be more friendly to replace these invalid
+      // localized templates with the source ones, show the errors and return
+      // non-zero, but still continue with the rest of the process so that at
+      // least some of the app can work during development.
+      throw new KnownError(
+        'One or more localized templates contain a set of placeholders ' +
+          '(HTML or template literal expressions) that do not exactly match ' +
+          'the source code, aborting. Details:\n\n' +
+          errors.join('\n')
+      );
+    }
+    await localizer.build();
   } else {
-    throwUnreachable(
-      config.output,
-      `Internal error: unknown output mode ${
-        (config.output as typeof config.output).mode
-      }`
+    // Should already have been validated.
+    throw new KnownError(
+      `Internal error: unknown command ${unreachable(command)}`
     );
   }
 }
 
-const usage = `
-Usage: lit-localize [--config=lit-localize.json]
+function makeLocalizer(config: Config): LitLocalizer {
+  switch (config.output.mode) {
+    case 'transform':
+      return new TransformLitLocalizer(
+        // TODO(aomarks) Unfortunate that TypeScript doesn't automatically do
+        // this type narrowing. Because the union is on a nested property?
+        config as Config & {output: TransformOutputConfig}
+      );
+    case 'runtime':
+      return new RuntimeLitLocalizer(
+        config as Config & {output: RuntimeOutputConfig}
+      );
+    default:
+      throw new KnownError(
+        `Internal error: unknown mode ${
+          (unreachable(config.output) as typeof config.output).mode
+        }`
+      );
+  }
+}
 
-Options:
-  --help      Display this help message.
-  --config    Path to JSON configuration file.
-              Default: ./lit-localize.json
-              See https://github.com/PolymerLabs/lit-localize for details.
-`;
-
-function configFromArgs(argv: string[]): Config {
+function cliOptsFromArgs(argv: string[]): CliOptions {
   const args = minimist(argv.slice(2));
-  if (args._.length > 0) {
-    throw new KnownError(`Unknown argument(s): ${args._.join(' ')}` + usage);
+  if (args._.length === 0) {
+    throw new KnownError(
+      `Missing command argument. ` +
+        `Valid commands: ${[...validCommands].join(', ')}`
+    );
+  }
+  const command = args._[0];
+  if (!isValidCommand(command)) {
+    throw new KnownError(
+      `Invalid command ${command}}. ` +
+        `Valid commands: ${[...validCommands].join(', ')}`
+    );
+  }
+  if (args._.length > 1) {
+    throw new KnownError(
+      `Unknown argument(s): ${args._.slice(1).join(' ')}` + usage
+    );
   }
   if ('help' in args) {
     throw new KnownError(usage);
   }
   const configPath = args['config'] || './lit-localize.json';
   const config = readConfigFileAndWriteSchema(configPath);
-  return config;
+  return {config, command};
 }

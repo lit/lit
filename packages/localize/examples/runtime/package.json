@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf lib/* && lit-localize && tsc",
+    "build": "rm -rf lib/* && lit-localize build && tsc",
     "serve": "es-dev-server --node-resolve --preserve-symlinks"
   },
   "dependencies": {

@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!--## Unreleased-->
+## Unreleased
+
+## Changed
+
+- **[BREAKING]** The `lit-localize` CLI now must always take one of two
+  commands: `extract` or `build`. Previously, both of these steps were always
+  performed.
 
 ## [0.6.1] - 2020-12-09
 

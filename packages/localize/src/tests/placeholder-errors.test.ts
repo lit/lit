@@ -8,7 +8,7 @@ import {e2eGoldensTest} from './e2e-goldens-test';
 
 e2eGoldensTest(
   'placeholder-errors',
-  ['--config=lit-localize.json'],
+  ['--config=lit-localize.json', 'build'],
   1,
   `One or more localized templates contain a set of placeholders (HTML or template literal expressions) that do not exactly match the source code, aborting. Details:
 
