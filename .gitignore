@@ -11,6 +11,10 @@
 /lit-html.d.ts.map
 /lit-html.js
 /lit-html.js.map
+/directive.d.ts*
+/directive.js*
+/async-directive.d.ts*
+/async-directive.js*
 /test/**/*.d.ts
 /test/**/*.d.ts.map
 /test/**/*.js

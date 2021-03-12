@@ -249,9 +249,9 @@ export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
  * `directive`.
  */
 export abstract class Directive {
-  constructor(partInfo: PartInfo) {}
+  constructor(_partInfo: PartInfo) {}
   abstract render(...props: Array<unknown>): unknown;
-  update(part: Part, props: Array<unknown>): unknown {
+  update(_part: Part, props: Array<unknown>): unknown {
     return this.render(...props);
   }
 }
