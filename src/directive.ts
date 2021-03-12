@@ -26,17 +26,17 @@ export const PartType = {
 
 export type PartType = typeof PartType[keyof typeof PartType];
 
-export type ChildPartInfo = {
+export interface ChildPartInfo {
   readonly type: typeof PartType.CHILD;
-};
+}
 
-export type AttributePartInfo = {
+export interface AttributePartInfo {
   readonly type:|typeof PartType.ATTRIBUTE|
                typeof PartType.PROPERTY|
                typeof PartType.BOOLEAN_ATTRIBUTE|typeof PartType.EVENT;
   readonly strings?: ReadonlyArray<string>; readonly name: string; readonly tagName:
                                                                                 string;
-};
+}
 
 export type Part = ChildPart|AttributePart|BooleanAttributePart|EventPart;
 
@@ -216,9 +216,9 @@ function legacyPartToPart(part: legacyLit.Part): Part {
  */
 export type PartInfo = ChildPartInfo|AttributePartInfo;
 
-export type DirectiveClass = {
+export interface DirectiveClass {
   new (part: PartInfo): Directive;
-};
+}
 
 /**
  * This utility type extracts the signature of a directive class's render()
