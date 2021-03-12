@@ -17,9 +17,11 @@ const url = 'https://www.example.com/';
 `Hola ${user}!`;
 // Lit template
 html`Hola <b>Mundo</b>!`;
-// Lit template with variable expression (one placeholder)
+// Lit template with one XLIFF placeholder (combined start tag + expression +
+// end tag).
 html`Hola <b>${user}</b>!`;
-// Lit template with variable expression (two placeholders)
+// Lit template with two XLIFF placeholders (combined start tag + expression,
+// separate end tag).
 html`Clic <a href="${url}">aquí</a>!`;
 // Lit template with string expression
 //
