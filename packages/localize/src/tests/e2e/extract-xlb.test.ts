@@ -6,4 +6,4 @@
 
 import {e2eGoldensTest} from './e2e-goldens-test';
 
-e2eGoldensTest('xlb-init', ['--config=lit-localize.json', 'extract']);
+e2eGoldensTest('extract-xlb', ['--config=lit-localize.json', 'extract']);

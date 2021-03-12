@@ -6,4 +6,4 @@
 
 import {e2eGoldensTest} from './e2e-goldens-test';
 
-e2eGoldensTest('xlb', ['--config=lit-localize.json', 'build']);
+e2eGoldensTest('build-runtime-xlb', ['--config=lit-localize.json', 'build']);

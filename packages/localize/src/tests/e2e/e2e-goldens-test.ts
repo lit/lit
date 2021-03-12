@@ -7,10 +7,10 @@
 import * as path from 'path';
 import {execFileSync} from 'child_process';
 import test from 'ava';
-import {runAndLog} from '../cli';
+import {runAndLog} from '../../cli';
 import * as fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
-import {formatDirDiff} from './format-dir-diff';
+import {formatDirDiff} from '../format-dir-diff';
 
 /**
  * Run lit-localize end-to-end using input and golden files from the filesystem.
@@ -44,7 +44,7 @@ export function e2eGoldensTest(
   expectedExitCode = 0,
   expectedStdOutErr = ''
 ) {
-  const root = path.resolve(__dirname, '..', '..', 'testdata', name);
+  const root = path.resolve(__dirname, '..', '..', '..', 'testdata', name);
   const inputDir = path.join(root, 'input');
   const outputDir = path.join(root, 'output');
   const goldensDir = path.join(root, 'goldens');
