@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {asyncReplace} from '../../directives/async-replace.js';
@@ -221,9 +213,14 @@ suite('asyncReplace', () => {
     const delay = (delay: number) =>
       new Promise((res) => setTimeout(res, delay));
 
-    render(component(generator(delay(20), 'slow')), container);
-    render(component(generator(delay(10), 'fast')), container);
-    await delay(30);
+    const slowDelay = delay(20);
+    const fastDelay = delay(10);
+
+    render(component(generator(slowDelay, 'slow')), container);
+    render(component(generator(fastDelay, 'fast')), container);
+
+    await slowDelay;
+    await delay(10);
 
     assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });

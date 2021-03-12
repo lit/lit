@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 /*
 Benchmark generated via the following invocation:
 node generator/build/index.js -r lit-html,lit-html@tot=generator/scripts/package-versions-tot.json,lit-html@release=generator/scripts/package-versions-release.json -n template-heavy -o lit-html/template-heavy -u 10 -q -m render,update -g

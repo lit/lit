@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
 
@@ -35,7 +27,7 @@ const stringsCache = new Map<string, TemplateStringsArray>();
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
  */
-export const withStatic = (coreTag: typeof coreHtml) => (
+export const withStatic = (coreTag: typeof coreHtml | typeof coreSvg) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {

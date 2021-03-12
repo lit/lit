@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Copyright 2020 Google LLC
+# SPDX-License-Identifier: BSD-3-Clause
+
 set -e
 
 # Kill all subprocesses when this script exits
