@@ -33,6 +33,10 @@ interface ValidateTranslationsResult {
 /**
  * Abstract base class for programmatic access to @lit/localize. Use one of the
  * concrete classes: TransformLitLocalizer, RuntimeLitLocalizer.
+ *
+ * TODO(aomarks) This set of classes is probably too monolithic. Let's split
+ * things up into Extractor, Builders, and Formatters classes (actually
+ * Formatter already exists, but it needs a better name).
  */
 export abstract class LitLocalizer {
   protected abstract config: Config;
@@ -83,8 +87,15 @@ export abstract class LitLocalizer {
   /**
    * Read translated messages from this project's translation files (e.g. XLIFF)
    * files into a Map keyed by locale ID.
+   *
+   * TODO(aomarks) Add an async version. This is synchronous as a conceit to our
+   * Rollup integration, because
+   * @rollup/typescript-plugin runs tsc in the Rollup buildStart hook, which we
+   * cannot preempt because that is the earliest hook, and they run in parallel
+   * (see https://github.com/rollup/rollup/issues/2826). We'd prefer to read
+   * translation files in parallel when we can.
    */
-  readTranslations(): ReadTranslationsResult {
+  readTranslationsSync(): ReadTranslationsResult {
     if (!this._translations) {
       const localeMessagesMap = new Map<Locale, Array<Message>>();
       for (const bundle of this.formatter.readTranslations()) {
@@ -100,7 +111,7 @@ export abstract class LitLocalizer {
    * messages.
    */
   validateTranslations(): ValidateTranslationsResult {
-    const {translations} = this.readTranslations();
+    const {translations} = this.readTranslationsSync();
     const {messages} = this.extractSourceMessages();
     const placeholderErrors = validateLocalizedPlaceholders(
       messages,
@@ -126,7 +137,7 @@ export abstract class LitLocalizer {
    */
   async writeInterchangeFiles(): Promise<void> {
     const {messages} = this.extractSourceMessages();
-    const {translations} = this.readTranslations();
+    const {translations} = this.readTranslationsSync();
     const sorted = sortProgramMessages([...messages]);
     await this.formatter.writeOutput(sorted, translations);
   }

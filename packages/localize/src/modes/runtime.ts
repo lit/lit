@@ -56,13 +56,10 @@ export class RuntimeLitLocalizer extends LitLocalizer {
     this.config = config;
   }
 
-  /**
-   * TODO
-   */
   async build() {
     this.assertTranslationsAreValid();
     const {messages} = this.extractSourceMessages();
-    const {translations} = this.readTranslations();
+    const {translations} = this.readTranslationsSync();
     await runtimeOutput(
       messages,
       translations,

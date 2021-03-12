@@ -61,7 +61,7 @@ export class TransformLitLocalizer extends LitLocalizer {
    */
   async build() {
     this.assertTranslationsAreValid();
-    const {translations} = this.readTranslations();
+    const {translations} = this.readTranslationsSync();
     await transformOutput(
       translations,
       this.config,
