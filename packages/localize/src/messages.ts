@@ -47,18 +47,6 @@ export interface ProgramMessage extends Message {
   descStack: string[];
 
   /**
-   * If this message was written as a function, the names of the parameters that
-   * the function takes.
-   *
-   * E.g. given:
-   *   msg('foo', (bar: string, baz: number) => `foo ${bar} ${baz}`, 'a', 4)
-   *
-   * Then params is:
-   *   [ 'bar', 'baz' ]
-   */
-  params?: string[];
-
-  /**
    * True if this message was tagged as a lit-html template, or was a function
    * that returned a lit-html template.
    */

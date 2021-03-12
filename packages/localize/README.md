@@ -321,48 +321,38 @@ promise resolves.
 Throws if the given locale is not contained by the configured `sourceLocale` or
 `targetLocales`.
 
-### `msg(template: string|TemplateResult|Function, options?: {id?: string, args?: any[]}) => string|TemplateResult`
+### `msg(template: TemplateResult|string|StrResult, options?: {id?: string}) => string|TemplateResult`
 
-Make a string or lit-html template localizable.
+Make lit-html template or string localizable.
 
 The `options.id` parameter is an optional project-wide unique identifier for
 this template. If omitted, an id will be automatically generated from the
 template strings.
 
-The `template` parameter can have any of these types:
+The `template` parameter can take any of these forms:
 
-- A plain string with no placeholders:
+- A Lit [`html`](https://lit-html.polymer-project.org/guide/writing-templates)
+  tagged string that may contain embedded HTML and arbitrary expressions. HTML
+  markup and template expressions are automatically encoded into placeholders.
+  Placeholders can be seen and re-ordered by translators, but they can't be
+  modified.
+
+  ```typescript
+  msg(html`Hello <b>${getUsername()}</b>!`);
+  ```
+
+- A plain string with no expressions.
 
   ```typescript
   msg('Hello World!');
   ```
 
-- A lit-html
-  [`TemplateResult`](https://lit-html.polymer-project.org/api/classes/_lit_html_.templateresult.html)
-  that may contain embedded HTML:
+- A `str` tagged string with arbitrary expressions. This `str` tag is required
+  if your plain string has expressions, because lit-localize needs dynamic
+  access to the template's `values` at runtime.
 
   ```typescript
-  msg(html`Hello <b>World</b>!`);
-  ```
-
-- A function that returns a [template
-  literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
-  string that may contain placeholders. Placeholders may only reference
-  parameters of the function. The function will be invoked with the
-  `options.args` array as its parameters:
-
-  ```typescript
-  msg((name) => `Hello ${name}!`, {args: [getUsername()]});
-  ```
-
-- A function that returns a lit-html
-  [`TemplateResult`](https://lit-html.polymer-project.org/api/classes/_lit_html_.templateresult.html)
-  that may contain embedded HTML, and may contain placeholders. Placeholders may
-  only reference parameters of the function. The function will be invoked with
-  the `options.args` array as its parameters:
-
-  ```typescript
-  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
+  msg(str`Hello ${getUsername()}!`);
   ```
 
 In transform mode, calls to this function are replaced with the static localized
@@ -371,6 +361,11 @@ template for each emitted locale. For example:
 ```typescript
 html`Hola <b>${getUsername()}!</b>`;
 ```
+
+### `str(strings: TemplateStringsArray, ...values: unknown[]): StrResult`
+
+Template tag function that allows string literals containing expressions to be
+localized.
 
 ### `LOCALE_STATUS_EVENT`
 

@@ -16,7 +16,11 @@ import {
   generateMsgIdFromAstNode,
 } from '../program-analysis';
 import {KnownError} from '../error';
-import {escapeStringToEmbedInTemplateLiteral} from '../typescript';
+import {
+  escapeStringToEmbedInTemplateLiteral,
+  stringifyDiagnostics,
+  parseStringAsTemplateLiteral,
+} from '../typescript';
 import * as pathLib from 'path';
 
 /**
@@ -259,22 +263,35 @@ class Transformer {
   ): ts.TemplateLiteral | ts.TaggedTemplateExpression | ts.StringLiteral {
     const [templateArg, optionsArg] = call.arguments;
 
-    const templateResult = extractTemplate(templateArg, this.sourceFile);
+    const templateResult = extractTemplate(
+      templateArg,
+      this.sourceFile,
+      this.typeChecker
+    );
     if (templateResult.error) {
-      throw new Error(templateResult.error.toString());
+      throw new Error(stringifyDiagnostics([templateResult.error]));
     }
-    const {
-      isLitTemplate: isLitTagged,
-      params: paramNames,
-    } = templateResult.result;
+    const {isLitTemplate: isLitTagged} = templateResult.result;
     let {template} = templateResult.result;
 
     const optionsResult = extractOptions(optionsArg, this.sourceFile);
     if (optionsResult.error) {
-      throw new Error(optionsResult.error.toString());
+      throw new Error(stringifyDiagnostics([optionsResult.error]));
     }
     const options = optionsResult.result;
     const id = options.id ?? generateMsgIdFromAstNode(template, isLitTagged);
+
+    const sourceExpressions = new Map<string, ts.Expression>();
+    if (ts.isTemplateExpression(template)) {
+      for (const span of template.templateSpans) {
+        // TODO(aomarks) Support less brittle/more readable placeholder keys.
+        const key = this.sourceFile.text.slice(
+          span.expression.pos,
+          span.expression.end
+        );
+        sourceExpressions.set(key, span.expression);
+      }
+    }
 
     // If translations are available, replace the source template from the
     // second argument with the corresponding translation.
@@ -288,33 +305,31 @@ class Transformer {
               : content.untranslatable
           )
           .join('');
-        // Note that we assume localized placeholder contents have already been
-        // validated against the source code to confirm that HTML and template
-        // literal expressions have not been corrupted or manipulated during
-        // localization (though moving their position is OK).
+
         template = parseStringAsTemplateLiteral(templateLiteralBody);
+        if (ts.isTemplateExpression(template)) {
+          const newParts = [];
+          newParts.push(template.head.text);
+          for (const span of template.templateSpans) {
+            const expressionKey = templateLiteralBody.slice(
+              span.expression.pos - 1,
+              span.expression.end - 1
+            );
+            const sourceExpression = sourceExpressions.get(expressionKey);
+            if (sourceExpression === undefined) {
+              throw new Error(
+                `Expression in translation does not appear in source.` +
+                  `\nLocale: ${this.locale}` +
+                  `\nExpression: ${expressionKey}`
+              );
+            }
+            newParts.push(sourceExpression);
+            newParts.push(span.literal.text);
+          }
+          template = makeTemplateLiteral(newParts);
+        }
       }
       // TODO(aomarks) Emit a warning that a translation was missing.
-    }
-
-    // If our second argument was a function, then any template expressions in
-    // our template are scoped to that function. The arguments to that function
-    // are the 3rd and onwards arguments to our `msg` function, so we must
-    // substitute those arguments into the expressions.
-    //
-    // Given: msg((name) => html`Hello <b>${name}</b>`, {args: ["World"]})
-    // Generate: html`Hello <b>${"World"}</b>`
-    if (ts.isArrowFunction(templateArg) && ts.isTemplateExpression(template)) {
-      if (!paramNames || !options.args) {
-        throw new KnownError(
-          'Internal error, expected paramNames and options.args to be defined'
-        );
-      }
-      const paramValues = new Map<string, ts.Expression>();
-      for (let i = 0; i < paramNames.length; i++) {
-        paramValues.set(paramNames[i], options.args[i]);
-      }
-      template = this.substituteIdentsInExpressions(template, paramValues);
     }
 
     // Nothing more to do with a simple string.
@@ -474,37 +489,6 @@ class Transformer {
  */
 function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
   return ts.createTaggedTemplate(ts.createIdentifier('html'), template);
-}
-
-/**
- * Parse the given string as though it were the body of a template literal
- * (backticks should not be included), and return its TypeScript AST node
- * representation.
- */
-function parseStringAsTemplateLiteral(
-  templateLiteralBody: string
-): ts.TemplateLiteral {
-  const file = ts.createSourceFile(
-    '__DUMMY__.ts',
-    '`' + templateLiteralBody + '`',
-    ts.ScriptTarget.ESNext,
-    false,
-    ts.ScriptKind.JS
-  );
-  if (file.statements.length !== 1) {
-    throw new KnownError('Internal error: expected 1 statement');
-  }
-  const statement = file.statements[0];
-  if (!ts.isExpressionStatement(statement)) {
-    throw new KnownError('Internal error: expected expression statement');
-  }
-  const expression = statement.expression;
-  if (!ts.isTemplateLiteral(expression)) {
-    throw new KnownError(
-      'Internal error: expected template literal expression'
-    );
-  }
-  return expression;
 }
 
 /**
