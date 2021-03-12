@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 
+- **[BREAKING]** Templates can now contain arbitrary expressions, and no longer
+  need to be wrapped in a function.
+
+  Before:
+
+  ```ts
+  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
+  ```
+
+  After:
+
+  ```ts
+  msg(html`Hello <b>${getUsername()}</b>!`);
+  ```
+
+  Plain strings containing expressions must now be tagged with the new `str`
+  tag. This allows lit-localize to access dynamic values at runtime.
+
+  ```ts
+  import {msg, str} from 'lit-localize';
+  msg(str`Hello ${name}`);
+  ```
+
 - **[BREAKING]** The `lit-localize` CLI now must always take one of two
   commands: `extract` or `build`. Previously, both of these steps were always
   performed.
